@@ -14,6 +14,7 @@ import {
   type Table,
   type TableDifference,
   TextType,
+  type SqlTriggerDef,
   type Transaction,
   type Type,
   Utils,
@@ -397,6 +398,101 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
+  /** Generates SQL to create an MSSQL trigger. MSSQL supports AFTER and INSTEAD OF only. */
+  override createTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
+    if (trigger.expression) {
+      return trigger.expression;
+    }
+
+    /* v8 ignore next 3 */
+    if (trigger.timing === 'before') {
+      throw new Error(`MSSQL does not support BEFORE triggers. Use AFTER or INSTEAD OF for trigger "${trigger.name}".`);
+    }
+
+    const timing = trigger.timing.toUpperCase();
+    const events = trigger.events.map(e => e.toUpperCase()).join(', ');
+    const qualifiedName = this.getSchemaQualifiedName(table, trigger.name);
+    return `create trigger ${qualifiedName} on ${table.getQuotedName()} ${timing} ${events} as begin ${trigger.body}; end`;
+  }
+
+  /** Generates SQL to drop an MSSQL trigger. */
+  override dropTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
+    return `drop trigger if exists ${this.getSchemaQualifiedName(table, trigger.name)}`;
+  }
+
+  private getSchemaQualifiedName(table: DatabaseTable, name: string): string {
+    const defaultSchema = this.platform.getDefaultSchemaName();
+
+    if (table.schema && table.schema !== defaultSchema) {
+      return `${this.quote(table.schema)}.${this.quote(name)}`;
+    }
+
+    return this.quote(name);
+  }
+
+  async getAllTriggers(
+    connection: AbstractSqlConnection,
+    tablesBySchemas: Map<string | undefined, Table[]>,
+  ): Promise<Dictionary<SqlTriggerDef[]>> {
+    const conditions: string[] = [];
+
+    for (const [schema, tables] of tablesBySchemas) {
+      const names = tables.map(t => this.platform.quoteValue(t.table_name)).join(', ');
+      const schemaName = this.platform.quoteValue(schema ?? this.platform.getDefaultSchemaName());
+      conditions.push(`(schema_name(p.schema_id) = ${schemaName} and p.name in (${names}))`);
+    }
+
+    const sql = `select t.name as trigger_name, schema_name(p.schema_id) as schema_name,
+      p.name as table_name, te.type_desc as event,
+      case when t.is_instead_of_trigger = 1 then 'INSTEAD OF' else 'AFTER' end as timing,
+      object_definition(t.object_id) as definition
+    from sys.triggers t
+    join sys.trigger_events te on t.object_id = te.object_id
+    join sys.objects p on t.parent_id = p.object_id
+    where (${conditions.join(' or ')})
+    order by t.name, te.type_desc`;
+
+    const allTriggers = await connection.execute<any[]>(sql);
+    const ret = {} as Dictionary<SqlTriggerDef[]>;
+    const triggerMap = new Map<string, SqlTriggerDef>();
+
+    for (const row of allTriggers) {
+      const key = this.getTableKey(row);
+      const dedupeKey = `${key}:${row.trigger_name}`;
+      const event = row.event.toLowerCase() as SqlTriggerDef['events'][number];
+
+      if (triggerMap.has(dedupeKey)) {
+        const existing = triggerMap.get(dedupeKey)!;
+        if (!existing.events.includes(event)) {
+          existing.events.push(event);
+        }
+        continue;
+      }
+
+      // Parse body from full trigger definition
+      let body = '';
+      if (row.definition) {
+        const bodyMatch = /\bas\s+begin\s+([\s\S]*)\s*end\s*$/i.exec(row.definition);
+        if (bodyMatch) {
+          body = bodyMatch[1].trim().replace(/;\s*$/, '');
+        }
+      }
+
+      ret[key] ??= [];
+      const trigger: SqlTriggerDef = {
+        name: row.trigger_name,
+        timing: row.timing.toLowerCase() as SqlTriggerDef['timing'],
+        events: [event],
+        forEach: 'row', // MSSQL has no FOR EACH ROW/STATEMENT syntax; match the metadata default to avoid false diffs
+        body,
+      };
+      ret[key].push(trigger);
+      triggerMap.set(dedupeKey, trigger);
+    }
+
+    return ret;
+  }
+
   override async loadInformationSchema(
     schema: DatabaseSchema,
     connection: AbstractSqlConnection,
@@ -413,6 +509,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     const indexes = await this.getAllIndexes(connection, tablesBySchema, ctx);
     const checks = await this.getAllChecks(connection, tablesBySchema, ctx);
     const fks = await this.getAllForeignKeys(connection, tablesBySchema, ctx);
+    const triggers = await this.getAllTriggers(connection, tablesBySchema);
 
     for (const t of tables) {
       const key = this.getTableKey(t);
@@ -420,6 +517,10 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       const pks = await this.getPrimaryKeys(connection, indexes[key], table.name, table.schema);
       const enums = this.getEnumDefinitions(checks[key] ?? []);
       table.init(columns[key], indexes[key], checks[key], pks, fks[key], enums);
+
+      if (triggers[key]) {
+        table.setTriggers(triggers[key]);
+      }
     }
   }
 

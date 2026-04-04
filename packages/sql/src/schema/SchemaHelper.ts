@@ -8,7 +8,7 @@ import {
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
-import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference } from '../typings.js';
+import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference, SqlTriggerDef } from '../typings.js';
 import type { DatabaseSchema } from './DatabaseSchema.js';
 import type { DatabaseTable } from './DatabaseTable.js';
 
@@ -292,6 +292,14 @@ export abstract class SchemaHelper {
       ret.push(this.dropConstraint(diff.name, check.name));
     }
 
+    for (const trigger of Object.values(diff.removedTriggers)) {
+      ret.push(this.dropTrigger(diff.toTable, trigger));
+    }
+
+    for (const trigger of Object.values(diff.changedTriggers)) {
+      ret.push(this.dropTrigger(diff.toTable, trigger));
+    }
+
     /* v8 ignore next */
     if (!safe && Object.values(diff.removedColumns).length > 0) {
       ret.push(this.getDropColumnsSQL(tableName, Object.values(diff.removedColumns), schemaName));
@@ -371,6 +379,14 @@ export abstract class SchemaHelper {
 
     for (const check of Object.values(diff.changedChecks)) {
       ret.push(this.createCheck(diff.toTable, check));
+    }
+
+    for (const trigger of Object.values(diff.addedTriggers)) {
+      ret.push(this.createTrigger(diff.toTable, trigger));
+    }
+
+    for (const trigger of Object.values(diff.changedTriggers)) {
+      ret.push(this.createTrigger(diff.toTable, trigger));
     }
 
     if ('changedComment' in diff) {
@@ -711,6 +727,10 @@ export abstract class SchemaHelper {
       for (const check of table.getChecks()) {
         this.append(ret, this.createCheck(table, check));
       }
+
+      for (const trigger of table.getTriggers()) {
+        this.append(ret, this.createTrigger(table, trigger));
+      }
     }
 
     return ret;
@@ -815,6 +835,37 @@ export abstract class SchemaHelper {
 
   createCheck(table: DatabaseTable, check: CheckDef): string {
     return `alter table ${table.getQuotedName()} add constraint ${this.quote(check.name)} check (${check.expression})`;
+  }
+
+  /**
+   * Generates SQL to create a database trigger on a table.
+   * Override in driver-specific helpers for custom DDL (e.g., PostgreSQL function wrapping).
+   */
+  /* v8 ignore next 10 */
+  createTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
+    if (trigger.expression) {
+      return trigger.expression;
+    }
+
+    const timing = trigger.timing.toUpperCase();
+    const events = trigger.events.map(e => e.toUpperCase()).join(' OR ');
+    const forEach = trigger.forEach === 'statement' ? 'STATEMENT' : 'ROW';
+    const when = trigger.when ? ` when (${trigger.when})` : '';
+    return `create trigger ${this.quote(trigger.name)} ${timing} ${events} on ${table.getQuotedName()} for each ${forEach}${when} begin ${trigger.body}; end`;
+  }
+
+  /**
+   * Generates SQL to drop a database trigger from a table.
+   * Override in driver-specific helpers for custom DDL.
+   */
+  dropTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
+    if (trigger.events.length > 1) {
+      return trigger.events
+        .map(event => `drop trigger if exists ${this.quote(`${trigger.name}_${event}`)}`)
+        .join(';\n');
+    }
+
+    return `drop trigger if exists ${this.quote(trigger.name)}`;
   }
 
   /** @internal */

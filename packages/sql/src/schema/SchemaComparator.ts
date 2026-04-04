@@ -10,7 +10,7 @@ import {
   parseJsonSafe,
   Utils,
 } from '@mikro-orm/core';
-import type { Column, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings.js';
+import type { Column, ForeignKey, IndexDef, SchemaDifference, TableDifference, SqlTriggerDef } from '../typings.js';
 import type { DatabaseSchema } from './DatabaseSchema.js';
 import { DatabaseTable } from './DatabaseTable.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
@@ -238,14 +238,17 @@ export class SchemaComparator {
       addedForeignKeys: {},
       addedIndexes: {},
       addedChecks: {},
+      addedTriggers: {},
       changedColumns: {},
       changedForeignKeys: {},
       changedIndexes: {},
       changedChecks: {},
+      changedTriggers: {},
       removedColumns: {},
       removedForeignKeys: {},
       removedIndexes: {},
       removedChecks: {},
+      removedTriggers: {},
       renamedColumns: {},
       renamedIndexes: {},
       fromTable,
@@ -397,6 +400,39 @@ export class SchemaComparator {
       });
       tableDifferences.changedChecks[check.name] = toTableCheck;
       changes++;
+    }
+
+    const fromTableTriggers = fromTable.getTriggers();
+    const toTableTriggers = toTable.getTriggers();
+
+    for (const trigger of toTableTriggers) {
+      if (fromTable.hasTrigger(trigger.name)) {
+        continue;
+      }
+
+      tableDifferences.addedTriggers[trigger.name] = trigger;
+      this.log(`trigger ${trigger.name} added to table ${tableDifferences.name}`, { trigger });
+      changes++;
+    }
+
+    for (const trigger of fromTableTriggers) {
+      if (!toTable.hasTrigger(trigger.name)) {
+        tableDifferences.removedTriggers[trigger.name] = trigger;
+        this.log(`trigger ${trigger.name} removed from table ${tableDifferences.name}`);
+        changes++;
+        continue;
+      }
+
+      const toTableTrigger = toTable.getTrigger(trigger.name)!;
+
+      if (this.diffTrigger(trigger, toTableTrigger)) {
+        this.log(`trigger ${trigger.name} changed in table ${tableDifferences.name}`, {
+          fromTableTrigger: trigger,
+          toTableTrigger,
+        });
+        tableDifferences.changedTriggers[trigger.name] = toTableTrigger;
+        changes++;
+      }
     }
 
     const fromForeignKeys = { ...fromTable.getForeignKeys() };
@@ -902,6 +938,36 @@ export class SchemaComparator {
     }
 
     return true;
+  }
+
+  private diffTrigger(from: SqlTriggerDef, to: SqlTriggerDef): boolean {
+    // Raw DDL expression cannot be meaningfully compared to introspected
+    // trigger metadata, so skip diffing when the metadata side uses it.
+    if (to.expression) {
+      // Both sides have expression — compare the raw DDL directly
+      if (from.expression) {
+        return this.diffExpression(from.expression, to.expression);
+      }
+
+      // Only metadata side has expression — the raw DDL cannot be compared to
+      // introspected metadata. Changes to the expression value won't be detected;
+      // drop and recreate the trigger manually to apply expression changes.
+      return false;
+    }
+
+    if (from.timing !== to.timing || from.forEach !== to.forEach) {
+      return true;
+    }
+
+    if ([...from.events].sort().join(',') !== [...to.events].sort().join(',')) {
+      return true;
+    }
+
+    if ((from.when ?? '') !== (to.when ?? '')) {
+      return true;
+    }
+
+    return this.diffExpression(from.body, to.body);
   }
 
   parseJsonDefault(defaultValue?: string | null): Dictionary | string | null {

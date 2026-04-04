@@ -212,6 +212,7 @@ export class MetadataDiscovery {
 
     filtered.forEach(meta => this.initAutoincrement(meta)); // once again after we init custom types
     filtered.forEach(meta => this.initCheckConstraints(meta));
+    filtered.forEach(meta => this.initTriggers(meta));
 
     forEachProp((_m, p) => {
       this.initDefaultValue(p);
@@ -1266,6 +1267,7 @@ export class MetadataDiscovery {
     meta.indexes = Utils.unique([...base.indexes, ...meta.indexes]);
     meta.uniques = Utils.unique([...base.uniques, ...meta.uniques]);
     meta.checks = Utils.unique([...base.checks, ...meta.checks]);
+    meta.triggers = Utils.unique([...base.triggers, ...meta.triggers]);
     const pks = Object.values(meta.properties)
       .filter(p => p.primary)
       .map(p => p.name);
@@ -1951,6 +1953,38 @@ export class MetadataDiscovery {
         }
       }
     }
+  }
+
+  private initTriggers(meta: EntityMetadata): void {
+    if (meta.triggers.length === 0) {
+      return;
+    }
+
+    const columns = meta.createSchemaColumnMappingObject();
+    const table = this.createSchemaTable(meta);
+
+    for (const trigger of meta.triggers) {
+      if (trigger.body && trigger.expression) {
+        throw new MetadataError(
+          `Trigger "${trigger.name ?? '(unnamed)'}" on entity ${meta.className} defines both 'body' and 'expression'. Use one or the other.`,
+        );
+      }
+
+      if (!trigger.body && !trigger.expression) {
+        throw new MetadataError(
+          `Trigger "${trigger.name ?? '(unnamed)'}" on entity ${meta.className} must define either 'body' or 'expression'.`,
+        );
+      }
+
+      trigger.name ??= this.#namingStrategy.indexName(meta.tableName, trigger.events, 'trigger');
+      trigger.forEach ??= 'row';
+
+      if (trigger.body instanceof Function) {
+        trigger.body = trigger.body(columns, table);
+      }
+    }
+
+    meta.hasTriggers = true;
   }
 
   private initGeneratedColumn(meta: EntityMetadata, prop: EntityProperty): void {

@@ -13,6 +13,7 @@ import type {
   IndexCallback,
   ObjectQuery,
   Raw,
+  TriggerDef,
 } from '../typings.js';
 import type { Cascade, LoadStrategy, DeferMode, QueryOrderMap, EmbeddedPrefixMode } from '../enums.js';
 import type { Type, types } from '../types/index.js';
@@ -70,6 +71,8 @@ export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   view?: boolean | { materialized?: boolean; withData?: boolean };
   /** Used to make ORM aware of externally defined triggers. This is needed for MS SQL Server multi inserts, ignored in other dialects. */
   hasTriggers?: boolean;
+  /** Database triggers to create for this entity's table. (SQL drivers only) */
+  triggers?: TriggerDef<E>[];
   // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`
   // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
   /** SQL query that maps to a {@doclink virtual-entities | virtual entity}, or for view entities, the view definition. */

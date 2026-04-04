@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`trigger [mariadb] > trigger diff [mariadb] > mariadb-trigger-diff-1 1`] = `
+"create table \`trigger_table\` (\`id\` int unsigned not null auto_increment primary key, \`price\` int not null) default character set utf8mb4 engine = InnoDB;
+
+create table \`trigger_entity\` (\`id\` int unsigned not null auto_increment primary key, \`price\` int not null) default character set utf8mb4 engine = InnoDB;
+
+create trigger \`trg_audit\` BEFORE INSERT on \`trigger_table\` for each ROW begin SET NEW.price = NEW.price + 1; end;
+
+create trigger \`trg_price\` BEFORE INSERT on \`trigger_entity\` for each ROW begin SET NEW.price = NEW.price + 1; end;
+"
+`;
+
+exports[`trigger [mariadb] > trigger diff [mariadb] > mariadb-trigger-diff-2 1`] = `
+"drop trigger if exists \`trg_audit\`;
+"
+`;
+
+exports[`trigger [mariadb] > trigger is generated for decorator [mariadb] > mariadb-trigger-decorator 1`] = `
+"create table \`trigger_entity\` (\`id\` int unsigned not null auto_increment primary key, \`price\` int not null) default character set utf8mb4 engine = InnoDB;
+create trigger \`trg_price\` BEFORE INSERT on \`trigger_entity\` for each ROW begin SET NEW.price = NEW.price + 1; end;
+"
+`;
