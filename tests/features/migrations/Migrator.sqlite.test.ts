@@ -245,6 +245,42 @@ describe('Migrator (sqlite)', () => {
     }
   });
 
+  test('checkSchema works without database connection when snapshot exists', async () => {
+    const migrations = orm.config.get('migrations');
+    migrations.snapshot = true;
+
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const path = process.cwd() + '/temp/migrations-3';
+    const migrator = new Migrator(orm.em);
+
+    // create a blank migration — snapshot is written from metadata (getTargetSchema)
+    const migration1 = await migrator.create(path, true);
+    expect(migration1.diff).toEqual({ up: ['select 1'], down: ['select 1'] });
+
+    // create a fresh migrator that has NOT been initialized (no DB connection)
+    const migrator2 = new Migrator(orm.em);
+
+    // mock ensureDatabase and ensureTable to throw — proving we don't need DB
+    const ensureDbMock = vi.spyOn(orm.schema, 'ensureDatabase');
+    ensureDbMock.mockRejectedValue(new Error('should not connect to database'));
+    const ensureTableMock = vi.spyOn(MigrationStorage.prototype, 'ensureTable');
+    ensureTableMock.mockRejectedValue(new Error('should not connect to database'));
+
+    try {
+      // checkSchema should succeed without database, using the snapshot
+      const outOfSync = await migrator2.checkSchema();
+      expect(outOfSync).toBe(false);
+    } finally {
+      const snapshotPath = path + '/.snapshot-memory.json';
+      await rm(path + '/' + migration1.fileName);
+      await rm(snapshotPath, { force: true });
+      ensureDbMock.mockRestore();
+      ensureTableMock.mockRestore();
+      migrations.snapshot = false;
+    }
+  });
+
   test('generate initial migration', async () => {
     await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const getExecutedMigrationsMock = vi.spyOn(Migrator.prototype, 'getExecuted');
