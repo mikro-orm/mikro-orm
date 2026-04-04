@@ -38,6 +38,8 @@ import type {
   DefineConfig,
   Config,
   MaybePromise,
+  IndexHints,
+  InferPropertyIndexMap,
 } from '../typings.js';
 import type { Raw } from '../utils/RawQueryFragment.js';
 import type { ScalarReference } from './Reference.js';
@@ -148,8 +150,12 @@ export interface PropertyChain<Value, Options> {
   customOrder(...customOrder: string[] | number[] | boolean[]): PropertyChain<Value, Options>;
   extra(extra: string): PropertyChain<Value, Options>;
   ignoreSchemaChanges(...ignoreSchemaChanges: ('type' | 'extra' | 'default')[]): PropertyChain<Value, Options>;
-  index(index?: boolean | string): PropertyChain<Value, Options>;
-  unique(unique?: boolean | string): PropertyChain<Value, Options>;
+  /** Explicitly specify index on a property. When a string name is passed, it enables type-safe `using` in `FindOptions`. */
+  index<N extends string>(name: N): PropertyChain<Value, Omit<Options, 'index'> & { index: N }>;
+  index(index?: boolean): PropertyChain<Value, Options>;
+  /** Set column as unique. When a string name is passed, it enables type-safe `using` in `FindOptions`. (SQL only) */
+  unique<N extends string>(name: N): PropertyChain<Value, Omit<Options, 'unique'> & { unique: N }>;
+  unique(unique?: boolean): PropertyChain<Value, Options>;
   comment(comment: string): PropertyChain<Value, Options>;
   accessor(accessor?: string | boolean): PropertyChain<Value, Options>;
 
@@ -602,19 +608,25 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
 
   /**
    * Explicitly specify index on a property.
+   * When a string name is passed, it is captured as a literal type for use with the `using` option in `FindOptions`.
    */
-  index(
-    index: boolean | string = true,
-  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  index<N extends string>(
+    name: N,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'index'> & { index: N }, IncludeKeys>, IncludeKeys>;
+  index(index?: boolean): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys>;
+  index(index: boolean | string = true): any {
     return this.assignOptions({ index });
   }
 
   /**
    * Set column as unique for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
+   * When a string name is passed, it is captured as a literal type for use with the `using` option in `FindOptions`.
    */
-  unique(
-    unique: boolean | string = true,
-  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  unique<N extends string>(
+    name: N,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'unique'> & { unique: N }, IncludeKeys>, IncludeKeys>;
+  unique(unique?: boolean): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys>;
+  unique(unique: boolean | string = true): any {
     return this.assignOptions({ unique });
   }
 
@@ -1504,7 +1516,9 @@ export type InferEntityFromProperties<
     ? {}
     : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository }) &
   (IsNever<Base> extends true ? {} : Omit<Base, typeof PrimaryKeyProp>) &
-  (ForceObject extends true ? { [Config]?: DefineConfig<{ forceObject: true }> } : {});
+  (ForceObject extends true ? { [Config]?: DefineConfig<{ forceObject: true }> } : {}) & {
+    [IndexHints]?: [Properties];
+  };
 
 // Combines primary keys from child properties and base entity
 type InferCombinedPrimaryKey<Properties extends Record<string, any>, PK, Base> = PK extends undefined

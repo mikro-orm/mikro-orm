@@ -17,6 +17,7 @@ import type {
   EntityName,
   PopulateHintOptions,
   Prefixes,
+  IndexName,
 } from '../typings.js';
 import type { Connection, QueryResult, Transaction } from '../connections/Connection.js';
 import type {
@@ -358,6 +359,20 @@ export interface FindOptions<
   connectionType?: ConnectionType;
   /** SQL: appended to FROM clause (e.g. `'force index(my_index)'`); MongoDB: index name or spec passed as `hint`. */
   indexHint?: string | Dictionary;
+  /**
+   * Named index(es) for this query. When provided:
+   * - Validates that `where` and `orderBy` only reference columns covered by the specified index(es).
+   * - Emits SQL index hints where supported (MySQL/MariaDB: `USE INDEX`, MSSQL: `WITH (INDEX(...))`).
+   * - If `indexHint` is also set, `indexHint` takes precedence for SQL generation.
+   *
+   * Accepts a single index name or an array. For `defineEntity` entities with named indexes
+   * and decorator entities with `[IndexHints]`, index names are autocompleted.
+   *
+   * @example
+   * await em.find(Book, { title: 'foo' }, { using: 'idx_book_title' });
+   * await em.find(Book, { title: 'foo', author: 1 }, { using: ['idx_book_title', 'idx_book_author'] });
+   */
+  using?: IndexName<Entity> | IndexName<Entity>[];
   /** sql only */
   comments?: string | string[];
   /** sql only */
