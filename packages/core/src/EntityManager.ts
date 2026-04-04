@@ -15,6 +15,7 @@ import { helper } from './entity/wrap.js';
 import { ChangeSet, ChangeSetType } from './unit-of-work/ChangeSet.js';
 import { UnitOfWork } from './unit-of-work/UnitOfWork.js';
 import type {
+  CountByOptions,
   CountOptions,
   DeleteOptions,
   EntityField,
@@ -2121,6 +2122,34 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
+   * Counts entities grouped by one or more properties. Returns a dictionary keyed by the grouped
+   * field value(s), with counts as values. For composite `groupBy`, keys are joined with `~~~`.
+   *
+   * SQL drivers issue a single `GROUP BY` query; MongoDB uses an aggregation pipeline.
+   *
+   * @example
+   * ```ts
+   * // Count books per author
+   * const counts = await em.countBy(Book, 'author');
+   * // { '1': 2, '2': 1, '3': 3 }
+   *
+   * // Count with a filter
+   * const counts = await em.countBy(Book, 'author', { where: { active: true } });
+   *
+   * // Composite groupBy — keys joined with ~~~
+   * const counts = await em.countBy(Order, ['status', 'country']);
+   * // { 'pending~~~US': 5, 'shipped~~~DE': 3 }
+   * ```
+   */
+  async countBy<Entity extends object>(
+    entityName: EntityName<Entity>,
+    groupBy: EntityKey<Entity> | readonly EntityKey<Entity>[],
+    options?: CountByOptions<Entity>,
+  ): Promise<Dictionary<number>> {
+    throw new Error(`${this.constructor.name}.countBy() is not supported by the current driver`);
+  }
+
+  /**
    * Tells the EntityManager to make an instance managed and persistent.
    * The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
    */
@@ -2687,7 +2716,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   protected prepareOptions(
-    options: FindOptions<any, any, any, any> | FindOneOptions<any, any, any, any> | CountOptions<any, any>,
+    options:
+      | FindOptions<any, any, any, any>
+      | FindOneOptions<any, any, any, any>
+      | CountOptions<any, any>
+      | CountByOptions<any>,
   ): void {
     if (!Utils.isEmpty((options as FindOptions<any>).fields) && !Utils.isEmpty((options as FindOptions<any>).exclude)) {
       throw new ValidationError(`Cannot combine 'fields' and 'exclude' option.`);
