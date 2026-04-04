@@ -922,6 +922,189 @@ export abstract class AbstractSqlDriver<
     return res;
   }
 
+  override async nativeClone<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    overrides?: EntityData<T>,
+    options: NativeInsertUpdateOptions<T> = {},
+  ): Promise<QueryResult<T>> {
+    options.convertCustomTypes ??= true;
+    const meta = this.metadata.get(entityName);
+
+    if (meta.inheritanceType === 'tpt' || meta.tptParent) {
+      return this.nativeCloneTPT(meta, where, overrides, options);
+    }
+
+    return this.nativeCloneSimple(meta, where, overrides, options);
+  }
+
+  private async nativeCloneSimple<T extends object>(
+    meta: EntityMetadata<T>,
+    where: FilterQuery<T>,
+    overrides?: EntityData<T>,
+    options: NativeInsertUpdateOptions<T> = {},
+  ): Promise<QueryResult<T>> {
+    const props = this.getCloneableProps(meta);
+    const mappedOverrides = this.mapCloneOverrides(overrides, meta, options);
+    const { selectFields, insertColumns } = this.buildCloneFields(props, mappedOverrides, meta);
+
+    const selectQb = this.createQueryBuilder<T>(
+      meta.class,
+      options.ctx,
+      'read',
+      options.convertCustomTypes,
+      options.loggerContext,
+    ).withSchema(this.getSchemaName(meta, options));
+    selectQb.select(selectFields as any).where(where as any);
+
+    const insertQb = this.createQueryBuilder<T>(
+      meta.class,
+      options.ctx,
+      'write',
+      options.convertCustomTypes,
+      options.loggerContext,
+    ).withSchema(this.getSchemaName(meta, options));
+
+    return this.rethrow(
+      (insertQb as AnyQueryBuilder<T>)
+        .insertFrom(selectQb as AnyQueryBuilder<T>, { columns: insertColumns as any })
+        .execute('run', false),
+    );
+  }
+
+  private async nativeCloneTPT<T extends object>(
+    leafMeta: EntityMetadata<T>,
+    where: FilterQuery<T>,
+    overrides?: EntityData<T>,
+    options: NativeInsertUpdateOptions<T> = {},
+  ): Promise<QueryResult<T>> {
+    const hierarchy: EntityMetadata[] = [];
+    let current: EntityMetadata | undefined = leafMeta;
+
+    while (current) {
+      hierarchy.unshift(current);
+      current = current.tptParent;
+    }
+
+    const rootMeta = hierarchy[0];
+    let newPk: any;
+    let rootResult: QueryResult<T> | undefined;
+
+    for (const tableMeta of hierarchy) {
+      const props = this.getCloneableProps(tableMeta as EntityMetadata<T>, true);
+      const mappedOverrides = this.mapCloneOverrides(overrides, tableMeta as EntityMetadata<T>, options);
+      const { selectFields, insertColumns } = this.buildCloneFields(
+        props,
+        mappedOverrides,
+        tableMeta as EntityMetadata<T>,
+      );
+
+      // For child tables, prepend the new PK value
+      if (tableMeta !== rootMeta && newPk != null) {
+        for (const pkName of tableMeta.primaryKeys) {
+          const prop = tableMeta.properties[pkName as EntityKey<T>] as EntityProperty;
+
+          for (const fieldName of prop.fieldNames) {
+            insertColumns.unshift(fieldName);
+            selectFields.unshift(raw('? as ??', [newPk, fieldName]));
+          }
+        }
+      }
+
+      const sourceWhere =
+        tableMeta === rootMeta ? where : ((Utils.extractPK(where as any, tableMeta) as FilterQuery<T>) ?? where);
+
+      const selectQb = this.createQueryBuilder<T>(
+        tableMeta.class as any,
+        options.ctx,
+        'read',
+        options.convertCustomTypes,
+        options.loggerContext,
+      ).withSchema(this.getSchemaName(tableMeta as EntityMetadata<T>, options));
+      selectQb.select(selectFields as any).where(sourceWhere as any);
+
+      const insertQb = this.createQueryBuilder<T>(
+        tableMeta.class as any,
+        options.ctx,
+        'write',
+        options.convertCustomTypes,
+        options.loggerContext,
+      ).withSchema(this.getSchemaName(tableMeta as EntityMetadata<T>, options));
+
+      const res = await this.rethrow(
+        (insertQb as AnyQueryBuilder<T>)
+          .insertFrom(selectQb as AnyQueryBuilder<T>, { columns: insertColumns as any })
+          .execute('run', false),
+      );
+
+      if (tableMeta === rootMeta) {
+        rootResult = res;
+        newPk = res.insertId ?? res.row?.[rootMeta.primaryKeys[0]];
+      }
+    }
+
+    return rootResult!;
+  }
+
+  private mapCloneOverrides<T extends object>(
+    overrides: EntityData<T> | undefined,
+    meta: EntityMetadata<T>,
+    options: NativeInsertUpdateOptions<T>,
+  ): Dictionary | undefined {
+    if (!overrides) {
+      return undefined;
+    }
+
+    return super.mapDataToFieldNames(overrides as Dictionary, true, meta.properties as any, options.convertCustomTypes);
+  }
+
+  private buildCloneFields<T extends object>(
+    props: EntityProperty<T>[],
+    mappedOverrides: Dictionary | undefined,
+    meta: EntityMetadata<T>,
+  ): { selectFields: (string | RawQueryFragment)[]; insertColumns: string[] } {
+    const selectFields: (string | RawQueryFragment)[] = [];
+    const insertColumns: string[] = [];
+
+    for (const prop of props) {
+      for (const fieldName of prop.fieldNames) {
+        insertColumns.push(fieldName);
+
+        if (mappedOverrides && fieldName in mappedOverrides) {
+          selectFields.push(raw('? as ??', [mappedOverrides[fieldName], fieldName]));
+        } else if (meta.versionProperty === prop.name) {
+          const initial = prop.runtimeType === 'Date' ? new Date() : 1;
+          selectFields.push(raw('? as ??', [initial, fieldName]));
+        } else {
+          selectFields.push(fieldName);
+        }
+      }
+    }
+
+    return { selectFields, insertColumns };
+  }
+
+  private getCloneableProps<T extends object>(meta: EntityMetadata<T>, ownProps?: boolean): EntityProperty<T>[] {
+    return (ownProps ? (meta.ownProps ?? meta.props) : meta.props).filter(prop => {
+      if (prop.persist === false) {
+        return false;
+      }
+      if (prop.primary) {
+        return false;
+      }
+      if (!prop.fieldNames?.length) {
+        return false;
+      }
+      if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
+        return false;
+      }
+      if (prop.kind === ReferenceKind.EMBEDDED && !prop.object) {
+        return false;
+      }
+      return true;
+    });
+  }
+
   async nativeInsertMany<T extends object>(
     entityName: EntityName<T>,
     data: EntityDictionary<T>[],

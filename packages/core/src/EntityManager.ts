@@ -1685,6 +1685,64 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
+   * Clones rows matching the condition at the database level via INSERT...SELECT.
+   * Automatically excludes auto-increment PKs, generated columns, and resets version properties.
+   * Returns the cloned entity, registered in the identity map.
+   *
+   * @example
+   * ```ts
+   * // Clone by entity class + where + overrides
+   * const cloned = await em.clone(Author, { id: 1 }, { email: 'new@email.com' });
+   *
+   * // Pure clone (all non-PK fields copied)
+   * const cloned = await em.clone(Author, { id: 1 });
+   *
+   * // Clone a loaded entity
+   * const author = await em.findOneOrFail(Author, 1);
+   * const cloned = await em.clone(author, { email: 'new@email.com' });
+   * ```
+   */
+  async clone<Entity extends object>(
+    entityNameOrEntity: EntityName<Entity> | Entity,
+    whereOrOverrides?: FilterQuery<NoInfer<Entity>> | EntityData<Entity>,
+    overridesOrOptions?: EntityData<Entity> | NativeInsertUpdateOptions<Entity>,
+    options?: NativeInsertUpdateOptions<Entity>,
+  ): Promise<Entity> {
+    const em = this.getContext(false);
+    let entityName: EntityName<Entity>;
+    let where: FilterQuery<Entity>;
+    let overrides: EntityData<Entity> | undefined;
+
+    if (Utils.isEntity(entityNameOrEntity)) {
+      // clone(entity, overrides?, options?)
+      entityName = (entityNameOrEntity as Dictionary).constructor;
+      where = helper(entityNameOrEntity).getPrimaryKey() as FilterQuery<Entity>;
+      overrides = whereOrOverrides as EntityData<Entity>;
+      options = overridesOrOptions as NativeInsertUpdateOptions<Entity>;
+    } else {
+      // clone(EntityClass, where, overrides?, options?)
+      entityName = entityNameOrEntity;
+      where = whereOrOverrides as FilterQuery<Entity>;
+      overrides = overridesOrOptions as EntityData<Entity>;
+    }
+
+    options ??= {};
+    em.prepareOptions(options);
+
+    const meta = em.metadata.get<Entity>(entityName);
+    const res = await em.driver.nativeClone<Entity>(entityName, where, overrides, {
+      ctx: em.#transactionContext,
+      ...options,
+    });
+
+    const pk = res.insertId ?? res.row?.[meta.primaryKeys[0]];
+
+    return em.findOneOrFail<Entity, any>(entityName, pk as any, {
+      schema: options.schema,
+    });
+  }
+
+  /**
    * Fires native multi-insert query. Calling this has no side effects on the context (identity map).
    */
   async insertMany<Entity extends object>(

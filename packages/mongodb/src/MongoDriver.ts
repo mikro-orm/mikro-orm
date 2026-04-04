@@ -259,6 +259,42 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     >;
   }
 
+  override async nativeClone<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    overrides?: EntityData<T>,
+    options: NativeInsertUpdateOptions<T> = {},
+  ): Promise<QueryResult<T>> {
+    const meta = this.metadata.find(entityName)!;
+    const pk = meta.getPrimaryProps()[0].fieldNames[0] ?? '_id';
+    const normalizedWhere = Utils.isPrimaryKey(where) ? ({ [pk]: where } as FilterQuery<T>) : where;
+    const renameWhere = this.renameFields(entityName, normalizedWhere as unknown as EntityDictionary<T>);
+    const source = await this.rethrow(
+      this.getConnection('read').find<T>(entityName, renameWhere as FilterQuery<T>, { ctx: options.ctx, limit: 1 }),
+    );
+
+    if (!source.length) {
+      throw new Error('Cannot clone: no entity found matching the given condition');
+    }
+
+    const doc = source[0] as Dictionary;
+    delete doc[pk];
+
+    if (overrides) {
+      const mapped = this.renameFields(entityName, overrides as unknown as EntityDictionary<T>);
+      Object.assign(doc, mapped);
+    }
+
+    if (meta.versionProperty) {
+      const vProp = meta.properties[meta.versionProperty];
+      doc[vProp.fieldNames[0]] = vProp.runtimeType === 'Date' ? new Date() : 1;
+    }
+
+    return this.rethrow(
+      this.getConnection('write').insertOne<T>(entityName, doc as EntityDictionary<T>, options.ctx),
+    ) as unknown as Promise<QueryResult<T>>;
+  }
+
   async nativeInsertMany<T extends object>(
     entityName: EntityName<T>,
     data: EntityDictionary<T>[],
