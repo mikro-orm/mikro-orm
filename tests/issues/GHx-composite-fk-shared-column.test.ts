@@ -1,4 +1,4 @@
-import { BaseEntity, MikroORM, PrimaryKeyProp, type Ref } from '@mikro-orm/postgresql';
+import { BaseEntity, MikroORM, PrimaryKeyProp, ref, type Ref } from '@mikro-orm/postgresql';
 import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { randomUUID } from 'node:crypto';
 
@@ -104,6 +104,34 @@ describe('GHx - composite FK with shared join column [object Object] bug', () =>
 
     const verifyEm = orm.em.fork();
     const loaded = await verifyEm.findOneOrFail(Referrer, { label: 'test' }, { populate: ['childA', 'childB'] });
+    expect(loaded.childA!.id).toBe(childA.id);
+    expect(loaded.childB!.id).toBe(childB.id);
+  });
+
+  test('update existing entity to reference new entity in same flush does not nullify shared column', async () => {
+    const em = orm.em.fork();
+    const orgId = randomUUID();
+
+    em.create(Organization, { id: orgId, name: 'Test Org Update' });
+    const childA = em.create(ChildA, { organization: orgId, label: 'A-existing' });
+    await em.flush();
+
+    // Create Referrer WITHOUT childB — flush so it has a real PK
+    const referrer = em.create(Referrer, {
+      organization: orgId,
+      label: 'test-update',
+      childA,
+    });
+    await em.flush();
+
+    // Create new ChildB (PK not yet assigned — defaultRaw) and assign to existing Referrer
+    const childB = em.create(ChildB, { organization: orgId, label: 'B-new' });
+    referrer.childB = ref(childB);
+
+    await em.flush();
+
+    const verifyEm = orm.em.fork();
+    const loaded = await verifyEm.findOneOrFail(Referrer, { label: 'test-update' }, { populate: ['childA', 'childB'] });
     expect(loaded.childA!.id).toBe(childA.id);
     expect(loaded.childB!.id).toBe(childB.id);
   });
