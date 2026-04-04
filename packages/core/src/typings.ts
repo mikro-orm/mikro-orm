@@ -1698,6 +1698,16 @@ export interface IMigrator {
   off(event: MigratorEvent, listener: (event: MigrationInfo) => MaybePromise<void>): IMigrator;
 
   /**
+   * Marks a migration as executed without actually running it.
+   */
+  logMigration(name: string): Promise<void>;
+
+  /**
+   * Removes a migration from the executed list without reverting it.
+   */
+  unlogMigration(name: string): Promise<void>;
+
+  /**
    * @internal
    */
   getStorage(): IMigratorStorage;
