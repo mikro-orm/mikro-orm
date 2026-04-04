@@ -629,7 +629,7 @@ export class Collection<T extends object, O extends object = object> {
   /**
    * @internal
    */
-  hydrate(items: T[], forcePropagate?: boolean, partial?: boolean): void {
+  hydrate(items: T[], forcePropagate?: boolean, partial?: boolean, readonly?: boolean): void {
     for (let i = 0; i < this.#items.size; i++) {
       delete this[i];
     }
@@ -640,6 +640,10 @@ export class Collection<T extends object, O extends object = object> {
     this.#count = 0;
     this.add(items);
     this.takeSnapshot(forcePropagate);
+
+    if (readonly) {
+      this.#readonly = true;
+    }
   }
 
   /**

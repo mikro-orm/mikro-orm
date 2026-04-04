@@ -140,6 +140,14 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     const orderBy = Utils.asArray(options.orderBy).map(orderBy => this.renameFields(entityName, orderBy as T, true));
+    const partitionLimit = (options as Dictionary)._partitionLimit as
+      | { partitionBy: string | string[]; limit: number; offset?: number }
+      | undefined;
+
+    if (partitionLimit) {
+      return this.findWithPartitionLimit(entityName, where, orderBy, fields ?? [], partitionLimit, options);
+    }
+
     const res = await this.rethrow(
       this.getConnection('read').find(entityName, where, {
         orderBy,
@@ -152,6 +160,74 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     );
 
     return res.map(r => this.mapResult<T>(r, this.metadata.find<T>(entityName))!);
+  }
+
+  private async findWithPartitionLimit<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    orderBy: Dictionary[],
+    fields: string[],
+    partitionLimit: { partitionBy: string | string[]; limit: number; offset?: number },
+    options: FindOptions<T, any, any, any>,
+  ): Promise<EntityData<T>[]> {
+    const meta = this.metadata.find<T>(entityName)!;
+    const { limit, offset = 0 } = partitionLimit;
+
+    // Resolve partition field to its DB field name
+    let partitionField = Array.isArray(partitionLimit.partitionBy)
+      ? partitionLimit.partitionBy[0]
+      : partitionLimit.partitionBy;
+    const prop = (meta.properties as Dictionary)[partitionField];
+
+    if (prop?.fieldNames?.length) {
+      partitionField = prop.fieldNames[0];
+    }
+
+    const pipeline: Dictionary[] = [];
+    pipeline.push({ $match: where });
+
+    if (orderBy.length > 0) {
+      const sortSpec: Dictionary = {};
+
+      for (const order of orderBy) {
+        for (const [key, dir] of Object.entries(order)) {
+          sortSpec[key] = dir === 'ASC' || dir === 'asc' || dir === 1 ? 1 : -1;
+        }
+      }
+
+      pipeline.push({ $sort: sortSpec });
+    }
+
+    // $sort before $group ensures $push collects in correct order
+    pipeline.push({
+      $group: {
+        _id: `$${partitionField}`,
+        __docs: { $push: '$$ROOT' },
+      },
+    });
+    pipeline.push({
+      $project: {
+        __docs: { $slice: ['$__docs', offset, limit] },
+      },
+    });
+    pipeline.push({ $unwind: '$__docs' });
+    pipeline.push({ $replaceRoot: { newRoot: '$__docs' } });
+
+    if (fields.length > 0) {
+      const projection: Dictionary = {};
+
+      for (const field of fields) {
+        projection[field] = 1;
+      }
+
+      pipeline.push({ $project: projection });
+    }
+
+    const res = await this.rethrow(
+      this.getConnection('read').aggregate<T>(entityName, pipeline, options.ctx, options.logging),
+    );
+
+    return res.map(r => this.mapResult<T>(r, meta)!);
   }
 
   async findOne<T extends object, P extends string = never, F extends string = never, E extends string = never>(

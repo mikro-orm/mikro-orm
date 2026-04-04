@@ -1783,12 +1783,24 @@ export type PopulateOptions<T> = {
   children?: PopulateOptions<T[keyof T]>[];
   /** When true, ignores `mapToPk` on the property and returns full entity data instead of just PKs. */
   dataOnly?: boolean;
+  /** Limit the number of items loaded per parent entity. Collections will be marked as partial and readonly. */
+  limit?: number;
+  /** Offset for per-parent limiting (used with `limit`). */
+  offset?: number;
+  /** Order by clause for per-parent limiting. Takes precedence over nested `FindOptions.orderBy`. */
+  orderBy?: QueryOrderMap<T[keyof T]>;
 };
 
 /** Inline options that can be appended to populate hint strings (e.g., strategy, join type). */
 export type PopulateHintOptions = {
   strategy?: LoadStrategy.JOINED | LoadStrategy.SELECT_IN | 'joined' | 'select-in';
   joinType?: 'inner join' | 'left join';
+  /** Limit the number of items loaded per parent entity. Collections will be marked as partial and readonly. */
+  limit?: number;
+  /** Offset for per-parent limiting (used with `limit`). */
+  offset?: number;
+  /** Order by clause for per-parent limiting. Takes precedence over nested `FindOptions.orderBy`. */
+  orderBy?: QueryOrderMap<any>;
 };
 
 type ExtractType<T> =

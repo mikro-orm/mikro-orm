@@ -544,6 +544,7 @@ export interface QBState<Entity extends object> {
   })[];
   tptJoinsApplied: boolean;
   autoJoinedPaths: string[];
+  partitionLimit?: { partitionBy: string; limit: number; offset?: number };
 }
 
 /**
@@ -1993,6 +1994,13 @@ export class QueryBuilder<
     return this.#state.flags.has(flag);
   }
 
+  /** @internal */
+  setPartitionLimit(opts: { partitionBy: string; limit: number; offset?: number }): this {
+    this.ensureNotFinalized();
+    this.#state.partitionLimit = opts;
+    return this;
+  }
+
   cache(config: boolean | number | [string, number] = true): this {
     this.ensureNotFinalized();
     this.#state.cache = config;
@@ -2155,6 +2163,10 @@ export class QueryBuilder<
     }
 
     this.processReturningStatement(qb, this.mainAlias.meta, this.#state.data, this.#state.returning);
+
+    if (this.#state.partitionLimit) {
+      return (this.#query!.qb = this.wrapPartitionLimitSubQuery(qb));
+    }
 
     return (this.#query!.qb = qb);
   }
@@ -3570,6 +3582,10 @@ export class QueryBuilder<
       this.wrapPaginateSubQuery(meta);
     }
 
+    if (this.#state.partitionLimit) {
+      this.preparePartitionLimit();
+    }
+
     if (
       meta &&
       (this.#state.flags.has(QueryFlag.UPDATE_SUB_QUERY) || this.#state.flags.has(QueryFlag.DELETE_SUB_QUERY))
@@ -3841,6 +3857,58 @@ export class QueryBuilder<
     (this.select(this.#state.fields as any).where as any)({
       [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: raw(sql, params) },
     });
+  }
+
+  /**
+   * Wraps the inner query (which has ROW_NUMBER in SELECT) with an outer query
+   * that filters by the __rn column to apply per-parent limiting.
+   */
+  protected wrapPartitionLimitSubQuery(innerQb: NativeQueryBuilder): NativeQueryBuilder {
+    const { limit, offset = 0 } = this.#state.partitionLimit!;
+    const rnCol = this.platform.quoteIdentifier('__rn');
+
+    innerQb.as(this.mainAlias.aliasName);
+
+    const outerQb = this.platform.createNativeQueryBuilder();
+    outerQb.select('*').from(innerQb);
+    outerQb.where(`${rnCol} > ? and ${rnCol} <= ?`, [offset, offset + limit]);
+    outerQb.orderBy(rnCol);
+
+    return outerQb;
+  }
+
+  /**
+   * Adds ROW_NUMBER() OVER (PARTITION BY ...) to the SELECT list and prepares
+   * the query state for per-parent limiting. The actual wrapping into a subquery
+   * with __rn filtering happens in getNativeQuery().
+   */
+  protected preparePartitionLimit(): void {
+    const { partitionBy } = this.#state.partitionLimit!;
+
+    const partitionCol = this.helper.mapper(partitionBy, this.type, undefined, null);
+    const quotedPartition =
+      typeof partitionCol === 'string'
+        ? partitionCol
+            .split('.')
+            .map(e => this.platform.quoteIdentifier(e))
+            .join('.')
+        : partitionCol;
+
+    const queryOrder = this.helper.getQueryOrder(
+      this.type,
+      this.#state.orderBy as FlatQueryOrderMap[],
+      this.#state.populateMap,
+      this.#state.collation,
+    );
+    const orderBySql = queryOrder.length > 0 ? Utils.unique(queryOrder).join(', ') : quotedPartition;
+
+    const rnAlias = this.platform.quoteIdentifier('__rn');
+    this.#state.fields!.push(
+      raw(`row_number() over (partition by ${quotedPartition} order by ${orderBySql}) as ${rnAlias}`),
+    );
+
+    // Moved into the OVER clause; outer query re-applies via wrapPartitionLimitSubQuery
+    this.#state.orderBy = [];
   }
 
   /**
