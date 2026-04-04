@@ -444,7 +444,7 @@ export abstract class Platform {
 
   /** Serializes a string array into its database storage format. */
   marshallArray(values: string[]): string {
-    return values.join(',');
+    return values.map(v => (/[,",\\]/.test(v) ? JSON.stringify(v) : v)).join(',');
   }
 
   /** Deserializes a database-stored array string back into a string array. */
@@ -453,7 +453,40 @@ export abstract class Platform {
       return [];
     }
 
-    return value.split(',');
+    if (!value.includes('"')) {
+      return value.split(',');
+    }
+
+    const result: string[] = [];
+    let i = 0;
+
+    while (i < value.length) {
+      if (value[i] === '"') {
+        let j = i + 1;
+        while (j < value.length) {
+          if (value[j] === '\\') {
+            j += 2;
+          } else if (value[j] === '"') {
+            j++;
+            break;
+          } else {
+            j++;
+          }
+        }
+        result.push(JSON.parse(value.substring(i, j)));
+        i = j + 1;
+      } else {
+        const comma = value.indexOf(',', i);
+        if (comma === -1) {
+          result.push(value.substring(i));
+          break;
+        }
+        result.push(value.substring(i, comma));
+        i = comma + 1;
+      }
+    }
+
+    return result;
   }
 
   getBlobDeclarationSQL(): string {
