@@ -113,9 +113,20 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
   }
 
   async checkSchema(): Promise<boolean> {
-    await this.init();
-    const diff = await this.getSchemaDiff(false, false);
-    return diff.up.length > 0;
+    const snapshot = await this.getSchemaFromSnapshot();
+
+    if (!snapshot) {
+      await this.init();
+    }
+
+    const diff = await this.#schemaGenerator.getUpdateSchemaMigrationSQL({
+      wrap: false,
+      safe: this.options.safe,
+      dropTables: this.options.dropTables,
+      fromSchema: snapshot,
+    });
+
+    return diff.up.trim().length > 0;
   }
 
   /**
