@@ -26,6 +26,7 @@ services:
       - mysql9:/var/lib/mysql
     healthcheck:
       test: /usr/bin/mysql --protocol=TCP -e 'select 1'
+      start_period: 30s
 
   mariadb:
     image: mariadb:12
@@ -96,10 +97,13 @@ services:
       - ORACLE_PWD=oracle123
       - ORACLE_MEM_TARGET=2G
     healthcheck:
-      test: ["CMD-SHELL", "echo 'select 1 from dual;' | sqlplus -S mikro_orm_test/oracle123@//localhost:1521/freepdb1 || exit 1"]
+      test: bash -c "echo 'select 1 from dual;' | sqlplus -L -S pdbadmin/oracle123@//localhost:1521/FREEPDB1"
+      start_period: 300s
+      start_interval: 5s
     volumes:
       - oracledb:/opt/oracle/data
       - ./docker/oracle-init.sql:/opt/oracle/scripts/startup/oracle-init.sql
+      - ./docker/oracle-startup.sh:/opt/oracle/scripts/startup/oracle-startup.sh
 
 volumes:
   mysql9:
