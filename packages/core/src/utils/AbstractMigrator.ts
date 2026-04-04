@@ -7,6 +7,7 @@ import type {
   MaybePromise,
   Migration,
   MigrationInfo,
+  MigrationResult,
   MigrationRow,
   MigratorEvent,
 } from '../typings.js';
@@ -125,6 +126,255 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     return this.runMigrations('down', options);
   }
 
+  /**
+   * @inheritDoc
+   */
+  async rollup(migrations?: string[]): Promise<MigrationResult> {
+    await this.init();
+    const { fs } = await import('@mikro-orm/core/fs-utils');
+
+    const all = await this.discoverMigrations();
+    const executedSet = new Set(await this.storage.executed());
+
+    let toRollup: RunnableMigration[];
+
+    if (migrations && migrations.length > 0) {
+      const requested = new Set(migrations.map(m => this.getMigrationFilename(m)));
+      toRollup = all.filter(m => requested.has(m.name));
+
+      const found = new Set(toRollup.map(m => m.name));
+      const notFound = [...requested].filter(name => !found.has(name));
+
+      if (notFound.length > 0) {
+        throw new Error(`Migrations not found: ${notFound.join(', ')}`);
+      }
+
+      const notExecuted = toRollup.filter(m => !executedSet.has(m.name));
+
+      if (notExecuted.length > 0) {
+        throw new Error(
+          `Cannot roll up migrations that have not been executed: ${notExecuted.map(m => m.name).join(', ')}`,
+        );
+      }
+    } else {
+      toRollup = all.filter(m => executedSet.has(m.name));
+    }
+
+    if (toRollup.length < 2) {
+      throw new Error('At least 2 executed migrations are required for rollup');
+    }
+
+    const withoutPath = toRollup.filter(m => !m.path);
+
+    if (withoutPath.length > 0) {
+      throw new Error(
+        `Cannot roll up migrations without file paths (class-based migrations): ${withoutPath.map(m => m.name).join(', ')}`,
+      );
+    }
+
+    const upBodies: string[] = [];
+    const downBodies: string[] = [];
+    const placeholder = `__mikro_orm_rollup_${Date.now()}__`;
+
+    for (const migration of toRollup) {
+      const source = await fs.readFile(migration.path!);
+      const upBody = this.extractMethodBody(source, 'up');
+      const downBody = this.extractMethodBody(source, 'down');
+
+      if (upBody) {
+        upBodies.push(`    // --- merged from ${migration.name} ---\n${upBody}`);
+      }
+
+      if (downBody) {
+        downBodies.unshift(`    // --- merged from ${migration.name} ---\n${downBody}`);
+      }
+    }
+
+    const diff = {
+      up: [placeholder],
+      down: downBodies.length > 0 ? [placeholder] : [],
+    };
+    const [templateCode, fileName] = await this.generator.generate(diff);
+    const placeholderRe = new RegExp(`^.*${placeholder}.*$`, 'm');
+    let code = templateCode.replace(placeholderRe, upBodies.join('\n'));
+
+    if (downBodies.length > 0) {
+      code = code.replace(placeholderRe, downBodies.join('\n'));
+    }
+
+    await fs.writeFile(fs.normalizePath(this.absolutePath, fileName), code, { flush: true });
+
+    const updateStorage = async () => {
+      for (const migration of toRollup) {
+        await this.storage.unlogMigration({ name: migration.name });
+      }
+
+      await this.storage.logMigration({ name: fileName.replace(/\.[jt]s$/, '') });
+    };
+
+    if (this.options.transactional) {
+      await this.driver.getConnection().transactional(async trx => {
+        this.storage.setMasterMigration(trx);
+
+        try {
+          await updateStorage();
+        } finally {
+          this.storage.unsetMasterMigration();
+        }
+      });
+    } else {
+      await updateStorage();
+    }
+
+    await Promise.all(toRollup.map(migration => fs.unlink(migration.path!)));
+
+    return { fileName, code, diff: { up: [], down: [] } };
+  }
+
+  /**
+   * Extracts the body of a method from migration source code using brace counting.
+   * Returns the raw lines between the opening and closing braces, or empty string if not found.
+   * @internal
+   */
+  private extractMethodBody(source: string, methodName: string): string {
+    const lines = source.split('\n');
+    // match method declarations, not occurrences in comments/strings — require preceding whitespace or keyword
+    const methodPattern = new RegExp(`^\\s+(?:override\\s+|async\\s+)*${methodName}\\s*\\(`);
+    let methodLine = -1;
+
+    for (let i = 0; i < lines.length; i++) {
+      if (methodPattern.test(lines[i])) {
+        methodLine = i;
+        break;
+      }
+    }
+
+    if (methodLine === -1) {
+      return '';
+    }
+
+    let braceCount = 0;
+    let bodyStart = -1;
+    let bodyEnd = -1;
+    let bodyStartCol = -1;
+    let bodyEndCol = -1;
+    let inBacktick = false;
+    let inBlockComment = false;
+    // stack tracks brace depth at which each template expression `${...}` was entered
+    const templateExprStack: number[] = [];
+
+    for (let i = methodLine; i < lines.length; i++) {
+      const line = lines[i];
+
+      for (let j = 0; j < line.length; j++) {
+        // handle multi-line block comments
+        if (inBlockComment) {
+          if (line[j] === '*' && j + 1 < line.length && line[j + 1] === '/') {
+            inBlockComment = false;
+            j++;
+          }
+
+          continue;
+        }
+
+        // handle multi-line template literals
+        if (inBacktick) {
+          if (line[j] === '\\') {
+            j++;
+          } else if (line[j] === '`') {
+            inBacktick = false;
+          } else if (line[j] === '$' && j + 1 < line.length && line[j + 1] === '{') {
+            // entering template expression — resume brace counting
+            templateExprStack.push(braceCount);
+            inBacktick = false;
+            j++; // skip the {
+            braceCount++;
+          }
+
+          continue;
+        }
+
+        const ch = line[j];
+
+        // single/double quoted strings (single-line only)
+        if (ch === "'" || ch === '"') {
+          const quote = ch;
+          j++;
+
+          while (j < line.length) {
+            if (line[j] === '\\') {
+              j++;
+            } else if (line[j] === quote) {
+              break;
+            }
+
+            j++;
+          }
+
+          continue;
+        }
+
+        // template literal start
+        if (ch === '`') {
+          inBacktick = true;
+          continue;
+        }
+
+        // single-line comment
+        if (ch === '/' && j + 1 < line.length && line[j + 1] === '/') {
+          break;
+        }
+
+        // block comment start
+        if (ch === '/' && j + 1 < line.length && line[j + 1] === '*') {
+          inBlockComment = true;
+          j++;
+          continue;
+        }
+
+        if (ch === '{') {
+          if (braceCount === 0) {
+            bodyStart = i;
+            bodyStartCol = j + 1;
+          }
+
+          braceCount++;
+        } else if (ch === '}') {
+          braceCount--;
+
+          // closing a template expression — re-enter backtick mode
+          if (templateExprStack.length > 0 && braceCount === templateExprStack[templateExprStack.length - 1]) {
+            templateExprStack.pop();
+            inBacktick = true;
+            continue;
+          }
+
+          if (braceCount === 0) {
+            bodyEnd = i;
+            bodyEndCol = j;
+            break;
+          }
+        }
+      }
+
+      if (bodyEnd !== -1) {
+        break;
+      }
+    }
+
+    if (bodyStart === -1 || bodyEnd === -1) {
+      return '';
+    }
+
+    // single-line method body: extract content between braces on the same line
+    if (bodyStart === bodyEnd) {
+      const content = lines[bodyStart].slice(bodyStartCol, bodyEndCol).trim();
+      return content ? `    ${content}` : '';
+    }
+
+    return lines.slice(bodyStart + 1, bodyEnd).join('\n');
+  }
+
   abstract getStorage(): IMigratorStorage;
 
   protected async init(): Promise<void> {
@@ -235,7 +485,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     }
   }
 
-  private async discoverMigrations(): Promise<RunnableMigration[]> {
+  protected async discoverMigrations(): Promise<RunnableMigration[]> {
     if (this.options.migrationsList) {
       return this.options.migrationsList.map(migration => {
         if (typeof migration === 'function') {

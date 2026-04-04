@@ -21,6 +21,7 @@ export class MigrationCommandFactory {
     check: 'Check if migrations are needed. Useful for bash scripts.',
     pending: 'List all pending migrations',
     fresh: 'Clear the database and rerun all migrations',
+    rollup: 'Combine multiple migrations into a single migration',
   };
 
   static create<const T extends MigratorMethod>(command: T) {
@@ -126,6 +127,10 @@ export class MigrationCommandFactory {
         break;
       case 'fresh':
         await this.handleFreshCommand(args, orm.migrator, orm);
+        break;
+      case 'rollup':
+        await this.handleRollupCommand(orm.migrator);
+        break;
     }
 
     await orm.close(true);
@@ -237,6 +242,11 @@ export class MigrationCommandFactory {
     }
   }
 
+  private static async handleRollupCommand(migrator: IMigrator): Promise<void> {
+    const ret = await migrator.rollup();
+    CLIHelper.dump(colors.green(`${ret.fileName} successfully created (rollup)`));
+  }
+
   private static getUpDownOptions(flags: CliUpDownOptions): MigrateOptions {
     if (!flags.to && !flags.from && flags.only) {
       return { migrations: flags.only.split(/[, ]+/) };
@@ -295,6 +305,7 @@ type MigrationOptionsMap = {
   list: BaseArgs;
   pending: BaseArgs;
   fresh: MigratorFreshOptions;
+  rollup: BaseArgs;
 };
 type MigratorMethod = keyof MigrationOptionsMap;
 type Opts = BaseArgs & MigratorCreateOptions & CliUpDownOptions & MigratorFreshOptions;

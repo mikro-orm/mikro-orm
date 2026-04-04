@@ -84,5 +84,6 @@ export async function configure(): Promise<Argv<{ config: string[] | undefined; 
     .command(MigrationCommandFactory.create('check'))
     .command(MigrationCommandFactory.create('pending'))
     .command(MigrationCommandFactory.create('fresh'))
+    .command(MigrationCommandFactory.create('rollup'))
     .command(new DebugCommand());
 }
