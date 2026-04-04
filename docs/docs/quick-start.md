@@ -80,6 +80,8 @@ If you are experiencing problems with folder-based discovery, try using `mikro-o
 
 For detailed information about using decorators (legacy and ES spec) and metadata providers, see the [Using Decorators guide](./using-decorators.md). For glob-based entity discovery, see [Folder-based Discovery](./folder-based-discovery.md).
 
+> For larger projects, you can use `npx mikro-orm discovery:export` to auto-generate a barrel file with all your entity imports. See [Folder-based Discovery](./folder-based-discovery.md#generating-a-barrel-file-with-discoveryexport) for details.
+
 ## Synchronous initialization
 
 As opposed to the async [`MikroORM.init`](/api/core/class/MikroORM#init) method, you can prefer to use synchronous variant with the constructor: [`new MikroORM()`](/api/core/class/MikroORM#constructor).

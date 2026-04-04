@@ -178,7 +178,7 @@ export class Configuration<
   readonly #cache = new Map<string, any>();
   readonly #extensions = new Map<string, () => unknown>();
 
-  constructor(options: Partial<Options>, validate = true) {
+  constructor(options: Partial<Options<any, any, any>>, validate = true) {
     if (options.dynamicImportProvider) {
       (globalThis as any).dynamicImportProvider = options.dynamicImportProvider;
     }
@@ -506,7 +506,7 @@ export class Configuration<
 export function defineConfig<
   D extends IDatabaseDriver = IDatabaseDriver,
   EM extends EntityManager<D> = EntityManager<D>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -773,7 +773,7 @@ export interface Options<
   Driver extends IDatabaseDriver = IDatabaseDriver,
   EM extends EntityManager<Driver> & Driver[typeof EntityManagerType] = EntityManager<Driver> &
     Driver[typeof EntityManagerType],
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
