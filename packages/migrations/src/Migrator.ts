@@ -284,7 +284,8 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     }
 
     const snapshotPath = await this.getSnapshotPath();
-    schema ??= this.#schemaGenerator.getTargetSchema();
+    const _schema = await DatabaseSchema.create(this.em.getConnection(), this.em.getPlatform(), this.config);
+    schema ??= this.#schemaGenerator.getTargetSchema(_schema?.name);
     const { fs } = await import('@mikro-orm/core/fs-utils');
     await fs.writeFile(snapshotPath, JSON.stringify(schema, null, 2));
   }
@@ -292,6 +293,8 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
   private async getSchemaDiff(blank: boolean, initial: boolean): Promise<{ up: string[]; down: string[] }> {
     const up: string[] = [];
     const down: string[] = [];
+
+    const schema = await DatabaseSchema.create(this.em.getConnection(), this.em.getPlatform(), this.config);
 
     // Split SQL by statement boundaries (semicolons followed by newline) rather than
     // just newlines, to preserve multiline statements like view definitions.
@@ -330,10 +333,11 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
       up.push('select 1');
       down.push('select 1');
     } else if (initial) {
-      const dump = await this.#schemaGenerator.getCreateSchemaSQL({ wrap: false });
+      const dump = await this.#schemaGenerator.getCreateSchemaSQL({ schema: schema?.name, wrap: false });
       up.push(...splitStatements(dump));
     } else {
       const diff = await this.#schemaGenerator.getUpdateSchemaMigrationSQL({
+        schema: schema?.name,
         wrap: false,
         safe: this.options.safe,
         dropTables: this.options.dropTables,
