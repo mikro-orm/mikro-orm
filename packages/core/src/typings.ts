@@ -1075,8 +1075,15 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
     const name = meta.className ?? meta.name;
 
     if (!this.class && name) {
-      const Class =
-        this.extends === BaseEntity ? { [name]: class extends BaseEntity {} }[name] : { [name]: class {} }[name];
+      let Parent: any;
+
+      if (typeof this.extends === 'function') {
+        Parent = this.extends;
+      } else if (this.extends != null && typeof (this.extends as any).class === 'function') {
+        Parent = (this.extends as any).class;
+      }
+
+      const Class = Parent ? { [name]: class extends Parent {} }[name] : { [name]: class {} }[name];
       this.class = Class as any;
     }
   }
