@@ -421,7 +421,9 @@ const BookSchema = defineEntity({
   properties: {
     id: p.integer().primary(),
     // when none of `owner/inversedBy/mappedBy` is provided, it will be considered owning side
-    tags: () => p.manyToMany(BookTag),
+    tags1: () => p.manyToMany(BookTag),
+    // or you can mark the owning side explicitly with `owner()`
+    tags2: () => p.manyToMany(BookTag).inversedBy('books').owner(),
     // to define uni-directional many to many, simply omit `mappedBy`
     friends: () => p.manyToMany(Author),
   },
@@ -443,7 +445,9 @@ export const Book = defineEntity({
   properties: {
     id: p.integer().primary(),
     // when none of `owner/inversedBy/mappedBy` is provided, it will be considered owning side
-    tags: () => p.manyToMany(BookTag),
+    tags1: () => p.manyToMany(BookTag),
+    // or you can mark the owning side explicitly with `owner()`
+    tags2: () => p.manyToMany(BookTag).inversedBy('books').owner(),
     // to define uni-directional many to many, simply omit `mappedBy`
     friends: () => p.manyToMany(Author),
   },
@@ -481,10 +485,15 @@ export class Book {
 @Entity()
 export class Book {
 
+  // when none of `owner/inversedBy/mappedBy` is provided, it will be considered owning side
   @ManyToMany()
-  tags = new Collection<BookTag>(this);
+  tags1 = new Collection<BookTag>(this);
 
-  // to define uni-directional many to many
+  // or you can mark the owning side explicitly with `owner: true`
+  @ManyToMany({ inversedBy: 'books', owner: true })
+  tags2 = new Collection<BookTag>(this);
+
+  // to define uni-directional many to many, simply omit `mappedBy`
   @ManyToMany()
   friends = new Collection<Author>(this);
 
