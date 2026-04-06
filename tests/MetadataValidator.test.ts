@@ -464,6 +464,79 @@ describe('MetadataValidator', () => {
     expect(() => storage.get(Test)).toThrow('Metadata for entity Test not found');
   });
 
+  describe('partitionBy validation', () => {
+    const createPartitionedSchema = (partitionBy?: any) =>
+      new EntitySchema({
+        name: 'PartitionedEntity',
+        tableName: 'partitioned_entity',
+        partitionBy,
+        properties: {
+          id: { kind: 'scalar', primary: true, name: 'id', type: 'number', fieldName: 'id' },
+          type: { kind: 'scalar', name: 'type', type: 'string', fieldName: 'type' },
+        },
+      }).init();
+
+    const validatePartitionedSchema = (partitionBy?: any) => {
+      const schema = createPartitionedSchema(partitionBy);
+      const storage = new MetadataStorage({ [schema.meta.className]: schema.meta } as any);
+
+      return () => validator.validateEntityDefinition(storage, schema, options);
+    };
+
+    test('accepts valid hash partitioning', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: ['type'],
+          partitions: 4,
+        }),
+      ).not.toThrow();
+    });
+
+    test('rejects partitioning without expression', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          partitions: 4,
+        }),
+      ).toThrow('Entity PartitionedEntity has invalid partitionBy option: missing expression');
+    });
+
+    test('rejects hash partitioning with invalid partition count', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: ['type'],
+          partitions: 0,
+        }),
+      ).toThrow(
+        'Entity PartitionedEntity has invalid partitionBy option: hash partition count must be a positive integer',
+      );
+    });
+
+    test('rejects list/range partitioning without child partitions', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'range',
+          expression: ['type'],
+          partitions: [],
+        }),
+      ).toThrow(
+        'Entity PartitionedEntity has invalid partitionBy option: list/range partitions must be a non-empty array',
+      );
+    });
+
+    test('rejects child partitions without bound values', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'list',
+          expression: ['type'],
+          partitions: [{ values: '   ' }],
+        }),
+      ).toThrow('Entity PartitionedEntity has invalid partitionBy option: every partition must define values');
+    });
+  });
+
   describe('targetKey validation', () => {
     test('throws when targetKey is used on ManyToMany relation', async () => {
       class Author {}
