@@ -461,7 +461,11 @@ export class Book {
 
   // when none of `owner/inversedBy/mappedBy` is provided, it will be considered owning side
   @ManyToMany(() => BookTag)
-  tags = new Collection<BookTag>(this);
+  tags1 = new Collection<BookTag>(this);
+
+  // or you can mark the owning side explicitly with `owner: true`
+  @ManyToMany(() => BookTag, 'books', { owner: true })
+  tags2 = new Collection<BookTag>(this);
 
   // to define uni-directional many to many, simply omit `mappedBy`
   @ManyToMany(() => Author)
