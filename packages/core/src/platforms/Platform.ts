@@ -122,6 +122,11 @@ export abstract class Platform {
     return false;
   }
 
+  /** Whether this platform supports declarative table partitioning in schema generation. */
+  supportsPartitionedTables(): boolean {
+    return false;
+  }
+
   /** Returns the schema helper instance for this platform, or undefined if not supported. */
   getSchemaHelper(): unknown {
     return undefined;
