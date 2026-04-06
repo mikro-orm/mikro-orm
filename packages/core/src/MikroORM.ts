@@ -239,7 +239,6 @@ export class MikroORM<
     this.em = this.driver.createEntityManager() as EM & { '~entities': Entities };
     (this.em as { global: boolean }).global = true;
     this.#metadata.decorate(this.em);
-    this.driver.setMetadata(this.#metadata);
   }
 
   /**
