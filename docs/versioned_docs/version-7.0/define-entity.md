@@ -30,6 +30,29 @@ BookSchema.setClass(Book);
 
 The `p` shortcut is also available as `defineEntity.properties`.
 
+### Table-level options
+
+`defineEntity()` accepts the same table-level metadata you would normally place on `@Entity()`, including `tableName`, `schema`, `comment`, and PostgreSQL `partitionBy`.
+
+```ts
+const AuditEvent = defineEntity({
+  name: 'AuditEvent',
+  tableName: 'audit_event',
+  partitionBy: {
+    type: 'hash',
+    expression: ['type'],
+    partitions: 8,
+  },
+  properties: {
+    type: p.string().primary(),
+    id: p.integer().primary(),
+    createdAt: p.datetime(),
+  },
+});
+```
+
+For more details about `partitionBy`, including `list`/`range` partitions and schema-generator behavior, see [Schema Generator](./schema-generator.md#postgresql-partitioned-tables).
+
 ### The `defineEntity + class` pattern (recommended)
 
 When you extend the auto-generated class and register it via `setClass()`, you get several benefits:
