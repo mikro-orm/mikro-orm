@@ -260,6 +260,50 @@ describe('compiled functions', () => {
     }
   });
 
+  test('driver comparator uses compiledFunctions for all read operations', async () => {
+    const compiledFunctions = generateCompiledFunctions(orm);
+
+    const orm2 = await MikroORM.init({ ...initOptions, compiledFunctions });
+
+    try {
+      await orm2.schema.refresh();
+
+      // Insert test data
+      orm2.em.create(Book, { title: 'Test Book', price: 19.99 });
+      await orm2.em.flush();
+      orm2.em.clear();
+
+      // Wrap createFunction to track if new Function is ever called (JIT fallback)
+      let jitFallbackCalled = false;
+      const original = Utils.createFunction;
+      Utils.createFunction = (context, code, cf, key) => {
+        const result = original.call(Utils, context, code, cf, key);
+
+        if (!key || !cf?.[key]) {
+          jitFallbackCalled = true;
+        }
+
+        return result;
+      };
+
+      try {
+        // All read operations (find, findOne, stream, em.map, etc.) go through
+        // the driver's own EntityComparator — not the one from config.getComparator().
+        // Before the fix, this comparator was created without config, so
+        // compiledFunctions were ignored and new Function() was called.
+        const loaded = await orm2.em.findOneOrFail(Book, { title: 'Test Book' });
+        expect(loaded.title).toBe('Test Book');
+        expect(loaded.price).toBe(19.99);
+      } finally {
+        Utils.createFunction = original;
+      }
+
+      expect(jitFallbackCalled).toBe(false);
+    } finally {
+      await orm2.close(true);
+    }
+  });
+
   test('falls back to JIT when key is missing from compiledFunctions', async () => {
     // Provide only partial compiled functions (missing Book)
     const allFunctions = generateCompiledFunctions(orm);

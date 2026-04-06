@@ -235,7 +235,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   /** Sets the metadata storage and initializes the comparator for all connections. */
   setMetadata(metadata: MetadataStorage): void {
     this.metadata = metadata;
-    this.comparator = new EntityComparator(this.metadata, this.platform);
+    this.comparator = new EntityComparator(this.metadata, this.platform, this.config);
     this.connection.setMetadata(metadata);
     this.connection.setPlatform(this.platform);
     this.replicas.forEach(replica => {
