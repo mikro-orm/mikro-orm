@@ -133,6 +133,17 @@ export interface CheckDef<T = unknown> {
   columnName?: string;
 }
 
+export interface TablePartition {
+  name: string;
+  schema?: string;
+  bound: string;
+}
+
+export interface TablePartitioning {
+  definition: string;
+  partitions: TablePartition[];
+}
+
 export interface ColumnDifference {
   oldColumnName: string;
   column: Column;
@@ -143,6 +154,7 @@ export interface ColumnDifference {
 export interface TableDifference {
   name: string;
   changedComment?: string;
+  changedPartitioning?: { from?: TablePartitioning; to?: TablePartitioning };
   fromTable: DatabaseTable;
   toTable: DatabaseTable;
   addedColumns: Dictionary<Column>;
