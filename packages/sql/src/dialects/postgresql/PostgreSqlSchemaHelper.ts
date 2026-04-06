@@ -10,7 +10,7 @@ import {
 } from '@mikro-orm/core';
 import { SchemaHelper } from '../../schema/SchemaHelper.js';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
-import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference } from '../../typings.js';
+import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference, TablePartitioning } from '../../typings.js';
 import type { DatabaseSchema } from '../../schema/DatabaseSchema.js';
 import type { DatabaseTable } from '../../schema/DatabaseTable.js';
 
@@ -149,6 +149,22 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `create materialized view ${viewName} as ${definition}${dataClause}`;
   }
 
+  override createTable(table: DatabaseTable, alter?: boolean): string[] {
+    const partitioning = table.getPartitioning();
+
+    if (!partitioning) {
+      return super.createTable(table, alter);
+    }
+
+    const [createTable, ...rest] = super.createTable(table, alter);
+    const partitions = partitioning.partitions.map(partition => {
+      const partitionName = this.quote(this.getTableName(partition.name, partition.schema ?? table.schema));
+      return `create table ${partitionName} partition of ${table.getQuotedName()} ${partition.bound}`;
+    });
+
+    return [createTable.replace(/;$/, ` partition by ${partitioning.definition};`), ...partitions, ...rest];
+  }
+
   override dropMaterializedViewIfExists(name: string, schema?: string): string {
     return `drop materialized view if exists ${this.quote(this.getTableName(name, schema))} cascade`;
   }
@@ -205,6 +221,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const indexes = await this.getAllIndexes(connection, tables, ctx);
     const checks = await this.getAllChecks(connection, tablesBySchema, ctx);
     const fks = await this.getAllForeignKeys(connection, tablesBySchema, ctx);
+    const partitionings = await this.getPartitions(connection, tablesBySchema, ctx);
 
     for (const t of tables) {
       const key = this.getTableKey(t);
@@ -215,7 +232,56 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       if (columns[key]) {
         table.init(columns[key], indexes[key], checks[key], pks, fks[key], enums);
       }
+
+      table.setPartitioning(partitionings[key]);
     }
+  }
+
+  async getPartitions(
+    connection: AbstractSqlConnection,
+    tablesBySchemas: Map<string | undefined, Table[]>,
+    ctx?: Transaction,
+  ): Promise<Dictionary<TablePartitioning>> {
+    const sql = `select parent_ns.nspname as schema_name,
+      parent.relname as table_name,
+      pg_get_partkeydef(parent.oid) as partition_definition,
+      child_ns.nspname as partition_schema_name,
+      child.relname as partition_name,
+      pg_get_expr(child.relpartbound, child.oid) as partition_bound
+      from pg_class parent
+      join pg_namespace parent_ns on parent_ns.oid = parent.relnamespace
+      join pg_partitioned_table partitioned on partitioned.partrelid = parent.oid
+      left join pg_inherits inherits on inherits.inhparent = parent.oid
+      left join pg_class child on child.oid = inherits.inhrelid
+      left join pg_namespace child_ns on child_ns.oid = child.relnamespace
+      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(parent_ns.nspname = ${this.platform.quoteValue(schema)} and parent.relname in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}))`).join(' or ')})
+      order by parent_ns.nspname, parent.relname, child_ns.nspname, child.relname`;
+    const rows = await connection.execute<
+      {
+        schema_name: string;
+        table_name: string;
+        partition_definition: string;
+        partition_schema_name?: string;
+        partition_name?: string;
+        partition_bound?: string;
+      }[]
+    >(sql, [], 'all', ctx);
+    const ret = {} as Dictionary<TablePartitioning>;
+
+    for (const row of rows) {
+      const key = this.getTableKey(row);
+      ret[key] ??= { definition: row.partition_definition.trim(), partitions: [] };
+
+      if (row.partition_name && row.partition_bound) {
+        ret[key].partitions.push({
+          name: row.partition_name,
+          schema: row.partition_schema_name,
+          bound: row.partition_bound.trim(),
+        });
+      }
+    }
+
+    return ret;
   }
 
   async getAllIndexes(
@@ -769,6 +835,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   override getPreAlterTable(tableDiff: TableDifference, safe: boolean): string[] {
+    if (tableDiff.changedPartitioning) {
+      throw new Error(
+        `Changing partition definitions for existing PostgreSQL tables is not supported automatically (${tableDiff.name}); create a manual migration instead`,
+      );
+    }
+
     const ret: string[] = [];
 
     const parts = tableDiff.name.split('.');
