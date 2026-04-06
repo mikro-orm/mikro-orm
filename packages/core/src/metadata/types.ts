@@ -13,12 +13,38 @@ import type {
   IndexCallback,
   ObjectQuery,
   Raw,
+  SchemaColumns,
 } from '../typings.js';
 import type { Cascade, LoadStrategy, DeferMode, QueryOrderMap, EmbeddedPrefixMode } from '../enums.js';
 import type { Type, types } from '../types/index.js';
 import type { EntityManager } from '../EntityManager.js';
 import type { FilterOptions, FindOptions } from '../drivers/IDatabaseDriver.js';
 import type { SerializeOptions } from '../serialization/EntitySerializer.js';
+
+export type EntityPartitionType = 'hash' | 'list' | 'range';
+
+export type EntityPartitionExpression<E = AnyEntity> =
+  | (keyof E & string)
+  | readonly (keyof E & string)[]
+  | AnyString
+  | ((columns: SchemaColumns<E>) => string);
+
+export interface EntityPartition<E = AnyEntity> {
+  name?: string;
+  values: string;
+}
+
+export type EntityPartitionBy<E = AnyEntity> =
+  | {
+      type: 'hash';
+      expression: EntityPartitionExpression<E>;
+      partitions: number;
+    }
+  | {
+      type: 'list' | 'range';
+      expression: EntityPartitionExpression<E>;
+      partitions: EntityPartition<E>[];
+    };
 
 export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   /** Override default collection/table name. Alias for `collection`. */
@@ -70,6 +96,8 @@ export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   view?: boolean | { materialized?: boolean; withData?: boolean };
   /** Used to make ORM aware of externally defined triggers. This is needed for MS SQL Server multi inserts, ignored in other dialects. */
   hasTriggers?: boolean;
+  /** PostgreSQL partitioning definition for this table. */
+  partitionBy?: EntityPartitionBy<E>;
   // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`
   // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
   /** SQL query that maps to a {@doclink virtual-entities | virtual entity}, or for view entities, the view definition. */

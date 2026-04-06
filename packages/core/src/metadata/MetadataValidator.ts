@@ -65,6 +65,7 @@ export class MetadataValidator {
     this.validateDuplicateFieldNames(meta, options);
     this.validateIndexes(meta, meta.indexes ?? [], 'index');
     this.validateIndexes(meta, meta.uniques ?? [], 'unique');
+    this.validatePartitioning(meta);
     this.validatePropertyNames(meta);
 
     for (const prop of Utils.values(meta.properties)) {
@@ -156,6 +157,38 @@ export class MetadataValidator {
         );
       }
     });
+  }
+
+  private validatePartitioning(meta: EntityMetadata): void {
+    if (!meta.partitionBy) {
+      return;
+    }
+
+    if (meta.partitionBy.expression == null) {
+      throw new MetadataError(`Entity ${meta.className} has invalid partitionBy option: missing expression`);
+    }
+
+    if (meta.partitionBy.type === 'hash') {
+      if (!Number.isInteger(meta.partitionBy.partitions) || meta.partitionBy.partitions < 1) {
+        throw new MetadataError(
+          `Entity ${meta.className} has invalid partitionBy option: hash partition count must be a positive integer`,
+        );
+      }
+
+      return;
+    }
+
+    if (!Array.isArray(meta.partitionBy.partitions) || meta.partitionBy.partitions.length === 0) {
+      throw new MetadataError(
+        `Entity ${meta.className} has invalid partitionBy option: list/range partitions must be a non-empty array`,
+      );
+    }
+
+    if (meta.partitionBy.partitions.some(partition => !partition.values?.trim())) {
+      throw new MetadataError(
+        `Entity ${meta.className} has invalid partitionBy option: every partition must define values`,
+      );
+    }
   }
 
   private validateReference(meta: EntityMetadata, prop: EntityProperty, options: MetadataDiscoveryOptions): void {
