@@ -32,7 +32,7 @@ import type { Connection, QueryResult, Transaction } from '../connections/Connec
 import { Utils } from '../utils/Utils.js';
 import { type Configuration, type ConnectionOptions } from '../utils/Configuration.js';
 import { Cursor } from '../utils/Cursor.js';
-import { EntityComparator } from '../utils/EntityComparator.js';
+import type { EntityComparator } from '../utils/EntityComparator.js';
 import { isRaw, raw } from '../utils/RawQueryFragment.js';
 import { type QueryOrder, type QueryOrderKeys, QueryOrderNumeric, ReferenceKind } from '../enums.js';
 import type { Platform } from '../platforms/Platform.js';
@@ -235,7 +235,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   /** Sets the metadata storage and initializes the comparator for all connections. */
   setMetadata(metadata: MetadataStorage): void {
     this.metadata = metadata;
-    this.comparator = new EntityComparator(this.metadata, this.platform, this.config);
+    this.comparator = this.config.getComparator(metadata);
     this.connection.setMetadata(metadata);
     this.connection.setPlatform(this.platform);
     this.replicas.forEach(replica => {
