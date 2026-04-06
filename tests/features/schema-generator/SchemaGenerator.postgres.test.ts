@@ -128,6 +128,59 @@ describe('SchemaGenerator [postgres]', () => {
     await orm.close(true);
   });
 
+  test('update schema partitioned tables [postgres] (GH #6944)', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.em.execute('drop table if exists partitioned_event cascade');
+    await orm.schema.update();
+
+    const partitionedMeta = new EntitySchema({
+      name: 'PartitionedEvent',
+      tableName: 'partitioned_event',
+      partitionBy: {
+        type: 'hash',
+        expression: ['type'],
+        partitions: 4,
+      },
+      properties: {
+        type: {
+          type: 'string',
+          primary: true,
+        },
+        id: {
+          type: 'number',
+          primary: true,
+        },
+      },
+    }).init().meta;
+    meta.set(partitionedMeta.class, partitionedMeta);
+
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('partition by HASH (type);');
+    expect(diff).toContain(
+      'create table "partitioned_event_0" partition of "partitioned_event" FOR VALUES WITH (modulus 4, remainder 0);',
+    );
+    expect(diff).toContain(
+      'create table "partitioned_event_3" partition of "partitioned_event" FOR VALUES WITH (modulus 4, remainder 3);',
+    );
+    await orm.schema.execute(diff, { wrap: true });
+
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    partitionedMeta.partitionBy = {
+      type: 'hash',
+      expression: ['type'],
+      partitions: 8,
+    };
+
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).rejects.toThrow(
+      /Changing partition definitions for existing PostgreSQL tables is not supported automatically/,
+    );
+
+    await orm.close(true);
+  });
+
   test('create/drop database [postgresql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
