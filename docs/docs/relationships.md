@@ -192,7 +192,7 @@ export class Author {
 
 As you can see, OneToMany is the inverse side of ManyToOne (which is the owning side). More about how collections work can be found on [collections page](./collections.md).
 
-You can also specify how operations on given entity should [cascade](./cascading.md) to the referred entities. There is also more aggressive remove mode called [Orphan Removal](./cascading.md#orphan-removal) (`books4` example).
+You can also specify how operations on given entity should [cascade](./cascading.md) to the referred entities. There is also more aggressive remove mode called [Orphan Removal](./cascading.md#orphan-removal) (`books3` example).
 
 ## OneToOne
 
@@ -327,8 +327,8 @@ const UserSchema = defineEntity({
   name: 'User',
   properties: {
     id: p.integer().primary(),
+    // inverse side has to point to the owning side via `mappedBy`
     bestFriend1: () => p.oneToOne(User).mappedBy('bestFriend1').orphanRemoval(),
-    bestFriend2: () => p.oneToOne(User).mappedBy('bestFriend2').orphanRemoval(),
   },
 });
 
@@ -347,8 +347,8 @@ export const User = defineEntity({
   name: 'User',
   properties: {
     id: p.integer().primary(),
+    // inverse side has to point to the owning side via `mappedBy`
     bestFriend1: () => p.oneToOne(User).mappedBy('bestFriend1').orphanRemoval(),
-    bestFriend2: () => p.oneToOne(User).mappedBy('bestFriend2').orphanRemoval(),
   },
 });
 
@@ -459,18 +459,13 @@ export type IBook = InferEntity<typeof Book>;
 @Entity()
 export class Book {
 
-  @ManyToMany(() => BookTag, 'books')
-  tags1 = new Collection<BookTag>(this);
+  // when none of `owner/inversedBy/mappedBy` is provided, it will be considered owning side
+  @ManyToMany(() => BookTag)
+  tags = new Collection<BookTag>(this);
 
-  @ManyToMany(() => BookTag, 'books', { owner: true })
-  tags2 = new Collection<BookTag>(this);
-
-  @ManyToMany(() => BookTag, 'books', { owner: true })
-  tags3 = new Collection<BookTag>(this);
-
-  // to define uni-directional many to many
+  // to define uni-directional many to many, simply omit `mappedBy`
   @ManyToMany(() => Author)
-  friends: Collection<Author> = new Collection<Author>(this);
+  friends = new Collection<Author>(this);
 
 }
 ```
