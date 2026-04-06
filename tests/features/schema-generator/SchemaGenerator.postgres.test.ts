@@ -146,10 +146,14 @@ describe('SchemaGenerator [postgres]', () => {
         type: {
           type: 'string',
           primary: true,
+          fieldName: 'type',
+          columnType: 'varchar(255)',
         },
         id: {
           type: 'number',
           primary: true,
+          fieldName: 'id',
+          columnType: 'int',
         },
       },
     }).init().meta;
