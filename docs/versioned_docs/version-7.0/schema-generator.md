@@ -201,13 +201,13 @@ export class Event {
 }
 ```
 
-For hash partitioning, MikroORM creates the parent table with `PARTITION BY HASH (...)` and generates child partitions automatically:
+For hash partitioning, MikroORM creates the parent table with `partition by hash (...)` and generates child partitions automatically:
 
 ```sql
-create table "event" ("type" varchar(255) not null, "id" int not null, primary key ("type", "id")) partition by HASH (type);
-create table "event_0" partition of "event" FOR VALUES WITH (modulus 16, remainder 0);
+create table "event" ("type" varchar(255) not null, "id" int not null, primary key ("type", "id")) partition by hash (type);
+create table "event_0" partition of "event" for values with (modulus 16, remainder 0);
 -- ...
-create table "event_15" partition of "event" FOR VALUES WITH (modulus 16, remainder 15);
+create table "event_15" partition of "event" for values with (modulus 16, remainder 15);
 ```
 
 `list` and `range` partitioning use explicit child partitions:
@@ -218,9 +218,9 @@ create table "event_15" partition of "event" FOR VALUES WITH (modulus 16, remain
     type: 'range',
     expression: cols => `date_trunc('month', ${cols.createdAt})`,
     partitions: [
-      { name: 'event_2026_01', values: "FROM ('2026-01-01') TO ('2026-02-01')" },
-      { name: 'event_2026_02', values: "FROM ('2026-02-01') TO ('2026-03-01')" },
-      { name: 'event_default', values: 'DEFAULT' },
+      { name: 'event_2026_01', values: "from ('2026-01-01') to ('2026-02-01')" },
+      { name: 'event_2026_02', values: "from ('2026-02-01') to ('2026-03-01')" },
+      { name: 'event_default', values: 'default' },
     ],
   },
 })
@@ -234,7 +234,7 @@ Notes:
 - This feature is PostgreSQL-only.
 - `expression` can be a property name, a list of property names, a raw SQL expression string, or a callback receiving schema column mappings.
 - Property-name expressions are mapped to physical column names automatically.
-- For `list` and `range`, each `values` entry can be either the full `FOR VALUES ...` clause or just its trailing part, such as `IN (...)`, `FROM ... TO ...`, or `DEFAULT`.
+- For `list` and `range`, each `values` entry can be either the full `for values ...` clause or just its trailing part, such as `in (...)`, `from ... to ...`, or `default`.
 - Existing partitioned tables are introspected back from PostgreSQL, so `schema:update` will not keep recreating them.
 - Changing the partition definition of an existing table is not auto-migrated. Generate a manual migration for repartitioning work.
 

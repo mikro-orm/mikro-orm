@@ -43,7 +43,7 @@ export type EntityPartitionExpression<E = AnyEntity> =
 export interface EntityPartition<E = AnyEntity> {
   /** Optional child table name. Defaults to `<tableName>_<index>`. */
   name?: string;
-  /** Partition bound clause, either as `FOR VALUES ...` or the trailing part such as `IN (...)`, `FROM ... TO ...`, or `DEFAULT`. */
+  /** Partition bound clause, either as `for values ...` or the trailing part such as `in (...)`, `from ... to ...`, or `default`. */
   values: string;
 }
 
