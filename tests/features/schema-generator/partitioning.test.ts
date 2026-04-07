@@ -2,7 +2,11 @@ import type { EntityPartitionBy } from '@mikro-orm/core';
 import { Configuration, EntitySchema } from '@mikro-orm/core';
 import { DatabaseSchema, type TablePartitioning } from '@mikro-orm/sql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { diffPartitioning, getTablePartitioning, toEntityPartitionBy } from '../../../packages/sql/src/schema/partitioning.js';
+import {
+  diffPartitioning,
+  getTablePartitioning,
+  toEntityPartitionBy,
+} from '../../../packages/sql/src/schema/partitioning.js';
 
 const createPartitionedMeta = (partitionBy?: EntityPartitionBy<any>) =>
   new EntitySchema({
@@ -130,7 +134,9 @@ describe('partitioning helpers', () => {
     expect(diffPartitioning(from, undefined, 'public')).toBe(true);
     expect(diffPartitioning(from, equivalent, 'public')).toBe(false);
     expect(diffPartitioning(from, { ...equivalent, definition: 'LIST (tenant_id, type)' }, 'public')).toBe(true);
-    expect(diffPartitioning(from, { ...equivalent, partitions: equivalent.partitions.slice(0, 1) }, 'public')).toBe(true);
+    expect(diffPartitioning(from, { ...equivalent, partitions: equivalent.partitions.slice(0, 1) }, 'public')).toBe(
+      true,
+    );
     expect(
       diffPartitioning(
         from,

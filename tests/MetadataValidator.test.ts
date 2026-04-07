@@ -465,14 +465,19 @@ describe('MetadataValidator', () => {
   });
 
   describe('partitionBy validation', () => {
+    interface PartitionedEntity {
+      id: number;
+      type: string;
+    }
+
     const createPartitionedSchema = (partitionBy?: any) =>
-      new EntitySchema({
+      new EntitySchema<PartitionedEntity>({
         name: 'PartitionedEntity',
         tableName: 'partitioned_entity',
         partitionBy,
         properties: {
-          id: { kind: 'scalar', primary: true, name: 'id', type: 'number', fieldName: 'id' },
-          type: { kind: 'scalar', name: 'type', type: 'string', fieldName: 'type' },
+          id: { primary: true, name: 'id', type: 'number', fieldName: 'id' },
+          type: { name: 'type', type: 'string', fieldName: 'type' },
         },
       }).init();
 

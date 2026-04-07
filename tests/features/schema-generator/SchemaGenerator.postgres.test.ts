@@ -134,7 +134,12 @@ describe('SchemaGenerator [postgres]', () => {
     await orm.em.execute('drop table if exists partitioned_event cascade');
     await orm.schema.update();
 
-    const partitionedMeta = new EntitySchema({
+    interface PartitionedEvent {
+      type: string;
+      id: number;
+    }
+
+    const partitionedMeta = new EntitySchema<PartitionedEvent>({
       name: 'PartitionedEvent',
       tableName: 'partitioned_event',
       partitionBy: {
