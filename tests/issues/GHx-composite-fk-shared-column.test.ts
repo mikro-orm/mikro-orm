@@ -1,8 +1,10 @@
 import {
   BaseEntity,
+  Collection,
   Entity,
   ManyToOne,
   MikroORM,
+  OneToMany,
   PrimaryKey,
   PrimaryKeyProp,
   Property,
@@ -84,6 +86,31 @@ class Referrer extends BaseEntity {
   })
   childB?: Ref<ChildB> | null;
 
+  // The @OneToMany collection has no fieldNames — it must not break
+  // ownColumns deduplication for sibling composite FK relations.
+  @OneToMany({ entity: () => ReferrerNote, mappedBy: 'referrer' })
+  notes = new Collection<ReferrerNote>(this);
+
+}
+
+@Entity({ tableName: 'cfk_referrer_note' })
+class ReferrerNote extends BaseEntity {
+
+  [PrimaryKeyProp]?: ['id', 'organization'];
+
+  @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
+  id!: string;
+
+  @ManyToOne({ entity: () => Organization, ref: true, primary: true })
+  organization!: Ref<Organization>;
+
+  @ManyToOne({
+    entity: () => Referrer,
+    ref: true,
+    joinColumns: ['referrer_id', 'organization_id'],
+  })
+  referrer!: Ref<Referrer>;
+
 }
 
 let orm: MikroORM;
@@ -91,7 +118,7 @@ let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: 'mikro_orm_composite_fk_shared_column',
-    entities: [Organization, ChildA, ChildB, Referrer],
+    entities: [Organization, ChildA, ChildB, Referrer, ReferrerNote],
   });
   await orm.schema.refreshDatabase();
 });
@@ -101,6 +128,18 @@ afterAll(async () => {
 });
 
 describe('GHx - composite FK with shared join column [object Object] bug', () => {
+
+  test('inverse @OneToMany must not break ownColumns deduplication on owning side', () => {
+    const meta = orm.getMetadata().get(Referrer);
+    const childA = meta.relations.find(p => p.name === 'childA')!;
+    const childB = meta.relations.find(p => p.name === 'childB')!;
+
+    // organization_id is shared with the primary `organization` relation,
+    // so it must be deduplicated out of ownColumns even though Referrer also
+    // has an inverse @OneToMany collection (which has no fieldNames).
+    expect(childA.ownColumns).toEqual(['child_a_id']);
+    expect(childB.ownColumns).toEqual(['child_b_id']);
+  });
 
   test('em.create children + referrer in single flush', async () => {
     const em = orm.em.fork();
