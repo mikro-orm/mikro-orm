@@ -5,6 +5,36 @@ const normalizeWhitespace = (value: string): string => value.replace(/\s+/g, ' '
 
 const normalizeQuotedIdentifiers = (value: string): string => normalizeWhitespace(value).replaceAll('"', '');
 
+export const normalizePartitionDefinition = (value: string): string =>
+  normalizeWhitespace(value).replace(/^(hash|list|range)\b/i, match => match.toLowerCase());
+
+export const normalizePartitionBound = (value: string): string => {
+  const normalized = normalizeWhitespace(value);
+
+  if (/^default$/i.test(normalized)) {
+    return 'default';
+  }
+
+  let ret = /^for values\b/i.test(normalized)
+    ? normalized.replace(/^for values\b/i, 'for values')
+    : `for values ${normalized}`;
+
+  if (/^for values\s+with\b/i.test(ret)) {
+    return ret.replace(/^for values\s+with\b/i, 'for values with');
+  }
+
+  if (/^for values\s+in\b/i.test(ret)) {
+    return ret.replace(/^for values\s+in\b/i, 'for values in');
+  }
+
+  if (/^for values\s+from\b/i.test(ret)) {
+    ret = ret.replace(/^for values\s+from\b/i, 'for values from');
+    ret = ret.replace(/\s+to\b/i, ' to');
+  }
+
+  return ret;
+};
+
 const unwrapOuterParentheses = (value: string): string => {
   const trimmed = value.trim();
 
@@ -68,24 +98,14 @@ const resolvePartitionExpression = (
 };
 
 const createPartitionBound = (value: string): string => {
-  const normalized = normalizeWhitespace(value);
-
-  if (normalized.toUpperCase() === 'DEFAULT') {
-    return 'DEFAULT';
-  }
-
-  if (/^for values\b/i.test(normalized)) {
-    return normalized.replace(/^for values/i, 'FOR VALUES');
-  }
-
-  return `FOR VALUES ${normalized}`;
+  return normalizePartitionBound(value);
 };
 
 const createHashPartitions = (tableName: string, tableSchema: string | undefined, count: number): TablePartition[] =>
   Array.from({ length: count }, (_, remainder) => ({
     name: `${tableName}_${remainder}`,
     schema: tableSchema,
-    bound: `FOR VALUES WITH (modulus ${count}, remainder ${remainder})`,
+    bound: normalizePartitionBound(`with (modulus ${count}, remainder ${remainder})`),
   }));
 
 const createExplicitPartitions = (
@@ -112,7 +132,9 @@ export const getTablePartitioning = (
     return undefined;
   }
 
-  const definition = `${meta.partitionBy.type.toUpperCase()} (${resolvePartitionExpression(meta, meta.partitionBy.expression)})`;
+  const definition = normalizePartitionDefinition(
+    `${meta.partitionBy.type} (${resolvePartitionExpression(meta, meta.partitionBy.expression)})`,
+  );
   const partitions =
     meta.partitionBy.type === 'hash'
       ? createHashPartitions(meta.tableName, tableSchema, meta.partitionBy.partitions)
@@ -134,7 +156,10 @@ export const diffPartitioning = (
     return true;
   }
 
-  if (normalizeQuotedIdentifiers(from.definition) !== normalizeQuotedIdentifiers(to.definition)) {
+  if (
+    normalizeQuotedIdentifiers(normalizePartitionDefinition(from.definition)) !==
+    normalizeQuotedIdentifiers(normalizePartitionDefinition(to.definition))
+  ) {
     return true;
   }
 
@@ -144,7 +169,7 @@ export const diffPartitioning = (
 
   const normalizeSchema = (schema?: string) => (schema && schema !== defaultSchema ? schema : '');
   const serializePartition = (partition: TablePartition) =>
-    `${normalizeSchema(partition.schema)}.${partition.name}:${normalizeQuotedIdentifiers(partition.bound)}`;
+    `${normalizeSchema(partition.schema)}.${partition.name}:${normalizeQuotedIdentifiers(normalizePartitionBound(partition.bound))}`;
 
   const fromPartitions = from.partitions.map(serializePartition).sort();
   const toPartitions = to.partitions.map(serializePartition).sort();
@@ -157,7 +182,12 @@ export const toEntityPartitionBy = (partitioning: TablePartitioning | undefined)
     return undefined;
   }
 
-  const [rawType, ...rest] = normalizeWhitespace(partitioning.definition).split(' ');
+  const normalizedDefinition = normalizePartitionDefinition(partitioning.definition);
+  const normalizedPartitions = partitioning.partitions.map(partition => ({
+    ...partition,
+    bound: normalizePartitionBound(partition.bound),
+  }));
+  const [rawType, ...rest] = normalizeWhitespace(normalizedDefinition).split(' ');
   const type = rawType.toLowerCase() as EntityPartitionBy['type'];
   const expression = unwrapOuterParentheses(rest.join(' '));
 
@@ -165,16 +195,16 @@ export const toEntityPartitionBy = (partitioning: TablePartitioning | undefined)
     return {
       type,
       expression,
-      partitions: partitioning.partitions.length,
+      partitions: normalizedPartitions.length,
     };
   }
 
   return {
     type,
     expression,
-    partitions: partitioning.partitions.map(partition => ({
+    partitions: normalizedPartitions.map(partition => ({
       name: partition.schema ? `${partition.schema}.${partition.name}` : partition.name,
-      values: partition.bound === 'DEFAULT' ? 'DEFAULT' : partition.bound.replace(/^FOR VALUES\s+/i, ''),
+      values: partition.bound === 'default' ? 'default' : partition.bound.replace(/^for values\s+/i, ''),
     })),
   };
 };

@@ -1084,7 +1084,7 @@ describe('check typings', () => {
       partitionBy: {
         type: 'range',
         expression: columns => `date_trunc('day', ${columns.createdAt})`,
-        partitions: [{ values: "FROM ('2026-01-01') TO ('2026-02-01')" }],
+        partitions: [{ values: "from ('2026-01-01') to ('2026-02-01')" }],
       },
     };
 

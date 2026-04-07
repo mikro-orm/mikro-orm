@@ -165,12 +165,12 @@ describe('SchemaGenerator [postgres]', () => {
     meta.set(partitionedMeta.class, partitionedMeta);
 
     let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff).toContain('partition by HASH (type);');
+    expect(diff).toContain('partition by hash (type);');
     expect(diff).toContain(
-      'create table "partitioned_event_0" partition of "partitioned_event" FOR VALUES WITH (modulus 4, remainder 0);',
+      'create table "partitioned_event_0" partition of "partitioned_event" for values with (modulus 4, remainder 0);',
     );
     expect(diff).toContain(
-      'create table "partitioned_event_3" partition of "partitioned_event" FOR VALUES WITH (modulus 4, remainder 3);',
+      'create table "partitioned_event_3" partition of "partitioned_event" for values with (modulus 4, remainder 3);',
     );
     await orm.schema.execute(diff, { wrap: true });
 

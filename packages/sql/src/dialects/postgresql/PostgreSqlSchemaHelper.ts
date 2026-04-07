@@ -21,6 +21,7 @@ import type {
 } from '../../typings.js';
 import type { DatabaseSchema } from '../../schema/DatabaseSchema.js';
 import type { DatabaseTable } from '../../schema/DatabaseTable.js';
+import { normalizePartitionBound, normalizePartitionDefinition } from '../../schema/partitioning.js';
 
 /** PostGIS system views that should be automatically ignored */
 const POSTGIS_VIEWS = ['geography_columns', 'geometry_columns'];
@@ -278,13 +279,13 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     for (const row of rows) {
       const key = this.getTableKey(row);
-      ret[key] ??= { definition: row.partition_definition.trim(), partitions: [] };
+      ret[key] ??= { definition: normalizePartitionDefinition(row.partition_definition), partitions: [] };
 
       if (row.partition_name && row.partition_bound) {
         ret[key].partitions.push({
           name: row.partition_name,
           schema: row.partition_schema_name,
-          bound: row.partition_bound.trim(),
+          bound: normalizePartitionBound(row.partition_bound),
         });
       }
     }

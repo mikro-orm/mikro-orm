@@ -1,6 +1,7 @@
 import type { EntityPartitionBy } from '@mikro-orm/core';
 import { Configuration, EntitySchema } from '@mikro-orm/core';
-import { DatabaseSchema, type TablePartitioning } from '@mikro-orm/sql';
+import { DatabaseSchema, SchemaComparator, type TablePartitioning } from '@mikro-orm/sql';
+import { PostgreSqlDriver, PostgreSqlPlatform } from '@mikro-orm/postgresql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import {
   diffPartitioning,
@@ -39,6 +40,9 @@ const createPartitionedMeta = (partitionBy?: EntityPartitionBy<any>) =>
     },
   }).init().meta;
 
+const uppercasePartitionSql = (value: string): string =>
+  value.replace(/\b(for values|hash|list|range|with|in|from|to|default)\b/gi, match => match.toUpperCase());
+
 describe('partitioning helpers', () => {
   test('builds hash partitioning from property arrays', () => {
     expect(getTablePartitioning(createPartitionedMeta(), 'public')).toBeUndefined();
@@ -53,11 +57,11 @@ describe('partitioning helpers', () => {
     );
 
     expect(partitioning).toEqual({
-      definition: 'HASH (tenant_id, type)',
+      definition: 'hash (tenant_id, type)',
       partitions: [
-        { name: 'partitioned_event_0', schema: 'public', bound: 'FOR VALUES WITH (modulus 3, remainder 0)' },
-        { name: 'partitioned_event_1', schema: 'public', bound: 'FOR VALUES WITH (modulus 3, remainder 1)' },
-        { name: 'partitioned_event_2', schema: 'public', bound: 'FOR VALUES WITH (modulus 3, remainder 2)' },
+        { name: 'partitioned_event_0', schema: 'public', bound: 'for values with (modulus 3, remainder 0)' },
+        { name: 'partitioned_event_1', schema: 'public', bound: 'for values with (modulus 3, remainder 1)' },
+        { name: 'partitioned_event_2', schema: 'public', bound: 'for values with (modulus 3, remainder 2)' },
       ],
     });
   });
@@ -68,31 +72,31 @@ describe('partitioning helpers', () => {
         type: 'range',
         expression: columns => ` date_trunc('day', ${columns.createdAt}) `,
         partitions: [
-          { values: " FROM ('2026-01-01') TO ('2026-02-01') " },
-          { name: 'archive.partitioned_event_default', values: ' DEFAULT ' },
-          { name: 'audit.partitioned_event_q1', values: "for values IN ('q1')" },
+          { values: " from ('2026-01-01') to ('2026-02-01') " },
+          { name: 'archive.partitioned_event_default', values: ' default ' },
+          { name: 'audit.partitioned_event_q1', values: "for values in ('q1')" },
         ],
       }),
       'public',
     );
 
     expect(partitioning).toEqual({
-      definition: "RANGE (date_trunc('day', created_at))",
+      definition: "range (date_trunc('day', created_at))",
       partitions: [
         {
           name: 'partitioned_event_0',
           schema: 'public',
-          bound: "FOR VALUES FROM ('2026-01-01') TO ('2026-02-01')",
+          bound: "for values from ('2026-01-01') to ('2026-02-01')",
         },
         {
           name: 'partitioned_event_default',
           schema: 'archive',
-          bound: 'DEFAULT',
+          bound: 'default',
         },
         {
           name: 'partitioned_event_q1',
           schema: 'audit',
-          bound: "FOR VALUES IN ('q1')",
+          bound: "for values in ('q1')",
         },
       ],
     });
@@ -103,37 +107,45 @@ describe('partitioning helpers', () => {
       createPartitionedMeta({
         type: 'list',
         expression: " date_trunc('month', created_at) ",
-        partitions: [{ values: "IN ('2026-01-01')" }],
+        partitions: [{ values: "in ('2026-01-01')" }],
       }),
       undefined,
     );
 
     expect(partitioning).toEqual({
-      definition: "LIST (date_trunc('month', created_at))",
-      partitions: [{ name: 'partitioned_event_0', schema: undefined, bound: "FOR VALUES IN ('2026-01-01')" }],
+      definition: "list (date_trunc('month', created_at))",
+      partitions: [{ name: 'partitioned_event_0', schema: undefined, bound: "for values in ('2026-01-01')" }],
     });
   });
 
-  test('diffs partitioning after normalizing identifiers, schemas, and order', () => {
+  test('diffs partitioning after normalizing identifiers, schemas, order, and sql keyword casing', () => {
     const from: TablePartitioning = {
-      definition: 'HASH ("tenant_id", "type")',
+      definition: uppercasePartitionSql('hash ("tenant_id", "type")'),
       partitions: [
-        { name: 'partitioned_event_0', schema: 'public', bound: 'FOR VALUES WITH (modulus 2, remainder 0)' },
-        { name: 'partitioned_event_1', schema: 'public', bound: 'FOR VALUES WITH (modulus 2, remainder 1)' },
+        {
+          name: 'partitioned_event_0',
+          schema: 'public',
+          bound: uppercasePartitionSql('for values with (modulus 2, remainder 0)'),
+        },
+        {
+          name: 'partitioned_event_1',
+          schema: 'public',
+          bound: uppercasePartitionSql('for values with (modulus 2, remainder 1)'),
+        },
       ],
     };
     const equivalent: TablePartitioning = {
-      definition: 'HASH (tenant_id, type)',
+      definition: uppercasePartitionSql('hash (tenant_id, type)'),
       partitions: [
-        { name: 'partitioned_event_1', bound: 'FOR VALUES WITH (modulus 2, remainder 1)' },
-        { name: 'partitioned_event_0', bound: 'FOR VALUES WITH (modulus 2, remainder 0)' },
+        { name: 'partitioned_event_1', bound: uppercasePartitionSql('for values with (modulus 2, remainder 1)') },
+        { name: 'partitioned_event_0', bound: uppercasePartitionSql('for values with (modulus 2, remainder 0)') },
       ],
     };
 
     expect(diffPartitioning(undefined, undefined, 'public')).toBe(false);
     expect(diffPartitioning(from, undefined, 'public')).toBe(true);
     expect(diffPartitioning(from, equivalent, 'public')).toBe(false);
-    expect(diffPartitioning(from, { ...equivalent, definition: 'LIST (tenant_id, type)' }, 'public')).toBe(true);
+    expect(diffPartitioning(from, { ...equivalent, definition: 'list (tenant_id, type)' }, 'public')).toBe(true);
     expect(diffPartitioning(from, { ...equivalent, partitions: equivalent.partitions.slice(0, 1) }, 'public')).toBe(
       true,
     );
@@ -149,15 +161,15 @@ describe('partitioning helpers', () => {
     ).toBe(true);
   });
 
-  test('converts partitioning definitions back to entity metadata', () => {
+  test('converts catalog-style partitioning definitions back to lowercase entity metadata', () => {
     expect(toEntityPartitionBy(undefined)).toBeUndefined();
 
     expect(
       toEntityPartitionBy({
-        definition: 'HASH (tenant_id, type)',
+        definition: uppercasePartitionSql('hash (tenant_id, type)'),
         partitions: [
-          { name: 'partitioned_event_0', bound: 'FOR VALUES WITH (modulus 2, remainder 0)' },
-          { name: 'partitioned_event_1', bound: 'FOR VALUES WITH (modulus 2, remainder 1)' },
+          { name: 'partitioned_event_0', bound: uppercasePartitionSql('for values with (modulus 2, remainder 0)') },
+          { name: 'partitioned_event_1', bound: uppercasePartitionSql('for values with (modulus 2, remainder 1)') },
         ],
       }),
     ).toEqual({
@@ -168,16 +180,16 @@ describe('partitioning helpers', () => {
 
     expect(
       toEntityPartitionBy({
-        definition: "RANGE ((date_trunc('day', created_at))::date)",
+        definition: uppercasePartitionSql("range ((date_trunc('day', created_at))::date)"),
         partitions: [
           {
             name: 'partitioned_event_0',
             schema: 'public',
-            bound: "FOR VALUES FROM ('2026-01-01') TO ('2026-02-01')",
+            bound: uppercasePartitionSql("for values from ('2026-01-01') to ('2026-02-01')"),
           },
           {
             name: 'partitioned_event_default',
-            bound: 'DEFAULT',
+            bound: uppercasePartitionSql('default'),
           },
         ],
       }),
@@ -187,11 +199,11 @@ describe('partitioning helpers', () => {
       partitions: [
         {
           name: 'public.partitioned_event_0',
-          values: "FROM ('2026-01-01') TO ('2026-02-01')",
+          values: "from ('2026-01-01') to ('2026-02-01')",
         },
         {
           name: 'partitioned_event_default',
-          values: 'DEFAULT',
+          values: 'default',
         },
       ],
     });
@@ -200,8 +212,8 @@ describe('partitioning helpers', () => {
   test('preserves expressions that are not wrapped by a single outer parenthesis pair', () => {
     expect(
       toEntityPartitionBy({
-        definition: 'HASH tenant_id',
-        partitions: [{ name: 'partitioned_event_0', bound: 'FOR VALUES WITH (modulus 1, remainder 0)' }],
+        definition: 'hash tenant_id',
+        partitions: [{ name: 'partitioned_event_0', bound: 'for values with (modulus 1, remainder 0)' }],
       }),
     ).toEqual({
       type: 'hash',
@@ -211,13 +223,13 @@ describe('partitioning helpers', () => {
 
     expect(
       toEntityPartitionBy({
-        definition: 'LIST (tenant_id) || (type)',
-        partitions: [{ name: 'partitioned_event_0', bound: "FOR VALUES IN ('tenant-a')" }],
+        definition: 'list (tenant_id) || (type)',
+        partitions: [{ name: 'partitioned_event_0', bound: "for values in ('tenant-a')" }],
       }),
     ).toEqual({
       type: 'list',
       expression: '(tenant_id) || (type)',
-      partitions: [{ name: 'partitioned_event_0', values: "IN ('tenant-a')" }],
+      partitions: [{ name: 'partitioned_event_0', values: "in ('tenant-a')" }],
     });
   });
 
@@ -239,5 +251,93 @@ describe('partitioning helpers', () => {
         config,
       ),
     ).toThrow('Entity PartitionedEvent uses partitionBy, but SqlitePlatform does not support partitioned tables');
+  });
+
+  test('round-trips partitioning through sql schema metadata', () => {
+    const config = new Configuration({ driver: PostgreSqlDriver }, false);
+    const platform = config.getPlatform() as PostgreSqlPlatform;
+    const meta = createPartitionedMeta({
+      type: 'range',
+      expression: ['createdAt'],
+      partitions: [
+        { values: "from ('2026-01-01') to ('2026-02-01')" },
+        { name: 'archive.partitioned_event_default', values: 'default' },
+      ],
+    });
+
+    expect(platform.supportsPartitionedTables()).toBe(true);
+
+    const schema = DatabaseSchema.fromMetadata([meta], platform as any, config);
+    const table = schema.getTable('partitioned_event')!;
+
+    expect(table.getPartitioning()).toEqual({
+      definition: 'range (created_at)',
+      partitions: [
+        {
+          name: 'partitioned_event_0',
+          schema: 'public',
+          bound: "for values from ('2026-01-01') to ('2026-02-01')",
+        },
+        {
+          name: 'partitioned_event_default',
+          schema: 'archive',
+          bound: 'default',
+        },
+      ],
+    });
+    expect(
+      table.getEntityDeclaration(config.getNamingStrategy(), platform.getSchemaHelper() as any, 'smart').partitionBy,
+    ).toEqual({
+      type: 'range',
+      expression: 'created_at',
+      partitions: [
+        {
+          name: 'public.partitioned_event_0',
+          values: "from ('2026-01-01') to ('2026-02-01')",
+        },
+        {
+          name: 'archive.partitioned_event_default',
+          values: 'default',
+        },
+      ],
+    });
+  });
+
+  test('surfaces partitioning changes through the schema comparator', () => {
+    const config = new Configuration({ driver: PostgreSqlDriver }, false);
+    const platform = config.getPlatform() as PostgreSqlPlatform;
+    const fromSchema = DatabaseSchema.fromMetadata(
+      [
+        createPartitionedMeta({
+          type: 'hash',
+          expression: ['type'],
+          partitions: 2,
+        }),
+      ],
+      platform as any,
+      config,
+    );
+    const toSchema = DatabaseSchema.fromMetadata(
+      [
+        createPartitionedMeta({
+          type: 'hash',
+          expression: ['type'],
+          partitions: 4,
+        }),
+      ],
+      platform as any,
+      config,
+    );
+    const comparator = new SchemaComparator(platform);
+    const diff = comparator.diffTable(
+      fromSchema.getTable('partitioned_event')!,
+      toSchema.getTable('partitioned_event')!,
+    );
+
+    expect(diff).not.toBe(false);
+    expect((diff as Exclude<typeof diff, false>).changedPartitioning).toEqual({
+      from: fromSchema.getTable('partitioned_event')!.getPartitioning(),
+      to: toSchema.getTable('partitioned_event')!.getPartitioning(),
+    });
   });
 });
