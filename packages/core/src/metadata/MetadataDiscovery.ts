@@ -525,7 +525,7 @@ export class MetadataDiscovery {
 
       if (prop.joinColumns.length > 1) {
         prop.ownColumns = prop.joinColumns.filter(col => {
-          return !meta.props.find(p => p.name !== prop.name && (!p.fieldNames || p.fieldNames.includes(col)));
+          return !meta.props.find(p => p.name !== prop.name && p.fieldNames?.includes(col));
         });
       }
 
