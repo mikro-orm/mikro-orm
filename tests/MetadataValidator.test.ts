@@ -498,6 +498,19 @@ describe('MetadataValidator', () => {
       ).not.toThrow();
     });
 
+    test('accepts valid range partitioning with explicit child tables', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'range',
+          expression: ['type'],
+          partitions: [
+            { values: "from ('2026-01-01') to ('2026-02-01')" },
+            { name: 'archive.partitioned_entity_default', values: 'default' },
+          ],
+        }),
+      ).not.toThrow();
+    });
+
     test('rejects partitioning without expression', async () => {
       expect(
         validatePartitionedSchema({
