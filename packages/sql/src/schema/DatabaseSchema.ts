@@ -264,7 +264,9 @@ export class DatabaseSchema {
 
       if (meta.partitionBy) {
         if (!platform.supportsPartitionedTables()) {
-          throw new Error(`Entity ${meta.className} uses partitionBy, but ${platform.constructor.name} does not support partitioned tables`);
+          throw new Error(
+            `Entity ${meta.className} uses partitionBy, but ${platform.constructor.name} does not support partitioned tables`,
+          );
         }
 
         table.setPartitioning(getTablePartitioning(meta, this.getSchemaName(meta, config, schemaName)));

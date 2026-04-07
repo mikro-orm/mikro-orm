@@ -10,7 +10,15 @@ import {
 } from '@mikro-orm/core';
 import { SchemaHelper } from '../../schema/SchemaHelper.js';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
-import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference, TablePartitioning } from '../../typings.js';
+import type {
+  CheckDef,
+  Column,
+  ForeignKey,
+  IndexDef,
+  Table,
+  TableDifference,
+  TablePartitioning,
+} from '../../typings.js';
 import type { DatabaseSchema } from '../../schema/DatabaseSchema.js';
 import type { DatabaseTable } from '../../schema/DatabaseTable.js';
 

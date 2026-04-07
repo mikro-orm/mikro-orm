@@ -262,7 +262,9 @@ export class SchemaComparator {
       changes++;
     }
 
-    if (diffPartitioning(fromTable.getPartitioning(), toTable.getPartitioning(), this.#platform.getDefaultSchemaName())) {
+    if (
+      diffPartitioning(fromTable.getPartitioning(), toTable.getPartitioning(), this.#platform.getDefaultSchemaName())
+    ) {
       tableDifferences.changedPartitioning = {
         from: fromTable.getPartitioning(),
         to: toTable.getPartitioning(),

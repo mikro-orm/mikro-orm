@@ -60,11 +60,11 @@ const resolvePartitionExpression = (
     return normalizeWhitespace(expression(meta.createSchemaColumnMappingObject()));
   }
 
-  if (Array.isArray(expression)) {
-    return expression.map(key => resolvePartitionKey(meta, key)).join(', ');
+  if (typeof expression === 'string') {
+    return resolvePartitionKey(meta, expression);
   }
 
-  return resolvePartitionKey(meta, expression);
+  return expression.map(key => resolvePartitionKey(meta, key)).join(', ');
 };
 
 const createPartitionBound = (value: string): string => {
@@ -81,11 +81,7 @@ const createPartitionBound = (value: string): string => {
   return `FOR VALUES ${normalized}`;
 };
 
-const createHashPartitions = (
-  tableName: string,
-  tableSchema: string | undefined,
-  count: number,
-): TablePartition[] =>
+const createHashPartitions = (tableName: string, tableSchema: string | undefined, count: number): TablePartition[] =>
   Array.from({ length: count }, (_, remainder) => ({
     name: `${tableName}_${remainder}`,
     schema: tableSchema,
@@ -128,7 +124,7 @@ export const getTablePartitioning = (
 export const diffPartitioning = (
   from: TablePartitioning | undefined,
   to: TablePartitioning | undefined,
-  defaultSchema: string,
+  defaultSchema: string | undefined,
 ): boolean => {
   if (!from && !to) {
     return false;
