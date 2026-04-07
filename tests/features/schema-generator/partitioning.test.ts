@@ -94,6 +94,22 @@ describe('partitioning helpers', () => {
     });
   });
 
+  test('keeps raw SQL partition expressions when they do not match entity properties', () => {
+    const partitioning = getTablePartitioning(
+      createPartitionedMeta({
+        type: 'list',
+        expression: " date_trunc('month', created_at) ",
+        partitions: [{ values: "IN ('2026-01-01')" }],
+      }),
+      undefined,
+    );
+
+    expect(partitioning).toEqual({
+      definition: "LIST (date_trunc('month', created_at))",
+      partitions: [{ name: 'partitioned_event_0', schema: undefined, bound: "FOR VALUES IN ('2026-01-01')" }],
+    });
+  });
+
   test('diffs partitioning after normalizing identifiers, schemas, and order', () => {
     const from: TablePartitioning = {
       definition: 'HASH ("tenant_id", "type")',
@@ -172,6 +188,30 @@ describe('partitioning helpers', () => {
           values: 'DEFAULT',
         },
       ],
+    });
+  });
+
+  test('preserves expressions that are not wrapped by a single outer parenthesis pair', () => {
+    expect(
+      toEntityPartitionBy({
+        definition: 'HASH tenant_id',
+        partitions: [{ name: 'partitioned_event_0', bound: 'FOR VALUES WITH (modulus 1, remainder 0)' }],
+      }),
+    ).toEqual({
+      type: 'hash',
+      expression: 'tenant_id',
+      partitions: 1,
+    });
+
+    expect(
+      toEntityPartitionBy({
+        definition: 'LIST (tenant_id) || (type)',
+        partitions: [{ name: 'partitioned_event_0', bound: "FOR VALUES IN ('tenant-a')" }],
+      }),
+    ).toEqual({
+      type: 'list',
+      expression: '(tenant_id) || (type)',
+      partitions: [{ name: 'partitioned_event_0', values: "IN ('tenant-a')" }],
     });
   });
 
