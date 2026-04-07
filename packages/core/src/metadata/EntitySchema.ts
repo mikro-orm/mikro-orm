@@ -522,7 +522,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
   private normalizeType(
     options: PropertyOptions<Entity> | EntityProperty | EmbeddedOptions<Entity, any>,
     type?: string | any | Constructor<Type>,
-  ) {
+  ): { type?: TypeType; target?: EntityName<any> | EntityName<any>[] } {
     if ('entity' in options) {
       /* v8 ignore next */
       if (typeof options.entity === 'string') {
@@ -537,7 +537,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
               .sort()
               .join(' | ')
           : Utils.className(tmp);
-        const target = EntitySchema.is(tmp) ? tmp.meta.class : tmp;
+        const target: EntityName<any> | EntityName<any>[] = EntitySchema.is(tmp) ? tmp.meta.class : tmp;
         return { type, target };
       }
     }
