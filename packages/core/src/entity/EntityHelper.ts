@@ -72,7 +72,8 @@ export class EntityHelper {
 
     // Walkers / serializers reaching the prototype directly invoke its methods and
     // accessors with `this === prototype`. Wrap each so that case is a no-op rather
-    // than throwing (#7506) or installing state on the prototype itself (#7151).
+    // than throwing (when a user `@Property({ persist: false })` getter dereferences
+    // unhydrated instance state) or installing state on the prototype itself (#7151).
     for (const name of Object.getOwnPropertyNames(prototype)) {
       const desc = Object.getOwnPropertyDescriptor(prototype, name)!;
       const fn: any = desc.get ?? desc.value;
