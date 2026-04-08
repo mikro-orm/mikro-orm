@@ -24,7 +24,7 @@ import { inspect } from '../logging/inspect.js';
 import { getEnv } from '../utils/env-vars.js';
 
 const entitySymbol = Symbol('Entity');
-type GuardedGetter<T> = ((this: T) => unknown) & { __guarded?: true };
+type GuardedFn<T> = ((this: T, ...args: any[]) => unknown) & { __guarded?: true };
 
 /**
  * @internal
@@ -63,12 +63,6 @@ export class EntityHelper {
       // toJSON can be overridden
       Object.defineProperty(prototype, 'toJSON', {
         value: function (this: T, ...args: any[]) {
-          // Guard against being called on the prototype itself (e.g. by serializers
-          // walking the object graph and calling toJSON on prototype objects)
-          if (this === prototype) {
-            return {};
-          }
-
           return EntityTransformer.toObject<T>(this, ...args);
         },
         writable: true,
@@ -77,23 +71,25 @@ export class EntityHelper {
       });
     }
 
-    // Same hazard as `toJSON` above, but for user `@Property({ persist: false })` getters:
-    // deep-clone walkers (e.g. `@vitest/utils` `clone`, `safe-stable-stringify`) read each
-    // prototype descriptor via `prototype[name]`, firing the getter with `this === prototype`
-    // where instance fields are unset and the body throws. (#7506)
-    for (const prop of meta.getterProps) {
-      const desc = Object.getOwnPropertyDescriptor(prototype, prop.name);
-      const original = desc?.get as GuardedGetter<T> | undefined;
+    // Walkers / serializers reaching the prototype directly — `@vitest/utils` `clone`
+    // reading `prototype[k]`, `safe-stable-stringify` calling `prototype.toJSON()`, the
+    // node inspect protocol, etc. — invoke prototype-installed methods and accessors with
+    // `this === prototype`. Wrap each one so that case is a no-op instead of throwing
+    // (#7506) or installing state on the prototype itself (#7151).
+    for (const name of Object.getOwnPropertyNames(prototype)) {
+      const desc = Object.getOwnPropertyDescriptor(prototype, name)!;
+      const original = (desc.get ?? desc.value) as GuardedFn<T> | undefined;
 
-      if (!original || original.__guarded) {
+      if (name === 'constructor' || typeof original !== 'function' || original.__guarded) {
         continue;
       }
 
-      const guarded: GuardedGetter<T> = function (this: T) {
-        return this === prototype ? undefined : original.call(this);
+      const guarded: GuardedFn<T> = function (this: T) {
+        // eslint-disable-next-line prefer-rest-params
+        return this === prototype ? undefined : original.apply(this, arguments as any);
       };
       guarded.__guarded = true;
-      Object.defineProperty(prototype, prop.name, { ...desc, get: guarded });
+      Object.defineProperty(prototype, name, desc.get ? { ...desc, get: guarded } : { ...desc, value: guarded });
     }
   }
 
