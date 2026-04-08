@@ -39,11 +39,11 @@ export const fs: FsUtils = {
       globSync = (patterns, options) => {
         patterns = Utils.asArray(patterns).map(p => p.replace(/\\/g, '/'));
 
-        if (options?.cwd) {
-          options = { ...options, cwd: options.cwd.replace(/\\/g, '/') };
-        }
-
-        return tinyGlobby.globSync(patterns, { ...options, expandDirectories: false });
+        // never forward `cwd: undefined` — tinyglobby >= 0.2.16 calls `path.resolve(undefined)` and throws
+        return tinyGlobby.globSync(patterns, {
+          expandDirectories: false,
+          ...(options?.cwd && { cwd: options.cwd.replace(/\\/g, '/') }),
+        });
       };
     }
   },
