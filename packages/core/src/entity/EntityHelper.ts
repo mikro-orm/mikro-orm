@@ -24,7 +24,7 @@ import { inspect } from '../logging/inspect.js';
 import { getEnv } from '../utils/env-vars.js';
 
 const entitySymbol = Symbol('Entity');
-const guardedPrototypeGetters = new WeakSet<() => unknown>();
+type GuardedGetter<T> = ((this: T) => unknown) & { __guarded?: true };
 
 /**
  * @internal
@@ -77,39 +77,23 @@ export class EntityHelper {
       });
     }
 
-    EntityHelper.guardPrototypeGetters(meta);
-  }
-
-  /**
-   * Wraps user-defined property getters on the prototype so that calling them with
-   * `this === prototype` returns `undefined` instead of dereferencing instance fields
-   * that don't exist on the prototype. This protects against deep-clone helpers that
-   * walk the object graph via `Object.getOwnPropertyNames` + plain `val[key]` access
-   * (e.g. `@vitest/utils` `clone` or `safe-stable-stringify`) and accidentally invoke
-   * the getter on the prototype object itself.
-   */
-  private static guardPrototypeGetters<T extends object>(meta: EntityMetadata<T>): void {
-    const prototype = meta.prototype as Dictionary;
-
+    // Same hazard as `toJSON` above, but for user `@Property({ persist: false })` getters:
+    // deep-clone walkers (e.g. `@vitest/utils` `clone`, `safe-stable-stringify`) read each
+    // prototype descriptor via `prototype[name]`, firing the getter with `this === prototype`
+    // where instance fields are unset and the body throws. (#7506)
     for (const prop of meta.getterProps) {
-      // `getterProps` includes method-style virtuals (`@Property()` on a function); those
-      // have `value`, not `get`, so the descriptor check below filters them out naturally.
       const desc = Object.getOwnPropertyDescriptor(prototype, prop.name);
+      const original = desc?.get as GuardedGetter<T> | undefined;
 
-      if (!desc?.get || guardedPrototypeGetters.has(desc.get)) {
+      if (!original || original.__guarded) {
         continue;
       }
 
-      const originalGet = desc.get;
-      const guardedGet = function (this: T) {
-        if (this === prototype) {
-          return undefined;
-        }
-        return originalGet.call(this);
+      const guarded: GuardedGetter<T> = function (this: T) {
+        return this === prototype ? undefined : original.call(this);
       };
-      guardedPrototypeGetters.add(guardedGet);
-
-      Object.defineProperty(prototype, prop.name, { ...desc, get: guardedGet });
+      guarded.__guarded = true;
+      Object.defineProperty(prototype, prop.name, { ...desc, get: guarded });
     }
   }
 
