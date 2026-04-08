@@ -60,18 +60,31 @@ export class EntityHelper {
     if (!prototype.toJSON) { // toJSON can be overridden
       Object.defineProperty(prototype, 'toJSON', {
         value(this: T, ...args: any[]) {
-          // Guard against being called on the prototype itself (e.g. by serializers
-          // walking the object graph and calling toJSON on prototype objects)
-          if (this === prototype) {
-            return {};
-          }
-
           return EntityTransformer.toObject<T>(this, ...args.slice(meta.toJsonParams.length));
         },
         writable: true,
         configurable: true,
         enumerable: false,
       });
+    }
+
+    // Walkers / serializers reaching the prototype directly invoke its methods and
+    // accessors with `this === prototype`. Wrap each so that case is a no-op rather
+    // than throwing (when a user `@Property({ persist: false })` getter dereferences
+    // unhydrated instance state) or installing state on the prototype itself (#7151).
+    for (const name of Object.getOwnPropertyNames(prototype)) {
+      const desc = Object.getOwnPropertyDescriptor(prototype, name)!;
+      const fn: any = desc.get ?? desc.value;
+
+      if (name === 'constructor' || typeof fn !== 'function' || fn.__guarded) {
+        continue;
+      }
+
+      const guarded: any = function (this: T, ...args: any[]) {
+        return this === prototype ? undefined : fn.apply(this, args);
+      };
+      guarded.__guarded = true;
+      Object.defineProperty(prototype, name, desc.get ? { ...desc, get: guarded } : { ...desc, value: guarded });
     }
   }
 
