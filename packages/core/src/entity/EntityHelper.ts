@@ -24,7 +24,6 @@ import { inspect } from '../logging/inspect.js';
 import { getEnv } from '../utils/env-vars.js';
 
 const entitySymbol = Symbol('Entity');
-type GuardedFn<T> = ((this: T, ...args: any[]) => unknown) & { __guarded?: true };
 
 /**
  * @internal
@@ -71,22 +70,19 @@ export class EntityHelper {
       });
     }
 
-    // Walkers / serializers reaching the prototype directly — `@vitest/utils` `clone`
-    // reading `prototype[k]`, `safe-stable-stringify` calling `prototype.toJSON()`, the
-    // node inspect protocol, etc. — invoke prototype-installed methods and accessors with
-    // `this === prototype`. Wrap each one so that case is a no-op instead of throwing
-    // (#7506) or installing state on the prototype itself (#7151).
+    // Walkers / serializers reaching the prototype directly invoke its methods and
+    // accessors with `this === prototype`. Wrap each so that case is a no-op rather
+    // than throwing (#7506) or installing state on the prototype itself (#7151).
     for (const name of Object.getOwnPropertyNames(prototype)) {
       const desc = Object.getOwnPropertyDescriptor(prototype, name)!;
-      const original = (desc.get ?? desc.value) as GuardedFn<T> | undefined;
+      const fn: any = desc.get ?? desc.value;
 
-      if (name === 'constructor' || typeof original !== 'function' || original.__guarded) {
+      if (name === 'constructor' || typeof fn !== 'function' || fn.__guarded) {
         continue;
       }
 
-      const guarded: GuardedFn<T> = function (this: T) {
-        // eslint-disable-next-line prefer-rest-params
-        return this === prototype ? undefined : original.apply(this, arguments as any);
+      const guarded: any = function (this: T, ...args: any[]) {
+        return this === prototype ? undefined : fn.apply(this, args);
       };
       guarded.__guarded = true;
       Object.defineProperty(prototype, name, desc.get ? { ...desc, get: guarded } : { ...desc, value: guarded });
