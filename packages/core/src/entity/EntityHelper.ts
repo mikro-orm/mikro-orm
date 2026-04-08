@@ -24,6 +24,7 @@ import { inspect } from '../logging/inspect.js';
 import { getEnv } from '../utils/env-vars.js';
 
 const entitySymbol = Symbol('Entity');
+const guardedPrototypeGetters = new WeakSet<() => unknown>();
 
 /**
  * @internal
@@ -74,6 +75,41 @@ export class EntityHelper {
         configurable: true,
         enumerable: false,
       });
+    }
+
+    EntityHelper.guardPrototypeGetters(meta);
+  }
+
+  /**
+   * Wraps user-defined property getters on the prototype so that calling them with
+   * `this === prototype` returns `undefined` instead of dereferencing instance fields
+   * that don't exist on the prototype. This protects against deep-clone helpers that
+   * walk the object graph via `Object.getOwnPropertyNames` + plain `val[key]` access
+   * (e.g. `@vitest/utils` `clone` or `safe-stable-stringify`) and accidentally invoke
+   * the getter on the prototype object itself.
+   */
+  private static guardPrototypeGetters<T extends object>(meta: EntityMetadata<T>): void {
+    const prototype = meta.prototype as Dictionary;
+
+    for (const prop of meta.getterProps) {
+      // `getterProps` includes method-style virtuals (`@Property()` on a function); those
+      // have `value`, not `get`, so the descriptor check below filters them out naturally.
+      const desc = Object.getOwnPropertyDescriptor(prototype, prop.name);
+
+      if (!desc?.get || guardedPrototypeGetters.has(desc.get)) {
+        continue;
+      }
+
+      const originalGet = desc.get;
+      const guardedGet = function (this: T) {
+        if (this === prototype) {
+          return undefined;
+        }
+        return originalGet.call(this);
+      };
+      guardedPrototypeGetters.add(guardedGet);
+
+      Object.defineProperty(prototype, prop.name, { ...desc, get: guardedGet });
     }
   }
 
