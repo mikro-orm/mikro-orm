@@ -5,6 +5,8 @@ import { MetadataError } from '../errors.js';
 import { ReferenceKind } from '../enums.js';
 import type { MetadataStorage } from './MetadataStorage.js';
 
+type PartitionExpression = NonNullable<EntityMetadata['partitionBy']>['expression'];
+
 /**
  * List of property names that could lead to prototype pollution vulnerabilities.
  * These names should never be used as entity property names because they could
@@ -164,9 +166,11 @@ export class MetadataValidator {
       return;
     }
 
-    if (meta.partitionBy.expression == null) {
+    if (!this.hasPartitionExpression(meta.partitionBy.expression)) {
       throw new MetadataError(`Entity ${meta.className} has invalid partitionBy option: missing expression`);
     }
+
+    this.validatePartitionKeyConstraints(meta);
 
     if (meta.partitionBy.type === 'hash') {
       if (!Number.isInteger(meta.partitionBy.partitions) || meta.partitionBy.partitions < 1) {
@@ -189,6 +193,116 @@ export class MetadataValidator {
         `Entity ${meta.className} has invalid partitionBy option: every partition must define values`,
       );
     }
+  }
+
+  private hasPartitionExpression(expression: PartitionExpression | undefined): boolean {
+    if (expression == null) {
+      return false;
+    }
+
+    if (typeof expression === 'function') {
+      return true;
+    }
+
+    if (Array.isArray(expression)) {
+      return expression.length > 0 && expression.every(key => key.trim().length > 0);
+    }
+
+    return String(expression).trim().length > 0;
+  }
+
+  private validatePartitionKeyConstraints(meta: EntityMetadata): void {
+    const partitionFields = this.getPartitionKeyFields(meta);
+
+    if (!partitionFields?.length) {
+      return;
+    }
+
+    const primaryKeyFields = meta.root.getPrimaryProps().flatMap(prop => prop.fieldNames);
+
+    if (partitionFields.some(field => !primaryKeyFields.includes(field))) {
+      throw new MetadataError(
+        `Entity ${meta.className} has invalid partitionBy option: primary key must include partition key columns '${partitionFields.join("', '")}'`,
+      );
+    }
+
+    for (const prop of Object.values(meta.root.properties)) {
+      if (!prop.unique || !prop.fieldNames?.length) {
+        continue;
+      }
+
+      if (partitionFields.some(field => !prop.fieldNames!.includes(field))) {
+        throw new MetadataError(
+          `Entity ${meta.className} has invalid partitionBy option: unique property ${meta.className}.${prop.name} must include partition key columns '${partitionFields.join("', '")}'`,
+        );
+      }
+    }
+
+    for (const unique of meta.root.uniques ?? []) {
+      const fields = this.getConstraintFields(meta, unique.properties);
+
+      if (!fields?.length) {
+        continue;
+      }
+
+      if (partitionFields.some(field => !fields.includes(field))) {
+        const constraint = unique.name ? `unique constraint '${unique.name}'` : 'unique constraint';
+        throw new MetadataError(
+          `Entity ${meta.className} has invalid partitionBy option: ${constraint} must include partition key columns '${partitionFields.join("', '")}'`,
+        );
+      }
+    }
+  }
+
+  private getPartitionKeyFields(meta: EntityMetadata): string[] | undefined {
+    const expression = meta.partitionBy?.expression;
+
+    if (!expression || typeof expression === 'function') {
+      return undefined;
+    }
+
+    const value = String(expression).trim();
+    const values = Array.isArray(expression)
+      ? expression
+      : /^[\w".]+(?:\s*,\s*[\w".]+)*$/.test(value)
+        ? value.split(',').map((key: string) => key.trim())
+        : [value];
+    const fields = values.map((key: string) => this.resolvePartitionKeyField(meta, key));
+
+    if (fields.some((field: string | undefined) => !field)) {
+      return undefined;
+    }
+
+    return fields as string[];
+  }
+
+  private resolvePartitionKeyField(meta: EntityMetadata, key: string): string | undefined {
+    const trimmed = key.trim().replaceAll('"', '');
+
+    if (!trimmed) {
+      return undefined;
+    }
+
+    const prop =
+      meta.root.properties[trimmed] ??
+      Object.values(meta.root.properties).find(
+        candidate => candidate.fieldNames?.length === 1 && candidate.fieldNames[0] === trimmed,
+      );
+
+    return prop?.fieldNames?.length === 1 ? prop.fieldNames[0] : undefined;
+  }
+
+  private getConstraintFields(meta: EntityMetadata, properties?: string | string[]): string[] | undefined {
+    if (!properties) {
+      return undefined;
+    }
+
+    const fields = Utils.asArray(properties).flatMap(propName => {
+      const prop = meta.root.properties[propName];
+      return prop?.fieldNames ?? [];
+    });
+
+    return fields.length > 0 ? fields : undefined;
   }
 
   private validateReference(meta: EntityMetadata, prop: EntityProperty, options: MetadataDiscoveryOptions): void {

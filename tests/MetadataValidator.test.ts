@@ -468,24 +468,30 @@ describe('MetadataValidator', () => {
     interface PartitionedEntity {
       id: number;
       type: string;
+      slug: string;
     }
 
-    const createPartitionedSchema = (partitionBy?: any) =>
+    const createPartitionedSchema = (partitionBy?: any, options: { typePrimary?: boolean; uniques?: any[] } = {}) =>
       new EntitySchema<PartitionedEntity>({
         name: 'PartitionedEntity',
         tableName: 'partitioned_entity',
         partitionBy,
+        uniques: options.uniques,
         properties: {
           id: { primary: true, name: 'id', type: 'number', fieldName: 'id' },
-          type: { name: 'type', type: 'string', fieldName: 'type' },
+          type: { primary: options.typePrimary ?? true, name: 'type', type: 'string', fieldName: 'type' },
+          slug: { name: 'slug', type: 'string', fieldName: 'slug' },
         },
       }).init();
 
-    const validatePartitionedSchema = (partitionBy?: any) => {
-      const schema = createPartitionedSchema(partitionBy);
+    const validatePartitionedSchema = (
+      partitionBy?: any,
+      schemaOptions: { typePrimary?: boolean; uniques?: any[] } = {},
+    ) => {
+      const schema = createPartitionedSchema(partitionBy, schemaOptions);
       const storage = new MetadataStorage({ [schema.meta.className]: schema.meta } as any);
 
-      return () => validator.validateEntityDefinition(storage, schema, options);
+      return () => validator.validateEntityDefinition(storage, schema as any, options);
     };
 
     test('accepts valid hash partitioning', async () => {
@@ -518,6 +524,56 @@ describe('MetadataValidator', () => {
           partitions: 4,
         }),
       ).toThrow('Entity PartitionedEntity has invalid partitionBy option: missing expression');
+    });
+
+    test('rejects blank string expressions', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: '   ',
+          partitions: 4,
+        }),
+      ).toThrow('Entity PartitionedEntity has invalid partitionBy option: missing expression');
+    });
+
+    test('rejects empty expression arrays', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: [],
+          partitions: 4,
+        }),
+      ).toThrow('Entity PartitionedEntity has invalid partitionBy option: missing expression');
+    });
+
+    test('rejects primary keys that omit partition columns', async () => {
+      expect(
+        validatePartitionedSchema(
+          {
+            type: 'hash',
+            expression: ['type'],
+            partitions: 4,
+          },
+          { typePrimary: false },
+        ),
+      ).toThrow(
+        "Entity PartitionedEntity has invalid partitionBy option: primary key must include partition key columns 'type'",
+      );
+    });
+
+    test('rejects unique constraints that omit partition columns', async () => {
+      expect(
+        validatePartitionedSchema(
+          {
+            type: 'hash',
+            expression: ['type'],
+            partitions: 4,
+          },
+          { uniques: [{ properties: ['id'] }] },
+        ),
+      ).toThrow(
+        "Entity PartitionedEntity has invalid partitionBy option: unique constraint must include partition key columns 'type'",
+      );
     });
 
     test('rejects hash partitioning with invalid partition count', async () => {

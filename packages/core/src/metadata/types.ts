@@ -55,13 +55,13 @@ export interface EntityPartition<E = AnyEntity> {
  */
 export type EntityPartitionBy<E = AnyEntity> =
   | {
-      type: 'hash';
+      type: Extract<EntityPartitionType, 'hash'>;
       expression: EntityPartitionExpression<E>;
       /** Number of hash partitions to create. */
       partitions: number;
     }
   | {
-      type: 'list' | 'range';
+      type: Exclude<EntityPartitionType, 'hash'>;
       expression: EntityPartitionExpression<E>;
       /** Explicit child partitions created in the order provided. */
       partitions: EntityPartition<E>[];
