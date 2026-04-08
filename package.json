@@ -109,7 +109,8 @@
     "yarn": ">=4.6.0"
   },
   "resolutions": {
-    "@ark/util": "0.56.0"
+    "@ark/util": "0.56.0",
+    "tinyglobby": "^0.2.16"
   },
   "devDependencies": {
     "@ark/attest": "0.56.0",
