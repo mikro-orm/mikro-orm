@@ -418,5 +418,23 @@ describe('SchemaHelper', () => {
         },
       });
     });
+
+    test('omits schema predicate for undefined table-schema buckets', async () => {
+      const config = new Configuration({ driver: PostgreSqlDriver }, false);
+      const helper = config.getPlatform().getSchemaHelper() as PostgreSqlSchemaHelper;
+      const connection = {
+        execute: vi.fn().mockResolvedValue([]),
+      } as any;
+
+      const partitions = await helper.getPartitions(
+        connection,
+        new Map([[undefined, [{ table_name: 'partitioned_event' } as Table]]]),
+      );
+
+      expect(partitions).toEqual({});
+      expect(connection.execute).toHaveBeenCalledTimes(1);
+      expect(connection.execute.mock.calls[0][0]).toContain(`parent.relname in ('partitioned_event')`);
+      expect(connection.execute.mock.calls[0][0]).not.toContain('parent_ns.nspname = NULL');
+    });
   });
 });

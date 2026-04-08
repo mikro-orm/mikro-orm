@@ -251,6 +251,18 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     tablesBySchemas: Map<string | undefined, Table[]>,
     ctx?: Transaction,
   ): Promise<Dictionary<TablePartitioning>> {
+    const predicates = [...tablesBySchemas.entries()]
+      .filter(([, tables]) => tables.length > 0)
+      .map(([schema, tables]) => {
+        const names = tables.map(t => this.platform.quoteValue(t.table_name)).join(',');
+        const schemaPredicate = schema != null ? `parent_ns.nspname = ${this.platform.quoteValue(schema)} and ` : '';
+        return `(${schemaPredicate}parent.relname in (${names}))`;
+      });
+
+    if (predicates.length === 0) {
+      return {} as Dictionary<TablePartitioning>;
+    }
+
     const sql = `select parent_ns.nspname as schema_name,
       parent.relname as table_name,
       pg_get_partkeydef(parent.oid) as partition_definition,
@@ -263,7 +275,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       left join pg_inherits inherits on inherits.inhparent = parent.oid
       left join pg_class child on child.oid = inherits.inhrelid
       left join pg_namespace child_ns on child_ns.oid = child.relnamespace
-      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(parent_ns.nspname = ${this.platform.quoteValue(schema)} and parent.relname in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}))`).join(' or ')})
+      where (${predicates.join(' or ')})
       order by parent_ns.nspname, parent.relname, child_ns.nspname, child.relname`;
     const rows = await connection.execute<
       {

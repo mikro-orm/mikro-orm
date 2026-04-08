@@ -190,6 +190,58 @@ describe('SchemaGenerator [postgres]', () => {
     await orm.close(true);
   });
 
+  test('update schema range partitioned timestamptz tables [postgres] (GH #6944)', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.em.execute('drop table if exists partitioned_event_range cascade');
+    await orm.schema.update();
+
+    interface PartitionedRangeEvent {
+      createdAt: Date;
+      id: number;
+    }
+
+    const partitionedMeta = new EntitySchema<PartitionedRangeEvent>({
+      name: 'PartitionedRangeEvent',
+      tableName: 'partitioned_event_range',
+      partitionBy: {
+        type: 'range',
+        expression: ['createdAt'],
+        partitions: [
+          { values: "from ('2026-01-01') to ('2026-02-01')" },
+          { name: 'partitioned_event_range_default', values: 'default' },
+        ],
+      },
+      properties: {
+        createdAt: {
+          type: 'Date',
+          primary: true,
+          fieldName: 'created_at',
+          columnType: 'timestamptz',
+        },
+        id: {
+          type: 'number',
+          primary: true,
+          fieldName: 'id',
+          columnType: 'int',
+        },
+      },
+    }).init().meta;
+    meta.set(partitionedMeta.class, partitionedMeta);
+
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('partition by range (created_at);');
+    expect(diff).toContain(
+      'create table "partitioned_event_range_0" partition of "partitioned_event_range" for values from (\'2026-01-01\') to (\'2026-02-01\');',
+    );
+    await orm.schema.execute(diff, { wrap: true });
+
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.close(true);
+  });
+
   test('create/drop database [postgresql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({

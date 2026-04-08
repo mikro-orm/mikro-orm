@@ -5,35 +5,55 @@ const normalizeWhitespace = (value: string): string => value.replace(/\s+/g, ' '
 
 const normalizeQuotedIdentifiers = (value: string): string => normalizeWhitespace(value).replaceAll('"', '');
 
-export const normalizePartitionDefinition = (value: string): string =>
-  normalizeWhitespace(value).replace(/^(hash|list|range)\b/i, match => match.toLowerCase());
+const skipQuotedLiteral = (value: string, start: number): number => {
+  let i = start + 1;
 
-export const normalizePartitionBound = (value: string): string => {
-  const normalized = normalizeWhitespace(value);
+  while (i < value.length) {
+    if (value[i] === "'") {
+      if (value[i + 1] === "'") {
+        i += 2;
+        continue;
+      }
 
-  if (/^default$/i.test(normalized)) {
-    return 'default';
+      return i;
+    }
+
+    i++;
   }
 
-  let ret = /^for values\b/i.test(normalized)
-    ? normalized.replace(/^for values\b/i, 'for values')
-    : `for values ${normalized}`;
-
-  if (/^for values\s+with\b/i.test(ret)) {
-    return ret.replace(/^for values\s+with\b/i, 'for values with');
-  }
-
-  if (/^for values\s+in\b/i.test(ret)) {
-    return ret.replace(/^for values\s+in\b/i, 'for values in');
-  }
-
-  if (/^for values\s+from\b/i.test(ret)) {
-    ret = ret.replace(/^for values\s+from\b/i, 'for values from');
-    ret = ret.replace(/\s+to\b/i, ' to');
-  }
-
-  return ret;
+  return value.length - 1;
 };
+
+const findMatchingParenthesis = (value: string, start: number): number => {
+  let depth = 0;
+
+  for (let i = start; i < value.length; i++) {
+    if (value[i] === "'") {
+      i = skipQuotedLiteral(value, i);
+      continue;
+    }
+
+    if (value[i] === '(') {
+      depth++;
+      continue;
+    }
+
+    if (value[i] === ')') {
+      depth--;
+
+      if (depth === 0) {
+        return i;
+      }
+    }
+  }
+
+  return -1;
+};
+
+const normalizePartitionLiterals = (value: string): string =>
+  value
+    .replace(/('(?:[^']|'')*')::text\b/gi, '$1')
+    .replace(/'(\d{4}-\d{2}-\d{2}) 00:00:00(?:[+-]\d{2}(?::\d{2})?)?'/g, "'$1'");
 
 const unwrapOuterParentheses = (value: string): string => {
   const trimmed = value.trim();
@@ -42,33 +62,71 @@ const unwrapOuterParentheses = (value: string): string => {
     return trimmed;
   }
 
-  let depth = 0;
-
-  for (let i = 0; i < trimmed.length; i++) {
-    if (trimmed[i] === '(') {
-      depth++;
-    } else if (trimmed[i] === ')') {
-      depth--;
-
-      if (depth === 0 && i < trimmed.length - 1) {
-        return trimmed;
-      }
-    }
+  if (findMatchingParenthesis(trimmed, 0) !== trimmed.length - 1) {
+    return trimmed;
   }
 
   return trimmed.slice(1, -1).trim();
 };
 
+const unwrapAllOuterParentheses = (value: string): string => {
+  let current = value.trim();
+
+  while (current.startsWith('(')) {
+    const unwrapped = unwrapOuterParentheses(current);
+
+    if (unwrapped === current) {
+      break;
+    }
+
+    current = unwrapped;
+  }
+
+  return current;
+};
+
+const normalizePartitionSqlFragment = (value: string): string => {
+  const normalized = normalizeWhitespace(normalizePartitionLiterals(value).replaceAll('"', ''));
+  let ret = '';
+
+  for (let i = 0; i < normalized.length; i++) {
+    if (normalized[i] === "'") {
+      const end = skipQuotedLiteral(normalized, i);
+      ret += normalized.slice(i, end + 1);
+      i = end;
+      continue;
+    }
+
+    if (normalized[i] === '(') {
+      const end = findMatchingParenthesis(normalized, i);
+
+      if (end === -1) {
+        ret += normalized.slice(i);
+        break;
+      }
+
+      const inner = unwrapAllOuterParentheses(normalizePartitionSqlFragment(normalized.slice(i + 1, end)));
+      ret += `(${inner})`;
+      i = end;
+      continue;
+    }
+
+    ret += normalized[i];
+  }
+
+  return normalizeWhitespace(unwrapAllOuterParentheses(ret));
+};
+
 const splitPartitionName = (name: string): { name: string; schema?: string } => {
   const parts = name.split('.');
 
-  if (parts.length < 2) {
+  if (parts.length !== 2) {
     return { name };
   }
 
   return {
     schema: parts[0],
-    name: parts.slice(1).join('.'),
+    name: parts[1],
   };
 };
 
@@ -97,9 +155,49 @@ const resolvePartitionExpression = (
   return expression.map(key => resolvePartitionKey(meta, key)).join(', ');
 };
 
-const createPartitionBound = (value: string): string => {
-  return normalizePartitionBound(value);
-};
+/** @internal */
+export function normalizePartitionDefinition(value: string): string {
+  const normalized = normalizeWhitespace(value);
+  const [rawType, ...rest] = normalized.split(' ');
+  const type = rawType.toLowerCase();
+  const expression = rest.join(' ').trim();
+
+  if (!expression) {
+    return type;
+  }
+
+  if (!expression.startsWith('(')) {
+    return `${type} ${normalizePartitionSqlFragment(expression)}`;
+  }
+
+  return `${type} (${normalizePartitionSqlFragment(unwrapAllOuterParentheses(expression))})`;
+}
+
+/** @internal */
+export function normalizePartitionBound(value: string): string {
+  const normalized = normalizeWhitespace(normalizePartitionLiterals(value));
+
+  if (/^default$/i.test(normalized)) {
+    return 'default';
+  }
+
+  let ret = /^for values\b/i.test(normalized)
+    ? normalized.replace(/^for values\b/i, 'for values')
+    : `for values ${normalized}`;
+
+  if (/^for values\s+with\b/i.test(ret)) {
+    ret = ret.replace(/^for values\s+with\b/i, 'for values with');
+  } else if (/^for values\s+in\b/i.test(ret)) {
+    ret = ret.replace(/^for values\s+in\b/i, 'for values in');
+  } else if (/^for values\s+from\b/i.test(ret)) {
+    ret = ret.replace(/^for values\s+from\b/i, 'for values from');
+    ret = ret.replace(/\s+to\b/i, ' to');
+  }
+
+  return normalizePartitionSqlFragment(ret);
+}
+
+const createPartitionBound = (value: string): string => normalizePartitionBound(value);
 
 const createHashPartitions = (tableName: string, tableSchema: string | undefined, count: number): TablePartition[] =>
   Array.from({ length: count }, (_, remainder) => ({
@@ -124,6 +222,7 @@ const createExplicitPartitions = (
     };
   });
 
+/** @internal */
 export const getTablePartitioning = (
   meta: EntityMetadata,
   tableSchema: string | undefined,
@@ -143,6 +242,7 @@ export const getTablePartitioning = (
   return { definition, partitions };
 };
 
+/** @internal */
 export const diffPartitioning = (
   from: TablePartitioning | undefined,
   to: TablePartitioning | undefined,
@@ -177,6 +277,7 @@ export const diffPartitioning = (
   return fromPartitions.some((partition, index) => partition !== toPartitions[index]);
 };
 
+/** @internal */
 export const toEntityPartitionBy = (partitioning: TablePartitioning | undefined): EntityPartitionBy | undefined => {
   if (!partitioning) {
     return undefined;

@@ -75,6 +75,7 @@ describe('partitioning helpers', () => {
           { values: " from ('2026-01-01') to ('2026-02-01') " },
           { name: 'archive.partitioned_event_default', values: ' default ' },
           { name: 'audit.partitioned_event_q1', values: "for values in ('q1')" },
+          { name: 'a.b.c', values: "for values in ('q2')" },
         ],
       }),
       'public',
@@ -97,6 +98,11 @@ describe('partitioning helpers', () => {
           name: 'partitioned_event_q1',
           schema: 'audit',
           bound: "for values in ('q1')",
+        },
+        {
+          name: 'a.b.c',
+          schema: 'public',
+          bound: "for values in ('q2')",
         },
       ],
     });
@@ -159,6 +165,41 @@ describe('partitioning helpers', () => {
         'public',
       ),
     ).toBe(true);
+  });
+
+  test('normalizes postgres canonical range expressions and timestamptz bounds', () => {
+    const from: TablePartitioning = {
+      definition: "range (((created_at AT TIME ZONE 'UTC')::date))",
+      partitions: [
+        {
+          name: 'partitioned_event_0',
+          schema: 'public',
+          bound: "for values from ('2026-01-01') to ('2026-02-01')",
+        },
+      ],
+    };
+    const introspected: TablePartitioning = {
+      definition: "range ((((created_at AT TIME ZONE 'UTC'::text))::date))",
+      partitions: [
+        {
+          name: 'partitioned_event_0',
+          schema: 'public',
+          bound: "for values from ('2026-01-01 00:00:00+00') to ('2026-02-01 00:00:00+00')",
+        },
+      ],
+    };
+
+    expect(diffPartitioning(from, introspected, 'public')).toBe(false);
+    expect(toEntityPartitionBy(introspected)).toEqual({
+      type: 'range',
+      expression: "(created_at AT TIME ZONE 'UTC')::date",
+      partitions: [
+        {
+          name: 'public.partitioned_event_0',
+          values: "from ('2026-01-01') to ('2026-02-01')",
+        },
+      ],
+    });
   });
 
   test('converts catalog-style partitioning definitions back to lowercase entity metadata', () => {
