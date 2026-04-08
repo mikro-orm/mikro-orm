@@ -136,7 +136,7 @@ module.exports = {
   themes: ['@docusaurus/theme-mermaid'],
   onDuplicateRoutes: 'throw',
   future: {
-    experimental_faster: {
+    faster: {
       swcJsLoader: true,
       swcJsMinimizer: true,
       swcHtmlMinimizer: true,
