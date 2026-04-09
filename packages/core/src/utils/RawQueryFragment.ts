@@ -31,10 +31,22 @@ export function isRaw(value: unknown): value is RawQueryFragment {
     return false;
   }
 
-  // Start from the prototype (not the value) so JSON payloads cannot forge
-  // the brand via an own property; walk the chain so subclasses inherit it.
-  for (let proto = Object.getPrototypeOf(value); proto != null; proto = Object.getPrototypeOf(proto)) {
-    if (Object.hasOwn(proto, RAW_FRAGMENT_BRAND)) {
+  // Fast path: intra-module instances, the vast majority when core is loaded once.
+  // eslint-disable-next-line no-use-before-define
+  if (value instanceof RawQueryFragment) {
+    return true;
+  }
+
+  // Fast negative: plain objects cannot be fragments. Also rejects JSON-spoofing
+  // attempts (proto === Object.prototype) without even checking the brand.
+  const proto = Object.getPrototypeOf(value);
+  if (proto === null || proto === Object.prototype) {
+    return false;
+  }
+
+  // Slow path: cross-module fragments or subclasses from a sibling CJS/ESM copy.
+  for (let p: object | null = proto; p != null; p = Object.getPrototypeOf(p)) {
+    if (Object.hasOwn(p, RAW_FRAGMENT_BRAND)) {
       return true;
     }
   }
