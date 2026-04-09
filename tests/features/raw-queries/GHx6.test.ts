@@ -240,9 +240,19 @@ test('plain objects with __raw should not be treated as RawQueryFragment in nati
 });
 
 test('plain objects carrying the prototype brand key directly should not be treated as RawQueryFragment', async () => {
-  const input = { __mikroOrmRawFragment: true, sql: 'malicious_input', params: [] };
+  orm.em.create(Tag, { name: 'brand-spoof', job: orm.em.create(Job, {}) });
+  await orm.em.flush();
+  orm.em.clear();
 
-  await expect(orm.em.find(Tag, { name: input as any })).rejects.toThrow();
+  const input = { __mikroOrmRawFragment: true, sql: 'malicious_input', params: [] };
+  const mock = mockLogger(orm);
+
+  await orm.em.nativeUpdate(Tag, { name: 'brand-spoof' }, { name: input as any });
+
+  const queries = mock.mock.calls.map((c: any) => c[0]);
+  const updateQuery = queries.find((q: string) => q.includes('update'));
+  expect(updateQuery).toBeDefined();
+  expect(updateQuery).toContain(JSON.stringify(input).replace(/'/g, "''"));
 });
 
 test('isRaw walks the prototype chain so subclasses are still recognised', () => {
@@ -254,10 +264,8 @@ test('isRaw walks the prototype chain so subclasses are still recognised', () =>
 });
 
 test('sibling module copies share the fragment registry and recognise each others fragments', () => {
-  // Simulates a second CJS/ESM copy of `RawQueryFragment.js` — its own class,
-  // its own prototype, brand independently installed during init, registering
-  // its symbol keys into the same globalThis-shared registry the real module
-  // uses (which is the only way `getKnownFragment` works across copies).
+  // Simulates a second CJS/ESM copy of the module — its own class and prototype,
+  // sharing the globalThis-published fragment registry with the real module.
   const sharedRegistry = (globalThis as any)[Symbol.for('@mikro-orm/core/RawQueryFragment.references')];
   expect(sharedRegistry).toBeInstanceOf(WeakMap);
 

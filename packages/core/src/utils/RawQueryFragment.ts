@@ -14,10 +14,6 @@ const RAW_FRAGMENT_BRAND = '__mikroOrmRawFragment';
 // across CJS/ESM module copies via globalThis (#7515): when one copy creates a
 // fragment via `raw('…')` and stores its symbol in a where-clause object key,
 // the other copy still needs to recover the original fragment to assemble SQL.
-// Polluting this map requires in-process code execution, which is strictly
-// stronger than the JSON-spoofing vector that the prototype brand defends
-// against — and an attacker who has code execution can call `raw()` directly,
-// so the shared registry does not widen the attack surface in practice.
 const REGISTRY_KEY = Symbol.for('@mikro-orm/core/RawQueryFragment.references');
 const rawQueryReferences: WeakMap<RawQueryFragmentSymbol, RawQueryFragment> = ((globalThis as any)[REGISTRY_KEY] ??=
   new WeakMap());
@@ -35,9 +31,8 @@ export function isRaw(value: unknown): value is RawQueryFragment {
     return false;
   }
 
-  // Walk the prototype chain so subclasses inherit the brand. Starting from
-  // the *prototype* (not the value itself) keeps JSON payloads out — their
-  // proto is `Object.prototype`, which has no own brand.
+  // Start from the prototype (not the value) so JSON payloads cannot forge
+  // the brand via an own property; walk the chain so subclasses inherit it.
   for (let proto = Object.getPrototypeOf(value); proto != null; proto = Object.getPrototypeOf(proto)) {
     if (Object.hasOwn(proto, RAW_FRAGMENT_BRAND)) {
       return true;
