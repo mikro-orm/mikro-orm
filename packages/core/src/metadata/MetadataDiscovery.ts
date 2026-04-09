@@ -1928,7 +1928,12 @@ export class MetadataDiscovery {
     }
 
     if (this.#platform.usesEnumCheckConstraints() && !meta.embeddable) {
-      for (const prop of meta.props) {
+      // Iterate `meta.properties` rather than `meta.props` — by this point in
+      // the discovery pipeline `initEmbeddables` has added flattened embedded
+      // properties to `meta.properties`, but `meta.sync()` has not yet been
+      // called, so `meta.props` is still the pre-flatten array and would miss
+      // enum properties that live inside embeddables.
+      for (const prop of Object.values(meta.properties)) {
         if (prop.persist === false || prop.nativeEnumName || !prop.items?.every(item => typeof item === 'string')) {
           continue;
         }
