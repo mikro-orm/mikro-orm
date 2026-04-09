@@ -31,21 +31,17 @@ export function isRaw(value: unknown): value is RawQueryFragment {
     return false;
   }
 
-  // Fast path: intra-module instances, the vast majority when core is loaded once.
+  // Fast path: intra-module instances and their subclasses.
   // eslint-disable-next-line no-use-before-define
   if (value instanceof RawQueryFragment) {
     return true;
   }
 
-  // Fast negative: plain objects cannot be fragments. Also rejects JSON-spoofing
-  // attempts (proto === Object.prototype) without even checking the brand.
-  const proto = Object.getPrototypeOf(value);
-  if (proto === null || proto === Object.prototype) {
-    return false;
-  }
-
-  // Slow path: cross-module fragments or subclasses from a sibling CJS/ESM copy.
-  for (let p: object | null = proto; p != null; p = Object.getPrototypeOf(p)) {
+  // Walk the prototype chain starting from the *prototype* (not the value) so
+  // own-property spoofing from JSON payloads cannot forge the brand. Stop at
+  // `Object.prototype`, which is never branded — that bails plain objects,
+  // JSON payloads, and built-ins like `Date`/`Array`/`Map` at depth 1.
+  for (let p = Object.getPrototypeOf(value); p != null && p !== Object.prototype; p = Object.getPrototypeOf(p)) {
     if (Object.hasOwn(p, RAW_FRAGMENT_BRAND)) {
       return true;
     }
@@ -145,7 +141,15 @@ export class RawQueryFragment<Alias extends string = string> {
   }
 }
 
-Object.defineProperty(RawQueryFragment.prototype, RAW_FRAGMENT_BRAND, { value: true });
+// Non-enumerable so the brand is skipped by JSON/Object.keys/for-in, but writable
+// and configurable so subclass instances can shadow or redefine it without
+// tripping strict-mode assignment. `isRaw` only checks *presence* of the brand,
+// never its value, so mutability does not weaken the spoofing defense.
+Object.defineProperty(RawQueryFragment.prototype, RAW_FRAGMENT_BRAND, {
+  value: true,
+  writable: true,
+  configurable: true,
+});
 
 export { RawQueryFragment as Raw };
 

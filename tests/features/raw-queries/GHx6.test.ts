@@ -300,3 +300,44 @@ test('sibling module copies share the fragment registry and recognise each other
   expect(RawQueryFragment.getKnownFragment(symbol)).toBe(sibling);
   expect(RawQueryFragment.hasObjectFragments({ [symbol]: 'value' })).toBe(true);
 });
+
+test('sibling module fragment drives SQL assembly through em.nativeUpdate end-to-end', async () => {
+  // Same sibling-copy simulation as above, but this time passed as a value
+  // into a real EntityManager operation so the whole query assembly path is
+  // exercised, not just the helper-level checks.
+  const sharedRegistry = (globalThis as any)[Symbol.for('@mikro-orm/core/RawQueryFragment.references')];
+
+  class SiblingRawQueryFragment {
+    #key?: symbol;
+
+    constructor(
+      public sql: string,
+      public params: unknown[] = [],
+    ) {}
+
+    get key(): symbol {
+      if (!this.#key) {
+        this.#key = Symbol(`raw('${this.sql}')`);
+        sharedRegistry.set(this.#key, this);
+      }
+      return this.#key;
+    }
+  }
+  Object.defineProperty(SiblingRawQueryFragment.prototype, '__mikroOrmRawFragment', { value: true });
+
+  orm.em.create(Tag, { name: 'sibling-roundtrip', job: orm.em.create(Job, {}) });
+  await orm.em.flush();
+  orm.em.clear();
+
+  const mock = mockLogger(orm);
+  const siblingFragment = new SiblingRawQueryFragment(`'rewritten-by-sibling'`) as any;
+
+  await orm.em.nativeUpdate(Tag, { name: 'sibling-roundtrip' }, { name: siblingFragment });
+
+  const queries = mock.mock.calls.map((c: any) => c[0]);
+  const updateQuery = queries.find((q: string) => q.includes('update'));
+  expect(updateQuery).toBeDefined();
+  // The sibling's raw SQL must be inlined verbatim (no JSON stringification,
+  // no '?' parameter placeholder), proving `isRaw` recognised it across copies.
+  expect(updateQuery).toContain(`'rewritten-by-sibling'`);
+});

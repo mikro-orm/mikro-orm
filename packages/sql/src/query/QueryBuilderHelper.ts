@@ -825,23 +825,28 @@ export class QueryBuilderHelper {
       const processed = this.#platform.mapRegExpCondition(mappedKey, value);
       parts.push(processed.sql);
       params.push(...processed.params);
-    } else if (isRaw(value[op]) || typeof value[op]?.toRaw === 'function') {
-      const query = isRaw(value[op]) ? value[op] : value[op].toRaw();
-      const mappedKey = this.mapper(key, type, query, null);
-
-      let sql = query.sql.replaceAll(ALIAS_REPLACEMENT, this.#alias);
-
-      if (['$in', '$nin'].includes(op)) {
-        sql = `(${sql})`;
-      }
-
-      parts.push(`${this.#platform.quoteIdentifier(mappedKey)} ${replacement} ${sql}`);
-      params.push(...query.params);
     } else {
-      const mappedKey = this.mapper(key, type, value[op], null);
-      const val = this.getValueReplacement(fields, value[op], params, op, prop);
+      const opValue = value[op];
+      const opValueIsRaw = isRaw(opValue);
 
-      parts.push(`${this.#platform.quoteIdentifier(mappedKey)} ${replacement} ${val}`);
+      if (opValueIsRaw || typeof opValue?.toRaw === 'function') {
+        const query: RawQueryFragment = opValueIsRaw ? opValue : opValue.toRaw();
+        const mappedKey = this.mapper(key, type, query, null);
+
+        let sql = query.sql.replaceAll(ALIAS_REPLACEMENT, this.#alias);
+
+        if (['$in', '$nin'].includes(op)) {
+          sql = `(${sql})`;
+        }
+
+        parts.push(`${this.#platform.quoteIdentifier(mappedKey)} ${replacement} ${sql}`);
+        params.push(...query.params);
+      } else {
+        const mappedKey = this.mapper(key, type, opValue, null);
+        const val = this.getValueReplacement(fields, opValue, params, op, prop);
+
+        parts.push(`${this.#platform.quoteIdentifier(mappedKey)} ${replacement} ${val}`);
+      }
     }
 
     return { sql: parts.join(' and '), params };
