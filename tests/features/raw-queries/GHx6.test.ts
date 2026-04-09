@@ -1,4 +1,5 @@
 import { Collection, MikroORM, QueryOrder, raw } from '@mikro-orm/sqlite';
+import { isRaw, RawQueryFragment } from '@mikro-orm/core';
 import {
   Entity,
   ManyToMany,
@@ -236,4 +237,58 @@ test('plain objects with __raw should not be treated as RawQueryFragment in nati
   const updateQuery = queries.find((q: string) => q.includes('update'));
   expect(updateQuery).toBeDefined();
   expect(updateQuery).toContain(JSON.stringify(input).replace(/'/g, "''"));
+});
+
+test('plain objects carrying the prototype brand key directly should not be treated as RawQueryFragment', async () => {
+  const input = { __mikroOrmRawFragment: true, sql: 'malicious_input', params: [] };
+
+  await expect(orm.em.find(Tag, { name: input as any })).rejects.toThrow();
+});
+
+test('isRaw walks the prototype chain so subclasses are still recognised', () => {
+  class CustomRaw extends RawQueryFragment {}
+
+  const fragment = new CustomRaw('select 1');
+  expect(isRaw(fragment)).toBe(true);
+  expect(RawQueryFragment.isKnownFragment(fragment)).toBe(true);
+});
+
+test('sibling module copies share the fragment registry and recognise each others fragments', () => {
+  // Simulates a second CJS/ESM copy of `RawQueryFragment.js` — its own class,
+  // its own prototype, brand independently installed during init, registering
+  // its symbol keys into the same globalThis-shared registry the real module
+  // uses (which is the only way `getKnownFragment` works across copies).
+  const sharedRegistry = (globalThis as any)[Symbol.for('@mikro-orm/core/RawQueryFragment.references')];
+  expect(sharedRegistry).toBeInstanceOf(WeakMap);
+
+  class SiblingRawQueryFragment {
+    #key?: symbol;
+
+    constructor(
+      public sql: string,
+      public params: unknown[] = [],
+    ) {}
+
+    get key(): symbol {
+      if (!this.#key) {
+        this.#key = Symbol(`raw('${this.sql}')`);
+        sharedRegistry.set(this.#key, this);
+      }
+      return this.#key;
+    }
+  }
+  Object.defineProperty(SiblingRawQueryFragment.prototype, '__mikroOrmRawFragment', { value: true });
+
+  const sibling = new SiblingRawQueryFragment('select 1');
+
+  // value-as-fragment path
+  expect(isRaw(sibling)).toBe(true);
+  expect(RawQueryFragment.isKnownFragment(sibling)).toBe(true);
+
+  // key-as-fragment path: produce the symbol from the sibling, then look it
+  // back up through the real module's static helpers.
+  const symbol = sibling.key;
+  expect(RawQueryFragment.isKnownFragmentSymbol(symbol)).toBe(true);
+  expect(RawQueryFragment.getKnownFragment(symbol)).toBe(sibling);
+  expect(RawQueryFragment.hasObjectFragments({ [symbol]: 'value' })).toBe(true);
 });

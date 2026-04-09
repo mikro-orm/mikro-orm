@@ -1,7 +1,26 @@
 import { Utils } from './Utils.js';
 import type { AnyString, Dictionary, EntityKey } from '../typings.js';
 
-const rawSymbol = Symbol('RawQueryFragment');
+// Brand lives on the prototype so JSON payloads — whose proto is
+// `Object.prototype` — cannot forge it. String key, not a `Symbol.for(...)`,
+// so each CJS/ESM copy of this module independently installs it on its own
+// prototype (#7515) without publishing a global key for the marker that
+// controls raw SQL assembly. The string is namespaced so it does not collide
+// with property names users might independently install on their own
+// prototypes.
+const RAW_FRAGMENT_BRAND = '__mikroOrmRawFragment';
+
+// Back-references from a fragment's symbol key to the fragment itself, shared
+// across CJS/ESM module copies via globalThis (#7515): when one copy creates a
+// fragment via `raw('…')` and stores its symbol in a where-clause object key,
+// the other copy still needs to recover the original fragment to assemble SQL.
+// Polluting this map requires in-process code execution, which is strictly
+// stronger than the JSON-spoofing vector that the prototype brand defends
+// against — and an attacker who has code execution can call `raw()` directly,
+// so the shared registry does not widen the attack surface in practice.
+const REGISTRY_KEY = Symbol.for('@mikro-orm/core/RawQueryFragment.references');
+const rawQueryReferences: WeakMap<RawQueryFragmentSymbol, RawQueryFragment> = ((globalThis as any)[REGISTRY_KEY] ??=
+  new WeakMap());
 
 declare const rawFragmentSymbolBrand: unique symbol;
 
@@ -10,9 +29,26 @@ export type RawQueryFragmentSymbol = symbol & {
   readonly [rawFragmentSymbolBrand]: true;
 };
 
+/** Checks whether the given value is a `RawQueryFragment` instance. */
+export function isRaw(value: unknown): value is RawQueryFragment {
+  if (value == null || typeof value !== 'object') {
+    return false;
+  }
+
+  // Walk the prototype chain so subclasses inherit the brand. Starting from
+  // the *prototype* (not the value itself) keeps JSON payloads out — their
+  // proto is `Object.prototype`, which has no own brand.
+  for (let proto = Object.getPrototypeOf(value); proto != null; proto = Object.getPrototypeOf(proto)) {
+    if (Object.hasOwn(proto, RAW_FRAGMENT_BRAND)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 /** Represents a raw SQL fragment with optional parameters, usable as both a value and an object key via Symbol coercion. */
 export class RawQueryFragment<Alias extends string = string> {
-  static #rawQueryReferences = new WeakMap<RawQueryFragmentSymbol, RawQueryFragment>();
   #key?: RawQueryFragmentSymbol;
   /** @internal Type-level only - used to track the alias for type inference */
   declare private readonly __alias?: Alias;
@@ -20,15 +56,13 @@ export class RawQueryFragment<Alias extends string = string> {
   constructor(
     readonly sql: string,
     readonly params: unknown[] = [],
-  ) {
-    Object.defineProperty(this, rawSymbol, { value: true, enumerable: false });
-  }
+  ) {}
 
   /** Returns a unique symbol key for this fragment, creating and caching it on first access. */
   get key(): RawQueryFragmentSymbol {
     if (!this.#key) {
       this.#key = Symbol(this.toJSON()) as RawQueryFragmentSymbol;
-      RawQueryFragment.#rawQueryReferences.set(this.#key, this);
+      rawQueryReferences.set(this.#key, this);
     }
 
     return this.#key;
@@ -64,7 +98,7 @@ export class RawQueryFragment<Alias extends string = string> {
 
   /** Checks whether the given value is a symbol that maps to a known raw query fragment. */
   static isKnownFragmentSymbol(key: unknown): key is RawQueryFragmentSymbol {
-    return typeof key === 'symbol' && this.#rawQueryReferences.has(key as RawQueryFragmentSymbol);
+    return typeof key === 'symbol' && rawQueryReferences.has(key as RawQueryFragmentSymbol);
   }
 
   /** Checks whether an object has any symbol keys that are known raw query fragments. */
@@ -77,16 +111,12 @@ export class RawQueryFragment<Alias extends string = string> {
 
   /** Checks whether the given value is a RawQueryFragment instance or a known fragment symbol. */
   static isKnownFragment(key: unknown): key is RawQueryFragment | symbol {
-    if (key instanceof RawQueryFragment) {
-      return true;
-    }
-
-    return this.isKnownFragmentSymbol(key);
+    return isRaw(key) || this.isKnownFragmentSymbol(key);
   }
 
   /** Retrieves the RawQueryFragment associated with the given key (instance or symbol). */
   static getKnownFragment(key: unknown): RawQueryFragment | undefined {
-    if (key instanceof RawQueryFragment) {
+    if (isRaw(key)) {
       return key;
     }
 
@@ -94,7 +124,7 @@ export class RawQueryFragment<Alias extends string = string> {
       return;
     }
 
-    return this.#rawQueryReferences.get(key as RawQueryFragmentSymbol);
+    return rawQueryReferences.get(key as RawQueryFragmentSymbol);
   }
 
   /** @ignore */
@@ -108,12 +138,9 @@ export class RawQueryFragment<Alias extends string = string> {
   }
 }
 
-export { RawQueryFragment as Raw };
+Object.defineProperty(RawQueryFragment.prototype, RAW_FRAGMENT_BRAND, { value: true });
 
-/** Checks whether the given value is a `RawQueryFragment` instance. */
-export function isRaw(value: unknown): value is RawQueryFragment {
-  return typeof value === 'object' && value !== null && Object.hasOwn(value, rawSymbol);
-}
+export { RawQueryFragment as Raw };
 
 /** @internal */
 export const ALIAS_REPLACEMENT = '[::alias::]';
@@ -180,7 +207,7 @@ export function raw<R = RawQueryFragment & symbol, T extends object = any>(
   sql: EntityKey<T> | EntityKey<T>[] | AnyString | ((alias: string) => string) | RawQueryFragment,
   params?: readonly unknown[] | Dictionary<unknown>,
 ): R {
-  if (sql instanceof RawQueryFragment) {
+  if (isRaw(sql)) {
     return sql as R;
   }
 
