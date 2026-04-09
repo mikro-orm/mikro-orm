@@ -1,5 +1,5 @@
 import { Collection, MikroORM, QueryOrder, raw } from '@mikro-orm/sqlite';
-import { isRaw, RawQueryFragment } from '@mikro-orm/core';
+import { compareObjects, isRaw, RawQueryFragment } from '@mikro-orm/core';
 import {
   Entity,
   ManyToMany,
@@ -299,6 +299,28 @@ test('sibling module copies share the fragment registry and recognise each other
   expect(RawQueryFragment.isKnownFragmentSymbol(symbol)).toBe(true);
   expect(RawQueryFragment.getKnownFragment(symbol)).toBe(sibling);
   expect(RawQueryFragment.hasObjectFragments({ [symbol]: 'value' })).toBe(true);
+});
+
+test('compareObjects matches cross-copy fragments carrying the same sql/params', () => {
+  // compareObjects previously gated raw-fragment value comparison behind
+  // compareConstructors, so a real RawQueryFragment and a sibling-copy
+  // instance with identical sql/params compared as unequal and produced
+  // spurious change-set diffs in dual-package setups.
+  class SiblingRawQueryFragment {
+    constructor(
+      public sql: string,
+      public params: unknown[] = [],
+    ) {}
+  }
+  Object.defineProperty(SiblingRawQueryFragment.prototype, '__mikroOrmRawFragment', { value: true });
+
+  const real = new RawQueryFragment('select ?', [1]);
+  const sibling = new SiblingRawQueryFragment('select ?', [1]);
+
+  expect(compareObjects(real, sibling)).toBe(true);
+  expect(compareObjects(sibling, real)).toBe(true);
+  expect(compareObjects(real, new SiblingRawQueryFragment('select ?', [2]))).toBe(false);
+  expect(compareObjects(real, new SiblingRawQueryFragment('select 1', [1]))).toBe(false);
 });
 
 test('sibling module fragment drives SQL assembly through em.nativeUpdate end-to-end', async () => {

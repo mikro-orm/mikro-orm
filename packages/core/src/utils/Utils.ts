@@ -40,13 +40,23 @@ export function compareObjects(a: any, b: any): boolean {
     return true;
   }
 
-  if (!a || !b || typeof a !== 'object' || typeof b !== 'object' || !compareConstructors(a, b)) {
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object') {
     return false;
   }
 
+  // Raw fragments are compared by `sql` + `params` *before* the constructor
+  // check, so that two fragments carrying the same SQL but constructed by
+  // different CJS/ESM copies of this module (different classes, different
+  // prototypes) still compare as equal. Without this, the dual-package hazard
+  // would produce spurious change-set diffs when a raw fragment is used as a
+  // property value.
   if (isRaw(a) && isRaw(b)) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     return a.sql === b.sql && compareArrays(a.params, b.params);
+  }
+
+  if (!compareConstructors(a, b)) {
+    return false;
   }
 
   if (a instanceof Date && b instanceof Date) {

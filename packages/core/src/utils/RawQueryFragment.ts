@@ -4,16 +4,15 @@ import type { AnyString, Dictionary, EntityKey } from '../typings.js';
 // Brand lives on the prototype so JSON payloads — whose proto is
 // `Object.prototype` — cannot forge it. String key, not a `Symbol.for(...)`,
 // so each CJS/ESM copy of this module independently installs it on its own
-// prototype (#7515) without publishing a global key for the marker that
-// controls raw SQL assembly. The string is namespaced so it does not collide
-// with property names users might independently install on their own
-// prototypes.
+// prototype without publishing a global key for the marker that controls raw
+// SQL assembly. The string is namespaced so it does not collide with property
+// names users might independently install on their own prototypes.
 const RAW_FRAGMENT_BRAND = '__mikroOrmRawFragment';
 
 // Back-references from a fragment's symbol key to the fragment itself, shared
-// across CJS/ESM module copies via globalThis (#7515): when one copy creates a
-// fragment via `raw('…')` and stores its symbol in a where-clause object key,
-// the other copy still needs to recover the original fragment to assemble SQL.
+// across CJS/ESM module copies via globalThis: when one copy creates a fragment
+// via `raw('…')` and stores its symbol in a where-clause object key, the other
+// copy still needs to recover the original fragment to assemble SQL.
 const REGISTRY_KEY = Symbol.for('@mikro-orm/core/RawQueryFragment.references');
 const rawQueryReferences: WeakMap<RawQueryFragmentSymbol, RawQueryFragment> = ((globalThis as any)[REGISTRY_KEY] ??=
   new WeakMap());
@@ -141,14 +140,17 @@ export class RawQueryFragment<Alias extends string = string> {
   }
 }
 
-// Non-enumerable so the brand is skipped by JSON/Object.keys/for-in, but writable
-// and configurable so subclass instances can shadow or redefine it without
-// tripping strict-mode assignment. `isRaw` only checks *presence* of the brand,
-// never its value, so mutability does not weaken the spoofing defense.
+// Non-enumerable so the brand is skipped by JSON/Object.keys/for-in, and locked
+// down (non-writable, non-configurable) so in-process code cannot delete or
+// overwrite it and thereby silently disable `isRaw` recognition for every
+// fragment in the process. Subclasses don't need mutability here — they inherit
+// the brand via the prototype chain, and sibling-copy classes install their own
+// brand on their own prototype (a different object), so lockdown only blocks
+// tampering with the canonical marker.
 Object.defineProperty(RawQueryFragment.prototype, RAW_FRAGMENT_BRAND, {
   value: true,
-  writable: true,
-  configurable: true,
+  writable: false,
+  configurable: false,
 });
 
 export { RawQueryFragment as Raw };
