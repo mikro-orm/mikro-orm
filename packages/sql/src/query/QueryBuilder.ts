@@ -541,6 +541,7 @@ export interface QBState<Entity extends object> {
     name: string;
     query: NativeQueryBuilder | RawQueryFragment;
     recursive?: boolean;
+    meta?: EntityMetadata;
   })[];
   tptJoinsApplied: boolean;
   autoJoinedPaths: string[];
@@ -2809,6 +2810,7 @@ export class QueryBuilder<
       recursive,
       columns: options?.columns,
       materialized: options?.materialized,
+      meta: query instanceof QueryBuilder ? query.mainAlias.meta : undefined,
     });
     return this;
   }
@@ -4061,14 +4063,21 @@ export class QueryBuilder<
 
   private fromRawTable(tableName: string, aliasName?: string): void {
     aliasName ??= this.#state.mainAlias?.aliasName ?? this.getNextAlias(tableName);
-    const meta = new EntityMetadata<Entity>({
-      className: tableName,
-      collection: tableName,
-    });
-    meta.root = meta;
+    // If the raw table name matches a CTE registered via `.with()` from a typed QueryBuilder,
+    // reuse the source entity meta so relation joins (`leftJoinAndSelect` etc.) keep working.
+    const cteMeta = this.#state.ctes.find(c => c.name === tableName)?.meta;
+    let meta: EntityMetadata<Entity>;
+
+    if (cteMeta) {
+      meta = cteMeta as EntityMetadata<Entity>;
+    } else {
+      meta = new EntityMetadata<Entity>({ className: tableName, collection: tableName });
+      meta.root = meta;
+    }
+
     this.#state.mainAlias = {
       aliasName,
-      entityName: tableName as unknown as EntityName<Entity>,
+      entityName: (cteMeta?.className ?? tableName) as unknown as EntityName<Entity>,
       meta,
       rawTableName: tableName,
     };
