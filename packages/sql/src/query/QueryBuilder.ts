@@ -70,6 +70,15 @@ export interface ExecuteOptions {
 
 export interface QBStreamOptions {
   /**
+   * How many rows to fetch in one round-trip.
+   * Lower values will result in more queries and network bandwidth, but less memory usage.
+   * Higher values will result in fewer queries and network bandwidth, but higher memory usage.
+   * Note that the results are iterated one row at a time regardless of this value.
+   *
+   * @default 1
+   */
+  chunkSize?: number;
+  /**
    * Results are mapped to entities, if you set `mapResults: false` you will get POJOs instead.
    *
    * @default true
@@ -2456,12 +2465,13 @@ export class QueryBuilder<
    */
   async *stream(options?: QBStreamOptions): AsyncIterableIterator<Loaded<Entity, Hint, Fields>> {
     options ??= {};
+    options.chunkSize ??= 1;
     options.mergeResults ??= true;
     options.mapResults ??= true;
 
     const query = this.toQuery();
     const loggerContext = { id: this.em?.id, ...this.loggerContext };
-    const res = this.getConnection().stream(query.sql, query.params, this.context, loggerContext);
+    const res = this.getConnection().stream(query.sql, query.params, this.context, loggerContext, options.chunkSize);
     const meta = this.mainAlias.meta;
 
     if (options.rawResults || !meta) {
