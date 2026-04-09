@@ -494,7 +494,14 @@ export interface IWrappedEntity<Entity extends object> {
     Fields extends string = never,
   >(
     options?: SerializeOptions<Naked, Hint, Exclude, Fields>,
-  ): SerializeDTO<Naked, Hint, Exclude, never, ResolveSerializeFields<Fields>, SerializeFieldsKeepPK<Fields>>;
+  ): SerializeDTO<
+    Naked,
+    Hint,
+    Exclude,
+    never,
+    ResolveSerializeFields<Fields, ExtractFieldsHint<Entity>>,
+    SerializeFieldsKeepPK<Fields>
+  >;
   setSerializationContext<Hint extends string = never, Fields extends string = never, Exclude extends string = never>(
     options: LoadHint<Entity, Hint, Fields, Exclude>,
   ): void;

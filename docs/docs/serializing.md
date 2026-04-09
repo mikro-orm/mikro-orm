@@ -270,6 +270,7 @@ A few notes:
 
 - **Primary keys are subject to `fields`.** Unlike the implicit serialization path (`toObject()` after partial loading), the explicit `serialize()` path treats `fields` as a strict whitelist — if you want the PK in the output, list it explicitly.
 - **Precedence with `exclude`**: `exclude` wins on conflict. `serialize(user, { fields: ['name', 'email'], exclude: ['email'] })` returns `{ name }`.
+- **Hidden properties are still hidden.** Listing a `hidden: true` property in `fields` does not override that — pass `includeHidden: true` if you really need it.
 - **Interaction with `populate`**: orthogonal. `populate` controls whether a relation is expanded into a nested object or shown as an FK; `fields` controls whether the property appears at all and which sub-keys survive.
 - **The return type narrows** to match the listed fields, so the resulting DTO is type-safe end-to-end.
 

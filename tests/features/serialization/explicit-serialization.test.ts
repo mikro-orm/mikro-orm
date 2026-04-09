@@ -463,3 +463,22 @@ test('explicit serialization with fields option', async () => {
   const o9 = serialize(jon, { populate: ['favouriteBook'], fields: ['favouriteBook.title'] });
   expect(o9).toEqual({ favouriteBook: { title: 'Bible' } });
 });
+
+test('wrap().serialize() inherits the partial-load fields hint at the type level', async () => {
+  const { author } = await createEntities();
+
+  // partial load — the entity type carries the `fields` hint via `Loaded<...>`
+  const partial = await orm.em.findOneOrFail(Author2, author, { fields: ['name'] });
+
+  // standalone serialize() narrows the return type from the entity hint…
+  const a = serialize(partial);
+  expect(a.name).toBe('Jon Snow');
+  // @ts-expect-error `email` was not partial-loaded
+  expect(a.email).toBeUndefined();
+
+  // …and wrap(e).serialize() does the same now
+  const b = wrap(partial).serialize();
+  expect(b.name).toBe('Jon Snow');
+  // @ts-expect-error `email` was not partial-loaded
+  expect(b.email).toBeUndefined();
+});

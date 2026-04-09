@@ -3,6 +3,7 @@ import type {
   AutoPath,
   EntityData,
   EntityDTO,
+  ExtractFieldsHint,
   Loaded,
   LoadedReference,
   AddEager,
@@ -130,8 +131,15 @@ export abstract class BaseEntity {
     Fields extends string = never,
   >(
     options?: SerializeOptions<Naked, Hint, Exclude, Fields>,
-  ): SerializeDTO<Naked, Hint, Exclude, never, ResolveSerializeFields<Fields>, SerializeFieldsKeepPK<Fields>> {
-    return EntitySerializer.serialize(this as unknown as Naked, options);
+  ): SerializeDTO<
+    Naked,
+    Hint,
+    Exclude,
+    never,
+    ResolveSerializeFields<Fields, ExtractFieldsHint<Entity>>,
+    SerializeFieldsKeepPK<Fields>
+  > {
+    return EntitySerializer.serialize(this as unknown as Naked, options) as any;
   }
 
   /** Assigns the given data to this entity, updating its properties and relations. */
