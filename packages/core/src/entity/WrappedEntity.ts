@@ -18,7 +18,9 @@ import type {
   LoadedReference,
   EntityDTO,
   Loaded,
+  ResolveSerializeFields,
   SerializeDTO,
+  SerializeFieldsKeepPK,
   FromEntityType,
   IsSubset,
   MergeSelected,
@@ -139,9 +141,9 @@ export class WrappedEntity<Entity extends object> {
   }
 
   /** Serializes the entity with control over which relations and fields to include or exclude. */
-  serialize<Hint extends string = never, Exclude extends string = never>(
-    options?: SerializeOptions<Entity, Hint, Exclude>,
-  ): SerializeDTO<Entity, Hint, Exclude> {
+  serialize<Hint extends string = never, Exclude extends string = never, Fields extends string = never>(
+    options?: SerializeOptions<Entity, Hint, Exclude, Fields>,
+  ): SerializeDTO<Entity, Hint, Exclude, never, ResolveSerializeFields<Fields>, SerializeFieldsKeepPK<Fields>> {
     return EntitySerializer.serialize(this.entity, options);
   }
 
