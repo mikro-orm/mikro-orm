@@ -1,9 +1,10 @@
 import {
   type Dictionary,
+  isRaw,
   LockMode,
   type QueryFlag,
   raw,
-  RawQueryFragment,
+  type RawQueryFragment,
   type Subquery,
   Utils,
 } from '@mikro-orm/core';
@@ -272,7 +273,7 @@ export class NativeQueryBuilder implements Subquery {
 
     this.parts.push('on conflict');
 
-    if (clause.fields instanceof RawQueryFragment) {
+    if (isRaw(clause.fields)) {
       this.parts.push(clause.fields.sql);
       this.params.push(...clause.fields.params);
     } else if (clause.fields.length > 0) {
@@ -664,7 +665,7 @@ export class NativeQueryBuilder implements Subquery {
 
     const indexHint = this.options.indexHint ? ' ' + this.options.indexHint : '';
 
-    if (this.options.tableName instanceof RawQueryFragment) {
+    if (isRaw(this.options.tableName)) {
       this.params.push(...this.options.tableName.params);
       return this.options.tableName.sql + indexHint;
     }
@@ -673,7 +674,7 @@ export class NativeQueryBuilder implements Subquery {
   }
 
   protected quote(id: string | RawQueryFragment | NativeQueryBuilder): string {
-    if (id instanceof RawQueryFragment) {
+    if (isRaw(id)) {
       return this.platform.formatQuery(id.sql, id.params);
     }
 

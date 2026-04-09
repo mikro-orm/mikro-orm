@@ -1,4 +1,4 @@
-import { LockMode, QueryFlag, RawQueryFragment, Utils } from '@mikro-orm/core';
+import { isRaw, LockMode, QueryFlag, Utils } from '@mikro-orm/core';
 import { NativeQueryBuilder } from '../../query/NativeQueryBuilder.js';
 import { QueryType } from '../../query/enums.js';
 
@@ -121,7 +121,7 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
     this.parts.push(`merge into ${this.getTableName()}`);
     this.parts.push(`using (values ${parts.join(', ')}) as tsource(${keys.map(key => this.quote(key)).join(', ')})`);
 
-    if (clause.fields instanceof RawQueryFragment) {
+    if (isRaw(clause.fields)) {
       this.parts.push(clause.fields.sql);
       this.params.push(...clause.fields.params);
     } else if (clause.fields.length > 0) {

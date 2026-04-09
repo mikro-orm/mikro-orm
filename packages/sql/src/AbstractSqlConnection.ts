@@ -5,12 +5,13 @@ import {
   type Dictionary,
   type EntityData,
   EventType,
+  isRaw,
   type IsolationLevel,
   type LogContext,
   type LoggingOptions,
   type MaybePromise,
   type QueryResult,
-  RawQueryFragment,
+  type RawQueryFragment,
   type Transaction,
   type TransactionEventBroadcaster,
   Utils,
@@ -249,7 +250,7 @@ export abstract class AbstractSqlConnection extends Connection {
       query = query.toRaw();
     }
 
-    if (query instanceof RawQueryFragment) {
+    if (isRaw(query)) {
       params = query.params;
       query = query.sql;
     }

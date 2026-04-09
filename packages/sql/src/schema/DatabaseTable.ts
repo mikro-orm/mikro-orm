@@ -8,8 +8,8 @@ import {
   EntitySchema,
   type IndexCallback,
   type IndexOptions,
+  isRaw,
   type NamingStrategy,
-  RawQueryFragment,
   ReferenceKind,
   t,
   Type,
@@ -138,10 +138,9 @@ export class DatabaseTable {
       this.#columns[field] = {
         name: prop.fieldNames[idx],
         type: prop.columnTypes[idx],
-        generated:
-          prop.generated instanceof RawQueryFragment
-            ? this.#platform.formatQuery(prop.generated.sql, prop.generated.params)
-            : (prop.generated as string),
+        generated: isRaw(prop.generated)
+          ? this.#platform.formatQuery(prop.generated.sql, prop.generated.params)
+          : (prop.generated as string),
         mappedType,
         unsigned: prop.unsigned && this.#platform.isNumericColumn(mappedType),
         autoincrement:
@@ -1067,7 +1066,7 @@ export class DatabaseTable {
       };
       const columns = meta.createSchemaColumnMappingObject();
       const exp = expression(columns, table, indexName);
-      return exp instanceof RawQueryFragment ? this.#platform.formatQuery(exp.sql, exp.params) : exp;
+      return isRaw(exp) ? this.#platform.formatQuery(exp.sql, exp.params) : exp;
     }
 
     return expression;

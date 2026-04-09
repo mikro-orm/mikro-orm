@@ -324,7 +324,7 @@ export abstract class AbstractSqlDriver<
       );
     }
 
-    if (res instanceof RawQueryFragment) {
+    if (isRaw(res)) {
       const expr = this.platform.formatQuery(res.sql, res.params);
       return this.wrapVirtualExpressionInSubquery(meta, expr, where, options as FindOptions<T, any>, type);
     }
@@ -382,7 +382,7 @@ export abstract class AbstractSqlDriver<
       return;
     }
 
-    if (res instanceof RawQueryFragment) {
+    if (isRaw(res)) {
       const expr = this.platform.formatQuery(res.sql, res.params);
       yield* this.wrapVirtualExpressionInSubqueryStream(
         meta,

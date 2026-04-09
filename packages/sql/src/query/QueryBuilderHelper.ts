@@ -825,8 +825,8 @@ export class QueryBuilderHelper {
       const processed = this.#platform.mapRegExpCondition(mappedKey, value);
       parts.push(processed.sql);
       params.push(...processed.params);
-    } else if (value[op] instanceof Raw || typeof value[op]?.toRaw === 'function') {
-      const query = value[op] instanceof Raw ? value[op] : value[op].toRaw();
+    } else if (isRaw(value[op]) || typeof value[op]?.toRaw === 'function') {
+      const query = isRaw(value[op]) ? value[op] : value[op].toRaw();
       const mappedKey = this.mapper(key, type, query, null);
 
       let sql = query.sql.replaceAll(ALIAS_REPLACEMENT, this.#alias);
@@ -1087,7 +1087,7 @@ export class QueryBuilderHelper {
       const alias = always ? (quote ? tptAlias : this.#platform.quoteIdentifier(tptAlias)) + '.' : '';
       const fieldName = this.fieldName(field, tptAlias, always, idx);
 
-      if (fieldName instanceof Raw) {
+      if (isRaw(fieldName)) {
         return fieldName.sql;
       }
 
@@ -1102,7 +1102,7 @@ export class QueryBuilderHelper {
       const resolvedAlias = isTableAlias ? this.getTPTAliasForProperty(f, a) : a;
       const fieldName = this.fieldName(f, resolvedAlias, always, idx);
 
-      if (fieldName instanceof Raw) {
+      if (isRaw(fieldName)) {
         return fieldName.sql;
       }
 

@@ -4,11 +4,12 @@ import {
   type ConnectionConfig,
   type Dictionary,
   type EntityData,
+  isRaw,
   type LoggingOptions,
   NativeQueryBuilder,
   OracleDialect,
   type QueryResult,
-  RawQueryFragment,
+  type RawQueryFragment,
   type Transaction,
   Utils,
 } from '@mikro-orm/sql';
@@ -108,7 +109,7 @@ export class OracleConnection extends AbstractSqlConnection {
       query = query.toRaw();
     }
 
-    if (query instanceof RawQueryFragment) {
+    if (isRaw(query)) {
       params = query.params;
       query = query.sql;
     }

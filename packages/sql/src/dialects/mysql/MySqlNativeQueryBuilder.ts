@@ -1,4 +1,4 @@
-import { type Dictionary, LockMode, RawQueryFragment, Utils } from '@mikro-orm/core';
+import { type Dictionary, isRaw, LockMode, Utils } from '@mikro-orm/core';
 import { NativeQueryBuilder } from '../../query/NativeQueryBuilder.js';
 
 /** @internal */
@@ -80,7 +80,7 @@ export class MySqlNativeQueryBuilder extends NativeQueryBuilder {
 
     this.parts.push('on conflict');
 
-    if (clause.fields instanceof RawQueryFragment) {
+    if (isRaw(clause.fields)) {
       this.parts.push(clause.fields.sql);
       this.params.push(...clause.fields.params);
     } else if (clause.fields.length > 0) {

@@ -1,9 +1,10 @@
 import {
   type Connection,
   type Dictionary,
+  isRaw,
   type Options,
   type Transaction,
-  RawQueryFragment,
+  type RawQueryFragment,
   Utils,
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
@@ -581,7 +582,7 @@ export abstract class SchemaHelper {
       return defaultValue;
     }
 
-    if (defaultValue instanceof RawQueryFragment) {
+    if (isRaw(defaultValue)) {
       return this.platform.formatQuery(defaultValue.sql, defaultValue.params);
     }
 
