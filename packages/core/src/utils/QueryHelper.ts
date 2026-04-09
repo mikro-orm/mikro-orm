@@ -161,7 +161,10 @@ export class QueryHelper {
             !Utils.isPlainObject(where[k]) ||
             Object.keys(where[k]).every(v => {
               if (Utils.isOperator(v, false)) {
-                return true;
+                // multi-value operators (e.g. `$in`/`$nin`) cannot be inlined into a composite
+                // PK tuple — `getPrimaryKeyValues` would flatten the operator's array alongside
+                // the sibling PK values, producing a malformed `(col1, col2) IN ((a, b))` clause
+                return !meta.compositePK || !Array.isArray(where[k][v]);
               }
 
               if (
