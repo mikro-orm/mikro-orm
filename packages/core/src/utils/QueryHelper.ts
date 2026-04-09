@@ -126,7 +126,10 @@ export class QueryHelper {
     if (meta.primaryKeys.every(pk => pk in where) && Utils.getObjectKeysSize(where) === meta.primaryKeys.length) {
       return !!key && !GroupOperator[key as keyof typeof GroupOperator] && key !== '$not' && Object.keys(where).every(k => !Utils.isPlainObject(where[k]) || Object.keys(where[k]).every(v => {
         if (Utils.isOperator(v, false)) {
-          return true;
+          // multi-value operators (e.g. `$in`/`$nin`) cannot be inlined into a composite
+          // PK tuple — `getPrimaryKeyValues` would flatten the operator's array alongside
+          // the sibling PK values, producing a malformed `(col1, col2) IN ((a, b))` clause
+          return !meta.compositePK || !Array.isArray(where[k][v]);
         }
 
         if (meta.properties[k as EntityKey<T>].primary && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(meta.properties[k as EntityKey<T>].kind)) {
