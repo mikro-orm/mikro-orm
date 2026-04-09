@@ -9,6 +9,7 @@ const stream = em.stream(Book, {
   populate: ['author'],
   where: { price: { $gt: 100 } },
   orderBy: { id: 'ASC' },
+  chunkSize: 100,
 });
 
 for await (const book of stream) {
@@ -34,6 +35,7 @@ const stream = em.stream(Book, {
   populate: ['author'],
   where: { price: { $gt: 100 } },
   orderBy: { id: 'ASC' },
+  chunkSize: 100,
   mergeResults: false,
 });
 ```
@@ -46,7 +48,7 @@ To stream raw results instead of entities, you can use the `QueryBuilder` with `
 const stream = em.createQueryBuilder(Author, 'a')
   .leftJoinAndSelect('books', 'b')
   .orderBy({ id: 'desc', books: { title: 'asc' } })
-  .stream({ mapResults: true });
+  .stream({ chunkSize: 100, mapResults: true });
 ```
 
 This will disable mapping to entities, returning POJOs instead, but still convert the column names to entity property names.
@@ -57,7 +59,7 @@ Alternatively, you can use `rawResults: true` to stream the raw values without a
 const stream = em.createQueryBuilder(Author, 'a')
   .leftJoinAndSelect('books', 'b')
   .orderBy({ id: 'desc', books: { title: 'asc' } })
-  .stream({ rawResults: true });
+  .stream({ chunkSize: 100, rawResults: true });
 ```
 
 ## Virtual entities
@@ -90,7 +92,8 @@ When using MongoDB driver, only root entities can be streamed. The `populate` op
 ```ts
 const stream = em.stream(Book, {
   where: { price: { $gt: 100 } },
-  orderBy: { id: 'ASC' },
+  orderBy: { id: 'ASC' }, 
+  chunkSize: 100,
 });
 
 for await (const book of stream) {

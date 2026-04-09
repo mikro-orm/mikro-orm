@@ -231,6 +231,15 @@ export interface StreamOptions<
   'cache' | 'before' | 'after' | 'first' | 'last' | 'overfetch' | 'strategy'
 > {
   /**
+   * How many rows to fetch in one round-trip.
+   * Lower values will result in more queries and network bandwidth, but less memory usage.
+   * Higher values will result in fewer queries and network bandwidth, but higher memory usage.
+   * Note that the results are iterated one row at a time regardless of this value.
+   *
+   * @default 1
+   */
+  chunkSize?: number;
+  /**
    * When populating to-many relations, the ORM streams fully merged entities instead of yielding every row.
    * You can opt out of this behavior by specifying `mergeResults: false`. This will yield every row from
    * the SQL result, but still mapped to entities, meaning that to-many collections will contain at most
