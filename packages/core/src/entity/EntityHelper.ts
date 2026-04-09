@@ -23,7 +23,12 @@ import { helper } from './wrap.js';
 import { inspect } from '../logging/inspect.js';
 import { getEnv } from '../utils/env-vars.js';
 
-const entitySymbol = Symbol('Entity');
+// Globally registered so the marker survives the CJS/ESM dual-package hazard
+// (#7515) — `tsx` registers both an ESM and a CJS hook for the CLI and ends up
+// loading `@mikro-orm/core` twice. JSON payloads still cannot forge the marker
+// because Symbol-keyed properties have no JSON representation, which is the
+// threat model the symbol-vs-string switch in f7e59a5ce was guarding against.
+const entitySymbol = Symbol.for('@mikro-orm/core/EntityHelper.entity');
 
 /**
  * @internal
