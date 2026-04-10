@@ -217,6 +217,12 @@ export class TransactionManager {
 
       if (parentEntity && parentEntity !== entity) {
         const parentWrapped = helper(parentEntity);
+
+        // Don't overwrite a fully-loaded entity with an uninitialized reference
+        if (!wrapped.__initialized && parentWrapped.__initialized) {
+          continue;
+        }
+
         parentWrapped.__data = helper(entity).__data;
         parentWrapped.__originalEntityData = helper(entity).__originalEntityData;
       } else {
