@@ -155,6 +155,9 @@ const resolvePartitionExpression = (
   return expression.map(key => resolvePartitionKey(meta, key)).join(', ');
 };
 
+const createPartitionDefinition = (type: EntityPartitionBy['type'], expression: string): string =>
+  `${type.toLowerCase()} (${normalizeWhitespace(expression)})`;
+
 /** @internal */
 export function normalizePartitionDefinition(value: string): string {
   const normalized = normalizeWhitespace(value);
@@ -231,8 +234,9 @@ export const getTablePartitioning = (
     return undefined;
   }
 
-  const definition = normalizePartitionDefinition(
-    `${meta.partitionBy.type} (${resolvePartitionExpression(meta, meta.partitionBy.expression)})`,
+  const definition = createPartitionDefinition(
+    meta.partitionBy.type,
+    resolvePartitionExpression(meta, meta.partitionBy.expression),
   );
   const partitions =
     meta.partitionBy.type === 'hash'
