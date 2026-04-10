@@ -96,8 +96,18 @@ jobs:
           git diff-index --quiet HEAD || git commit -m 'chore(release): update internal dependencies [skip ci]'
           git push
 
+      - name: Determine dist-tag
+        id: dist-tag
+        run: |
+          if [[ "${{ inputs.ref }}" == "master" ]]; then
+            echo "tag=" >> "$GITHUB_OUTPUT"
+          else
+            MAJOR=$(echo "${{ inputs.ref }}" | grep -oP '^\d+')
+            echo "tag=--dist-tag latest-v${MAJOR}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish to npm
-        run: yarn publish:prod --yes
+        run: yarn publish:prod ${{ steps.dist-tag.outputs.tag }} --yes
 
       - name: Publish to JSR
         run: yarn publish:jsr
