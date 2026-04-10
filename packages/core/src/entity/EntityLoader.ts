@@ -770,6 +770,26 @@ export class EntityLoader {
     }
 
     if (populated.length === 0 && !populate.children) {
+      // Populate child-specific relations for TPT entities already in the identity map (GH #7529).
+      // Pass a sentinel hint so the existing TPT child handling in `populate()` does the real work.
+      if (populate.all && prop.targetMeta?.inheritanceType === 'tpt') {
+        const visited = (options as Dictionary).visited as Set<AnyEntity>;
+        const pending = Utils.unique(children).filter(
+          c => helper(c as AnyEntity).__meta !== prop.targetMeta && !visited.has(c as AnyEntity),
+        );
+
+        if (pending.length > 0) {
+          const hint = [
+            { field: prop.targetMeta.primaryKeys[0], strategy: LoadStrategy.SELECT_IN, all: true },
+          ] as PopulateOptions<Entity>[];
+          await this.populate(prop.targetMeta.class as EntityName<Entity>, pending as Entity[], hint, {
+            ...options,
+            lookup: false,
+            validate: false,
+          });
+        }
+      }
+
       return;
     }
 
