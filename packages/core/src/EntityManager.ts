@@ -1812,10 +1812,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   map<Entity extends object>(
     entityName: EntityName<Entity>,
     result: EntityDictionary<Entity>,
-    options: { schema?: string } = {},
+    options: { schema?: string; mapped?: boolean } = {},
   ): Entity {
+    const { mapped, ...rest } = options;
     const meta = this.metadata.get(entityName);
-    const data = this.driver.mapResult(result, meta) as Dictionary;
+    const data = (mapped ? result : this.driver.mapResult(result, meta)) as Dictionary;
 
     for (const k of Object.keys(data)) {
       const prop = meta.properties[k as EntityKey<Entity>];
@@ -1834,7 +1835,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       convertCustomTypes: true,
       refresh: true,
       validate: false,
-      ...options,
+      ...rest,
     });
   }
 

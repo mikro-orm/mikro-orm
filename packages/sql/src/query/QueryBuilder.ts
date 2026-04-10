@@ -2539,11 +2539,10 @@ export class QueryBuilder<
       return row as Loaded<Entity, Hint, Fields>;
     }
 
-    const entity = this.em!.map<Entity>(this.mainAlias.entityName, row, { schema: this.#state.schema }) as Loaded<
-      Entity,
-      Hint,
-      Fields
-    >;
+    const entity = this.em!.map<Entity>(this.mainAlias.entityName, row, {
+      schema: this.#state.schema,
+      mapped: true,
+    }) as Loaded<Entity, Hint, Fields>;
     this.propagatePopulateHint(entity as Entity, this.#state.populate);
 
     return entity;
