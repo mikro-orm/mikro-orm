@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.13](https://github.com/mikro-orm/mikro-orm/compare/v6.6.12...v6.6.13) (2026-04-10)
+
+
+### Bug Fixes
+
+* **core:** guard prototype-installed methods and accessors against `this === prototype` ([#7512](https://github.com/mikro-orm/mikro-orm/issues/7512)) ([62928f1](https://github.com/mikro-orm/mikro-orm/commit/62928f18b65b4492c62e173283e41975825b0ffe)), closes [#7508](https://github.com/mikro-orm/mikro-orm/issues/7508) [#7151](https://github.com/mikro-orm/mikro-orm/issues/7151) [#7151](https://github.com/mikro-orm/mikro-orm/issues/7151)
+* **core:** resolve EntityIdentifier in composite FK with shared join columns ([#7478](https://github.com/mikro-orm/mikro-orm/issues/7478)) ([dcf89d7](https://github.com/mikro-orm/mikro-orm/commit/dcf89d7f443675c094b634d8dd6070c9c4779327)), closes [#7477](https://github.com/mikro-orm/mikro-orm/issues/7477)
+* **core:** skip composite PK inlining when operator value is an array ([#7525](https://github.com/mikro-orm/mikro-orm/issues/7525)) ([030d82b](https://github.com/mikro-orm/mikro-orm/commit/030d82b6cfbfea01846308b9d70ab3352efcb882)), closes [#7524](https://github.com/mikro-orm/mikro-orm/issues/7524)
+* **core:** skip inverse collections when deduplicating ownColumns ([#7505](https://github.com/mikro-orm/mikro-orm/issues/7505)) ([132a8d2](https://github.com/mikro-orm/mikro-orm/commit/132a8d217210deea368b3bf739630f757fd45808)), closes [#7504](https://github.com/mikro-orm/mikro-orm/issues/7504) [#7492](https://github.com/mikro-orm/mikro-orm/issues/7492)
+* **core:** skip overwriting loaded entities with uninitialized references during transaction merge ([#7532](https://github.com/mikro-orm/mikro-orm/issues/7532)) ([7ab9769](https://github.com/mikro-orm/mikro-orm/commit/7ab976929a3dd6352692c1838013a15851356019)), closes [#7531](https://github.com/mikro-orm/mikro-orm/issues/7531) [#7528](https://github.com/mikro-orm/mikro-orm/issues/7528)
+* **core:** skip shared join columns with null value in mapDataToFieldNames ([#7492](https://github.com/mikro-orm/mikro-orm/issues/7492)) ([eaa2712](https://github.com/mikro-orm/mikro-orm/commit/eaa2712171a2ab8d41fa60b2e1b6f1af262e2c2d)), closes [#7490](https://github.com/mikro-orm/mikro-orm/issues/7490)
+
+
+
+
+
 ## [6.6.12](https://github.com/mikro-orm/mikro-orm/compare/v6.6.11...v6.6.12) (2026-04-01)
 
 
