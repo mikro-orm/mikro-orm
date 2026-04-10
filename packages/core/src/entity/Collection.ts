@@ -36,7 +36,9 @@ export interface MatchingOptions<T extends object, P extends string = never> ext
   ctx?: Transaction;
 }
 
-const collectionSymbol = Symbol('Collection');
+// Globally registered so the marker survives the CJS/ESM dual-package hazard
+// (see entitySymbol rationale in EntityHelper.ts and #7515/#7534).
+const collectionSymbol = Symbol.for('@mikro-orm/core/Collection');
 
 /** Represents a to-many relation (1:m or m:n) as an iterable, managed collection of entities. */
 export class Collection<T extends object, O extends object = object> {

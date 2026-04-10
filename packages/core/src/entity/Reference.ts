@@ -19,8 +19,10 @@ import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseD
 import { NotFoundError } from '../errors.js';
 import { inspect } from '../logging/inspect.js';
 
-const referenceSymbol = Symbol('Reference');
-const scalarReferenceSymbol = Symbol('ScalarReference');
+// Globally registered so the markers survive the CJS/ESM dual-package hazard
+// (see entitySymbol rationale in EntityHelper.ts and #7515/#7534).
+const referenceSymbol = Symbol.for('@mikro-orm/core/Reference');
+const scalarReferenceSymbol = Symbol.for('@mikro-orm/core/ScalarReference');
 
 /** Wrapper around an entity that provides lazy loading capabilities and identity-preserving reference semantics. */
 export class Reference<T extends object> {
