@@ -80,6 +80,7 @@
       ":semanticCommitTypeAll(chore)"
     ],
     "semanticCommits": "enabled",
+    "minimumReleaseAge": "1 day",
     "separateMajorMinor": false,
     "dependencyDashboard": false,
     "packageRules": [
