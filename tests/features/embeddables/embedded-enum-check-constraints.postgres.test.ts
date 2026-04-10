@@ -1,4 +1,4 @@
-import { MikroORM, Options } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
 import {
   Embeddable,
   Embedded,
@@ -41,8 +41,7 @@ test('check constraints are emitted for enum properties inside embeddables', asy
     metadataProvider: ReflectMetadataProvider,
     entities: [Demo, Settings],
     dbName: `mikro_orm_test_embedded_enum_check`,
-    connect: false,
-  } as Options);
+  });
 
   const meta = orm.getMetadata().get(Demo);
   const checkNames = meta.checks.map(c => c.name).sort();
