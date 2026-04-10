@@ -6,6 +6,8 @@ import { SqliteDriver } from '@mikro-orm/sqlite';
 import {
   diffPartitioning,
   getTablePartitioning,
+  normalizePartitionBound,
+  normalizePartitionDefinition,
   toEntityPartitionBy,
 } from '../../../packages/sql/src/schema/partitioning.js';
 
@@ -108,6 +110,28 @@ describe('partitioning helpers', () => {
     });
   });
 
+  test('preserves wrapped complex partition expressions in generated table definitions', () => {
+    const partitioning = getTablePartitioning(
+      createPartitionedMeta({
+        type: 'range',
+        expression: columns => `((${columns.createdAt} at time zone 'UTC')::date)`,
+        partitions: [{ values: "from ('2026-01-01') to ('2026-02-01')" }],
+      }),
+      'public',
+    );
+
+    expect(partitioning).toEqual({
+      definition: "range (((created_at at time zone 'UTC')::date))",
+      partitions: [
+        {
+          name: 'partitioned_event_0',
+          schema: 'public',
+          bound: "for values from ('2026-01-01') to ('2026-02-01')",
+        },
+      ],
+    });
+  });
+
   test('keeps raw SQL partition expressions when they do not match entity properties', () => {
     const partitioning = getTablePartitioning(
       createPartitionedMeta({
@@ -169,7 +193,7 @@ describe('partitioning helpers', () => {
 
   test('normalizes postgres canonical range expressions and timestamptz bounds', () => {
     const from: TablePartitioning = {
-      definition: "range (((created_at AT TIME ZONE 'UTC')::date))",
+      definition: "range (((created_at at time zone 'UTC')::date))",
       partitions: [
         {
           name: 'partitioned_event_0',
@@ -179,7 +203,7 @@ describe('partitioning helpers', () => {
       ],
     };
     const introspected: TablePartitioning = {
-      definition: "range ((((created_at AT TIME ZONE 'UTC'::text))::date))",
+      definition: "range ((((created_at at time zone 'UTC'::text))::date))",
       partitions: [
         {
           name: 'partitioned_event_0',
@@ -192,7 +216,7 @@ describe('partitioning helpers', () => {
     expect(diffPartitioning(from, introspected, 'public')).toBe(false);
     expect(toEntityPartitionBy(introspected)).toEqual({
       type: 'range',
-      expression: "(created_at AT TIME ZONE 'UTC')::date",
+      expression: "(created_at at time zone 'UTC')::date",
       partitions: [
         {
           name: 'public.partitioned_event_0',
@@ -200,6 +224,13 @@ describe('partitioning helpers', () => {
         },
       ],
     });
+  });
+
+  test('normalizes malformed partition sql fragments defensively', () => {
+    expect(normalizePartitionDefinition('hash'.toUpperCase())).toBe('hash');
+    expect(normalizePartitionBound("in ('O''Reilly')")).toBe("for values in ('O''Reilly')");
+    expect(normalizePartitionBound('with (modulus 2')).toBe('for values with (modulus 2');
+    expect(normalizePartitionBound("in ('unterminated")).toBe("for values in ('unterminated");
   });
 
   test('converts catalog-style partitioning definitions back to lowercase entity metadata', () => {

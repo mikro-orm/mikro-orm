@@ -242,6 +242,51 @@ describe('SchemaGenerator [postgres]', () => {
     await orm.close(true);
   });
 
+  test('postgres canonicalizes complex range partition expressions [postgres] (GH #6944)', async () => {
+    const orm = await initORMPostgreSql();
+    await orm.em.execute('drop table if exists partitioned_event_range_expr cascade');
+
+    try {
+      await orm.em.execute(`
+        create table "partitioned_event_range_expr" (
+          "created_at" timestamptz not null,
+          "id" int not null
+        ) partition by range (((created_at at time zone 'UTC')::date));
+      `);
+      await orm.em.execute(
+        'create table "partitioned_event_range_expr_0" partition of "partitioned_event_range_expr" for values from (\'2026-01-01\') to (\'2026-02-01\')',
+      );
+      await orm.em.execute(
+        'create table "partitioned_event_range_expr_default" partition of "partitioned_event_range_expr" default',
+      );
+
+      const rows = await orm.em.getConnection().execute(`
+        select pg_get_partkeydef(parent.oid) as partition_definition,
+               pg_get_expr(child.relpartbound, child.oid) as partition_bound,
+               child.relname as partition_name
+        from pg_class parent
+        join pg_inherits inh on inh.inhparent = parent.oid
+        join pg_class child on child.oid = inh.inhrelid
+        join pg_namespace parent_ns on parent_ns.oid = parent.relnamespace
+        where parent.relname = 'partitioned_event_range_expr'
+          and parent_ns.nspname = 'public'
+        order by child.relname
+      `);
+
+      expect(rows).toHaveLength(2);
+      expect(rows[0].partition_name).toBe('partitioned_event_range_expr_0');
+      expect(rows[0].partition_definition.toLowerCase()).toBe(
+        "range ((((created_at at time zone 'utc'::text))::date))",
+      );
+      expect(rows[0].partition_bound.toLowerCase()).toBe("for values from ('2026-01-01') to ('2026-02-01')");
+      expect(rows[1].partition_name).toBe('partitioned_event_range_expr_default');
+      expect(rows[1].partition_bound.toLowerCase()).toBe('default');
+    } finally {
+      await orm.em.execute('drop table if exists partitioned_event_range_expr cascade');
+      await orm.close(true);
+    }
+  });
+
   test('create/drop database [postgresql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
