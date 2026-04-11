@@ -849,6 +849,7 @@ export class SchemaComparator {
       return (
         str
           ?.replace(/_\w+'(.*?)'/g, '$1')
+          .replace(/!=/g, '<>')
           .replace(/in\s*\((.*?)\)/gi, '= any (array[$1])')
           // MySQL normalizes count(*) to count(0)
           .replace(/\bcount\s*\(\s*0\s*\)/gi, 'count(*)')
