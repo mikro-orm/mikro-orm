@@ -229,15 +229,6 @@ export class EntityFactory {
     const originalEntityData = helper(entity).__originalEntityData ?? ({} as EntityData<T>);
     const diff = this.#comparator.diffEntities(meta.class, originalEntityData, existsData);
 
-    // version properties are not part of entity snapshots
-    if (
-      meta.versionProperty &&
-      data[meta.versionProperty] &&
-      data[meta.versionProperty] !== originalEntityData[meta.versionProperty]
-    ) {
-      diff[meta.versionProperty] = data[meta.versionProperty];
-    }
-
     const diff2 = this.#comparator.diffEntities(meta.class, existsData, data, { includeInverseSides: true });
 
     // do not override values changed by user; for uninitialized entities,
@@ -263,12 +254,13 @@ export class EntityFactory {
       })
       .forEach(key => delete diff2[key]);
 
-    // but always add collection properties, formulas, and generated columns if they are part of the `data`,
-    // as these are excluded from `comparableProps` and won't appear in the diff
+    // but always add collection properties, formulas, generated columns, and version properties if they
+    // are part of the `data`, as these are excluded from `comparableProps` and won't appear in the diff
     Utils.keys(data)
       .filter(
         key =>
           meta.properties[key]?.formula ||
+          meta.properties[key]?.version ||
           (meta.properties[key]?.generated && !meta.properties[key]?.primary) ||
           [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(meta.properties[key]?.kind),
       )
