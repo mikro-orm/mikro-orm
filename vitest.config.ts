@@ -19,6 +19,11 @@ export default defineConfig({
           name: 'legacy',
           include: ['tests/**/*.test.ts'],
           exclude: ['tests/features/decorators/es', 'tests/deno/**'],
+          typecheck: {
+            tsconfig: './tests/tsconfig.json',
+            include: ['**\/*.{test,spec}-d.?(c|m)[jt]s?(x)'],
+            enabled: true,
+          },
         },
       },
       {
