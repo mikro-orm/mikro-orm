@@ -32,4 +32,4 @@ bench('AutoPath - scalar Date property should not expand', () => {
 bench('AutoPath - relation should expand', () => {
   // Use 'books.title' - a valid nested path (not 'books.' which is just a prefix)
   validatePath<Author, 'books.title'>('books.title');
-}).types([871, 'instantiations']);
+}).types([870, 'instantiations']);

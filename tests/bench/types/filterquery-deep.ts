@@ -84,15 +84,15 @@ bench('FilterQuery<Author> - complex entity', () => {
 
 bench('FilterQuery<Author> - nested 1 level', () => {
   useFilter<Author>({ books: { title: 'test' } });
-}).types([1063, 'instantiations']);
+}).types([1062, 'instantiations']);
 
 bench('FilterQuery<Author> - nested 2 levels', () => {
   useFilter<Author>({ books: { publisher: { name: 'test' } } });
-}).types([1357, 'instantiations']);
+}).types([1356, 'instantiations']);
 
 bench('FilterQuery<Author> - nested 3 levels', () => {
   useFilter<Author>({ books: { publisher: { books: { title: 'test' } } } });
-}).types([1389, 'instantiations']);
+}).types([1388, 'instantiations']);
 
 // ============================================
 // Component type benchmarks

@@ -68,7 +68,7 @@ bench('FromEntityType - plain entity', () => {
 
 bench('FromEntityType - Loaded entity', () => {
   useFromEntityType<Loaded<Author, 'books'>>({} as FromEntityType<Loaded<Author, 'books'>>);
-}).types([1122, 'instantiations']);
+}).types([1121, 'instantiations']);
 
 // ============================================
 // IsSubset benchmarks
@@ -103,7 +103,7 @@ bench('MergeSelected - Loaded entity', () => {
   type R = MergeSelected<Loaded<Author, 'books'>, Author, 'name'>;
   const x = {} as R;
   void x;
-}).types([1646, 'instantiations']);
+}).types([1645, 'instantiations']);
 
 // ============================================
 // Full assign signature simulation
@@ -122,7 +122,7 @@ bench('assign return type - Loaded entity', () => {
   type R = AssignReturnType<Loaded<Author, 'books'>, { name: string }>;
   const x = {} as R;
   void x;
-}).types([1665, 'instantiations']);
+}).types([1664, 'instantiations']);
 
 // ============================================
 // Data parameter type computation
@@ -136,10 +136,10 @@ bench('assign data type - plain entity', () => {
   type R = AssignDataType<Author>;
   const x = {} as R;
   void x;
-}).types([2358, 'instantiations']);
+}).types([2374, 'instantiations']);
 
 bench('assign data type - Loaded entity', () => {
   type R = AssignDataType<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([3429, 'instantiations']);
+}).types([3445, 'instantiations']);

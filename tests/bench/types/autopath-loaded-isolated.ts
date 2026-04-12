@@ -116,7 +116,7 @@ bench('AutoPath SELF-REF - 2 levels', () => {
 
 bench('AutoPath SELF-REF - children (Collection)', () => {
   validatePath<TreeNode, 'children'>('children');
-}).types([607, 'instantiations']);
+}).types([606, 'instantiations']);
 
 bench('Loaded SELF-REF - 1 level (Ref)', () => {
   useLoaded<TreeNode, 'parent'>({} as Loaded<TreeNode, 'parent'>);
@@ -128,7 +128,7 @@ bench('Loaded SELF-REF - 2 levels (Ref)', () => {
 
 bench('Loaded SELF-REF - children (Collection)', () => {
   useLoaded<TreeNode, 'children'>({} as Loaded<TreeNode, 'children'>);
-}).types([895, 'instantiations']);
+}).types([894, 'instantiations']);
 
 // ============================================
 // TWO-WAY circular reference (A <-> B)
@@ -175,11 +175,11 @@ bench('Loaded CIRCULAR - back to start (Ref)', () => {
 
 bench('Loaded CIRCULAR - collection', () => {
   useLoaded<Department, 'employees'>({} as Loaded<Department, 'employees'>);
-}).types([895, 'instantiations']);
+}).types([894, 'instantiations']);
 
 bench('Loaded CIRCULAR - collection nested', () => {
   useLoaded<Department, 'employees.department'>({} as Loaded<Department, 'employees.department'>);
-}).types([895, 'instantiations']);
+}).types([894, 'instantiations']);
 
 // ============================================
 // Entity with many properties (width test)

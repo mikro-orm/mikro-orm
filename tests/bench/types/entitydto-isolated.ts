@@ -51,7 +51,7 @@ bench('EntityDTO<EntityWithRef> - with Ref', () => {
 
 bench('EntityDTO<EntityWithCollection> - with Collection', () => {
   useDTO<EntityWithCollection>({} as EntityDTO<EntityWithCollection>);
-}).types([791, 'instantiations']);
+}).types([790, 'instantiations']);
 
 // ============================================
 // EntityDTO on Loaded entities
@@ -71,7 +71,7 @@ bench('EntityDTO<Loaded<EntityWithRef, "parent">> - loaded with populated Ref', 
 
 bench('EntityDTO<Loaded<EntityWithCollection>> - loaded with Collection', () => {
   useDTO<Loaded<EntityWithCollection>>({} as EntityDTO<Loaded<EntityWithCollection>>);
-}).types([1741, 'instantiations']);
+}).types([1740, 'instantiations']);
 
 bench('EntityDTO<Loaded<EntityWithCollection, "items">> - loaded with populated Collection', () => {
   useDTO<Loaded<EntityWithCollection, 'items'>>({} as EntityDTO<Loaded<EntityWithCollection, 'items'>>);
@@ -86,4 +86,4 @@ function useLoaded<T, L extends string = never>(_entity: Loaded<T, L>): void {}
 
 bench('Loaded<EntityWithCollection, "items"> - without EntityDTO', () => {
   useLoaded<EntityWithCollection, 'items'>({} as Loaded<EntityWithCollection, 'items'>);
-}).types([873, 'instantiations']);
+}).types([872, 'instantiations']);

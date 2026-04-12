@@ -92,19 +92,19 @@ bench('em.create() return type', () => {
   type R = ReturnType<typeof em.create<Author>>;
   const x = {} as R;
   void x;
-}).types([2444, 'instantiations']);
+}).types([2442, 'instantiations']);
 
 bench('RequiredEntityData - Author', () => {
   type R = RequiredEntityData<Author>;
   const x = {} as R;
   void x;
-}).types([1505, 'instantiations']);
+}).types([1503, 'instantiations']);
 
 bench('RequiredEntityData - Book', () => {
   type R = RequiredEntityData<Book>;
   const x = {} as R;
   void x;
-}).types([1310, 'instantiations']);
+}).types([1309, 'instantiations']);
 
 // New<T> type (used as create return type)
 bench('New<Author>', () => {
@@ -117,7 +117,7 @@ bench('New<Author, "books">', () => {
   type R = New<Author, 'books'>;
   const x = {} as R;
   void x;
-}).types([1004, 'instantiations']);
+}).types([1003, 'instantiations']);
 
 // ============================================
 // em.populate() - return type computation
@@ -137,25 +137,25 @@ bench('EntityDTO<Author>', () => {
   type R = EntityDTO<Author>;
   const x = {} as R;
   void x;
-}).types([1114, 'instantiations']);
+}).types([1112, 'instantiations']);
 
 bench('EntityDTO<Book>', () => {
   type R = EntityDTO<Book>;
   const x = {} as R;
   void x;
-}).types([984, 'instantiations']);
+}).types([983, 'instantiations']);
 
 bench('EntityDTO<Loaded<Author, "books">>', () => {
   type R = EntityDTO<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([3621, 'instantiations']);
+}).types([3620, 'instantiations']);
 
 bench('EntityDTO<Loaded<Author, "books.publisher">>', () => {
   type R = EntityDTO<Loaded<Author, 'books.publisher'>>;
   const x = {} as R;
   void x;
-}).types([3621, 'instantiations']);
+}).types([3620, 'instantiations']);
 
 // ============================================
 // FilterQuery - used in where clauses
@@ -206,13 +206,13 @@ bench('wrap(author).toObject() return type', () => {
   type R = ToObjectReturn<Author>;
   const x = {} as R;
   void x;
-}).types([1115, 'instantiations']);
+}).types([1113, 'instantiations']);
 
 bench('wrap(loadedAuthor).toObject() return type', () => {
   type R = ToObjectReturn<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([3623, 'instantiations']);
+}).types([3622, 'instantiations']);
 
 // ============================================
 // Complex scenarios
@@ -224,4 +224,4 @@ bench('find result then EntityDTO', () => {
   type DTOResult = EntityDTO<FindResult>;
   const x = {} as DTOResult;
   void x;
-}).types([3621, 'instantiations']);
+}).types([3620, 'instantiations']);

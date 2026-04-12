@@ -760,7 +760,11 @@ type DTOWrapper<T, C extends TypeConfig, Flat extends boolean> = Flat extends tr
 
 /** Resolves the serialized (DTO) type for a single entity property. Unwraps references, collections, and custom serialized types. */
 export type EntityDTOProp<E, T, C extends TypeConfig = never, Flat extends boolean = false> = T extends Scalar
-  ? T
+  ? T extends { __serialized?: infer U }
+    ? IsUnknown<U> extends false
+      ? U
+      : T
+    : T
   : T extends ScalarReference<infer U>
     ? U
     : T extends { __serialized?: infer U }

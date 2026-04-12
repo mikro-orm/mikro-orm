@@ -137,7 +137,7 @@ bench('FilterQuery nested - author.books', () => {
   type R = FilterObject<Author>['books'];
   const x = {} as R;
   void x;
-}).types([1027, 'instantiations']);
+}).types([1026, 'instantiations']);
 
 bench('FilterQuery nested - book.author', () => {
   type R = FilterObject<Book>['author'];

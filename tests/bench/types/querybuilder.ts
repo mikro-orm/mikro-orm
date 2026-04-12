@@ -140,11 +140,11 @@ function useOrderBy<E, R extends string, C>(_order: ContextOrderByMap<E, R, C>):
 
 bench('ContextOrderByMap<Author, "a", never> - no context', () => {
   useOrderBy<Author, 'a', never>({ name: 'asc' });
-}).types([558, 'instantiations']);
+}).types([557, 'instantiations']);
 
 bench('ContextOrderByMap<Author, "a", SimpleContext> - with join', () => {
   useOrderBy<Author, 'a', SimpleContext>({ 'b.title': 'asc' });
-}).types([595, 'instantiations']);
+}).types([594, 'instantiations']);
 
 // ============================================
 // QBFilterQuery benchmarks
@@ -230,19 +230,19 @@ bench('execute() return - wildcard fields', () => {
   const r = {} as EntityDTOFlat<Author>;
   const _: string = r.name;
   void _;
-}).types([446, 'instantiations']);
+}).types([454, 'instantiations']);
 
 bench('execute() return - selected fields', () => {
   const r = {} as DirectDTO<Author, 'id' | 'email'>;
   const _: string = r.email;
   void _;
-}).types([21, 'instantiations']);
+}).types([29, 'instantiations']);
 
 bench('execute("get") return - selected fields (single)', () => {
   const r = {} as DirectDTO<Author, 'id' | 'email'>;
   const _: number = r.id;
   void _;
-}).types([21, 'instantiations']);
+}).types([29, 'instantiations']);
 
 bench('execute() return - with join hint', () => {
   const r = {} as DirectDTO<Author, 'id'> & {
@@ -250,7 +250,7 @@ bench('execute() return - with join hint', () => {
   };
   const _: number = r.id;
   void _;
-}).types([42, 'instantiations']);
+}).types([50, 'instantiations']);
 
 bench('execute() return - with join hint and wildcard', () => {
   const r = {} as Omit<EntityDTOFlat<Author>, 'books'> & {
@@ -258,19 +258,19 @@ bench('execute() return - with join hint and wildcard', () => {
   };
   const _: string = r.name;
   void _;
-}).types([647, 'instantiations']);
+}).types([655, 'instantiations']);
 
 bench('execute() return - 2-level nested wildcard', () => {
   const r = {} as SerializeDTO<Author, 'books' | 'books.publisher'>;
   const _: string = r.name;
   void _;
-}).types([589, 'instantiations']);
+}).types([593, 'instantiations']);
 
 bench('execute() return - 3-level nested wildcard', () => {
   const r = {} as SerializeDTO<Author, 'books' | 'books.publisher' | 'books.publisher.books'>;
   const _: string = r.name;
   void _;
-}).types([595, 'instantiations']);
+}).types([599, 'instantiations']);
 
 bench('execute() return - 3-level nested with fields', () => {
   const r = {} as EntityDTOFlat<
@@ -282,7 +282,7 @@ bench('execute() return - 3-level nested with fields', () => {
   >;
   const _: number = r.id;
   void _;
-}).types([1697, 'instantiations']);
+}).types([1709, 'instantiations']);
 
 // ============================================
 // EntityDTOFlat vs EntityDTO comparison (wide entities)
@@ -346,25 +346,25 @@ bench('EntityDTO<Loaded<WideAuthor, "books">> - 2-pass recursive', () => {
   const r = {} as EntityDTO<Loaded<WideAuthor, 'books'>>;
   const _: string = r.name;
   void _;
-}).types([5080, 'instantiations']);
+}).types([5088, 'instantiations']);
 
 bench('EntityDTOFlat<Loaded<WideAuthor, "books">> - 1-pass recursive', () => {
   const r = {} as EntityDTOFlat<Loaded<WideAuthor, 'books'>>;
   const _: string = r.name;
   void _;
-}).types([4071, 'instantiations']);
+}).types([4079, 'instantiations']);
 
 bench('EntityDTO<Loaded<WideAuthor, "books.publisher">> - 2-pass recursive 2-level', () => {
   const r = {} as EntityDTO<Loaded<WideAuthor, 'books' | 'books.publisher'>>;
   const _: string = r.name;
   void _;
-}).types([5112, 'instantiations']);
+}).types([5120, 'instantiations']);
 
 bench('EntityDTOFlat<Loaded<WideAuthor, "books.publisher">> - 1-pass recursive 2-level', () => {
   const r = {} as EntityDTOFlat<Loaded<WideAuthor, 'books' | 'books.publisher'>>;
   const _: string = r.name;
   void _;
-}).types([4103, 'instantiations']);
+}).types([4111, 'instantiations']);
 
 // ============================================
 // CTE type safety benchmarks

@@ -997,6 +997,17 @@ describe('check typings', () => {
     const dOk3 = {} as EntityData<MyEntity, false>;
   });
 
+  test('IType with scalar runtime type unwraps serialized type in EntityDTO', async () => {
+    class MyEntity {
+      dateAsString!: IType<Date, number, string>;
+      dateAsNumber!: IType<Date, number>;
+    }
+
+    const o = {} as EntityDTO<MyEntity>;
+    assert<IsExact<typeof o.dateAsString, string>>(true);
+    assert<IsExact<typeof o.dateAsNumber, number>>(true);
+  });
+
   test('explicit serialization', async () => {
     interface CustomerSubscription {
       id: number;

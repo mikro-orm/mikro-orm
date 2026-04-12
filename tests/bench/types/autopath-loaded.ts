@@ -62,19 +62,19 @@ bench('AutoPath - simple property access', () => {
 
 bench('AutoPath - single relation', () => {
   validatePath<Author, 'books'>('books');
-}).types([773, 'instantiations']);
+}).types([772, 'instantiations']);
 
 bench('AutoPath - nested relation (2 levels)', () => {
   validatePath<Author, 'books.publisher'>('books.publisher');
-}).types([1000, 'instantiations']);
+}).types([999, 'instantiations']);
 
 bench('AutoPath - nested relation (3 levels)', () => {
   validatePath<Author, 'books.publisher.books'>('books.publisher.books');
-}).types([1043, 'instantiations']);
+}).types([1042, 'instantiations']);
 
 bench('AutoPath - nested relation (4 levels)', () => {
   validatePath<Author, 'books.publisher.books.author'>('books.publisher.books.author');
-}).types([1106, 'instantiations']);
+}).types([1105, 'instantiations']);
 
 bench('AutoPath - collection with :ref', () => {
   validatePath<Author, 'books:ref'>('books:ref');
@@ -93,25 +93,25 @@ bench('Loaded - no populate', () => {
 
 bench('Loaded - single relation', () => {
   useLoaded<Author, 'books'>({} as Loaded<Author, 'books'>);
-}).types([961, 'instantiations']);
+}).types([960, 'instantiations']);
 
 bench('Loaded - nested relation (2 levels)', () => {
   useLoaded<Author, 'books.publisher'>({} as Loaded<Author, 'books.publisher'>);
-}).types([961, 'instantiations']);
+}).types([960, 'instantiations']);
 
 bench('Loaded - nested relation (3 levels)', () => {
   useLoaded<Author, 'books.publisher.books'>({} as Loaded<Author, 'books.publisher.books'>);
-}).types([961, 'instantiations']);
+}).types([960, 'instantiations']);
 
 bench('Loaded - multiple relations', () => {
   useLoaded<Author, 'books' | 'friends' | 'favouriteBook'>({} as Loaded<Author, 'books' | 'friends' | 'favouriteBook'>);
-}).types([1242, 'instantiations']);
+}).types([1240, 'instantiations']);
 
 bench('Loaded - complex nested paths', () => {
   useLoaded<Author, 'books.tags' | 'books.publisher' | 'friends.books'>(
     {} as Loaded<Author, 'books.tags' | 'books.publisher' | 'friends.books'>,
   );
-}).types([1119, 'instantiations']);
+}).types([1117, 'instantiations']);
 
 // ============================================
 // Deep hierarchy tests
