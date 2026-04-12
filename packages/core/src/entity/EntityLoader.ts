@@ -133,7 +133,14 @@ export class EntityLoader {
 
     this.setSerializationContext(entities, populate, options);
 
+    const addedToVisited: AnyEntity[] = [];
+
     for (const entity of entities) {
+      if (visited.has(entity as AnyEntity)) {
+        continue;
+      }
+
+      addedToVisited.push(entity as AnyEntity);
       visited.add(entity);
     }
 
@@ -172,7 +179,7 @@ export class EntityLoader {
       }
     }
 
-    for (const entity of entities) {
+    for (const entity of addedToVisited) {
       visited.delete(entity);
     }
   }
