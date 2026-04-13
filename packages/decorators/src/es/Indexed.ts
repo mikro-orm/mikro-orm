@@ -1,9 +1,9 @@
-import { type IndexOptions, type UniqueOptions, type EntityMetadata, type Constructor } from '@mikro-orm/core';
+import { type IndexOptions, type UniqueOptions, type EntityMetadata, type EntityCtor } from '@mikro-orm/core';
 
 function createDecorator<T extends object>(options: IndexOptions<T> | UniqueOptions<T>, unique: boolean) {
   return function (
     value: unknown,
-    context: ClassDecoratorContext<T & Constructor> | ClassFieldDecoratorContext<T>,
+    context: ClassDecoratorContext<T & EntityCtor> | ClassFieldDecoratorContext<T>,
   ): any {
     const meta = context.metadata as Partial<EntityMetadata<T>>;
 
@@ -20,13 +20,13 @@ function createDecorator<T extends object>(options: IndexOptions<T> | UniqueOpti
 /** Defines a database index on a property or entity class (TC39 decorator). */
 export function Index<T extends object, H extends string>(
   options: IndexOptions<T, H> = {},
-): (value: unknown, context: ClassDecoratorContext<T & Constructor> | ClassFieldDecoratorContext<T>) => any {
+): (value: unknown, context: ClassDecoratorContext<T & EntityCtor> | ClassFieldDecoratorContext<T>) => any {
   return createDecorator(options, false);
 }
 
 /** Defines a unique constraint on a property or entity class (TC39 decorator). */
 export function Unique<T extends object, H extends string>(
   options: UniqueOptions<T, H> = {},
-): (value: unknown, context: ClassDecoratorContext<T & Constructor> | ClassFieldDecoratorContext<T>) => any {
+): (value: unknown, context: ClassDecoratorContext<T & EntityCtor> | ClassFieldDecoratorContext<T>) => any {
   return createDecorator(options, true);
 }
