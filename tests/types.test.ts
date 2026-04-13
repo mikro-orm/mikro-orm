@@ -536,6 +536,14 @@ describe('check typings', () => {
     let r5: EntityData<RowNullable>;
     r5 = { data: unknownValue };
     r5 = { data: null };
+
+    // RestoreOptUnknown should not widen non-Opt properties
+    interface RowTyped {
+      id: number;
+      name: string;
+    }
+    // @ts-expect-error name requires a string, not a number
+    const r6: RequiredEntityData<RowTyped> = { name: 123 };
   });
 
   test('FilterQuery ok assignments', async () => {
