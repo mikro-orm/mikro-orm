@@ -14,6 +14,7 @@ import {
 } from '@mikro-orm/core';
 import type {
   BaseEntity,
+  Opt,
   Ref,
   Reference,
   Collection,
@@ -495,6 +496,46 @@ describe('check typings', () => {
     let bar: RequiredEntityData<User>['bar'];
     bar = '';
     bar = null;
+  });
+
+  test('RequiredEntityData allows unknown values for Opt<unknown> properties', async () => {
+    interface Row {
+      id: number;
+      data: Opt<unknown>;
+    }
+
+    interface RowNullable {
+      id: number;
+      data: Opt<unknown> | null;
+    }
+
+    const unknownValue = JSON.parse('{}') as unknown;
+
+    // Opt<unknown> properties should be omittable
+    const r1: RequiredEntityData<Row> = {};
+
+    // Opt<unknown> properties should accept unknown values
+    let r2: RequiredEntityData<Row>;
+    r2 = { data: unknownValue };
+    r2 = { data: 'string' };
+    r2 = { data: 123 };
+    r2 = { data: null };
+
+    // Opt<unknown> | null should also work
+    let r3: RequiredEntityData<RowNullable>;
+    r3 = {};
+    r3 = { data: unknownValue };
+    r3 = { data: null };
+
+    // EntityData (used by em.assign / em.create with partial: true) should also accept unknown
+    let r4: EntityData<Row>;
+    r4 = { data: unknownValue };
+    r4 = { data: 'string' };
+    r4 = { data: null };
+
+    let r5: EntityData<RowNullable>;
+    r5 = { data: unknownValue };
+    r5 = { data: null };
   });
 
   test('FilterQuery ok assignments', async () => {

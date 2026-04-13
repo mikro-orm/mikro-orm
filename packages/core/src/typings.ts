@@ -676,6 +676,14 @@ type ProbablyOptionalProps<T> =
   | ExplicitlyOptionalProps<T>
   | Exclude<NonNullable<NullableKeys<T, null | undefined>>, RequiredNullableKeys<T>>;
 
+// `Opt<unknown>` collapses to `Opt.Brand` (since `unknown & T = T`), losing the `unknown`.
+// Detect this case and restore `unknown` so that `unknown`-typed values are assignable.
+type RestoreOptUnknown<T> = [Exclude<T, null | undefined>] extends [Opt.Brand]
+  ? [Opt.Brand] extends [Exclude<T, null | undefined>]
+    ? unknown
+    : T
+  : T;
+
 type IsOptional<T, K extends keyof T, I> = T[K] extends CollectionShape
   ? true
   : ExtractType<T[K]> extends I
@@ -686,7 +694,9 @@ type IsOptional<T, K extends keyof T, I> = T[K] extends CollectionShape
 type RequiredKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? CleanKeys<T, K> : never;
 type OptionalKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? never : CleanKeys<T, K>;
 /** Data shape for creating or updating entities. All properties are optional. Used in `em.create()` and `em.assign()`. */
-export type EntityData<T, C extends boolean = false> = { [K in EntityKey<T>]?: EntityDataItem<T[K] & {}, C> };
+export type EntityData<T, C extends boolean = false> = {
+  [K in EntityKey<T>]?: RestoreOptUnknown<T[K]> | EntityDataItem<T[K] & {}, C>;
+};
 
 /**
  * Data shape for `em.create()` with required/optional distinction based on entity metadata.
@@ -695,14 +705,14 @@ export type EntityData<T, C extends boolean = false> = { [K in EntityKey<T>]?: E
  */
 export type RequiredEntityData<T, I = never, C extends boolean = false> = {
   [K in keyof T as RequiredKeys<T, K, I>]:
-    | T[K]
+    | RestoreOptUnknown<T[K]>
     | RequiredEntityDataProp<T[K], T, C>
     | Primary<T[K]>
     | PolymorphicPrimary<T[K]>
     | Raw;
 } & {
   [K in keyof T as OptionalKeys<T, K, I>]?:
-    | T[K]
+    | RestoreOptUnknown<T[K]>
     | RequiredEntityDataProp<T[K], T, C>
     | Primary<T[K]>
     | PolymorphicPrimary<T[K]>
