@@ -415,6 +415,7 @@ export interface NativeInsertUpdateOptions<T> {
   /** `nativeUpdate()` only option */
   upsert?: boolean;
   loggerContext?: LogContext;
+  logging?: LoggingOptions;
   /** sql only */
   unionWhere?: ObjectQuery<T>[];
   /** sql only */
@@ -485,6 +486,8 @@ export interface UpdateOptions<T> {
   filters?: FilterOptions;
   schema?: string;
   ctx?: Transaction;
+  loggerContext?: LogContext;
+  logging?: LoggingOptions;
   /** sql only */
   unionWhere?: ObjectQuery<T>[];
   /** sql only */
@@ -526,6 +529,7 @@ export interface DriverMethodOptions {
   ctx?: Transaction;
   schema?: string;
   loggerContext?: LogContext;
+  logging?: LoggingOptions;
 }
 
 /** MongoDB-style collation options for locale-aware string comparison. */

@@ -125,6 +125,20 @@ describe('logging', () => {
     expect(mockedLogger).toHaveBeenCalledTimes(1);
   });
 
+  it(`accepts the 'logging' option on write methods (#7557)`, async () => {
+    setDebug([]);
+    const em = orm.em.fork();
+
+    await em.insert(Example, { id: 10, title: 'a' }, { logging: { enabled: true } });
+    await em.insertMany(Example, [{ id: 11, title: 'b' }], { logging: { enabled: true } });
+    await em.upsert(Example, { id: 10, title: 'a2' }, { logging: { enabled: true } });
+    await em.upsertMany(Example, [{ id: 11, title: 'b2' }], { logging: { enabled: true } });
+    await em.nativeUpdate(Example, { id: 10 }, { title: 'a3' }, { logging: { enabled: true } });
+    await em.nativeDelete(Example, { id: 11 }, { logging: { enabled: true } });
+
+    expect(mockedLogger).toHaveBeenCalledTimes(6);
+  });
+
   describe('slow query logging', () => {
     let slowOrm: MikroORM;
     let slowLoggerMock: Mock;
