@@ -817,7 +817,15 @@ export class EntityComparator {
         ret += `      ret${dataKey} = null;\n`;
         ret += `    } else if (typeof entity${entityKey} !== 'undefined') {\n`;
         ret += `      const val${level} = entity${entityKey}${unwrap};\n`;
-        ret += `      const discriminator = ${discriminatorMapKey}.get(val${level}?.constructor);\n`;
+        ret += `      let discriminator = ${discriminatorMapKey}.get(val${level}?.constructor);\n`;
+        ret += `      if (discriminator === undefined && val${level}?.constructor) {\n`;
+        ret += `        let __proto = Object.getPrototypeOf(val${level}.constructor);\n`;
+        ret += `        while (__proto && __proto !== Object) {\n`;
+        ret += `          discriminator = ${discriminatorMapKey}.get(__proto);\n`;
+        ret += `          if (discriminator !== undefined) break;\n`;
+        ret += `          __proto = Object.getPrototypeOf(__proto);\n`;
+        ret += `        }\n`;
+        ret += `      }\n`;
         ret += `      const pk = val${level}?.__helper?.__identifier && !val${level}?.__helper?.hasPrimaryKey()\n`;
         ret += `        ? val${level}.__helper.__identifier\n`;
         ret += `        : toArray(val${level}?.__helper?.getPrimaryKey(true));\n`;

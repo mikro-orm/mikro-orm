@@ -27,7 +27,27 @@ export class QueryHelper {
    * Finds the discriminator value (key) for a given entity class in a discriminator map.
    */
   static findDiscriminatorValue<T>(discriminatorMap: Dictionary<T>, targetClass: T): string | undefined {
-    return Object.entries(discriminatorMap).find(([, cls]) => cls === targetClass)?.[0];
+    const result = Object.entries(discriminatorMap).find(([, cls]) => cls === targetClass)?.[0];
+
+    if (result) {
+      return result;
+    }
+
+    // Walk up the prototype chain (TPT hierarchy): if targetClass is a TPT
+    // child whose parent is in the discriminator map, return the parent's key.
+    let parent = Object.getPrototypeOf(targetClass);
+
+    while (parent && parent !== Object) {
+      const parentResult = Object.entries(discriminatorMap).find(([, cls]) => cls === parent)?.[0];
+
+      if (parentResult) {
+        return parentResult;
+      }
+
+      parent = Object.getPrototypeOf(parent);
+    }
+
+    return undefined;
   }
 
   static processParams(params: unknown): any {

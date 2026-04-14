@@ -606,9 +606,27 @@ export abstract class AbstractSqlDriver<
               this.mapJoinedProp(relationPojo, p, relationAlias, root, tz, meta2);
             }
 
+            // Handle TPT child fields — determines concrete type from
+            // discriminator and maps child-specific properties.
+            this.mapTPTChildFields(relationPojo, meta2, relationAlias, qb, root);
+
+            // Determine the concrete class: if TPT resolved a more specific
+            // type via the discriminator, use that; otherwise use the
+            // polymorphic target's class.
+            let concreteClass = meta2.class;
+
+            if (meta2.root?.tptDiscriminatorColumn && relationPojo[meta2.root.tptDiscriminatorColumn as EntityKey<T>]) {
+              const discValue = relationPojo[meta2.root.tptDiscriminatorColumn as EntityKey<T>] as string;
+              const resolved = meta2.root.discriminatorMap?.[discValue];
+
+              if (resolved) {
+                concreteClass = resolved;
+              }
+            }
+
             // Inject the entity class constructor so that the factory creates the correct type
             Object.defineProperty(relationPojo, 'constructor', {
-              value: meta2.class,
+              value: concreteClass,
               enumerable: false,
               configurable: true,
             });
@@ -2126,6 +2144,13 @@ export abstract class AbstractSqlDriver<
             targetPath,
             schema,
           );
+
+          // For polymorphic targets that are TPT base classes, also LEFT JOIN
+          // all descendant tables so child-specific fields can be selected.
+          if (targetMeta.inheritanceType === 'tpt' && targetMeta.tptChildren?.length && !ref) {
+            const tptMeta = this.metadata.get(targetMeta.class);
+            this.addTPTPolymorphicJoinsForRelation(qb, tptMeta, tableAlias, fields);
+          }
 
           if (ref) {
             // For filter :ref hints, schedule filter check for each target (no field selection)
