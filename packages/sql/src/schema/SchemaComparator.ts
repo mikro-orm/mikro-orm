@@ -662,11 +662,11 @@ export class SchemaComparator {
       changedProperties.add('comment');
     }
 
-    if (
-      !(fromColumn.mappedType instanceof ArrayType) &&
-      !(toColumn.mappedType instanceof ArrayType) &&
-      this.diffEnumItems(fromColumn.enumItems, toColumn.enumItems)
-    ) {
+    const isNonNativeEnumArray =
+      !(fromColumn.nativeEnumName || toColumn.nativeEnumName) &&
+      (fromColumn.mappedType instanceof ArrayType || toColumn.mappedType instanceof ArrayType);
+
+    if (!isNonNativeEnumArray && this.diffEnumItems(fromColumn.enumItems, toColumn.enumItems)) {
       log(`'enumItems' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('enumItems');
     }
