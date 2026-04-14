@@ -850,7 +850,12 @@ export class EntityLoader {
     if (prop.polymorphic && prop.polymorphTargets) {
       await Promise.all(
         prop.polymorphTargets.map(async targetMeta => {
-          const targetChildren = unique.filter(child => helper(child).__meta.className === targetMeta.className);
+          const targetChildren = unique.filter(child => {
+            const childMeta = helper(child).__meta;
+            // Use root.className for TPT entities: a Dog (root: Animal) should match
+            // targetMeta Animal. For non-TPT entities, root === self.
+            return childMeta.root.className === targetMeta.root.className;
+          });
           if (targetChildren.length > 0) {
             await populateChildren(targetMeta, targetChildren);
           }

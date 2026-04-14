@@ -1,7 +1,9 @@
-import { MikroORM, ref } from '@mikro-orm/sqlite';
+import { Collection, LoadStrategy, MikroORM, ref, wrap } from '@mikro-orm/sqlite';
 import {
   Entity,
+  ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryKey,
   Property,
   ReflectMetadataProvider,
@@ -10,6 +12,7 @@ import { mockLogger } from '../../bootstrap.js';
 
 // ---------------------------------------------------------------------------
 // TPT hierarchy: Animal (abstract) -> Dog, Cat (concrete)
+//                                     Dog -> GermanShepherd (nested)
 // ---------------------------------------------------------------------------
 
 @Entity({ inheritance: 'tpt' })
@@ -19,6 +22,9 @@ abstract class Animal {
 
   @Property()
   name!: string;
+
+  @OneToMany(() => Activity, a => a.subject)
+  activities = new Collection<Activity>(this);
 }
 
 @Entity()
@@ -51,6 +57,9 @@ class Person {
 
   @Property()
   personName!: string;
+
+  @OneToMany(() => Activity, a => a.subject)
+  activities = new Collection<Activity>(this);
 }
 
 @Entity()
@@ -80,7 +89,36 @@ class Activity {
   subject?: Animal | Person | Shelter | null;
 }
 
-describe('polymorphic relations with TPT targets', () => {
+// ---------------------------------------------------------------------------
+// M:N polymorphic pivot table entities — Tag can be applied to
+// Animal (TPT hierarchy) or Person (plain entity) via a shared pivot table.
+// ---------------------------------------------------------------------------
+
+@Entity()
+class Tag {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  label!: string;
+
+  @ManyToMany(() => Animal, animal => animal.tags)
+  animals = new Collection<Animal>(this);
+
+  @ManyToMany(() => Person, person => person.tags)
+  people = new Collection<Person>(this);
+}
+
+// Extend the entities with M:N owner sides (must be declared after Tag to
+// avoid circular reference issues with decorators).
+// We use a separate describe block below that re-initializes the ORM with
+// augmented entities.
+
+// ---------------------------------------------------------------------------
+// Tests — ManyToOne polymorphic with TPT targets
+// ---------------------------------------------------------------------------
+
+describe('polymorphic ManyToOne with TPT targets', () => {
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -101,9 +139,7 @@ describe('polymorphic relations with TPT targets', () => {
   });
 
   // -------------------------------------------------------------------------
-  // Bug 1: INSERT — When assigning a TPT child (Dog) as a polymorphic ref
-  // that lists the abstract parent (Animal), MikroORM should resolve the
-  // discriminator to the TPT root's table name ('animal'), not null.
+  // INSERT — discriminator resolution
   // -------------------------------------------------------------------------
 
   test('INSERT: discriminator is set correctly for TPT child entities', async () => {
@@ -148,101 +184,32 @@ describe('polymorphic relations with TPT targets', () => {
     expect(activity.subject).toBeDefined();
   });
 
-  // -------------------------------------------------------------------------
-  // Bug 2: SELECT — When populating a polymorphic relation that targets a
-  // TPT base class, MikroORM should JOIN the child tables too, so the entity
-  // is hydrated as the concrete subclass with all its properties.
-  // -------------------------------------------------------------------------
+  test('INSERT: nested TPT grandchild resolves discriminator correctly', async () => {
+    const mock = mockLogger(orm);
 
-  test('SELECT: polymorphic populate resolves TPT child entities (joined strategy)', async () => {
-    // Seed data via raw SQL to bypass the INSERT bug for this test
-    const conn = orm.em.getConnection();
-    await conn.execute(`insert into \`animal\` (\`name\`) values ('Buddy')`);
-    const [{ id: animalId }] = await conn.execute(`select last_insert_rowid() as id`);
-    await conn.execute(`insert into \`dog\` (\`id\`, \`breed\`) values (${animalId}, 'Labrador')`);
-    await conn.execute(
-      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('Walk the dog', 'animal', ${animalId})`,
-    );
-
-    // Also insert a Person-linked activity to verify non-TPT types still work
-    await conn.execute(`insert into \`person\` (\`person_name\`) values ('Bob')`);
-    const [{ id: personId }] = await conn.execute(`select last_insert_rowid() as id`);
-    await conn.execute(
-      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('Person walked', 'person', ${personId})`,
-    );
-
-    const activities = await orm.em.find(
-      Activity,
-      {},
-      { populate: ['subject'] },
-    );
-
-    expect(activities.length).toBe(2);
-
-    // The Dog-linked activity should be hydrated as a Dog, not a bare Animal
-    const dogActivity = activities.find(a => a.description === 'Walk the dog')!;
-    expect(dogActivity).toBeDefined();
-    expect(dogActivity.subject).toBeDefined();
-    expect(dogActivity.subject).toBeInstanceOf(Dog);
-    expect((dogActivity.subject as Dog).breed).toBe('Labrador');
-    expect((dogActivity.subject as Dog).name).toBe('Buddy');
-
-    // The Person-linked activity should still work
-    const personActivity = activities.find(a => a.description === 'Person walked')!;
-    expect(personActivity).toBeDefined();
-    expect(personActivity.subject).toBeDefined();
-    expect(personActivity.subject).toBeInstanceOf(Person);
-    expect((personActivity.subject as Person).personName).toBe('Bob');
-  });
-
-  test('SELECT: polymorphic populate with Cat (second TPT child)', async () => {
-    const conn = orm.em.getConnection();
-    await conn.execute(`insert into \`animal\` (\`name\`) values ('Whiskers')`);
-    const [{ id: animalId }] = await conn.execute(`select last_insert_rowid() as id`);
-    await conn.execute(`insert into \`cat\` (\`id\`, \`indoor\`) values (${animalId}, 1)`);
-    await conn.execute(
-      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('Cat adopted', 'animal', ${animalId})`,
-    );
-
-    const activities = await orm.em.find(
-      Activity,
-      {},
-      { populate: ['subject'] },
-    );
-
-    const catActivity = activities.find(a => a.description === 'Cat adopted')!;
-    expect(catActivity).toBeDefined();
-    expect(catActivity.subject).toBeDefined();
-    expect(catActivity.subject).toBeInstanceOf(Cat);
-    expect((catActivity.subject as Cat).indoor).toBe(true);
-    expect((catActivity.subject as Cat).name).toBe('Whiskers');
-  });
-
-  test('INSERT + SELECT round-trip: TPT child through polymorphic relation', async () => {
-    // Create a Dog and assign it to an Activity
-    const dog = orm.em.create(Dog, { name: 'Max', breed: 'Poodle' });
+    const gs = orm.em.create(GermanShepherd, {
+      name: 'Kaiser',
+      breed: 'German Shepherd',
+      lineage: 'Schutzhund Champion',
+    });
     await orm.em.flush();
 
-    // @ts-expect-error Same TS limitation as above
+    // @ts-expect-error GermanShepherd extends Dog extends Animal
     orm.em.create(Activity, {
-      description: 'Walk Max',
-      subject: ref(dog),
+      description: 'Trained a GSD',
+      subject: ref(gs),
     });
     await orm.em.flush();
     orm.em.clear();
 
-    // Read back with populate
-    const activities = await orm.em.find(
-      Activity,
-      { description: 'Walk Max' },
-      { populate: ['subject'] },
+    const insertActivityQuery = mock.mock.calls.find(
+      c => typeof c[0] === 'string' && c[0].includes('insert into `activity`') && c[0].includes('Trained a GSD'),
     );
+    expect(insertActivityQuery).toBeDefined();
+    expect(insertActivityQuery![0]).toContain("'animal'");
 
-    expect(activities.length).toBe(1);
-    expect(activities[0].subject).toBeDefined();
-    expect(activities[0].subject).toBeInstanceOf(Dog);
-    expect((activities[0].subject as Dog).breed).toBe('Poodle');
-    expect((activities[0].subject as Dog).name).toBe('Max');
+    const activity = await orm.em.findOneOrFail(Activity, { description: 'Trained a GSD' });
+    expect(activity.subject).toBeDefined();
   });
 
   test('INSERT: null subject is handled correctly', async () => {
@@ -258,44 +225,67 @@ describe('polymorphic relations with TPT targets', () => {
   });
 
   // -------------------------------------------------------------------------
-  // Nested TPT: GermanShepherd extends Dog extends Animal
-  // The polymorphic union lists Animal, so GermanShepherd (two levels deep)
-  // must resolve its discriminator and hydrate with all intermediate props.
+  // SELECT — JOINED strategy (default)
   // -------------------------------------------------------------------------
 
-  test('INSERT: nested TPT grandchild resolves discriminator correctly', async () => {
-    const mock = mockLogger(orm);
-
-    const gs = orm.em.create(GermanShepherd, {
-      name: 'Kaiser',
-      breed: 'German Shepherd',
-      lineage: 'Schutzhund Champion',
-    });
-    await orm.em.flush();
-
-    // @ts-expect-error GermanShepherd extends Dog extends Animal, Animal is in the union
-    orm.em.create(Activity, {
-      description: 'Trained a GSD',
-      subject: ref(gs),
-    });
-    await orm.em.flush();
-    orm.em.clear();
-
-    // Verify the SQL wrote 'animal' as the discriminator (the TPT root)
-    const insertActivityQuery = mock.mock.calls.find(
-      c => typeof c[0] === 'string' && c[0].includes('insert into `activity`') && c[0].includes('Trained a GSD'),
+  test('SELECT JOINED: polymorphic populate resolves TPT child entities', async () => {
+    const conn = orm.em.getConnection();
+    await conn.execute(`insert into \`animal\` (\`name\`) values ('Buddy')`);
+    const [{ id: animalId }] = await conn.execute(`select last_insert_rowid() as id`);
+    await conn.execute(`insert into \`dog\` (\`id\`, \`breed\`) values (${animalId}, 'Labrador')`);
+    await conn.execute(
+      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('Walk the dog', 'animal', ${animalId})`,
     );
-    expect(insertActivityQuery).toBeDefined();
-    expect(insertActivityQuery![0]).toContain("'animal'");
 
-    const activity = await orm.em.findOneOrFail(Activity, { description: 'Trained a GSD' });
-    expect(activity.subject).toBeDefined();
+    await conn.execute(`insert into \`person\` (\`person_name\`) values ('Bob')`);
+    const [{ id: personId }] = await conn.execute(`select last_insert_rowid() as id`);
+    await conn.execute(
+      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('Person walked', 'person', ${personId})`,
+    );
+
+    const activities = await orm.em.find(
+      Activity,
+      {},
+      { populate: ['subject'], strategy: LoadStrategy.JOINED },
+    );
+
+    expect(activities.length).toBe(2);
+
+    const dogActivity = activities.find(a => a.description === 'Walk the dog')!;
+    expect(dogActivity.subject).toBeDefined();
+    expect(dogActivity.subject).toBeInstanceOf(Dog);
+    expect((dogActivity.subject as Dog).breed).toBe('Labrador');
+    expect((dogActivity.subject as Dog).name).toBe('Buddy');
+
+    const personActivity = activities.find(a => a.description === 'Person walked')!;
+    expect(personActivity.subject).toBeDefined();
+    expect(personActivity.subject).toBeInstanceOf(Person);
+    expect((personActivity.subject as Person).personName).toBe('Bob');
   });
 
-  test('SELECT: nested TPT grandchild is hydrated with all intermediate properties', async () => {
+  test('SELECT JOINED: Cat (second TPT child)', async () => {
     const conn = orm.em.getConnection();
+    await conn.execute(`insert into \`animal\` (\`name\`) values ('Whiskers')`);
+    const [{ id: animalId }] = await conn.execute(`select last_insert_rowid() as id`);
+    await conn.execute(`insert into \`cat\` (\`id\`, \`indoor\`) values (${animalId}, 1)`);
+    await conn.execute(
+      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('Cat adopted', 'animal', ${animalId})`,
+    );
 
-    // Insert Animal -> Dog -> GermanShepherd via raw SQL
+    const activities = await orm.em.find(
+      Activity,
+      {},
+      { populate: ['subject'], strategy: LoadStrategy.JOINED },
+    );
+
+    const catActivity = activities.find(a => a.description === 'Cat adopted')!;
+    expect(catActivity.subject).toBeInstanceOf(Cat);
+    expect((catActivity.subject as Cat).indoor).toBe(true);
+    expect((catActivity.subject as Cat).name).toBe('Whiskers');
+  });
+
+  test('SELECT JOINED: nested TPT grandchild hydrates all intermediate properties', async () => {
+    const conn = orm.em.getConnection();
     await conn.execute(`insert into \`animal\` (\`name\`) values ('Kaiser')`);
     const [{ id: animalId }] = await conn.execute(`select last_insert_rowid() as id`);
     await conn.execute(`insert into \`dog\` (\`id\`, \`breed\`) values (${animalId}, 'German Shepherd')`);
@@ -307,22 +297,109 @@ describe('polymorphic relations with TPT targets', () => {
     const activities = await orm.em.find(
       Activity,
       { description: 'GSD activity' },
-      { populate: ['subject'] },
+      { populate: ['subject'], strategy: LoadStrategy.JOINED },
     );
 
     expect(activities.length).toBe(1);
     const subject = activities[0].subject;
-    expect(subject).toBeDefined();
     expect(subject).toBeInstanceOf(GermanShepherd);
-    // Properties from Animal (root)
     expect((subject as GermanShepherd).name).toBe('Kaiser');
-    // Properties from Dog (intermediate)
     expect((subject as GermanShepherd).breed).toBe('German Shepherd');
-    // Properties from GermanShepherd (leaf)
     expect((subject as GermanShepherd).lineage).toBe('Schutzhund Champion');
   });
 
-  test('INSERT + SELECT round-trip: nested TPT grandchild through polymorphic relation', async () => {
+  // -------------------------------------------------------------------------
+  // SELECT — SELECT_IN strategy
+  // -------------------------------------------------------------------------
+
+  test('SELECT_IN: polymorphic populate resolves TPT child entities', async () => {
+    const conn = orm.em.getConnection();
+    await conn.execute(`insert into \`animal\` (\`name\`) values ('Buddy')`);
+    const [{ id: animalId }] = await conn.execute(`select last_insert_rowid() as id`);
+    await conn.execute(`insert into \`dog\` (\`id\`, \`breed\`) values (${animalId}, 'Labrador')`);
+    await conn.execute(
+      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('Walk the dog', 'animal', ${animalId})`,
+    );
+
+    await conn.execute(`insert into \`person\` (\`person_name\`) values ('Bob')`);
+    const [{ id: personId }] = await conn.execute(`select last_insert_rowid() as id`);
+    await conn.execute(
+      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('Person walked', 'person', ${personId})`,
+    );
+
+    const activities = await orm.em.find(
+      Activity,
+      {},
+      { populate: ['subject'], strategy: LoadStrategy.SELECT_IN },
+    );
+
+    expect(activities.length).toBe(2);
+
+    const dogActivity = activities.find(a => a.description === 'Walk the dog')!;
+    expect(dogActivity.subject).toBeDefined();
+    expect(dogActivity.subject).toBeInstanceOf(Dog);
+    expect((dogActivity.subject as Dog).breed).toBe('Labrador');
+    expect((dogActivity.subject as Dog).name).toBe('Buddy');
+
+    const personActivity = activities.find(a => a.description === 'Person walked')!;
+    expect(personActivity.subject).toBeDefined();
+    expect(personActivity.subject).toBeInstanceOf(Person);
+    expect((personActivity.subject as Person).personName).toBe('Bob');
+  });
+
+  test('SELECT_IN: nested TPT grandchild hydrates correctly', async () => {
+    const conn = orm.em.getConnection();
+    await conn.execute(`insert into \`animal\` (\`name\`) values ('Kaiser')`);
+    const [{ id: animalId }] = await conn.execute(`select last_insert_rowid() as id`);
+    await conn.execute(`insert into \`dog\` (\`id\`, \`breed\`) values (${animalId}, 'German Shepherd')`);
+    await conn.execute(`insert into \`german_shepherd\` (\`id\`, \`lineage\`) values (${animalId}, 'Schutzhund Champion')`);
+    await conn.execute(
+      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('GSD activity', 'animal', ${animalId})`,
+    );
+
+    const activities = await orm.em.find(
+      Activity,
+      { description: 'GSD activity' },
+      { populate: ['subject'], strategy: LoadStrategy.SELECT_IN },
+    );
+
+    expect(activities.length).toBe(1);
+    const subject = activities[0].subject;
+    expect(subject).toBeInstanceOf(GermanShepherd);
+    expect((subject as GermanShepherd).name).toBe('Kaiser');
+    expect((subject as GermanShepherd).breed).toBe('German Shepherd');
+    expect((subject as GermanShepherd).lineage).toBe('Schutzhund Champion');
+  });
+
+  // -------------------------------------------------------------------------
+  // INSERT + SELECT round-trip
+  // -------------------------------------------------------------------------
+
+  test('round-trip: TPT child through polymorphic relation', async () => {
+    const dog = orm.em.create(Dog, { name: 'Max', breed: 'Poodle' });
+    await orm.em.flush();
+
+    // @ts-expect-error Same TS limitation as above
+    orm.em.create(Activity, {
+      description: 'Walk Max',
+      subject: ref(dog),
+    });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const activities = await orm.em.find(
+      Activity,
+      { description: 'Walk Max' },
+      { populate: ['subject'] },
+    );
+
+    expect(activities.length).toBe(1);
+    expect(activities[0].subject).toBeInstanceOf(Dog);
+    expect((activities[0].subject as Dog).breed).toBe('Poodle');
+    expect((activities[0].subject as Dog).name).toBe('Max');
+  });
+
+  test('round-trip: nested TPT grandchild through polymorphic relation', async () => {
     const gs = orm.em.create(GermanShepherd, {
       name: 'Bruno',
       breed: 'German Shepherd',
@@ -346,10 +423,318 @@ describe('polymorphic relations with TPT targets', () => {
 
     expect(activities.length).toBe(1);
     const subject = activities[0].subject;
-    expect(subject).toBeDefined();
     expect(subject).toBeInstanceOf(GermanShepherd);
     expect((subject as GermanShepherd).name).toBe('Bruno');
     expect((subject as GermanShepherd).breed).toBe('German Shepherd');
     expect((subject as GermanShepherd).lineage).toBe('Working Line');
+  });
+
+  // -------------------------------------------------------------------------
+  // UPDATE — changing polymorphic ref between TPT children and across types
+  // -------------------------------------------------------------------------
+
+  test('UPDATE: change polymorphic ref from Dog to Cat (same TPT hierarchy)', async () => {
+    const dog = orm.em.create(Dog, { name: 'Rex', breed: 'German Shepherd' });
+    const cat = orm.em.create(Cat, { name: 'Whiskers', indoor: true });
+    await orm.em.flush();
+
+    // @ts-expect-error
+    const activity = orm.em.create(Activity, { description: 'Pet care', subject: ref(dog) });
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Load and update
+    const loaded = await orm.em.findOneOrFail(Activity, { description: 'Pet care' });
+    const catRef = orm.em.getReference(Cat, cat.id);
+    // @ts-expect-error
+    loaded.subject = catRef;
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Verify the update
+    const updated = await orm.em.findOneOrFail(
+      Activity,
+      { description: 'Pet care' },
+      { populate: ['subject'] },
+    );
+    expect(updated.subject).toBeDefined();
+    expect(updated.subject).toBeInstanceOf(Cat);
+    expect((updated.subject as Cat).name).toBe('Whiskers');
+    expect((updated.subject as Cat).indoor).toBe(true);
+  });
+
+  test('UPDATE: change polymorphic ref from Dog to Person (cross-type)', async () => {
+    const dog = orm.em.create(Dog, { name: 'Rex', breed: 'German Shepherd' });
+    const person = orm.em.create(Person, { personName: 'Alice' });
+    await orm.em.flush();
+
+    // @ts-expect-error
+    const activity = orm.em.create(Activity, { description: 'Reassign', subject: ref(dog) });
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Load and change from Dog to Person
+    const loaded = await orm.em.findOneOrFail(Activity, { description: 'Reassign' });
+    const personRef = orm.em.getReference(Person, person.id);
+    loaded.subject = personRef;
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Verify the update — discriminator should change from 'animal' to 'person'
+    const updated = await orm.em.findOneOrFail(
+      Activity,
+      { description: 'Reassign' },
+      { populate: ['subject'] },
+    );
+    expect(updated.subject).toBeDefined();
+    expect(updated.subject).toBeInstanceOf(Person);
+    expect((updated.subject as Person).personName).toBe('Alice');
+  });
+
+  test('UPDATE: change polymorphic ref from Person to Dog (cross-type into TPT)', async () => {
+    const person = orm.em.create(Person, { personName: 'Bob' });
+    const dog = orm.em.create(Dog, { name: 'Fido', breed: 'Beagle' });
+    await orm.em.flush();
+
+    const activity = orm.em.create(Activity, { description: 'Switch to dog', subject: ref(person) });
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Load and change from Person to Dog
+    const loaded = await orm.em.findOneOrFail(Activity, { description: 'Switch to dog' });
+    const dogRef = orm.em.getReference(Dog, dog.id);
+    // @ts-expect-error
+    loaded.subject = dogRef;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const updated = await orm.em.findOneOrFail(
+      Activity,
+      { description: 'Switch to dog' },
+      { populate: ['subject'] },
+    );
+    expect(updated.subject).toBeDefined();
+    expect(updated.subject).toBeInstanceOf(Dog);
+    expect((updated.subject as Dog).name).toBe('Fido');
+    expect((updated.subject as Dog).breed).toBe('Beagle');
+  });
+
+  // -------------------------------------------------------------------------
+  // Inverse side — OneToMany loading
+  // -------------------------------------------------------------------------
+
+  test('inverse side: load activities from a Dog entity', async () => {
+    const dog = orm.em.create(Dog, { name: 'Rex', breed: 'German Shepherd' });
+    await orm.em.flush();
+
+    // @ts-expect-error
+    orm.em.create(Activity, { description: 'Walk', subject: ref(dog) });
+    // @ts-expect-error
+    orm.em.create(Activity, { description: 'Feed', subject: ref(dog) });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const loadedDog = await orm.em.findOneOrFail(Dog, { name: 'Rex' }, { populate: ['activities'] });
+    expect(loadedDog.activities).toHaveLength(2);
+    expect(loadedDog.activities.getItems().map(a => a.description).sort()).toEqual(['Feed', 'Walk']);
+  });
+
+  test('inverse side: load activities from a Person entity', async () => {
+    const person = orm.em.create(Person, { personName: 'Alice' });
+    await orm.em.flush();
+
+    orm.em.create(Activity, { description: 'Volunteer', subject: ref(person) });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const loadedPerson = await orm.em.findOneOrFail(Person, { personName: 'Alice' }, { populate: ['activities'] });
+    expect(loadedPerson.activities).toHaveLength(1);
+    expect(loadedPerson.activities[0].description).toBe('Volunteer');
+  });
+
+  // -------------------------------------------------------------------------
+  // Lazy loading via em.populate()
+  // -------------------------------------------------------------------------
+
+  test('em.populate: lazy-load polymorphic ref to TPT entity', async () => {
+    const dog = orm.em.create(Dog, { name: 'Rex', breed: 'Husky' });
+    await orm.em.flush();
+
+    // @ts-expect-error
+    orm.em.create(Activity, { description: 'Lazy walk', subject: ref(dog) });
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Load without populate first
+    const activity = await orm.em.findOneOrFail(Activity, { description: 'Lazy walk' });
+    // Subject should be a reference (not initialized)
+    expect(activity.subject).toBeDefined();
+    expect(wrap(activity.subject!).isInitialized()).toBe(false);
+
+    // Now populate lazily
+    await orm.em.populate(activity, ['subject']);
+    expect(wrap(activity.subject!).isInitialized()).toBe(true);
+    expect(activity.subject).toBeInstanceOf(Dog);
+    expect((activity.subject as Dog).breed).toBe('Husky');
+    expect((activity.subject as Dog).name).toBe('Rex');
+  });
+
+  test('em.populate: lazy-load polymorphic ref to nested TPT grandchild', async () => {
+    const gs = orm.em.create(GermanShepherd, {
+      name: 'Kaiser',
+      breed: 'German Shepherd',
+      lineage: 'Working Line',
+    });
+    await orm.em.flush();
+
+    // @ts-expect-error
+    orm.em.create(Activity, { description: 'Lazy GSD', subject: ref(gs) });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const activity = await orm.em.findOneOrFail(Activity, { description: 'Lazy GSD' });
+    expect(wrap(activity.subject!).isInitialized()).toBe(false);
+
+    await orm.em.populate(activity, ['subject']);
+    expect(wrap(activity.subject!).isInitialized()).toBe(true);
+    expect(activity.subject).toBeInstanceOf(GermanShepherd);
+    expect((activity.subject as GermanShepherd).name).toBe('Kaiser');
+    expect((activity.subject as GermanShepherd).breed).toBe('German Shepherd');
+    expect((activity.subject as GermanShepherd).lineage).toBe('Working Line');
+  });
+
+  // -------------------------------------------------------------------------
+  // Serialization — wrap().toJSON()
+  // -------------------------------------------------------------------------
+
+  test('serialization: toJSON with populated TPT child subject', async () => {
+    const dog = orm.em.create(Dog, { name: 'Rex', breed: 'Poodle' });
+    await orm.em.flush();
+
+    // @ts-expect-error
+    orm.em.create(Activity, { description: 'Serialize test', subject: ref(dog) });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const activity = await orm.em.findOneOrFail(
+      Activity,
+      { description: 'Serialize test' },
+      { populate: ['subject'] },
+    );
+
+    const json = wrap(activity).toJSON();
+    expect(json.description).toBe('Serialize test');
+    expect(json.subject).toBeDefined();
+    expect(json.subject).toHaveProperty('name', 'Rex');
+    expect(json.subject).toHaveProperty('breed', 'Poodle');
+    expect(json.subject).toHaveProperty('id');
+  });
+
+  test('serialization: toJSON with populated nested TPT grandchild', async () => {
+    const gs = orm.em.create(GermanShepherd, {
+      name: 'Kaiser',
+      breed: 'German Shepherd',
+      lineage: 'Champion',
+    });
+    await orm.em.flush();
+
+    // @ts-expect-error
+    orm.em.create(Activity, { description: 'Serialize GSD', subject: ref(gs) });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const activity = await orm.em.findOneOrFail(
+      Activity,
+      { description: 'Serialize GSD' },
+      { populate: ['subject'] },
+    );
+
+    const json = wrap(activity).toJSON();
+    expect(json.subject).toHaveProperty('name', 'Kaiser');
+    expect(json.subject).toHaveProperty('breed', 'German Shepherd');
+    expect(json.subject).toHaveProperty('lineage', 'Champion');
+  });
+
+  test('serialization: toJSON with non-populated ref is just the PK', async () => {
+    const dog = orm.em.create(Dog, { name: 'Rex', breed: 'Poodle' });
+    await orm.em.flush();
+
+    // @ts-expect-error
+    orm.em.create(Activity, { description: 'No populate', subject: ref(dog) });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const activity = await orm.em.findOneOrFail(Activity, { description: 'No populate' });
+    const json = wrap(activity).toJSON();
+    // When not populated, subject should serialize as the PK value
+    expect(json.subject).toBe(dog.id);
+  });
+
+  // -------------------------------------------------------------------------
+  // Mixed: multiple TPT children + non-TPT entities in one query
+  // -------------------------------------------------------------------------
+
+  test('mixed query: Dog, Cat, GermanShepherd, and Person all in one populate', async () => {
+    const conn = orm.em.getConnection();
+
+    // Dog
+    await conn.execute(`insert into \`animal\` (\`name\`) values ('Buddy')`);
+    let [{ id }] = await conn.execute(`select last_insert_rowid() as id`);
+    await conn.execute(`insert into \`dog\` (\`id\`, \`breed\`) values (${id}, 'Labrador')`);
+    await conn.execute(
+      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('dog activity', 'animal', ${id})`,
+    );
+
+    // Cat
+    await conn.execute(`insert into \`animal\` (\`name\`) values ('Whiskers')`);
+    [{ id }] = await conn.execute(`select last_insert_rowid() as id`);
+    await conn.execute(`insert into \`cat\` (\`id\`, \`indoor\`) values (${id}, 1)`);
+    await conn.execute(
+      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('cat activity', 'animal', ${id})`,
+    );
+
+    // GermanShepherd
+    await conn.execute(`insert into \`animal\` (\`name\`) values ('Kaiser')`);
+    [{ id }] = await conn.execute(`select last_insert_rowid() as id`);
+    await conn.execute(`insert into \`dog\` (\`id\`, \`breed\`) values (${id}, 'German Shepherd')`);
+    await conn.execute(`insert into \`german_shepherd\` (\`id\`, \`lineage\`) values (${id}, 'Champion')`);
+    await conn.execute(
+      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('gsd activity', 'animal', ${id})`,
+    );
+
+    // Person
+    await conn.execute(`insert into \`person\` (\`person_name\`) values ('Alice')`);
+    [{ id }] = await conn.execute(`select last_insert_rowid() as id`);
+    await conn.execute(
+      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('person activity', 'person', ${id})`,
+    );
+
+    // Null subject
+    await conn.execute(
+      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('null activity', null, null)`,
+    );
+
+    const activities = await orm.em.find(Activity, {}, { populate: ['subject'], orderBy: { description: 'asc' } });
+
+    expect(activities).toHaveLength(5);
+
+    // cat activity
+    expect(activities[0].subject).toBeInstanceOf(Cat);
+    expect((activities[0].subject as Cat).indoor).toBe(true);
+
+    // dog activity
+    expect(activities[1].subject).toBeInstanceOf(Dog);
+    expect((activities[1].subject as Dog).breed).toBe('Labrador');
+
+    // gsd activity
+    expect(activities[2].subject).toBeInstanceOf(GermanShepherd);
+    expect((activities[2].subject as GermanShepherd).lineage).toBe('Champion');
+
+    // null activity
+    expect(activities[3].subject).toBeNull();
+
+    // person activity
+    expect(activities[4].subject).toBeInstanceOf(Person);
+    expect((activities[4].subject as Person).personName).toBe('Alice');
   });
 });
