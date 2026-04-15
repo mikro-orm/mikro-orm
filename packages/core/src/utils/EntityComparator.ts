@@ -817,14 +817,13 @@ export class EntityComparator {
         ret += `      ret${dataKey} = null;\n`;
         ret += `    } else if (typeof entity${entityKey} !== 'undefined') {\n`;
         ret += `      const val${level} = entity${entityKey}${unwrap};\n`;
-        ret += `      let discriminator = ${discriminatorMapKey}.get(val${level}?.constructor);\n`;
-        ret += `      if (discriminator === undefined && val${level}?.constructor) {\n`;
-        ret += `        let __proto = Object.getPrototypeOf(val${level}.constructor);\n`;
-        ret += `        while (__proto && __proto !== Object) {\n`;
-        ret += `          discriminator = ${discriminatorMapKey}.get(__proto);\n`;
-        ret += `          if (discriminator !== undefined) break;\n`;
-        ret += `          __proto = Object.getPrototypeOf(__proto);\n`;
-        ret += `        }\n`;
+        // walk up the prototype chain so TPT subclasses resolve to their root's discriminator
+        ret += `      let __cls${level} = val${level}?.constructor;\n`;
+        ret += `      let discriminator;\n`;
+        ret += `      while (__cls${level} != null) {\n`;
+        ret += `        discriminator = ${discriminatorMapKey}.get(__cls${level});\n`;
+        ret += `        if (discriminator !== undefined) break;\n`;
+        ret += `        __cls${level} = Object.getPrototypeOf(__cls${level});\n`;
         ret += `      }\n`;
         ret += `      const pk = val${level}?.__helper?.__identifier && !val${level}?.__helper?.hasPrimaryKey()\n`;
         ret += `        ? val${level}.__helper.__identifier\n`;

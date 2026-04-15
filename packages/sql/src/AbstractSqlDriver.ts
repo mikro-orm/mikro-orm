@@ -606,27 +606,12 @@ export abstract class AbstractSqlDriver<
               this.mapJoinedProp(relationPojo, p, relationAlias, root, tz, meta2);
             }
 
-            // Handle TPT child fields — determines concrete type from
-            // discriminator and maps child-specific properties.
-            this.mapTPTChildFields(relationPojo, meta2, relationAlias, qb, root);
+            // For TPT base targets, map child-specific fields and resolve the
+            // concrete class so the factory creates the correct subtype.
+            const concreteMeta = this.mapTPTChildFields(relationPojo, meta2, relationAlias, qb, root);
 
-            // Determine the concrete class: if TPT resolved a more specific
-            // type via the discriminator, use that; otherwise use the
-            // polymorphic target's class.
-            let concreteClass = meta2.class;
-
-            if (meta2.root?.tptDiscriminatorColumn && relationPojo[meta2.root.tptDiscriminatorColumn as EntityKey<T>]) {
-              const discValue = relationPojo[meta2.root.tptDiscriminatorColumn as EntityKey<T>] as string;
-              const resolved = meta2.root.discriminatorMap?.[discValue];
-
-              if (resolved) {
-                concreteClass = resolved;
-              }
-            }
-
-            // Inject the entity class constructor so that the factory creates the correct type
             Object.defineProperty(relationPojo, 'constructor', {
-              value: concreteClass,
+              value: concreteMeta?.class ?? meta2.class,
               enumerable: false,
               configurable: true,
             });
@@ -2382,13 +2367,11 @@ export abstract class AbstractSqlDriver<
     relationAlias: string,
     qb: AnyQueryBuilder<T>,
     root: EntityData<T>,
-  ): void {
-    // Check if this is a TPT base with polymorphic children
+  ): EntityMetadata | undefined {
     if (meta.inheritanceType !== 'tpt' || !meta.root.tptDiscriminatorColumn) {
       return;
     }
 
-    // Read the discriminator value
     const discriminatorAlias = `${relationAlias}__${meta.root.tptDiscriminatorColumn}` as EntityKey<T>;
     const discriminatorValue = root[discriminatorAlias] as string;
 
@@ -2396,10 +2379,8 @@ export abstract class AbstractSqlDriver<
       return;
     }
 
-    // Set the discriminator in the pojo for EntityFactory
     relationPojo[meta.root.tptDiscriminatorColumn as EntityKey<T>] = discriminatorValue as EntityDataValue<T>;
 
-    // Find the concrete metadata from discriminator map
     const concreteClass = meta.root.discriminatorMap?.[discriminatorValue];
     /* v8 ignore next 3 - defensive check for invalid discriminator values */
     if (!concreteClass) {
@@ -2407,11 +2388,10 @@ export abstract class AbstractSqlDriver<
     }
 
     const concreteMeta = this.metadata.get(concreteClass);
+    delete root[discriminatorAlias];
 
     if (concreteMeta === meta) {
-      // Already the concrete type, no child fields to map
-      delete root[discriminatorAlias];
-      return;
+      return concreteMeta;
     }
 
     // Traverse up from concrete type and map fields from each level's table
@@ -2433,8 +2413,7 @@ export abstract class AbstractSqlDriver<
       currentMeta = currentMeta.tptParent;
     }
 
-    // Clean up the discriminator alias
-    delete root[discriminatorAlias];
+    return concreteMeta;
   }
 
   /**

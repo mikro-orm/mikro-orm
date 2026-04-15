@@ -1,7 +1,6 @@
 import { Collection, LoadStrategy, MikroORM, ref, wrap } from '@mikro-orm/sqlite';
 import {
   Entity,
-  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryKey,
@@ -10,11 +9,7 @@ import {
 } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../bootstrap.js';
 
-// ---------------------------------------------------------------------------
-// TPT hierarchy: Animal (abstract) -> Dog, Cat (concrete)
-//                                     Dog -> GermanShepherd (nested)
-// ---------------------------------------------------------------------------
-
+// TPT hierarchy: Animal (abstract) -> Dog, Cat; Dog -> GermanShepherd (nested)
 @Entity({ inheritance: 'tpt' })
 abstract class Animal {
   @PrimaryKey()
@@ -39,16 +34,11 @@ class Cat extends Animal {
   indoor!: boolean;
 }
 
-// Multi-level TPT: GermanShepherd extends Dog extends Animal
 @Entity()
 class GermanShepherd extends Dog {
   @Property()
   lineage!: string;
 }
-
-// ---------------------------------------------------------------------------
-// Simple entities used in the polymorphic union
-// ---------------------------------------------------------------------------
 
 @Entity()
 class Person {
@@ -71,10 +61,6 @@ class Shelter {
   location!: string;
 }
 
-// ---------------------------------------------------------------------------
-// Entity with a polymorphic manyToOne that includes the abstract TPT root
-// ---------------------------------------------------------------------------
-
 @Entity()
 class Activity {
   @PrimaryKey()
@@ -83,40 +69,9 @@ class Activity {
   @Property()
   description!: string;
 
-  // Polymorphic relation — subject can be an Animal, Person, or Shelter.
-  // Animal is a TPT entity with concrete subclasses Dog and Cat.
   @ManyToOne(() => [Animal, Person, Shelter], { nullable: true })
   subject?: Animal | Person | Shelter | null;
 }
-
-// ---------------------------------------------------------------------------
-// M:N polymorphic pivot table entities — Tag can be applied to
-// Animal (TPT hierarchy) or Person (plain entity) via a shared pivot table.
-// ---------------------------------------------------------------------------
-
-@Entity()
-class Tag {
-  @PrimaryKey()
-  id!: number;
-
-  @Property()
-  label!: string;
-
-  @ManyToMany(() => Animal, animal => animal.tags)
-  animals = new Collection<Animal>(this);
-
-  @ManyToMany(() => Person, person => person.tags)
-  people = new Collection<Person>(this);
-}
-
-// Extend the entities with M:N owner sides (must be declared after Tag to
-// avoid circular reference issues with decorators).
-// We use a separate describe block below that re-initializes the ORM with
-// augmented entities.
-
-// ---------------------------------------------------------------------------
-// Tests — ManyToOne polymorphic with TPT targets
-// ---------------------------------------------------------------------------
 
 describe('polymorphic ManyToOne with TPT targets', () => {
   let orm: MikroORM;
@@ -148,10 +103,9 @@ describe('polymorphic ManyToOne with TPT targets', () => {
     const dog = orm.em.create(Dog, { name: 'Rex', breed: 'German Shepherd' });
     await orm.em.flush();
 
-    // @ts-expect-error Dog extends Animal which is in the union, but
-    // MikroORM's types don't account for TPT subclasses in polymorphic unions.
     orm.em.create(Activity, {
       description: 'Adopted a dog',
+      // @ts-expect-error TS limitation: polymorphic union doesn't accept a single-target ref
       subject: ref(dog),
     });
     await orm.em.flush();
@@ -175,6 +129,7 @@ describe('polymorphic ManyToOne with TPT targets', () => {
 
     orm.em.create(Activity, {
       description: 'Person volunteered',
+      // @ts-expect-error
       subject: ref(person),
     });
     await orm.em.flush();
@@ -194,9 +149,9 @@ describe('polymorphic ManyToOne with TPT targets', () => {
     });
     await orm.em.flush();
 
-    // @ts-expect-error GermanShepherd extends Dog extends Animal
     orm.em.create(Activity, {
       description: 'Trained a GSD',
+      // @ts-expect-error
       subject: ref(gs),
     });
     await orm.em.flush();
@@ -243,11 +198,7 @@ describe('polymorphic ManyToOne with TPT targets', () => {
       `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('Person walked', 'person', ${personId})`,
     );
 
-    const activities = await orm.em.find(
-      Activity,
-      {},
-      { populate: ['subject'], strategy: LoadStrategy.JOINED },
-    );
+    const activities = await orm.em.find(Activity, {}, { populate: ['subject'], strategy: LoadStrategy.JOINED });
 
     expect(activities.length).toBe(2);
 
@@ -272,11 +223,7 @@ describe('polymorphic ManyToOne with TPT targets', () => {
       `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('Cat adopted', 'animal', ${animalId})`,
     );
 
-    const activities = await orm.em.find(
-      Activity,
-      {},
-      { populate: ['subject'], strategy: LoadStrategy.JOINED },
-    );
+    const activities = await orm.em.find(Activity, {}, { populate: ['subject'], strategy: LoadStrategy.JOINED });
 
     const catActivity = activities.find(a => a.description === 'Cat adopted')!;
     expect(catActivity.subject).toBeInstanceOf(Cat);
@@ -289,7 +236,9 @@ describe('polymorphic ManyToOne with TPT targets', () => {
     await conn.execute(`insert into \`animal\` (\`name\`) values ('Kaiser')`);
     const [{ id: animalId }] = await conn.execute(`select last_insert_rowid() as id`);
     await conn.execute(`insert into \`dog\` (\`id\`, \`breed\`) values (${animalId}, 'German Shepherd')`);
-    await conn.execute(`insert into \`german_shepherd\` (\`id\`, \`lineage\`) values (${animalId}, 'Schutzhund Champion')`);
+    await conn.execute(
+      `insert into \`german_shepherd\` (\`id\`, \`lineage\`) values (${animalId}, 'Schutzhund Champion')`,
+    );
     await conn.execute(
       `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('GSD activity', 'animal', ${animalId})`,
     );
@@ -327,11 +276,7 @@ describe('polymorphic ManyToOne with TPT targets', () => {
       `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('Person walked', 'person', ${personId})`,
     );
 
-    const activities = await orm.em.find(
-      Activity,
-      {},
-      { populate: ['subject'], strategy: LoadStrategy.SELECT_IN },
-    );
+    const activities = await orm.em.find(Activity, {}, { populate: ['subject'], strategy: LoadStrategy.SELECT_IN });
 
     expect(activities.length).toBe(2);
 
@@ -352,7 +297,9 @@ describe('polymorphic ManyToOne with TPT targets', () => {
     await conn.execute(`insert into \`animal\` (\`name\`) values ('Kaiser')`);
     const [{ id: animalId }] = await conn.execute(`select last_insert_rowid() as id`);
     await conn.execute(`insert into \`dog\` (\`id\`, \`breed\`) values (${animalId}, 'German Shepherd')`);
-    await conn.execute(`insert into \`german_shepherd\` (\`id\`, \`lineage\`) values (${animalId}, 'Schutzhund Champion')`);
+    await conn.execute(
+      `insert into \`german_shepherd\` (\`id\`, \`lineage\`) values (${animalId}, 'Schutzhund Champion')`,
+    );
     await conn.execute(
       `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('GSD activity', 'animal', ${animalId})`,
     );
@@ -379,19 +326,15 @@ describe('polymorphic ManyToOne with TPT targets', () => {
     const dog = orm.em.create(Dog, { name: 'Max', breed: 'Poodle' });
     await orm.em.flush();
 
-    // @ts-expect-error Same TS limitation as above
     orm.em.create(Activity, {
       description: 'Walk Max',
+      // @ts-expect-error TS limitation: polymorphic union doesn't accept a single-target ref
       subject: ref(dog),
     });
     await orm.em.flush();
     orm.em.clear();
 
-    const activities = await orm.em.find(
-      Activity,
-      { description: 'Walk Max' },
-      { populate: ['subject'] },
-    );
+    const activities = await orm.em.find(Activity, { description: 'Walk Max' }, { populate: ['subject'] });
 
     expect(activities.length).toBe(1);
     expect(activities[0].subject).toBeInstanceOf(Dog);
@@ -407,19 +350,15 @@ describe('polymorphic ManyToOne with TPT targets', () => {
     });
     await orm.em.flush();
 
-    // @ts-expect-error Same TS limitation
     orm.em.create(Activity, {
       description: 'Walk Bruno',
+      // @ts-expect-error
       subject: ref(gs),
     });
     await orm.em.flush();
     orm.em.clear();
 
-    const activities = await orm.em.find(
-      Activity,
-      { description: 'Walk Bruno' },
-      { populate: ['subject'] },
-    );
+    const activities = await orm.em.find(Activity, { description: 'Walk Bruno' }, { populate: ['subject'] });
 
     expect(activities.length).toBe(1);
     const subject = activities[0].subject;
@@ -446,17 +385,12 @@ describe('polymorphic ManyToOne with TPT targets', () => {
     // Load and update
     const loaded = await orm.em.findOneOrFail(Activity, { description: 'Pet care' });
     const catRef = orm.em.getReference(Cat, cat.id);
-    // @ts-expect-error
     loaded.subject = catRef;
     await orm.em.flush();
     orm.em.clear();
 
     // Verify the update
-    const updated = await orm.em.findOneOrFail(
-      Activity,
-      { description: 'Pet care' },
-      { populate: ['subject'] },
-    );
+    const updated = await orm.em.findOneOrFail(Activity, { description: 'Pet care' }, { populate: ['subject'] });
     expect(updated.subject).toBeDefined();
     expect(updated.subject).toBeInstanceOf(Cat);
     expect((updated.subject as Cat).name).toBe('Whiskers');
@@ -481,11 +415,7 @@ describe('polymorphic ManyToOne with TPT targets', () => {
     orm.em.clear();
 
     // Verify the update — discriminator should change from 'animal' to 'person'
-    const updated = await orm.em.findOneOrFail(
-      Activity,
-      { description: 'Reassign' },
-      { populate: ['subject'] },
-    );
+    const updated = await orm.em.findOneOrFail(Activity, { description: 'Reassign' }, { populate: ['subject'] });
     expect(updated.subject).toBeDefined();
     expect(updated.subject).toBeInstanceOf(Person);
     expect((updated.subject as Person).personName).toBe('Alice');
@@ -496,6 +426,7 @@ describe('polymorphic ManyToOne with TPT targets', () => {
     const dog = orm.em.create(Dog, { name: 'Fido', breed: 'Beagle' });
     await orm.em.flush();
 
+    // @ts-expect-error TS limitation: polymorphic union doesn't accept a single-target ref
     const activity = orm.em.create(Activity, { description: 'Switch to dog', subject: ref(person) });
     await orm.em.flush();
     orm.em.clear();
@@ -503,16 +434,11 @@ describe('polymorphic ManyToOne with TPT targets', () => {
     // Load and change from Person to Dog
     const loaded = await orm.em.findOneOrFail(Activity, { description: 'Switch to dog' });
     const dogRef = orm.em.getReference(Dog, dog.id);
-    // @ts-expect-error
     loaded.subject = dogRef;
     await orm.em.flush();
     orm.em.clear();
 
-    const updated = await orm.em.findOneOrFail(
-      Activity,
-      { description: 'Switch to dog' },
-      { populate: ['subject'] },
-    );
+    const updated = await orm.em.findOneOrFail(Activity, { description: 'Switch to dog' }, { populate: ['subject'] });
     expect(updated.subject).toBeDefined();
     expect(updated.subject).toBeInstanceOf(Dog);
     expect((updated.subject as Dog).name).toBe('Fido');
@@ -536,13 +462,19 @@ describe('polymorphic ManyToOne with TPT targets', () => {
 
     const loadedDog = await orm.em.findOneOrFail(Dog, { name: 'Rex' }, { populate: ['activities'] });
     expect(loadedDog.activities).toHaveLength(2);
-    expect(loadedDog.activities.getItems().map(a => a.description).sort()).toEqual(['Feed', 'Walk']);
+    expect(
+      loadedDog.activities
+        .getItems()
+        .map(a => a.description)
+        .sort(),
+    ).toEqual(['Feed', 'Walk']);
   });
 
   test('inverse side: load activities from a Person entity', async () => {
     const person = orm.em.create(Person, { personName: 'Alice' });
     await orm.em.flush();
 
+    // @ts-expect-error TS limitation: polymorphic union doesn't accept a single-target ref
     orm.em.create(Activity, { description: 'Volunteer', subject: ref(person) });
     await orm.em.flush();
     orm.em.clear();
@@ -616,11 +548,7 @@ describe('polymorphic ManyToOne with TPT targets', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const activity = await orm.em.findOneOrFail(
-      Activity,
-      { description: 'Serialize test' },
-      { populate: ['subject'] },
-    );
+    const activity = await orm.em.findOneOrFail(Activity, { description: 'Serialize test' }, { populate: ['subject'] });
 
     const json = wrap(activity).toJSON();
     expect(json.description).toBe('Serialize test');
@@ -643,11 +571,7 @@ describe('polymorphic ManyToOne with TPT targets', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const activity = await orm.em.findOneOrFail(
-      Activity,
-      { description: 'Serialize GSD' },
-      { populate: ['subject'] },
-    );
+    const activity = await orm.em.findOneOrFail(Activity, { description: 'Serialize GSD' }, { populate: ['subject'] });
 
     const json = wrap(activity).toJSON();
     expect(json.subject).toHaveProperty('name', 'Kaiser');
@@ -736,5 +660,39 @@ describe('polymorphic ManyToOne with TPT targets', () => {
     // person activity
     expect(activities[4].subject).toBeInstanceOf(Person);
     expect((activities[4].subject as Person).personName).toBe('Alice');
+  });
+
+  // Deep populate recursion — exercises the polymorphic target bucketing that
+  // previously compared className exactly, dropping TPT/STI subclasses. With
+  // subjects of different TPT children and a non-TPT target, the inner populate
+  // for `activities` must correctly bucket each subject under its polymorph target.
+  test('deep populate: polymorphic subject -> inverse activities across TPT/non-TPT targets', async () => {
+    const dog = orm.em.create(Dog, { name: 'Rex', breed: 'Labrador' });
+    const cat = orm.em.create(Cat, { name: 'Whiskers', indoor: true });
+    const person = orm.em.create(Person, { personName: 'Alice' });
+    await orm.em.flush();
+
+    // @ts-expect-error TS limitation: Dog/Cat extend Animal which is in the union
+    orm.em.create(Activity, { description: 'Walk Rex', subject: ref(dog) });
+    // @ts-expect-error
+    orm.em.create(Activity, { description: 'Pet Whiskers', subject: ref(cat) });
+    // @ts-expect-error
+    orm.em.create(Activity, { description: 'Call Alice', subject: ref(person) });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const activities = await orm.em.find(
+      Activity,
+      {},
+      { populate: ['subject.activities'], orderBy: { description: 'asc' } },
+    );
+
+    expect(activities).toHaveLength(3);
+    expect(activities[0].subject).toBeInstanceOf(Person);
+    expect(wrap((activities[0].subject as Person).activities).isInitialized()).toBe(true);
+    expect(activities[1].subject).toBeInstanceOf(Cat);
+    expect(wrap((activities[1].subject as Cat).activities).isInitialized()).toBe(true);
+    expect(activities[2].subject).toBeInstanceOf(Dog);
+    expect(wrap((activities[2].subject as Dog).activities).isInitialized()).toBe(true);
   });
 });
