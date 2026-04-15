@@ -902,15 +902,14 @@ export class EntityLoader {
       pivotJoin,
     );
     const children: AnyEntity[][] = [];
-    // For union-target polymorphic M:N the driver marks each item with its concrete class
-    // via a non-enumerable `constructor` property, so we dispatch to the right factory call per item.
-    const isUnionTargetMN = prop.polymorphic && (prop.polymorphTargets?.length ?? 0) > 1;
-    const classFor = (item: Dictionary): EntityName<any> => {
-      if (isUnionTargetMN && item.constructor && item.constructor !== Object) {
-        return item.constructor as EntityName<any>;
-      }
-      return prop.targetMeta!.class;
-    };
+    // For union-target polymorphic M:N the driver marks each item with its concrete class via a
+    // non-enumerable `constructor` property (same trick used for polymorphic @ManyToOne targets),
+    // so dispatch to the right factory call per item.
+    const isUnionTargetMN = QueryHelper.isUnionTargetPolymorphic(prop);
+    const classFor = (item: Dictionary): EntityName<any> =>
+      isUnionTargetMN && item.constructor && item.constructor !== Object
+        ? (item.constructor as EntityName<any>)
+        : prop.targetMeta!.class;
 
     for (let i = 0; i < filtered.length; i++) {
       const entity = filtered[i] as AnyEntity;

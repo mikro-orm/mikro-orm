@@ -6,6 +6,7 @@ import {
   type EntityProperty,
   type FilterQuery,
   type Primary,
+  QueryHelper,
   type Transaction,
 } from '@mikro-orm/core';
 import { type AbstractSqlDriver } from './AbstractSqlDriver.js';
@@ -156,12 +157,15 @@ export class PivotCollectionPersister<Entity extends object> {
     let data: Primary<Entity>[];
     let keys: string[];
 
-    // Union-target polymorphic M:N prepends the per-row discriminator to `fks` in syncCollections.
-    const isUnionTargetMN = prop.polymorphic && (prop.polymorphTargets?.length ?? 0) > 1;
-    let perRowDiscriminator: Primary<Entity> | undefined;
+    // Union-target polymorphic M:N prepends the per-row discriminator to `fks` in syncCollections;
+    // Rails-style polymorphic M:N uses a static discriminatorValue on the prop. Normalize to a single
+    // "current row's discriminator" value so the prepend block below handles both cases uniformly.
+    let rowDiscriminator: Primary<Entity> | undefined;
 
-    if (isUnionTargetMN && !deleteAll && fks.length > 0) {
-      [perRowDiscriminator, ...fks] = fks;
+    if (QueryHelper.isUnionTargetPolymorphic(prop) && !deleteAll && fks.length > 0) {
+      [rowDiscriminator, ...fks] = fks;
+    } else if (prop.polymorphic && prop.discriminatorColumn && prop.discriminatorValue) {
+      rowDiscriminator = prop.discriminatorValue as Primary<Entity>;
     }
 
     if (deleteAll) {
@@ -174,13 +178,9 @@ export class PivotCollectionPersister<Entity extends object> {
         : [...prop.joinColumns, ...prop.inverseJoinColumns];
     }
 
-    if (perRowDiscriminator !== undefined) {
-      data = [perRowDiscriminator, ...data];
+    if (rowDiscriminator !== undefined) {
+      data = [rowDiscriminator, ...data];
       keys = [prop.discriminatorColumn!, ...keys];
-    } else if (prop.polymorphic && prop.discriminatorColumn && prop.discriminatorValue) {
-      // Rails-style polymorphic M:N: static discriminator per prop
-      data = [prop.discriminatorValue as Primary<Entity>, ...data];
-      keys = [prop.discriminatorColumn, ...keys];
     }
 
     return { data, keys };

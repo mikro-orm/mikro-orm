@@ -12,6 +12,9 @@ class Image {
   @Property()
   url!: string;
 
+  @ManyToMany(() => Post, (p: Post) => p.attachments)
+  posts = new Collection<Post>(this);
+
   constructor(url: string) {
     this.url = url;
   }
@@ -24,6 +27,9 @@ class Video {
 
   @Property()
   src!: string;
+
+  @ManyToMany(() => Post, (p: Post) => p.attachments)
+  posts = new Collection<Post>(this);
 
   constructor(src: string) {
     this.src = src;
@@ -79,6 +85,15 @@ describe('polymorphic M:N with union target', () => {
     expect(prop.discriminatorColumn).toBe('attachable_type');
     expect(prop.polymorphTargets).toBeDefined();
     expect(prop.polymorphTargets!.map(m => m.className).sort()).toEqual(['Image', 'Video']);
+  });
+
+  test('metadata: inverse sides inherit pivot info and own discriminator value', () => {
+    const imgMeta = orm.getMetadata().get(Image);
+    const vidMeta = orm.getMetadata().get(Video);
+    expect(imgMeta.properties.posts.pivotEntity).toBeDefined();
+    expect(vidMeta.properties.posts.pivotEntity).toBeDefined();
+    expect(imgMeta.properties.posts.discriminatorValue).toBe('image');
+    expect(vidMeta.properties.posts.discriminatorValue).toBe('video');
   });
 
   test('schema: pivot has discriminator + target id, no FK on target_id', async () => {
@@ -168,6 +183,25 @@ describe('polymorphic M:N with union target', () => {
 
     const loaded = await orm.em.findOneOrFail(Post, { title: 'No attachments' }, { populate: ['attachments'] });
     expect(loaded.attachments.getItems()).toHaveLength(0);
+  });
+
+  test('inverse side: Image.posts loads only posts attached to images (filtered by discriminator)', async () => {
+    const img = new Image('https://example.com/a.png');
+    const vid = new Video('https://example.com/b.mp4');
+    const p1 = new Post('with image');
+    const p2 = new Post('with video');
+    p1.attachments.add(img);
+    p2.attachments.add(vid);
+    await orm.em.persist([p1, p2]).flush();
+    orm.em.clear();
+
+    const loadedImg = await orm.em.findOneOrFail(Image, { url: 'https://example.com/a.png' }, { populate: ['posts'] });
+    expect(loadedImg.posts.getItems()).toHaveLength(1);
+    expect(loadedImg.posts[0].title).toBe('with image');
+
+    const loadedVid = await orm.em.findOneOrFail(Video, { src: 'https://example.com/b.mp4' }, { populate: ['posts'] });
+    expect(loadedVid.posts.getItems()).toHaveLength(1);
+    expect(loadedVid.posts[0].title).toBe('with video');
   });
 
   test('multiple posts with overlapping attachments bucket correctly per owner', async () => {

@@ -1649,16 +1649,22 @@ export abstract class AbstractSqlDriver<
       const snap = coll.getSnapshot();
       const includes = <T>(arr: T[][], item: T[]) => !!arr.find(i => this.comparePrimaryKeyArrays(i, item));
       // For union-target polymorphic M:N, prepend the per-row discriminator value so the pivot
-      // persister can write it alongside the FK id. Same prototype-walking helper that handles
-      // TPT subclasses in polymorphic M:1 (QueryHelper.findDiscriminatorValue).
-      const isUnionTargetMN = coll.property.polymorphic && (coll.property.polymorphTargets?.length ?? 0) > 1;
+      // persister can write it alongside the FK id. Memoized per sync-run because a collection can
+      // hold hundreds of items of the same few types, and findDiscriminatorValue walks the prototype
+      // chain + re-scans Object.entries each call.
+      const isUnionTargetMN = QueryHelper.isUnionTargetPolymorphic(coll.property);
+      const classToDisc = new Map<Function, Primary<any>>();
       const toDiff = (item: AnyEntity) => {
         const keys = helper(item).getPrimaryKeys(true)!;
         if (!isUnionTargetMN) {
           return keys;
         }
-        const disc = QueryHelper.findDiscriminatorValue(coll.property.discriminatorMap!, item.constructor);
-        return [disc as Primary<any>, ...keys];
+        let disc = classToDisc.get(item.constructor);
+        if (disc === undefined) {
+          disc = QueryHelper.findDiscriminatorValue(coll.property.discriminatorMap!, item.constructor) as Primary<any>;
+          classToDisc.set(item.constructor, disc);
+        }
+        return [disc, ...keys];
       };
       const snapshot = snap ? snap.map(toDiff) : [];
       const current = coll.getItems(false).map(toDiff);
@@ -1764,7 +1770,7 @@ export abstract class AbstractSqlDriver<
 
     const pivotMeta = this.metadata.get(prop.pivotEntity);
 
-    if (prop.polymorphic && prop.discriminatorColumn && prop.polymorphTargets && prop.polymorphTargets.length > 1) {
+    if (prop.discriminatorColumn && QueryHelper.isUnionTargetPolymorphic(prop)) {
       return this.loadFromUnionTargetPolymorphicPivotTable(prop, owners, where, orderBy, ctx, options, pivotJoin);
     }
 
@@ -1775,17 +1781,7 @@ export abstract class AbstractSqlDriver<
     const pivotProp1 = pivotMeta.relations[prop.owner ? 1 : 0];
     const pivotProp2 = pivotMeta.relations[prop.owner ? 0 : 1];
     const ownerMeta = pivotProp2.targetMeta as EntityMetadata<O>;
-
-    // The pivot query builder doesn't convert custom types, so we need to manually
-    // convert owner PKs to DB format for the query and convert result FKs back to
-    // JS format for consistent key hashing in buildPivotResultMap.
-    const pkProp = ownerMeta.properties[ownerMeta.primaryKeys[0]];
-    const needsConversion = pkProp?.customType?.ensureComparable(ownerMeta, pkProp) && !ownerMeta.compositePK;
-    let ownerPks = ownerMeta.compositePK ? owners : owners.map(o => o[0]);
-
-    if (needsConversion) {
-      ownerPks = ownerPks.map(v => pkProp.customType!.convertToDatabaseValue(v, this.platform, { mode: 'query' }));
-    }
+    const { ownerPks, needsConversion, pkProp } = this.convertOwnerPksForPivotQuery<O>(owners, ownerMeta);
 
     const cond = {
       [pivotProp2.name]: { $in: ownerPks },
@@ -2024,15 +2020,8 @@ export abstract class AbstractSqlDriver<
     const discriminatorColumn = prop.discriminatorColumn!;
 
     const ownerMeta = ownerProp.targetMeta as EntityMetadata<O>;
-    const pkProp = ownerMeta.properties[ownerMeta.primaryKeys[0]];
-    const needsConversion = pkProp?.customType?.ensureComparable(ownerMeta, pkProp) && !ownerMeta.compositePK;
-    let ownerPks = ownerMeta.compositePK ? owners : owners.map(o => o[0]);
+    const { ownerPks } = this.convertOwnerPksForPivotQuery<O>(owners, ownerMeta);
 
-    if (needsConversion) {
-      ownerPks = ownerPks.map(v => pkProp.customType!.convertToDatabaseValue(v, this.platform, { mode: 'query' }));
-    }
-
-    // Fetch the pivot rows with their discriminator + target FK as scalars
     const pivotRows = (await this.find(pivotMeta.class, { [ownerProp.name]: { $in: ownerPks } } as any, {
       ctx,
       orderBy: this.getPivotOrderBy(prop, ownerProp, orderBy, options?.orderBy),
@@ -2043,12 +2032,9 @@ export abstract class AbstractSqlDriver<
     })) as EntityData<any>[];
 
     if (pivotJoin) {
-      // ref mode — return just references without hydrating the target entities
-      const map = this.buildPivotResultMap<T, O>(owners, pivotRows, ownerProp.name, prop.discriminator!);
-      return map;
+      return this.buildPivotResultMap<T, O>(owners, pivotRows, ownerProp.name, prop.discriminator!);
     }
 
-    // Group pivot rows by target class so we can bulk-fetch each target type in one query
     const rowsByTarget = new Map<EntityMetadata, EntityData<any>[]>();
     for (const row of pivotRows) {
       const discValue = (row as Dictionary)[discriminatorColumn] as string;
@@ -2065,7 +2051,10 @@ export abstract class AbstractSqlDriver<
       rowsByTarget.set(targetMeta, list);
     }
 
-    // Per-target bulk load, then attach hydrated entities back onto their pivot rows
+    // Strip the outer find's orderBy/fields/exclude before bulk-loading targets by PK — those apply
+    // to the owner query, not each polymorph target (Image and Video wouldn't share an orderBy field).
+    // Hoisted above the loop since `options` doesn't change per target.
+    const { orderBy: _o, fields: _f, exclude: _e, ...childOptions } = (options ?? {}) as Dictionary;
     const populate = (options?.populate as PopulateOptions<T>[]) ?? [];
 
     for (const [targetMeta, rows] of rowsByTarget) {
@@ -2076,9 +2065,6 @@ export abstract class AbstractSqlDriver<
         Object.assign(cond, where);
       }
 
-      // strip outer find's orderBy/fields/etc. before bulk-loading targets by PK — those apply to the
-      // owner query, not each polymorph target (Image and Video wouldn't share an orderBy field).
-      const { orderBy: _o, fields: _f, exclude: _e, ...childOptions } = (options ?? {}) as Dictionary;
       const results = (await this.find<any>(targetMeta.class, cond as FilterQuery<any>, {
         ctx,
         ...childOptions,
@@ -2087,8 +2073,8 @@ export abstract class AbstractSqlDriver<
       const primaryKey = targetMeta.primaryKeys[0];
       const byPk = new Map<string, EntityData<any>>();
       for (const row of results) {
-        // mark the data with the concrete class so findChildrenFromPivotTable can
-        // dispatch factory.create to the right type per item
+        // Marks the data with its concrete class so EntityLoader.findChildrenFromPivotTable can
+        // dispatch factory.create per item — same trick used for polymorphic @ManyToOne targets.
         Object.defineProperty(row, 'constructor', {
           value: targetMeta.class,
           enumerable: false,
@@ -2139,6 +2125,28 @@ export abstract class AbstractSqlDriver<
     }
 
     return undefined;
+  }
+
+  /**
+   * The pivot query builder doesn't convert custom types — manually convert owner PKs to the DB
+   * representation. Returns `needsConversion` + `pkProp` so the caller can convert result FKs back
+   * to JS format for consistent key hashing in `buildPivotResultMap`.
+   */
+  private convertOwnerPksForPivotQuery<O extends object>(
+    owners: Primary<O>[][],
+    ownerMeta: EntityMetadata<O>,
+  ): { ownerPks: Primary<O>[] | Primary<O>[][]; needsConversion: boolean; pkProp: EntityProperty<O> } {
+    const pkProp = ownerMeta.properties[ownerMeta.primaryKeys[0]];
+    const needsConversion = !!pkProp?.customType?.ensureComparable(ownerMeta, pkProp) && !ownerMeta.compositePK;
+    let ownerPks: Primary<O>[] | Primary<O>[][] = ownerMeta.compositePK ? owners : owners.map(o => o[0]);
+
+    if (needsConversion) {
+      ownerPks = (ownerPks as Primary<O>[]).map(v =>
+        pkProp.customType!.convertToDatabaseValue(v, this.platform, { mode: 'query' }),
+      );
+    }
+
+    return { ownerPks, needsConversion, pkProp };
   }
 
   private getPivotOrderBy<T>(

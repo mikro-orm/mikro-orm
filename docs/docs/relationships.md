@@ -1747,3 +1747,96 @@ console.log(loadedTag.videos.length); // 1
 2. **No FK constraint on polymorphic side** - The pivot table cannot have a foreign key constraint on the polymorphic columns since they point to different tables.
 3. **Separate inverse collections** - On the inverse side (Tag), you need separate collections for each entity type (`posts`, `videos`) rather than a single polymorphic collection.
 4. **Same discriminator property** - All entities sharing a pivot table must use the same `discriminator` property name.
+
+### Union-target M:N Polymorphic Relations
+
+The previous section covers the case where several owner types (`Post`, `Video`) share one pivot pointing at a single target (`Tag`) — the discriminator identifies the owner type. The mirror shape is also supported: a single owner holding a **union collection** of multiple target types, where the discriminator identifies the target type on each pivot row.
+
+```ts
+@Entity()
+class Image {
+  @PrimaryKey() id!: number;
+  @Property()    url!: string;
+}
+
+@Entity()
+class Video {
+  @PrimaryKey() id!: number;
+  @Property()    src!: string;
+}
+
+@Entity()
+class Post {
+  @PrimaryKey() id!: number;
+  @Property()   title!: string;
+
+  @ManyToMany(() => [Image, Video], undefined, {
+    pivotTable: 'attachables',
+    discriminator: 'attachable',
+    owner: true,
+  })
+  attachments = new Collection<Image | Video>(this);
+}
+```
+
+The pivot table stores `(post_id, attachable_type, attachable_id)` — `attachable_type` holds the target discriminator (`'image'` or `'video'`), and `attachable_id` points at the row in the corresponding target table. There is no FK constraint on `attachable_id` since it spans multiple target tables.
+
+```sql
+CREATE TABLE attachables (
+  post_id         INTEGER,     -- FK to post.id
+  attachable_type VARCHAR(255),-- 'image' or 'video'
+  attachable_id   INTEGER,     -- FK to image.id or video.id
+  PRIMARY KEY (post_id, attachable_type, attachable_id)
+);
+```
+
+Use it like a regular collection — you can mix target types freely, and loaded items come back as instances of the correct concrete class:
+
+```ts
+const post = new Post();
+post.attachments.add(new Image(), new Video());
+await em.persist(post).flush();
+
+const loaded = await em.findOneOrFail(Post, post.id, { populate: ['attachments'] });
+for (const a of loaded.attachments) {
+  if (a instanceof Image) { /* ... */ }
+  if (a instanceof Video) { /* ... */ }
+}
+```
+
+#### How union-target loading works
+
+When populating a union-target collection, MikroORM runs one query against the pivot table to read the owner FK, discriminator, and target FK per row, then bulk-loads each target table in a single additional query (one per distinct target type that appears in the pivot). For most cases this means at most `1 + N` queries where `N` is the number of target types that actually have rows, not the number of target types declared.
+
+#### Inverse side
+
+Each target entity can declare its own inverse collection pointing back at the owner. Those are regular M:N inverse sides and load correctly — MikroORM filters the shared pivot by the target's discriminator value automatically:
+
+```ts
+@Entity()
+class Image {
+  // ...
+  @ManyToMany(() => Post, p => p.attachments)
+  posts = new Collection<Post>(this);
+}
+
+@Entity()
+class Video {
+  // ...
+  @ManyToMany(() => Post, p => p.attachments)
+  posts = new Collection<Post>(this);
+}
+
+// Usage
+const img = await em.findOneOrFail(Image, id, { populate: ['posts'] });
+// img.posts contains only posts where this image is attached — the pivot is filtered
+// by attachable_type='image' automatically.
+```
+
+The inverse collection on each target only sees pivot rows for that target class, so `Image.posts` and `Video.posts` are cleanly separated.
+
+#### Caveats
+
+1. **TypeScript limitation** — `Collection<Image | Video>.add()` is typed against the first union member, so you may need a `@ts-expect-error` or cast when adding mixed types until TypeScript's distributive behavior is expanded. This mirrors the known limitation of polymorphic `@ManyToOne(() => [A, B])`.
+2. **Shared discriminator values** — all declared targets must have distinct `tableName`s, since the discriminator column is populated from `tableName`.
+3. **Merged inverse-side collection not yet supported** — if you want the inverse side of the Rails-style pivot (multiple owners → one target, e.g. `Post.tags` / `Video.tags`) to collapse into a single `Collection<Post | Video>` on `Tag`, you still declare separate `Tag.posts` / `Tag.videos` collections for now. Planned as a follow-up.

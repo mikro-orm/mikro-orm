@@ -24,6 +24,15 @@ export class QueryHelper {
   static readonly SUPPORTED_OPERATORS = ['>', '<', '<=', '>=', '!', '!='];
 
   /**
+   * True when the property is a polymorphic M:N with multiple target types sharing a single pivot
+   * (e.g. `Post.attachments: Collection<Image | Video>`), as opposed to Rails-style polymorphic
+   * M:N where multiple owners share one pivot pointing at a single target.
+   */
+  static isUnionTargetPolymorphic(prop: { polymorphic?: boolean; polymorphTargets?: readonly unknown[] }): boolean {
+    return !!prop.polymorphic && (prop.polymorphTargets?.length ?? 0) > 1;
+  }
+
+  /**
    * Finds the discriminator value (key) for a given entity class in a discriminator map.
    * Walks up the prototype chain so TPT subclasses resolve to their root's key.
    */
