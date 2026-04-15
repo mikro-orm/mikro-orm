@@ -2050,7 +2050,9 @@ export class MetadataDiscovery {
       return;
     }
 
-    if (Array.isArray(prop.default) && prop.customType) {
+    // TODO(v8): always convert the default via the custom type — the `compareAsType() !== 'any'`
+    // guard preserves the legacy convention where JSON defaults are passed pre-stringified.
+    if (prop.customType && prop.customType.compareAsType() !== 'any') {
       val = prop.customType.convertToDatabaseValue(prop.default, this.#platform)!;
     }
 
