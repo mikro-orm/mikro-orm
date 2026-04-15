@@ -184,19 +184,16 @@ describe('polymorphic ManyToOne with TPT targets', () => {
   // -------------------------------------------------------------------------
 
   test('SELECT JOINED: polymorphic populate resolves TPT child entities', async () => {
-    const conn = orm.em.getConnection();
-    await conn.execute(`insert into \`animal\` (\`name\`) values ('Buddy')`);
-    const [{ id: animalId }] = await conn.execute(`select last_insert_rowid() as id`);
-    await conn.execute(`insert into \`dog\` (\`id\`, \`breed\`) values (${animalId}, 'Labrador')`);
-    await conn.execute(
-      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('Walk the dog', 'animal', ${animalId})`,
-    );
+    const dog = orm.em.create(Dog, { name: 'Buddy', breed: 'Labrador' });
+    const person = orm.em.create(Person, { personName: 'Bob' });
+    await orm.em.flush();
 
-    await conn.execute(`insert into \`person\` (\`person_name\`) values ('Bob')`);
-    const [{ id: personId }] = await conn.execute(`select last_insert_rowid() as id`);
-    await conn.execute(
-      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('Person walked', 'person', ${personId})`,
-    );
+    // @ts-expect-error TS limitation: polymorphic union doesn't accept a single-target ref
+    orm.em.create(Activity, { description: 'Walk the dog', subject: ref(dog) });
+    // @ts-expect-error
+    orm.em.create(Activity, { description: 'Person walked', subject: ref(person) });
+    await orm.em.flush();
+    orm.em.clear();
 
     const activities = await orm.em.find(Activity, {}, { populate: ['subject'], strategy: LoadStrategy.JOINED });
 
@@ -215,13 +212,13 @@ describe('polymorphic ManyToOne with TPT targets', () => {
   });
 
   test('SELECT JOINED: Cat (second TPT child)', async () => {
-    const conn = orm.em.getConnection();
-    await conn.execute(`insert into \`animal\` (\`name\`) values ('Whiskers')`);
-    const [{ id: animalId }] = await conn.execute(`select last_insert_rowid() as id`);
-    await conn.execute(`insert into \`cat\` (\`id\`, \`indoor\`) values (${animalId}, 1)`);
-    await conn.execute(
-      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('Cat adopted', 'animal', ${animalId})`,
-    );
+    const cat = orm.em.create(Cat, { name: 'Whiskers', indoor: true });
+    await orm.em.flush();
+
+    // @ts-expect-error
+    orm.em.create(Activity, { description: 'Cat adopted', subject: ref(cat) });
+    await orm.em.flush();
+    orm.em.clear();
 
     const activities = await orm.em.find(Activity, {}, { populate: ['subject'], strategy: LoadStrategy.JOINED });
 
@@ -232,16 +229,17 @@ describe('polymorphic ManyToOne with TPT targets', () => {
   });
 
   test('SELECT JOINED: nested TPT grandchild hydrates all intermediate properties', async () => {
-    const conn = orm.em.getConnection();
-    await conn.execute(`insert into \`animal\` (\`name\`) values ('Kaiser')`);
-    const [{ id: animalId }] = await conn.execute(`select last_insert_rowid() as id`);
-    await conn.execute(`insert into \`dog\` (\`id\`, \`breed\`) values (${animalId}, 'German Shepherd')`);
-    await conn.execute(
-      `insert into \`german_shepherd\` (\`id\`, \`lineage\`) values (${animalId}, 'Schutzhund Champion')`,
-    );
-    await conn.execute(
-      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('GSD activity', 'animal', ${animalId})`,
-    );
+    const gs = orm.em.create(GermanShepherd, {
+      name: 'Kaiser',
+      breed: 'German Shepherd',
+      lineage: 'Schutzhund Champion',
+    });
+    await orm.em.flush();
+
+    // @ts-expect-error
+    orm.em.create(Activity, { description: 'GSD activity', subject: ref(gs) });
+    await orm.em.flush();
+    orm.em.clear();
 
     const activities = await orm.em.find(
       Activity,
@@ -262,19 +260,16 @@ describe('polymorphic ManyToOne with TPT targets', () => {
   // -------------------------------------------------------------------------
 
   test('SELECT_IN: polymorphic populate resolves TPT child entities', async () => {
-    const conn = orm.em.getConnection();
-    await conn.execute(`insert into \`animal\` (\`name\`) values ('Buddy')`);
-    const [{ id: animalId }] = await conn.execute(`select last_insert_rowid() as id`);
-    await conn.execute(`insert into \`dog\` (\`id\`, \`breed\`) values (${animalId}, 'Labrador')`);
-    await conn.execute(
-      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('Walk the dog', 'animal', ${animalId})`,
-    );
+    const dog = orm.em.create(Dog, { name: 'Buddy', breed: 'Labrador' });
+    const person = orm.em.create(Person, { personName: 'Bob' });
+    await orm.em.flush();
 
-    await conn.execute(`insert into \`person\` (\`person_name\`) values ('Bob')`);
-    const [{ id: personId }] = await conn.execute(`select last_insert_rowid() as id`);
-    await conn.execute(
-      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('Person walked', 'person', ${personId})`,
-    );
+    // @ts-expect-error
+    orm.em.create(Activity, { description: 'Walk the dog', subject: ref(dog) });
+    // @ts-expect-error
+    orm.em.create(Activity, { description: 'Person walked', subject: ref(person) });
+    await orm.em.flush();
+    orm.em.clear();
 
     const activities = await orm.em.find(Activity, {}, { populate: ['subject'], strategy: LoadStrategy.SELECT_IN });
 
@@ -293,16 +288,17 @@ describe('polymorphic ManyToOne with TPT targets', () => {
   });
 
   test('SELECT_IN: nested TPT grandchild hydrates correctly', async () => {
-    const conn = orm.em.getConnection();
-    await conn.execute(`insert into \`animal\` (\`name\`) values ('Kaiser')`);
-    const [{ id: animalId }] = await conn.execute(`select last_insert_rowid() as id`);
-    await conn.execute(`insert into \`dog\` (\`id\`, \`breed\`) values (${animalId}, 'German Shepherd')`);
-    await conn.execute(
-      `insert into \`german_shepherd\` (\`id\`, \`lineage\`) values (${animalId}, 'Schutzhund Champion')`,
-    );
-    await conn.execute(
-      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('GSD activity', 'animal', ${animalId})`,
-    );
+    const gs = orm.em.create(GermanShepherd, {
+      name: 'Kaiser',
+      breed: 'German Shepherd',
+      lineage: 'Schutzhund Champion',
+    });
+    await orm.em.flush();
+
+    // @ts-expect-error
+    orm.em.create(Activity, { description: 'GSD activity', subject: ref(gs) });
+    await orm.em.flush();
+    orm.em.clear();
 
     const activities = await orm.em.find(
       Activity,
@@ -599,44 +595,23 @@ describe('polymorphic ManyToOne with TPT targets', () => {
   // -------------------------------------------------------------------------
 
   test('mixed query: Dog, Cat, GermanShepherd, and Person all in one populate', async () => {
-    const conn = orm.em.getConnection();
+    const dog = orm.em.create(Dog, { name: 'Buddy', breed: 'Labrador' });
+    const cat = orm.em.create(Cat, { name: 'Whiskers', indoor: true });
+    const gsd = orm.em.create(GermanShepherd, { name: 'Kaiser', breed: 'German Shepherd', lineage: 'Champion' });
+    const person = orm.em.create(Person, { personName: 'Alice' });
+    await orm.em.flush();
 
-    // Dog
-    await conn.execute(`insert into \`animal\` (\`name\`) values ('Buddy')`);
-    let [{ id }] = await conn.execute(`select last_insert_rowid() as id`);
-    await conn.execute(`insert into \`dog\` (\`id\`, \`breed\`) values (${id}, 'Labrador')`);
-    await conn.execute(
-      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('dog activity', 'animal', ${id})`,
-    );
-
-    // Cat
-    await conn.execute(`insert into \`animal\` (\`name\`) values ('Whiskers')`);
-    [{ id }] = await conn.execute(`select last_insert_rowid() as id`);
-    await conn.execute(`insert into \`cat\` (\`id\`, \`indoor\`) values (${id}, 1)`);
-    await conn.execute(
-      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('cat activity', 'animal', ${id})`,
-    );
-
-    // GermanShepherd
-    await conn.execute(`insert into \`animal\` (\`name\`) values ('Kaiser')`);
-    [{ id }] = await conn.execute(`select last_insert_rowid() as id`);
-    await conn.execute(`insert into \`dog\` (\`id\`, \`breed\`) values (${id}, 'German Shepherd')`);
-    await conn.execute(`insert into \`german_shepherd\` (\`id\`, \`lineage\`) values (${id}, 'Champion')`);
-    await conn.execute(
-      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('gsd activity', 'animal', ${id})`,
-    );
-
-    // Person
-    await conn.execute(`insert into \`person\` (\`person_name\`) values ('Alice')`);
-    [{ id }] = await conn.execute(`select last_insert_rowid() as id`);
-    await conn.execute(
-      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('person activity', 'person', ${id})`,
-    );
-
-    // Null subject
-    await conn.execute(
-      `insert into \`activity\` (\`description\`, \`subject_type\`, \`subject_id\`) values ('null activity', null, null)`,
-    );
+    // @ts-expect-error TS limitation: polymorphic union doesn't accept a single-target ref
+    orm.em.create(Activity, { description: 'dog activity', subject: ref(dog) });
+    // @ts-expect-error
+    orm.em.create(Activity, { description: 'cat activity', subject: ref(cat) });
+    // @ts-expect-error
+    orm.em.create(Activity, { description: 'gsd activity', subject: ref(gsd) });
+    // @ts-expect-error
+    orm.em.create(Activity, { description: 'person activity', subject: ref(person) });
+    orm.em.create(Activity, { description: 'null activity', subject: null });
+    await orm.em.flush();
+    orm.em.clear();
 
     const activities = await orm.em.find(Activity, {}, { populate: ['subject'], orderBy: { description: 'asc' } });
 
