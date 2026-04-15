@@ -133,16 +133,26 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     }
 
     this.initialized = true;
+    await this.initPaths();
+  }
 
-    if (!this.options.migrationsList) {
-      const { fs } = await import('@mikro-orm/core/fs-utils');
-      this.detectSourceFolder(fs);
+  protected async initPaths(): Promise<void> {
+    if (this.absolutePath || this.options.migrationsList) {
+      return;
+    }
 
-      /* v8 ignore next */
-      const key =
-        this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs ? 'pathTs' : 'path';
-      this.absolutePath = fs.absolutePath(this.options[key]!, this.config.get('baseDir'));
+    const { fs } = await import('@mikro-orm/core/fs-utils');
+    this.detectSourceFolder(fs);
+
+    /* v8 ignore next */
+    const key = this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs ? 'pathTs' : 'path';
+    this.absolutePath = fs.absolutePath(this.options[key]!, this.config.get('baseDir'));
+
+    try {
       fs.ensureDir(this.absolutePath);
+    } catch {
+      // read-only filesystem — read-only operations (e.g. `getPending` with a
+      // snapshot) may still succeed; write operations will fail on their own
     }
   }
 
@@ -235,7 +245,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     }
   }
 
-  private async discoverMigrations(): Promise<RunnableMigration[]> {
+  protected async discoverMigrations(): Promise<RunnableMigration[]> {
     if (this.options.migrationsList) {
       return this.options.migrationsList.map(migration => {
         if (typeof migration === 'function') {

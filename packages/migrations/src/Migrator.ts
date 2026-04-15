@@ -90,7 +90,8 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
    * @inheritDoc
    */
   async create(path?: string, blank = false, initial = false, name?: string): Promise<MigrationResult> {
-    await this.init();
+    const offline = !initial && (await this.hasSnapshot());
+    await (offline ? this.initPaths() : this.init());
 
     if (initial) {
       return this.createInitial(path, name, blank);
@@ -110,6 +111,36 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
       code: migration[0],
       diff,
     };
+  }
+
+  override async getPending(): Promise<MigrationInfo[]> {
+    if (!(await this.hasSnapshot())) {
+      return super.getPending();
+    }
+
+    await this.initPaths();
+    const all = await this.discoverMigrations();
+
+    // probe the DB via `ensureTable` — if it fails, the DB is unreachable and
+    // we treat every discovered migration as pending; otherwise let errors
+    // from `storage.executed()` propagate so real bugs are not swallowed
+    try {
+      await (this.storage as MigrationStorage).ensureTable();
+    } catch {
+      return all.map(m => ({ name: m.name, path: m.path }));
+    }
+
+    const executed = new Set(await this.storage.executed());
+    return all.filter(m => !executed.has(m.name)).map(m => ({ name: m.name, path: m.path }));
+  }
+
+  private async hasSnapshot(): Promise<boolean> {
+    if (!this.options.snapshot) {
+      return false;
+    }
+
+    const { fs } = await import('@mikro-orm/core/fs-utils');
+    return fs.pathExists(await this.getSnapshotPath());
   }
 
   async checkSchema(): Promise<boolean> {
