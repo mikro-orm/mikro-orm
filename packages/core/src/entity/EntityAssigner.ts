@@ -172,7 +172,9 @@ export class EntityAssigner {
     }
 
     if (prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.has(prop.runtimeType) && (prop.setter || !prop.getter)) {
-      validateProperty(prop, value, entity);
+      if (!customType) {
+        validateProperty(prop, value, entity);
+      }
       return (entity[prop.name] = value);
     }
 
