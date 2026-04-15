@@ -634,8 +634,11 @@ export class MetadataDiscovery {
       meta.primaryKeys.map(primaryKey => meta.properties[primaryKey].fieldNames),
     );
 
-    // For polymorphic M:N, use discriminator base name for FK column (e.g., taggable_id instead of post_id)
-    if (prop.polymorphic && prop.discriminator) {
+    // Union-target polymorphic M:N: owner side is fixed (real FK), target side uses discriminator-derived names.
+    const isUnionTargetMN = prop.polymorphic && prop.polymorphTargets && prop.polymorphTargets.length > 1;
+
+    if (prop.polymorphic && prop.discriminator && !isUnionTargetMN) {
+      // Rails-style: owner side is polymorphic, uses discriminator base name (e.g. taggable_id instead of post_id)
       prop.joinColumns ??= prop.referencedColumnNames.map(referencedColumnName =>
         this.#namingStrategy.joinKeyColumnName(
           prop.discriminator!,
@@ -649,7 +652,15 @@ export class MetadataDiscovery {
       );
     }
 
-    prop.inverseJoinColumns ??= this.initManyToOneFieldName(prop, meta2.root.className);
+    if (isUnionTargetMN) {
+      // Target side uses discriminator base name (e.g. attachable_id — shared across Image/Video)
+      const targetPkCols = Utils.flatten(meta2.primaryKeys.map(pk => meta2.properties[pk].fieldNames));
+      prop.inverseJoinColumns ??= targetPkCols.map(fieldName =>
+        this.#namingStrategy.joinKeyColumnName(prop.discriminator!, fieldName, targetPkCols.length > 1),
+      );
+    } else {
+      prop.inverseJoinColumns ??= this.initManyToOneFieldName(prop, meta2.root.className);
+    }
   }
 
   private isExplicitTableName(meta: EntityMetadata): boolean {
@@ -936,8 +947,11 @@ export class MetadataDiscovery {
       }
     }
 
-    // For polymorphic M:N, create discriminator column and polymorphic FK
-    if (prop.polymorphic && prop.discriminatorColumn) {
+    // Union-target polymorphic M:N: discriminator + target FK share the pivot across multiple target types
+    if (prop.polymorphic && prop.discriminatorColumn && prop.polymorphTargets && prop.polymorphTargets.length > 1) {
+      this.defineUnionTargetPolymorphicPivotProperties(pivotMeta2, meta, prop);
+    } else if (prop.polymorphic && prop.discriminatorColumn) {
+      // Rails-style polymorphic M:N: multiple owners share the pivot, single target type
       this.definePolymorphicPivotProperties(pivotMeta2, meta, prop, targetMeta);
     } else {
       pivotMeta2.properties[meta.name + '_owner'] = this.definePivotProperty(
@@ -1080,6 +1094,91 @@ export class MetadataDiscovery {
 
     pivotMeta.polymorphicDiscriminatorMap ??= {};
     pivotMeta.polymorphicDiscriminatorMap[prop.discriminatorValue!] = meta.class;
+  }
+
+  /**
+   * Mirror of definePolymorphicPivotProperties for union-target M:N
+   * (e.g. Post.attachments -> Image | Video via shared pivot with a target-side discriminator).
+   *
+   * Pivot shape:
+   *   (owner_fk..., discriminator_column, target_fk...)
+   *   - owner side is a normal M:1 to the single owner entity
+   *   - target side is a discriminator column + per-target-type virtual M:1 relations
+   */
+  private defineUnionTargetPolymorphicPivotProperties(
+    pivotMeta: EntityMetadata,
+    meta: EntityMetadata,
+    prop: EntityProperty,
+  ): void {
+    const discriminatorColumn = prop.discriminatorColumn!;
+    const targets = prop.polymorphTargets!;
+    const isOwnerCompositePK = meta.compositePK;
+    const needFixedOrder = isOwnerCompositePK || targets.some(t => t.compositePK || t.primaryKeys.length > 1);
+
+    // Composite PK owners (or composite PK targets) force fixedOrder auto-increment PK
+    // because a composite PK across (owner_cols, discriminator, target_cols) gets unwieldy.
+    if (needFixedOrder && !prop.fixedOrder) {
+      prop.fixedOrder = true;
+      const primaryProp = this.defineFixedOrderProperty(prop, targets[0]);
+      pivotMeta.properties[primaryProp.name] = primaryProp;
+      pivotMeta.compositePK = false;
+    }
+
+    // Owner side: normal M:1 (single entity type)
+    pivotMeta.properties[meta.name + '_owner'] = this.definePivotProperty(
+      prop,
+      meta.name + '_owner',
+      meta.class,
+      prop.discriminator!,
+      true,
+      false,
+    );
+
+    // Discriminator column — nullable=false, part of composite PK unless fixedOrder kicked in
+    const discriminatorProp = this.createPivotScalarProperty(
+      discriminatorColumn,
+      [this.#platform.getVarcharTypeDeclarationSQL(prop)],
+      [discriminatorColumn],
+      { type: 'string', primary: !prop.fixedOrder, nullable: false },
+    );
+    this.initFieldName(discriminatorProp);
+    pivotMeta.properties[discriminatorColumn] = discriminatorProp;
+
+    // Target-side ID column(s) — nullable because different target types may have different PK column shapes
+    const firstTargetColumnTypes = this.getPrimaryKeyColumnTypes(targets[0]);
+
+    if (targets.some(t => t.compositePK)) {
+      // Composite target PKs: emit separate nullable scalar cols, plus a virtual combined prop
+      for (let i = 0; i < prop.inverseJoinColumns.length; i++) {
+        pivotMeta.properties[prop.inverseJoinColumns[i]] = this.createPivotScalarProperty(prop.inverseJoinColumns[i], [
+          firstTargetColumnTypes[i],
+        ]);
+      }
+      pivotMeta.properties[prop.discriminator!] = this.createPivotScalarProperty(
+        prop.discriminator!,
+        firstTargetColumnTypes,
+        [...prop.inverseJoinColumns],
+        { type: targets[0].className, persist: false },
+      );
+    } else {
+      pivotMeta.properties[prop.discriminator!] = this.createPivotScalarProperty(
+        prop.discriminator!,
+        firstTargetColumnTypes,
+        [...prop.inverseJoinColumns],
+        { type: targets[0].className, primary: !prop.fixedOrder, nullable: false },
+      );
+    }
+
+    // Per-target virtual M:1 relations enable single-query JOIN loading (one LEFT JOIN per target)
+    pivotMeta.polymorphicDiscriminatorMap ??= {};
+
+    for (const targetMeta of targets) {
+      const relationName = `${prop.discriminator}_${targetMeta.tableName}`;
+      const relation = this.definePolymorphicOwnerRelation(prop, relationName, targetMeta);
+      relation.joinColumns = relation.fieldNames = relation.ownColumns = [...prop.inverseJoinColumns];
+      pivotMeta.properties[relationName] = relation;
+      pivotMeta.polymorphicDiscriminatorMap[targetMeta.tableName] = targetMeta.class;
+    }
   }
 
   /**
@@ -1371,8 +1470,9 @@ export class MetadataDiscovery {
     prop.createForeignKeyConstraint = false;
 
     const isToOne = [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind);
+    const isUnionTargetMN = prop.kind === ReferenceKind.MANY_TO_MANY && Array.isArray(prop.target);
 
-    if (isToOne) {
+    if (isToOne || isUnionTargetMN) {
       const types = prop.type.split(/ ?\| ?/);
       prop.polymorphTargets = discovered.filter(m => types.includes(m.className) && !m.embeddable);
       prop.targetMeta = prop.polymorphTargets[0];
@@ -1397,7 +1497,7 @@ export class MetadataDiscovery {
       }
 
       prop.discriminatorMap = normalizedMap;
-    } else if (isToOne) {
+    } else if (isToOne || isUnionTargetMN) {
       prop.discriminatorMap = {};
       const tableNameToTarget = new Map<string, EntityMetadata>();
       for (const target of prop.polymorphTargets!) {

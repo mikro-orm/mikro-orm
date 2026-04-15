@@ -156,6 +156,14 @@ export class PivotCollectionPersister<Entity extends object> {
     let data: Primary<Entity>[];
     let keys: string[];
 
+    // Union-target polymorphic M:N prepends the per-row discriminator to `fks` in syncCollections.
+    const isUnionTargetMN = prop.polymorphic && (prop.polymorphTargets?.length ?? 0) > 1;
+    let perRowDiscriminator: Primary<Entity> | undefined;
+
+    if (isUnionTargetMN && !deleteAll && fks.length > 0) {
+      [perRowDiscriminator, ...fks] = fks;
+    }
+
     if (deleteAll) {
       data = pks;
       keys = prop.joinColumns;
@@ -166,7 +174,11 @@ export class PivotCollectionPersister<Entity extends object> {
         : [...prop.joinColumns, ...prop.inverseJoinColumns];
     }
 
-    if (prop.polymorphic && prop.discriminatorColumn && prop.discriminatorValue) {
+    if (perRowDiscriminator !== undefined) {
+      data = [perRowDiscriminator, ...data];
+      keys = [prop.discriminatorColumn!, ...keys];
+    } else if (prop.polymorphic && prop.discriminatorColumn && prop.discriminatorValue) {
+      // Rails-style polymorphic M:N: static discriminator per prop
       data = [prop.discriminatorValue as Primary<Entity>, ...data];
       keys = [prop.discriminatorColumn, ...keys];
     }

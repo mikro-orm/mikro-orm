@@ -1648,8 +1648,20 @@ export abstract class AbstractSqlDriver<
       const pks = wrapped.getPrimaryKeys(true)!;
       const snap = coll.getSnapshot();
       const includes = <T>(arr: T[][], item: T[]) => !!arr.find(i => this.comparePrimaryKeyArrays(i, item));
-      const snapshot = snap ? snap.map(item => helper(item).getPrimaryKeys(true)!) : [];
-      const current = coll.getItems(false).map(item => helper(item).getPrimaryKeys(true)!);
+      // For union-target polymorphic M:N, prepend the per-row discriminator value so the pivot
+      // persister can write it alongside the FK id. Same prototype-walking helper that handles
+      // TPT subclasses in polymorphic M:1 (QueryHelper.findDiscriminatorValue).
+      const isUnionTargetMN = coll.property.polymorphic && (coll.property.polymorphTargets?.length ?? 0) > 1;
+      const toDiff = (item: AnyEntity) => {
+        const keys = helper(item).getPrimaryKeys(true)!;
+        if (!isUnionTargetMN) {
+          return keys;
+        }
+        const disc = QueryHelper.findDiscriminatorValue(coll.property.discriminatorMap!, item.constructor);
+        return [disc as Primary<any>, ...keys];
+      };
+      const snapshot = snap ? snap.map(toDiff) : [];
+      const current = coll.getItems(false).map(toDiff);
       const deleteDiff = snap ? snapshot.filter(item => !includes(current, item)) : true;
       const insertDiff = current.filter(item => !includes(snapshot, item));
       const target = snapshot.filter(item => includes(current, item)).concat(...insertDiff);
@@ -1751,6 +1763,10 @@ export abstract class AbstractSqlDriver<
     }
 
     const pivotMeta = this.metadata.get(prop.pivotEntity);
+
+    if (prop.polymorphic && prop.discriminatorColumn && prop.polymorphTargets && prop.polymorphTargets.length > 1) {
+      return this.loadFromUnionTargetPolymorphicPivotTable(prop, owners, where, orderBy, ctx, options, pivotJoin);
+    }
 
     if (prop.polymorphic && prop.discriminatorColumn && prop.discriminatorValue) {
       return this.loadFromPolymorphicPivotTable(prop, owners, where, orderBy, ctx, options, pivotJoin);
@@ -1983,6 +1999,110 @@ export abstract class AbstractSqlDriver<
     });
 
     return this.buildPivotResultMap(owners, res, tagProp.name, ownerRelationName);
+  }
+
+  /**
+   * Load a union-target polymorphic M:N pivot (e.g. Post.attachments -> Image | Video).
+   * Each pivot row's discriminator column selects which target table to hydrate.
+   */
+  protected async loadFromUnionTargetPolymorphicPivotTable<T extends object, O extends object>(
+    prop: EntityProperty,
+    owners: Primary<O>[][],
+    where: FilterQuery<any> = {} as FilterQuery<any>,
+    orderBy?: OrderDefinition<T>,
+    ctx?: Transaction,
+    options?: FindOptions<T, any, any, any>,
+    pivotJoin?: boolean,
+  ): Promise<Dictionary<T[]>> {
+    const pivotMeta = this.metadata.get(prop.pivotEntity);
+    const targets = prop.polymorphTargets!;
+
+    // The pivot has a single real M:1 to the owner, plus a discriminator column and a FK scalar
+    // pointing at whichever target table each row references. We use the owner M:1 for the owner
+    // filter, and read the discriminator + FK as scalars to dispatch per row.
+    const ownerProp = pivotMeta.relations.find(r => r.persist !== false && !r.polymorphic)!;
+    const discriminatorColumn = prop.discriminatorColumn!;
+
+    const ownerMeta = ownerProp.targetMeta as EntityMetadata<O>;
+    const pkProp = ownerMeta.properties[ownerMeta.primaryKeys[0]];
+    const needsConversion = pkProp?.customType?.ensureComparable(ownerMeta, pkProp) && !ownerMeta.compositePK;
+    let ownerPks = ownerMeta.compositePK ? owners : owners.map(o => o[0]);
+
+    if (needsConversion) {
+      ownerPks = ownerPks.map(v => pkProp.customType!.convertToDatabaseValue(v, this.platform, { mode: 'query' }));
+    }
+
+    // Fetch the pivot rows with their discriminator + target FK as scalars
+    const pivotRows = (await this.find(pivotMeta.class, { [ownerProp.name]: { $in: ownerPks } } as any, {
+      ctx,
+      orderBy: this.getPivotOrderBy(prop, ownerProp, orderBy, options?.orderBy),
+      fields: [ownerProp.name, discriminatorColumn, prop.discriminator!] as any[],
+      populateWhere: undefined,
+      // @ts-ignore
+      _populateWhere: 'infer',
+    })) as EntityData<any>[];
+
+    if (pivotJoin) {
+      // ref mode — return just references without hydrating the target entities
+      const map = this.buildPivotResultMap<T, O>(owners, pivotRows, ownerProp.name, prop.discriminator!);
+      return map;
+    }
+
+    // Group pivot rows by target class so we can bulk-fetch each target type in one query
+    const rowsByTarget = new Map<EntityMetadata, EntityData<any>[]>();
+    for (const row of pivotRows) {
+      const discValue = (row as Dictionary)[discriminatorColumn] as string;
+      const targetClass = prop.discriminatorMap![discValue];
+      const targetMeta = targets.find(t => t.class === targetClass);
+
+      /* v8 ignore next 3 - defensive: unknown discriminator value */
+      if (!targetMeta) {
+        continue;
+      }
+
+      const list = rowsByTarget.get(targetMeta) ?? [];
+      list.push(row);
+      rowsByTarget.set(targetMeta, list);
+    }
+
+    // Per-target bulk load, then attach hydrated entities back onto their pivot rows
+    const populate = (options?.populate as PopulateOptions<T>[]) ?? [];
+
+    for (const [targetMeta, rows] of rowsByTarget) {
+      const targetIds = rows.map(r => (r as Dictionary)[prop.discriminator!]);
+      const cond = { [targetMeta.primaryKeys[0]]: { $in: targetIds } };
+
+      if (!Utils.isEmpty(where)) {
+        Object.assign(cond, where);
+      }
+
+      // strip outer find's orderBy/fields/etc. before bulk-loading targets by PK — those apply to the
+      // owner query, not each polymorph target (Image and Video wouldn't share an orderBy field).
+      const { orderBy: _o, fields: _f, exclude: _e, ...childOptions } = (options ?? {}) as Dictionary;
+      const results = (await this.find<any>(targetMeta.class, cond as FilterQuery<any>, {
+        ctx,
+        ...childOptions,
+        populate: populate as any,
+      })) as EntityData<any>[];
+      const primaryKey = targetMeta.primaryKeys[0];
+      const byPk = new Map<string, EntityData<any>>();
+      for (const row of results) {
+        // mark the data with the concrete class so findChildrenFromPivotTable can
+        // dispatch factory.create to the right type per item
+        Object.defineProperty(row, 'constructor', {
+          value: targetMeta.class,
+          enumerable: false,
+          configurable: true,
+        });
+        byPk.set(Utils.getPrimaryKeyHash(Utils.asArray((row as Dictionary)[primaryKey])), row);
+      }
+      for (const row of rows) {
+        const pkHash = Utils.getPrimaryKeyHash(Utils.asArray((row as Dictionary)[prop.discriminator!]));
+        (row as Dictionary)[prop.discriminator!] = byPk.get(pkHash);
+      }
+    }
+
+    return this.buildPivotResultMap<T, O>(owners, pivotRows, ownerProp.name, prop.discriminator!);
   }
 
   /**

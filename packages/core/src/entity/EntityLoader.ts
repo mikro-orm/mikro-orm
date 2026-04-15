@@ -902,18 +902,27 @@ export class EntityLoader {
       pivotJoin,
     );
     const children: AnyEntity[][] = [];
+    // For union-target polymorphic M:N the driver marks each item with its concrete class
+    // via a non-enumerable `constructor` property, so we dispatch to the right factory call per item.
+    const isUnionTargetMN = prop.polymorphic && (prop.polymorphTargets?.length ?? 0) > 1;
+    const classFor = (item: Dictionary): EntityName<any> => {
+      if (isUnionTargetMN && item.constructor && item.constructor !== Object) {
+        return item.constructor as EntityName<any>;
+      }
+      return prop.targetMeta!.class;
+    };
 
     for (let i = 0; i < filtered.length; i++) {
       const entity = filtered[i] as AnyEntity;
       const items = map[Utils.getPrimaryKeyHash(ids[i] as string[])].map(item => {
         if (pivotJoin) {
-          return this.#em.getReference(prop.targetMeta!.class, item, {
+          return this.#em.getReference(classFor(item as Dictionary), item, {
             convertCustomTypes: true,
             schema: options.schema ?? this.#em.config.get('schema'),
           });
         }
 
-        const entity = this.#em.getEntityFactory().create(prop.targetMeta!.class, item, {
+        const entity = this.#em.getEntityFactory().create(classFor(item as Dictionary), item, {
           refresh,
           merge: true,
           convertCustomTypes: true,
