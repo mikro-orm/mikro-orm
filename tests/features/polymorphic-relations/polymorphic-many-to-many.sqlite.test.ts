@@ -405,6 +405,55 @@ describe('polymorphic many-to-many relations', () => {
     expect(owners.some(o => o instanceof Post)).toBe(true);
     expect(owners.some(o => o instanceof Video)).toBe(true);
   });
+
+  test('merged inverse: adding via Tag.owners propagates to owning side', async () => {
+    const tag = new Tag('Propagated');
+    const post = new Post('Post via inverse');
+    await orm.em.persist([tag, post]).flush();
+    orm.em.clear();
+
+    const loaded = await orm.em.findOneOrFail(Tag, tag.id, { populate: ['owners'] });
+    expect(loaded.owners).toHaveLength(0);
+
+    const existingPost = await orm.em.findOneOrFail(Post, post.id, { populate: ['tags'] });
+    loaded.owners.add(existingPost);
+
+    // Propagation should add tag to the owning side
+    expect(existingPost.tags.contains(loaded)).toBe(true);
+
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Verify persisted via owning side
+    const reloaded = await orm.em.findOneOrFail(Tag, tag.id, { populate: ['owners'] });
+    expect(reloaded.owners).toHaveLength(1);
+    expect(reloaded.owners[0]).toBeInstanceOf(Post);
+  });
+
+  test('merged inverse: removing via Tag.owners propagates to owning side', async () => {
+    const tag = new Tag('Removable');
+    const post = new Post('Post to remove');
+    const video = new Video('https://example.com/keep.mp4');
+
+    post.tags.add(tag);
+    video.tags.add(tag);
+    await orm.em.persist([post, video]).flush();
+    orm.em.clear();
+
+    const loaded = await orm.em.findOneOrFail(Tag, tag.id, { populate: ['owners'] });
+    expect(loaded.owners).toHaveLength(2);
+
+    const postOwner = loaded.owners.getItems().find(o => o instanceof Post)!;
+    loaded.owners.remove(postOwner);
+
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Only the video should remain
+    const reloaded = await orm.em.findOneOrFail(Tag, tag.id, { populate: ['owners'] });
+    expect(reloaded.owners).toHaveLength(1);
+    expect(reloaded.owners[0]).toBeInstanceOf(Video);
+  });
 });
 
 // Test for custom discriminator map in polymorphic M:N
