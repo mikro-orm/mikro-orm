@@ -485,21 +485,25 @@ export class QueryHelper {
       }
 
       const prop = meta.properties[k as EntityKey<T>];
+      const polymorphic = !!prop?.polymorphic && (prop.fieldNames?.length ?? 0) > 1;
+      const composite = (prop?.joinColumns?.length ?? 0) > 1;
 
-      if (!prop?.joinColumns || prop.joinColumns.length <= 1) {
+      if (!polymorphic && !composite) {
         continue;
       }
 
+      const expand = (entity: any) =>
+        polymorphic
+          ? this.extractPolymorphicJoinColumnValues(entity, prop)
+          : this.extractJoinColumnValues(entity, prop);
       const w = where[k];
 
       if (Utils.isEntity(w)) {
-        where[k] = this.extractJoinColumnValues(w, prop);
+        where[k] = expand(w);
       } else if (Utils.isPlainObject(w)) {
         for (const op of Object.keys(w)) {
           if (Utils.isOperator(op, false) && Array.isArray(w[op])) {
-            w[op] = w[op].map((item: unknown) =>
-              Utils.isEntity(item) ? this.extractJoinColumnValues(item, prop) : item,
-            );
+            w[op] = w[op].map((item: unknown) => (Utils.isEntity(item) ? expand(item) : item));
           }
         }
       }
@@ -514,6 +518,15 @@ export class QueryHelper {
     return prop.referencedColumnNames.map(refCol => {
       return this.extractColumnValue(entity, prop.targetMeta!, refCol);
     });
+  }
+
+  /**
+   * Expands a polymorphic entity reference to `[discriminatorValue, ...joinColumnValues]`,
+   * matching the column order of `prop.fieldNames`.
+   */
+  private static extractPolymorphicJoinColumnValues(entity: any, prop: EntityProperty): any[] {
+    const discriminator = this.findDiscriminatorValue(prop.discriminatorMap!, entity.constructor);
+    return [discriminator, ...this.extractJoinColumnValues(entity, prop)];
   }
 
   /**
