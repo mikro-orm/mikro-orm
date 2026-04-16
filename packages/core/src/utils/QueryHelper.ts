@@ -496,15 +496,22 @@ export class QueryHelper {
         polymorphic
           ? this.extractPolymorphicJoinColumnValues(entity, prop)
           : this.extractJoinColumnValues(entity, prop);
+      const expandItem = (item: unknown) => {
+        const entity = Reference.isReference(item) ? item.unwrap() : item;
+        return Utils.isEntity(entity) ? expand(entity) : item;
+      };
       const w = where[k];
+      const expanded = expandItem(w);
 
-      if (Utils.isEntity(w)) {
-        where[k] = expand(w);
+      if (expanded !== w) {
+        where[k] = expanded;
       } else if (Utils.isPlainObject(w)) {
         for (const op of Object.keys(w)) {
-          if (Utils.isOperator(op, false) && Array.isArray(w[op])) {
-            w[op] = w[op].map((item: unknown) => (Utils.isEntity(item) ? expand(item) : item));
+          if (!Utils.isOperator(op, false)) {
+            continue;
           }
+
+          w[op] = Array.isArray(w[op]) ? w[op].map(expandItem) : expandItem(w[op]);
         }
       }
     }

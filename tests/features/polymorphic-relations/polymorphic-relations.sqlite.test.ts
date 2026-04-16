@@ -482,7 +482,7 @@ describe('polymorphic relations in sqlite', () => {
     const comment1 = new Comment('Comment 1');
     const like1 = orm.em.create(UserLike, { likeable: post1 });
     const like2 = orm.em.create(UserLike, { likeable: post2 });
-    orm.em.create(UserLike, { likeable: comment1 });
+    const like3 = orm.em.create(UserLike, { likeable: comment1 });
     await orm.em.flush();
     orm.em.clear();
 
@@ -496,6 +496,25 @@ describe('polymorphic relations in sqlite', () => {
       likeable: { $in: [post1Reloaded, post2Reloaded] },
     });
     expect(inResult.map(r => r.id).sort()).toEqual([like1.id, like2.id].sort());
+
+    const neResult = await orm.em.find(UserLike, { likeable: { $ne: post1Reloaded } });
+    expect(neResult.map(r => r.id).sort()).toEqual([like2.id, like3.id].sort());
+
+    const ninResult = await orm.em.find(UserLike, {
+      likeable: { $nin: [post1Reloaded, post2Reloaded] },
+    });
+    expect(ninResult.map(r => r.id).sort()).toEqual([like3.id]);
+
+    const isNullResult = await orm.em.find(UserLike, { likeable: null });
+    expect(isNullResult).toHaveLength(0);
+
+    const notNullResult = await orm.em.find(UserLike, { likeable: { $ne: null } });
+    expect(notNullResult).toHaveLength(3);
+
+    const refResult = await orm.em.find(UserLike, {
+      likeable: orm.em.getReference(Post, post1.id),
+    });
+    expect(refResult.map(r => r.id).sort()).toEqual([like1.id]);
   });
 });
 
