@@ -2004,18 +2004,16 @@ export abstract class AbstractSqlDriver<
   protected async loadFromUnionTargetPolymorphicPivotTable<T extends object, O extends object>(
     prop: EntityProperty,
     owners: Primary<O>[][],
-    _where: FilterQuery<any> = {} as FilterQuery<any>,
+    where: FilterQuery<any> = {} as FilterQuery<any>,
     orderBy?: OrderDefinition<T>,
     ctx?: Transaction,
     options: FindOptions<T, any, any, any> = {} as FindOptions<T, any, any, any>,
+    // pivotJoin (:ref hints) is not supported for union-target — EntityLoader.getReference needs
+    // both a concrete class and a PK per item, but the ref-mode map only carries flat PK values.
     _pivotJoin?: boolean,
   ): Promise<Dictionary<T[]>> {
     const pivotMeta = this.metadata.get(prop.pivotEntity);
     const targets = prop.polymorphTargets!;
-
-    // The pivot has a single real M:1 to the owner, plus a discriminator column and a FK scalar
-    // pointing at whichever target table each row references. We use the owner M:1 for the owner
-    // filter, and read the discriminator + FK as scalars to dispatch per row.
     const ownerProp = pivotMeta.relations.find(r => r.persist !== false && !r.polymorphic)!;
     const discriminatorColumn = prop.discriminatorColumn!;
 
@@ -2067,23 +2065,31 @@ export abstract class AbstractSqlDriver<
 
     for (const [targetMeta, rows] of rowsByTarget) {
       const targetIds = rows.map(r => (r as Dictionary)[prop.discriminator!]);
-      const cond = { [targetMeta.primaryKeys[0]]: { $in: targetIds } };
+      const pkCol = targetMeta.compositePK
+        ? Utils.getPrimaryKeyHash(targetMeta.primaryKeys)
+        : targetMeta.primaryKeys[0];
+      const cond: Dictionary = { [pkCol]: { $in: targetIds } };
+
+      if (!Utils.isEmpty(where)) {
+        Object.assign(cond, where);
+      }
+
       const results = (await this.find<any>(targetMeta.class, cond as FilterQuery<any>, {
         ctx,
         ...childOptions,
         populate: populate as any,
       })) as EntityData<any>[];
-      const primaryKey = targetMeta.primaryKeys[0];
       const byPk = new Map<string, EntityData<any>>();
       for (const row of results) {
-        // Marks the data with its concrete class so EntityLoader.findChildrenFromPivotTable can
-        // dispatch factory.create per item — same trick used for polymorphic @ManyToOne targets.
         Object.defineProperty(row, 'constructor', {
           value: targetMeta.class,
           enumerable: false,
           configurable: true,
         });
-        byPk.set(Utils.getPrimaryKeyHash(Utils.asArray((row as Dictionary)[primaryKey])), row);
+        const pk = targetMeta.compositePK
+          ? targetMeta.primaryKeys.map(k => (row as Dictionary)[k])
+          : [(row as Dictionary)[targetMeta.primaryKeys[0]]];
+        byPk.set(Utils.getPrimaryKeyHash(pk as string[]), row);
       }
       for (const row of rows) {
         const pkHash = Utils.getPrimaryKeyHash(Utils.asArray((row as Dictionary)[prop.discriminator!]));

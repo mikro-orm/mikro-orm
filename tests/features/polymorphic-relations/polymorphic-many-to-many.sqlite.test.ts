@@ -17,7 +17,7 @@ class Tag {
   videos = new Collection<Video>(this);
 
   // Merged inverse — single union collection across all polymorphic owners
-  @ManyToMany(() => [Post, Video] as any, 'tags' as any)
+  @ManyToMany({ entity: () => [Post, Video] as any, mappedBy: 'tags' })
   owners = new Collection<Post | Video>(this);
 
   constructor(name: string) {

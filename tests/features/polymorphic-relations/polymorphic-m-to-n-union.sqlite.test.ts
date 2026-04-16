@@ -44,7 +44,8 @@ class Post {
   @Property()
   title!: string;
 
-  @ManyToMany(() => [Image, Video] as any, undefined, {
+  @ManyToMany({
+    entity: () => [Image, Video] as any,
     pivotTable: 'attachables',
     discriminator: 'attachable',
     owner: true,
