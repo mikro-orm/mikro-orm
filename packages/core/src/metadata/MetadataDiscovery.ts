@@ -1132,17 +1132,6 @@ export class MetadataDiscovery {
   ): void {
     const discriminatorColumn = prop.discriminatorColumn!;
     const targets = prop.polymorphTargets!;
-    const isOwnerCompositePK = meta.compositePK;
-    const needFixedOrder = isOwnerCompositePK || targets.some(t => t.compositePK || t.primaryKeys.length > 1);
-
-    // Composite PKs on either side force fixedOrder — a composite PK across
-    // (owner_cols, discriminator, target_cols) gets unwieldy.
-    if (needFixedOrder && !prop.fixedOrder) {
-      prop.fixedOrder = true;
-      const primaryProp = this.defineFixedOrderProperty(prop, targets[0]);
-      pivotMeta.properties[primaryProp.name] = primaryProp;
-      pivotMeta.compositePK = false;
-    }
 
     pivotMeta.properties[meta.name + '_owner'] = this.definePivotProperty(
       prop,
@@ -1157,35 +1146,18 @@ export class MetadataDiscovery {
       discriminatorColumn,
       [this.#platform.getVarcharTypeDeclarationSQL(prop)],
       [discriminatorColumn],
-      { type: 'string', primary: !prop.fixedOrder, nullable: false },
+      { type: 'string', primary: true, nullable: false },
     );
     this.initFieldName(discriminatorProp);
     pivotMeta.properties[discriminatorColumn] = discriminatorProp;
 
     const firstTargetColumnTypes = this.getPrimaryKeyColumnTypes(targets[0]);
-
-    if (targets.some(t => t.compositePK)) {
-      // Composite target PKs: emit separate nullable scalar cols, plus a virtual combined prop
-      // so individual columns can live nullable while the combined prop still appears in metadata.
-      for (let i = 0; i < prop.inverseJoinColumns.length; i++) {
-        pivotMeta.properties[prop.inverseJoinColumns[i]] = this.createPivotScalarProperty(prop.inverseJoinColumns[i], [
-          firstTargetColumnTypes[i],
-        ]);
-      }
-      pivotMeta.properties[prop.discriminator!] = this.createPivotScalarProperty(
-        prop.discriminator!,
-        firstTargetColumnTypes,
-        [...prop.inverseJoinColumns],
-        { type: targets[0].className, persist: false },
-      );
-    } else {
-      pivotMeta.properties[prop.discriminator!] = this.createPivotScalarProperty(
-        prop.discriminator!,
-        firstTargetColumnTypes,
-        [...prop.inverseJoinColumns],
-        { type: targets[0].className, primary: !prop.fixedOrder, nullable: false },
-      );
-    }
+    pivotMeta.properties[prop.discriminator!] = this.createPivotScalarProperty(
+      prop.discriminator!,
+      firstTargetColumnTypes,
+      [...prop.inverseJoinColumns],
+      { type: targets[0].className, primary: true, nullable: false },
+    );
 
     pivotMeta.polymorphicDiscriminatorMap ??= {};
 

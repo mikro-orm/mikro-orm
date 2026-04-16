@@ -2004,11 +2004,11 @@ export abstract class AbstractSqlDriver<
   protected async loadFromUnionTargetPolymorphicPivotTable<T extends object, O extends object>(
     prop: EntityProperty,
     owners: Primary<O>[][],
-    where: FilterQuery<any> = {} as FilterQuery<any>,
+    _where: FilterQuery<any> = {} as FilterQuery<any>,
     orderBy?: OrderDefinition<T>,
     ctx?: Transaction,
     options?: FindOptions<T, any, any, any>,
-    pivotJoin?: boolean,
+    _pivotJoin?: boolean,
   ): Promise<Dictionary<T[]>> {
     const pivotMeta = this.metadata.get(prop.pivotEntity);
     const targets = prop.polymorphTargets!;
@@ -2031,15 +2031,12 @@ export abstract class AbstractSqlDriver<
       _populateWhere: 'infer',
     })) as EntityData<any>[];
 
-    if (pivotJoin) {
-      return this.buildPivotResultMap<T, O>(owners, pivotRows, ownerProp.name, prop.discriminator!);
-    }
-
+    const classMeta = new Map(targets.map(t => [t.class, t]));
     const rowsByTarget = new Map<EntityMetadata, EntityData<any>[]>();
     for (const row of pivotRows) {
       const discValue = (row as Dictionary)[discriminatorColumn] as string;
       const targetClass = prop.discriminatorMap![discValue];
-      const targetMeta = targets.find(t => t.class === targetClass);
+      const targetMeta = classMeta.get(targetClass);
 
       /* v8 ignore next 3 - defensive: unknown discriminator value */
       if (!targetMeta) {
@@ -2060,11 +2057,6 @@ export abstract class AbstractSqlDriver<
     for (const [targetMeta, rows] of rowsByTarget) {
       const targetIds = rows.map(r => (r as Dictionary)[prop.discriminator!]);
       const cond = { [targetMeta.primaryKeys[0]]: { $in: targetIds } };
-
-      if (!Utils.isEmpty(where)) {
-        Object.assign(cond, where);
-      }
-
       const results = (await this.find<any>(targetMeta.class, cond as FilterQuery<any>, {
         ctx,
         ...childOptions,
