@@ -81,9 +81,12 @@ services:
       - '1433:1433'
     cap_add:
       - SYS_PTRACE
+    cpus: 2
+    mem_limit: 3g
     environment:
       MSSQL_SA_PASSWORD: Root.Root
       MSSQL_TELEMETRY_ENABLED: 0
+      MSSQL_MEMORY_LIMIT_MB: 2048
       ACCEPT_EULA: 1
     healthcheck:
       test: /opt/mssql-tools18/bin/sqlcmd -b -C -S tcp:localhost -U sa -P 'Root.Root' -Q 'select 1'
