@@ -1470,6 +1470,12 @@ export class MetadataDiscovery {
       prop.polymorphTargets = discovered.filter(m => types.includes(m.className) && !m.embeddable);
       prop.targetMeta = prop.polymorphTargets[0];
       prop.referencedPKs = prop.targetMeta?.primaryKeys;
+
+      if (isUnionTargetMN && prop.polymorphTargets.length < 2) {
+        throw new MetadataError(
+          `${meta.className}.${prop.name} union-target polymorphic M:N requires at least two target entity types; use a regular M:N relation for a single target.`,
+        );
+      }
     }
 
     if (prop.discriminatorMap) {

@@ -232,4 +232,248 @@ describe('polymorphic M:N with union target', () => {
     expect(p1Types).toEqual(['Image', 'Video']);
     expect(p2Types).toEqual(['Image', 'Video']);
   });
+
+  test('populateFilter restricts which attachments load, applied per target', async () => {
+    const keep = new Image('https://example.com/keep.png');
+    const drop = new Image('https://example.com/drop.png');
+    const vid = new Video('https://example.com/v.mp4');
+    const post = new Post('Filter post');
+
+    post.attachments.add(keep, drop, vid);
+    await orm.em.persist(post).flush();
+    orm.em.clear();
+
+    const loaded = await orm.em.findOneOrFail(
+      Post,
+      { title: 'Filter post' },
+      {
+        populate: ['attachments'],
+        populateFilter: { attachments: { id: { $ne: drop.id } } },
+      },
+    );
+    const items = loaded.attachments.getItems();
+    expect(items).toHaveLength(2);
+    expect(items.some(i => i instanceof Image && (i as Image).url === 'https://example.com/keep.png')).toBe(true);
+    expect(items.some(i => i instanceof Video)).toBe(true);
+    expect(items.every(i => !(i instanceof Image && (i as Image).url === 'https://example.com/drop.png'))).toBe(true);
+  });
+
+  test('populateWhere filters the populated union collection', async () => {
+    const keep = new Image('https://example.com/keep.png');
+    const drop = new Image('https://example.com/drop.png');
+    const vid = new Video('https://example.com/v.mp4');
+    const post = new Post('Where post');
+
+    post.attachments.add(keep, drop, vid);
+    await orm.em.persist(post).flush();
+    orm.em.clear();
+
+    const loaded = await orm.em.findOneOrFail(
+      Post,
+      { title: 'Where post' },
+      {
+        populate: ['attachments'],
+        populateWhere: { attachments: { id: { $ne: drop.id } } },
+      },
+    );
+    const items = loaded.attachments.getItems();
+    expect(items).toHaveLength(2);
+    expect(items.every(i => !(i instanceof Image && (i as Image).url === 'https://example.com/drop.png'))).toBe(true);
+  });
+});
+
+describe('polymorphic M:N union-target validation', () => {
+  test('throws when targets have incompatible PK column types', async () => {
+    @Entity()
+    class IntTarget {
+      @PrimaryKey()
+      id!: number;
+
+      @ManyToMany(() => Owner, (o: any) => o.items)
+      owners = new Collection<any>(this);
+    }
+
+    @Entity()
+    class StrTarget {
+      @PrimaryKey()
+      id!: string;
+
+      @ManyToMany(() => Owner, (o: any) => o.items)
+      owners = new Collection<any>(this);
+    }
+
+    @Entity()
+    class Owner {
+      @PrimaryKey()
+      id!: number;
+
+      @ManyToMany({
+        entity: () => [IntTarget, StrTarget],
+        pivotTable: 'owner_items',
+        discriminator: 'item',
+        owner: true,
+      })
+      items = new Collection<IntTarget | StrTarget>(this);
+    }
+
+    await expect(
+      MikroORM.init({
+        entities: [IntTarget, StrTarget, Owner],
+        dbName: ':memory:',
+        metadataProvider: ReflectMetadataProvider,
+      }),
+    ).rejects.toThrow(/incompatible polymorphic targets .*incompatible primary key types/);
+  });
+
+  test('throws when union target array has a single entry', async () => {
+    @Entity()
+    class Only {
+      @PrimaryKey()
+      id!: number;
+    }
+
+    @Entity()
+    class SingleOwner {
+      @PrimaryKey()
+      id!: number;
+
+      @ManyToMany({
+        entity: () => [Only],
+        pivotTable: 'single_items',
+        discriminator: 'item',
+        owner: true,
+      })
+      items = new Collection<Only>(this);
+    }
+
+    await expect(
+      MikroORM.init({
+        entities: [Only, SingleOwner],
+        dbName: ':memory:',
+        metadataProvider: ReflectMetadataProvider,
+      }),
+    ).rejects.toThrow(/union-target polymorphic M:N requires at least two target entity types/);
+  });
+
+  test('throws when a union target has a composite primary key', async () => {
+    @Entity()
+    class SimpleTarget {
+      @PrimaryKey()
+      id!: number;
+    }
+
+    @Entity()
+    class CompositeTarget {
+      @PrimaryKey()
+      a!: number;
+
+      @PrimaryKey()
+      b!: number;
+    }
+
+    @Entity()
+    class CompOwner {
+      @PrimaryKey()
+      id!: number;
+
+      @ManyToMany({
+        entity: () => [SimpleTarget, CompositeTarget],
+        pivotTable: 'comp_items',
+        discriminator: 'item',
+        owner: true,
+      })
+      items = new Collection<SimpleTarget | CompositeTarget>(this);
+    }
+
+    await expect(
+      MikroORM.init({
+        entities: [SimpleTarget, CompositeTarget, CompOwner],
+        dbName: ':memory:',
+        metadataProvider: ReflectMetadataProvider,
+      }),
+    ).rejects.toThrow(/union-target polymorphic M:N does not support composite-PK targets/);
+  });
+});
+
+describe('polymorphic M:N union-target unsupported populate hints', () => {
+  @Entity()
+  class Img2 {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    url!: string;
+  }
+
+  @Entity()
+  class Vid2 {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    src!: string;
+  }
+
+  @Entity()
+  class Article {
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    title!: string;
+
+    @ManyToMany({
+      entity: () => [Img2, Vid2],
+      pivotTable: 'article_attachables',
+      discriminator: 'attachable',
+      owner: true,
+    })
+    attachments = new Collection<Img2 | Vid2>(this);
+
+    constructor(title: string) {
+      this.title = title;
+    }
+  }
+
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      entities: [Img2, Vid2, Article],
+      dbName: ':memory:',
+      metadataProvider: ReflectMetadataProvider,
+    });
+    await orm.schema.create();
+  });
+
+  afterAll(async () => {
+    await orm.close(true);
+  });
+
+  test(':ref populate hint throws clearly instead of returning wrong target classes', async () => {
+    const article = new Article('Article');
+    await orm.em.persist(article).flush();
+    orm.em.clear();
+
+    await expect(orm.em.findOneOrFail(Article, article.id, { populate: ['attachments:ref'] as any })).rejects.toThrow(
+      /':ref' populate hint is not supported for union-target/,
+    );
+  });
+
+  test('JOINED load strategy silently falls back to SELECT_IN (no error)', async () => {
+    const img = new Img2();
+    (img as any).url = 'u';
+    const article = new Article('Joined');
+    article.attachments.add(img);
+    await orm.em.persist(article).flush();
+    orm.em.clear();
+
+    const loaded = await orm.em.findOneOrFail(
+      Article,
+      { title: 'Joined' },
+      { populate: ['attachments'], strategy: 'joined' },
+    );
+    expect(loaded.attachments.getItems()).toHaveLength(1);
+    expect(loaded.attachments[0]).toBeInstanceOf(Img2);
+  });
 });

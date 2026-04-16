@@ -1660,11 +1660,18 @@ export abstract class AbstractSqlDriver<
           return keys;
         }
         let disc = classToDisc.get(item.constructor);
-        if (disc === undefined) {
+        if (!classToDisc.has(item.constructor)) {
           disc = QueryHelper.findDiscriminatorValue(coll.property.discriminatorMap!, item.constructor) as Primary<any>;
+
+          if (disc === undefined) {
+            throw new Error(
+              `Cannot resolve discriminator value for ${item.constructor.name} in ${coll.property.name}; the class is not part of the union target list.`,
+            );
+          }
+
           classToDisc.set(item.constructor, disc);
         }
-        return [disc, ...keys];
+        return [disc as Primary<any>, ...keys];
       };
       const snapshot = snap ? snap.map(toDiff) : [];
       const current = coll.getItems(false).map(toDiff);
@@ -2008,10 +2015,17 @@ export abstract class AbstractSqlDriver<
     orderBy?: OrderDefinition<T>,
     ctx?: Transaction,
     options: FindOptions<T, any, any, any> = {} as FindOptions<T, any, any, any>,
-    // pivotJoin (:ref hints) is not supported for union-target — EntityLoader.getReference needs
-    // both a concrete class and a PK per item, but the ref-mode map only carries flat PK values.
-    _pivotJoin?: boolean,
+    pivotJoin?: boolean,
   ): Promise<Dictionary<T[]>> {
+    // :ref hints cannot be honored for union-target — EntityLoader.getReference needs a concrete
+    // class per item, but the ref-mode map only carries flat PK values and would hydrate every
+    // row as the first polymorph target. Fail loudly instead of silently corrupting the collection.
+    if (pivotJoin) {
+      throw new Error(
+        `The ':ref' populate hint is not supported for union-target polymorphic M:N on ${prop.name}. Use a regular populate hint instead.`,
+      );
+    }
+
     const pivotMeta = this.metadata.get(prop.pivotEntity);
     const targets = prop.polymorphTargets!;
     const ownerProp = pivotMeta.relations.find(r => r.persist !== false && !r.polymorphic)!;
@@ -2059,19 +2073,27 @@ export abstract class AbstractSqlDriver<
 
     // Strip the outer find's orderBy/fields/exclude before bulk-loading targets by PK — those apply
     // to the owner query, not each polymorph target (Image and Video wouldn't share an orderBy field).
+    // populateFilter is a filter on the populated collection; since union-target splits the pivot
+    // and target queries, we merge it into the target-level `where` instead of wrapping it on the
+    // pivot query (where joins to target tables aren't available).
     // Hoisted above the loop since `options` doesn't change per target.
-    const { orderBy: _o, fields: _f, exclude: _e, ...childOptions } = options as Dictionary;
+    const { orderBy: _o, fields: _f, exclude: _e, populateFilter, ...childOptions } = options as Dictionary;
     const populate = (options.populate as PopulateOptions<T>[]) ?? [];
+    const orphanedRows = new Set<EntityData<any>>();
 
     for (const [targetMeta, rows] of rowsByTarget) {
       const targetIds = rows.map(r => (r as Dictionary)[prop.discriminator!]);
-      const pkCol = targetMeta.compositePK
-        ? Utils.getPrimaryKeyHash(targetMeta.primaryKeys)
-        : targetMeta.primaryKeys[0];
+      // Union-target pivot stores one scalar FK per row; composite-PK targets are rejected at
+      // metadata validation time, so a single primary key column is guaranteed here.
+      const pkCol = targetMeta.primaryKeys[0];
       let cond: Dictionary = { [pkCol]: { $in: targetIds } };
 
       if (!Utils.isEmpty(where)) {
         cond = { $and: [cond, where] };
+      }
+
+      if (!Utils.isEmpty(populateFilter)) {
+        cond = { $and: [cond, populateFilter] };
       }
 
       const results = (await this.find<any>(targetMeta.class, cond as FilterQuery<any>, {
@@ -2086,17 +2108,14 @@ export abstract class AbstractSqlDriver<
           enumerable: false,
           configurable: true,
         });
-        const pk = targetMeta.compositePK
-          ? targetMeta.primaryKeys.map(k => (row as Dictionary)[k])
-          : [(row as Dictionary)[targetMeta.primaryKeys[0]]];
-        byPk.set(Utils.getPrimaryKeyHash(pk as string[]), row);
+        byPk.set(Utils.getPrimaryKeyHash([(row as Dictionary)[pkCol]] as string[]), row);
       }
       for (const row of rows) {
-        const pkHash = Utils.getPrimaryKeyHash(Utils.asArray((row as Dictionary)[prop.discriminator!]));
+        const pkHash = Utils.getPrimaryKeyHash([(row as Dictionary)[prop.discriminator!]] as string[]);
         const entity = byPk.get(pkHash);
 
         if (entity == null) {
-          pivotRows.splice(pivotRows.indexOf(row), 1);
+          orphanedRows.add(row);
           continue;
         }
 
@@ -2104,7 +2123,8 @@ export abstract class AbstractSqlDriver<
       }
     }
 
-    return this.buildPivotResultMap<T, O>(owners, pivotRows, ownerProp.name, prop.discriminator!);
+    const result = orphanedRows.size > 0 ? pivotRows.filter(r => !orphanedRows.has(r)) : pivotRows;
+    return this.buildPivotResultMap<T, O>(owners, result, ownerProp.name, prop.discriminator!);
   }
 
   /**
@@ -2274,6 +2294,13 @@ export abstract class AbstractSqlDriver<
 
       if (ref && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind)) {
         return true;
+      }
+
+      // Union-target polymorphic M:N cannot be loaded via a single JOIN because rows span multiple
+      // target tables; fall through to SELECT_IN which dispatches through `loadFromPivotTable`.
+      // Polymorphic M:1 (to-one with target_type discriminator) is handled via LEFT JOINs elsewhere.
+      if (prop.kind === ReferenceKind.MANY_TO_MANY && QueryHelper.isUnionTargetPolymorphic(prop) && prop.owner) {
+        return false;
       }
 
       // skip redundant joins for 1:1 owner population hints when using `mapToPk`

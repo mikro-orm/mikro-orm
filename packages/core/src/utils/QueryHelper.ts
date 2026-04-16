@@ -24,9 +24,16 @@ export class QueryHelper {
   static readonly SUPPORTED_OPERATORS = ['>', '<', '<=', '>=', '!', '!='];
 
   /**
-   * True when the property is a polymorphic M:N with multiple target types sharing a single pivot
-   * (e.g. `Post.attachments: Collection<Image | Video>`), as opposed to Rails-style polymorphic
-   * M:N where multiple owners share one pivot pointing at a single target.
+   * True when the property has multiple polymorph target types. Covers two structurally-equivalent
+   * shapes routed through the same loading path:
+   *   1. Union-target owner side — `Post.attachments: Collection<Image | Video>` (one owner, many
+   *      target types, shared pivot with target-side discriminator).
+   *   2. Merged inverse of Rails-style polymorphic M:N — `Tag.owners: Collection<Post | Video>`
+   *      (many owner types pointing at one target, viewed from the target where "owners" looks
+   *      like a union of multiple types).
+   *
+   * Both cases are loaded via `loadFromUnionTargetPolymorphicPivotTable`, which buckets pivot rows
+   * by discriminator and hydrates each target class separately.
    */
   static isUnionTargetPolymorphic(prop: { polymorphic?: boolean; polymorphTargets?: readonly unknown[] }): boolean {
     return !!prop.polymorphic && (prop.polymorphTargets?.length ?? 0) > 1;
