@@ -1818,7 +1818,7 @@ class Post {
   title!: string;
 
   @ManyToMany({
-    entity: () => [Image, Video] as any,
+    entity: () => [Image, Video],
     pivotTable: 'attachables',
     discriminator: 'attachable',
     owner: true,
@@ -1864,7 +1864,7 @@ class Post {
   title!: string;
 
   @ManyToMany({
-    entity: () => [Image, Video] as any,
+    entity: () => [Image, Video],
     pivotTable: 'attachables',
     discriminator: 'attachable',
     owner: true,
