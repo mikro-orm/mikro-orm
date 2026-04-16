@@ -1,20 +1,42 @@
-import { type ControlledTransaction, MysqlDialect } from 'kysely';
-import { createPool, type PoolOptions } from 'mysql2';
-import { type ConnectionConfig, Utils, AbstractSqlConnection, type TransactionEventBroadcaster } from '@mikro-orm/sql';
+import { type ControlledTransaction, type MysqlPool, type MysqlPoolConnection, MysqlDialect } from 'kysely';
+import { createPool, type Pool, type PoolOptions } from 'mysql2';
+import {
+  type ConnectionConfig,
+  type Dictionary,
+  Utils,
+  AbstractSqlConnection,
+  type TransactionEventBroadcaster,
+} from '@mikro-orm/sql';
 
 /** MySQL database connection using the `mysql2` driver. */
 export class MySqlConnection extends AbstractSqlConnection {
-  override createKyselyDialect(overrides: PoolOptions): MysqlDialect {
+  override async createKyselyDialect(overrides: PoolOptions): Promise<MysqlDialect> {
     const options = this.mapOptions(overrides);
     const password = options.password as ConnectionConfig['password'];
 
     if (typeof password === 'function') {
+      const initialPassword = await password();
+      const innerPool = createPool({ ...options, password: initialPassword });
+
+      // mysql2 reads pool.config.connectionConfig.password when creating new physical
+      // connections, so updating it before getConnection() ensures fresh tokens are used.
+      // Existing idle connections are already authenticated and unaffected.
+      const pool: MysqlPool = {
+        getConnection(cb: (error: unknown, connection: MysqlPoolConnection) => void) {
+          Promise.resolve(password())
+            .then(pw => {
+              ((innerPool as Dictionary).config.connectionConfig as Dictionary).password = pw;
+              innerPool.getConnection(cb as Parameters<Pool['getConnection']>[0]);
+            })
+            .catch(err => cb(err, undefined as unknown as MysqlPoolConnection));
+        },
+        end(cb: (error: unknown) => void) {
+          innerPool.end(cb as Parameters<Pool['end']>[0]);
+        },
+      };
+
       return new MysqlDialect({
-        pool: async () =>
-          createPool({
-            ...options,
-            password: await password(),
-          }) as any,
+        pool,
         onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
       });
     }

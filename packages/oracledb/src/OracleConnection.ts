@@ -23,10 +23,11 @@ export class OracleConnection extends AbstractSqlConnection {
     const password = options.password as ConnectionConfig['password'];
     const onCreateConnection = this.options.onCreateConnection ?? this.config.get('onCreateConnection');
 
+    const initialPassword = typeof password === 'function' ? await password() : password;
+
     const poolOptions = {
       ...options,
-      /* v8 ignore next: password-as-function branch requires mocking pool creation */
-      password: typeof password === 'function' ? await password() : password,
+      password: initialPassword,
       sessionCallback: onCreateConnection as PoolAttributes['sessionCallback'],
     };
 
@@ -71,8 +72,20 @@ export class OracleConnection extends AbstractSqlConnection {
       },
     };
 
+    // When password is a callback, wrap the pool to resolve it per-connection.
+    // oracledb supports per-connection password override via getConnection({ password }).
+    const wrappedPool =
+      typeof password === 'function'
+        ? {
+            async getConnection() {
+              return pool.getConnection({ password: await password() });
+            },
+            close: (drainTime?: number) => pool.close(drainTime),
+          }
+        : pool;
+
     return new OracleDialect({
-      pool,
+      pool: wrappedPool,
       executeOptions: executeOptions as Record<string, unknown>,
     });
   }
