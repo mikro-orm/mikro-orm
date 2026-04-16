@@ -8,6 +8,7 @@ import { Author2, Car2, CarOwner2, Sandwich, User2 } from './entities-sql/index.
 import { BaseEntity2 } from './entities-sql/BaseEntity2.js';
 import { MsSqlDriver } from '@mikro-orm/mssql';
 import { MySqlDriver } from '@mikro-orm/mysql';
+import { OracleDriver } from '@mikro-orm/oracledb';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { MongoDriver, MikroORM as MongoMikroORM } from '@mikro-orm/mongodb';
@@ -382,6 +383,24 @@ describe('MikroORM', () => {
     await o.close();
   });
 
+  test('should propagate password callback errors [mysql]', async () => {
+    const passwordFn = vi
+      .fn()
+      .mockResolvedValueOnce('pass1') // initial pool creation
+      .mockRejectedValue(new Error('token refresh failed'));
+    const o = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [Test],
+      driver: MySqlDriver,
+      dbName: 'mikro-orm-test',
+      port: 3308,
+      ensureDatabase: false,
+      password: passwordFn,
+    });
+    await expect(() => o.driver.execute('select 1')).rejects.toThrow('token refresh failed');
+    await o.close();
+  });
+
   test('should work with dynamic passwords/tokens [postgresql]', async () => {
     // pg natively supports password-as-function, calling it per-connection during auth.
     // The docker PostgreSQL uses trust auth so the callback won't fire, but we verify
@@ -397,6 +416,22 @@ describe('MikroORM', () => {
     });
     const r = await o.driver.execute('select 1 as foo');
     expect(r).toEqual([{ foo: 1 }]);
+    await o.close();
+  });
+
+  test('should work with dynamic passwords/tokens [oracle]', async () => {
+    const passwordFn = vi.fn(async () => 'oracle123');
+    const o = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [Test],
+      driver: OracleDriver,
+      dbName: 'system',
+      ensureDatabase: false,
+      password: passwordFn,
+    });
+    const r = await o.driver.execute('select 1 as foo from dual');
+    expect(r).toEqual([{ foo: 1 }]);
+    expect(passwordFn).toHaveBeenCalled();
     await o.close();
   });
 
