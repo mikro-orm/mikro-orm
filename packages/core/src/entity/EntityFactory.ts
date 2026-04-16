@@ -345,6 +345,9 @@ export class EntityFactory {
 
   private assignDefaultValues<T extends object>(entity: T, meta: EntityMetadata<T>): void {
     for (const prop of meta.props) {
+      if (prop.getter && !prop.setter) {
+        continue;
+      }
       if (prop.onCreate) {
         entity[prop.name] ??= prop.onCreate(entity, this.em);
       }
