@@ -1745,8 +1745,28 @@ console.log(loadedTag.videos.length); // 1
 
 1. **Shared pivot table** - Multiple entity types share the same pivot table, distinguished by the discriminator column.
 2. **No FK constraint on polymorphic side** - The pivot table cannot have a foreign key constraint on the polymorphic columns since they point to different tables.
-3. **Separate inverse collections** - On the inverse side (Tag), you need separate collections for each entity type (`posts`, `videos`) rather than a single polymorphic collection.
+3. **Separate inverse collections** - On the inverse side (Tag), you need separate collections for each entity type (`posts`, `videos`), or a single [merged inverse collection](#merged-inverse-collection).
 4. **Same discriminator property** - All entities sharing a pivot table must use the same `discriminator` property name.
+
+#### Merged inverse collection
+
+Instead of separate per-type inverse collections, you can declare a single union collection that combines all owner types on the inverse side of the Rails-style polymorphic M:N:
+
+```ts
+@Entity()
+class Tag {
+  // Separate per-type collections (always available)
+  @ManyToMany(() => Post, post => post.tags)
+  posts = new Collection<Post>(this);
+
+  @ManyToMany(() => Video, video => video.tags)
+  videos = new Collection<Video>(this);
+
+  // Merged union collection — loads all owner types at once
+  @ManyToMany(() => [Post, Video], 'tags')
+  owners = new Collection<Post | Video>(this);
+}
+```
 
 ### Union-target M:N Polymorphic Relations
 
@@ -1924,26 +1944,6 @@ Each target entity can declare its own inverse collection pointing back at the o
 const img = await em.findOneOrFail(Image, id, { populate: ['posts'] });
 // img.posts contains only posts where this image is attached — pivot is filtered
 // by attachable_type='image' automatically.
-```
-
-#### Merged inverse collection
-
-On the inverse side of the Rails-style polymorphic M:N (where multiple owners share one pivot pointing at a single target), you can declare a single union collection that combines all owner types instead of separate per-type collections:
-
-```ts
-@Entity()
-class Tag {
-  // Separate per-type collections (always available)
-  @ManyToMany(() => Post, post => post.tags)
-  posts = new Collection<Post>(this);
-
-  @ManyToMany(() => Video, video => video.tags)
-  videos = new Collection<Video>(this);
-
-  // Merged union collection — loads all owner types at once
-  @ManyToMany(() => [Post, Video], 'tags')
-  owners = new Collection<Post | Video>(this);
-}
 ```
 
 #### Caveats

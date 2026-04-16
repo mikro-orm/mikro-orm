@@ -2068,10 +2068,10 @@ export abstract class AbstractSqlDriver<
       const pkCol = targetMeta.compositePK
         ? Utils.getPrimaryKeyHash(targetMeta.primaryKeys)
         : targetMeta.primaryKeys[0];
-      const cond: Dictionary = { [pkCol]: { $in: targetIds } };
+      let cond: Dictionary = { [pkCol]: { $in: targetIds } };
 
       if (!Utils.isEmpty(where)) {
-        Object.assign(cond, where);
+        cond = { $and: [cond, where] };
       }
 
       const results = (await this.find<any>(targetMeta.class, cond as FilterQuery<any>, {
@@ -2093,7 +2093,14 @@ export abstract class AbstractSqlDriver<
       }
       for (const row of rows) {
         const pkHash = Utils.getPrimaryKeyHash(Utils.asArray((row as Dictionary)[prop.discriminator!]));
-        (row as Dictionary)[prop.discriminator!] = byPk.get(pkHash);
+        const entity = byPk.get(pkHash);
+
+        if (entity == null) {
+          pivotRows.splice(pivotRows.indexOf(row), 1);
+          continue;
+        }
+
+        (row as Dictionary)[prop.discriminator!] = entity;
       }
     }
 
