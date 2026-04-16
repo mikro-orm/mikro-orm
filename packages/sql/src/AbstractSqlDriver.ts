@@ -2020,7 +2020,7 @@ export abstract class AbstractSqlDriver<
     const discriminatorColumn = prop.discriminatorColumn!;
 
     const ownerMeta = ownerProp.targetMeta as EntityMetadata<O>;
-    const { ownerPks } = this.convertOwnerPksForPivotQuery<O>(owners, ownerMeta);
+    const { ownerPks, needsConversion, pkProp } = this.convertOwnerPksForPivotQuery<O>(owners, ownerMeta);
 
     const pivotRows = (await this.find(pivotMeta.class, { [ownerProp.name]: { $in: ownerPks } } as any, {
       ctx,
@@ -2031,12 +2031,22 @@ export abstract class AbstractSqlDriver<
       _populateWhere: 'infer',
     })) as EntityData<any>[];
 
+    if (needsConversion) {
+      for (const item of pivotRows) {
+        const fk = (item as any)[ownerProp.name];
+
+        if (fk != null) {
+          (item as any)[ownerProp.name] = pkProp.customType!.convertToJSValue(fk, this.platform);
+        }
+      }
+    }
+
     const classMeta = new Map(targets.map(t => [t.class, t]));
     const rowsByTarget = new Map<EntityMetadata, EntityData<any>[]>();
     for (const row of pivotRows) {
       const discValue = (row as Dictionary)[discriminatorColumn] as string;
       const targetClass = prop.discriminatorMap![discValue];
-      const targetMeta = classMeta.get(targetClass);
+      const targetMeta = classMeta.get(targetClass as any);
 
       /* v8 ignore next 3 - defensive: unknown discriminator value */
       if (!targetMeta) {

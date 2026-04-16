@@ -109,7 +109,6 @@ describe('polymorphic M:N with union target', () => {
     const video = new Video('https://example.com/b.mp4');
     const post = new Post('Mixed post');
 
-    // @ts-expect-error TS limitation: Collection<A | B>.add() doesn't distribute the union
     post.attachments.add(image, video);
     await orm.em.persist(post).flush();
     orm.em.clear();
@@ -123,7 +122,7 @@ describe('polymorphic M:N with union target', () => {
     const image = new Image('https://example.com/a.png');
     const video = new Video('https://example.com/b.mp4');
     const post = new Post('Mixed post');
-    // @ts-expect-error TS limitation
+
     post.attachments.add(image, video);
     await orm.em.persist(post).flush();
     orm.em.clear();
@@ -139,7 +138,7 @@ describe('polymorphic M:N with union target', () => {
     const image = new Image('https://example.com/a.png');
     const video = new Video('https://example.com/b.mp4');
     const post = new Post('Mixed post');
-    // @ts-expect-error TS limitation
+
     post.attachments.add(image, video);
     await orm.em.persist(post).flush();
     orm.em.clear();
@@ -210,9 +209,9 @@ describe('polymorphic M:N with union target', () => {
     const vid = new Video('https://example.com/c.mp4');
     const p1 = new Post('post one');
     const p2 = new Post('post two');
-    // @ts-expect-error TS limitation
+
     p1.attachments.add(img1, vid);
-    // @ts-expect-error TS limitation
+
     p2.attachments.add(img2, vid);
     await orm.em.persist([p1, p2]).flush();
     orm.em.clear();

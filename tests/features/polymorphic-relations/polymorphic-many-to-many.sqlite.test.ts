@@ -16,6 +16,10 @@ class Tag {
   @ManyToMany(() => Video, video => video.tags)
   videos = new Collection<Video>(this);
 
+  // Merged inverse — single union collection across all polymorphic owners
+  @ManyToMany(() => [Post, Video] as any, 'tags' as any)
+  owners = new Collection<Post | Video>(this);
+
   constructor(name: string) {
     this.name = name;
   }
@@ -382,6 +386,24 @@ describe('polymorphic many-to-many relations', () => {
     // Only posts matching the filter should be populated
     expect(loadedTag.posts).toHaveLength(1);
     expect(loadedTag.posts[0].title).toBe('Post Alpha');
+  });
+
+  test('merged inverse: Tag.owners loads all owner types in one collection', async () => {
+    const tag = new Tag('Shared');
+    const post = new Post('Post 1');
+    const video = new Video('https://example.com/v1.mp4');
+
+    post.tags.add(tag);
+    video.tags.add(tag);
+
+    await orm.em.persist([post, video]).flush();
+    orm.em.clear();
+
+    const loaded = await orm.em.findOneOrFail(Tag, tag.id, { populate: ['owners'] });
+    const owners = loaded.owners.getItems();
+    expect(owners).toHaveLength(2);
+    expect(owners.some(o => o instanceof Post)).toBe(true);
+    expect(owners.some(o => o instanceof Video)).toBe(true);
   });
 });
 

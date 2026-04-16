@@ -1752,25 +1752,52 @@ console.log(loadedTag.videos.length); // 1
 
 The previous section covers the case where several owner types (`Post`, `Video`) share one pivot pointing at a single target (`Tag`) — the discriminator identifies the owner type. The mirror shape is also supported: a single owner holding a **union collection** of multiple target types, where the discriminator identifies the target type on each pivot row.
 
+<Tabs
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'defineEntity', value: 'define-entity'},
+]
+  }
+>
+  <TabItem value="reflect-metadata">
+
 ```ts
 @Entity()
 class Image {
-  @PrimaryKey() id!: number;
-  @Property()    url!: string;
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  url!: string;
+
+  @ManyToMany(() => Post, post => post.attachments)
+  posts = new Collection<Post>(this);
 }
 
 @Entity()
 class Video {
-  @PrimaryKey() id!: number;
-  @Property()    src!: string;
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  src!: string;
+
+  @ManyToMany(() => Post, post => post.attachments)
+  posts = new Collection<Post>(this);
 }
 
 @Entity()
 class Post {
-  @PrimaryKey() id!: number;
-  @Property()   title!: string;
+  @PrimaryKey()
+  id!: number;
 
-  @ManyToMany(() => [Image, Video], undefined, {
+  @Property()
+  title!: string;
+
+  @ManyToMany(() => [Image, Video], {
     pivotTable: 'attachables',
     discriminator: 'attachable',
     owner: true,
@@ -1779,13 +1806,96 @@ class Post {
 }
 ```
 
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts
+@Entity()
+class Image {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  url!: string;
+
+  @ManyToMany(() => Post, post => post.attachments)
+  posts = new Collection<Post>(this);
+}
+
+@Entity()
+class Video {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  src!: string;
+
+  @ManyToMany(() => Post, post => post.attachments)
+  posts = new Collection<Post>(this);
+}
+
+@Entity()
+class Post {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  title!: string;
+
+  @ManyToMany(() => [Image, Video], {
+    pivotTable: 'attachables',
+    discriminator: 'attachable',
+    owner: true,
+  })
+  attachments = new Collection<Image | Video>(this);
+}
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts
+export const Image = defineEntity({
+  name: 'Image',
+  properties: {
+    id: p.number().primary(),
+    url: p.string(),
+    posts: () => p.manyToMany(Post).mappedBy('attachments'),
+  },
+});
+
+export const Video = defineEntity({
+  name: 'Video',
+  properties: {
+    id: p.number().primary(),
+    src: p.string(),
+    posts: () => p.manyToMany(Post).mappedBy('attachments'),
+  },
+});
+
+export const Post = defineEntity({
+  name: 'Post',
+  properties: {
+    id: p.number().primary(),
+    title: p.string(),
+    attachments: () => p.manyToMany([Image, Video])
+      .pivotTable('attachables')
+      .discriminator('attachable')
+      .owner(),
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
 The pivot table stores `(post_id, attachable_type, attachable_id)` — `attachable_type` holds the target discriminator (`'image'` or `'video'`), and `attachable_id` points at the row in the corresponding target table. There is no FK constraint on `attachable_id` since it spans multiple target tables.
 
 ```sql
 CREATE TABLE attachables (
-  post_id         INTEGER,     -- FK to post.id
-  attachable_type VARCHAR(255),-- 'image' or 'video'
-  attachable_id   INTEGER,     -- FK to image.id or video.id
+  post_id         INTEGER,      -- FK to post.id
+  attachable_type VARCHAR(255), -- 'image' or 'video'
+  attachable_id   INTEGER,      -- FK to image.id or video.id
   PRIMARY KEY (post_id, attachable_type, attachable_id)
 );
 ```
@@ -1804,39 +1914,37 @@ for (const a of loaded.attachments) {
 }
 ```
 
-#### How union-target loading works
-
-When populating a union-target collection, MikroORM runs one query against the pivot table to read the owner FK, discriminator, and target FK per row, then bulk-loads each target table in a single additional query (one per distinct target type that appears in the pivot). For most cases this means at most `1 + N` queries where `N` is the number of target types that actually have rows, not the number of target types declared.
-
 #### Inverse side
 
-Each target entity can declare its own inverse collection pointing back at the owner. Those are regular M:N inverse sides and load correctly — MikroORM filters the shared pivot by the target's discriminator value automatically:
+Each target entity can declare its own inverse collection pointing back at the owner. MikroORM filters the shared pivot by the target's discriminator value automatically, so `Image.posts` and `Video.posts` are cleanly separated:
 
 ```ts
-@Entity()
-class Image {
-  // ...
-  @ManyToMany(() => Post, p => p.attachments)
-  posts = new Collection<Post>(this);
-}
-
-@Entity()
-class Video {
-  // ...
-  @ManyToMany(() => Post, p => p.attachments)
-  posts = new Collection<Post>(this);
-}
-
-// Usage
 const img = await em.findOneOrFail(Image, id, { populate: ['posts'] });
-// img.posts contains only posts where this image is attached — the pivot is filtered
+// img.posts contains only posts where this image is attached — pivot is filtered
 // by attachable_type='image' automatically.
 ```
 
-The inverse collection on each target only sees pivot rows for that target class, so `Image.posts` and `Video.posts` are cleanly separated.
+#### Merged inverse collection
+
+On the inverse side of the Rails-style polymorphic M:N (where multiple owners share one pivot pointing at a single target), you can declare a single union collection that combines all owner types instead of separate per-type collections:
+
+```ts
+@Entity()
+class Tag {
+  // Separate per-type collections (always available)
+  @ManyToMany(() => Post, post => post.tags)
+  posts = new Collection<Post>(this);
+
+  @ManyToMany(() => Video, video => video.tags)
+  videos = new Collection<Video>(this);
+
+  // Merged union collection — loads all owner types at once
+  @ManyToMany(() => [Post, Video], 'tags')
+  owners = new Collection<Post | Video>(this);
+}
+```
 
 #### Caveats
 
-1. **TypeScript limitation** — `Collection<Image | Video>.add()` is typed against the first union member, so you may need a `@ts-expect-error` or cast when adding mixed types until TypeScript's distributive behavior is expanded. This mirrors the known limitation of polymorphic `@ManyToOne(() => [A, B])`.
-2. **Shared discriminator values** — all declared targets must have distinct `tableName`s, since the discriminator column is populated from `tableName`.
-3. **Merged inverse-side collection not yet supported** — if you want the inverse side of the Rails-style pivot (multiple owners → one target, e.g. `Post.tags` / `Video.tags`) to collapse into a single `Collection<Post | Video>` on `Tag`, you still declare separate `Tag.posts` / `Tag.videos` collections for now. Planned as a follow-up.
+1. All declared targets must have distinct `tableName`s, since the discriminator column is populated from `tableName`.
+2. The collection element order in union-target M:N reflects the pivot table order, grouped by target type.

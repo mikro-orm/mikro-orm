@@ -780,20 +780,26 @@ export class MetadataDiscovery {
             prop.targetMeta!.properties[prop.inversedBy].pivotEntity = pivotMeta.class;
           }
 
-          // Union-target polymorphic M:N may have inverse collections on every target type;
-          // autoWireBidirectionalProperties only records one inversedBy, so propagate pivotEntity
-          // to every target's mappedBy prop pointing at this owner.
-          if (QueryHelper.isUnionTargetPolymorphic(prop)) {
-            for (const targetMeta of prop.polymorphTargets!) {
-              for (const inverseProp of Object.values(targetMeta.properties)) {
-                if (
-                  inverseProp.kind === ReferenceKind.MANY_TO_MANY &&
-                  inverseProp.mappedBy === prop.name &&
-                  inverseProp.type === meta.className
-                ) {
-                  inverseProp.pivotEntity = pivotMeta.class;
-                  inverseProp.pivotTable = pivotMeta.tableName;
-                }
+          // Propagate pivotEntity to ALL inverse collections using mappedBy pointing at this
+          // owner prop. Covers three cases:
+          //   - regular inverse (Tag.posts mappedBy Post.tags) — handled by inversedBy above
+          //   - union-target inverse (Image.posts mappedBy Post.attachments) — on each polymorph target
+          //   - merged inverse (Tag.owners mappedBy [Post,Video].tags) — union collection on the target
+          const inverseCandidates = QueryHelper.isUnionTargetPolymorphic(prop)
+            ? prop.polymorphTargets!
+            : prop.targetMeta
+              ? [prop.targetMeta]
+              : [];
+
+          for (const targetMeta of inverseCandidates) {
+            for (const inverseProp of Object.values(targetMeta.properties)) {
+              if (
+                inverseProp.kind === ReferenceKind.MANY_TO_MANY &&
+                inverseProp.mappedBy === prop.name &&
+                !inverseProp.pivotEntity
+              ) {
+                inverseProp.pivotEntity = pivotMeta.class;
+                inverseProp.pivotTable = pivotMeta.tableName;
               }
             }
           }
