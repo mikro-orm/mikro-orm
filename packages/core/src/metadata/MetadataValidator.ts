@@ -389,9 +389,13 @@ export class MetadataValidator {
   ): void {
     for (const index of indexes) {
       for (const propName of Utils.asArray(index.properties)) {
-        const prop = meta.root.properties[propName];
+        const prop = meta.properties[propName] ?? meta.root.properties[propName];
 
-        if (!prop && !Object.values(meta.root.properties).some(p => propName.startsWith(p.name + '.'))) {
+        if (
+          !prop &&
+          !Object.values(meta.properties).some(p => propName.startsWith(p.name + '.')) &&
+          !Object.values(meta.root.properties).some(p => propName.startsWith(p.name + '.'))
+        ) {
           throw MetadataError.unknownIndexProperty(meta, propName, type);
         }
       }
