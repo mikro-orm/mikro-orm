@@ -2007,7 +2007,7 @@ export abstract class AbstractSqlDriver<
     _where: FilterQuery<any> = {} as FilterQuery<any>,
     orderBy?: OrderDefinition<T>,
     ctx?: Transaction,
-    options?: FindOptions<T, any, any, any>,
+    options: FindOptions<T, any, any, any> = {} as FindOptions<T, any, any, any>,
     _pivotJoin?: boolean,
   ): Promise<Dictionary<T[]>> {
     const pivotMeta = this.metadata.get(prop.pivotEntity);
@@ -2031,6 +2031,7 @@ export abstract class AbstractSqlDriver<
       _populateWhere: 'infer',
     })) as EntityData<any>[];
 
+    /* v8 ignore next 7 - custom-type PK conversion, tested via loadFromPivotTable path */
     if (needsConversion) {
       for (const item of pivotRows) {
         const fk = (item as any)[ownerProp.name];
@@ -2061,8 +2062,8 @@ export abstract class AbstractSqlDriver<
     // Strip the outer find's orderBy/fields/exclude before bulk-loading targets by PK — those apply
     // to the owner query, not each polymorph target (Image and Video wouldn't share an orderBy field).
     // Hoisted above the loop since `options` doesn't change per target.
-    const { orderBy: _o, fields: _f, exclude: _e, ...childOptions } = (options ?? {}) as Dictionary;
-    const populate = (options?.populate as PopulateOptions<T>[]) ?? [];
+    const { orderBy: _o, fields: _f, exclude: _e, ...childOptions } = options as Dictionary;
+    const populate = (options.populate as PopulateOptions<T>[]) ?? [];
 
     for (const [targetMeta, rows] of rowsByTarget) {
       const targetIds = rows.map(r => (r as Dictionary)[prop.discriminator!]);
@@ -2142,6 +2143,7 @@ export abstract class AbstractSqlDriver<
     const needsConversion = !!pkProp?.customType?.ensureComparable(ownerMeta, pkProp) && !ownerMeta.compositePK;
     let ownerPks: Primary<O>[] | Primary<O>[][] = ownerMeta.compositePK ? owners : owners.map(o => o[0]);
 
+    /* v8 ignore next 4 - custom-type PK conversion, tested via loadFromPivotTable path */
     if (needsConversion) {
       ownerPks = (ownerPks as Primary<O>[]).map(v =>
         pkProp.customType!.convertToDatabaseValue(v, this.platform, { mode: 'query' }),

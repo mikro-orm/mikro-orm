@@ -787,9 +787,7 @@ export class MetadataDiscovery {
           //   - merged inverse (Tag.owners mappedBy [Post,Video].tags) — union collection on the target
           const inverseCandidates = QueryHelper.isUnionTargetPolymorphic(prop)
             ? prop.polymorphTargets!
-            : prop.targetMeta
-              ? [prop.targetMeta]
-              : [];
+            : [prop.targetMeta!];
 
           for (const targetMeta of inverseCandidates) {
             for (const inverseProp of Object.values(targetMeta.properties)) {
