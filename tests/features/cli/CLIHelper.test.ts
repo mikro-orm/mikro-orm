@@ -768,6 +768,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
       'cache:clear',
       'cache:generate',
       'compile',
+      'discovery:export',
       'generate-entities',
       'database:create',
       'database:import',
