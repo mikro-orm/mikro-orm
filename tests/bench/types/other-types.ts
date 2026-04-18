@@ -70,19 +70,19 @@ function useFilter<T>(_filter: FilterQuery<T>): void {}
 
 bench('FilterQuery<Author> - simple', () => {
   useFilter<Author>({ name: 'test' });
-}).types([543, 'instantiations']);
+}).types([550, 'instantiations']);
 
 bench('FilterQuery<Author> - with relation', () => {
   useFilter<Author>({ books: { title: 'test' } });
-}).types([1084, 'instantiations']);
+}).types([1096, 'instantiations']);
 
 bench('FilterQuery<Author> - with operators', () => {
   useFilter<Author>({ age: { $gt: 18 }, name: { $like: '%test%' } });
-}).types([700, 'instantiations']);
+}).types([717, 'instantiations']);
 
 bench('FilterQuery<Book> - nested relations', () => {
   useFilter<Book>({ author: { books: { publisher: { name: 'test' } } } });
-}).types([1482, 'instantiations']);
+}).types([1514, 'instantiations']);
 
 // ============================================
 // EntityData benchmarks
@@ -101,7 +101,7 @@ bench('EntityData<Book> - with relations', () => {
     price: 10,
     author: { name: 'test' } as any,
   });
-}).types([674, 'instantiations']);
+}).types([688, 'instantiations']);
 
 // ============================================
 // RequiredEntityData benchmarks
@@ -116,7 +116,7 @@ bench('RequiredEntityData<Author> - simple', () => {
 
 bench('RequiredEntityData<Book> - with required relations', () => {
   useRequiredData<Book>({ title: 'test', price: 10, author: {} as Author });
-}).types([3576, 'instantiations']);
+}).types([3590, 'instantiations']);
 
 // ============================================
 // Primary type benchmarks
@@ -146,4 +146,4 @@ bench('EntityDTO<Author> - simple', () => {
 
 bench('EntityDTO<Loaded<Author, "books">> - with loaded hint', () => {
   useDTO<Loaded<Author, 'books'>>({} as EntityDTO<Loaded<Author, 'books'>>);
-}).types([3891, 'instantiations']);
+}).types([3916, 'instantiations']);

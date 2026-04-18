@@ -187,6 +187,24 @@ const properties = {
 };
 ```
 
+### Relation modifiers: `.ref()` and `.lazyRef()`
+
+For `m:1` / `1:1` relations, you can opt into compile-time populate-state safety:
+
+- **`.ref()`** wraps the runtime value in a `Reference`, exposing `.$` / `.get()` / `.load()` — see [`Ref<T>`](./type-safe-relations.md#reference-wrapper).
+- **`.lazyRef()`** is a type-only marker — the runtime stays a plain entity (no wrapper), but TypeScript hides non-PK access until `Loaded<>` narrows it. See [`LazyRef<T>`](./type-safe-relations.md#lazyreft--type-only-reference).
+
+```ts
+const BookSchema = defineEntity({
+  name: 'Book',
+  properties: {
+    id: p.integer().primary(),
+    author: () => p.manyToOne(AuthorSchema).ref(),       // `Ref<Author>`
+    publisher: () => p.manyToOne(PublisherSchema).lazyRef(), // `LazyRef<Publisher>`
+  },
+});
+```
+
 ## MongoDB example
 
 <Tabs
