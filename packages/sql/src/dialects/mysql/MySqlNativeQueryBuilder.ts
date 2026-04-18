@@ -4,6 +4,21 @@ import { NativeQueryBuilder } from '../../query/NativeQueryBuilder.js';
 /** @internal */
 export class MySqlNativeQueryBuilder extends NativeQueryBuilder {
   protected override compileInsert() {
+    if (this.options.insertSubQuery) {
+      super.compileInsert();
+
+      // Inject 'ignore' after 'insert' for MySQL's INSERT IGNORE ... SELECT syntax
+      if (this.options.onConflict?.ignore) {
+        const insertIdx = this.parts.indexOf('insert');
+
+        if (insertIdx >= 0) {
+          this.parts.splice(insertIdx + 1, 0, 'ignore');
+        }
+      }
+
+      return;
+    }
+
     if (!this.options.data) {
       throw new Error('No data provided');
     }
