@@ -724,7 +724,7 @@ export class Utils {
     return classOrName.name as string;
   }
 
-  static extractChildElements(items: string[], prefix: string, allSymbol?: string): string[] {
+  static extractChildElements(items: readonly string[], prefix: string, allSymbol?: string): string[] {
     return items
       .filter(field => field === allSymbol || field.startsWith(`${prefix}.`))
       .map(field => (field === allSymbol ? allSymbol : field.substring(prefix.length + 1)));
