@@ -8,6 +8,7 @@ import { DatabaseSeedCommand } from './commands/DatabaseSeedCommand.js';
 import { DebugCommand } from './commands/DebugCommand.js';
 import { GenerateCacheCommand } from './commands/GenerateCacheCommand.js';
 import { CompileCommand } from './commands/CompileCommand.js';
+import { DiscoveryExportCommand } from './commands/DiscoveryExportCommand.js';
 import { GenerateEntitiesCommand } from './commands/GenerateEntitiesCommand.js';
 import { ImportCommand } from './commands/ImportCommand.js';
 import { MigrationCommandFactory } from './commands/MigrationCommandFactory.js';
@@ -68,6 +69,7 @@ export async function configure(): Promise<Argv<{ config: string[] | undefined; 
     .command(new ClearCacheCommand())
     .command(new GenerateCacheCommand())
     .command(new CompileCommand())
+    .command(new DiscoveryExportCommand())
     .command(new GenerateEntitiesCommand())
     .command(new CreateDatabaseCommand())
     .command(new ImportCommand())
