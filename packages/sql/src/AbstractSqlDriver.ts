@@ -1659,8 +1659,33 @@ export abstract class AbstractSqlDriver<
       const pks = wrapped.getPrimaryKeys(true)!;
       const snap = coll.getSnapshot();
       const includes = <T>(arr: T[][], item: T[]) => !!arr.find(i => this.comparePrimaryKeyArrays(i, item));
-      const snapshot = snap ? snap.map(item => helper(item).getPrimaryKeys(true)!) : [];
-      const current = coll.getItems(false).map(item => helper(item).getPrimaryKeys(true)!);
+      // For union-target polymorphic M:N, prepend the per-row discriminator value so the pivot
+      // persister can write it alongside the FK id. Memoized per sync-run because a collection can
+      // hold hundreds of items of the same few types, and findDiscriminatorValue walks the prototype
+      // chain + re-scans Object.entries each call.
+      const isUnionTargetMN = QueryHelper.isUnionTargetPolymorphic(coll.property);
+      const classToDisc = new Map<Function, Primary<any>>();
+      const toDiff = (item: AnyEntity) => {
+        const keys = helper(item).getPrimaryKeys(true)!;
+        if (!isUnionTargetMN) {
+          return keys;
+        }
+        let disc = classToDisc.get(item.constructor);
+        if (!classToDisc.has(item.constructor)) {
+          disc = QueryHelper.findDiscriminatorValue(coll.property.discriminatorMap!, item.constructor) as Primary<any>;
+
+          if (disc === undefined) {
+            throw new Error(
+              `Cannot resolve discriminator value for ${item.constructor.name} in ${coll.property.name}; the class is not part of the union target list.`,
+            );
+          }
+
+          classToDisc.set(item.constructor, disc);
+        }
+        return [disc as Primary<any>, ...keys];
+      };
+      const snapshot = snap ? snap.map(toDiff) : [];
+      const current = coll.getItems(false).map(toDiff);
       const deleteDiff = snap ? snapshot.filter(item => !includes(current, item)) : true;
       const insertDiff = current.filter(item => !includes(snapshot, item));
       const target = snapshot.filter(item => includes(current, item)).concat(...insertDiff);
@@ -1763,6 +1788,10 @@ export abstract class AbstractSqlDriver<
 
     const pivotMeta = this.metadata.get(prop.pivotEntity);
 
+    if (prop.discriminatorColumn && QueryHelper.isUnionTargetPolymorphic(prop)) {
+      return this.loadFromUnionTargetPolymorphicPivotTable(prop, owners, where, orderBy, ctx, options, pivotJoin);
+    }
+
     if (prop.polymorphic && prop.discriminatorColumn && prop.discriminatorValue) {
       return this.loadFromPolymorphicPivotTable(prop, owners, where, orderBy, ctx, options, pivotJoin);
     }
@@ -1770,17 +1799,7 @@ export abstract class AbstractSqlDriver<
     const pivotProp1 = pivotMeta.relations[prop.owner ? 1 : 0];
     const pivotProp2 = pivotMeta.relations[prop.owner ? 0 : 1];
     const ownerMeta = pivotProp2.targetMeta as EntityMetadata<O>;
-
-    // The pivot query builder doesn't convert custom types, so we need to manually
-    // convert owner PKs to DB format for the query and convert result FKs back to
-    // JS format for consistent key hashing in buildPivotResultMap.
-    const pkProp = ownerMeta.properties[ownerMeta.primaryKeys[0]];
-    const needsConversion = pkProp?.customType?.ensureComparable(ownerMeta, pkProp) && !ownerMeta.compositePK;
-    let ownerPks = ownerMeta.compositePK ? owners : owners.map(o => o[0]);
-
-    if (needsConversion) {
-      ownerPks = ownerPks.map(v => pkProp.customType!.convertToDatabaseValue(v, this.platform, { mode: 'query' }));
-    }
+    const { ownerPks, needsConversion, pkProp } = this.convertOwnerPksForPivotQuery<O>(owners, ownerMeta);
 
     const cond = {
       [pivotProp2.name]: { $in: ownerPks },
@@ -1997,6 +2016,129 @@ export abstract class AbstractSqlDriver<
   }
 
   /**
+   * Load a union-target polymorphic M:N pivot (e.g. Post.attachments -> Image | Video).
+   * Each pivot row's discriminator column selects which target table to hydrate.
+   */
+  protected async loadFromUnionTargetPolymorphicPivotTable<T extends object, O extends object>(
+    prop: EntityProperty,
+    owners: Primary<O>[][],
+    where: FilterQuery<any> = {} as FilterQuery<any>,
+    orderBy?: OrderDefinition<T>,
+    ctx?: Transaction,
+    options: FindOptions<T, any, any, any> = {} as FindOptions<T, any, any, any>,
+    pivotJoin?: boolean,
+  ): Promise<Dictionary<T[]>> {
+    // :ref hints cannot be honored for union-target — EntityLoader.getReference needs a concrete
+    // class per item, but the ref-mode map only carries flat PK values and would hydrate every
+    // row as the first polymorph target. Fail loudly instead of silently corrupting the collection.
+    if (pivotJoin) {
+      throw new Error(
+        `The ':ref' populate hint is not supported for union-target polymorphic M:N on ${prop.name}. Use a regular populate hint instead.`,
+      );
+    }
+
+    const pivotMeta = this.metadata.get(prop.pivotEntity);
+    const targets = prop.polymorphTargets!;
+    const ownerProp = pivotMeta.relations.find(r => r.persist !== false && !r.polymorphic)!;
+    const discriminatorColumn = prop.discriminatorColumn!;
+
+    const ownerMeta = ownerProp.targetMeta as EntityMetadata<O>;
+    const { ownerPks, needsConversion, pkProp } = this.convertOwnerPksForPivotQuery<O>(owners, ownerMeta);
+
+    const pivotRows = (await this.find(pivotMeta.class, { [ownerProp.name]: { $in: ownerPks } } as any, {
+      ctx,
+      orderBy: this.getPivotOrderBy(prop, ownerProp, orderBy, options?.orderBy),
+      fields: [ownerProp.name, discriminatorColumn, prop.discriminator!] as any[],
+      populateWhere: undefined,
+      // @ts-ignore
+      _populateWhere: 'infer',
+    })) as EntityData<any>[];
+
+    /* v8 ignore next 7 - custom-type PK conversion, tested via loadFromPivotTable path */
+    if (needsConversion) {
+      for (const item of pivotRows) {
+        const fk = (item as any)[ownerProp.name];
+
+        if (fk != null) {
+          (item as any)[ownerProp.name] = pkProp.customType!.convertToJSValue(fk, this.platform);
+        }
+      }
+    }
+
+    const classMeta = new Map(targets.map(t => [t.class, t]));
+    const rowsByTarget = new Map<EntityMetadata, EntityData<any>[]>();
+    for (const row of pivotRows) {
+      const discValue = (row as Dictionary)[discriminatorColumn] as string;
+      const targetClass = prop.discriminatorMap![discValue];
+      const targetMeta = classMeta.get(targetClass as any);
+
+      /* v8 ignore next 3 - defensive: unknown discriminator value */
+      if (!targetMeta) {
+        continue;
+      }
+
+      const list = rowsByTarget.get(targetMeta) ?? [];
+      list.push(row);
+      rowsByTarget.set(targetMeta, list);
+    }
+
+    // Strip the outer find's orderBy/fields/exclude before bulk-loading targets by PK — those apply
+    // to the owner query, not each polymorph target (Image and Video wouldn't share an orderBy field).
+    // populateFilter is a filter on the populated collection; since union-target splits the pivot
+    // and target queries, we merge it into the target-level `where` instead of wrapping it on the
+    // pivot query (where joins to target tables aren't available).
+    // Hoisted above the loop since `options` doesn't change per target.
+    const { orderBy: _o, fields: _f, exclude: _e, populateFilter, ...childOptions } = options as Dictionary;
+    const populate = (options.populate as PopulateOptions<T>[]) ?? [];
+    const orphanedRows = new Set<EntityData<any>>();
+
+    for (const [targetMeta, rows] of rowsByTarget) {
+      const targetIds = rows.map(r => (r as Dictionary)[prop.discriminator!]);
+      // Union-target pivot stores one scalar FK per row; composite-PK targets are rejected at
+      // metadata validation time, so a single primary key column is guaranteed here.
+      const pkCol = targetMeta.primaryKeys[0];
+      let cond: Dictionary = { [pkCol]: { $in: targetIds } };
+
+      if (!Utils.isEmpty(where)) {
+        cond = { $and: [cond, where] };
+      }
+
+      if (!Utils.isEmpty(populateFilter)) {
+        cond = { $and: [cond, populateFilter] };
+      }
+
+      const results = (await this.find<any>(targetMeta.class, cond as FilterQuery<any>, {
+        ctx,
+        ...childOptions,
+        populate: populate as any,
+      })) as EntityData<any>[];
+      const byPk = new Map<string, EntityData<any>>();
+      for (const row of results) {
+        Object.defineProperty(row, 'constructor', {
+          value: targetMeta.class,
+          enumerable: false,
+          configurable: true,
+        });
+        byPk.set(Utils.getPrimaryKeyHash([(row as Dictionary)[pkCol]] as string[]), row);
+      }
+      for (const row of rows) {
+        const pkHash = Utils.getPrimaryKeyHash([(row as Dictionary)[prop.discriminator!]] as string[]);
+        const entity = byPk.get(pkHash);
+
+        if (entity == null) {
+          orphanedRows.add(row);
+          continue;
+        }
+
+        (row as Dictionary)[prop.discriminator!] = entity;
+      }
+    }
+
+    const result = orphanedRows.size > 0 ? pivotRows.filter(r => !orphanedRows.has(r)) : pivotRows;
+    return this.buildPivotResultMap<T, O>(owners, result, ownerProp.name, prop.discriminator!);
+  }
+
+  /**
    * Build a map from owner PKs to their related entities from pivot table results.
    */
   private buildPivotResultMap<T extends object, O extends object>(
@@ -2030,6 +2172,29 @@ export abstract class AbstractSqlDriver<
     }
 
     return undefined;
+  }
+
+  /**
+   * The pivot query builder doesn't convert custom types — manually convert owner PKs to the DB
+   * representation. Returns `needsConversion` + `pkProp` so the caller can convert result FKs back
+   * to JS format for consistent key hashing in `buildPivotResultMap`.
+   */
+  private convertOwnerPksForPivotQuery<O extends object>(
+    owners: Primary<O>[][],
+    ownerMeta: EntityMetadata<O>,
+  ): { ownerPks: Primary<O>[] | Primary<O>[][]; needsConversion: boolean; pkProp: EntityProperty<O> } {
+    const pkProp = ownerMeta.properties[ownerMeta.primaryKeys[0]];
+    const needsConversion = !!pkProp?.customType?.ensureComparable(ownerMeta, pkProp) && !ownerMeta.compositePK;
+    let ownerPks: Primary<O>[] | Primary<O>[][] = ownerMeta.compositePK ? owners : owners.map(o => o[0]);
+
+    /* v8 ignore next 4 - custom-type PK conversion, tested via loadFromPivotTable path */
+    if (needsConversion) {
+      ownerPks = (ownerPks as Primary<O>[]).map(v =>
+        pkProp.customType!.convertToDatabaseValue(v, this.platform, { mode: 'query' }),
+      );
+    }
+
+    return { ownerPks, needsConversion, pkProp };
   }
 
   private getPivotOrderBy<T>(
@@ -2140,6 +2305,13 @@ export abstract class AbstractSqlDriver<
 
       if (ref && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind)) {
         return true;
+      }
+
+      // Union-target polymorphic M:N cannot be loaded via a single JOIN because rows span multiple
+      // target tables; fall through to SELECT_IN which dispatches through `loadFromPivotTable`.
+      // Polymorphic M:1 (to-one with target_type discriminator) is handled via LEFT JOINs elsewhere.
+      if (prop.kind === ReferenceKind.MANY_TO_MANY && QueryHelper.isUnionTargetPolymorphic(prop) && prop.owner) {
+        return false;
       }
 
       // skip redundant joins for 1:1 owner population hints when using `mapToPk`
