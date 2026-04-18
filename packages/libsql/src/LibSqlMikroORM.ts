@@ -15,7 +15,7 @@ import { LibSqlDriver } from './LibSqlDriver.js';
 /** Configuration options for the libSQL driver. */
 export type LibSqlOptions<
   EM extends SqlEntityManager<LibSqlDriver> = SqlEntityManager<LibSqlDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -25,7 +25,7 @@ export type LibSqlOptions<
 /** Creates a type-safe configuration object for the libSQL driver. */
 export function defineLibSqlConfig<
   EM extends SqlEntityManager<LibSqlDriver> = SqlEntityManager<LibSqlDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -39,7 +39,7 @@ export function defineLibSqlConfig<
  */
 export class LibSqlMikroORM<
   EM extends SqlEntityManager<LibSqlDriver> = SqlEntityManager<LibSqlDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -51,7 +51,7 @@ export class LibSqlMikroORM<
   static override async init<
     D extends IDatabaseDriver = LibSqlDriver,
     EM extends EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
-    Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+    Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
       | string
       | EntityClass<AnyEntity>
       | EntitySchema

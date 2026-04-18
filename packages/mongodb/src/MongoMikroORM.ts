@@ -16,7 +16,7 @@ import type { MongoEntityManager } from './MongoEntityManager.js';
 /** Configuration options for the MongoDB driver. */
 export type MongoOptions<
   EM extends MongoEntityManager = MongoEntityManager,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -26,7 +26,7 @@ export type MongoOptions<
 /** Creates a type-safe configuration object for the MongoDB driver. */
 export function defineMongoConfig<
   EM extends MongoEntityManager = MongoEntityManager,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -40,7 +40,7 @@ export function defineMongoConfig<
  */
 export class MongoMikroORM<
   EM extends MongoEntityManager = MongoEntityManager,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -52,7 +52,7 @@ export class MongoMikroORM<
   static override async init<
     D extends IDatabaseDriver = MongoDriver,
     EM extends EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
-    Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+    Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
       | string
       | EntityClass<AnyEntity>
       | EntitySchema
