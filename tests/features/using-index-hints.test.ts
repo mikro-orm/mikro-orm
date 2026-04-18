@@ -82,6 +82,20 @@ class Tag {
   label!: string;
 }
 
+// Entity with an expression-based index that has a name but no `properties`.
+@Entity()
+@Index({
+  name: 'expr_widget',
+  expression: 'create index `expr_widget` on `widget` (`code`)',
+})
+class Widget {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  code!: string;
+}
+
 // ==========================================
 // Type Tests (compile-time only)
 // ==========================================
@@ -158,7 +172,7 @@ describe('using option - runtime validation (SQLite)', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [User, Article, Tag, Plain],
+      entities: [User, Article, Tag, Plain, Widget],
       dbName: ':memory:',
       driver: SqliteDriver,
     });
@@ -355,6 +369,100 @@ describe('using option - runtime validation (SQLite)', () => {
   test('using works with defineEntity unique constraint at runtime', async () => {
     await orm.em.find(Article, { slug: 'foo' } as any, { using: 'uniq_article_slug' });
   });
+
+  // --- EntityRepository delegation ---
+
+  test('using works through EntityRepository.find', async () => {
+    const repo = orm.em.getRepository(User);
+    await repo.find({ name: 'foo' } as any, { using: 'idx_user_name' });
+    await expect(repo.find({ age: 30 } as any, { using: 'idx_user_name' })).rejects.toThrow(/Property 'age'/);
+  });
+
+  test('using works through EntityRepository.findOne', async () => {
+    const repo = orm.em.getRepository(User);
+    await repo.findOne({ name: 'foo' } as any, { using: 'idx_user_name' });
+    await expect(repo.findOne({ age: 30 } as any, { using: 'idx_user_name' })).rejects.toThrow(/Property 'age'/);
+  });
+
+  test('using works through EntityRepository.findOneOrFail', async () => {
+    const repo = orm.em.getRepository(User);
+    await expect(repo.findOneOrFail({ name: 'foo' } as any, { using: 'idx_user_name' })).rejects.toThrow(/not found/);
+    await expect(repo.findOneOrFail({ age: 30 } as any, { using: 'idx_user_name' })).rejects.toThrow(/Property 'age'/);
+  });
+
+  test('using works through EntityRepository.findAndCount', async () => {
+    const repo = orm.em.getRepository(User);
+    await repo.findAndCount({ name: 'foo' } as any, { using: 'idx_user_name' });
+    await expect(repo.findAndCount({ age: 30 } as any, { using: 'idx_user_name' })).rejects.toThrow(/Property 'age'/);
+  });
+
+  test('using works through EntityRepository.findAll', async () => {
+    const repo = orm.em.getRepository(User);
+    await repo.findAll({ where: { name: 'foo' }, using: 'idx_user_name' } as any);
+  });
+
+  test('using works through EntityRepository.findByCursor', async () => {
+    const repo = orm.em.getRepository(User);
+    await repo.findByCursor({ where: { name: 'foo' }, using: 'idx_user_name', orderBy: { name: 'asc' } } as any);
+  });
+
+  test('using works through EntityRepository.stream', async () => {
+    const repo = orm.em.getRepository(User);
+    for await (const _ of repo.stream({ where: { name: 'foo' }, using: 'idx_user_name' } as any)) {
+      // no rows, but iterator runs
+    }
+  });
+
+  // --- findByCursor with includeCount: false ---
+
+  test('using with findByCursor includeCount=false', async () => {
+    const cursor = await orm.em.findByCursor(User, {
+      where: { name: 'foo' },
+      using: 'idx_user_name',
+      orderBy: { name: 'asc' },
+      includeCount: false,
+    } as any);
+    expect(cursor.items).toEqual([]);
+  });
+
+  // --- stream without any using option also hits validateIndexUsage early return ---
+
+  test('stream without using option passes through', async () => {
+    for await (const _ of orm.em.stream(User, {} as any)) {
+      // no rows
+    }
+  });
+
+  // --- findAll without options triggers default where ---
+
+  test('findAll without any options works (covers default where branch)', async () => {
+    await orm.em.findAll(User);
+  });
+
+  // --- array where (OR of partial conditions) ---
+
+  test('using validates array where clauses', async () => {
+    await orm.em.find(User, [{ name: 'foo' }, { name: 'bar' }] as any, { using: 'idx_user_name' });
+    await expect(orm.em.find(User, [{ name: 'foo' }, { age: 30 }] as any, { using: 'idx_user_name' })).rejects.toThrow(
+      /Property 'age'/,
+    );
+  });
+
+  // --- top-level $ operator (not $and/$or/$not) is skipped ---
+
+  test('using skips unknown top-level $ operators', async () => {
+    await orm.em.find(User, { $fulltext: 'x', name: 'foo' } as any, { using: 'idx_user_name' });
+  });
+
+  // --- expression-based index without explicit `properties` (covers `?? []` fallback) ---
+
+  test('using with expression-based index (no properties) allows empty where', async () => {
+    await orm.em.find(Widget, {} as any, { using: 'expr_widget' });
+    // any where key is rejected because allowedProps is empty
+    await expect(orm.em.find(Widget, { code: 'x' } as any, { using: 'expr_widget' })).rejects.toThrow(
+      /Property 'code' in where clause is not covered by index 'expr_widget'/,
+    );
+  });
 });
 
 // ==========================================
@@ -511,5 +619,19 @@ describe('using option - MongoDB runtime', () => {
     await expect(orm.em.find(Doc, { body: 'x' } as any, { using: 'idx_doc_title' })).rejects.toThrow(
       /Property 'body' in where clause is not covered by index 'idx_doc_title'/,
     );
+  });
+
+  test('MongoEntityManager.stream delegates to parent', async () => {
+    for await (const _ of orm.em.stream(Doc, { where: { title: 'foo' } } as any)) {
+      // no rows
+    }
+  });
+
+  test('MongoEntityManager.stream throws when populate is used', async () => {
+    await expect(async () => {
+      for await (const _ of orm.em.stream(Doc, { populate: ['body'] } as any)) {
+        // should not reach here
+      }
+    }).rejects.toThrow(/Populate option is not supported when streaming/);
   });
 });
