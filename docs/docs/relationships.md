@@ -1745,5 +1745,208 @@ console.log(loadedTag.videos.length); // 1
 
 1. **Shared pivot table** - Multiple entity types share the same pivot table, distinguished by the discriminator column.
 2. **No FK constraint on polymorphic side** - The pivot table cannot have a foreign key constraint on the polymorphic columns since they point to different tables.
-3. **Separate inverse collections** - On the inverse side (Tag), you need separate collections for each entity type (`posts`, `videos`) rather than a single polymorphic collection.
+3. **Separate inverse collections** - On the inverse side (Tag), you need separate collections for each entity type (`posts`, `videos`), or a single [merged inverse collection](#merged-inverse-collection).
 4. **Same discriminator property** - All entities sharing a pivot table must use the same `discriminator` property name.
+
+#### Merged inverse collection
+
+Instead of separate per-type inverse collections, you can declare a single union collection that combines all owner types on the inverse side of the Rails-style polymorphic M:N:
+
+```ts
+@Entity()
+class Tag {
+  // Separate per-type collections (always available)
+  @ManyToMany(() => Post, post => post.tags)
+  posts = new Collection<Post>(this);
+
+  @ManyToMany(() => Video, video => video.tags)
+  videos = new Collection<Video>(this);
+
+  // Merged union collection — loads all owner types at once
+  @ManyToMany(() => [Post, Video], 'tags')
+  owners = new Collection<Post | Video>(this);
+}
+```
+
+### Union-target M:N Polymorphic Relations
+
+The previous section covers the case where several owner types (`Post`, `Video`) share one pivot pointing at a single target (`Tag`) — the discriminator identifies the owner type. The mirror shape is also supported: a single owner holding a **union collection** of multiple target types, where the discriminator identifies the target type on each pivot row.
+
+<Tabs
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'defineEntity', value: 'define-entity'},
+]
+  }
+>
+  <TabItem value="reflect-metadata">
+
+```ts
+@Entity()
+class Image {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  url!: string;
+
+  @ManyToMany(() => Post, post => post.attachments)
+  posts = new Collection<Post>(this);
+}
+
+@Entity()
+class Video {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  src!: string;
+
+  @ManyToMany(() => Post, post => post.attachments)
+  posts = new Collection<Post>(this);
+}
+
+@Entity()
+class Post {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  title!: string;
+
+  @ManyToMany({
+    entity: () => [Image, Video],
+    pivotTable: 'attachables',
+    discriminator: 'attachable',
+    owner: true,
+  })
+  attachments = new Collection<Image | Video>(this);
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts
+@Entity()
+class Image {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  url!: string;
+
+  @ManyToMany(() => Post, post => post.attachments)
+  posts = new Collection<Post>(this);
+}
+
+@Entity()
+class Video {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  src!: string;
+
+  @ManyToMany(() => Post, post => post.attachments)
+  posts = new Collection<Post>(this);
+}
+
+@Entity()
+class Post {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  title!: string;
+
+  @ManyToMany({
+    entity: () => [Image, Video],
+    pivotTable: 'attachables',
+    discriminator: 'attachable',
+    owner: true,
+  })
+  attachments = new Collection<Image | Video>(this);
+}
+```
+
+  </TabItem>
+  <TabItem value="define-entity">
+
+```ts
+export const Image = defineEntity({
+  name: 'Image',
+  properties: {
+    id: p.number().primary(),
+    url: p.string(),
+    posts: () => p.manyToMany(Post).mappedBy('attachments'),
+  },
+});
+
+export const Video = defineEntity({
+  name: 'Video',
+  properties: {
+    id: p.number().primary(),
+    src: p.string(),
+    posts: () => p.manyToMany(Post).mappedBy('attachments'),
+  },
+});
+
+export const Post = defineEntity({
+  name: 'Post',
+  properties: {
+    id: p.number().primary(),
+    title: p.string(),
+    attachments: () => p.manyToMany([Image, Video])
+      .pivotTable('attachables')
+      .discriminator('attachable')
+      .owner(),
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
+The pivot table stores `(post_id, attachable_type, attachable_id)` — `attachable_type` holds the target discriminator (`'image'` or `'video'`), and `attachable_id` points at the row in the corresponding target table. There is no FK constraint on `attachable_id` since it spans multiple target tables.
+
+```sql
+CREATE TABLE attachables (
+  post_id         INTEGER,      -- FK to post.id
+  attachable_type VARCHAR(255), -- 'image' or 'video'
+  attachable_id   INTEGER,      -- FK to image.id or video.id
+  PRIMARY KEY (post_id, attachable_type, attachable_id)
+);
+```
+
+Use it like a regular collection — you can mix target types freely, and loaded items come back as instances of the correct concrete class:
+
+```ts
+const post = new Post();
+post.attachments.add(new Image(), new Video());
+await em.persist(post).flush();
+
+const loaded = await em.findOneOrFail(Post, post.id, { populate: ['attachments'] });
+for (const a of loaded.attachments) {
+  if (a instanceof Image) { /* ... */ }
+  if (a instanceof Video) { /* ... */ }
+}
+```
+
+#### Inverse side
+
+Each target entity can declare its own inverse collection pointing back at the owner. MikroORM filters the shared pivot by the target's discriminator value automatically, so `Image.posts` and `Video.posts` are cleanly separated:
+
+```ts
+const img = await em.findOneOrFail(Image, id, { populate: ['posts'] });
+// img.posts contains only posts where this image is attached — pivot is filtered
+// by attachable_type='image' automatically.
+```
+
+#### Caveats
+
+1. All declared targets must have distinct `tableName`s, since the discriminator column is populated from `tableName`.
+2. The collection element order in union-target M:N reflects the pivot table order, grouped by target type.

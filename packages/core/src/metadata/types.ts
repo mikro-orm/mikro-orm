@@ -368,7 +368,7 @@ export interface PropertyOptions<Owner> {
 
 export interface ReferenceOptions<Owner, Target> extends PropertyOptions<Owner> {
   /** Set target entity type. For polymorphic relations, pass an array of entity types. */
-  entity?: () => EntityName<Target> | EntityName<Target>[];
+  entity?: () => EntityName<Target> | EntityName[];
 
   /** Set what actions on owning entity should be cascaded to the relationship. Defaults to [Cascade.PERSIST, Cascade.MERGE] (see {@doclink cascading}). */
   cascade?: Cascade[];
