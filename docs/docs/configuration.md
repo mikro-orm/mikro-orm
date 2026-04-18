@@ -368,6 +368,18 @@ MikroORM.init({
 });
 ```
 
+## Initializing nullable properties to `null`
+
+By default, nullable properties that are not provided in `em.create()` data remain `undefined` on the entity object. This can lead to a mismatch between the runtime value (`undefined`) and what the database returns after loading (`null`).
+
+With `initNullableProperties` enabled, nullable properties are initialized to `null` (or `undefined` when `forceUndefined` is set) during `em.create()`. Properties with explicit `default`, `defaultRaw`, or `onCreate` are not affected.
+
+```ts
+MikroORM.init({
+  initNullableProperties: true,
+});
+```
+
 ## Ignoring `undefined` values in Find Queries
 
 The ORM will treat explicitly defined `undefined` values in your `em.find()` queries as `null`s. If you want to ignore them instead, use `ignoreUndefinedInQuery` option:
