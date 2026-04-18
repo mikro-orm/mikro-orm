@@ -64,19 +64,19 @@ function useFilter<T>(_filter: FilterQuery<T>): void {}
 
 bench('FilterQuery<Tag> - simple entity', () => {
   useFilter<Tag>({ name: 'test' });
-}).types([442, 'instantiations']);
+}).types([449, 'instantiations']);
 
 bench('FilterQuery<Publisher> - entity with collection', () => {
   useFilter<Publisher>({ name: 'test' });
-}).types([469, 'instantiations']);
+}).types([476, 'instantiations']);
 
 bench('FilterQuery<Book> - entity with relations', () => {
   useFilter<Book>({ title: 'test' });
-}).types([501, 'instantiations']);
+}).types([508, 'instantiations']);
 
 bench('FilterQuery<Author> - complex entity', () => {
   useFilter<Author>({ name: 'test' });
-}).types([532, 'instantiations']);
+}).types([539, 'instantiations']);
 
 // ============================================
 // Nested query benchmarks
@@ -84,15 +84,15 @@ bench('FilterQuery<Author> - complex entity', () => {
 
 bench('FilterQuery<Author> - nested 1 level', () => {
   useFilter<Author>({ books: { title: 'test' } });
-}).types([1062, 'instantiations']);
+}).types([1074, 'instantiations']);
 
 bench('FilterQuery<Author> - nested 2 levels', () => {
   useFilter<Author>({ books: { publisher: { name: 'test' } } });
-}).types([1356, 'instantiations']);
+}).types([1383, 'instantiations']);
 
 bench('FilterQuery<Author> - nested 3 levels', () => {
   useFilter<Author>({ books: { publisher: { books: { title: 'test' } } } });
-}).types([1388, 'instantiations']);
+}).types([1415, 'instantiations']);
 
 // ============================================
 // Component type benchmarks
@@ -103,14 +103,14 @@ function useFilterObject<T>(_filter: FilterObject<T>): void {}
 
 bench('FilterObject<Author> - direct', () => {
   useFilterObject<Author>({ name: 'test' });
-}).types([450, 'instantiations']);
+}).types([457, 'instantiations']);
 
 // eslint-disable-next-line
 function useExpandQuery<T>(_filter: ExpandQuery<T>): void {}
 
 bench('ExpandQuery<Author> - direct', () => {
   useExpandQuery<Author>({ name: 'test' });
-}).types([602, 'instantiations']);
+}).types([609, 'instantiations']);
 
 // ============================================
 // EntityKey benchmarks
