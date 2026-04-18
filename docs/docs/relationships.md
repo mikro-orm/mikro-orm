@@ -103,6 +103,16 @@ export class Book {
 
 You can also specify how operations on given entity should [cascade](./cascading.md) to the referred entity.
 
+### Making the relation type-safe
+
+By default, a `@ManyToOne` property is typed as the bare entity, which means TypeScript does not know whether it has been populated. Three ways to add compile-time safety:
+
+- **`Ref<T>`** — wraps the entity in a `Reference` at runtime, adds `.$` / `.get()` / `.load()` accessors. Use via `{ ref: true }` or `.ref()`. See [Type-safe Relations → `Ref` Wrapper](./type-safe-relations.md#reference-wrapper).
+- **`LazyRef<T>`** — type-only marker, runtime value stays a plain entity (no wrapper). Restricts non-PK access until `Loaded<>` narrows it, no `.$` indirection when loaded. Use via `.lazyRef()` or declare the property as `LazyRef<T>`. See [`LazyRef<T>`](./type-safe-relations.md#lazyreft--type-only-reference).
+- **Plain relation** — no compile-time populate-state safety, most familiar to users coming from other ORMs.
+
+The same applies to `@OneToOne`.
+
 ## OneToMany
 
 > One instance of the current Entity has Many instances (references) to the referred Entity.

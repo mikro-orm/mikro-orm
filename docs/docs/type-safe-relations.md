@@ -188,6 +188,108 @@ book.author.getProperty('name');   // OK
 
 > Unlike `wrap(entity).init()` which always refreshes from the database, `Reference.load()` only queries if the entity is not already in the Identity Map.
 
+## `LazyRef<T>` — type-only reference
+
+When you want **compile-time populate-state safety** without the `.$` / `.get()` indirection that `Reference` requires, use `LazyRef<T>`. It is a **type-only** marker — at runtime the property holds the entity instance directly (same as a plain relation without `ref: true`), but TypeScript restricts access to the primary key until `Loaded<>` narrows it.
+
+```ts
+@ManyToOne(() => Author)
+author!: LazyRef<Author>;
+```
+
+Or with `defineEntity`:
+
+```ts
+const BookSchema = defineEntity({
+  name: 'Book',
+  properties: {
+    author: () => p.manyToOne(AuthorSchema).lazyRef(),
+  },
+});
+```
+
+### Semantics
+
+| | `LazyRef<T>` | `Ref<T>` |
+|---|---|---|
+| Runtime value | entity instance (stub or hydrated) | `Reference` wrapper |
+| `instanceof T` (runtime) | `true` | `false` |
+| Access unloaded PK | `ref.id` ✅ | `ref.id` ✅ |
+| Access unloaded non-PK | compile error ✅ | compile error ✅ |
+| Access loaded prop | `loaded.author.name` (no `.$`) | `loaded.author.$.name` |
+| `load()` / `loadOrFail()` method | ❌ — use `Loadable` mixin on the target | ✅ built-in |
+
+> **Note on `instanceof`**: the table's `instanceof T` row is about the runtime JS check — `book.author instanceof Author` returns `true` at runtime. TypeScript's control-flow narrowing through `instanceof`, however, does **not** strip `LazyRef<T>`'s brand, so `if (book.author instanceof Author) { /* book.author.name is still a compile error here */ }` still won't give you full entity access. Use `unref()` or `Loaded<>` narrowing for compile-time access.
+
+### Usage
+
+```ts
+const book = await em.findOneOrFail(Book, 1);
+book.author.id;     // ok — PK is always accessible
+book.author.name;   // compile error — not loaded
+
+const loaded = await em.findOneOrFail(Book, 1, { populate: ['author'] });
+loaded.author.name; // ok — Loaded<Book, 'author'> narrows LazyRef<Author> to Author
+```
+
+> **Scope**: `LazyRef<T>` is for to-one relations only (`@ManyToOne`, `@OneToOne`). Collections already have their own indirection via `Collection<T>`.
+>
+> **Caveat**: the safety is purely compile-time. JS code, `as any` casts, or code paths that bypass `Loaded<>` can freely read any property at runtime — and on an *unpopulated* relation (a stub with only the PK set) those reads will return `undefined`. If the relation has already been populated, the underlying entity is fully hydrated and reads behave normally; the caveat applies only to the stub case. Same footgun as plain non-`Ref` relations.
+>
+> **Type performance**: `LazyRef<T>` adds one conditional branch in the `Loaded<>` / `AutoPath` narrowing paths. The cost is comparable to `Ref<T>` (in fact slightly cheaper for loaded narrowing, since no `LoadedReference` intersection is produced). See `tests/bench/types/lazy-ref.ts` for measurements.
+
+### `unref()` — escape hatch when you can't thread `Loaded<>` through
+
+When you know a relation is populated but the surrounding code is typed as bare `Book` rather than `Loaded<Book, 'author'>`, use `unref()` to narrow a `LazyRef<T>` (or `Ref<T>`) back to `T`.
+
+```ts
+import { unref } from '@mikro-orm/core';
+
+function logAuthor(book: Book) {
+  // `book.author` is `LazyRef<Author>` — `.name` would be a compile error
+  console.log(unref(book.author).name);
+}
+```
+
+`unref()` is the inverse of `ref()` and works on any of:
+
+- `Ref<T>` / `Reference<T>` (entity) — calls `.unwrap()`, returns `T`
+- `LazyRef<T>` — identity cast at runtime (the underlying value is already `T`), returns `T`
+- plain `T` — passthrough, returns `T`
+- `ScalarReference<V>` / `ScalarRef<V>` — calls `.unwrap()`, returns `V | undefined` (the scalar may be unbound)
+- `null` / `undefined` — passthrough
+
+Like a plain `as` cast, `unref()` is a compile-time narrowing only for entity relations — if the entity is a stub that was never populated, non-PK properties are still `undefined` at runtime. Use it when you're confident the relation is loaded; prefer threading `Loaded<>` through signatures when you can.
+
+## `Loadable` mixin — `load()` / `loadOrFail()` on entities
+
+If you are using plain relations or `LazyRef<T>` and want the `load()` / `loadOrFail()` ergonomics that `Reference` provides on the wrapper, opt into the `Loadable` mixin on your entity class. It adds the two methods to the entity prototype so you can call them directly on the relation target.
+
+```ts
+import { BaseEntity, Loadable, LoadableBaseEntity } from '@mikro-orm/core';
+
+// convenience: BaseEntity pre-composed with the mixin
+class User extends LoadableBaseEntity {
+  // ...
+}
+
+// standalone — no inherited base
+class Product extends Loadable() {
+  // ...
+}
+
+// or compose with your own base class
+class Article extends Loadable(MyBase) {
+  // ...
+}
+
+const user = orm.em.getReference(User, 1);
+const loaded = await user.load();          // Promise<User | null>
+const loadedOrThrows = await user.loadOrFail(); // Promise<User>
+```
+
+Opt-in by design: `BaseEntity` itself does **not** gain these methods, so entities with existing `load` / `loadOrFail` properties are unaffected.
+
 ## `Loaded` Type
 
 The `Loaded<Entity, Hints>` type tracks which relations are populated at compile time. All `em.find*` methods return this type:
