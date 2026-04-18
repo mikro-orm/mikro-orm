@@ -313,4 +313,84 @@ describe('populate with limit (per-parent limiting)', () => {
     // Without limit, all 5 posts should be loaded
     expect(users[0].posts.length).toBe(5);
   });
+
+  test('M:N populate via pivot table without limit loads all items', async () => {
+    // Covers the false branch of `populate?.limit != null` in findChildrenFromPivotTable
+    // (and the matching `_partitionLimit` guard in AbstractSqlDriver.loadFromPivotTable).
+    const tags = await orm.em.find(
+      Tag,
+      {},
+      {
+        populate: ['posts'],
+      },
+    );
+
+    // Without limit, every tag loads all its posts (each tag has 6-9 posts).
+    for (const tag of tags) {
+      expect(tag.posts.length).toBeGreaterThan(2);
+    }
+  });
+
+  test('nested populateHints with limit only on the child level', async () => {
+    // Only comments is limited; posts carries no limit — exercises the
+    // `entry.limit != null` false branch of forceSelectInForLimitedPopulate.
+    const users = await orm.em.find(
+      User,
+      { name: 'User 1' },
+      {
+        populate: ['posts.comments'],
+        populateHints: {
+          'posts.comments': { limit: 1, orderBy: { createdAt: 'desc' } },
+        },
+      },
+    );
+
+    expect(users).toHaveLength(1);
+    // All 5 posts load (posts has no limit), but each post has at most 1 comment.
+    expect(users[0].posts.length).toBe(5);
+
+    for (const post of users[0].posts) {
+      expect(post.comments.length).toBeLessThanOrEqual(1);
+    }
+  });
+
+  test('populate with limit but without any orderBy (partition-only row_number)', async () => {
+    // Covers the QueryBuilder fallback that orders by the partition column
+    // when no explicit orderBy is provided alongside the limit.
+    const mock = mockLogger(orm, ['query']);
+    const users = await orm.em.find(
+      User,
+      { name: 'User 1' },
+      {
+        populate: ['posts'],
+        populateHints: {
+          posts: { limit: 3 },
+        },
+      },
+    );
+
+    expect(users[0].posts.length).toBe(3);
+
+    const queries = mock.mock.calls.map(c => c[0]);
+    const populateQuery = queries.find(q => q.includes('row_number'));
+    expect(populateQuery).toBeDefined();
+    // When no orderBy is supplied, the OVER clause orders by the partition column itself.
+    expect(populateQuery).toMatch(/partition by.*order by/);
+  });
+
+  test('populateHints with null/undefined option values are ignored', async () => {
+    // Covers the `hint[key] != null` false branch in applyPopulateHints.
+    const users = await orm.em.find(
+      User,
+      { name: 'User 1' },
+      {
+        populate: ['posts'],
+        populateHints: {
+          posts: { limit: 2, offset: undefined, orderBy: null as any },
+        },
+      },
+    );
+
+    expect(users[0].posts.length).toBe(2);
+  });
 });
