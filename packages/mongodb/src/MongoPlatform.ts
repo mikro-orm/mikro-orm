@@ -120,6 +120,10 @@ export class MongoPlatform extends Platform {
       throw MetadataError.tptNotSupportedByDriver(meta);
     }
 
+    if (meta.triggers?.length > 0) {
+      throw MetadataError.triggersNotSupportedByDriver(meta);
+    }
+
     const pk = meta.getPrimaryProps()[0];
 
     if (pk && pk.fieldNames?.[0] !== '_id') {
