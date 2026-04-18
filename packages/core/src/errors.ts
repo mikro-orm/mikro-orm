@@ -452,6 +452,13 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     );
   }
 
+  /** Thrown when database triggers are defined on an entity using a driver that does not support them. */
+  static triggersNotSupportedByDriver(meta: EntityMetadata): MetadataError {
+    return new MetadataError(
+      `Entity ${meta.className} defines database triggers which are not supported by the current driver. Triggers are only available with SQL drivers.`,
+    );
+  }
+
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): MetadataError {
     return new MetadataError(`${meta.className}.${prop.name} ${message}`);
   }
