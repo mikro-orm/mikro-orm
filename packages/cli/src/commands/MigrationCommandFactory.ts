@@ -21,6 +21,8 @@ export class MigrationCommandFactory {
     check: 'Check if migrations are needed. Useful for bash scripts.',
     pending: 'List all pending migrations',
     fresh: 'Clear the database and rerun all migrations',
+    log: 'Mark a migration as executed without running it',
+    unlog: 'Remove a migration from the executed list without reverting it',
   };
 
   static create<const T extends MigratorMethod>(command: T) {
@@ -49,7 +51,22 @@ export class MigrationCommandFactory {
       return this.configureFreshCommand(args);
     }
 
+    if (method === 'log' || method === 'unlog') {
+      return this.configureLogUnlogCommand(args);
+    }
+
     return args;
+  }
+
+  private static configureLogUnlogCommand(args: Argv<BaseArgs>): Argv<MigratorLogUnlogOptions> {
+    args.option('n', {
+      alias: 'name',
+      type: 'string',
+      desc: 'Name of the migration to log/unlog',
+      demandOption: true,
+    });
+
+    return args as Argv<MigratorLogUnlogOptions>;
   }
 
   private static configureUpDownCommand(args: Argv<BaseArgs>, method: 'up' | 'down'): Argv<CliUpDownOptions> {
@@ -126,6 +143,11 @@ export class MigrationCommandFactory {
         break;
       case 'fresh':
         await this.handleFreshCommand(args, orm.migrator, orm);
+        break;
+      case 'log':
+      case 'unlog':
+        await this.handleLogUnlogCommand(args, orm.migrator, method);
+        break;
     }
 
     await orm.close(true);
@@ -237,6 +259,16 @@ export class MigrationCommandFactory {
     }
   }
 
+  private static async handleLogUnlogCommand(
+    args: ArgumentsCamelCase<MigratorLogUnlogOptions>,
+    migrator: IMigrator,
+    method: 'log' | 'unlog',
+  ) {
+    await migrator[`${method}Migration`](args.name!);
+    const action = method === 'log' ? 'logged' : 'unlogged';
+    CLIHelper.dump(colors.green(`Successfully ${action} migration '${args.name}'`));
+  }
+
   private static getUpDownOptions(flags: CliUpDownOptions): MigrateOptions {
     if (!flags.to && !flags.from && flags.only) {
       return { migrations: flags.only.split(/[, ]+/) };
@@ -286,6 +318,7 @@ type MigratorCreateOptions = BaseArgs & {
   dump?: boolean;
   name?: string;
 };
+type MigratorLogUnlogOptions = BaseArgs & { name?: string };
 
 type MigrationOptionsMap = {
   create: MigratorCreateOptions;
@@ -295,6 +328,8 @@ type MigrationOptionsMap = {
   list: BaseArgs;
   pending: BaseArgs;
   fresh: MigratorFreshOptions;
+  log: MigratorLogUnlogOptions;
+  unlog: MigratorLogUnlogOptions;
 };
 type MigratorMethod = keyof MigrationOptionsMap;
-type Opts = BaseArgs & MigratorCreateOptions & CliUpDownOptions & MigratorFreshOptions;
+type Opts = BaseArgs & MigratorCreateOptions & CliUpDownOptions & MigratorFreshOptions & MigratorLogUnlogOptions;
