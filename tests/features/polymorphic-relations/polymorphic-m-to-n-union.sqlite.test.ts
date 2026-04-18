@@ -477,3 +477,70 @@ describe('polymorphic M:N union-target unsupported populate hints', () => {
     expect(loaded.attachments[0]).toBeInstanceOf(Img2);
   });
 });
+
+describe('polymorphic M:N union-target collection edge cases', () => {
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      entities: [Image, Video, Post],
+      dbName: ':memory:',
+      metadataProvider: ReflectMetadataProvider,
+    });
+    await orm.schema.create();
+  });
+
+  afterAll(async () => {
+    await orm.close(true);
+  });
+
+  beforeEach(async () => {
+    await orm.schema.clear();
+    orm.em.clear();
+  });
+
+  test('Collection.remove(predicate) drops matching items from a mixed collection', async () => {
+    const img = new Image('https://example.com/a.png');
+    const vid = new Video('https://example.com/b.mp4');
+    const post = new Post('predicate remove');
+    post.attachments.add(img, vid);
+    await orm.em.persist(post).flush();
+    orm.em.clear();
+
+    const loaded = await orm.em.findOneOrFail(Post, { title: 'predicate remove' }, { populate: ['attachments'] });
+    // predicate form exercises the callback path (entity instanceof Function) in Collection.remove
+    loaded.attachments.remove(item => item instanceof Image);
+    await orm.em.flush();
+    orm.em.clear();
+
+    const pivot = await orm.em.execute('SELECT * FROM attachables');
+    expect(pivot).toHaveLength(1);
+    expect(pivot[0].attachable_type).toBe('video');
+  });
+
+  test('flushing an off-union class in a union-target M:N collection throws a clear error', async () => {
+    // unrelated plain entity not part of Post.attachments' [Image, Video] union
+    @Entity()
+    class Foreign {
+      @PrimaryKey()
+      id!: number;
+    }
+
+    const foreignOrm = await MikroORM.init({
+      entities: [Image, Video, Post, Foreign],
+      dbName: ':memory:',
+      metadataProvider: ReflectMetadataProvider,
+    });
+    await foreignOrm.schema.create();
+
+    const post = new Post('off-union');
+    const foreign = foreignOrm.em.create(Foreign, {});
+    // bypass compile-time typing: the runtime guard in AbstractSqlDriver.syncCollections is what we exercise
+    (post.attachments as Collection<any>).add(foreign);
+    await expect(foreignOrm.em.persist(post).flush()).rejects.toThrow(
+      /Cannot resolve discriminator value for Foreign in attachments/,
+    );
+
+    await foreignOrm.close(true);
+  });
+});
