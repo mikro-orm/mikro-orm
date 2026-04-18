@@ -787,6 +787,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
       'migration:fresh',
       'migration:log',
       'migration:unlog',
+      'migration:rollup',
       'debug',
     ]);
   });
