@@ -78,7 +78,7 @@ class TransactionalManager {
     Fields extends string = '*',
     Excludes extends string = never,
   >(entityName: EntityName<Entity>, options?: FindAllOptions<NoInfer<Entity>, Hint, Fields, Excludes>) {
-    return this.getEntityManager()!.findAll(entityName, options);
+    return this.getEntityManager()!.findAll(entityName, options as any);
   }
 
   @Transactional()
@@ -92,7 +92,7 @@ class TransactionalManager {
     where: FilterQuery<NoInfer<Entity>>,
     options?: FindOneOptions<Entity, Hint, Fields, Excludes>,
   ) {
-    return this.getEntityManager()!.findOne(entityName, where, options);
+    return this.getEntityManager()!.findOne(entityName, where as any, options);
   }
 
   @Transactional({ ignoreNestedTransactions: true })
