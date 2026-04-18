@@ -15,7 +15,7 @@ import { MsSqlDriver } from './MsSqlDriver.js';
 /** Configuration options for the MSSQL driver. */
 export type MsSqlOptions<
   EM extends SqlEntityManager<MsSqlDriver> = SqlEntityManager<MsSqlDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -25,7 +25,7 @@ export type MsSqlOptions<
 /** Creates a type-safe configuration object for the MSSQL driver. */
 export function defineMsSqlConfig<
   EM extends SqlEntityManager<MsSqlDriver> = SqlEntityManager<MsSqlDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -39,7 +39,7 @@ export function defineMsSqlConfig<
  */
 export class MsSqlMikroORM<
   EM extends SqlEntityManager<MsSqlDriver> = SqlEntityManager<MsSqlDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -51,7 +51,7 @@ export class MsSqlMikroORM<
   static override async init<
     D extends IDatabaseDriver = MsSqlDriver,
     EM extends EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
-    Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+    Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
       | string
       | EntityClass<AnyEntity>
       | EntitySchema
