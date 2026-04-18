@@ -7,7 +7,9 @@ import type {
   EntityDTOProp,
   ExtractFieldsHint,
   FromEntityType,
+  ResolveSerializeFields,
   SerializeDTO,
+  SerializeFieldsKeepPK,
   EntityKey,
   EntityMetadata,
   EntityProperty,
@@ -24,10 +26,15 @@ import { Reference } from '../entity/Reference.js';
 import { SerializationContext } from './SerializationContext.js';
 import { isRaw } from '../utils/RawQueryFragment.js';
 
+/** Returns true when any entry in `items` is `propName`, the wildcard `*`, or a dot-path under `propName`. */
+function matchesPath(items: readonly string[], propName: string): boolean {
+  return items.some(item => item === propName || item === '*' || item.startsWith(propName + '.'));
+}
+
 function isVisible<T extends object>(
   meta: EntityMetadata<T>,
   propName: EntityKey<T>,
-  options: SerializeOptions<T, any, any>,
+  options: SerializeOptions<T, any, any, any>,
 ): boolean {
   const prop = meta.properties[propName];
 
@@ -35,10 +42,11 @@ function isVisible<T extends object>(
     return prop.groups.some(g => options.groups!.includes(g));
   }
 
-  if (
-    Array.isArray(options.populate) &&
-    options.populate?.find(item => item === propName || item.startsWith(propName + '.') || item === '*')
-  ) {
+  if (Array.isArray(options.fields) && options.fields.length > 0 && !matchesPath(options.fields, propName)) {
+    return false;
+  }
+
+  if (Array.isArray(options.populate) && matchesPath(options.populate, propName)) {
     return true;
   }
 
@@ -52,10 +60,11 @@ function isVisible<T extends object>(
   return visible && !prefixed;
 }
 
-function isPopulated(propName: string, options: SerializeOptions<any, any, any>): boolean {
+function isPopulated(propName: string, options: SerializeOptions<any, any, any, any>): boolean {
   if (
     typeof options.populate !== 'boolean' &&
-    (options.populate as string[])?.find(item => item === propName || item.startsWith(propName + '.') || item === '*')
+    Array.isArray(options.populate) &&
+    matchesPath(options.populate, propName)
   ) {
     return true;
   }
@@ -67,13 +76,13 @@ function isPopulated(propName: string, options: SerializeOptions<any, any, any>)
   return false;
 }
 
-/** Converts entity instances to plain DTOs via `serialize()`, with fine-grained control over populate, exclude, and serialization groups. */
+/** Converts entity instances to plain DTOs via `serialize()`, with fine-grained control over populate, exclude, fields, and serialization groups. */
 export class EntitySerializer {
-  /** Serializes an entity to a plain DTO, with fine-grained control over population, exclusion, groups, and custom types. */
-  static serialize<T extends object, P extends string = never, E extends string = never>(
+  /** Serializes an entity to a plain DTO, with fine-grained control over population, exclusion, fields, groups, and custom types. */
+  static serialize<T extends object, P extends string = never, E extends string = never, F extends string = never>(
     entity: T,
-    options: SerializeOptions<T, P, E> = {},
-  ): SerializeDTO<T, P, E> {
+    options: SerializeOptions<T, P, E, F> = {},
+  ): SerializeDTO<T, P, E, never, ResolveSerializeFields<F>, SerializeFieldsKeepPK<F>> {
     const wrapped = helper(entity);
     const meta = wrapped.__meta;
     let contextCreated = false;
@@ -158,7 +167,7 @@ export class EntitySerializer {
     }
 
     if (!wrapped.isInitialized()) {
-      return ret as SerializeDTO<T, P, E>;
+      return ret as SerializeDTO<T, P, E, never, ResolveSerializeFields<F>, SerializeFieldsKeepPK<F>>;
     }
 
     for (const prop of meta.getterProps) {
@@ -179,7 +188,7 @@ export class EntitySerializer {
       }
     }
 
-    return ret as SerializeDTO<T, P, E>;
+    return ret as SerializeDTO<T, P, E, never, ResolveSerializeFields<F>, SerializeFieldsKeepPK<F>>;
   }
 
   private static propertyName<T>(meta: EntityMetadata<T>, prop: EntityKey<T>): EntityKey<T> {
@@ -198,7 +207,7 @@ export class EntitySerializer {
   private static processProperty<T extends object>(
     prop: EntityKey<T>,
     entity: T,
-    options: SerializeOptions<T, any, any>,
+    options: SerializeOptions<T, any, any, any>,
   ): EntityValue<T> | undefined {
     const parts = prop.split('.');
     prop = parts[0] as EntityKey<T>;
@@ -270,7 +279,7 @@ export class EntitySerializer {
   }
 
   private static extractChildOptions<T extends object, U extends object>(
-    options: SerializeOptions<T, any, any>,
+    options: SerializeOptions<T, any, any, any>,
     prop: EntityKey<T>,
   ): SerializeOptions<U> {
     return {
@@ -279,14 +288,37 @@ export class EntitySerializer {
         ? Utils.extractChildElements(options.populate, prop, '*')
         : options.populate,
       exclude: Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop) : options.exclude,
+      fields: Array.isArray(options.fields) ? this.extractChildFields(options.fields, prop) : options.fields,
     } as SerializeOptions<U>;
+  }
+
+  /**
+   * Extracts the nested `fields` whitelist for a child property. A bare parent name (`fields: ['books']`) or a
+   * wildcard removes the whitelist on the sub-tree (everything is included), so consumers don't have to repeat
+   * every field of the child. Otherwise dot-paths are stripped of the parent prefix and passed down.
+   */
+  private static extractChildFields(fields: readonly string[], prop: string): readonly string[] | undefined {
+    const out: string[] = [];
+    const dotPrefix = prop + '.';
+
+    for (const field of fields) {
+      if (field === prop || field === '*') {
+        return undefined;
+      }
+
+      if (field.startsWith(dotPrefix)) {
+        out.push(field.substring(dotPrefix.length));
+      }
+    }
+
+    return out;
   }
 
   private static processEntity<T extends object>(
     prop: EntityProperty<T>,
     entity: T,
     platform: Platform,
-    options: SerializeOptions<T, any, any>,
+    options: SerializeOptions<T, any, any, any>,
   ): EntityValue<T> | undefined {
     const child = Reference.unwrapReference(entity[prop.name] as T);
     const wrapped = helper(child);
@@ -322,7 +354,7 @@ export class EntitySerializer {
   private static processCollection<T extends object>(
     prop: EntityProperty<T>,
     entity: T,
-    options: SerializeOptions<T, any, any>,
+    options: SerializeOptions<T, any, any, any>,
   ): EntityValue<T> | undefined {
     const col = entity[prop.name] as Collection<T>;
 
@@ -349,12 +381,19 @@ export class EntitySerializer {
   }
 }
 
-export interface SerializeOptions<T, P extends string = never, E extends string = never> {
+export interface SerializeOptions<T, P extends string = never, E extends string = never, F extends string = never> {
   /** Specify which relation should be serialized as populated and which as a FK. */
   populate?: readonly AutoPath<T, P, `${PopulatePath.ALL}`>[];
 
   /** Specify which properties should be omitted. */
   exclude?: readonly AutoPath<T, E>[];
+
+  /**
+   * Whitelist of properties to serialize, supports dot-paths (e.g. `['name', 'books.title']`). When set, only the
+   * listed properties end up in the output, including primary keys. A bare property name keeps its entire sub-tree;
+   * a dot-path additionally narrows the nested object to the listed sub-keys. `exclude` takes precedence on conflict.
+   */
+  fields?: readonly AutoPath<T, F, `${PopulatePath.ALL}`>[];
 
   /** Enforce unpopulated references to be returned as objects, e.g. `{ author: { id: 1 } }` instead of `{ author: 1 }`. */
   forceObject?: boolean;
@@ -392,13 +431,28 @@ export function serialize<
   Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
   Populate extends string = never,
   Exclude extends string = never,
+  Fields extends string = never,
   Config extends TypeConfig = never,
 >(
   entity: Entity,
-  options?: Config & SerializeOptions<UnboxArray<Entity>, Populate, Exclude>,
+  options?: Config & SerializeOptions<UnboxArray<Entity>, Populate, Exclude, Fields>,
 ): Naked extends object[]
-  ? SerializeDTO<ArrayElement<Naked>, Populate, Exclude, CleanTypeConfig<Config>>[]
-  : SerializeDTO<Naked, Populate, Exclude, CleanTypeConfig<Config>, ExtractFieldsHint<Entity>>;
+  ? SerializeDTO<
+      ArrayElement<Naked>,
+      Populate,
+      Exclude,
+      CleanTypeConfig<Config>,
+      ResolveSerializeFields<Fields, ExtractFieldsHint<Entity>>,
+      SerializeFieldsKeepPK<Fields>
+    >[]
+  : SerializeDTO<
+      Naked,
+      Populate,
+      Exclude,
+      CleanTypeConfig<Config>,
+      ResolveSerializeFields<Fields, ExtractFieldsHint<Entity>>,
+      SerializeFieldsKeepPK<Fields>
+    >;
 
 /**
  * Converts entity instance to POJO, converting the `Collection`s to arrays and unwrapping the `Reference` wrapper, while respecting the serialization options.
@@ -417,13 +471,28 @@ export function serialize<
   Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
   Populate extends string = never,
   Exclude extends string = never,
+  Fields extends string = never,
   Config extends TypeConfig = never,
 >(
   entities: Entity | Entity[],
-  options?: SerializeOptions<Entity, Populate, Exclude>,
+  options?: SerializeOptions<Entity, Populate, Exclude, Fields>,
 ):
-  | SerializeDTO<Naked, Populate, Exclude, CleanTypeConfig<Config>, ExtractFieldsHint<Entity>>
-  | SerializeDTO<Naked, Populate, Exclude, CleanTypeConfig<Config>, ExtractFieldsHint<Entity>>[] {
+  | SerializeDTO<
+      Naked,
+      Populate,
+      Exclude,
+      CleanTypeConfig<Config>,
+      ResolveSerializeFields<Fields, ExtractFieldsHint<Entity>>,
+      SerializeFieldsKeepPK<Fields>
+    >
+  | SerializeDTO<
+      Naked,
+      Populate,
+      Exclude,
+      CleanTypeConfig<Config>,
+      ResolveSerializeFields<Fields, ExtractFieldsHint<Entity>>,
+      SerializeFieldsKeepPK<Fields>
+    >[] {
   if (Array.isArray(entities)) {
     return entities.map(e => EntitySerializer.serialize(e, options)) as any;
   }
