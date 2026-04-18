@@ -92,7 +92,7 @@ export interface NamingStrategy {
   indexName(
     tableName: string,
     columns: string[],
-    type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check' | 'default',
+    type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check' | 'default' | 'trigger',
   ): string;
 
   /**

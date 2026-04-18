@@ -31,6 +31,7 @@ import type {
   MaybeReturnType,
   Ref,
   IndexCallback,
+  TriggerCallback,
   FormulaCallback,
   EntityCtor,
   IsNever,
@@ -1236,6 +1237,7 @@ export interface EntityMetadataWithProperties<
   | 'serializedPrimaryKey'
   | 'indexes'
   | 'uniques'
+  | 'triggers'
   | 'repository'
   | 'filters'
   | 'orderBy'
@@ -1309,6 +1311,15 @@ export interface EntityMetadataWithProperties<
     include?: NoInfer<AllKeys<TProperties, TBase>> | NoInfer<AllKeys<TProperties, TBase>>[];
     fillFactor?: number;
     disabled?: boolean;
+  }[];
+  triggers?: {
+    name?: string;
+    timing: 'before' | 'after' | 'instead of';
+    events: ('insert' | 'update' | 'delete' | 'truncate')[];
+    forEach?: 'row' | 'statement';
+    body?: string | Raw | TriggerCallback<InferEntityFromProperties<TProperties, TPK, TBase>>;
+    when?: string;
+    expression?: string;
   }[];
 }
 
