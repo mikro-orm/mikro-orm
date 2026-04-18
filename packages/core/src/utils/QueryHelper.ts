@@ -24,6 +24,22 @@ export class QueryHelper {
   static readonly SUPPORTED_OPERATORS = ['>', '<', '<=', '>=', '!', '!='];
 
   /**
+   * True when the property has multiple polymorph target types. Covers two structurally-equivalent
+   * shapes routed through the same loading path:
+   *   1. Union-target owner side — `Post.attachments: Collection<Image | Video>` (one owner, many
+   *      target types, shared pivot with target-side discriminator).
+   *   2. Merged inverse of Rails-style polymorphic M:N — `Tag.owners: Collection<Post | Video>`
+   *      (many owner types pointing at one target, viewed from the target where "owners" looks
+   *      like a union of multiple types).
+   *
+   * Both cases are loaded via `loadFromUnionTargetPolymorphicPivotTable`, which buckets pivot rows
+   * by discriminator and hydrates each target class separately.
+   */
+  static isUnionTargetPolymorphic(prop: { polymorphic?: boolean; polymorphTargets?: readonly unknown[] }): boolean {
+    return !!prop.polymorphic && (prop.polymorphTargets?.length ?? 0) > 1;
+  }
+
+  /**
    * Finds the discriminator value (key) for a given entity class in a discriminator map.
    * Walks up the prototype chain so TPT subclasses resolve to their root's key.
    */
