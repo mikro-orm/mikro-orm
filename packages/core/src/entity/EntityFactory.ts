@@ -479,6 +479,15 @@ export class EntityFactory {
         entity[prop.name] ??= prop.onCreate(entity, this.#em);
       } else if (!onCreateOnly && prop.default != null && !isRaw(prop.default) && entity[prop.name] === undefined) {
         entity[prop.name] = prop.default as EntityValue<T>;
+      } else if (
+        !onCreateOnly &&
+        this.#config.get('initNullableProperties') &&
+        prop.nullable &&
+        prop.default == null &&
+        !prop.defaultRaw &&
+        entity[prop.name] === undefined
+      ) {
+        entity[prop.name] = (this.#config.get('forceUndefined') ? undefined : null) as EntityValue<T>;
       }
 
       if (prop.kind === ReferenceKind.EMBEDDED && entity[prop.name]) {
@@ -486,7 +495,21 @@ export class EntityFactory {
 
         for (const item of items) {
           // Embedded sub-properties need all defaults since the DB can't apply them within JSON columns.
-          this.assignDefaultValues(item, prop.targetMeta! as EntityMetadata<T>);
+          // For polymorphic embeddables, resolve the actual subtype to avoid setting
+          // properties from other subtypes (e.g. Cat's canMeow on a Dog instance).
+          let targetMeta = prop.targetMeta! as EntityMetadata<T>;
+
+          if (targetMeta.polymorphs && targetMeta.discriminatorColumn) {
+            const discValue = (item as Dictionary)[targetMeta.discriminatorColumn];
+            // eslint-disable-next-line eqeqeq
+            const resolved = targetMeta.polymorphs.find(m => m.discriminatorValue == discValue);
+
+            if (resolved) {
+              targetMeta = resolved as EntityMetadata<T>;
+            }
+          }
+
+          this.assignDefaultValues(item, targetMeta);
         }
       }
     }
