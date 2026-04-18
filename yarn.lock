@@ -2,7 +2,7 @@
 # Manual changes might be lost - proceed with caution!
 
 __metadata:
-  version: 8
+  version: 9
   cacheKey: 10
 
 "@ark/attest@npm:0.56.0":
@@ -1348,7 +1348,7 @@ __metadata:
     "@mikro-orm/core": "npm:^7.0.11"
     "@mikro-orm/sql": "npm:7.0.11"
     kysely: "npm:0.28.16"
-    mysql2: "npm:3.22.0"
+    mysql2: "npm:3.22.1"
     sqlstring: "npm:2.3.3"
   peerDependencies:
     "@mikro-orm/core": 7.0.11
@@ -1435,10 +1435,21 @@ __metadata:
     rimraf: "npm:6.1.3"
     tsimp: "npm:2.0.12"
     tsx: "npm:4.21.0"
-    typescript: "npm:6.0.2"
+    typescript: "npm:6.0.3"
     unplugin-swc: "npm:1.5.9"
     uuid: "npm:11.1.0"
     vitest: "npm:4.1.4"
+  dependenciesMeta:
+    "@swc/core":
+      built: true
+    better-sqlite3:
+      built: true
+    esbuild:
+      built: true
+    nx:
+      built: true
+    oracledb:
+      built: true
   languageName: unknown
   linkType: soft
 
@@ -7230,9 +7241,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mysql2@npm:3.22.0":
-  version: 3.22.0
-  resolution: "mysql2@npm:3.22.0"
+"mysql2@npm:3.22.1":
+  version: 3.22.1
+  resolution: "mysql2@npm:3.22.1"
   dependencies:
     aws-ssl-profiles: "npm:^1.1.2"
     denque: "npm:^2.1.0"
@@ -7244,7 +7255,7 @@ __metadata:
     sql-escaper: "npm:^1.3.3"
   peerDependencies:
     "@types/node": ">= 8"
-  checksum: 10/fbfa0665624f479eeef9d0a9027157f035f07f2f5e782a32ec8b74af95342d3deb8f22f39817e25476fb86d7f93b194a6a319b82ac3af273e011b7a6208ca14e
+  checksum: 10/f8abf958b6d338e092408afb0f12a368a32e3f363de6585181cd90c593ea601fdff1f84784dbbc7bbaa6a36719a55d720534387625ffd75327b115e6c8646dff
   languageName: node
   linkType: hard
 
@@ -9873,13 +9884,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:6.0.2":
-  version: 6.0.2
-  resolution: "typescript@npm:6.0.2"
+"typescript@npm:6.0.3":
+  version: 6.0.3
+  resolution: "typescript@npm:6.0.3"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10/b9fc2fcee7ee8e5ca6f5138181964550531e18e2d20ecb71b802d4d495881e3444e0ef94cbb6e84eb2ba41e913f6feae3ca33cc722b32e6e6dfadb32d23b80e6
+  checksum: 10/0ef2357a4cffd916b52b683a021cdab0f81eea4e9aa35f2d254581c9a5106da02224e3392e1b0ed42b7a48f80c966e5f52b8e1a27941fa0523c1705a9c2e0330
   languageName: node
   linkType: hard
 
@@ -9893,13 +9904,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A6.0.2#optional!builtin<compat/typescript>":
-  version: 6.0.2
-  resolution: "typescript@patch:typescript@npm%3A6.0.2#optional!builtin<compat/typescript>::version=6.0.2&hash=5786d5"
+"typescript@patch:typescript@npm%3A6.0.3#optional!builtin<compat/typescript>":
+  version: 6.0.3
+  resolution: "typescript@patch:typescript@npm%3A6.0.3#optional!builtin<compat/typescript>::version=6.0.3&hash=5786d5"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10/e5501dfcf8c5b6b9a61f6fa53decc40187cebe3a2b7b2bd51c615007ad4cf6d58298461fef63294f6be9d5f2f33019b2a2e2bf02d9cb7d7f6ec94372bf24ffa2
+  checksum: 10/22b67a18dafedf9b1468b64ca20d9aa02ea61d449b65413d8aa6552aeb63f52ef369e86beb25b6b4c91a803d9726ee5c196f391a9b64201263263410a4223ee6
   languageName: node
   linkType: hard
 

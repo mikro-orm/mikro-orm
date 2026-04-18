@@ -491,9 +491,17 @@ export interface IWrappedEntity<Entity extends object> {
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
     Hint extends string = never,
     Exclude extends string = never,
+    Fields extends string = never,
   >(
-    options?: SerializeOptions<Naked, Hint, Exclude>,
-  ): SerializeDTO<Naked, Hint, Exclude>;
+    options?: SerializeOptions<Naked, Hint, Exclude, Fields>,
+  ): SerializeDTO<
+    Naked,
+    Hint,
+    Exclude,
+    never,
+    ResolveSerializeFields<Fields, ExtractFieldsHint<Entity>>,
+    SerializeFieldsKeepPK<Fields>
+  >;
   setSerializationContext<Hint extends string = never, Fields extends string = never, Exclude extends string = never>(
     options: LoadHint<Entity, Hint, Fields, Exclude>,
   ): void;
@@ -848,7 +856,9 @@ type SerializeSubFields<K extends string, F extends string> = K extends F
     : F extends `${K & string}.${infer Rest}`
       ? Rest
       : never;
-type SerializeFieldsFilter<T, K extends keyof T, F extends string> = K extends Prefix<T, F> | PrimaryProperty<T>
+type SerializeFieldsFilter<T, K extends keyof T, F extends string, KeepPK extends boolean = true> = K extends
+  | Prefix<T, F>
+  | (KeepPK extends true ? PrimaryProperty<T> : never)
   ? K
   : never;
 type SerializePropValue<T, K extends keyof T, H extends string, C extends TypeConfig = never> =
@@ -857,24 +867,58 @@ type SerializePropValue<T, K extends keyof T, H extends string, C extends TypeCo
       ? SerializeDTO<U & object, SerializeSubHints<K & string, H>, never, C>[]
       : SerializeDTO<ExpandProperty<T[K]>, SerializeSubHints<K & string, H>, never, C> | Extract<T[K], null | undefined>
     : EntityDTOProp<T, T[K], C>;
-type SerializePropValueWithFields<T, K extends keyof T, H extends string, C extends TypeConfig, F extends string> =
+type SerializePropValueWithFields<
+  T,
+  K extends keyof T,
+  H extends string,
+  C extends TypeConfig,
+  F extends string,
+  KeepPK extends boolean = true,
+> =
   K & string extends SerializeTopHints<H>
     ? NonNullable<T[K]> extends CollectionShape<infer U>
-      ? SerializeDTO<U & object, SerializeSubHints<K & string, H>, never, C, SerializeSubFields<K & string, F>>[]
+      ? SerializeDTO<
+          U & object,
+          SerializeSubHints<K & string, H>,
+          never,
+          C,
+          SerializeSubFields<K & string, F>,
+          KeepPK
+        >[]
       :
           | SerializeDTO<
               ExpandProperty<T[K]>,
               SerializeSubHints<K & string, H>,
               never,
               C,
-              SerializeSubFields<K & string, F>
+              SerializeSubFields<K & string, F>,
+              KeepPK
             >
           | Extract<T[K], null | undefined>
     : EntityDTOProp<T, T[K], C>;
 
 /**
+ * Resolves a user-provided `Fields` generic to the value passed to `SerializeDTO`'s `F` parameter:
+ * `never` (no `fields` option) falls back to `Default` (typically `'*'` or the entity's `ExtractFieldsHint`).
+ */
+export type ResolveSerializeFields<Fields extends string, Default extends string = '*'> = [Fields] extends [never]
+  ? Default
+  : Fields;
+
+/**
+ * Whether the explicit `serialize()` path should keep primary keys in the output. When the user does not provide
+ * a `fields` option (`Fields = never`), behave like `toObject()` and keep PKs; when they do, treat it as a strict
+ * whitelist so PKs are dropped unless listed.
+ */
+export type SerializeFieldsKeepPK<Fields extends string> = [Fields] extends [never] ? true : false;
+
+/**
  * Return type of `serialize()`. Combines Loaded + EntityDTO in a single pass for better performance.
  * Respects populate hints (`H`), exclude hints (`E`), and fields hints (`F`).
+ *
+ * `KeepPK` controls whether primary keys are auto-included when narrowing by `F`. The `toObject()` path keeps the
+ * default `true` (PKs always present); the explicit `serialize()` path passes `false` so the user-provided `fields`
+ * option is a strict whitelist that can drop PKs from the output.
  */
 export type SerializeDTO<
   T,
@@ -882,6 +926,7 @@ export type SerializeDTO<
   E extends string = never,
   C extends TypeConfig = never,
   F extends string = '*',
+  KeepPK extends boolean = true,
 > = string extends H
   ? EntityDTOFlat<T, C>
   : [F] extends ['*']
@@ -894,8 +939,8 @@ export type SerializeDTO<
         [K in keyof T as ExcludeHidden<T, K> &
           CleanKeys<T, K> &
           (IsNever<E> extends true ? K : Exclude<K, E>) &
-          SerializeFieldsFilter<T, K, F>]:
-          | SerializePropValueWithFields<T, K, H, C, F>
+          SerializeFieldsFilter<T, K, F, KeepPK>]:
+          | SerializePropValueWithFields<T, K, H, C, F, KeepPK>
           | Extract<T[K], null | undefined>;
       };
 
