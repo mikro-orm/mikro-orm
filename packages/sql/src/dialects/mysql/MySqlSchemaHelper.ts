@@ -1,5 +1,5 @@
 import { type Dictionary, EnumType, StringType, TextType, type Transaction, type Type } from '@mikro-orm/core';
-import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference } from '../../typings.js';
+import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference, SqlTriggerDef } from '../../typings.js';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
 import { SchemaHelper } from '../../schema/SchemaHelper.js';
 import type { DatabaseSchema } from '../../schema/DatabaseSchema.js';
@@ -105,12 +105,17 @@ export class MySqlSchemaHelper extends SchemaHelper {
     const checks = await this.getAllChecks(connection, tables, ctx);
     const fks = await this.getAllForeignKeys(connection, tables, ctx);
     const enums = await this.getAllEnumDefinitions(connection, tables, ctx);
+    const triggers = await this.getAllTriggers(connection, tables);
 
     for (const t of tables) {
       const key = this.getTableKey(t);
       const table = schema.addTable(t.table_name, t.schema_name, t.table_comment);
       const pks = await this.getPrimaryKeys(connection, indexes[key], table.name, table.schema);
       table.init(columns[key], indexes[key], checks[key], pks, fks[key], enums[key]);
+
+      if (triggers[key]) {
+        table.setTriggers(triggers[key]);
+      }
     }
   }
 
@@ -352,6 +357,105 @@ export class MySqlSchemaHelper extends SchemaHelper {
         definition: `check ${check.expression}`,
         expression: check.expression.replace(/^\((.*)\)$/, '$1'),
       });
+    }
+
+    return ret;
+  }
+
+  /** Generates SQL to create MySQL triggers. MySQL requires one trigger per event. */
+  override createTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
+    if (trigger.expression) {
+      return trigger.expression;
+    }
+
+    /* v8 ignore next 3 */
+    if (trigger.timing === 'instead of') {
+      throw new Error(`MySQL does not support INSTEAD OF triggers. Use BEFORE or AFTER for trigger "${trigger.name}".`);
+    }
+
+    /* v8 ignore next 5 */
+    if (trigger.forEach === 'statement') {
+      throw new Error(
+        `MySQL does not support FOR EACH STATEMENT triggers. Use FOR EACH ROW for trigger "${trigger.name}".`,
+      );
+    }
+
+    const timing = trigger.timing.toUpperCase();
+    const ret: string[] = [];
+
+    for (const event of trigger.events) {
+      const name = trigger.events.length > 1 ? `${trigger.name}_${event}` : trigger.name;
+      ret.push(
+        `create trigger ${this.quote(name)} ${timing} ${event.toUpperCase()} on ${table.getQuotedName()} for each ROW begin ${trigger.body}; end`,
+      );
+    }
+
+    return ret.join(';\n');
+  }
+
+  async getAllTriggers(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<SqlTriggerDef[]>> {
+    const names = tables.map(t => this.platform.quoteValue(t.table_name)).join(', ');
+    const sql = `select trigger_name as trigger_name, event_object_table as table_name, nullif(event_object_schema, schema()) as schema_name,
+      event_manipulation as event, action_timing as timing,
+      action_orientation as for_each, action_statement as body
+    from information_schema.triggers
+    where event_object_schema = database()
+      and event_object_table in (${names})
+    order by trigger_name, event_manipulation`;
+
+    const allTriggers = await connection.execute<any[]>(sql);
+    const ret = {} as Dictionary<SqlTriggerDef[]>;
+
+    // First pass: collect all raw trigger names per table to detect multi-event groups.
+    // A base name is only used for grouping if multiple triggers share it (e.g. trg_multi_insert + trg_multi_update).
+    const namesByTable = new Map<string, string[]>();
+    for (const row of allTriggers) {
+      const key = this.getTableKey(row);
+      namesByTable.set(key, [...(namesByTable.get(key) ?? []), row.trigger_name]);
+    }
+
+    const triggerMap = new Map<string, SqlTriggerDef>();
+    for (const row of allTriggers) {
+      const key = this.getTableKey(row);
+      const eventLower = row.event.toLowerCase();
+      const tableNames = namesByTable.get(key) ?? [];
+
+      // Only strip event suffix when another trigger with the same base exists for this table
+      const candidateBase = row.trigger_name.endsWith(`_${eventLower}`)
+        ? row.trigger_name.slice(0, -eventLower.length - 1)
+        : null;
+      const baseName =
+        candidateBase && tableNames.some(n => n !== row.trigger_name && n.startsWith(`${candidateBase}_`))
+          ? candidateBase
+          : row.trigger_name;
+      const dedupeKey = `${key}:${baseName}`;
+
+      if (triggerMap.has(dedupeKey)) {
+        const existing = triggerMap.get(dedupeKey)!;
+        const event = eventLower as SqlTriggerDef['events'][number];
+        if (!existing.events.includes(event)) {
+          existing.events.push(event);
+        }
+        continue;
+      }
+
+      ret[key] ??= [];
+      // Strip BEGIN/END wrapper from MySQL action_statement
+      let body = row.body ?? '';
+      const beginEndMatch = /^\s*begin\s+([\s\S]*)\s*end\s*$/i.exec(body);
+      if (beginEndMatch) {
+        body = beginEndMatch[1].trim().replace(/;\s*$/, '');
+      }
+
+      const trigger: SqlTriggerDef = {
+        name: baseName,
+        timing: row.timing.toLowerCase() as SqlTriggerDef['timing'],
+        events: [eventLower as SqlTriggerDef['events'][number]],
+        forEach: (row.for_each ?? 'row').toLowerCase() as SqlTriggerDef['forEach'],
+        body,
+      };
+      ret[key].push(trigger);
+      triggerMap.set(dedupeKey, trigger);
     }
 
     return ret;
