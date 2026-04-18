@@ -259,7 +259,7 @@ export interface ICriteriaNode<T extends object> {
   shouldInline(payload: any): boolean;
   willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions): boolean;
   shouldRename(payload: any): boolean;
-  renameFieldToPK<T>(qb: IQueryBuilder<T>, ownerAlias?: string): string;
+  renameFieldToPK<T>(qb: IQueryBuilder<T>, ownerAlias?: string, options?: ICriteriaNodeProcessOptions): string;
   getPath(opts?: { addIndex?: boolean }): string;
   getPivotPath(path: string): string;
 }
