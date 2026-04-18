@@ -65,6 +65,17 @@ const books = await orm.em.find(Book, [1, 2, 3]);
 await Promise.all(books.map(book => book.author.load({ dataloader: true })));
 ```
 
+### `Collection.loadCount()`
+
+The dataloader also supports `Collection.loadCount()`, batching multiple count queries into a single `GROUP BY` query:
+
+```ts
+const authors = await orm.em.find(Author, [1, 2, 3]);
+await Promise.all(authors.map(author => author.books.loadCount({ dataloader: true })));
+```
+
+This issues a single query instead of three separate `COUNT` queries.
+
 ## GraphQL
 
 If you're using GraphQL you won't have to use `Promise.all`, just make sure to use the `Reference.load()` and `Collection.load()` methods in your resolvers. Issuing a normal query would be enough:
