@@ -11,7 +11,7 @@ import { prepareMetadataContext, processDecoratorParameters } from '../utils.js'
 
 /** Defines a many-to-many relationship (TC39 decorator). */
 export function ManyToMany<Target extends object, Owner extends object>(
-  entity?: ManyToManyOptions<Owner, Target> | string | (() => EntityName<Target>),
+  entity?: ManyToManyOptions<Owner, Target> | string | (() => EntityName<Target> | EntityName<Target>[]),
   mappedBy?: (string & keyof Target) | ((e: Target) => any),
   options: Partial<ManyToManyOptions<Owner, Target>> = {},
 ): (_: unknown, context: ClassFieldDecoratorContext<Owner, Collection<Target> | undefined>) => void {
