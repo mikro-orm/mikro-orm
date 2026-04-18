@@ -2462,7 +2462,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const entityName = arr[0].constructor;
     const preparedPopulate = await em.preparePopulate<Entity>(
       entityName,
-      { populate: populate as any, filters: options.filters },
+      { populate: populate as any, filters: options.filters, populateHints: options.populateHints },
       options.validate,
     );
     await em.#entityLoader.populate(entityName, arr, preparedPopulate, options as any);
@@ -2957,9 +2957,23 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     if (options.populateHints) {
       applyPopulateHints(populate, options.populateHints as Record<string, PopulateHintOptions>);
+      this.forceSelectInForLimitedPopulate(populate);
     }
 
     return populate;
+  }
+
+  /** Force SELECT_IN strategy on populate entries with `limit`, since JOINED cannot do per-parent limiting. */
+  private forceSelectInForLimitedPopulate(populate: PopulateOptions<any>[]): void {
+    for (const entry of populate) {
+      if (entry.limit != null) {
+        entry.strategy = LoadStrategy.SELECT_IN;
+      }
+
+      if (entry.children?.length) {
+        this.forceSelectInForLimitedPopulate(entry.children);
+      }
+    }
   }
 
   /**

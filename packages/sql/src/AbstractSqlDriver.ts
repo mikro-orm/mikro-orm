@@ -214,6 +214,10 @@ export abstract class AbstractSqlDriver<
       await qb.applyJoinedFilters(options.em, options.filters);
     }
 
+    if ((options as Dictionary)._partitionLimit) {
+      qb.setPartitionLimit((options as Dictionary)._partitionLimit);
+    }
+
     return qb;
   }
 
@@ -1821,7 +1825,7 @@ export abstract class AbstractSqlDriver<
     const fields = pivotJoin
       ? ([pivotProp1.name, pivotProp2.name] as any[])
       : [pivotProp1.name, pivotProp2.name, ...childFields];
-    const res = await this.find(pivotMeta.class, where, {
+    const pivotFindOptions: Dictionary = {
       ctx,
       ...options,
       fields,
@@ -1837,10 +1841,15 @@ export abstract class AbstractSqlDriver<
         } as any,
       ],
       populateWhere: undefined,
-      // @ts-ignore
       _populateWhere: 'infer',
       populateFilter: this.wrapPopulateFilter(options, pivotProp2.name),
-    });
+    };
+
+    if (pivotFindOptions._partitionLimit) {
+      pivotFindOptions._partitionLimit.partitionBy = pivotProp2.name;
+    }
+
+    const res = await this.find(pivotMeta.class, where, pivotFindOptions);
 
     // Convert result FK values back to JS format so key hashing
     // in buildPivotResultMap is consistent with the owner keys.
