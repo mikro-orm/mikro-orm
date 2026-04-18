@@ -74,6 +74,7 @@ export type {
   SimpleColumnMeta,
   Rel,
   Ref,
+  LazyRef,
   ScalarRef,
   EntityRef,
   ISchemaGenerator,

@@ -76,7 +76,7 @@ bench('EntityKey<Loaded<Author, "books">>', () => {
   type R = EntityKey<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([1727, 'instantiations']);
+}).types([1752, 'instantiations']);
 
 // ============================================
 // FilterObject benchmarks
@@ -86,13 +86,13 @@ bench('FilterObject<Author>', () => {
   type R = FilterObject<Author>;
   const x = {} as R;
   void x;
-}).types([332, 'instantiations']);
+}).types([330, 'instantiations']);
 
 bench('FilterObject<Book>', () => {
   type R = FilterObject<Book>;
   const x = {} as R;
   void x;
-}).types([303, 'instantiations']);
+}).types([301, 'instantiations']);
 
 // ============================================
 // FilterQuery benchmarks (already in api-methods but more detailed here)
@@ -102,19 +102,19 @@ bench('FilterQuery<Author> - plain', () => {
   type R = FilterQuery<Author>;
   const x = {} as R;
   void x;
-}).types([548, 'instantiations']);
+}).types([546, 'instantiations']);
 
 bench('FilterQuery<Book> - plain', () => {
   type R = FilterQuery<Book>;
   const x = {} as R;
   void x;
-}).types([517, 'instantiations']);
+}).types([515, 'instantiations']);
 
 bench('FilterQuery<Tag> - simple entity', () => {
   type R = FilterQuery<Tag>;
   const x = {} as R;
   void x;
-}).types([458, 'instantiations']);
+}).types([456, 'instantiations']);
 
 // ============================================
 // Union entity tests
@@ -126,7 +126,7 @@ bench('FilterQuery<Author | Book> - union', () => {
   type R = FilterQuery<AuthorOrBook>;
   const x = {} as R;
   void x;
-}).types([492, 'instantiations']);
+}).types([490, 'instantiations']);
 
 // ============================================
 // Nested filter access simulation
@@ -137,10 +137,10 @@ bench('FilterQuery nested - author.books', () => {
   type R = FilterObject<Author>['books'];
   const x = {} as R;
   void x;
-}).types([1026, 'instantiations']);
+}).types([1033, 'instantiations']);
 
 bench('FilterQuery nested - book.author', () => {
   type R = FilterObject<Book>['author'];
   const x = {} as R;
   void x;
-}).types([1035, 'instantiations']);
+}).types([1042, 'instantiations']);

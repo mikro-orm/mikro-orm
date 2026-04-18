@@ -71,8 +71,8 @@ bench('AutoPath<Publisher, true> - populate all', () => {
 // Compare with string paths
 bench('AutoPath<Author, "books"> - string path', () => {
   validatePath<Author, 'books'>('books');
-}).types([794, 'instantiations']);
+}).types([809, 'instantiations']);
 
 bench('AutoPath<Author, "books.publisher"> - nested string', () => {
   validatePath<Author, 'books.publisher'>('books.publisher');
-}).types([1032, 'instantiations']);
+}).types([1071, 'instantiations']);

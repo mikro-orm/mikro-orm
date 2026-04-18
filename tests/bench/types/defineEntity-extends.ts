@@ -19,7 +19,7 @@ bench('entity extends entity', () => {
       extra: p.string(),
     },
   });
-}).types([1472, 'instantiations']);
+}).types([1479, 'instantiations']);
 
 bench('entity extends entity with discriminator', () => {
   const base = defineEntity({
@@ -40,7 +40,7 @@ bench('entity extends entity with discriminator', () => {
       extra: p.string(),
     },
   });
-}).types([1493, 'instantiations']);
+}).types([1500, 'instantiations']);
 
 bench('embeddable extends embeddable', () => {
   const base = defineEntity({
@@ -60,7 +60,7 @@ bench('embeddable extends embeddable', () => {
       bar: p.string(),
     },
   });
-}).types([926, 'instantiations']);
+}).types([930, 'instantiations']);
 
 bench('embeddable extends embeddable with discriminator', () => {
   const base = defineEntity({
@@ -83,7 +83,7 @@ bench('embeddable extends embeddable with discriminator', () => {
       bar: p.string(),
     },
   });
-}).types([947, 'instantiations']);
+}).types([951, 'instantiations']);
 
 bench('polymorphic embeddables', () => {
   const base = defineEntity({
@@ -198,7 +198,7 @@ bench('polymorphic embeddables', () => {
       data: () => p.embedded([documentDataAwEdCard, documentDataCoCheckMig, documentDataMvDiCard]).object(),
     },
   });
-}).types([3650, 'instantiations']);
+}).types([3657, 'instantiations']);
 
 bench('realistic entity (~20 props, relations, extends)', () => {
   const base = defineEntity({
@@ -270,7 +270,7 @@ bench('realistic entity (~20 props, relations, extends)', () => {
       tags: () => p.manyToMany(Tag),
     },
   });
-}).types([7890, 'instantiations']);
+}).types([8120, 'instantiations']);
 
 bench('realistic entity - InferEntity usage', () => {
   const base = defineEntity({
@@ -350,7 +350,7 @@ bench('realistic entity - InferEntity usage', () => {
 
   // Force evaluation of all entity types
   const _check: [IAuthor, IBook, ITag, IPublisher] = {} as any;
-}).types([7998, 'instantiations']);
+}).types([8228, 'instantiations']);
 
 bench('realistic entity - setClass pattern', () => {
   const BaseSchema = defineEntity({
@@ -436,4 +436,4 @@ bench('realistic entity - setClass pattern', () => {
   PublisherSchema.setClass(Publisher);
   AuthorSchema.setClass(Author);
   BookSchema.setClass(Book);
-}).types([8049, 'instantiations']);
+}).types([8289, 'instantiations']);
