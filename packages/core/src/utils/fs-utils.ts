@@ -1,5 +1,5 @@
 import { existsSync, globSync as nodeGlobSync, mkdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
-import { writeFile as nodeWriteFile } from 'node:fs/promises';
+import { readFile as nodeReadFile, unlink as nodeUnlink, writeFile as nodeWriteFile } from 'node:fs/promises';
 import { isAbsolute, join, normalize, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Utils } from './Utils.js';
@@ -27,7 +27,9 @@ export interface FsUtils {
   normalizePath(...parts: string[]): string;
   relativePath(path: string, relativeTo: string): string;
   absolutePath(path: string, baseDir?: string): string;
+  readFile(path: string): Promise<string>;
   writeFile(path: string, data: string, options?: Record<string, any>): Promise<void>;
+  unlink(path: string): Promise<void>;
   dynamicImport<T = any>(id: string): Promise<T>;
 }
 
@@ -245,8 +247,16 @@ export const fs: FsUtils = {
     return this.normalizePath(path);
   },
 
+  async readFile(path: string): Promise<string> {
+    return nodeReadFile(path, 'utf-8');
+  },
+
   async writeFile(path: string, data: string, options?: Record<string, any>): Promise<void> {
     await nodeWriteFile(path, data, options);
+  },
+
+  async unlink(path: string): Promise<void> {
+    await nodeUnlink(path);
   },
 
   async dynamicImport<T = any>(id: string): Promise<T> {
