@@ -45,12 +45,17 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
     const checks = await this.getAllChecks(connection, tables, ctx, columns);
     const fks = await this.getAllForeignKeys(connection, tables, ctx);
     const enums = await this.getAllEnumDefinitions(connection, tables, ctx);
+    const triggers = await this.getAllTriggers(connection, tables);
 
     for (const t of tables) {
       const key = this.getTableKey(t);
       const table = schema.addTable(t.table_name, t.schema_name, t.table_comment);
       const pks = await this.getPrimaryKeys(connection, indexes[key], table.name, table.schema);
       table.init(columns[key], indexes[key], checks[key], pks, fks[key], enums[key]);
+
+      if (triggers[key]) {
+        table.setTriggers(triggers[key]);
+      }
     }
   }
 
