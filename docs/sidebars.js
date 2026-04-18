@@ -129,12 +129,12 @@ module.exports = {
       items: [
         'logging',
         'deployment',
-        'canary-builds',
         'define-entity',
         'using-decorators',
         'folder-based-discovery',
         'metadata-providers',
         'metadata-cache',
+        'canary-builds',
       ],
     },
     {
