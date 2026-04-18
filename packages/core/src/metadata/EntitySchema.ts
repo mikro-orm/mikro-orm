@@ -522,7 +522,7 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
   private normalizeType(
     options: PropertyOptions<Entity> | EntityProperty | EmbeddedOptions<Entity, any>,
     type?: string | any | Constructor<Type>,
-  ) {
+  ): { type: string; target?: unknown } {
     if ('entity' in options) {
       /* v8 ignore next */
       if (typeof options.entity === 'string') {
