@@ -553,6 +553,83 @@ describe('EntityManagerMongo', () => {
     ).rejects.toThrow('Collation option for MongoDB must be a CollationOptions object');
   });
 
+  test('em.countBy (single field)', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    const bible = new Book('Bible', god);
+    const bible2 = new Book('Bible pt. 2', god);
+    const author2 = new Author('Author2', 'a2@test.com');
+    const book3 = new Book('Book3', author2);
+    await orm.em.persist([god, author2, bible, bible2, book3]).flush();
+    orm.em.clear();
+
+    const counts = await orm.em.countBy(Book, 'author');
+    expect(counts[String(god._id)]).toBe(2);
+    expect(counts[String(author2._id)]).toBe(1);
+  });
+
+  test('em.countBy with where filter', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    const bible = new Book('Bible', god);
+    const bible2 = new Book('Bible pt. 2', god);
+    await orm.em.persist([god, bible, bible2]).flush();
+    orm.em.clear();
+
+    const counts = await orm.em.countBy(Book, 'author', { where: { title: 'Bible' } as any });
+    expect(counts[String(god._id)]).toBe(1);
+  });
+
+  test('em.countBy with empty result', async () => {
+    const counts = await orm.em.countBy(Book, 'author', { where: { title: 'nonexistent' } as any });
+    expect(counts).toEqual({});
+  });
+
+  test('repo.countBy', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    const bible = new Book('Bible', god);
+    const bible2 = new Book('Bible pt. 2', god);
+    await orm.em.persist([god, bible, bible2]).flush();
+    orm.em.clear();
+
+    const repo = orm.em.getRepository(Book);
+    const counts = await repo.countBy('author');
+    expect(counts[String(god._id)]).toBe(2);
+  });
+
+  test('em.countBy (composite groupBy with ~~~ separator)', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    const author2 = new Author('Author2', 'a2@test.com');
+    const bible = new Book('Bible', god);
+    const bible2 = new Book('Bible pt. 2', god);
+    const biblea2 = new Book('Bible', author2);
+    await orm.em.persist([god, author2, bible, bible2, biblea2]).flush();
+    orm.em.clear();
+
+    const counts = await orm.em.countBy(Book, ['author', 'title']);
+    expect(counts[`${String(god._id)}~~~Bible`]).toBe(1);
+    expect(counts[`${String(god._id)}~~~Bible pt. 2`]).toBe(1);
+    expect(counts[`${String(author2._id)}~~~Bible`]).toBe(1);
+  });
+
+  test('em.countBy throws when having option is passed for MongoDB', async () => {
+    await expect(orm.em.countBy(Book, 'author', { having: { title: 'Bible' } as any })).rejects.toThrow(
+      'The `having` option is not supported for MongoDB in `countBy`.',
+    );
+  });
+
+  test('em.countBy falls back to the raw field name when grouping by a non-property key', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    const bible = new Book('Bible', god);
+    const bible2 = new Book('Bible pt. 2', god);
+    await orm.em.persist([god, bible, bible2]).flush();
+    orm.em.clear();
+
+    // `nonExistentField` is not an entity property — `meta.properties[...]` is undefined,
+    // so the implementation falls back to using the raw field name. Mongo groups by missing fields
+    // under `_id: null`, yielding a single bucket for the stored documents.
+    const counts = await orm.em.countBy(Book, 'nonExistentField' as any);
+    expect(counts.null).toBeGreaterThanOrEqual(2);
+  });
+
   test('should throw when trying to merge entity without id', async () => {
     const author = new Author('test', 'test');
     expect(() => orm.em.merge(author)).toThrow(`You cannot merge entity 'Author' without identifier!`);
