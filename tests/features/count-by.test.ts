@@ -1,4 +1,5 @@
-import { Collection, MikroORM, Ref, ref } from '@mikro-orm/sqlite';
+import { Collection, MikroORM, raw, Ref, ref } from '@mikro-orm/sqlite';
+import { EntityManager as CoreEntityManager } from '@mikro-orm/core';
 import {
   Entity,
   Filter,
@@ -183,5 +184,36 @@ test('repo.countBy', async () => {
   const em = orm.em.fork();
   const repo = em.getRepository(Book);
   const counts = await repo.countBy('author');
+  expect(counts).toEqual({ '1': 2, '2': 1, '3': 3 });
+});
+
+test('em.countBy with having filters groups', async () => {
+  const em = orm.em.fork();
+  // keep only authors with 2+ published books (author 1 has 2, author 3 has 3)
+  const counts = await em.countBy(Book, 'author', {
+    having: { [raw('count(*)')]: { $gte: 2 } } as any,
+  });
+  expect(counts).toEqual({ '1': 2, '3': 3 });
+});
+
+test('em.countBy accepts schema option', async () => {
+  const em = orm.em.fork();
+  // SQLite ignores schema, but the option path must be exercised without breaking the query
+  const counts = await em.countBy(Book, 'author', { schema: 'main' });
+  expect(counts).toEqual({ '1': 2, '2': 1, '3': 3 });
+});
+
+test('base EntityManager.countBy throws for unsupported drivers', async () => {
+  const em = orm.em.fork();
+  // force-invoke the base implementation to cover the "not supported" fallback
+  const base = (CoreEntityManager.prototype as any).countBy as (...args: any[]) => Promise<unknown>;
+  await expect(base.call(em, Book, 'author')).rejects.toThrow('countBy() is not supported by the current driver');
+});
+
+test('em.countBy falls back to the raw column name when grouping by a non-property key', async () => {
+  const em = orm.em.fork();
+  // `author_id` is the resolved column name, not an entity property — `meta.properties['author_id']` is undefined,
+  // so the implementation falls back to using the raw column name as both the SELECT/GROUP BY target and the result key.
+  const counts = await em.countBy(Book, 'author_id' as any);
   expect(counts).toEqual({ '1': 2, '2': 1, '3': 3 });
 });
