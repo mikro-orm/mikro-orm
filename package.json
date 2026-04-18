@@ -112,6 +112,23 @@
   "resolutions": {
     "@ark/util": "0.56.0"
   },
+  "dependenciesMeta": {
+    "@swc/core": {
+      "built": true
+    },
+    "better-sqlite3": {
+      "built": true
+    },
+    "esbuild": {
+      "built": true
+    },
+    "nx": {
+      "built": true
+    },
+    "oracledb": {
+      "built": true
+    }
+  },
   "devDependencies": {
     "@ark/attest": "0.56.0",
     "@commitlint/cli": "20.5.0",
