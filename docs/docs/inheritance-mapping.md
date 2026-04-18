@@ -62,6 +62,8 @@ export class Person extends PersonSchema.class {}
 PersonSchema.setClass(Person);
 ```
 
+> When using `extends` with the `defineEntity + class` pattern, property initializers from the base class run automatically via `super()`. See [Reusing base properties via `extends`](./define-entity.md#extends-initializers) for details.
+
   </TabItem>
 
   <TabItem value="define-entity">

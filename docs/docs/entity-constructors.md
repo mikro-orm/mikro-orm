@@ -108,6 +108,10 @@ book.author = ref(Author, author);
 book.author = ref(author);
 ```
 
+## Property initializers with `defineEntity` and `extends`
+
+When using `defineEntity` with the `extends` option, property initializers from the base class are inherited and run automatically via `super()`. This allows you to define defaults like `id = v4()` or `createdAt = new Date()` on the base class and have them work in all child entities created via `new`. See [Reusing base properties via `extends`](./define-entity.md#extends-initializers) for a full example.
+
 ## Using native private properties
 
 If you want to use native private properties inside entities, the default approach of how MikroORM creates entity instances via `Object.create()` is not viable (more about this in the [issue](https://github.com/mikro-orm/mikro-orm/issues/1226)). To force usage of entity constructors, you can use [`forceEntityConstructor`](./configuration.md#using-native-private-properties) toggle.
