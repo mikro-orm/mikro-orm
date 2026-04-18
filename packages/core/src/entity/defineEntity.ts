@@ -201,10 +201,13 @@ export interface PropertyChain<Value, Options> {
     fixedOrderColumn: string,
   ): HasKind<Options, 'm:n'> extends true ? PropertyChain<Value, Options> : never;
 
+  array(): Options extends { kind: infer K extends string }
+    ? K extends 'embedded' | 'enum'
+      ? PropertyChain<Value, Omit<Options, 'array'> & { array: true }>
+      : never
+    : PropertyChain<Value, Omit<Options, 'array'> & { array: true }>;
+
   // Embedded-only methods
-  array(): HasKind<Options, 'embedded' | 'enum'> extends true
-    ? PropertyChain<Value, Omit<Options, 'array'> & { array: true }>
-    : never;
   prefix(prefix: string | boolean): HasKind<Options, 'embedded'> extends true ? PropertyChain<Value, Options> : never;
   prefixMode(
     prefixMode: EmbeddedPrefixMode,
