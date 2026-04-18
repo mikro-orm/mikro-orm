@@ -18,6 +18,11 @@ on:
         required: false
         type: string
         default: 'prod'
+      canary-bump:
+        description: Canary bump strategy (patch for patch canaries, minor for upcoming-minor dev builds)
+        required: false
+        type: string
+        default: 'patch'
       ref:
         description: Git ref to publish (branch, tag, or commit SHA)
         type: string
@@ -32,6 +37,10 @@ on:
       dist-tag:
         description: NPM dist-tag (prod, rc, or any next* canary tag like next / next-v7)
         type: string
+      canary-bump:
+        description: Canary bump strategy (patch / minor / major)
+        type: string
+        default: 'patch'
 
 permissions:
   contents: write
@@ -151,8 +160,7 @@ jobs:
       - name: Bump version
         run: |
           PREID=${{ inputs.dist-tag == 'rc' && 'rc' || 'dev' }}
-          BUMP=${{ startsWith(inputs.dist-tag, 'next-v') && 'minor' || 'patch' }}
-          yarn lerna run copy -- -- --canary=$BUMP --preid=$PREID
+          yarn lerna run copy -- -- --canary=${{ inputs.canary-bump }} --preid=$PREID
           git commit -am 'chore: bump ${{ inputs.dist-tag }} versions [skip ci]'
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
 
