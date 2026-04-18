@@ -96,6 +96,18 @@ constructor(dto: { title: string; author: number }) {
 }
 ```
 
+Or, to keep the runtime as a plain entity (no wrapper) while still getting compile-time populate-state safety, declare the property as [`LazyRef<T>`](./type-safe-relations.md#lazyreft--type-only-reference) and assign with `rel()`:
+
+```ts
+@ManyToOne({ entity: () => Author })
+author: LazyRef<Author>;
+
+constructor(dto: { title: string; author: number }) {
+  this.title = dto.title;
+  this.author = rel(Author, dto.author);
+}
+```
+
 The `rel` and `ref` helpers will accept both primary key and entity instance, as well as empty value (`null` or `undefined`).
 
 ```ts

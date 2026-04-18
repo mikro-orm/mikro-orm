@@ -70,19 +70,19 @@ bench('em.find() return type - no options', () => {
   type R = ReturnType<typeof em.find<Author>>;
   const x = {} as R;
   void x;
-}).types([745, 'instantiations']);
+}).types([743, 'instantiations']);
 
 bench('em.find() return type - with populate', () => {
   type R = ReturnType<typeof em.find<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([745, 'instantiations']);
+}).types([743, 'instantiations']);
 
 bench('em.find() return type - with populate and fields', () => {
   type R = ReturnType<typeof em.find<Author, 'books', 'name' | 'email'>>;
   const x = {} as R;
   void x;
-}).types([739, 'instantiations']);
+}).types([737, 'instantiations']);
 
 // ============================================
 // em.create() - input and return type computation
@@ -92,32 +92,32 @@ bench('em.create() return type', () => {
   type R = ReturnType<typeof em.create<Author>>;
   const x = {} as R;
   void x;
-}).types([2442, 'instantiations']);
+}).types([2473, 'instantiations']);
 
 bench('RequiredEntityData - Author', () => {
   type R = RequiredEntityData<Author>;
   const x = {} as R;
   void x;
-}).types([1503, 'instantiations']);
+}).types([1534, 'instantiations']);
 
 bench('RequiredEntityData - Book', () => {
   type R = RequiredEntityData<Book>;
   const x = {} as R;
   void x;
-}).types([1309, 'instantiations']);
+}).types([1340, 'instantiations']);
 
 // New<T> type (used as create return type)
 bench('New<Author>', () => {
   type R = New<Author>;
   const x = {} as R;
   void x;
-}).types([583, 'instantiations']);
+}).types([581, 'instantiations']);
 
 bench('New<Author, "books">', () => {
   type R = New<Author, 'books'>;
   const x = {} as R;
   void x;
-}).types([1003, 'instantiations']);
+}).types([1028, 'instantiations']);
 
 // ============================================
 // em.populate() - return type computation
@@ -149,13 +149,13 @@ bench('EntityDTO<Loaded<Author, "books">>', () => {
   type R = EntityDTO<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([3620, 'instantiations']);
+}).types([3645, 'instantiations']);
 
 bench('EntityDTO<Loaded<Author, "books.publisher">>', () => {
   type R = EntityDTO<Loaded<Author, 'books.publisher'>>;
   const x = {} as R;
   void x;
-}).types([3620, 'instantiations']);
+}).types([3645, 'instantiations']);
 
 // ============================================
 // FilterQuery - used in where clauses
@@ -165,19 +165,19 @@ bench('FilterQuery<Author>', () => {
   type R = FilterQuery<Author>;
   const x = {} as R;
   void x;
-}).types([548, 'instantiations']);
+}).types([546, 'instantiations']);
 
 bench('FilterQuery<Book>', () => {
   type R = FilterQuery<Book>;
   const x = {} as R;
   void x;
-}).types([517, 'instantiations']);
+}).types([515, 'instantiations']);
 
 bench('FilterQuery<Loaded<Author, "books">>', () => {
   type R = FilterQuery<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([2479, 'instantiations']);
+}).types([2502, 'instantiations']);
 
 // ============================================
 // EntityData - used in em.assign()
@@ -187,13 +187,13 @@ bench('EntityData<Author>', () => {
   type R = EntityData<Author>;
   const x = {} as R;
   void x;
-}).types([216, 'instantiations']);
+}).types([235, 'instantiations']);
 
 bench('EntityData<Loaded<Author, "books">>', () => {
   type R = EntityData<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([1848, 'instantiations']);
+}).types([1892, 'instantiations']);
 
 // ============================================
 // Simulating wrap(e).toObject()
@@ -212,7 +212,7 @@ bench('wrap(loadedAuthor).toObject() return type', () => {
   type R = ToObjectReturn<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([3622, 'instantiations']);
+}).types([3647, 'instantiations']);
 
 // ============================================
 // Complex scenarios
@@ -224,4 +224,4 @@ bench('find result then EntityDTO', () => {
   type DTOResult = EntityDTO<FindResult>;
   const x = {} as DTOResult;
   void x;
-}).types([3620, 'instantiations']);
+}).types([3645, 'instantiations']);

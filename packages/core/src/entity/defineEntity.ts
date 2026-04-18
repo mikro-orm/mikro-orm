@@ -30,6 +30,7 @@ import type {
   InferEntity,
   MaybeReturnType,
   Ref,
+  LazyRef,
   IndexCallback,
   TriggerCallback,
   FormulaCallback,
@@ -71,7 +72,7 @@ export type UniversalPropertyKeys =
   | keyof OneToOneOptions<any, any>
   | keyof ManyToManyOptions<any, any>;
 
-type BuilderExtraKeys = '~options' | '~type' | '$type' | 'strictNullable';
+type BuilderExtraKeys = '~options' | '~type' | '$type' | 'strictNullable' | 'lazyRef';
 type ExcludeKeys = 'entity' | 'items';
 type BuilderKeys = Exclude<UniversalPropertyKeys, ExcludeKeys> | BuilderExtraKeys;
 
@@ -107,7 +108,17 @@ export interface PropertyChain<Value, Options> {
     Value,
     Omit<Options, 'nullable' | 'strictNullable'> & { nullable: true; strictNullable: true }
   >;
-  ref(): PropertyChain<Value, Omit<Options, 'ref'> & { ref: true }>;
+  ref(): Options extends { lazyRef: true } ? never : PropertyChain<Value, Omit<Options, 'ref'> & { ref: true }>;
+  /**
+   * Mark a to-one relation (`m:1`/`1:1`) as a {@apilink LazyRef} — direct entity at runtime, type-restricted
+   * until `Loaded<>` narrows it. Type-level only, no `ref: true` wrapping. Not compatible with `.ref()` or
+   * `.mapToPk()` — those chains are rejected in both directions at compile time.
+   */
+  lazyRef(): HasKind<Options, 'm:1' | '1:1'> extends true
+    ? Options extends { ref: true } | { mapToPk: true }
+      ? never
+      : PropertyChain<Value, Omit<Options, 'lazyRef'> & { lazyRef: true }>
+    : never;
   primary(): PropertyChain<Value, Omit<Options, 'primary'> & { primary: true }>;
   hidden(): PropertyChain<Value, Omit<Options, 'hidden'> & { hidden: true }>;
   autoincrement(): PropertyChain<Value, Omit<Options, 'autoincrement'> & { autoincrement: true }>;
@@ -186,7 +197,9 @@ export interface PropertyChain<Value, Options> {
     ? PropertyChain<Value, Omit<Options, 'owner'> & { owner: true }>
     : never;
   mapToPk(): HasKind<Options, 'm:1' | '1:1'> extends true
-    ? PropertyChain<Value, Omit<Options, 'mapToPk'> & { mapToPk: true }>
+    ? Options extends { lazyRef: true }
+      ? never
+      : PropertyChain<Value, Omit<Options, 'mapToPk'> & { mapToPk: true }>
     : never;
   orphanRemoval(
     orphanRemoval?: boolean,
@@ -577,8 +590,25 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   /**
    * Enable `ScalarReference` wrapper for lazy values. Use this in combination with `lazy: true` to have a type-safe accessor object in place of the value.
    */
-  ref(): UniversalPropertyOptionsBuilder<Value, Omit<Options, 'ref'> & { ref: true }, IncludeKeys> {
-    return this.assignOptions({ ref: true });
+  ref(): Options extends { lazyRef: true }
+    ? never
+    : UniversalPropertyOptionsBuilder<Value, Omit<Options, 'ref'> & { ref: true }, IncludeKeys> {
+    return this.assignOptions({ ref: true }) as any;
+  }
+
+  /**
+   * Mark a to-one relation (`m:1`/`1:1`) as a {@apilink LazyRef} — the runtime value stays a plain entity
+   * (no `Reference` wrapper) but the TypeScript type restricts access to the primary key until `Loaded<>`
+   * narrows it. Type-level only; does not set `ref: true`. Not compatible with `.ref()` or `.mapToPk()` —
+   * those chains are rejected in both directions at compile time.
+   */
+  lazyRef(): HasKind<Options, 'm:1' | '1:1'> extends true
+    ? Options extends { ref: true } | { mapToPk: true }
+      ? never
+      : UniversalPropertyOptionsBuilder<Value, Omit<Options, 'lazyRef'> & { lazyRef: true }, IncludeKeys>
+    : never {
+    // purely type-level — no runtime metadata change
+    return this as any;
   }
 
   /**
@@ -963,11 +993,13 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   }
 
   /** Map this relation to the primary key value instead of an entity. */
-  mapToPk(): Pick<
-    UniversalPropertyOptionsBuilder<Value, Omit<Options, 'mapToPk'> & { mapToPk: true }, IncludeKeys>,
-    IncludeKeys
-  > {
-    return this.assignOptions({ mapToPk: true });
+  mapToPk(): Options extends { lazyRef: true }
+    ? never
+    : Pick<
+        UniversalPropertyOptionsBuilder<Value, Omit<Options, 'mapToPk'> & { mapToPk: true }, IncludeKeys>,
+        IncludeKeys
+      > {
+    return this.assignOptions({ mapToPk: true }) as any;
   }
 
   /** Set the constraint type. Immediate constraints are checked for each statement, while deferred ones are only checked at the end of the transaction. Only for postgres unique constraints. */
@@ -1590,23 +1622,27 @@ type MaybeNullable<Value, Options> = Options extends { nullable: true }
 
 type MaybeRelationRef<Value, Options> = Options extends { mapToPk: true }
   ? Value
-  : Options extends { ref: true; kind: '1:1' }
+  : Options extends { lazyRef: true; kind: '1:1' | 'm:1' }
     ? Value extends object
-      ? Ref<Value>
+      ? LazyRef<Value>
       : never
-    : Options extends { ref: true; kind: 'm:1' }
+    : Options extends { ref: true; kind: '1:1' }
       ? Value extends object
         ? Ref<Value>
         : never
-      : Options extends { kind: '1:m' }
+      : Options extends { ref: true; kind: 'm:1' }
         ? Value extends object
-          ? Collection<Value>
+          ? Ref<Value>
           : never
-        : Options extends { kind: 'm:n' }
+        : Options extends { kind: '1:m' }
           ? Value extends object
             ? Collection<Value>
             : never
-          : Value;
+          : Options extends { kind: 'm:n' }
+            ? Value extends object
+              ? Collection<Value>
+              : never
+            : Value;
 
 type MaybeScalarRef<Value, Options> = Options extends { kind: '1:1' | 'm:1' | '1:m' | 'm:n' }
   ? Value
