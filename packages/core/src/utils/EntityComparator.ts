@@ -817,7 +817,14 @@ export class EntityComparator {
         ret += `      ret${dataKey} = null;\n`;
         ret += `    } else if (typeof entity${entityKey} !== 'undefined') {\n`;
         ret += `      const val${level} = entity${entityKey}${unwrap};\n`;
-        ret += `      const discriminator = ${discriminatorMapKey}.get(val${level}?.constructor);\n`;
+        // walk up the prototype chain so TPT subclasses resolve to their root's discriminator
+        ret += `      let __cls${level} = val${level}?.constructor;\n`;
+        ret += `      let discriminator;\n`;
+        ret += `      while (__cls${level} != null) {\n`;
+        ret += `        discriminator = ${discriminatorMapKey}.get(__cls${level});\n`;
+        ret += `        if (discriminator !== undefined) break;\n`;
+        ret += `        __cls${level} = Object.getPrototypeOf(__cls${level});\n`;
+        ret += `      }\n`;
         ret += `      const pk = val${level}?.__helper?.__identifier && !val${level}?.__helper?.hasPrimaryKey()\n`;
         ret += `        ? val${level}.__helper.__identifier\n`;
         ret += `        : toArray(val${level}?.__helper?.getPrimaryKey(true));\n`;

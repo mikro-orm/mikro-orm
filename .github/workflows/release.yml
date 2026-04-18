@@ -14,10 +14,15 @@ on:
         required: false
         type: string
       dist-tag:
-        description: NPM dist-tag (prod, next, or rc)
+        description: NPM dist-tag (prod, rc, or any next* canary tag like next / next-v7)
         required: false
         type: string
         default: 'prod'
+      canary-bump:
+        description: Canary bump strategy (patch for patch canaries, minor for upcoming-minor dev builds)
+        required: false
+        type: string
+        default: 'patch'
       ref:
         description: Git ref to publish (branch, tag, or commit SHA)
         type: string
@@ -30,8 +35,12 @@ on:
         required: true
         type: string
       dist-tag:
-        description: NPM dist-tag (prod, next, or rc)
+        description: NPM dist-tag (prod, rc, or any next* canary tag like next / next-v7)
         type: string
+      canary-bump:
+        description: Canary bump strategy (patch / minor / major)
+        type: string
+        default: 'patch'
 
 permissions:
   contents: write
@@ -113,7 +122,7 @@ jobs:
         run: yarn publish:jsr
 
   canary-release:
-    if: inputs.dist-tag == 'next' || inputs.dist-tag == 'rc'
+    if: startsWith(inputs.dist-tag, 'next') || inputs.dist-tag == 'rc'
     name: Release ${{ inputs.dist-tag == 'rc' && 'RC' || 'canary' }}
     runs-on: ubuntu-latest
 
@@ -151,12 +160,12 @@ jobs:
       - name: Bump version
         run: |
           PREID=${{ inputs.dist-tag == 'rc' && 'rc' || 'dev' }}
-          yarn lerna run copy -- -- --canary=patch --preid=$PREID
+          yarn lerna run copy -- -- --canary=${{ inputs.canary-bump }} --preid=$PREID
           git commit -am 'chore: bump ${{ inputs.dist-tag }} versions [skip ci]'
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
 
       - name: Publish to npm
-        run: yarn publish:${{ inputs.dist-tag }} --yes
+        run: yarn lerna publish from-package --contents dist --dist-tag ${{ inputs.dist-tag }} --force-publish --yes
 
       - name: Create git tag
         if: inputs.dist-tag == 'rc'

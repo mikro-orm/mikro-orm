@@ -465,7 +465,11 @@ export class EntityFactory {
   /** @internal */
   assignDefaultValues<T extends object>(entity: T, meta: EntityMetadata<T>, onCreateOnly?: boolean): void {
     for (const prop of meta.props) {
-      if (prop.embedded || [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
+      if (
+        prop.embedded ||
+        [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) ||
+        (prop.getter && !prop.setter)
+      ) {
         continue;
       }
 

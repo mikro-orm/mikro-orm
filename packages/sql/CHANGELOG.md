@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.11](https://github.com/mikro-orm/mikro-orm/compare/v7.0.10...v7.0.11) (2026-04-16)
+
+### Bug Fixes
+
+- **core:** support TPT inheritance targets in polymorphic relations ([#7564](https://github.com/mikro-orm/mikro-orm/issues/7564)) ([0e818fa](https://github.com/mikro-orm/mikro-orm/commit/0e818fabfafdc453c4e6c3c9e6a1d5e8ac38f332)), closes [#7563](https://github.com/mikro-orm/mikro-orm/issues/7563)
+- **postgres:** normalize `!=` to `<>` in check constraint diffing ([#7541](https://github.com/mikro-orm/mikro-orm/issues/7541)) ([b8ad2b0](https://github.com/mikro-orm/mikro-orm/commit/b8ad2b0ba87a6771ff27f9aa824c7bf131551154)), closes [#7540](https://github.com/mikro-orm/mikro-orm/issues/7540)
+- **schema:** detect native enum value changes on array columns ([#7561](https://github.com/mikro-orm/mikro-orm/issues/7561)) ([ec20701](https://github.com/mikro-orm/mikro-orm/commit/ec2070144acbece47b397c175f2e5674df3611e8)), closes [#7560](https://github.com/mikro-orm/mikro-orm/issues/7560)
+
 ## [7.0.10](https://github.com/mikro-orm/mikro-orm/compare/v7.0.9...v7.0.10) (2026-04-10)
 
 ### Bug Fixes

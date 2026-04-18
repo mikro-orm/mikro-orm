@@ -474,6 +474,48 @@ describe('polymorphic relations in sqlite', () => {
     expect(likes[1].likeable).toBeInstanceOf(Post);
     expect(likes[2].likeable).toBeInstanceOf(Comment);
   });
+
+  // github: https://github.com/mikro-orm/mikro-orm/issues/7578
+  test('can filter polymorphic relation by entity reference', async () => {
+    const post1 = new Post('Post 1', 'Content 1');
+    const post2 = new Post('Post 2', 'Content 2');
+    const comment1 = new Comment('Comment 1');
+    const like1 = orm.em.create(UserLike, { likeable: post1 });
+    const like2 = orm.em.create(UserLike, { likeable: post2 });
+    const like3 = orm.em.create(UserLike, { likeable: comment1 });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const post1Reloaded = await orm.em.findOneOrFail(Post, post1.id);
+    const post2Reloaded = await orm.em.findOneOrFail(Post, post2.id);
+
+    const eqResult = await orm.em.find(UserLike, { likeable: post1Reloaded });
+    expect(eqResult.map(r => r.id).sort()).toEqual([like1.id]);
+
+    const inResult = await orm.em.find(UserLike, {
+      likeable: { $in: [post1Reloaded, post2Reloaded] },
+    });
+    expect(inResult.map(r => r.id).sort()).toEqual([like1.id, like2.id].sort());
+
+    const neResult = await orm.em.find(UserLike, { likeable: { $ne: post1Reloaded } });
+    expect(neResult.map(r => r.id).sort()).toEqual([like2.id, like3.id].sort());
+
+    const ninResult = await orm.em.find(UserLike, {
+      likeable: { $nin: [post1Reloaded, post2Reloaded] },
+    });
+    expect(ninResult.map(r => r.id).sort()).toEqual([like3.id]);
+
+    const isNullResult = await orm.em.find(UserLike, { likeable: null });
+    expect(isNullResult).toHaveLength(0);
+
+    const notNullResult = await orm.em.find(UserLike, { likeable: { $ne: null } });
+    expect(notNullResult).toHaveLength(3);
+
+    const refResult = await orm.em.find(UserLike, {
+      likeable: orm.em.getReference(Post, post1.id),
+    });
+    expect(refResult.map(r => r.id).sort()).toEqual([like1.id]);
+  });
 });
 
 // Test polymorphic with Ref wrapper

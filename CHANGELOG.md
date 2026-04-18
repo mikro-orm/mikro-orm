@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.11](https://github.com/mikro-orm/mikro-orm/compare/v7.0.10...v7.0.11) (2026-04-16)
+
+
+### Bug Fixes
+
+* **core:** allow `unknown` values for `Opt<unknown>` properties ([#7555](https://github.com/mikro-orm/mikro-orm/issues/7555)) ([7368fa1](https://github.com/mikro-orm/mikro-orm/commit/7368fa1dee4c2d72ea635ef9ae5f7f0db2158df7))
+* **core:** hydrate version property when merging data via SELECT_IN populate ([#7547](https://github.com/mikro-orm/mikro-orm/issues/7547)) ([23ed086](https://github.com/mikro-orm/mikro-orm/commit/23ed0862e57839f29bc8b026384a75d6ffd564d0)), closes [#7543](https://github.com/mikro-orm/mikro-orm/issues/7543)
+* **core:** prevent infinite loop with `populate: ['*']` and `refresh: true` ([#7548](https://github.com/mikro-orm/mikro-orm/issues/7548)) ([2f0518f](https://github.com/mikro-orm/mikro-orm/commit/2f0518f24881f3fb49288f8ea8fa70f088b72ea8)), closes [#7544](https://github.com/mikro-orm/mikro-orm/issues/7544)
+* **core:** support TPT inheritance targets in polymorphic relations ([#7564](https://github.com/mikro-orm/mikro-orm/issues/7564)) ([0e818fa](https://github.com/mikro-orm/mikro-orm/commit/0e818fabfafdc453c4e6c3c9e6a1d5e8ac38f332)), closes [#7563](https://github.com/mikro-orm/mikro-orm/issues/7563)
+* **core:** unwrap IType serialized type for scalar-based properties in EntityDTO ([#7549](https://github.com/mikro-orm/mikro-orm/issues/7549)) ([42e4675](https://github.com/mikro-orm/mikro-orm/commit/42e467519bebdfa16193d53846f8d195e92f36b1)), closes [/github.com/mikro-orm/mikro-orm/discussions/6555#discussioncomment-16520713](https://github.com//github.com/mikro-orm/mikro-orm/discussions/6555/issues/discussioncomment-16520713)
+* **core:** validate TPT leaf entity indexes against own properties ([#7573](https://github.com/mikro-orm/mikro-orm/issues/7573)) ([1f5e518](https://github.com/mikro-orm/mikro-orm/commit/1f5e518566b3a468fec7de3615a5711f9b597e37)), closes [#7570](https://github.com/mikro-orm/mikro-orm/issues/7570)
+* **decorators:** allow ES decorators on abstract classes ([#7556](https://github.com/mikro-orm/mikro-orm/issues/7556)) ([a4eb8f2](https://github.com/mikro-orm/mikro-orm/commit/a4eb8f297744222e811657da8e56e24c33a78d2d)), closes [#7553](https://github.com/mikro-orm/mikro-orm/issues/7553)
+* **migrations:** skip database connection in `create()` and `getPending()` when snapshot exists ([#7568](https://github.com/mikro-orm/mikro-orm/issues/7568)) ([4bf6ed5](https://github.com/mikro-orm/mikro-orm/commit/4bf6ed55f2c49e78a1d3b710852bf345829eaac3)), closes [#7493](https://github.com/mikro-orm/mikro-orm/issues/7493) [/github.com/mikro-orm/mikro-orm/discussions/7481#discussioncomment-16538274](https://github.com//github.com/mikro-orm/mikro-orm/discussions/7481/issues/discussioncomment-16538274)
+* **postgres:** normalize `!=` to `<>` in check constraint diffing ([#7541](https://github.com/mikro-orm/mikro-orm/issues/7541)) ([b8ad2b0](https://github.com/mikro-orm/mikro-orm/commit/b8ad2b0ba87a6771ff27f9aa824c7bf131551154)), closes [#7540](https://github.com/mikro-orm/mikro-orm/issues/7540)
+* **schema:** convert default values of custom-typed properties to DB form ([#7567](https://github.com/mikro-orm/mikro-orm/issues/7567)) ([0c1d2c9](https://github.com/mikro-orm/mikro-orm/commit/0c1d2c9331ec20e3dd2a5da39a9420ea2aeaef3e)), closes [#7565](https://github.com/mikro-orm/mikro-orm/issues/7565)
+* **schema:** detect native enum value changes on array columns ([#7561](https://github.com/mikro-orm/mikro-orm/issues/7561)) ([ec20701](https://github.com/mikro-orm/mikro-orm/commit/ec2070144acbece47b397c175f2e5674df3611e8)), closes [#7560](https://github.com/mikro-orm/mikro-orm/issues/7560)
+
+
+### Features
+
+* **core:** add `logging` option to `em.upsert()`, `nativeUpdate()` etc ([#7562](https://github.com/mikro-orm/mikro-orm/issues/7562)) ([8808779](https://github.com/mikro-orm/mikro-orm/commit/8808779d21347920267c4049680bae310090b6d3)), closes [#7557](https://github.com/mikro-orm/mikro-orm/issues/7557)
+
+
+
+
+
 ## [7.0.10](https://github.com/mikro-orm/mikro-orm/compare/v7.0.9...v7.0.10) (2026-04-10)
 
 

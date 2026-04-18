@@ -2,9 +2,9 @@ name: tests
 
 on:
   push:
-    branches: [ master, renovate/** ]
+    branches: [ master, next, renovate/** ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, next ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
@@ -381,10 +381,27 @@ jobs:
 
   release:
     name: Release
-    if: github.ref == 'refs/heads/master' && github.repository_owner == 'mikro-orm'
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/next') && github.repository_owner == 'mikro-orm'
     runs-on: ubuntu-latest
     needs: [ build, typecheck, test, lint, docs ]
     steps:
+      - uses: actions/checkout@v6
+        with:
+          sparse-checkout: lerna.json
+          sparse-checkout-cone-mode: false
+
+      - name: Determine dist-tag and canary bump
+        id: tag
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/next" ]]; then
+            MAJOR=$(jq -r '.version | split(".")[0]' lerna.json)
+            echo "dist-tag=next-v${MAJOR}" >> "$GITHUB_OUTPUT"
+            echo "canary-bump=minor" >> "$GITHUB_OUTPUT"
+          else
+            echo "dist-tag=next" >> "$GITHUB_OUTPUT"
+            echo "canary-bump=patch" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish packages
         uses: apify/workflows/execute-workflow@main
         with:
@@ -392,5 +409,6 @@ jobs:
           inputs: >
             {
               "ref": "${{ steps.commit.outputs.commit_long_sha || github.sha }}",
-              "dist-tag": "next"
+              "dist-tag": "${{ steps.tag.outputs.dist-tag }}",
+              "canary-bump": "${{ steps.tag.outputs.canary-bump }}"
             }
