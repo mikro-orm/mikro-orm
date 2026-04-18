@@ -93,9 +93,13 @@ const book = em.create(Book, { title: 'My Book', author });
 await em.flush();
 ```
 
-### Reusing base properties via composition
+### Reusing base properties
 
-With `defineEntity`, use composition (shared property objects) instead of class inheritance for base properties:
+There are two ways to share common properties across entities with `defineEntity`:
+
+#### Via composition (shared property objects)
+
+The simplest approach — spread a shared property object into each entity's properties:
 
 ```ts
 const p = defineEntity.properties;
@@ -120,6 +124,52 @@ const BookSchema = defineEntity({
 export class Book extends BookSchema.class {}
 BookSchema.setClass(Book);
 ```
+
+#### Via `extends` with property initializers {#extends-initializers}
+
+When using the `defineEntity + class` pattern with `extends`, the auto-generated class inherits from the parent class at the JavaScript level. This means property initializers defined on the base class (like `id = v4()` or `createdAt = new Date()`) run automatically when constructing child entities via `new`:
+
+```ts
+const BaseSchema = defineEntity({
+  name: 'BaseEntity',
+  abstract: true,
+  properties: {
+    id: p.string().primary(),
+    createdAt: p.datetime(),
+    updatedAt: p.datetime(),
+  },
+});
+
+export class Base extends BaseSchema.class {
+  id = v4();
+  createdAt = new Date();
+  updatedAt = new Date();
+}
+
+BaseSchema.setClass(Base);
+
+const UserSchema = defineEntity({
+  name: 'User',
+  extends: BaseSchema,
+  properties: {
+    email: p.string().unique(),
+    name: p.string(),
+  },
+});
+
+export class User extends UserSchema.class {
+  name = '';
+}
+
+UserSchema.setClass(User);
+
+// id, createdAt, updatedAt are initialized from Base's property initializers
+const user = new User();
+console.log(user.id); // a UUID string
+console.log(user.createdAt); // current Date
+```
+
+> This approach is useful when you want constructor-level defaults that work without an `EntityManager` context (i.e., with plain `new`). If you only need defaults during persistence, you can use `onCreate` hooks instead — see [Mapped Superclasses](./inheritance-mapping.md#mapped-superclasses) for more details.
 
 ### Property types
 
