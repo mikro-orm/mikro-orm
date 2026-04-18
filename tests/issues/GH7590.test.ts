@@ -41,8 +41,6 @@ beforeAll(async () => {
     dbName: ':memory:',
     entities: [User, Role],
     metadataProvider: ReflectMetadataProvider,
-    debug: ['query', 'query-params'],
-    allowGlobalContext: true, // only for testing
   });
   await orm.schema.refresh();
 });
