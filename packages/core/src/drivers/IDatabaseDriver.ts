@@ -131,6 +131,17 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
     options?: NativeDeleteOptions<T>,
   ): Promise<QueryResult<T>>;
 
+  /**
+   * Clones rows matching the condition at the database level via INSERT...SELECT.
+   * Automatically excludes auto-increment PKs, generated columns, and resets version properties.
+   */
+  nativeClone<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    overrides?: EntityData<T>,
+    options?: NativeInsertUpdateOptions<T>,
+  ): Promise<QueryResult<T>>;
+
   /** Persists changes to M:N collections (inserts/deletes pivot table rows). */
   syncCollections<T extends object, O extends object>(
     collections: Iterable<Collection<T, O>>,
