@@ -399,3 +399,86 @@ test('explicit serialization with convertCustomTypes option', async () => {
     expect(typeof bookId).toBe('string'); // UUID convertToDatabaseValue also returns string
   });
 });
+
+test('explicit serialization with fields option', async () => {
+  const { author } = await createEntities();
+  const jon = await orm.em.findOneOrFail(Author2, author, { populate: ['*'] });
+
+  const o1 = serialize(jon, { fields: ['name'] });
+  expect(o1).toEqual({ name: 'Jon Snow' });
+  // @ts-expect-error `id` is not part of the narrowed type
+  expect(o1.id).toBeUndefined();
+  // @ts-expect-error `email` is not part of the narrowed type
+  expect(o1.email).toBeUndefined();
+
+  const o2 = serialize(jon, { fields: ['id', 'name', 'email'] });
+  expect(o2).toEqual({ id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' });
+
+  const o3 = serialize(jon, { populate: ['books'], fields: ['books.title'] });
+  expect(o3).toEqual({
+    books: [
+      { title: 'My Life on The Wall, part 1' },
+      { title: 'My Life on The Wall, part 2' },
+      { title: 'My Life on The Wall, part 3' },
+    ],
+  });
+  // @ts-expect-error nothing else made it through
+  expect(o3.id).toBeUndefined();
+
+  // a bare relation name in `fields` opts the whole sub-tree in, instead of recursing with an empty whitelist
+  const o4 = serialize(jon, { populate: ['books.author'], fields: ['books'] });
+  expect(Object.keys(o4)).toEqual(['books']);
+  expect(o4.books).toHaveLength(3);
+  expect(o4.books[0]).toMatchObject({
+    title: 'My Life on The Wall, part 1',
+    author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' },
+  });
+  // @ts-expect-error top-level fields are still filtered out
+  expect(o4.name).toBeUndefined();
+
+  const o5 = serialize(jon, { populate: ['books'], fields: ['name', 'books.title'] });
+  expect(o5).toEqual({
+    name: 'Jon Snow',
+    books: [
+      { title: 'My Life on The Wall, part 1' },
+      { title: 'My Life on The Wall, part 2' },
+      { title: 'My Life on The Wall, part 3' },
+    ],
+  });
+
+  // `exclude` wins over `fields` on conflict — strip after whitelist
+  const o6 = serialize(jon, { fields: ['name', 'email'], exclude: ['email'] });
+  expect(o6).toEqual({ name: 'Jon Snow' });
+  // @ts-expect-error `email` was excluded even though listed in fields
+  expect(o6.email).toBeUndefined();
+
+  const o7 = wrap(jon).serialize({ fields: ['name'] });
+  expect(o7).toEqual({ name: 'Jon Snow' });
+  // @ts-expect-error PK dropped under strict whitelist
+  expect(o7.id).toBeUndefined();
+
+  const arr = serialize([jon, jon], { fields: ['name'] });
+  expect(arr).toEqual([{ name: 'Jon Snow' }, { name: 'Jon Snow' }]);
+
+  const o9 = serialize(jon, { populate: ['favouriteBook'], fields: ['favouriteBook.title'] });
+  expect(o9).toEqual({ favouriteBook: { title: 'Bible' } });
+});
+
+test('wrap().serialize() inherits the partial-load fields hint at the type level', async () => {
+  const { author } = await createEntities();
+
+  // partial load — the entity type carries the `fields` hint via `Loaded<...>`
+  const partial = await orm.em.findOneOrFail(Author2, author, { fields: ['name'] });
+
+  // standalone serialize() narrows the return type from the entity hint…
+  const a = serialize(partial);
+  expect(a.name).toBe('Jon Snow');
+  // @ts-expect-error `email` was not partial-loaded
+  expect(a.email).toBeUndefined();
+
+  // …and wrap(e).serialize() does the same now
+  const b = wrap(partial).serialize();
+  expect(b.name).toBe('Jon Snow');
+  // @ts-expect-error `email` was not partial-loaded
+  expect(b.email).toBeUndefined();
+});

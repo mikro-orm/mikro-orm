@@ -192,12 +192,18 @@ const dto2 = wrap(user1).serialize();
 By default, every relation is considered as not populated - this will result in the foreign key values to be present. Loaded collections will be represented as arrays of the foreign keys. To control the shape of the serialized response you can use the second `options` parameter:
 
 ```ts
-interface SerializeOptions<T extends object, P extends string = never, E extends string = never> {
+interface SerializeOptions<T extends object, P extends string = never, E extends string = never, F extends string = never> {
   /** Specify which relation should be serialized as populated and which as a FK. */
   populate?: AutoPath<T, P>[] | boolean;
 
   /** Specify which properties should be omitted. */
   exclude?: AutoPath<T, E>[];
+
+  /**
+   * Whitelist of properties to serialize (supports dot-paths). When set, only the listed
+   * properties end up in the output, including primary keys. `exclude` takes precedence on conflict.
+   */
+  fields?: AutoPath<T, F>[];
 
   /** Enforce unpopulated references to be returned as objects, e.g. `{ author: { id: 1 } }` instead of `{ author: 1 }`. */
   forceObject?: boolean;
@@ -231,6 +237,42 @@ const dto = wrap(author).serialize({
   skipNull: true, // properties with `null` value won't be part of the result
 });
 ```
+
+### Whitelisting properties via `fields`
+
+While `exclude` is a denylist (everything is in the output by default, listed paths are stripped), `fields` is a whitelist — only the listed properties end up in the output. This is useful for shaping API responses without writing manual `pick()` helpers, and it protects against accidentally exposing newly added entity fields.
+
+```ts
+import { serialize, wrap } from '@mikro-orm/core';
+
+// only `name` is in the output — no PK, no other fields
+const dto1 = serialize(author, { fields: ['name'] });
+// { name: 'Jon Snow' }
+
+// dot-paths drill into relations and embeddables
+const dto2 = serialize(author, {
+  populate: ['books'],
+  fields: ['name', 'books.title'],
+});
+// { name: 'Jon Snow', books: [{ title: '...' }, ...] }
+
+// a bare relation name keeps the entire sub-tree
+const dto3 = serialize(author, {
+  populate: ['books.author'],
+  fields: ['books'], // every field of every book (and its populated author) is included
+});
+
+// the same option is available on `wrap(e).serialize()`
+const dto4 = wrap(author).serialize({ fields: ['id', 'name'] });
+```
+
+A few notes:
+
+- **Primary keys are subject to `fields`.** Unlike the implicit serialization path (`toObject()` after partial loading), the explicit `serialize()` path treats `fields` as a strict whitelist — if you want the PK in the output, list it explicitly.
+- **Precedence with `exclude`**: `exclude` wins on conflict. `serialize(user, { fields: ['name', 'email'], exclude: ['email'] })` returns `{ name }`.
+- **Hidden properties are still hidden.** Listing a `hidden: true` property in `fields` does not override that — pass `includeHidden: true` if you really need it.
+- **Interaction with `populate`**: orthogonal. `populate` controls whether a relation is expanded into a nested object or shown as an FK; `fields` controls whether the property appears at all and which sub-keys survive.
+- **The return type narrows** to match the listed fields, so the resulting DTO is type-safe end-to-end.
 
 If you try to populate a relation that is not initialized, it will have same effect as the `forceObject` option - the value will be represented as object with just the primary key available.
 
