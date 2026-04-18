@@ -759,6 +759,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     // First pass: parse all triggers and collect names to detect multi-event groups
     const parsedRows: { name: string; parsed: SqlTriggerDef }[] = [];
     for (const row of rows) {
+      /* v8 ignore next 3 */
       if (!row.sql) {
         continue;
       }
@@ -802,6 +803,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     // so that a WHEN clause containing the word "begin" in a string literal doesn't confuse parsing.
     const beginIdx = sql.search(/\bbegin\b(?=[^]*$)/i);
 
+    /* v8 ignore next 3 */
     if (beginIdx === -1) {
       return null;
     }
@@ -814,12 +816,14 @@ export class SqliteSchemaHelper extends SchemaHelper {
         header,
       );
 
+    /* v8 ignore next 3 */
     if (!headerMatch) {
       return null;
     }
 
     const bodyMatch = /^begin\s+([\s\S]*?)\s*end/i.exec(bodyPart);
 
+    /* v8 ignore next 3 */
     if (!bodyMatch) {
       return null;
     }

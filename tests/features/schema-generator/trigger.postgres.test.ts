@@ -124,6 +124,86 @@ describe('trigger [postgres]', () => {
     await orm.close();
   });
 
+  test('trigger with FOR EACH STATEMENT and WHEN clause [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.schema.update();
+
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+      },
+      name: 'StmtTrg',
+      tableName: 'stmt_trg',
+      triggers: [
+        {
+          name: 'trg_stmt',
+          timing: 'after',
+          events: ['insert'],
+          forEach: 'statement',
+          when: 'pg_trigger_depth() = 0',
+          body: 'RETURN NULL',
+        },
+      ],
+    }).init().meta;
+    meta.set(newTableMeta.class, newTableMeta);
+
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('for each STATEMENT');
+    expect(diff).toContain('when (pg_trigger_depth() = 0)');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
+  test('trigger in non-default schema [postgres]', async () => {
+    const schema1 = new EntitySchema({
+      properties: {
+        id: {
+          primary: true,
+          name: 'id',
+          type: 'number',
+          fieldName: 'id',
+          columnType: 'int',
+        },
+      },
+      name: 'CustomSchemaTrigger',
+      tableName: 'custom_schema_trigger',
+      schema: 'trg_schema',
+      triggers: [
+        {
+          name: 'trg_ns',
+          timing: 'after',
+          events: ['insert'],
+          body: 'RETURN NEW',
+        },
+      ],
+    });
+    const orm = await MikroORM.init({
+      entities: [schema1],
+      dbName: `mikro_orm_test_trigger_ns`,
+      schema: 'trg_schema',
+    });
+
+    await orm.schema.ensureDatabase();
+    await orm.em.getConnection().execute('create schema if not exists "trg_schema"');
+
+    const diff = await orm.schema.getCreateSchemaSQL({ wrap: false });
+    // fn name must be qualified with the non-default schema in both create and drop DDL
+    expect(diff).toContain('"trg_schema"."custom_schema_trigger_trg_ns_fn"');
+
+    await orm.schema.execute(diff);
+
+    // Remove the trigger -> dropTrigger must emit the schema-qualified fn name
+    const metaEntry = orm.getMetadata(schema1);
+    metaEntry.triggers = [];
+    const dropDiff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(dropDiff).toContain('"trg_schema"."custom_schema_trigger_trg_ns_fn"');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
   test('trigger with expression escape hatch [postgres]', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();

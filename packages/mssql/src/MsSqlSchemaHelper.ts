@@ -472,7 +472,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       // Parse body from full trigger definition
       let body = '';
       if (row.definition) {
-        const bodyMatch = /\bas\s+begin\s+([\s\S]*)\s*end\s*$/i.exec(row.definition);
+        const bodyMatch = /\bas\s+begin\s+([\s\S]*)\s*end\s*;?\s*$/i.exec(row.definition);
         if (bodyMatch) {
           body = bodyMatch[1].trim().replace(/;\s*$/, '');
         }

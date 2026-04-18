@@ -1,4 +1,4 @@
-import { defineEntity, EntitySchema, MikroORM, p, quote } from '@mikro-orm/sqlite';
+import { defineEntity, EntitySchema, MikroORM, p, quote, SchemaComparator } from '@mikro-orm/sqlite';
 import { MikroORM as MongoMikroORM } from '@mikro-orm/mongodb';
 import { MetadataError } from '@mikro-orm/core';
 
@@ -266,6 +266,172 @@ describe('trigger (defineEntity)', () => {
     const dropDiff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
     expect(dropDiff).toContain('drop trigger');
     await orm2.schema.execute(dropDiff);
+
+    await orm2.close();
+  });
+
+  it('should add trigger to pre-existing table via alter', async () => {
+    const schema1 = new EntitySchema({
+      name: 'AddTrgTable',
+      tableName: 'add_trg_table',
+      properties: {
+        id: { type: 'number', primary: true, fieldName: 'id', columnType: 'integer' },
+        val: { type: 'number', name: 'val', fieldName: 'val', columnType: 'integer' },
+      },
+    });
+    const orm2 = await MikroORM.init({
+      dbName: ':memory:',
+      entities: [schema1],
+    });
+    await orm2.schema.refresh();
+
+    // Attach a trigger post-creation -> forces `addedTriggers` branch in alterTable
+    const meta = orm2.getMetadata(schema1);
+    meta.triggers = [
+      {
+        name: 'trg_added',
+        timing: 'after',
+        events: ['insert'],
+        forEach: 'row',
+        body: 'UPDATE add_trg_table SET val = val + 1 WHERE id = NEW.id',
+      },
+    ];
+
+    const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('create trigger');
+    expect(diff).toContain('trg_added');
+    await orm2.schema.execute(diff);
+
+    // After executing, there should be no drift
+    const diff2 = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff2).toBe('');
+
+    await orm2.close();
+  });
+
+  it('should detect change when both from and to have expression', async () => {
+    const schema1 = new EntitySchema({
+      name: 'ExprDiffTable',
+      tableName: 'expr_diff_table',
+      properties: {
+        id: { type: 'number', primary: true, fieldName: 'id', columnType: 'integer' },
+      },
+      triggers: [
+        {
+          name: 'trg_expr_diff',
+          timing: 'after' as const,
+          events: ['insert' as const],
+          expression:
+            'create trigger "trg_expr_diff" AFTER INSERT on "expr_diff_table" for each ROW begin SELECT 1; end',
+        },
+      ],
+    });
+    const orm2 = await MikroORM.init({
+      dbName: ':memory:',
+      entities: [schema1],
+    });
+    await orm2.schema.refresh();
+
+    // Both sides have expression; SchemaComparator should compare them directly
+    const meta = orm2.getMetadata(schema1);
+    // Simulate an imported trigger with expression to force the "both expressions" path
+    meta.triggers = [
+      {
+        name: 'trg_expr_diff',
+        timing: 'after' as const,
+        events: ['insert' as const],
+        forEach: 'row',
+        expression: 'create trigger "trg_expr_diff" AFTER INSERT on "expr_diff_table" for each ROW begin SELECT 1; end',
+      },
+    ];
+
+    const schemaFromDb = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    // Both sides carry identical expression, so the raw-DDL comparison must yield no diff
+    expect(schemaFromDb).toBe('');
+
+    // Exercise the comparator directly across every branch of diffTrigger
+    const platform = orm2.em.getDriver().getPlatform();
+    const comparator = new SchemaComparator(platform);
+    const base = {
+      name: 't',
+      timing: 'after' as const,
+      events: ['insert' as const],
+      forEach: 'row' as const,
+      body: 'X',
+    };
+
+    // both sides carry expression -> direct DDL compare
+    expect((comparator as any).diffTrigger({ ...base, expression: 'A' }, { ...base, expression: 'B' })).toBe(true);
+    expect((comparator as any).diffTrigger({ ...base, expression: 'A' }, { ...base, expression: 'A' })).toBe(false);
+
+    // only metadata side has expression -> comparator must skip (cannot compare vs introspected body)
+    expect((comparator as any).diffTrigger({ ...base, expression: undefined }, { ...base, expression: 'A' })).toBe(
+      false,
+    );
+
+    // timing change
+    expect((comparator as any).diffTrigger({ ...base, timing: 'before' }, { ...base })).toBe(true);
+
+    // forEach change
+    expect((comparator as any).diffTrigger({ ...base, forEach: 'statement' }, { ...base })).toBe(true);
+
+    // events change
+    expect((comparator as any).diffTrigger({ ...base, events: ['update'] }, { ...base })).toBe(true);
+
+    // events order only — unchanged
+    expect(
+      (comparator as any).diffTrigger(
+        { ...base, events: ['insert', 'update'] },
+        { ...base, events: ['update', 'insert'] },
+      ),
+    ).toBe(false);
+
+    // when change (from set -> unset, and empty equivalence)
+    expect((comparator as any).diffTrigger({ ...base, when: 'foo' }, { ...base })).toBe(true);
+    expect((comparator as any).diffTrigger({ ...base, when: undefined }, { ...base, when: undefined })).toBe(false);
+
+    // body change
+    expect((comparator as any).diffTrigger({ ...base, body: 'A' }, { ...base, body: 'B' })).toBe(true);
+
+    // all equal -> no change
+    expect((comparator as any).diffTrigger({ ...base }, { ...base })).toBe(false);
+
+    await orm2.close();
+  });
+
+  it('should drop triggers when dropping tables', async () => {
+    const schema1 = new EntitySchema({
+      name: 'DropTrgTable',
+      tableName: 'drop_trg_table',
+      properties: {
+        id: { type: 'number', primary: true, fieldName: 'id', columnType: 'integer' },
+      },
+      triggers: [
+        {
+          name: 'trg_to_drop',
+          timing: 'after',
+          events: ['insert'],
+          body: 'SELECT 1',
+        },
+      ],
+    });
+    const orm2 = await MikroORM.init({
+      dbName: ':memory:',
+      entities: [schema1],
+    });
+    await orm2.schema.refresh();
+
+    // Remove the entity from metadata to simulate a dropped table
+    const meta = orm2.getMetadata();
+    meta.reset(schema1);
+
+    const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false, dropTables: true, safe: false });
+    // Drop trigger must precede the drop table
+    const dropTriggerIdx = diff.indexOf('drop trigger');
+    const dropTableIdx = diff.indexOf('drop table');
+    expect(dropTriggerIdx).toBeGreaterThan(-1);
+    expect(dropTableIdx).toBeGreaterThan(-1);
+    expect(dropTriggerIdx).toBeLessThan(dropTableIdx);
 
     await orm2.close();
   });

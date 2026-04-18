@@ -142,6 +142,49 @@ describe('trigger [mysql]', () => {
     await orm.close();
   });
 
+  test('trigger expression escape hatch [mysql]', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [TriggerEntity],
+      discovery: { warnWhenNoEntities: false },
+      dbName: `mikro_orm_test_trigger_mysql_expr`,
+      port: 3308,
+    });
+    const meta = orm.getMetadata();
+    await orm.schema.ensureDatabase();
+
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: {
+          primary: true,
+          name: 'id',
+          type: 'number',
+          fieldName: 'id',
+          columnType: 'int',
+        },
+      },
+      name: 'ExprTriggerMy',
+      tableName: 'expr_trigger_my',
+      triggers: [
+        {
+          name: 'trg_custom',
+          timing: 'before' as const,
+          events: ['insert' as const],
+          expression: 'create trigger `trg_custom` BEFORE INSERT on `expr_trigger_my` for each ROW set NEW.id = NEW.id',
+        },
+      ],
+    }).init().meta;
+    meta.set(newTableMeta.class, newTableMeta);
+
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    // The expression short-circuit returns the raw DDL verbatim
+    expect(diff).toContain('trg_custom');
+    expect(diff).toContain('BEFORE INSERT');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
   test('trigger round-trip with multi-event grouping [mysql]', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
