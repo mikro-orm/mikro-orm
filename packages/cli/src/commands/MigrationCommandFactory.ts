@@ -23,6 +23,7 @@ export class MigrationCommandFactory {
     fresh: 'Clear the database and rerun all migrations',
     log: 'Mark a migration as executed without running it',
     unlog: 'Remove a migration from the executed list without reverting it',
+    rollup: 'Combine multiple migrations into a single migration',
   };
 
   static create<const T extends MigratorMethod>(command: T) {
@@ -148,6 +149,9 @@ export class MigrationCommandFactory {
       case 'unlog':
         await this.handleLogUnlogCommand(args, orm.migrator, method);
         break;
+      case 'rollup':
+        await this.handleRollupCommand(orm.migrator);
+        break;
     }
 
     await orm.close(true);
@@ -269,6 +273,11 @@ export class MigrationCommandFactory {
     CLIHelper.dump(colors.green(`Successfully ${action} migration '${args.name}'`));
   }
 
+  private static async handleRollupCommand(migrator: IMigrator): Promise<void> {
+    const ret = await migrator.rollup();
+    CLIHelper.dump(colors.green(`${ret.fileName} successfully created (rollup)`));
+  }
+
   private static getUpDownOptions(flags: CliUpDownOptions): MigrateOptions {
     if (!flags.to && !flags.from && flags.only) {
       return { migrations: flags.only.split(/[, ]+/) };
@@ -330,6 +339,7 @@ type MigrationOptionsMap = {
   fresh: MigratorFreshOptions;
   log: MigratorLogUnlogOptions;
   unlog: MigratorLogUnlogOptions;
+  rollup: BaseArgs;
 };
 type MigratorMethod = keyof MigrationOptionsMap;
 type Opts = BaseArgs & MigratorCreateOptions & CliUpDownOptions & MigratorFreshOptions & MigratorLogUnlogOptions;

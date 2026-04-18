@@ -257,6 +257,7 @@ npx mikro-orm migration:pending  # List all pending migrations
 npx mikro-orm migration:fresh    # Drop the database and migrate up to the latest version
 npx mikro-orm migration:log      # Mark a migration as executed without running it
 npx mikro-orm migration:unlog    # Remove a migration from the executed list without reverting it
+npx mikro-orm migration:rollup   # Combine all executed migrations into a single migration
 ```
 
 > To create blank migration file, you can use `npx mikro-orm migration:create --blank`.
@@ -279,6 +280,8 @@ npx mikro-orm migration:fresh --seed=UsersSeeder  # seed the database with the U
 ```
 
 > You can specify the default database seeder in the orm config with the key `config.seeder.defaultSeeder`
+
+The `migration:rollup` command combines all executed migrations into a single migration file. This is useful for cleaning up a large number of migrations that have accumulated over time. It works by extracting the source code from each migration's `up()` and `down()` methods and concatenating them into a new migration file — no database interaction required (other than updating the migration log), so there is no risk of data loss.
 
 ## Using the Migrator programmatically
 
@@ -303,6 +306,8 @@ import { Migrator } from '@mikro-orm/migrations';
   await orm.migrator.down('name'); // runs only given migration, down
   await orm.migrator.down({ to: 'down-to-name' }); // runs migrations down to given version
   await orm.migrator.down({ to: 0 }); // migrates down to the first version
+  await orm.migrator.rollup(); // combines all executed migrations into one
+  await orm.migrator.rollup(['Migration1', 'Migration2']); // combines specific migrations
 
   await orm.close(true);
 })();
