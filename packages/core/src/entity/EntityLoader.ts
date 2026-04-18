@@ -902,6 +902,7 @@ export class EntityLoader {
       pivotJoin,
     );
     const children: AnyEntity[][] = [];
+    const isUnionTargetMN = QueryHelper.isUnionTargetPolymorphic(prop);
 
     for (let i = 0; i < filtered.length; i++) {
       const entity = filtered[i] as AnyEntity;
@@ -913,7 +914,12 @@ export class EntityLoader {
           });
         }
 
-        const entity = this.#em.getEntityFactory().create(prop.targetMeta!.class, item, {
+        // Union-target items carry their concrete class via `constructor` — dispatch to the right factory call.
+        const targetClass =
+          isUnionTargetMN && (item as Dictionary).constructor !== Object
+            ? ((item as Dictionary).constructor as EntityName<any>)
+            : prop.targetMeta!.class;
+        const entity = this.#em.getEntityFactory().create(targetClass, item, {
           refresh,
           merge: true,
           convertCustomTypes: true,
