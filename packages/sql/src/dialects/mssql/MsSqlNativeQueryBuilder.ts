@@ -66,6 +66,11 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
   }
 
   protected override compileInsert() {
+    if (this.options.insertSubQuery) {
+      super.compileInsert();
+      return;
+    }
+
     if (!this.options.data) {
       throw new Error('No data provided');
     }
