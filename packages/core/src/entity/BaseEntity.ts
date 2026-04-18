@@ -3,6 +3,7 @@ import type {
   AutoPath,
   EntityData,
   EntityDTO,
+  ExtractFieldsHint,
   Loaded,
   LoadedReference,
   AddEager,
@@ -10,7 +11,9 @@ import type {
   FromEntityType,
   IsSubset,
   MergeSelected,
+  ResolveSerializeFields,
   SerializeDTO,
+  SerializeFieldsKeepPK,
 } from '../typings.js';
 import { EntityAssigner, type AssignOptions } from './EntityAssigner.js';
 import type { EntityLoaderOptions } from './EntityLoader.js';
@@ -125,8 +128,18 @@ export abstract class BaseEntity {
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
     Hint extends string = never,
     Exclude extends string = never,
-  >(options?: SerializeOptions<Naked, Hint, Exclude>): SerializeDTO<Naked, Hint, Exclude> {
-    return EntitySerializer.serialize(this as unknown as Naked, options);
+    Fields extends string = never,
+  >(
+    options?: SerializeOptions<Naked, Hint, Exclude, Fields>,
+  ): SerializeDTO<
+    Naked,
+    Hint,
+    Exclude,
+    never,
+    ResolveSerializeFields<Fields, ExtractFieldsHint<Entity>>,
+    SerializeFieldsKeepPK<Fields>
+  > {
+    return EntitySerializer.serialize(this as unknown as Naked, options) as any;
   }
 
   /** Assigns the given data to this entity, updating its properties and relations. */
