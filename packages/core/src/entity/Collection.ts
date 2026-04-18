@@ -227,9 +227,9 @@ export class Collection<T extends object, O extends object = object> {
   /** Adds one or more items to the collection, propagating the change to the inverse side. Returns the number of items added. */
   add<TT extends T>(
     entity: TT | Reference<TT> | Iterable<TT | Reference<TT>>,
-    ...entities: (TT | Reference<TT>)[]
+    ...entities: (T | Reference<T>)[]
   ): number {
-    entities = Utils.asArray(entity).concat(entities);
+    entities = (Utils.asArray(entity) as (T | Reference<T>)[]).concat(entities);
     const unwrapped = entities.map(i => Reference.unwrapReference(i)) as T[];
     this.validateModification(unwrapped);
     const em = this.getEntityManager(entities as T[], false);
@@ -264,14 +264,14 @@ export class Collection<T extends object, O extends object = object> {
    * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
    */
   remove<TT extends T>(
-    entity: TT | Reference<TT> | Iterable<TT | Reference<TT>> | ((item: TT) => boolean),
-    ...entities: (TT | Reference<TT>)[]
+    entity: TT | Reference<TT> | Iterable<TT | Reference<TT>> | ((item: T) => boolean),
+    ...entities: (T | Reference<T>)[]
   ): number {
     if (entity instanceof Function) {
       let removed = 0;
 
       for (const item of this.#items) {
-        if (entity(item as TT)) {
+        if (entity(item as T)) {
           removed += this.remove(item);
         }
       }
@@ -280,7 +280,7 @@ export class Collection<T extends object, O extends object = object> {
     }
 
     this.checkInitialized();
-    entities = Utils.asArray(entity).concat(entities);
+    entities = (Utils.asArray(entity) as (T | Reference<T>)[]).concat(entities);
     const unwrapped = entities.map(i => Reference.unwrapReference(i)) as T[];
     this.validateModification(unwrapped);
     const em = this.getEntityManager(entities as T[], false);

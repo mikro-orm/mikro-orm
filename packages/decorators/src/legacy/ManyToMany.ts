@@ -9,7 +9,7 @@ import { processDecoratorParameters, validateSingleDecorator, getMetadataFromDec
 
 /** Defines a many-to-many relationship (legacy TypeScript decorator). */
 export function ManyToMany<Target extends object, Owner extends object>(
-  entity: () => EntityName<Target>,
+  entity: () => EntityName<Target> | EntityName<Target>[],
   mappedBy?: (string & keyof Target) | ((e: Target) => any),
   options?: Partial<ManyToManyOptions<Owner, Target>>,
 ): (target: Owner, propertyName: keyof Owner) => void;
@@ -18,7 +18,7 @@ export function ManyToMany<Target extends object, Owner extends object>(
   options?: ManyToManyOptions<Owner, Target>,
 ): (target: Owner, propertyName: keyof Owner) => void;
 export function ManyToMany<Target extends object, Owner extends object>(
-  entity?: ManyToManyOptions<Owner, Target> | (() => EntityName<Target>),
+  entity?: ManyToManyOptions<Owner, Target> | (() => EntityName<Target> | EntityName<Target>[]),
   mappedBy?: (string & keyof Target) | ((e: Target) => any),
   options: Partial<ManyToManyOptions<Owner, Target>> = {},
 ) {
