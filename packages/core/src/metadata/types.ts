@@ -230,6 +230,12 @@ export interface PropertyOptions<Owner> {
    */
   lazy?: boolean;
   /**
+   * Marks this property as an array. When used with a custom type, the type is automatically
+   * wrapped in an `ArrayType` that delegates element conversion to the inner type.
+   * The column type is inferred as `innerType[]` (e.g. `int[]`, `time[]`).
+   */
+  array?: boolean;
+  /**
    * Set true to define entity's unique primary key identifier.
    * Alias for `@PrimaryKey()` decorator
    *
