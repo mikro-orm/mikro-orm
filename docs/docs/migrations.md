@@ -248,6 +248,8 @@ npx mikro-orm migration:list     # List all executed migrations
 npx mikro-orm migration:check    # Check if schema is up to date
 npx mikro-orm migration:pending  # List all pending migrations
 npx mikro-orm migration:fresh    # Drop the database and migrate up to the latest version
+npx mikro-orm migration:log      # Mark a migration as executed without running it
+npx mikro-orm migration:unlog    # Remove a migration from the executed list without reverting it
 ```
 
 > To create blank migration file, you can use `npx mikro-orm migration:create --blank`.
