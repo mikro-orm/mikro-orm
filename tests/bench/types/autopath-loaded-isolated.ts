@@ -61,15 +61,15 @@ function validatePath<T, P extends string>(_path: AutoPath<T, P, PopulatePath.AL
 
 bench('AutoPath LINEAR - 1 level', () => {
   validatePath<Person, 'address'>('address');
-}).types([714, 'instantiations']);
+}).types([729, 'instantiations']);
 
 bench('AutoPath LINEAR - 2 levels', () => {
   validatePath<Person, 'address.city'>('address.city');
-}).types([895, 'instantiations']);
+}).types([922, 'instantiations']);
 
 bench('AutoPath LINEAR - 3 levels', () => {
   validatePath<Person, 'address.city.country'>('address.city.country');
-}).types([1042, 'instantiations']);
+}).types([1081, 'instantiations']);
 
 // ============================================
 // Loaded with LINEAR entities (Ref only)
@@ -80,19 +80,19 @@ function useLoaded<T, L extends string = never>(_entity: Loaded<T, L>): void {}
 
 bench('Loaded LINEAR - no populate', () => {
   useLoaded<Person>({} as Person);
-}).types([505, 'instantiations']);
+}).types([503, 'instantiations']);
 
 bench('Loaded LINEAR - 1 level (Ref)', () => {
   useLoaded<Person, 'address'>({} as Loaded<Person, 'address'>);
-}).types([901, 'instantiations']);
+}).types([927, 'instantiations']);
 
 bench('Loaded LINEAR - 2 levels (Ref)', () => {
   useLoaded<Person, 'address.city'>({} as Loaded<Person, 'address.city'>);
-}).types([901, 'instantiations']);
+}).types([927, 'instantiations']);
 
 bench('Loaded LINEAR - 3 levels (Ref)', () => {
   useLoaded<Person, 'address.city.country'>({} as Loaded<Person, 'address.city.country'>);
-}).types([901, 'instantiations']);
+}).types([927, 'instantiations']);
 
 // ============================================
 // SELF-REFERENCING entity (single type circular)
@@ -108,27 +108,27 @@ interface TreeNode {
 
 bench('AutoPath SELF-REF - 1 level', () => {
   validatePath<TreeNode, 'parent'>('parent');
-}).types([781, 'instantiations']);
+}).types([808, 'instantiations']);
 
 bench('AutoPath SELF-REF - 2 levels', () => {
   validatePath<TreeNode, 'parent.parent'>('parent.parent');
-}).types([843, 'instantiations']);
+}).types([870, 'instantiations']);
 
 bench('AutoPath SELF-REF - children (Collection)', () => {
   validatePath<TreeNode, 'children'>('children');
-}).types([606, 'instantiations']);
+}).types([615, 'instantiations']);
 
 bench('Loaded SELF-REF - 1 level (Ref)', () => {
   useLoaded<TreeNode, 'parent'>({} as Loaded<TreeNode, 'parent'>);
-}).types([923, 'instantiations']);
+}).types([949, 'instantiations']);
 
 bench('Loaded SELF-REF - 2 levels (Ref)', () => {
   useLoaded<TreeNode, 'parent.parent'>({} as Loaded<TreeNode, 'parent.parent'>);
-}).types([923, 'instantiations']);
+}).types([949, 'instantiations']);
 
 bench('Loaded SELF-REF - children (Collection)', () => {
   useLoaded<TreeNode, 'children'>({} as Loaded<TreeNode, 'children'>);
-}).types([894, 'instantiations']);
+}).types([919, 'instantiations']);
 
 // ============================================
 // TWO-WAY circular reference (A <-> B)
@@ -151,35 +151,35 @@ interface Department {
 
 bench('AutoPath CIRCULAR - simple', () => {
   validatePath<Employee, 'department'>('department');
-}).types([726, 'instantiations']);
+}).types([741, 'instantiations']);
 
 bench('AutoPath CIRCULAR - 2 levels', () => {
   validatePath<Employee, 'department.manager'>('department.manager');
-}).types([903, 'instantiations']);
+}).types([930, 'instantiations']);
 
 bench('AutoPath CIRCULAR - 3 levels', () => {
   validatePath<Employee, 'department.manager.department'>('department.manager.department');
-}).types([951, 'instantiations']);
+}).types([984, 'instantiations']);
 
 bench('Loaded CIRCULAR - simple (Ref)', () => {
   useLoaded<Employee, 'department'>({} as Loaded<Employee, 'department'>);
-}).types([901, 'instantiations']);
+}).types([927, 'instantiations']);
 
 bench('Loaded CIRCULAR - 2 levels (Ref)', () => {
   useLoaded<Employee, 'department.manager'>({} as Loaded<Employee, 'department.manager'>);
-}).types([901, 'instantiations']);
+}).types([927, 'instantiations']);
 
 bench('Loaded CIRCULAR - back to start (Ref)', () => {
   useLoaded<Employee, 'department.manager.department'>({} as Loaded<Employee, 'department.manager.department'>);
-}).types([901, 'instantiations']);
+}).types([927, 'instantiations']);
 
 bench('Loaded CIRCULAR - collection', () => {
   useLoaded<Department, 'employees'>({} as Loaded<Department, 'employees'>);
-}).types([894, 'instantiations']);
+}).types([919, 'instantiations']);
 
 bench('Loaded CIRCULAR - collection nested', () => {
   useLoaded<Department, 'employees.department'>({} as Loaded<Department, 'employees.department'>);
-}).types([894, 'instantiations']);
+}).types([919, 'instantiations']);
 
 // ============================================
 // Entity with many properties (width test)
@@ -227,22 +227,22 @@ interface WideWithRefs {
 
 bench('AutoPath WIDE - 20 scalar props', () => {
   validatePath<WideSimple, 'f1'>('f1');
-}).types([830, 'instantiations']);
+}).types([841, 'instantiations']);
 
 bench('AutoPath WIDE - 5 refs', () => {
   validatePath<WideWithRefs, 'r1'>('r1');
-}).types([787, 'instantiations']);
+}).types([802, 'instantiations']);
 
 bench('Loaded WIDE - 20 scalar props', () => {
   useLoaded<WideSimple>({} as WideSimple);
-}).types([865, 'instantiations']);
+}).types([863, 'instantiations']);
 
 bench('Loaded WIDE - 5 refs no populate', () => {
   useLoaded<WideWithRefs>({} as WideWithRefs);
-}).types([665, 'instantiations']);
+}).types([663, 'instantiations']);
 
 bench('Loaded WIDE - 5 refs all populated', () => {
   useLoaded<WideWithRefs, 'r1' | 'r2' | 'r3' | 'r4' | 'r5'>(
     {} as Loaded<WideWithRefs, 'r1' | 'r2' | 'r3' | 'r4' | 'r5'>,
   );
-}).types([1554, 'instantiations']);
+}).types([1580, 'instantiations']);
