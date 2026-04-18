@@ -16,7 +16,7 @@ import type { PostgreSqlEntityManager } from './PostgreSqlEntityManager.js';
 /** Configuration options for the PostgreSQL driver. */
 export type PostgreSqlOptions<
   EM extends PostgreSqlEntityManager = PostgreSqlEntityManager,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -26,7 +26,7 @@ export type PostgreSqlOptions<
 /** Creates a type-safe configuration object for the PostgreSQL driver. */
 export function definePostgreSqlConfig<
   EM extends PostgreSqlEntityManager = PostgreSqlEntityManager,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -40,7 +40,7 @@ export function definePostgreSqlConfig<
  */
 export class PostgreSqlMikroORM<
   EM extends PostgreSqlEntityManager = PostgreSqlEntityManager,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -52,7 +52,7 @@ export class PostgreSqlMikroORM<
   static override async init<
     D extends IDatabaseDriver = PostgreSqlDriver,
     EM extends EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
-    Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+    Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
       | string
       | EntityClass<AnyEntity>
       | EntitySchema

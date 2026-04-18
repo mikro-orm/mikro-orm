@@ -15,7 +15,7 @@ import { MySqlDriver } from './MySqlDriver.js';
 /** Configuration options for the MySQL driver. */
 export type MySqlOptions<
   EM extends SqlEntityManager<MySqlDriver> = SqlEntityManager<MySqlDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -25,7 +25,7 @@ export type MySqlOptions<
 /** Creates a type-safe configuration object for the MySQL driver. */
 export function defineMySqlConfig<
   EM extends SqlEntityManager<MySqlDriver> = SqlEntityManager<MySqlDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -39,7 +39,7 @@ export function defineMySqlConfig<
  */
 export class MySqlMikroORM<
   EM extends SqlEntityManager<MySqlDriver> = SqlEntityManager<MySqlDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -51,7 +51,7 @@ export class MySqlMikroORM<
   static override async init<
     D extends IDatabaseDriver = MySqlDriver,
     EM extends EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
-    Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+    Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
       | string
       | EntityClass<AnyEntity>
       | EntitySchema
