@@ -150,3 +150,35 @@ export default defineConfig({
 ```
 
 This is useful when you have base entities that need to be loaded first, or when mixing discovery approaches.
+
+## Generating a barrel file with `discovery:export`
+
+Instead of manually maintaining entity arrays or relying on folder-based discovery at runtime, you can use the `discovery:export` CLI command to generate a TypeScript barrel file with explicit entity imports:
+
+```bash
+npx mikro-orm discovery:export
+```
+
+This scans your entity source files (using `entitiesTs` or `entities` paths from your config) and generates a file like:
+
+```ts
+import { Article } from './entities/Article.js';
+import { User } from './entities/User.js';
+
+export const entities = [
+  Article,
+  User,
+] as const;
+```
+
+You can then use the generated file in your config:
+
+```ts
+import { entities } from './entities.generated';
+
+export default defineConfig({ entities });
+```
+
+This gives you the convenience of folder-based discovery (no manual updates when adding entities) with the benefits of explicit references (works with bundlers, faster startup, compile-time checking). The command also generates a `Database` type for use with [Kysely integration](./kysely.md#generating-entity-exports-with-the-cli).
+
+See the [Kysely guide](./kysely.md#generating-entity-exports-with-the-cli) for the full command options.
