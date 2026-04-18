@@ -156,6 +156,61 @@ const author = await orm.em.findOne(Author, 1, {
 
 Hints for paths that don't match any populate entry are silently ignored.
 
+### Per-parent limiting
+
+You can limit the number of items loaded per parent entity using the `limit` option in `populateHints`. This is useful when a relation can have many items (e.g., thousands of posts per user) but you only need a few per parent.
+
+```ts
+const users = await em.find(User, {}, {
+  populate: ['posts'],
+  populateHints: {
+    posts: { limit: 5, orderBy: { createdAt: 'desc' } },
+  },
+});
+// each user.posts collection will have at most 5 items (the most recent ones)
+```
+
+You can also use `offset` for pagination:
+
+```ts
+const users = await em.find(User, {}, {
+  populate: ['posts'],
+  populateHints: {
+    posts: { limit: 5, offset: 5, orderBy: { createdAt: 'desc' } },
+  },
+});
+```
+
+Different limits can be applied at each level of nested population:
+
+```ts
+const users = await em.find(User, {}, {
+  populate: ['posts.comments'],
+  populateHints: {
+    posts: { limit: 5, orderBy: { createdAt: 'desc' } },
+    'posts.comments': { limit: 3 },
+  },
+});
+```
+
+The `orderBy` in `populateHints` takes precedence over nested `FindOptions.orderBy`. If neither is provided, the relation's default ordering is used.
+
+Collections loaded with a limit are marked as **partial and readonly** — you cannot add or remove items from them, which prevents the Unit of Work from treating unloaded items as removals.
+
+Under the hood, SQL drivers use `ROW_NUMBER() OVER (PARTITION BY ...)` window functions to efficiently limit per parent in a single query. MongoDB uses an aggregation pipeline with `$group` and `$slice`.
+
+> When `limit` is set, the loading strategy is automatically forced to `select-in`, since the `joined` strategy cannot apply per-parent limiting within a join.
+
+This also works with `em.populate()`:
+
+```ts
+await em.populate(users, ['posts'], {
+  populateHints: {
+    posts: { limit: 5, orderBy: { createdAt: 'desc' } },
+  },
+});
+```
+
 ## Population `where` condition
 
 The where condition is by default applied only to the root entity. This can be controlled via `populateWhere` option. It accepts one of `all` (default), `infer` (use same condition as the `where` query) or an explicit filter query.
