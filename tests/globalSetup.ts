@@ -174,7 +174,7 @@ async function dropExtras(t: SqlTarget, extras: string[]): Promise<string[]> {
 }
 
 export async function setup() {
-  if (!(global as any).__MONGOINSTANCE) {
+  if (!(globalThis as any).__MONGOINSTANCE) {
     try {
       const instance = await MongoMemoryReplSet.create({
         replSet: { name: 'rs', count: 3 },
@@ -182,7 +182,7 @@ export async function setup() {
 
       await instance.waitUntilRunning();
       const uri = instance.getUri();
-      (global as any).__MONGOINSTANCE = instance;
+      (globalThis as any).__MONGOINSTANCE = instance;
       process.env.MONGO_URI = uri.slice(0, uri.lastIndexOf('/'));
     } catch {
       // eslint-disable-next-line no-console
@@ -199,17 +199,17 @@ export async function setup() {
       }
     }),
   );
-  (global as any)[BASELINE_KEY] = baseline;
+  (globalThis as any)[BASELINE_KEY] = baseline;
 }
 
 export async function teardown() {
-  const instance: MongoMemoryReplSet | undefined = (global as any).__MONGOINSTANCE;
+  const instance: MongoMemoryReplSet | undefined = (globalThis as any).__MONGOINSTANCE;
 
   if (instance) {
     await instance.stop({ force: true, doCleanup: true });
   }
 
-  const baseline: Record<string, string[]> = (global as any)[BASELINE_KEY] ?? {};
+  const baseline: Record<string, string[]> = (globalThis as any)[BASELINE_KEY] ?? {};
 
   await Promise.all(
     SQL_TARGETS.map(async t => {
