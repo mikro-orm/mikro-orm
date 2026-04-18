@@ -1,0 +1,27 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`trigger [sqlite] > trigger diff [sqlite] > sqlite-trigger-diff-1 1`] = `
+"create table \`trigger_table\` (\`id\` integer not null primary key autoincrement, \`price\` integer not null);
+create trigger \`trg_audit\` AFTER INSERT on \`trigger_table\` for each ROW begin UPDATE trigger_table SET price = price + 1 WHERE id = NEW.id; end;
+
+create table \`trigger_entity\` (\`id\` integer not null primary key autoincrement, \`price\` integer not null);
+create trigger \`update_timestamp\` AFTER INSERT on \`trigger_entity\` for each ROW begin UPDATE trigger_entity SET price = price + 1 WHERE id = NEW.id; end;
+"
+`;
+
+exports[`trigger [sqlite] > trigger diff [sqlite] > sqlite-trigger-diff-2 1`] = `
+"drop trigger if exists \`trg_audit\`;
+create trigger \`trg_audit\` AFTER INSERT on \`trigger_table\` for each ROW begin UPDATE trigger_table SET price = price + 2 WHERE id = NEW.id; end;
+"
+`;
+
+exports[`trigger [sqlite] > trigger diff [sqlite] > sqlite-trigger-diff-3 1`] = `
+"drop trigger if exists \`trg_audit\`;
+"
+`;
+
+exports[`trigger [sqlite] > trigger is generated for decorator [sqlite] > sqlite-trigger-decorator 1`] = `
+"create table \`trigger_entity\` (\`id\` integer not null primary key autoincrement, \`price\` integer not null);
+create trigger \`update_timestamp\` AFTER INSERT on \`trigger_entity\` for each ROW begin UPDATE trigger_entity SET price = price + 1 WHERE id = NEW.id; end;
+"
+`;
