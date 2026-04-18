@@ -1082,6 +1082,40 @@ describe('defineEntity', () => {
     assert<IsExact<LoadedBar['paymentMethods'], ('CASH' | 'CARD' | 'CRYPTO')[]>>(true);
   });
 
+  it('should allow .array() on scalar typed properties', () => {
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: p => ({
+        id: p.integer().primary().autoincrement(),
+        integers: p.integer().array(),
+        booleans: p.boolean().array(),
+        strings: p.string().array(),
+        decimals: p.decimal('number').array().nullable(),
+        bigints: p.type(new types.bigint('string')).array(),
+      }),
+    });
+
+    type IFoo = InferEntity<typeof Foo>;
+    assert<IsExact<IFoo['integers'], number[]>>(true);
+    assert<IsExact<IFoo['booleans'], boolean[]>>(true);
+    assert<IsExact<IFoo['strings'], string[]>>(true);
+    assert<IsExact<IFoo['decimals'], number[] | null | undefined>>(true);
+    assert<IsExact<IFoo['bigints'], string[]>>(true);
+
+    // Loaded<> preserves array types
+    type LoadedFoo = Loaded<IFoo>;
+    assert<IsExact<LoadedFoo['integers'], number[]>>(true);
+    assert<IsExact<LoadedFoo['booleans'], boolean[]>>(true);
+    assert<IsExact<LoadedFoo['strings'], string[]>>(true);
+    assert<IsExact<LoadedFoo['decimals'], number[] | null | undefined>>(true);
+    assert<IsExact<LoadedFoo['bigints'], string[]>>(true);
+
+    // array option is set on metadata
+    expect(Foo.meta.properties.integers.array).toBe(true);
+    expect(Foo.meta.properties.decimals.array).toBe(true);
+    expect(Foo.meta.properties.bigints.array).toBe(true);
+  });
+
   it('should define entity with decimal property', () => {
     const Foo = defineEntity({
       name: 'Foo',
