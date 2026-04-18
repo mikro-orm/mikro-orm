@@ -36,6 +36,10 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     boolean: 'bit',
   };
 
+  override formatIndexHint(indexNames: string[]): string {
+    return `with (index(${indexNames.join(', ')}))`;
+  }
+
   /** @inheritDoc */
   override lookupExtensions(orm: MikroORM<MsSqlDriver>): void {
     MsSqlSchemaGenerator.register(orm);
