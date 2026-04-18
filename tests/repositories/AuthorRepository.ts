@@ -11,6 +11,6 @@ export class AuthorRepository extends EntityRepository<Author> {
     where: FilterQuery<Author> = {},
     options?: FindOptions<Author, P, F, E>,
   ): Promise<Loaded<Author, P, F, E>[]> {
-    return super.find(where, options);
+    return super.find(where as any, options);
   }
 }
