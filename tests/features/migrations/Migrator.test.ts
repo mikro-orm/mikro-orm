@@ -1221,4 +1221,160 @@ describe('Migrator - rollup coverage', () => {
 
     dateMock.mockRestore();
   });
+
+  test('rollup handles escape sequences inside template literals and single-quoted strings', async () => {
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValueOnce('2020-01-01T00:00:00.000Z');
+    dateMock.mockReturnValueOnce('2020-02-01T00:00:00.000Z');
+
+    const migrator = new Migrator(orm.em);
+    const m1 = await migrator.create(migrationsPath, true);
+    const m2 = await migrator.create(migrationsPath, true);
+
+    // migration with `\`` inside template literal and `\'` inside single-quoted string
+    const m1Content = [
+      `import { Migration } from '@mikro-orm/migrations';`,
+      ``,
+      `export class ${m1.fileName.replace('.ts', '')} extends Migration {`,
+      ``,
+      `  override up(): void | Promise<void> {`,
+      '    this.addSql(`select \\`foo\\` from bar',
+      '    where x = 1`);',
+      `    this.addSql('it\\'s fine {');`,
+      `  }`,
+      ``,
+      `}`,
+    ].join('\n');
+
+    const m2Content = `import { Migration } from '@mikro-orm/migrations';\n\nexport class ${m2.fileName.replace('.ts', '')} extends Migration {\n\n  override up(): void | Promise<void> {\n    this.addSql(\`select 2\`);\n  }\n\n}\n`;
+
+    await writeFile(migrationsPath + '/' + m1.fileName, m1Content);
+    await writeFile(migrationsPath + '/' + m2.fileName, m2Content);
+
+    const storage = migrator.getStorage();
+    await storage.logMigration({ name: m1.fileName });
+    await storage.logMigration({ name: m2.fileName });
+
+    dateMock.mockReturnValueOnce('2020-03-01T00:00:00.000Z');
+    const result = await migrator.rollup();
+
+    expect(result.code).toContain('from bar');
+    expect(result.code).toContain("it\\'s fine {");
+    expect(result.code).toContain('select 2');
+
+    dateMock.mockRestore();
+  });
+
+  test('rollup handles single-line // comments inside method bodies', async () => {
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValueOnce('2020-01-01T00:00:00.000Z');
+    dateMock.mockReturnValueOnce('2020-02-01T00:00:00.000Z');
+
+    const migrator = new Migrator(orm.em);
+    const m1 = await migrator.create(migrationsPath, true);
+    const m2 = await migrator.create(migrationsPath, true);
+
+    const m1Content = [
+      `import { Migration } from '@mikro-orm/migrations';`,
+      ``,
+      `export class ${m1.fileName.replace('.ts', '')} extends Migration {`,
+      ``,
+      `  override up(): void | Promise<void> {`,
+      `    // inline comment with { brace`,
+      `    this.addSql(\`select 1\`);`,
+      `  }`,
+      ``,
+      `}`,
+    ].join('\n');
+
+    const m2Content = `import { Migration } from '@mikro-orm/migrations';\n\nexport class ${m2.fileName.replace('.ts', '')} extends Migration {\n\n  override up(): void | Promise<void> {\n    this.addSql(\`select 2\`);\n  }\n\n}\n`;
+
+    await writeFile(migrationsPath + '/' + m1.fileName, m1Content);
+    await writeFile(migrationsPath + '/' + m2.fileName, m2Content);
+
+    const storage = migrator.getStorage();
+    await storage.logMigration({ name: m1.fileName });
+    await storage.logMigration({ name: m2.fileName });
+
+    dateMock.mockReturnValueOnce('2020-03-01T00:00:00.000Z');
+    const result = await migrator.rollup();
+
+    expect(result.code).toContain('select 1');
+    expect(result.code).toContain('select 2');
+
+    dateMock.mockRestore();
+  });
+
+  test('rollup skips migrations with malformed method body (no closing brace)', async () => {
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValueOnce('2020-01-01T00:00:00.000Z');
+    dateMock.mockReturnValueOnce('2020-02-01T00:00:00.000Z');
+
+    const migrator = new Migrator(orm.em);
+    const m1 = await migrator.create(migrationsPath, true);
+    const m2 = await migrator.create(migrationsPath, true);
+
+    // m1 has an up() declaration with no body braces — extractMethodBody returns ''
+    const m1Content = [
+      `import { Migration } from '@mikro-orm/migrations';`,
+      ``,
+      `export class ${m1.fileName.replace('.ts', '')} extends Migration {`,
+      ``,
+      `  override up(): void | Promise<void>`,
+      ``,
+      `}`,
+    ].join('\n');
+
+    const m2Content = `import { Migration } from '@mikro-orm/migrations';\n\nexport class ${m2.fileName.replace('.ts', '')} extends Migration {\n\n  override up(): void | Promise<void> {\n    this.addSql(\`select 2\`);\n  }\n\n}\n`;
+
+    await writeFile(migrationsPath + '/' + m1.fileName, m1Content);
+    await writeFile(migrationsPath + '/' + m2.fileName, m2Content);
+
+    const storage = migrator.getStorage();
+    await storage.logMigration({ name: m1.fileName });
+    await storage.logMigration({ name: m2.fileName });
+
+    dateMock.mockReturnValueOnce('2020-03-01T00:00:00.000Z');
+    const result = await migrator.rollup();
+
+    // m1 has no extractable body so only m2's body is merged
+    expect(result.code).toContain('select 2');
+
+    dateMock.mockRestore();
+  });
+
+  test('rollup handles empty single-line method body', async () => {
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValueOnce('2020-01-01T00:00:00.000Z');
+    dateMock.mockReturnValueOnce('2020-02-01T00:00:00.000Z');
+
+    const migrator = new Migrator(orm.em);
+    const m1 = await migrator.create(migrationsPath, true);
+    const m2 = await migrator.create(migrationsPath, true);
+
+    // single-line up() with an empty body
+    const m1Content = [
+      `import { Migration } from '@mikro-orm/migrations';`,
+      ``,
+      `export class ${m1.fileName.replace('.ts', '')} extends Migration {`,
+      `  override up(): void | Promise<void> {}`,
+      `}`,
+    ].join('\n');
+
+    const m2Content = `import { Migration } from '@mikro-orm/migrations';\n\nexport class ${m2.fileName.replace('.ts', '')} extends Migration {\n\n  override up(): void | Promise<void> {\n    this.addSql(\`select 2\`);\n  }\n\n}\n`;
+
+    await writeFile(migrationsPath + '/' + m1.fileName, m1Content);
+    await writeFile(migrationsPath + '/' + m2.fileName, m2Content);
+
+    const storage = migrator.getStorage();
+    await storage.logMigration({ name: m1.fileName });
+    await storage.logMigration({ name: m2.fileName });
+
+    dateMock.mockReturnValueOnce('2020-03-01T00:00:00.000Z');
+    const result = await migrator.rollup();
+
+    expect(result.code).toContain('select 2');
+
+    dateMock.mockRestore();
+  });
 });
