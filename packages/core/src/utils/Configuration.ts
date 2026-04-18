@@ -99,6 +99,7 @@ const DEFAULTS = {
   upsertManaged: true,
   forceEntityConstructor: false,
   forceUndefined: false,
+  initNullableProperties: false,
   forceUtcTimezone: true,
   processOnCreateHooksEarly: true,
   ensureDatabase: true,
@@ -947,6 +948,13 @@ export interface Options<
    * @default false
    */
   forceUndefined: boolean;
+  /**
+   * Initialize nullable properties to `null` (or `undefined` when `forceUndefined` is set)
+   * during `em.create()` when they are not provided in the data. Without this option,
+   * nullable properties remain `undefined` until the entity is loaded from the database.
+   * @default false
+   */
+  initNullableProperties: boolean;
   /**
    * Property `onCreate` hooks are normally executed during `flush` operation.
    * With this option, they will be processed early inside `em.create()` method.
