@@ -150,7 +150,7 @@ type LoadedReferenceShape<T = any> = ReferenceShape & { $: T };
  * Using this instead of `Loadable<any>` in conditional type checks prevents
  * TypeScript from evaluating the full Collection/Reference interfaces.
  */
-type LoadableShape = CollectionShape | ReferenceShape | readonly any[];
+type LoadableShape = CollectionShape | ReferenceShape | LazyRef.Brand<any> | readonly any[];
 
 /** Gets all keys from all members of a union type (distributes over the union). */
 export type UnionKeys<T> = T extends any ? keyof T : never;
@@ -692,15 +692,17 @@ export type EntityDataProp<T, C extends boolean> = T extends Date
         ? C extends true
           ? Raw
           : Runtime
-        : T extends ReferenceShape<infer U>
+        : T extends LazyRef.Brand<infer U>
           ? EntityDataNested<U, C>
-          : T extends CollectionShape<infer U>
-            ? U | U[] | EntityDataNested<U & object, C> | EntityDataNested<U & object, C>[]
-            : T extends readonly (infer U)[]
-              ? U extends NonArrayObject
-                ? U | U[] | EntityDataNested<U, C> | EntityDataNested<U, C>[]
-                : U[] | EntityDataNested<U, C>[]
-              : EntityDataNested<T, C>;
+          : T extends ReferenceShape<infer U>
+            ? EntityDataNested<U, C>
+            : T extends CollectionShape<infer U>
+              ? U | U[] | EntityDataNested<U & object, C> | EntityDataNested<U & object, C>[]
+              : T extends readonly (infer U)[]
+                ? U extends NonArrayObject
+                  ? U | U[] | EntityDataNested<U, C> | EntityDataNested<U, C>[]
+                  : U[] | EntityDataNested<U, C>[]
+                : EntityDataNested<T, C>;
 
 /** Like `EntityDataProp` but used in `RequiredEntityData` context with required/optional key distinction. */
 export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
@@ -715,15 +717,17 @@ export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
           ? C extends true
             ? Raw
             : Runtime
-          : T extends ReferenceShape<infer U>
+          : T extends LazyRef.Brand<infer U>
             ? RequiredEntityDataNested<U, O, C>
-            : T extends CollectionShape<infer U>
-              ? U | U[] | RequiredEntityDataNested<U & object, O, C> | RequiredEntityDataNested<U & object, O, C>[]
-              : T extends readonly (infer U)[]
-                ? U extends NonArrayObject
-                  ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
-                  : U[] | RequiredEntityDataNested<U, O, C>[]
-                : RequiredEntityDataNested<T, O, C>;
+            : T extends ReferenceShape<infer U>
+              ? RequiredEntityDataNested<U, O, C>
+              : T extends CollectionShape<infer U>
+                ? U | U[] | RequiredEntityDataNested<U & object, O, C> | RequiredEntityDataNested<U & object, O, C>[]
+                : T extends readonly (infer U)[]
+                  ? U extends NonArrayObject
+                    ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
+                    : U[] | RequiredEntityDataNested<U, O, C>[]
+                  : RequiredEntityDataNested<T, O, C>;
 
 /** Nested entity data shape for embedded or related entities within `EntityData`. */
 export type EntityDataNested<T, C extends boolean = false> = T extends undefined
@@ -810,6 +814,37 @@ export type Rel<T> = T;
 
 /** Alias for `ScalarReference` (see {@apilink Ref}). */
 export type ScalarRef<T> = ScalarReference<T>;
+
+/**
+ * Type-level marker for a to-one relation that is **direct at runtime** (no `Reference` wrapper) but
+ * **restricted at compile time** until narrowed via `Loaded<>`.
+ *
+ * Use as the property type on a `@ManyToOne`/`@OneToOne` relation that does **not** have `ref: true`:
+ *
+ * ```ts
+ * @ManyToOne(() => User)
+ * author!: LazyRef<User>;
+ * ```
+ *
+ * Semantics:
+ * - **Runtime**: identical to a plain direct relation — `article.author` is a `User` instance (stub or hydrated),
+ *   `article.author instanceof User` is `true`, no `Reference` object is created.
+ * - **Type (unloaded view)**: only the primary key is accessible. Accessing other properties is a compile error.
+ * - **Type (loaded view)**: once the relation is in the populate hint of a `Loaded<Entity, 'author'>`, it narrows
+ *   back to the full entity — no `.$` or `.get()` indirection needed.
+ *
+ * Note: the safety is purely compile-time. JS code or `as any` casts bypass it.
+ */
+export type LazyRef<T extends object> =
+  IsAny<T> extends true ? LazyRef.Brand<T> : { [K in PrimaryProperty<T> & keyof T]: T[K] } & LazyRef.Brand<T>;
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export declare namespace LazyRef {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const __lazyRef: unique symbol;
+  export interface Brand<T> {
+    [__lazyRef]?: (arg: T) => T;
+  }
+}
 
 /** Alias for `Reference<T> & { id: number }` (see {@apilink Ref}). */
 export type EntityRef<T extends object> =
@@ -1988,14 +2023,24 @@ type ExtractType<T> =
           ? U
           : T;
 
+/**
+ * Like {@link ExtractType} but also unwraps {@link LazyRef}. Kept separate so {@link ExtractType}'s
+ * hot path (used by `IsOptional`, `EntityData`, `RequiredEntityData`) doesn't pay the cost of the
+ * extra branch — those contexts handle `LazyRef` in their own earlier branches (see
+ * `EntityDataProp` / `RequiredEntityDataProp`) before delegating to `ExtractType`.
+ */
+type ExtractTypeWithLazyRef<T> = T extends LazyRef.Brand<infer U> ? U : ExtractType<T>;
+
 type ExtractStringKeys<T> = { [K in keyof T]-?: CleanKeys<T, K> }[keyof T] & {};
 /**
  * Extracts string keys from an entity type, handling Collection/Reference wrappers.
  * Simplified to just check `T extends object` since ExtractType handles the unwrapping.
  */
-type StringKeys<T, E extends string = never> = T extends object ? ExtractStringKeys<ExtractType<T>> | E : never;
+type StringKeys<T, E extends string = never> = T extends object
+  ? ExtractStringKeys<ExtractTypeWithLazyRef<T>> | E
+  : never;
 type GetStringKey<T, K extends StringKeys<T, string>, E extends string> = K extends keyof T
-  ? ExtractType<T[K]>
+  ? ExtractTypeWithLazyRef<T[K]>
   : K extends E
     ? keyof T
     : never;
@@ -2045,27 +2090,31 @@ export type ArrayElement<ArrayType extends unknown[]> = ArrayType extends (infer
 
 /** Unwraps a property type from its wrapper (Reference, Collection, or array) to the inner entity type. */
 export type ExpandProperty<T> =
-  T extends ReferenceShape<infer U>
+  T extends LazyRef.Brand<infer U>
     ? NonNullable<U>
-    : T extends CollectionShape<infer U>
+    : T extends ReferenceShape<infer U>
       ? NonNullable<U>
-      : T extends (infer U)[]
+      : T extends CollectionShape<infer U>
         ? NonNullable<U>
-        : NonNullable<T>;
+        : T extends (infer U)[]
+          ? NonNullable<U>
+          : NonNullable<T>;
 
 type LoadedLoadable<T, E extends object> = T extends CollectionShape
   ? LoadedCollection<E>
   : T extends ScalarReference<infer U>
     ? LoadedScalarReference<U>
-    : T extends ReferenceShape
-      ? T & LoadedReference<E> // intersect with T (which is `Ref`) to include the PK props
-      : T extends Scalar
-        ? T
-        : T extends (infer U)[]
-          ? U extends Scalar
-            ? T // preserve scalar arrays (e.g., string[]) without Loaded<> wrapping
-            : E[]
-          : E;
+    : T extends LazyRef.Brand<any>
+      ? E // LazyRef narrows directly to the loaded entity (no wrapper at type level)
+      : T extends ReferenceShape
+        ? T & LoadedReference<E> // intersect with T (which is `Ref`) to include the PK props
+        : T extends Scalar
+          ? T
+          : T extends (infer U)[]
+            ? U extends Scalar
+              ? T // preserve scalar arrays (e.g., string[]) without Loaded<> wrapping
+              : E[]
+            : E;
 
 type IsTrue<T> = IsNever<T> extends true ? false : T extends boolean ? (T extends true ? true : false) : false;
 type StringLiteral<T> = T extends string ? (string extends T ? never : T) : never;
@@ -2141,7 +2190,7 @@ export type AddOptional<T> = undefined | null extends T
       : never;
 type LoadedProp<T, L extends string = never, F extends string = '*', E extends string = never> = LoadedLoadable<
   T,
-  Loaded<ExtractType<T>, L, F, E>
+  Loaded<ExtractTypeWithLazyRef<T>, L, F, E>
 >;
 /** Extracts the eager-loaded property names declared via `[EagerProps]` as a string union. */
 export type AddEager<T> = ExtractEagerProps<T> & string;

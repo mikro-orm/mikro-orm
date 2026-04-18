@@ -59,24 +59,24 @@ function useLoaded<T, L extends string = never, F extends string = '*'>(_entity:
 
 bench('Loaded<Author, "*"> - asterisk populate all', () => {
   useLoaded<Author, '*'>({} as Loaded<Author, '*'>);
-}).types([1360, 'instantiations']);
+}).types([1405, 'instantiations']);
 
 bench('Loaded<Book, "*"> - asterisk populate all', () => {
   useLoaded<Book, '*'>({} as Loaded<Book, '*'>);
-}).types([1890, 'instantiations']);
+}).types([1955, 'instantiations']);
 
 bench('Loaded<Publisher, "*"> - asterisk populate all', () => {
   useLoaded<Publisher, '*'>({} as Loaded<Publisher, '*'>);
-}).types([1037, 'instantiations']);
+}).types([1069, 'instantiations']);
 
 // Compare with explicit paths
 bench('Loaded<Author, "books"> - single relation', () => {
   useLoaded<Author, 'books'>({} as Loaded<Author, 'books'>);
-}).types([1134, 'instantiations']);
+}).types([1159, 'instantiations']);
 
 bench('Loaded<Author, "books" | "friends"> - multiple relations', () => {
   useLoaded<Author, 'books' | 'friends'>({} as Loaded<Author, 'books' | 'friends'>);
-}).types([1253, 'instantiations']);
+}).types([1284, 'instantiations']);
 
 // ============================================
 // Loaded with asterisk fields (F parameter)
@@ -84,7 +84,7 @@ bench('Loaded<Author, "books" | "friends"> - multiple relations', () => {
 
 bench('Loaded<Author, "books", "*"> - default fields', () => {
   useLoaded<Author, 'books', '*'>({} as Loaded<Author, 'books', '*'>);
-}).types([994, 'instantiations']);
+}).types([1019, 'instantiations']);
 
 bench('Loaded<Author, "books", "name" | "email"> - specific fields', () => {
   useLoaded<Author, 'books', 'name' | 'email'>({} as Loaded<Author, 'books', 'name' | 'email'>);

@@ -97,6 +97,13 @@ books = new Collection<Book>(this);
 publisher!: Ref<Publisher>;
 ```
 
+For type-only references without a runtime `Reference` wrapper, use [`LazyRef<T>`](./type-safe-relations.md#lazyreft--type-only-reference):
+
+```ts
+@ManyToOne(() => Publisher)
+publisher!: LazyRef<Publisher>;
+```
+
 #### Optional properties
 
 Reading property nullability is not supported, you need to explicitly set `nullable` attribute:
