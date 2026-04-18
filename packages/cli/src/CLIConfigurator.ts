@@ -88,5 +88,6 @@ export async function configure(): Promise<Argv<{ config: string[] | undefined; 
     .command(MigrationCommandFactory.create('fresh'))
     .command(MigrationCommandFactory.create('log'))
     .command(MigrationCommandFactory.create('unlog'))
+    .command(MigrationCommandFactory.create('rollup'))
     .command(new DebugCommand());
 }
