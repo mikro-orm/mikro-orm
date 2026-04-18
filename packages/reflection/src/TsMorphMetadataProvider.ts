@@ -108,6 +108,18 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     this.processWrapper(prop, 'EntityRef');
     this.processWrapper(prop, 'ScalarRef');
     this.processWrapper(prop, 'ScalarReference');
+    // `LazyRef<T>` is a type-only marker — unwrap the type for metadata but do NOT set `ref: true`
+    // (there is no `Reference` wrapper at runtime for `LazyRef`). If the user also set `ref: true`
+    // explicitly via options, that's a contradiction — the property type promises a plain entity
+    // with PK access, but `ref: true` would produce a `Reference` wrapper at runtime.
+    const hadLazyRef = /(?:^|[.( ])LazyRef</.test(prop.type.replace(/import\(.*\)\./g, ''));
+    this.processWrapper(prop, 'LazyRef');
+
+    if (hadLazyRef && prop.ref) {
+      throw new MetadataError(
+        `Property '${meta.className}.${prop.name}' is typed as 'LazyRef<T>' but also has 'ref: true' set — these are incompatible. Remove 'ref: true' to keep 'LazyRef' semantics, or change the type to 'Ref<T>'.`,
+      );
+    }
     this.processWrapper(prop, 'Collection');
     prop.runtimeType ??= prop.type;
 
