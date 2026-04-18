@@ -1439,6 +1439,17 @@ __metadata:
     unplugin-swc: "npm:1.5.9"
     uuid: "npm:11.1.0"
     vitest: "npm:4.1.4"
+  dependenciesMeta:
+    "@swc/core":
+      built: true
+    better-sqlite3:
+      built: true
+    esbuild:
+      built: true
+    nx:
+      built: true
+    oracledb:
+      built: true
   languageName: unknown
   linkType: soft
 
