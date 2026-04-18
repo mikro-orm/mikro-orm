@@ -18,7 +18,7 @@ import {
   Utils,
 } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper.js';
-import type { CheckDef, Column, ForeignKey, IndexDef } from '../typings.js';
+import type { CheckDef, Column, ForeignKey, IndexDef, SqlTriggerDef } from '../typings.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 
 /**
@@ -28,6 +28,7 @@ export class DatabaseTable {
   #columns: Dictionary<Column> = {};
   #indexes: IndexDef[] = [];
   #checks: CheckDef[] = [];
+  #triggers: SqlTriggerDef[] = [];
   #foreignKeys: Dictionary<ForeignKey> = {};
   readonly #platform: AbstractSqlPlatform;
   public nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {}; // for postgres
@@ -65,6 +66,10 @@ export class DatabaseTable {
     return this.#checks;
   }
 
+  getTriggers(): SqlTriggerDef[] {
+    return this.#triggers;
+  }
+
   /** @internal */
   setIndexes(indexes: IndexDef[]): void {
     this.#indexes = indexes;
@@ -73,6 +78,11 @@ export class DatabaseTable {
   /** @internal */
   setChecks(checks: CheckDef[]): void {
     this.#checks = checks;
+  }
+
+  /** @internal */
+  setTriggers(triggers: SqlTriggerDef[]): void {
+    this.#triggers = triggers;
   }
 
   /** @internal */
@@ -820,6 +830,14 @@ export class DatabaseTable {
     return !!this.getCheck(checkName);
   }
 
+  getTrigger(triggerName: string): SqlTriggerDef | undefined {
+    return this.#triggers.find(t => t.name === triggerName);
+  }
+
+  hasTrigger(triggerName: string): boolean {
+    return !!this.getTrigger(triggerName);
+  }
+
   getPrimaryKey(): IndexDef | undefined {
     return this.#indexes.find(i => i.primary);
   }
@@ -1230,6 +1248,10 @@ export class DatabaseTable {
     this.#checks.push(check);
   }
 
+  addTrigger(trigger: SqlTriggerDef) {
+    this.#triggers.push(trigger);
+  }
+
   toJSON(): Dictionary {
     const columns = this.#columns;
     // locale-independent comparison so the snapshot is stable across machines
@@ -1364,6 +1386,7 @@ export class DatabaseTable {
 
     const sortedIndexes = [...this.#indexes].sort((a, b) => byString(a.keyName, b.keyName)).map(normalizeIndex);
     const sortedChecks = [...this.#checks].sort((a, b) => byString(a.name, b.name)).map(normalizeCheck);
+    const sortedTriggers = [...this.#triggers].sort((a, b) => byString(a.name, b.name));
     const sortedForeignKeys = Object.fromEntries(
       Object.entries(this.#foreignKeys)
         .sort(([a], [b]) => byString(a, b))
@@ -1375,6 +1398,7 @@ export class DatabaseTable {
       columns: columnsMapped,
       indexes: sortedIndexes,
       checks: sortedChecks,
+      triggers: sortedTriggers,
       foreignKeys: sortedForeignKeys,
       // emit `comment` even when unset so introspection (which always reads it) matches metadata
       comment: this.comment ?? null,

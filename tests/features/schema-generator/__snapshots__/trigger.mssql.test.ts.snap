@@ -1,0 +1,7 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`trigger [mssql] > trigger is generated for decorator [mssql] > mssql-trigger-decorator 1`] = `
+"create table [trigger_entity] ([id] int identity(1,1) not null primary key, [price] int not null);
+create trigger [trg_price] on [trigger_entity] AFTER INSERT as begin PRINT 'trigger fired'; end;
+"
+`;
