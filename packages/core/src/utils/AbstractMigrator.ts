@@ -127,6 +127,24 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
 
   abstract getStorage(): IMigratorStorage;
 
+  /**
+   * @inheritDoc
+   */
+  async logMigration(name: string): Promise<void> {
+    await this.init();
+    await this.storage.ensureTable?.();
+    await this.storage.logMigration({ name });
+  }
+
+  /**
+   * @inheritDoc
+   */
+  async unlogMigration(name: string): Promise<void> {
+    await this.init();
+    await this.storage.ensureTable?.();
+    await this.storage.unlogMigration({ name });
+  }
+
   protected async init(): Promise<void> {
     if (this.initialized) {
       return;
