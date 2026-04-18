@@ -948,4 +948,89 @@ describe('Dataloader', () => {
 
     await orm2.close(true);
   });
+
+  test('Collection.loadCount with dataloader (M:N inverse side)', async () => {
+    const em = orm.em.fork();
+    const authors = await em.find(Author, { id: [1, 2, 3] }, { orderBy: { id: QueryOrder.ASC } });
+    const expected = [];
+    for (const a of authors) {
+      expected.push(await a.buddiesInverse.loadCount());
+    }
+
+    const em2 = orm.em.fork();
+    const authors2 = await em2.find(Author, { id: [1, 2, 3] }, { orderBy: { id: QueryOrder.ASC } });
+    const mock = mockLogger(orm);
+    const counts = await Promise.all(authors2.map(a => a.buddiesInverse.loadCount({ dataloader: true })));
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(counts).toEqual(expected);
+  });
+
+  test('Collection.loadCount with dataloader and disabled filters', async () => {
+    const em = orm.em.fork();
+    const authors = await em.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const expected = [];
+    for (const a of authors) {
+      expected.push(await a.buddies.loadCount({ filters: false }));
+    }
+
+    const em2 = orm.em.fork();
+    const authors2 = await em2.find(Author, {}, { first: 3, orderBy: { id: QueryOrder.ASC } });
+    const mock = mockLogger(orm);
+    const counts = await Promise.all(authors2.map(a => a.buddies.loadCount({ dataloader: true, filters: false })));
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(counts).toEqual(expected);
+  });
+
+  test('Collection.loadCount with dataloader batches 1:M and M:N relations on the same owners', async () => {
+    const em = orm.em.fork();
+    const authors = await em.find(Author, { id: [1, 2, 3] }, { orderBy: { id: QueryOrder.ASC } });
+    const mock = mockLogger(orm);
+    const counts = await Promise.all([
+      ...authors.map(a => a.books.loadCount({ dataloader: true })),
+      ...authors.map(a => a.buddies.loadCount({ dataloader: true })),
+    ]);
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(counts.slice(0, 3)).toEqual([2, 1, 3]);
+    // buddies counts depend on the young filter (author 4 is filtered out)
+    expect(counts.slice(3)).toHaveLength(3);
+  });
+
+  test('Collection.loadCount returns 0 when owner has no related rows', async () => {
+    const em = orm.em.fork();
+    // authors 4 and 5 have no books (and 4 is filtered out by the young filter unless disabled)
+    const authors = await em.find(Author, { id: [4, 5] }, { orderBy: { id: QueryOrder.ASC }, filters: false });
+    const mock = mockLogger(orm);
+    const counts = await Promise.all(authors.map(a => a.books.loadCount({ dataloader: true })));
+    expect(mock.mock.calls).toMatchSnapshot();
+    expect(counts).toEqual([0, 0]);
+  });
+
+  test('Collection.loadCount dataloader does not collide across owner types sharing a relation name', async () => {
+    // `Author.books` (mappedBy=author) and `Publisher.books` (mappedBy=publisher) both target Book
+    // and share the property name `books`. The batch keys must stay distinct so that the counts
+    // for each owner type are issued against their own FK column.
+    const em = orm.em.fork();
+    const authors = await em.find(Author, { id: [1, 2, 3] }, { orderBy: { id: QueryOrder.ASC } });
+    const publishers = await em.find(Publisher, {}, { orderBy: { id: QueryOrder.ASC } });
+
+    const expectedAuthorCounts = [];
+    for (const a of authors) {
+      expectedAuthorCounts.push(await a.books.loadCount());
+    }
+    const expectedPublisherCounts = [];
+    for (const p of publishers) {
+      expectedPublisherCounts.push(await p.books.loadCount());
+    }
+
+    const em2 = orm.em.fork();
+    const authors2 = await em2.find(Author, { id: [1, 2, 3] }, { orderBy: { id: QueryOrder.ASC } });
+    const publishers2 = await em2.find(Publisher, {}, { orderBy: { id: QueryOrder.ASC } });
+    const counts = await Promise.all([
+      ...authors2.map(a => a.books.loadCount({ dataloader: true })),
+      ...publishers2.map(p => p.books.loadCount({ dataloader: true })),
+    ]);
+
+    expect(counts.slice(0, authors2.length)).toEqual(expectedAuthorCounts);
+    expect(counts.slice(authors2.length)).toEqual(expectedPublisherCounts);
+  });
 });
