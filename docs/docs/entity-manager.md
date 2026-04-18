@@ -452,6 +452,30 @@ order by (point(loc_latitude, loc_longitude) <@> point(0, 0)) asc
 
 Read more about this in [Using raw SQL query fragments](./raw-queries.md) section.
 
+### Counting by group
+
+Use `em.countBy()` to count entities grouped by one or more properties. Instead of N individual count queries, it issues a single `GROUP BY` query on SQL drivers and an aggregation pipeline on MongoDB:
+
+```ts
+// Count books per author
+const counts = await em.countBy(Book, 'author');
+// { '1': 2, '2': 1, '3': 3 }
+
+// Count with a filter
+const counts = await em.countBy(Book, 'author', { where: { active: true } });
+// { '1': 1, '3': 2 }
+
+// Composite groupBy — keys joined with ~~~
+const counts = await em.countBy(Order, ['status', 'country']);
+// { 'pending~~~US': 5, 'shipped~~~DE': 3 }
+```
+
+The same method is available on the repository:
+
+```ts
+const counts = await em.getRepository(Book).countBy('author');
+```
+
 ### Query Options
 
 The `em.find()` and `em.count()` methods accept several driver-specific query options:
