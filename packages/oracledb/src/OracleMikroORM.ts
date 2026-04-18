@@ -15,7 +15,7 @@ import { OracleDriver } from './OracleDriver.js';
 /** Configuration options for the Oracle driver. */
 export type OracleOptions<
   EM extends SqlEntityManager<OracleDriver> = SqlEntityManager<OracleDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -25,7 +25,7 @@ export type OracleOptions<
 /** Creates a type-safe configuration object for the Oracle driver. */
 export function defineOracleConfig<
   EM extends SqlEntityManager<OracleDriver> = SqlEntityManager<OracleDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -39,7 +39,7 @@ export function defineOracleConfig<
  */
 export class OracleMikroORM<
   EM extends SqlEntityManager<OracleDriver> = SqlEntityManager<OracleDriver>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -51,7 +51,7 @@ export class OracleMikroORM<
   static override async init<
     D extends IDatabaseDriver = OracleDriver,
     EM extends EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
-    Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+    Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
       | string
       | EntityClass<AnyEntity>
       | EntitySchema
