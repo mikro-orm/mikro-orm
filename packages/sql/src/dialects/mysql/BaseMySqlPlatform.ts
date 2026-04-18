@@ -41,6 +41,10 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
     return new MySqlNativeQueryBuilder(this);
   }
 
+  override formatIndexHint(indexNames: string[]): string {
+    return `use index(${indexNames.join(', ')})`;
+  }
+
   override getDefaultCharset(): string {
     return 'utf8mb4';
   }
