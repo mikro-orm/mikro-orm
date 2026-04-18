@@ -6,6 +6,7 @@ import {
   type EntityProperty,
   type FilterQuery,
   type Primary,
+  QueryHelper,
   type Transaction,
 } from '@mikro-orm/core';
 import { type AbstractSqlDriver } from './AbstractSqlDriver.js';
@@ -156,6 +157,17 @@ export class PivotCollectionPersister<Entity extends object> {
     let data: Primary<Entity>[];
     let keys: string[];
 
+    // Union-target polymorphic M:N prepends the per-row discriminator to `fks` in syncCollections;
+    // Rails-style polymorphic M:N uses a static discriminatorValue on the prop. Normalize to a single
+    // "current row's discriminator" value so the prepend block below handles both cases uniformly.
+    let rowDiscriminator: Primary<Entity> | undefined;
+
+    if (QueryHelper.isUnionTargetPolymorphic(prop) && !deleteAll && fks.length > 0) {
+      [rowDiscriminator, ...fks] = fks;
+    } else if (prop.polymorphic && prop.discriminatorColumn && prop.discriminatorValue) {
+      rowDiscriminator = prop.discriminatorValue as Primary<Entity>;
+    }
+
     if (deleteAll) {
       data = pks;
       keys = prop.joinColumns;
@@ -166,9 +178,9 @@ export class PivotCollectionPersister<Entity extends object> {
         : [...prop.joinColumns, ...prop.inverseJoinColumns];
     }
 
-    if (prop.polymorphic && prop.discriminatorColumn && prop.discriminatorValue) {
-      data = [prop.discriminatorValue as Primary<Entity>, ...data];
-      keys = [prop.discriminatorColumn, ...keys];
+    if (rowDiscriminator !== undefined) {
+      data = [rowDiscriminator, ...data];
+      keys = [prop.discriminatorColumn!, ...keys];
     }
 
     return { data, keys };
