@@ -20,6 +20,7 @@ import {
 import type { SchemaHelper } from './SchemaHelper.js';
 import type { CheckDef, Column, ForeignKey, IndexDef, SqlTriggerDef } from '../typings.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
+import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
 
 /**
  * @internal
@@ -297,6 +298,7 @@ export class DatabaseTable {
         name: index.keyName,
         deferMode: index.deferMode,
         expression: index.expression,
+        where: index.where,
         // Advanced index options - convert column names to property names
         columns: index.columns?.map(col => ({
           ...col,
@@ -330,7 +332,7 @@ export class DatabaseTable {
         index.invisible ||
         index.disabled ||
         index.clustered;
-      const isTrivial = !index.deferMode && !index.expression && !hasAdvancedOptions;
+      const isTrivial = !index.deferMode && !index.expression && !index.where && !hasAdvancedOptions;
 
       if (isTrivial) {
         // Index is for FK. Map to the FK prop and move on.
@@ -1106,6 +1108,7 @@ export class DatabaseTable {
       name?: string;
       type?: string;
       expression?: string | IndexCallback<any>;
+      where?: string | Dictionary;
       deferMode?: DeferMode | `${DeferMode}`;
       options?: Dictionary;
       columns?: {
@@ -1223,16 +1226,29 @@ export class DatabaseTable {
       );
     }
 
+    // The `expression` escape hatch takes the full index definition as raw SQL; combining it
+    // with `where` is dialect-dependent (PG/Oracle/MySQL drop `where`, MSSQL appends it) so we
+    // reject the combination up-front and ask users to inline the predicate into `expression`.
+    if (index.expression && index.where != null) {
+      throw new Error(
+        `Index '${name}' on entity '${meta.className}': cannot combine \`expression\` with \`where\` — inline the WHERE clause into the \`expression\` escape hatch, or drop \`expression\` and use structured \`properties\` + \`where\`.`,
+      );
+    }
+
+    const where = this.processIndexWhere(index.where, meta);
+
     this.#indexes.push({
       keyName: name,
       columnNames: properties,
       composite: properties.length > 1,
-      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
-      constraint: type !== 'index' && !properties.some((d: string) => d.includes('.')),
+      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them.
+      // Partial indexes (`where`) must use CREATE [UNIQUE] INDEX form — constraints can't carry predicates.
+      constraint: type !== 'index' && !properties.some((d: string) => d.includes('.')) && !where,
       primary: type === 'primary',
       unique: type !== 'index',
       type: index.type,
       expression: this.processIndexExpression(name, index.expression, meta),
+      where,
       options: index.options,
       deferMode: index.deferMode,
       columns,
@@ -1242,6 +1258,17 @@ export class DatabaseTable {
       disabled: index.disabled,
       clustered: index.clustered,
     });
+  }
+
+  private processIndexWhere(where: string | Dictionary | undefined, meta: EntityMetadata): string | undefined {
+    if (where == null) {
+      return undefined;
+    }
+
+    // The driver is always an `AbstractSqlDriver` here — `DatabaseTable` is only instantiated
+    // by SQL-side schema code, so the platform's config-bound driver is guaranteed to be one.
+    const driver = this.#platform.getConfig().getDriver() as AbstractSqlDriver;
+    return driver.renderPartialIndexWhere(meta.class, where);
   }
 
   addCheck(check: CheckDef) {

@@ -1526,9 +1526,12 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
 
   private initIndexes(prop: EntityProperty<Entity>): void {
     const simpleIndex = this.indexes.find(
-      index => index.properties === prop.name && !index.options && !index.type && !index.expression,
+      index =>
+        index.properties === prop.name && !index.options && !index.type && !index.expression && index.where == null,
     );
-    const simpleUnique = this.uniques.find(index => index.properties === prop.name && !index.options);
+    const simpleUnique = this.uniques.find(
+      index => index.properties === prop.name && !index.options && !index.expression && index.where == null,
+    );
     const owner = prop.kind === ReferenceKind.MANY_TO_ONE;
 
     if (!prop.index && simpleIndex) {
@@ -1629,6 +1632,7 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
     type?: string;
     options?: Dictionary;
     expression?: string | IndexCallback<Entity>;
+    where?: string | FilterQuery<Entity>;
     columns?: IndexColumnOptions[];
     include?: EntityKey<Entity> | EntityKey<Entity>[];
     fillFactor?: number;
@@ -1641,6 +1645,7 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
     name?: string;
     options?: Dictionary;
     expression?: string | IndexCallback<Entity>;
+    where?: string | FilterQuery<Entity>;
     deferMode?: DeferMode | `${DeferMode}`;
     columns?: IndexColumnOptions[];
     include?: EntityKey<Entity> | EntityKey<Entity>[];
