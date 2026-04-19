@@ -880,7 +880,11 @@ export abstract class Platform {
 
   /** Platform-specific validation of entity metadata. */
   validateMetadata(meta: EntityMetadata): void {
-    return;
+    if (meta.partitionBy && !this.supportsPartitionedTables()) {
+      throw new Error(
+        `Entity ${meta.className} uses partitionBy, but ${this.constructor.name} does not support partitioned tables`,
+      );
+    }
   }
 
   /**

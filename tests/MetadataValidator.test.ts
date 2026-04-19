@@ -700,7 +700,7 @@ describe('MetadataValidator', () => {
       );
     });
 
-    test('skips key-column checks when comma-separated identifiers fail to resolve', async () => {
+    test('skips key-column checks when all comma-separated identifiers fail to resolve', async () => {
       expect(
         validatePartitionedSchema({
           type: 'hash',
@@ -708,6 +708,29 @@ describe('MetadataValidator', () => {
           partitions: 1,
         }),
       ).not.toThrow();
+    });
+
+    test('validates resolved keys even when some identifiers are unknown', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: 'type, unknown_column',
+          partitions: 1,
+        }),
+      ).not.toThrow();
+
+      expect(
+        validatePartitionedSchema(
+          {
+            type: 'hash',
+            expression: 'slug, unknown_column',
+            partitions: 1,
+          },
+          { typePrimary: false },
+        ),
+      ).toThrow(
+        "Entity PartitionedEntity has invalid partitionBy option: primary key must include partition key columns 'slug'",
+      );
     });
 
     test('ignores unique constraints with no properties declared', async () => {

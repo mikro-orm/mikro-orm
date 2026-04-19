@@ -267,13 +267,10 @@ export class MetadataValidator {
       : /^[\w".]+(?:\s*,\s*[\w".]+)*$/.test(value)
         ? value.split(',').map((key: string) => key.trim())
         : [value];
-    const fields = values.map((key: string) => this.resolvePartitionKeyField(meta, key));
 
-    if (fields.some((field: string | undefined) => !field)) {
-      return undefined;
-    }
-
-    return fields as string[];
+    return values
+      .map((key: string) => this.resolvePartitionKeyField(meta, key))
+      .filter((field: string | undefined): field is string => !!field);
   }
 
   private resolvePartitionKeyField(meta: EntityMetadata, key: string): string | undefined {

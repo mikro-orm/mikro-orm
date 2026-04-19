@@ -409,22 +409,18 @@ describe('partitioning helpers', () => {
     });
   });
 
-  test('rejects partitioned tables on unsupported platforms', () => {
+  test('rejects partitioned tables on unsupported platforms at discovery time', () => {
     const config = new Configuration({ driver: SqliteDriver }, false);
-    const driver = new SqliteDriver(config);
+    const platform = config.getPlatform();
 
-    expect(driver.getPlatform().supportsPartitionedTables()).toBe(false);
+    expect(platform.supportsPartitionedTables()).toBe(false);
     expect(() =>
-      DatabaseSchema.fromMetadata(
-        [
-          createPartitionedMeta({
-            type: 'hash',
-            expression: ['type'],
-            partitions: 4,
-          }),
-        ],
-        driver.getPlatform() as any,
-        config,
+      platform.validateMetadata(
+        createPartitionedMeta({
+          type: 'hash',
+          expression: ['type'],
+          partitions: 4,
+        }),
       ),
     ).toThrow('Entity PartitionedEvent uses partitionBy, but SqlitePlatform does not support partitioned tables');
   });

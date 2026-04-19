@@ -202,6 +202,8 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override validateMetadata(meta: EntityMetadata): void {
+    super.validateMetadata(meta);
+
     for (const prop of meta.props) {
       if (
         (prop.runtimeType === 'string' || ['string', 'nvarchar'].includes(prop.type)) &&
