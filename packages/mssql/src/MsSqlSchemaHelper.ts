@@ -33,6 +33,13 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   // optional leading/trailing parens, which accepted unbalanced strings like `([col] IS NOT NULL`.
   private static readonly AUTO_NOT_NULL_RE = /^\[([^\]]+)\]\s+IS\s+NOT\s+NULL$/i;
 
+  // MSSQL `filter_definition` and `where` predicates use `[…]` bracket-quoting for identifiers,
+  // so `splitTopLevelAnd` must treat `[` as opening a quoted span (otherwise `[some and col]`
+  // would split mid-identifier).
+  protected override get bracketQuotedIdentifiers(): boolean {
+    return true;
+  }
+
   override getManagementDbName(): string {
     return 'master';
   }

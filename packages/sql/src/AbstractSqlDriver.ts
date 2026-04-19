@@ -2552,7 +2552,28 @@ export abstract class AbstractSqlDriver<
 
     const quote = (s: string) => this.platform.quoteIdentifier(s);
     const aliasPrefix = new RegExp(`${quote(alias).replace(/[[\]]/g, '\\$&')}\\.`, 'g');
-    return match[1].replace(aliasPrefix, '').trim();
+    const stripped = match[1].replace(aliasPrefix, '').trim();
+
+    // Any qualified column reference remaining after the alias strip points at another table or
+    // subquery and can't be inlined into a CREATE INDEX ... WHERE predicate. Covers both
+    // QB-generated sub-aliases (quoted, e.g. `"e0"."col"`) and raw fragments with bare refs
+    // (e.g. `raw('other_table.col = 1')`). String literals are erased first so dots inside
+    // them (e.g. JSON path operands like `'$.path'`) don't trip the guard.
+    // Both patterns use a `(?!\s*\()` lookahead so schema-qualified function calls
+    // (`pg_catalog.lower(name)`, `"public".my_func(col)`) are accepted — only `<id>.<id>` not
+    // followed by `(` is treated as a cross-table column reference.
+    const withoutStrings = stripped.replace(/'(?:[^']|'')*'/g, "''");
+    const quotedIdent = String.raw`(?:"(?:[^"]|"")+"|\`(?:[^\`]|\`\`)+\`|\[(?:[^\]]|\]\])+\])`;
+    const anyIdent = `(?:${quotedIdent}|[A-Za-z_]\\w*)`;
+    const quotedCrossRef = new RegExp(`${quotedIdent}\\s*\\.\\s*${anyIdent}(?!\\s*\\()`);
+    const bareCrossRef = /\b[A-Za-z_]\w*\s*\.\s*[A-Za-z_]\w*\b(?!\s*\()/;
+    if (quotedCrossRef.test(withoutStrings) || bareCrossRef.test(withoutStrings)) {
+      throw new Error(
+        `Cannot render partial-index predicate for entity '${name}': \`where\` references another table or subquery which cannot be inlined into a CREATE INDEX ... WHERE clause.`,
+      );
+    }
+
+    return stripped;
   }
 
   protected resolveConnectionType(args: { ctx?: Transaction; connectionType?: ConnectionType }): ConnectionType {

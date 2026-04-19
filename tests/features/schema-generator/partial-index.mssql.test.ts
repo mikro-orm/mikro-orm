@@ -131,6 +131,8 @@ describe('partial index [mssql]', () => {
 
     // purely auto-NOT-NULL: strip the wrapping parens, drop the clause, leave empty
     expect(strip('([email] IS NOT NULL)')).toBe('');
+    // multiple wrapping paren layers: peel until the auto-NOT-NULL recognizer fires
+    expect(strip('((([email] IS NOT NULL)))')).toBe('');
     // non-wrapping parens (`(a) AND (b)`) must not be stripped as a block — exercises isBalancedWrap's false path
     expect(strip('([email] IS NOT NULL) AND ([other] = 1)')).toBe('([other] = 1)');
     // user redundantly writes `[email] IS NOT NULL` themselves — strip only one guard (the tail),
@@ -140,5 +142,10 @@ describe('partial index [mssql]', () => {
     expect(strip("([some and col] = 'x' AND [email] IS NOT NULL)")).toBe("[some and col] = 'x'");
     // ` AND ` inside a string literal must not trigger a top-level split either
     expect(strip("([label] = 'a AND b' AND [email] IS NOT NULL)")).toBe("[label] = 'a AND b'");
+    // doubled `]]` escape inside a `[...]` identifier: the first `]` is literal, only the second
+    // closes the identifier — an `AND` sitting between them must stay swallowed by the quote.
+    expect(strip("([weird]]col] = 'x' AND [email] IS NOT NULL)")).toBe("[weird]]col] = 'x'");
+    // ditto for SQL `''` inside a string literal
+    expect(strip("([label] = 'a''b AND c' AND [email] IS NOT NULL)")).toBe("[label] = 'a''b AND c'");
   });
 });

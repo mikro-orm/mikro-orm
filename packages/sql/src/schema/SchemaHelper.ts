@@ -232,15 +232,18 @@ export abstract class SchemaHelper {
    * their copy survives.
    */
   protected stripAutoNotNullFilter(filterDef: string, columnNames: string[], identifierPattern: RegExp): string {
-    // Strip a single layer of balanced wrapping parens (anything beyond is a deliberate sub-clause group).
+    // Peel off any number of balanced wrapping paren layers. Introspection sources differ
+    // (MSSQL `filter_definition` wraps once, Oracle `INDEX_EXPRESSIONS` typically not at all),
+    // and a user `where` round-tripped through a dialect that double-wraps would otherwise slip
+    // past the auto-NOT-NULL recognizer below.
     let inner = filterDef.trim();
-    if (inner.startsWith('(') && inner.endsWith(')') && this.isBalancedWrap(inner)) {
+    while (inner.startsWith('(') && inner.endsWith(')') && this.isBalancedWrap(inner)) {
       inner = inner.slice(1, -1).trim();
     }
     const clauses = this.splitTopLevelAnd(inner);
     const autoCol = (clause: string): string | null => {
       let trimmed = clause.trim();
-      if (trimmed.startsWith('(') && trimmed.endsWith(')') && this.isBalancedWrap(trimmed)) {
+      while (trimmed.startsWith('(') && trimmed.endsWith(')') && this.isBalancedWrap(trimmed)) {
         trimmed = trimmed.slice(1, -1).trim();
       }
       const match = identifierPattern.exec(trimmed);
@@ -260,6 +263,15 @@ export abstract class SchemaHelper {
   }
 
   /**
+   * Whether `[…]` is a quoted identifier (MSSQL convention). Other dialects either reuse
+   * `[` for array literals/constructors or never produce it in introspected predicates,
+   * so the default is `false` and the MSSQL helper opts in.
+   */
+  protected get bracketQuotedIdentifiers(): boolean {
+    return false;
+  }
+
+  /**
    * Splits on top-level ` AND ` (case-insensitive), ignoring matches that sit inside string
    * literals, quoted identifiers, or parenthesized groups — so a predicate like
    * `'foo AND bar' = col` or `(a AND b) OR c` is not mis-split.
@@ -275,8 +287,9 @@ export abstract class SchemaHelper {
       const c = s[i];
 
       if (quote) {
-        // Handle SQL's doubled-quote escape inside single/double-quoted strings.
-        if (c === quote && (quote === "'" || quote === '"') && s[i + 1] === quote) {
+        // Handle SQL's doubled-delimiter escape inside quoted strings/identifiers:
+        // `'` → `''`, `"` → `""`, `` ` `` → ```` `` ````, MSSQL `]` → `]]`.
+        if (c === quote && s[i + 1] === quote) {
           i += 2;
           continue;
         }
@@ -292,7 +305,7 @@ export abstract class SchemaHelper {
         i++;
         continue;
       }
-      if (c === '[') {
+      if (c === '[' && this.bracketQuotedIdentifiers) {
         quote = ']';
         i++;
         continue;

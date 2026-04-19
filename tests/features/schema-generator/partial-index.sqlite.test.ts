@@ -1,4 +1,4 @@
-import { defineEntity, EntitySchema, MikroORM, p } from '@mikro-orm/sqlite';
+import { defineEntity, EntitySchema, MikroORM, p, raw } from '@mikro-orm/sqlite';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
@@ -172,11 +172,66 @@ describe('partial index [sqlite]', () => {
         /`where` may not traverse relations/,
       );
 
+      // a raw fragment that injects a bare `other_table.col` cross-reference is rejected,
+      // even though the QB can't see it as a relation-traversal join
+      expect(() => driver.renderPartialIndexWhere(TagRel, { name: raw('other_table.col') })).toThrow(
+        /references another table or subquery/,
+      );
+
       // object FilterQuery on own columns renders with no alias prefix
       expect(driver.renderPartialIndexWhere(TagRel, { name: 'x' })).toMatch(/`name` = 'x'/);
+      // dots inside string literals (e.g. in raw fragments) must not trigger the cross-ref guard
+      expect(driver.renderPartialIndexWhere(TagRel, { name: raw(`'a.b'`) })).toMatch(/`name` = 'a\.b'/);
+      // schema-qualified function calls are NOT cross-table refs — the guard's `(?!\s*\()`
+      // lookahead distinguishes `pg_catalog.lower(name)` (OK) from `other_table.col` (rejected).
+      expect(driver.renderPartialIndexWhere(TagRel, { name: raw(`pg_catalog.lower('x')`) })).toMatch(
+        /`name` = pg_catalog\.lower\('x'\)/,
+      );
     } finally {
       await rtOrm.close(true);
     }
+  });
+
+  test('splitTopLevelAnd does not treat `[` as a quote outside MSSQL', () => {
+    // The MSSQL helper opts into bracket-quoted identifiers; every other dialect must NOT
+    // — `[` may legitimately appear in PG array constructors (`ARRAY[1,2]`) etc., and
+    // swallowing it as a quoted span would mis-tokenize predicates that follow.
+    const helper = (orm.em.getPlatform() as any).getSchemaHelper();
+    const split = (s: string): string[] => helper.splitTopLevelAnd(s);
+    expect(split('a = 1 and b = 2')).toEqual(['a = 1', 'b = 2']);
+    // a literal `[` followed by `and` must split — `[` is NOT a quote here
+    expect(split('a = ARRAY[1,2] and b = 3')).toEqual(['a = ARRAY[1,2]', 'b = 3']);
+  });
+
+  test('addIndex rejects combining `expression` and `where`', async () => {
+    const meta = orm.getMetadata();
+    for (const [, m] of meta.getAll()) {
+      meta.reset(m.class);
+    }
+
+    const e = new EntitySchema<PartialUser>({
+      name: 'PartialUserBad',
+      tableName: 'partial_user_bad',
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'integer' },
+        email: { name: 'email', type: 'string', fieldName: 'email', columnType: 'text' },
+        deletedAt: { name: 'deletedAt', type: 'Date', fieldName: 'deleted_at', columnType: 'datetime', nullable: true },
+      },
+      indexes: [
+        {
+          name: 'partial_user_bad_idx',
+          expression: 'create index partial_user_bad_idx on partial_user_bad (email)',
+          where: { deletedAt: null },
+        } as any,
+      ],
+    }).init().meta;
+    meta.set(e.class, e as any);
+
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).rejects.toThrow(
+      /cannot combine `expression` with `where`/,
+    );
+
+    meta.reset(e.class);
   });
 
   test('entity generator round-trips a partial index/unique back into clean `where:` options', async () => {

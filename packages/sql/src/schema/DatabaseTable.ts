@@ -1199,6 +1199,15 @@ export class DatabaseTable {
       );
     }
 
+    // The `expression` escape hatch takes the full index definition as raw SQL; combining it
+    // with `where` is dialect-dependent (PG/Oracle/MySQL drop `where`, MSSQL appends it) so we
+    // reject the combination up-front and ask users to inline the predicate into `expression`.
+    if (index.expression && index.where != null) {
+      throw new Error(
+        `Index '${name}' on entity '${meta.className}': cannot combine \`expression\` with \`where\` — inline the WHERE clause into the \`expression\` escape hatch, or drop \`expression\` and use structured \`properties\` + \`where\`.`,
+      );
+    }
+
     const where = this.processIndexWhere(index.where, meta);
 
     this.#indexes.push({

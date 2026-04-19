@@ -307,6 +307,8 @@ Raw fragments are SQL-only — MongoDB rejects them.
 | Object `where` (FilterQuery) | PostgreSQL, SQLite, MSSQL, MongoDB | MySQL 8.0.13+, Oracle | MariaDB (use a virtual column instead) |
 | Raw SQL string `where` | PostgreSQL, SQLite, MSSQL | MySQL 8.0.13+, Oracle | MariaDB, MongoDB |
 
+The MySQL emulation (functional-key-part indexes) requires MySQL **8.0.13 or newer**. MikroORM does not probe the server version before emitting the DDL — older MySQL servers reject the `CASE WHEN` expression with their own parser error at schema-apply time, not with a MikroORM-specific message.
+
 :::note Schema diffing
 
 Schema diffing for partial indexes compares the WHERE predicate structurally — the same expression normalizer used for check constraints (whitespace / quoting / casing collapse) is applied to both sides. Changing or removing `where` will produce a proper `ALTER`/`DROP`+`CREATE`, and idempotent re-runs of `schema:update` produce no diff.
@@ -316,6 +318,18 @@ Schema diffing for partial indexes compares the WHERE predicate structurally —
 :::note Combining with `columns`
 
 The advanced `columns` option (sort order, prefix length, collation) is not supported alongside `where` on MySQL / MariaDB / Oracle, because each indexed column is wrapped inside a `CASE WHEN` expression there. Use `properties` (or simple `columnNames`) for partial indexes on those drivers.
+
+:::
+
+:::note Combining with `expression`
+
+The `expression` escape hatch (raw SQL for the whole index body) cannot be combined with `where` — the two ways to spell the predicate are mutually exclusive. If you need both a custom expression and a predicate, inline the `WHERE` clause into `expression` yourself. MikroORM throws a clear error if both are set.
+
+:::
+
+:::note Round-trip via the entity generator
+
+On PostgreSQL, indexes over functional columns (e.g. `lower(email)`, `(data->>'kind')`) are introspected as opaque `expression` strings — the full `CREATE INDEX … WHERE …` survives the round-trip, but a regenerated entity uses `expression` rather than structured `properties` + `where`. Purely column-based partial indexes round-trip as structured `where`.
 
 :::
 
