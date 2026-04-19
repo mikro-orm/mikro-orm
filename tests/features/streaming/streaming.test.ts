@@ -362,6 +362,24 @@ describe.each(Utils.keys(options))('streaming [%s]', type => {
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(0);
   });
 
+  test('chunkSize option is forwarded to connection stream', async () => {
+    const streamSpy = vi.spyOn(orm.em.getConnection(), 'stream');
+    const stream = orm.em.stream(Author, {
+      orderBy: { id: 'desc' },
+      chunkSize: 2,
+    });
+    const authors = [];
+
+    for await (const author of stream) {
+      authors.push(author);
+    }
+
+    expect(authors).toHaveLength(6);
+    expect(streamSpy).toHaveBeenCalled();
+    expect(streamSpy.mock.calls[0][4]).toBe(2);
+    streamSpy.mockRestore();
+  });
+
   test('error handling', async () => {
     const stream = orm.em.stream(Author);
     await orm.schema.drop();

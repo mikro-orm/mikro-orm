@@ -210,3 +210,21 @@ test('streaming raw results', async () => {
   });
   expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(0);
 });
+
+test('chunkSize option is forwarded as batchSize', async () => {
+  const findSpy = vi.spyOn(Object.getPrototypeOf(orm.em.getConnection().getCollection(Author)), 'find');
+  const stream = orm.em.stream(Author, {
+    orderBy: { _id: 'desc' },
+    chunkSize: 2,
+  });
+  const authors = [];
+
+  for await (const author of stream) {
+    authors.push(author);
+  }
+
+  expect(authors).toHaveLength(6);
+  expect(findSpy).toHaveBeenCalled();
+  expect(findSpy.mock.calls[0][1]).toMatchObject({ batchSize: 2 });
+  findSpy.mockRestore();
+});

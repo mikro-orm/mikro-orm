@@ -290,6 +290,7 @@ export abstract class AbstractSqlConnection extends Connection {
     params: readonly unknown[] = [],
     ctx?: Transaction<Kysely<any>>,
     loggerContext?: LoggingOptions,
+    chunkSize?: number,
   ): AsyncIterableIterator<T> {
     await this.ensureConnection();
     const q = this.prepareQuery(query, params);
@@ -305,7 +306,7 @@ export abstract class AbstractSqlConnection extends Connection {
     } as unknown as CompiledQuery;
 
     try {
-      const res = (ctx ?? this.getClient()).getExecutor().stream(compiled, 1);
+      const res = (ctx ?? this.getClient()).getExecutor().stream(compiled, chunkSize ?? 100);
 
       this.logQuery(sql, {
         sql,

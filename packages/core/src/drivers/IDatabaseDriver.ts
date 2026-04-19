@@ -243,6 +243,20 @@ export interface StreamOptions<
   'cache' | 'before' | 'after' | 'first' | 'last' | 'overfetch' | 'strategy'
 > {
   /**
+   * How many rows to fetch in one round-trip.
+   * Lower values will result in more queries and network bandwidth, but less memory usage.
+   * Higher values will result in fewer queries and network bandwidth, but higher memory usage.
+   * Note that the results are iterated one row at a time regardless of this value.
+   *
+   * Honored on PostgreSQL (cursor-based fetch), MSSQL (tedious stream chunk size),
+   * Oracle (mapped to `fetchArraySize`) and MongoDB (mapped to `batchSize`). Ignored
+   * on MySQL, MariaDB, SQLite and libSQL, where the underlying driver already streams
+   * row-by-row with no batching knob.
+   *
+   * @default 100 (on dialects that honor it)
+   */
+  chunkSize?: number;
+  /**
    * When populating to-many relations, the ORM streams fully merged entities instead of yielding every row.
    * You can opt out of this behavior by specifying `mergeResults: false`. This will yield every row from
    * the SQL result, but still mapped to entities, meaning that to-many collections will contain at most
