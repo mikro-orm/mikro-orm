@@ -274,21 +274,13 @@ export class MsSqlSchemaHelper extends SchemaHelper {
         indexDef.fillFactor = index.fill_factor;
       }
 
-      const filterDef: string | undefined = index.filter_definition ?? undefined;
-
-      /* v8 ignore start: function-based / computed-column index branch (unchanged from pre-PR behavior) */
+      /* v8 ignore next: function-based / computed-column introspection path, same as pre-PR */
       if (index.column_name?.match(/[(): ,"'`]/)) {
         indexDef.expression = index.expression;
         indexDef.expression = this.getCreateIndexSQL(index.table_name, indexDef, !!index.expression);
-        ret[key] ??= [];
-        ret[key].push(indexDef);
-        continue;
-      }
-      /* v8 ignore stop */
-
-      if (filterDef) {
+      } else if (index.filter_definition) {
         // Auto-NOT-NULL stripping runs post-mapIndexes (needs the consolidated column list).
-        indexDef.where = filterDef;
+        indexDef.where = index.filter_definition;
       }
 
       ret[key] ??= [];
@@ -651,7 +643,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   override getCreateIndexSQL(tableName: string, index: IndexDef, partialExpression = false): string {
     /* v8 ignore next */
     if (index.expression && !partialExpression) {
-      return index.expression + this.getIndexWhereClause(index);
+      return index.expression;
     }
 
     if (index.fillFactor != null && (index.fillFactor < 0 || index.fillFactor > 100)) {

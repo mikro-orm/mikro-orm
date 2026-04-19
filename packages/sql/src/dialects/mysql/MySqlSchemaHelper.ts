@@ -217,7 +217,8 @@ export class MySqlSchemaHelper extends SchemaHelper {
   /**
    * Build the column list for a MySQL index. MySQL requires collation via an expression:
    * `(column COLLATE collation_name)`. Partial indexes (`where`) are emulated via functional
-   * indexes — requires MySQL 8.0.13+ / MariaDB 10.5+.
+   * indexes — requires MySQL 8.0.13+. MariaDB does not support inline functional indexes
+   * and overrides to throw at a higher level.
    */
   protected override getIndexColumns(index: IndexDef): string {
     if (index.where) {

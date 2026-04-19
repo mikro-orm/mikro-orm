@@ -269,23 +269,19 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       const hasFunctionalColumns = index.index_def.some((col: string) =>
         PostgreSqlSchemaHelper.FUNCTIONAL_COL_RE.exec(col),
       );
-      const whereMatch = PostgreSqlSchemaHelper.PARTIAL_WHERE_RE.exec(index.expression ?? '');
-      const where = whereMatch
-        ? whereMatch[1]
-            .trim()
-            .replace(/^\((.*)\)$/s, '$1')
-            .trim()
-        : undefined;
+      const whereMatch = hasFunctionalColumns
+        ? null
+        : PostgreSqlSchemaHelper.PARTIAL_WHERE_RE.exec(index.expression ?? '');
 
       if (hasFunctionalColumns) {
-        // Functional-column expression can't be diffed structurally — keep it as `expression`.
-        // Split the WHERE predicate off so it can still be diffed structurally via `where`.
-        indexDef.expression = whereMatch ? index.expression.slice(0, whereMatch.index).trimEnd() : index.expression;
-        if (where) {
-          indexDef.where = where;
-        }
-      } else if (where) {
-        indexDef.where = where;
+        // Functional-column expression can't be diffed structurally — keep the whole CREATE
+        // statement (WHERE included) on `expression`; don't try to split the predicate.
+        indexDef.expression = index.expression;
+      } else if (whereMatch) {
+        indexDef.where = whereMatch[1]
+          .trim()
+          .replace(/^\((.*)\)$/s, '$1')
+          .trim();
       }
 
       if (index.deferrable) {
