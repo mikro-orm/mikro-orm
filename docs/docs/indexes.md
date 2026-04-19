@@ -119,6 +119,91 @@ export class Author {
 </TabItem>
 </Tabs>
 
+## Partial Indexes
+
+Partial indexes (also called filtered indexes) only index the rows that match a predicate. They are useful for enforcing uniqueness on a subset of rows, or for accelerating queries that target a specific slice of data while keeping the index small.
+
+Use the `where` option on `@Index` or `@Unique`. SQL drivers accept a raw SQL fragment; MongoDB accepts an object that maps to its `partialFilterExpression`.
+
+```ts
+@Entity()
+export class User {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  email!: string;
+
+  @Property({ nullable: true })
+  deletedAt?: Date;
+
+  // Enforce email uniqueness only for non-deleted users (SQL form)
+  @Unique({ properties: ['email'], where: '"deleted_at" is null' })
+  static readonly emailUnique: never;
+
+}
+```
+
+For MongoDB, pass the object form — it lands directly on the `partialFilterExpression` index option:
+
+```ts
+@Entity()
+export class User {
+
+  @PrimaryKey()
+  _id!: ObjectId;
+
+  @Property()
+  email!: string;
+
+  @Property({ nullable: true })
+  deletedAt?: Date;
+
+  @Unique({
+    properties: ['email'],
+    where: { deletedAt: null },
+  })
+  static readonly emailUnique: never;
+
+}
+```
+
+**Generated DDL by dialect** (for `where: '"deleted_at" is null'`):
+
+| Dialect | Output |
+|---------|--------|
+| PostgreSQL | `create unique index "user_email_uniq" on "user" ("email") where "deleted_at" is null` |
+| SQLite | `create unique index \`user_email_uniq\` on \`user\` (\`email\`) where "deleted_at" is null` |
+| MSSQL | `create unique index [user_email_uniq] on [user] ([email]) where "deleted_at" is null` |
+| MySQL | `alter table \`user\` add unique \`user_email_uniq\` ((case when "deleted_at" is null then \`email\` end))` |
+| MariaDB | not supported — see note below |
+| Oracle | `create unique index "user_email_uniq" on "user" ((case when "deleted_at" is null then "email" end))` |
+| MongoDB | `db.user.createIndex({ email: 1 }, { unique: true, partialFilterExpression: { deletedAt: null } })` |
+
+**How MySQL / Oracle emulate this**: those engines have no native `WHERE` clause for indexes, so MikroORM emits a *function-based index* that wraps each column in `(CASE WHEN <predicate> THEN <col> END)`. Rows where the predicate is false get `NULL` for the indexed expression, and since `NULL`s are treated as distinct in unique indexes, uniqueness is enforced only where the predicate holds. Non-unique partial indexes also work via the same trick (off-predicate rows are still indexed, just under `NULL` keys).
+
+**MariaDB**: inline expression indexes are not supported. If you need a partial index on MariaDB, define a virtual generated column with the predicate baked in and create a regular index on that column. MikroORM throws a clear error if you try to use `where` on MariaDB.
+
+**Database support:**
+
+| Form | Native | Emulated (CASE WHEN) | Not supported |
+|------|--------|----------------------|---------------|
+| SQL string `where` | PostgreSQL, SQLite, MSSQL | MySQL 8.0.13+, Oracle | MariaDB (use a virtual column instead) |
+| Object `where` | MongoDB (`partialFilterExpression`) | — | SQL drivers (use string form) |
+
+:::note Schema diffing
+
+Schema diffing for partial indexes compares the WHERE predicate structurally — the same expression normalizer used for check constraints (whitespace / quoting / casing collapse) is applied to both sides. Changing or removing `where` will produce a proper `ALTER`/`DROP`+`CREATE`, and idempotent re-runs of `schema:update` produce no diff.
+
+:::
+
+:::note Combining with `columns`
+
+The advanced `columns` option (sort order, prefix length, collation) is not supported alongside `where` on MySQL / MariaDB / Oracle, because each indexed column is wrapped inside a `CASE WHEN` expression there. Use `properties` (or simple `columnNames`) for partial indexes on those drivers.
+
+:::
+
 ## Index Types
 
 You can specify the index type using the `type` option. This is particularly useful for fulltext indexes, spatial indexes, or database-specific index types like `hash` or `btree`.
@@ -432,6 +517,7 @@ export class User {
 | Unique constraints | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Composite indexes | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Index expressions | ✅ | ✅ | ✅ | ✅ | ✅ | - |
+| Partial indexes (`where`) | ✅ (CASE WHEN) | - | ✅ | ✅ | ✅ | ✅ (object form → `partialFilterExpression`) |
 | Fulltext indexes | ✅ | ✅ | ✅ | ✅ | - | ✅ |
 | Sort order (ASC/DESC) | ✅ | ✅ | ✅ | ✅ | ✅ | - |
 | NULLS FIRST/LAST | - | - | ✅ | - | - | - |

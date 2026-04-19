@@ -228,10 +228,35 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
         indexOptions.hidden = true;
       }
 
+      MongoSchemaGenerator.applyPartialFilter(indexOptions, index.where, index.name, meta.className);
+
       res.push([collection.collectionName, this.executeQuery(collection, 'createIndex', fieldOrSpec, indexOptions)]);
     });
 
     return res;
+  }
+
+  /**
+   * An explicit `options.partialFilterExpression` wins over `where` — this preserves the
+   * long-standing `options: { partialFilterExpression }` escape hatch.
+   */
+  private static applyPartialFilter(
+    options: Dictionary,
+    where: unknown,
+    indexName: string | undefined,
+    entityName: string,
+  ): void {
+    if (where == null || options.partialFilterExpression != null) {
+      return;
+    }
+
+    if (typeof where === 'string') {
+      throw new Error(
+        `Index '${indexName ?? '(unnamed)'}' on entity '${entityName}': string \`where\` is not supported on MongoDB; pass an object/FilterQuery (it maps to MongoDB's \`partialFilterExpression\`).`,
+      );
+    }
+
+    options.partialFilterExpression = where;
   }
 
   private async executeQuery(collection: Collection, method: keyof Collection, ...args: unknown[]) {
@@ -258,14 +283,13 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
         return o;
       }, {} as Dictionary);
       const collection = this.connection.getCollection(meta.class);
-      res.push([
-        collection.collectionName,
-        this.executeQuery(collection, 'createIndex', fieldOrSpec, {
-          name: index.name,
-          unique: true,
-          ...index.options,
-        }),
-      ]);
+      const indexOptions: Dictionary = {
+        name: index.name,
+        unique: true,
+        ...index.options,
+      };
+      MongoSchemaGenerator.applyPartialFilter(indexOptions, index.where, index.name, meta.className);
+      res.push([collection.collectionName, this.executeQuery(collection, 'createIndex', fieldOrSpec, indexOptions)]);
     });
 
     return res;

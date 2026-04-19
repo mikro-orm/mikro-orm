@@ -1079,6 +1079,7 @@ export class DatabaseTable {
       name?: string;
       type?: string;
       expression?: string | IndexCallback<any>;
+      where?: string | Dictionary;
       deferMode?: DeferMode | `${DeferMode}`;
       options?: Dictionary;
       columns?: {
@@ -1196,16 +1197,20 @@ export class DatabaseTable {
       );
     }
 
+    const where = this.processIndexWhere(name, index.where, meta);
+
     this.#indexes.push({
       keyName: name,
       columnNames: properties,
       composite: properties.length > 1,
-      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
-      constraint: type !== 'index' && !properties.some((d: string) => d.includes('.')),
+      // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them.
+      // Partial indexes (`where`) must use CREATE [UNIQUE] INDEX form — constraints can't carry predicates.
+      constraint: type !== 'index' && !properties.some((d: string) => d.includes('.')) && !where,
       primary: type === 'primary',
       unique: type !== 'index',
       type: index.type,
       expression: this.processIndexExpression(name, index.expression, meta),
+      where,
       options: index.options,
       deferMode: index.deferMode,
       columns,
@@ -1215,6 +1220,24 @@ export class DatabaseTable {
       disabled: index.disabled,
       clustered: index.clustered,
     });
+  }
+
+  private processIndexWhere(
+    indexName: string,
+    where: string | Dictionary | undefined,
+    meta: EntityMetadata,
+  ): string | undefined {
+    if (where == null) {
+      return undefined;
+    }
+
+    if (typeof where === 'string') {
+      return where;
+    }
+
+    throw new Error(
+      `Index '${indexName}' on entity '${meta.className}': object form of \`where\` is not supported on SQL drivers; pass a SQL string fragment instead (e.g. \`where: '"deleted_at" is null'\`).`,
+    );
   }
 
   addCheck(check: CheckDef) {

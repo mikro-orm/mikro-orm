@@ -171,7 +171,7 @@ export abstract class SchemaHelper {
       // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
       sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName}`;
       const columns = this.platform.getJsonIndexDefinition(index);
-      return `${sql} (${columns.join(', ')})${this.getCreateIndexSuffix(index)}${defer}`;
+      return `${sql} (${columns.join(', ')})${this.getCreateIndexSuffix(index)}${this.getIndexWhereClause(index)}${defer}`;
     }
 
     // Build column list with advanced options
@@ -183,7 +183,7 @@ export abstract class SchemaHelper {
       sql += ` include (${index.include.map(c => this.quote(c)).join(', ')})`;
     }
 
-    return sql + this.getCreateIndexSuffix(index) + defer;
+    return sql + this.getCreateIndexSuffix(index) + this.getIndexWhereClause(index) + defer;
   }
 
   /**
@@ -191,6 +191,54 @@ export abstract class SchemaHelper {
    */
   protected getCreateIndexSuffix(_index: IndexDef): string {
     return '';
+  }
+
+  /**
+   * Default emits ` where <predicate>` for partial indexes. Dialects that emulate partials via
+   * `(CASE WHEN ... THEN col END)` columns (MySQL/MariaDB/Oracle) override to return `''`.
+   */
+  protected getIndexWhereClause(index: IndexDef): string {
+    return index.where ? ` where ${index.where}` : '';
+  }
+
+  /**
+   * Wraps each indexed column in `(CASE WHEN <predicate> THEN <col> END)` for dialects that
+   * emulate partial indexes via functional indexes (MySQL/MariaDB/Oracle). Combined with NULL
+   * being treated as distinct in unique indexes, this enforces uniqueness only where the
+   * predicate holds. Throws if combined with the advanced `columns` option.
+   */
+  protected emulatePartialIndexColumns(index: IndexDef): string {
+    if (index.columns?.length) {
+      throw new Error(
+        `Index '${index.keyName}': combining \`where\` with advanced \`columns\` options is not supported when emulating a partial index via functional expressions; use plain \`properties\` (or \`columnNames\`).`,
+      );
+    }
+
+    const predicate = index.where!;
+    return index.columnNames.map(c => `(case when ${predicate} then ${this.quote(c)} end)`).join(', ');
+  }
+
+  /**
+   * Strips `<col> IS NOT NULL` clauses (with the dialect's identifier quoting) from an
+   * introspected partial-index predicate when the column matches one of the index's own
+   * columns. MikroORM auto-emits this guard for unique indexes on nullable columns
+   * (MSSQL, Oracle) — it's an internal artifact, not user intent.
+   */
+  protected stripAutoNotNullFilter(filterDef: string, columnNames: string[], identifierPattern: RegExp): string {
+    let inner = filterDef.trim();
+    let m: RegExpExecArray | null;
+    while ((m = /^\((.*)\)$/s.exec(inner))) {
+      inner = m[1].trim();
+    }
+    const isAutoForCol = (clause: string): boolean => {
+      const match = identifierPattern.exec(clause.trim());
+      return !!match && columnNames.includes(match[1]);
+    };
+    return inner
+      .split(/\s+and\s+/i)
+      .filter(p => !isAutoForCol(p))
+      .join(' and ')
+      .trim();
   }
 
   /**

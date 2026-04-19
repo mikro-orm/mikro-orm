@@ -28,6 +28,8 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     'getdate()': ['current_timestamp'],
   };
 
+  private static readonly AUTO_NOT_NULL_RE = /^\(?\[([^\]]+)\]\s+IS\s+NOT\s+NULL\)?$/i;
+
   override getManagementDbName(): string {
     return 'master';
   }
@@ -219,6 +221,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       col.name as column_name,
       schema_name(t.schema_id) as schema_name,
       (case when filter_definition is not null then concat('where ', filter_definition) else null end) as expression,
+      filter_definition as filter_definition,
       ind.is_disabled as is_disabled,
       ind.type as index_type,
       ind.fill_factor as fill_factor,
@@ -271,9 +274,15 @@ export class MsSqlSchemaHelper extends SchemaHelper {
         indexDef.fillFactor = index.fill_factor;
       }
 
-      if (index.column_name?.match(/[(): ,"'`]/) || index.expression?.match(/where /i)) {
-        indexDef.expression = index.expression; // required for the `getCreateIndexSQL()` call
+      const filterDef: string | undefined = index.filter_definition ?? undefined;
+      const isFunctionalCol = index.column_name?.match(/[(): ,"'`]/);
+
+      if (isFunctionalCol) {
+        indexDef.expression = index.expression;
         indexDef.expression = this.getCreateIndexSQL(index.table_name, indexDef, !!index.expression);
+      } else if (filterDef) {
+        // Auto-NOT-NULL stripping runs post-mapIndexes (needs the consolidated column list).
+        indexDef.where = filterDef;
       }
 
       ret[key] ??= [];
@@ -282,6 +291,17 @@ export class MsSqlSchemaHelper extends SchemaHelper {
 
     for (const key of Object.keys(ret)) {
       ret[key] = await this.mapIndexes(ret[key]);
+
+      for (const idx of ret[key]) {
+        if (idx.where) {
+          const stripped = this.stripAutoNotNullFilter(idx.where, idx.columnNames, MsSqlSchemaHelper.AUTO_NOT_NULL_RE);
+          if (stripped === '') {
+            delete idx.where;
+          } else {
+            idx.where = stripped;
+          }
+        }
+      }
     }
 
     return ret;
@@ -638,7 +658,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     let sql = `create ${index.unique ? 'unique ' : ''}${clustered}index ${keyName} on ${this.quote(tableName)} `;
 
     if (index.expression && partialExpression) {
-      return sql + `(${index.expression})` + this.getMsSqlIndexSuffix(index);
+      return sql + `(${index.expression})` + this.getMsSqlIndexSuffix(index) + this.getIndexWhereClause(index);
     }
 
     // Build column list with advanced options
@@ -650,7 +670,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       sql += ` include (${index.include.map(c => this.quote(c)).join(', ')})`;
     }
 
-    sql += this.getMsSqlIndexSuffix(index);
+    sql += this.getMsSqlIndexSuffix(index) + this.getIndexWhereClause(index);
 
     // Disabled indexes need to be created first, then disabled
     if (index.disabled) {
@@ -708,15 +728,16 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       return index.expression;
     }
 
-    const needsWhereClause = index.unique && index.columnNames.some(column => table.getColumn(column)?.nullable);
+    const needsAutoNotNull = index.unique && index.columnNames.some(column => table.getColumn(column)?.nullable);
 
-    if (!needsWhereClause) {
+    if (!needsAutoNotNull) {
       return this.getCreateIndexSQL(table.getShortestName(), index);
     }
 
-    // Generate without disabled suffix, insert WHERE clause, then re-add disabled
+    // Generate without disabled suffix, then merge auto NOT-NULL with the user-provided WHERE
     let sql = this.getCreateIndexSQL(table.getShortestName(), { ...index, disabled: false });
-    sql += ' where ' + index.columnNames.map(c => `${this.quote(c)} is not null`).join(' and ');
+    const autoNotNull = index.columnNames.map(c => `${this.quote(c)} is not null`).join(' and ');
+    sql += index.where ? ` and ${autoNotNull}` : ` where ${autoNotNull}`;
 
     if (index.disabled) {
       sql += `;\nalter index ${this.quote(index.keyName)} on ${table.getQuotedName()} disable`;

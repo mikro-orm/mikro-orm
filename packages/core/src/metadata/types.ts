@@ -697,6 +697,15 @@ interface BaseOptions<T, H extends string> {
   include?: T extends EntityClass<infer P> ? Properties<P, H> : Properties<T, H>;
   /** Fill factor for the index as a percentage 0-100 (PostgreSQL, MSSQL). */
   fillFactor?: number;
+  /**
+   * Predicate for partial indexes. Object form is a `FilterQuery` and is portable across
+   * SQL drivers and MongoDB; string form is a raw SQL fragment (SQL drivers only).
+   *
+   * Native support: PostgreSQL, SQLite, MSSQL (`WHERE`), MongoDB (`partialFilterExpression`).
+   * MySQL 8.0.13+ / MariaDB 10.5+ / Oracle: emulated via `CASE WHEN` functional index
+   * (uniqueness only enforced where the predicate holds).
+   */
+  where?: string | (T extends EntityClass<infer P> ? FilterQuery<P> : FilterQuery<T>);
 }
 
 export interface UniqueOptions<T, H extends string = string> extends BaseOptions<T, H> {
