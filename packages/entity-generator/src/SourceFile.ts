@@ -173,6 +173,10 @@ export class SourceFile {
       indexOpt.expression = `${index.expression}`.replace(')=>`', ') => `');
     }
 
+    if (typeof index.where === 'string') {
+      indexOpt.where = this.quote(index.where) as never;
+    }
+
     if (isAtEntityLevel && index.properties) {
       indexOpt.properties = Utils.asArray(index.properties).map(prop => this.quote('' + prop)) as never[];
     }
@@ -222,6 +226,10 @@ export class SourceFile {
       uniqueOpt.expression = this.quote(index.expression);
     } else if (typeof index.expression === 'function') {
       uniqueOpt.expression = `${index.expression}`.replace(')=>`', ') => `');
+    }
+
+    if (typeof index.where === 'string') {
+      uniqueOpt.where = this.quote(index.where) as never;
     }
 
     if (isAtEntityLevel && index.properties) {

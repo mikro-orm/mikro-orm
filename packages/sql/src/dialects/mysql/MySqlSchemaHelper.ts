@@ -14,6 +14,11 @@ export class MySqlSchemaHelper extends SchemaHelper {
     '0': ['0', 'false'],
   };
 
+  // Greedy `(.+)` so nested CASE expressions inside the predicate don't trip the match on
+  // an inner `then <col> end` — the trailing `$` anchor forces the regex engine to extend
+  // the capture to the outermost case-end boundary.
+  private static readonly PARTIAL_INDEX_RE = /^\s*\(\s*case\s+when\s+(.+)\s+then\s+`([^`]+)`\s+end\s*\)\s*$/is;
+
   override getSchemaBeginning(charset: string, disableForeignKeys?: boolean): string {
     if (disableForeignKeys) {
       return `set names ${charset};\n${this.disableForeignKeysSQL()}\n\n`;
@@ -133,8 +138,12 @@ export class MySqlSchemaHelper extends SchemaHelper {
 
     for (const index of allIndexes) {
       const key = this.getTableKey(index);
+      const partialMatch =
+        !index.column_name && typeof index.expression === 'string'
+          ? MySqlSchemaHelper.PARTIAL_INDEX_RE.exec(index.expression)
+          : null;
       const indexDef: IndexDef = {
-        columnNames: [index.column_name],
+        columnNames: [partialMatch ? partialMatch[2] : index.column_name],
         keyName: index.index_name,
         unique: !index.non_unique,
         primary: index.index_name === 'PRIMARY',
@@ -165,7 +174,9 @@ export class MySqlSchemaHelper extends SchemaHelper {
         indexDef.invisible = true;
       }
 
-      if (!index.column_name || index.expression?.match(/ where /i)) {
+      if (partialMatch) {
+        indexDef.where = partialMatch[1].trim();
+      } else if (!index.column_name || index.expression?.match(/ where /i)) {
         indexDef.expression = index.expression; // required for the `getCreateIndexSQL()` call
         indexDef.expression = this.getCreateIndexSQL(index.table_name, indexDef, !!index.expression);
       }
@@ -212,10 +223,16 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   /**
-   * Build the column list for a MySQL index, with MySQL-specific handling for collation.
-   * MySQL requires collation to be specified as an expression: (column_name COLLATE collation_name)
+   * Build the column list for a MySQL index. MySQL requires collation via an expression:
+   * `(column COLLATE collation_name)`. Partial indexes (`where`) are emulated via functional
+   * indexes — requires MySQL 8.0.13+. MariaDB does not support inline functional indexes
+   * and overrides to throw at a higher level.
    */
   protected override getIndexColumns(index: IndexDef): string {
+    if (index.where) {
+      return this.emulatePartialIndexColumns(index);
+    }
+
     return index.columnNames
       .map(name => {
         const col = index.columns?.find(c => c.name === name);
