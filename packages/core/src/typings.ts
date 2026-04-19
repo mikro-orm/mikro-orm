@@ -1668,6 +1668,8 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   polymorphicDiscriminatorMap?: Dictionary<EntityClass>;
   /** Inheritance type: 'sti' (Single Table Inheritance) or 'tpt' (Table-Per-Type). Only set on root entities. */
   inheritanceType?: 'sti' | 'tpt';
+  /** Legacy alias populated from `EntityOptions.inheritance`; mirrored to `inheritanceType` during discovery. */
+  inheritance?: 'tpt';
   /** For TPT: direct parent entity metadata (the entity this one extends). */
   tptParent?: EntityMetadata;
   /** For TPT: direct child entities (entities that extend this one). */

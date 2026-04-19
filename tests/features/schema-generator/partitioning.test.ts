@@ -459,6 +459,79 @@ describe('partitioning helpers', () => {
     expect(normalizePartitionBound("for values in ('2026-01-01')")).toBe("for values in ('2026-01-01')");
   });
 
+  test('creates hash partitions with user-supplied names and preserves them on introspection', () => {
+    const partitioning = getTablePartitioning(
+      createPartitionedMeta({
+        type: 'hash',
+        expression: ['tenant'],
+        partitions: ['events_shard_a', 'events_shard_b', 'archive.events_shard_c'],
+      }),
+      'public',
+    );
+
+    expect(partitioning).toEqual({
+      definition: 'hash (tenant_id)',
+      partitions: [
+        { name: 'events_shard_a', schema: 'public', bound: 'for values with (modulus 3, remainder 0)' },
+        { name: 'events_shard_b', schema: 'public', bound: 'for values with (modulus 3, remainder 1)' },
+        { name: 'events_shard_c', schema: 'archive', bound: 'for values with (modulus 3, remainder 2)' },
+      ],
+    });
+
+    // Round-trip: when parent context is passed, non-default hash names survive as an array so
+    // re-generating DDL reproduces the same children.
+    expect(toEntityPartitionBy(partitioning, 'partitioned_event', 'public')).toEqual({
+      type: 'hash',
+      expression: 'tenant_id',
+      partitions: ['events_shard_a', 'events_shard_b', 'archive.events_shard_c'],
+    });
+  });
+
+  test('collapses default-named hash partitions back to a count on introspection', () => {
+    const partitioning = getTablePartitioning(
+      createPartitionedMeta({
+        type: 'hash',
+        expression: ['tenant'],
+        partitions: 3,
+      }),
+      'public',
+    );
+
+    expect(toEntityPartitionBy(partitioning, 'partitioned_event', 'public')).toEqual({
+      type: 'hash',
+      expression: 'tenant_id',
+      partitions: 3,
+    });
+  });
+
+  test('accepts quoted-identifier partition names with dots inside', () => {
+    const partitioning = getTablePartitioning(
+      createPartitionedMeta({
+        type: 'list',
+        expression: ['tenant'],
+        partitions: [{ name: '"my.schema"."part_1"', values: "in ('a')" }],
+      }),
+      'public',
+    );
+
+    expect(partitioning?.partitions[0]).toEqual({
+      name: 'part_1',
+      schema: 'my.schema',
+      bound: "for values in ('a')",
+    });
+  });
+
+  test('strips midnight suffix for timestamp (no-tz) casts', () => {
+    // Timestamp-without-tz catalog output does not carry an offset. The normalizer relies on the
+    // explicit `::timestamp` cast to recognise the literal as a timestamp value and collapse it.
+    expect(
+      normalizePartitionBound("from ('2026-01-01 00:00:00'::timestamp) to ('2026-02-01 00:00:00'::timestamp)"),
+    ).toBe("for values from ('2026-01-01'::timestamp) to ('2026-02-01'::timestamp)");
+    expect(normalizePartitionDefinition("range (('2026-01-01 00:00:00'::timestamp without time zone))")).toBe(
+      "range ('2026-01-01'::timestamp without time zone)",
+    );
+  });
+
   test('round-trips partitioning through sql schema metadata', () => {
     const config = new Configuration({ driver: PostgreSqlDriver }, false);
     const platform = config.getPlatform() as PostgreSqlPlatform;
@@ -498,7 +571,7 @@ describe('partitioning helpers', () => {
       expression: 'created_at',
       partitions: [
         {
-          name: 'public.partitioned_event_0',
+          name: 'partitioned_event_0',
           values: "from ('2026-01-01') to ('2026-02-01')",
         },
         {

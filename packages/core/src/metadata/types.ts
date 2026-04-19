@@ -61,8 +61,12 @@ export type EntityPartitionBy<E = AnyEntity> =
   | {
       type: Extract<EntityPartitionType, 'hash'>;
       expression: EntityPartitionExpression<E>;
-      /** Number of hash partitions to create. */
-      partitions: number;
+      /**
+       * Hash partition fan-out: either a number (auto-named as `${tableName}_N`) or an array of
+       * explicit partition names in remainder order. Names may be `schema.name` to create the
+       * child in a non-default schema.
+       */
+      partitions: number | readonly string[];
     }
   | {
       type: Exclude<EntityPartitionType, 'hash'>;

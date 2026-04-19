@@ -177,9 +177,7 @@ export class MetadataValidator {
     // Inheritance (STI/TPT) and partitioning both drive table layout, so combining them would
     // require non-trivial DDL coordination that the schema generator does not produce today.
     const hasInheritance =
-      !!meta.root.discriminatorColumn ||
-      meta.root.inheritanceType === 'tpt' ||
-      (meta.root as { inheritance?: string }).inheritance === 'tpt';
+      !!meta.root.discriminatorColumn || meta.root.inheritanceType === 'tpt' || meta.root.inheritance === 'tpt';
 
     if (hasInheritance) {
       throw new MetadataError(
@@ -190,7 +188,35 @@ export class MetadataValidator {
     this.validatePartitionKeyConstraints(meta);
 
     if (meta.partitionBy.type === 'hash') {
-      if (!Number.isInteger(meta.partitionBy.partitions) || meta.partitionBy.partitions < 1) {
+      const { partitions } = meta.partitionBy;
+
+      if (Array.isArray(partitions)) {
+        if (partitions.length === 0) {
+          throw new MetadataError(
+            `Entity ${meta.className} has invalid partitionBy option: hash partition name list must not be empty`,
+          );
+        }
+
+        const blank = partitions.find(name => typeof name !== 'string' || !name.trim());
+
+        if (blank !== undefined) {
+          throw new MetadataError(
+            `Entity ${meta.className} has invalid partitionBy option: hash partition names must be non-empty strings`,
+          );
+        }
+
+        const ambiguous = partitions.find(name => !this.hasValidPartitionName(name));
+
+        if (ambiguous) {
+          throw new MetadataError(
+            `Entity ${meta.className} has invalid partitionBy option: partition name '${ambiguous}' contains more than one '.' — use at most one '.' to separate schema from table`,
+          );
+        }
+
+        return;
+      }
+
+      if (typeof partitions !== 'number' || !Number.isInteger(partitions) || partitions < 1) {
         throw new MetadataError(
           `Entity ${meta.className} has invalid partitionBy option: hash partition count must be a positive integer`,
         );
@@ -212,7 +238,7 @@ export class MetadataValidator {
     }
 
     const ambiguousName = meta.partitionBy.partitions.find(
-      partition => (partition.name?.match(/\./g)?.length ?? 0) > 1,
+      partition => partition.name != null && !this.hasValidPartitionName(partition.name),
     );
 
     if (ambiguousName) {
@@ -220,6 +246,35 @@ export class MetadataValidator {
         `Entity ${meta.className} has invalid partitionBy option: partition name '${ambiguousName.name}' contains more than one '.' — use at most one '.' to separate schema from table`,
       );
     }
+  }
+
+  /**
+   * Partition names may be bare (`child`), schema-qualified (`schema.child`), or use quoted
+   * identifiers (`"my.schema"."child"`). Reject anything with more than one unquoted `.`.
+   */
+  private hasValidPartitionName(name: string): boolean {
+    let depth = 0;
+    let dots = 0;
+
+    for (let i = 0; i < name.length; i++) {
+      const ch = name[i];
+
+      if (ch === '"') {
+        if (name[i + 1] === '"') {
+          i++;
+          continue;
+        }
+
+        depth = depth === 0 ? 1 : 0;
+        continue;
+      }
+
+      if (ch === '.' && depth === 0) {
+        dots++;
+      }
+    }
+
+    return dots <= 1;
   }
 
   private hasPartitionExpression(expression: PartitionExpression | undefined): boolean {

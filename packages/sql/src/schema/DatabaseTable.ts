@@ -273,7 +273,7 @@ export class DatabaseTable {
 
     const name = namingStrategy.getEntityName(this.name, this.schema);
     const schema = new EntitySchema({ name, collection: this.name, schema: this.schema, comment: this.comment });
-    schema.meta.partitionBy = toEntityPartitionBy(this.partitioning);
+    schema.meta.partitionBy = toEntityPartitionBy(this.partitioning, this.name, this.schema);
 
     const compositeFkIndexes: Dictionary<Pick<IndexDef, 'keyName'>> = {};
     const compositeFkUniques: Dictionary<Pick<IndexDef, 'keyName'>> = {};

@@ -253,29 +253,6 @@ export type IBookTag = InferEntity<typeof BookTag>;
   </TabItem>
 </Tabs>
 
-## Partitioned tables (PostgreSQL)
-
-`defineEntity` accepts the same `partitionBy` option as `@Entity()`. See [PostgreSQL partitioned tables](./schema-generator.md#postgresql-partitioned-tables) for the full reference (supported types, `expression` forms, and catalog round-tripping).
-
-```ts
-export const EventSchema = defineEntity({
-  name: 'Event',
-  partitionBy: {
-    type: 'range',
-    expression: ['createdAt'],
-    partitions: [
-      { name: 'event_2026_01', values: "from ('2026-01-01') to ('2026-02-01')" },
-      { name: 'event_default', values: 'default' },
-    ],
-  },
-  properties: {
-    id: p.integer().primary(),
-    createdAt: p.datetime().primary(),
-    payload: p.json(),
-  },
-});
-```
-
 ## Hooks example
 
 Hooks can be registered in two ways:

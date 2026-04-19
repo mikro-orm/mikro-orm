@@ -504,6 +504,48 @@ describe('MetadataValidator', () => {
       ).not.toThrow();
     });
 
+    test('accepts hash partitioning with custom partition names', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: ['type'],
+          partitions: ['events_shard_a', 'events_shard_b', 'archive.events_shard_c'],
+        }),
+      ).not.toThrow();
+    });
+
+    test('rejects hash partitioning with an empty name array', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: ['type'],
+          partitions: [],
+        }),
+      ).toThrow('Entity PartitionedEntity has invalid partitionBy option: hash partition name list must not be empty');
+    });
+
+    test('rejects hash partitioning with blank names', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: ['type'],
+          partitions: ['ok', '  '],
+        }),
+      ).toThrow(
+        'Entity PartitionedEntity has invalid partitionBy option: hash partition names must be non-empty strings',
+      );
+    });
+
+    test('allows quoted-identifier partition names with embedded dots', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'list',
+          expression: ['type'],
+          partitions: [{ name: '"my.schema"."part_1"', values: "in ('a')" }],
+        }),
+      ).not.toThrow();
+    });
+
     test('accepts valid range partitioning with explicit child tables', async () => {
       expect(
         validatePartitionedSchema({

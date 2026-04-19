@@ -82,13 +82,23 @@ const findMatchingParenthesis = (value: string, start: number): number => {
 
 const normalizePartitionLiterals = (value: string): string =>
   value
+    // PG pg_get_expr output often tacks `::text` onto string literals inside expressions; drop it
+    // so the catalog shape matches user-provided bounds. This applies symmetrically to both
+    // user metadata and catalog reads, so diffing converges. If a user intentionally writes a
+    // `::text` cast in a bound literal it will be stripped on both sides as well.
     .replace(/('(?:[^']|'')*')::text\b/gi, '$1')
-    // Strip the `00:00:00±HH[:MM]` time-with-offset suffix so catalog round-trips (timestamptz
-    // bounds formatted via the session TimeZone) match user metadata that omitted the time part.
-    // The numeric offset is required here so we don't collapse midnight-looking text values (e.g.
-    // `'2026-01-01 00:00:00'` stored in a text/varchar list partition), which would otherwise
-    // produce false-negative diffs.
-    .replace(/'(\d{4}-\d{2}-\d{2}) 00:00:00[+-]\d{2}(?::\d{2})?'/g, "'$1'");
+    // Strip the `00:00:00` time component so catalog round-trips (timestamp[tz] bounds formatted
+    // via the session TimeZone) match user metadata that omitted the time part. Only collapse
+    // when we can confidently attribute the literal to a timestamp column: either a numeric
+    // offset is present (timestamptz catalog output) or an explicit `::timestamp[tz]` cast
+    // follows the literal. Bare `'YYYY-MM-DD 00:00:00'` without offset/cast could just as easily
+    // be a text/varchar list-partition value, and collapsing it would produce false-negative
+    // diffs.
+    .replace(/'(\d{4}-\d{2}-\d{2}) 00:00:00[+-]\d{2}(?::\d{2})?'/g, "'$1'")
+    .replace(
+      /'(\d{4}-\d{2}-\d{2}) 00:00:00'(?=\s*::\s*timestamp(?:tz)?(?:\s+(?:with|without)\s+time\s+zone)?\b)/gi,
+      "'$1'",
+    );
 
 const unwrapOuterParentheses = (value: string): string => {
   const trimmed = value.trim();
@@ -152,17 +162,46 @@ const normalizePartitionSqlFragment = (value: string): string => {
   return normalizeWhitespace(unwrapAllOuterParentheses(ret));
 };
 
-const splitPartitionName = (name: string): { name: string; schema?: string } => {
-  const firstDot = name.indexOf('.');
+const unquoteIdentifier = (value: string): string => {
+  const trimmed = value.trim();
 
-  if (firstDot === -1) {
-    return { name };
+  if (trimmed.length >= 2 && trimmed.startsWith('"') && trimmed.endsWith('"')) {
+    return trimmed.slice(1, -1).replaceAll('""', '"');
   }
 
-  return {
-    schema: name.slice(0, firstDot),
-    name: name.slice(firstDot + 1),
-  };
+  return trimmed;
+};
+
+/**
+ * Split a user-supplied partition name into `{ schema, name }`. Supports bare (`child`),
+ * schema-qualified (`schema.child`), and quoted (`"my.schema"."child"`) forms. Dots inside
+ * double-quoted identifiers are part of the identifier and do not split.
+ */
+const splitPartitionName = (name: string): { name: string; schema?: string } => {
+  let depth = 0;
+
+  for (let i = 0; i < name.length; i++) {
+    const ch = name[i];
+
+    if (ch === '"') {
+      if (name[i + 1] === '"') {
+        i++;
+        continue;
+      }
+
+      depth = depth === 0 ? 1 : 0;
+      continue;
+    }
+
+    if (ch === '.' && depth === 0) {
+      return {
+        schema: unquoteIdentifier(name.slice(0, i)),
+        name: unquoteIdentifier(name.slice(i + 1)),
+      };
+    }
+  }
+
+  return { name: unquoteIdentifier(name) };
 };
 
 const COMMA_SEPARATED_IDENTIFIERS = /^[\w".]+(?:\s*,\s*[\w".]+)*$/;
@@ -261,12 +300,24 @@ export function normalizePartitionBound(value: string): string {
 
 const createPartitionBound = (value: string): string => normalizePartitionBound(value);
 
-const createHashPartitions = (tableName: string, tableSchema: string | undefined, count: number): TablePartition[] =>
-  Array.from({ length: count }, (_, remainder) => ({
-    name: `${tableName}_${remainder}`,
-    schema: tableSchema,
-    bound: normalizePartitionBound(`with (modulus ${count}, remainder ${remainder})`),
-  }));
+const createHashPartitions = (
+  tableName: string,
+  tableSchema: string | undefined,
+  partitions: number | readonly string[],
+): TablePartition[] => {
+  const count = typeof partitions === 'number' ? partitions : partitions.length;
+
+  return Array.from({ length: count }, (_, remainder) => {
+    const bound = normalizePartitionBound(`with (modulus ${count}, remainder ${remainder})`);
+
+    if (typeof partitions === 'number') {
+      return { name: `${tableName}_${remainder}`, schema: tableSchema, bound };
+    }
+
+    const { name, schema } = splitPartitionName(partitions[remainder]);
+    return { name, schema: schema ?? tableSchema, bound };
+  });
+};
 
 const createExplicitPartitions = (
   tableName: string,
@@ -347,7 +398,11 @@ const isSupportedPartitionType = (value: string): value is EntityPartitionBy['ty
   (SUPPORTED_PARTITION_TYPES as readonly string[]).includes(value);
 
 /** @internal */
-export const toEntityPartitionBy = (partitioning: TablePartitioning | undefined): EntityPartitionBy | undefined => {
+export const toEntityPartitionBy = (
+  partitioning: TablePartitioning | undefined,
+  parentTableName?: string,
+  parentSchema?: string,
+): EntityPartitionBy | undefined => {
   if (!partitioning) {
     return undefined;
   }
@@ -368,12 +423,25 @@ export const toEntityPartitionBy = (partitioning: TablePartitioning | undefined)
   }
 
   const expression = unwrapOuterParentheses(rawExpression);
+  const qualify = (partition: TablePartition) =>
+    partition.schema && partition.schema !== parentSchema ? `${partition.schema}.${partition.name}` : partition.name;
 
   if (type === 'hash') {
+    // Collapse to a bare count when catalog names follow the default
+    // `${parentTableName}_${remainder}` pattern and live in the parent's schema, or when we have
+    // no parent context to compare against (backwards-compatible behavior for callers that pass
+    // just the `TablePartitioning`). Otherwise preserve the explicit name array so the next DDL
+    // generation reproduces the same children.
+    const usesDefaultShape =
+      parentTableName == null ||
+      normalizedPartitions.every(
+        (p, i) => p.name === `${parentTableName}_${i}` && (!p.schema || p.schema === parentSchema),
+      );
+
     return {
       type,
       expression,
-      partitions: normalizedPartitions.length,
+      partitions: usesDefaultShape ? normalizedPartitions.length : normalizedPartitions.map(qualify),
     };
   }
 
@@ -381,7 +449,7 @@ export const toEntityPartitionBy = (partitioning: TablePartitioning | undefined)
     type,
     expression,
     partitions: normalizedPartitions.map(partition => ({
-      name: partition.schema ? `${partition.schema}.${partition.name}` : partition.name,
+      name: qualify(partition),
       values: partition.bound === 'default' ? 'default' : partition.bound.replace(/^for values\s+/i, ''),
     })),
   };
