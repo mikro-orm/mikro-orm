@@ -10,9 +10,19 @@ import {
 } from '@mikro-orm/core';
 import { SchemaHelper } from '../../schema/SchemaHelper.js';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
-import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference, SqlTriggerDef } from '../../typings.js';
+import type {
+  CheckDef,
+  Column,
+  ForeignKey,
+  IndexDef,
+  Table,
+  TableDifference,
+  TablePartitioning,
+  SqlTriggerDef,
+} from '../../typings.js';
 import type { DatabaseSchema } from '../../schema/DatabaseSchema.js';
 import type { DatabaseTable } from '../../schema/DatabaseTable.js';
+import { normalizePartitionBound, normalizePartitionDefinition } from '../../schema/partitioning.js';
 
 /** PostGIS system views that should be automatically ignored */
 const POSTGIS_VIEWS = ['geography_columns', 'geometry_columns'];
@@ -44,14 +54,23 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   override getListTablesSQL(): string {
+    // The `pg_inherits` anti-join compares on (schema, table) pairs so cross-schema child
+    // partitions are excluded even when their schema is not on the session `search_path`
+    // (in which case `inhrelid::regclass::text` renders as `schema.name` rather than bare `name`,
+    // breaking a plain `table_name not in (...)` predicate).
     return (
       `select table_name, table_schema as schema_name, ` +
       `(select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c
           where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment ` +
-      `from information_schema.tables ` +
+      `from information_schema.tables t ` +
       `where ${this.getIgnoredNamespacesConditionSQL('table_schema')} ` +
       `and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' ` +
-      `and table_name not in (select inhrelid::regclass::text from pg_inherits) ` +
+      `and not exists (` +
+      `select 1 from pg_inherits i ` +
+      `join pg_class c on c.oid = i.inhrelid ` +
+      `join pg_namespace n on n.oid = c.relnamespace ` +
+      `where c.relname = t.table_name and n.nspname = t.table_schema` +
+      `) ` +
       `order by table_name`
     );
   }
@@ -152,6 +171,27 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `create materialized view ${viewName} as ${definition}${dataClause}`;
   }
 
+  override createTable(table: DatabaseTable, alter?: boolean): string[] {
+    const partitioning = table.getPartitioning();
+
+    if (!partitioning) {
+      return super.createTable(table, alter);
+    }
+
+    const [createTable, ...rest] = super.createTable(table, alter);
+    const partitions = partitioning.partitions.map(partition => {
+      const partitionName = this.quote(this.getTableName(partition.name, partition.schema ?? table.schema));
+      return `create table ${partitionName} partition of ${table.getQuotedName()} ${partition.bound}`;
+    });
+
+    // SchemaHelper.append() always terminates the CREATE TABLE with `;`; we rely on that to splice
+    // the `partition by ...` clause in before the terminator. Use slice instead of replace() so that
+    // regex replacement tokens like `$$`, `$&`, or `$1` inside user-supplied expressions (e.g., a
+    // callback that returns a dollar-quoted literal) are not interpreted as back-references.
+    const spliced = `${createTable.slice(0, -1)} partition by ${partitioning.definition};`;
+    return [spliced, ...rest, ...partitions];
+  }
+
   override dropMaterializedViewIfExists(name: string, schema?: string): string {
     return `drop materialized view if exists ${this.quote(this.getTableName(name, schema))} cascade`;
   }
@@ -208,6 +248,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const indexes = await this.getAllIndexes(connection, tables, ctx);
     const checks = await this.getAllChecks(connection, tablesBySchema, ctx);
     const fks = await this.getAllForeignKeys(connection, tablesBySchema, ctx);
+    const partitionings = await this.getPartitions(connection, tablesBySchema, ctx);
     const triggers = await this.getAllTriggers(connection, tablesBySchema);
 
     for (const t of tables) {
@@ -223,7 +264,82 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       if (triggers[key]) {
         table.setTriggers(triggers[key]);
       }
+
+      table.setPartitioning(partitionings[key]);
     }
+  }
+
+  /**
+   * Introspects direct partitions only: the `pg_inherits` join surfaces a parent's children but
+   * does not recurse into sub-partitioning (e.g. hash-of-range). Declarative `partitionBy`
+   * metadata does not express multi-level partitioning either, so grandchildren are intentionally
+   * invisible to schema diffing.
+   *
+   * Entries with an undefined schema bucket are resolved against `current_schema()` so they do
+   * not match same-named tables in unrelated schemas.
+   */
+  async getPartitions(
+    connection: AbstractSqlConnection,
+    tablesBySchemas: Map<string | undefined, Table[]>,
+    ctx?: Transaction,
+  ): Promise<Dictionary<TablePartitioning>> {
+    // Collapse every (schema, table) pair into a single `values (...)` relation and join against
+    // the catalog, instead of building an OR-tree of per-schema `in (...)` predicates. This keeps
+    // the query size O(pairs) rather than O(schemas × predicate_overhead) and stays sargable when
+    // many schemas are in play.
+    const pairs = [...tablesBySchemas.entries()].flatMap(([schema, tables]) =>
+      tables.map(t => {
+        const schemaLiteral = schema == null ? 'null::text' : `${this.platform.quoteValue(schema)}::text`;
+        return `(${schemaLiteral}, ${this.platform.quoteValue(t.table_name)})`;
+      }),
+    );
+
+    if (pairs.length === 0) {
+      return {} as Dictionary<TablePartitioning>;
+    }
+
+    const sql = `with targets(schema_name, table_name) as (values ${pairs.join(', ')})
+      select parent_ns.nspname as schema_name,
+      parent.relname as table_name,
+      pg_get_partkeydef(parent.oid) as partition_definition,
+      child_ns.nspname as partition_schema_name,
+      child.relname as partition_name,
+      pg_get_expr(child.relpartbound, child.oid) as partition_bound
+      from targets
+      join pg_class parent on parent.relname = targets.table_name
+      join pg_namespace parent_ns on parent_ns.oid = parent.relnamespace
+        and parent_ns.nspname = coalesce(targets.schema_name, current_schema())
+      join pg_partitioned_table partitioned on partitioned.partrelid = parent.oid
+      left join pg_inherits inherits on inherits.inhparent = parent.oid
+      left join pg_class child on child.oid = inherits.inhrelid
+      left join pg_namespace child_ns on child_ns.oid = child.relnamespace
+      order by parent_ns.nspname, parent.relname, child_ns.nspname, child.relname`;
+    const rows = await connection.execute<
+      {
+        schema_name: string;
+        table_name: string;
+        partition_definition: string;
+        partition_schema_name?: string;
+        partition_name?: string;
+        partition_bound?: string;
+      }[]
+    >(sql, [], 'all', ctx);
+    const ret = {} as Dictionary<TablePartitioning>;
+
+    for (const row of rows) {
+      const key = this.getTableKey(row);
+      ret[key] ??= { definition: normalizePartitionDefinition(row.partition_definition), partitions: [] };
+
+      if (row.partition_name && row.partition_bound) {
+        ret[key].partitions.push({
+          name: row.partition_name,
+          schema: row.partition_schema_name,
+          bound: normalizePartitionBound(row.partition_bound),
+        });
+      }
+    }
+
+    return ret;
   }
 
   async getAllIndexes(
@@ -912,6 +1028,15 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   override getPreAlterTable(tableDiff: TableDifference, safe: boolean): string[] {
+    if (tableDiff.changedPartitioning) {
+      const from = tableDiff.changedPartitioning.from?.definition;
+      const to = tableDiff.changedPartitioning.to?.definition;
+      const action = !from ? 'Adding' : !to ? 'Removing' : 'Changing';
+      throw new Error(
+        `${action} partition definitions for existing PostgreSQL tables is not supported automatically (${tableDiff.name}: '${from ?? '<none>'}' -> '${to ?? '<none>'}'); create a manual migration instead`,
+      );
+    }
+
     const ret: string[] = [];
 
     const parts = tableDiff.name.split('.');

@@ -18,9 +18,10 @@ import {
   Utils,
 } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper.js';
-import type { CheckDef, Column, ForeignKey, IndexDef, SqlTriggerDef } from '../typings.js';
+import type { CheckDef, Column, ForeignKey, IndexDef, TablePartitioning, SqlTriggerDef } from '../typings.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
+import { toEntityPartitionBy } from './partitioning.js';
 
 /**
  * @internal
@@ -34,6 +35,7 @@ export class DatabaseTable {
   readonly #platform: AbstractSqlPlatform;
   public nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {}; // for postgres
   public comment?: string;
+  public partitioning?: TablePartitioning;
 
   constructor(
     platform: AbstractSqlPlatform,
@@ -65,6 +67,15 @@ export class DatabaseTable {
 
   getChecks(): CheckDef[] {
     return this.#checks;
+  }
+
+  getPartitioning(): TablePartitioning | undefined {
+    return this.partitioning;
+  }
+
+  /** @internal */
+  setPartitioning(partitioning?: TablePartitioning): void {
+    this.partitioning = partitioning;
   }
 
   getTriggers(): SqlTriggerDef[] {
@@ -272,6 +283,7 @@ export class DatabaseTable {
 
     const name = namingStrategy.getEntityName(this.name, this.schema);
     const schema = new EntitySchema({ name, collection: this.name, schema: this.schema, comment: this.comment });
+    schema.meta.partitionBy = toEntityPartitionBy(this.partitioning, this.name, this.schema);
 
     const compositeFkIndexes: Dictionary<Pick<IndexDef, 'keyName'>> = {};
     const compositeFkUniques: Dictionary<Pick<IndexDef, 'keyName'>> = {};
