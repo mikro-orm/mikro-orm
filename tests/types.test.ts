@@ -1348,6 +1348,49 @@ describe('check typings', () => {
     }
   });
 
+  test('partial index `where` option (EntitySchema) types correctly', async () => {
+    interface PartialUser {
+      id: number;
+      email: string;
+      deletedAt: Date | null;
+    }
+
+    // string form: raw SQL fragment
+    new EntitySchema<PartialUser>({
+      name: 'PartialUser',
+      properties: {
+        id: { type: 'number', primary: true },
+        email: { type: 'string' },
+        deletedAt: { type: 'Date', nullable: true },
+      },
+      uniques: [{ name: 'u1', properties: ['email'], where: '"deleted_at" is null' }],
+      indexes: [{ name: 'i1', properties: ['email'], where: '"deleted_at" is null' }],
+    });
+
+    // object form: typed FilterQuery
+    new EntitySchema<PartialUser>({
+      name: 'PartialUser',
+      properties: {
+        id: { type: 'number', primary: true },
+        email: { type: 'string' },
+        deletedAt: { type: 'Date', nullable: true },
+      },
+      uniques: [{ name: 'u1', properties: ['email'], where: { deletedAt: null } }],
+      indexes: [{ name: 'i1', properties: ['email'], where: { deletedAt: null } }],
+    });
+
+    new EntitySchema<PartialUser>({
+      name: 'PartialUser',
+      properties: {
+        id: { type: 'number', primary: true },
+        email: { type: 'string' },
+        deletedAt: { type: 'Date', nullable: true },
+      },
+      // @ts-expect-error - `nonexistent` is not a property of PartialUser
+      uniques: [{ name: 'u1', properties: ['email'], where: { nonexistent: null } }],
+    });
+  });
+
   test('GH #7470 - entity with relation named "owner" should not break populate types', async () => {
     const UserSchema = defineEntity({
       name: 'User7470',

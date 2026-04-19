@@ -97,7 +97,12 @@ export interface IndexDef {
   constraint: boolean;
   primary: boolean;
   composite?: boolean;
-  expression?: string; // allows using custom sql expressions
+  expression?: string; // raw SQL escape hatch; mutually exclusive with `where`
+  /**
+   * WHERE predicate for partial indexes, normalized to a SQL fragment after metadata
+   * resolution and introspection. Mutually exclusive with `expression`.
+   */
+  where?: string;
   options?: Dictionary; // for driver specific options
   type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: string }>;
   deferMode?: DeferMode | `${DeferMode}`;

@@ -210,16 +210,10 @@ exports[`SchemaGenerator [oracle] > update indexes [oracle] > oracle-update-sche
 "
 `;
 
-exports[`SchemaGenerator [oracle] > update indexes [oracle] > oracle-update-schema-alter-index 1`] = `
-"drop index "book2_author_id_publisher_id_unique";
-create unique index "book2_author_id_publisher_id_unique" on "book2" ("author_id", case when "publisher_id" is not null then "publisher_id" end);
-"
-`;
+exports[`SchemaGenerator [oracle] > update indexes [oracle] > oracle-update-schema-alter-index 1`] = `""`;
 
 exports[`SchemaGenerator [oracle] > update indexes [oracle] > oracle-update-schema-drop-index 1`] = `
 "drop index "book2_title_index";
-drop index "book2_author_id_publisher_id_unique";
-create unique index "book2_author_id_publisher_id_unique" on "book2" ("author_id", case when "publisher_id" is not null then "publisher_id" end);
 "
 `;
 

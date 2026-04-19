@@ -101,13 +101,6 @@ export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
 export const BaseUser2Schema = defineEntity({
   class: BaseUser2,
-  uniques: [
-    {
-      name: 'base_user2_favourite_manager_id_unique',
-      expression: 'create unique index [base_user2_favourite_manager_id_unique] on [base_user2] (where ([favourite_manager_id] IS NOT NULL))',
-      properties: ['favouriteManager'],
-    },
-  ],
   properties: {
     id: p.integer().primary(),
     firstName: p.string().length(100),
@@ -173,13 +166,6 @@ export class Book2 {
 
 export const Book2Schema = defineEntity({
   class: Book2,
-  uniques: [
-    {
-      name: 'book2_isbn_unique',
-      expression: 'create unique index [book2_isbn_unique] on [book2] (where ([isbn] IS NOT NULL))',
-      properties: ['isbn'],
-    },
-  ],
   properties: {
     uuidPk: p.uuid().primary(),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp\`),
@@ -316,18 +302,6 @@ export class FooBar2 {
 
 export const FooBar2Schema = defineEntity({
   class: FooBar2,
-  uniques: [
-    {
-      name: 'foo_bar2_baz_id_unique',
-      expression: 'create unique index [foo_bar2_baz_id_unique] on [foo_bar2] (where ([baz_id] IS NOT NULL))',
-      properties: ['baz'],
-    },
-    {
-      name: 'foo_bar2_foo_bar_id_unique',
-      expression: 'create unique index [foo_bar2_foo_bar_id_unique] on [foo_bar2] (where ([foo_bar_id] IS NOT NULL))',
-      properties: ['fooBar'],
-    },
-  ],
   properties: {
     id: p.integer().primary(),
     name: p.string(),
@@ -498,13 +472,6 @@ export class Test2 {
 
 export const Test2Schema = defineEntity({
   class: Test2,
-  uniques: [
-    {
-      name: 'test2_book_uuid_pk_unique',
-      expression: 'create unique index [test2_book_uuid_pk_unique] on [test2] (where ([book_uuid_pk] IS NOT NULL))',
-      properties: ['book'],
-    },
-  ],
   properties: {
     id: p.integer().primary(),
     name: p.string().nullable(),
@@ -531,13 +498,6 @@ export class User2 {
 
 export const User2Schema = defineEntity({
   class: User2,
-  uniques: [
-    {
-      name: 'user2_favourite_car_name_favourite_car_year_unique',
-      expression: 'create unique index [user2_favourite_car_name_favourite_car_year_unique] on [user2] (where ([favourite_car_name] IS NOT NULL AND [favourite_car_year] IS NOT NULL))',
-      properties: ['favouriteCarName'],
-    },
-  ],
   properties: {
     firstName: p.string().primary().length(100),
     lastName: p.string().primary().length(100),
@@ -652,13 +612,6 @@ export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
 export const BaseUser2Schema = defineEntity({
   class: BaseUser2,
-  uniques: [
-    {
-      name: 'base_user2_favourite_manager_id_unique',
-      expression: 'create unique index [base_user2_favourite_manager_id_unique] on [base_user2] (where ([favourite_manager_id] IS NOT NULL))',
-      properties: ['favouriteManager'],
-    },
-  ],
   properties: {
     id: p.integer().primary(),
     firstName: p.string().length(100),
@@ -724,13 +677,6 @@ export class Book2 {
 
 export const Book2Schema = defineEntity({
   class: Book2,
-  uniques: [
-    {
-      name: 'book2_isbn_unique',
-      expression: 'create unique index [book2_isbn_unique] on [book2] (where ([isbn] IS NOT NULL))',
-      properties: ['isbn'],
-    },
-  ],
   properties: {
     uuidPk: p.uuid().primary(),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp\`),
@@ -867,18 +813,6 @@ export class FooBar2 {
 
 export const FooBar2Schema = defineEntity({
   class: FooBar2,
-  uniques: [
-    {
-      name: 'foo_bar2_baz_id_unique',
-      expression: 'create unique index [foo_bar2_baz_id_unique] on [foo_bar2] (where ([baz_id] IS NOT NULL))',
-      properties: ['baz'],
-    },
-    {
-      name: 'foo_bar2_foo_bar_id_unique',
-      expression: 'create unique index [foo_bar2_foo_bar_id_unique] on [foo_bar2] (where ([foo_bar_id] IS NOT NULL))',
-      properties: ['fooBar'],
-    },
-  ],
   properties: {
     id: p.integer().primary(),
     name: p.string(),
@@ -1049,13 +983,6 @@ export class Test2 {
 
 export const Test2Schema = defineEntity({
   class: Test2,
-  uniques: [
-    {
-      name: 'test2_book_uuid_pk_unique',
-      expression: 'create unique index [test2_book_uuid_pk_unique] on [test2] (where ([book_uuid_pk] IS NOT NULL))',
-      properties: ['book'],
-    },
-  ],
   properties: {
     id: p.integer().primary(),
     name: p.string().nullable(),
@@ -1082,13 +1009,6 @@ export class User2 {
 
 export const User2Schema = defineEntity({
   class: User2,
-  uniques: [
-    {
-      name: 'user2_favourite_car_name_favourite_car_year_unique',
-      expression: 'create unique index [user2_favourite_car_name_favourite_car_year_unique] on [user2] (where ([favourite_car_name] IS NOT NULL AND [favourite_car_year] IS NOT NULL))',
-      properties: ['favouriteCarName'],
-    },
-  ],
   properties: {
     firstName: p.string().primary().length(100),
     lastName: p.string().primary().length(100),
@@ -1203,13 +1123,6 @@ export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
 export const BaseUser2Schema = defineEntity({
   class: BaseUser2,
-  uniques: [
-    {
-      name: 'base_user2_favourite_manager_id_unique',
-      expression: 'create unique index [base_user2_favourite_manager_id_unique] on [base_user2] (where ([favourite_manager_id] IS NOT NULL))',
-      properties: ['favouriteManager'],
-    },
-  ],
   properties: {
     id: p.integer().primary(),
     firstName: p.string().length(100),
@@ -1275,13 +1188,6 @@ export class Book2 {
 
 export const Book2Schema = defineEntity({
   class: Book2,
-  uniques: [
-    {
-      name: 'book2_isbn_unique',
-      expression: 'create unique index [book2_isbn_unique] on [book2] (where ([isbn] IS NOT NULL))',
-      properties: ['isbn'],
-    },
-  ],
   properties: {
     uuidPk: p.uuid().primary(),
     createdAt: p.datetime().length(3).defaultRaw(\`current_timestamp\`),
@@ -1418,18 +1324,6 @@ export class FooBar2 {
 
 export const FooBar2Schema = defineEntity({
   class: FooBar2,
-  uniques: [
-    {
-      name: 'foo_bar2_baz_id_unique',
-      expression: 'create unique index [foo_bar2_baz_id_unique] on [foo_bar2] (where ([baz_id] IS NOT NULL))',
-      properties: ['baz'],
-    },
-    {
-      name: 'foo_bar2_foo_bar_id_unique',
-      expression: 'create unique index [foo_bar2_foo_bar_id_unique] on [foo_bar2] (where ([foo_bar_id] IS NOT NULL))',
-      properties: ['fooBar'],
-    },
-  ],
   properties: {
     id: p.integer().primary(),
     name: p.string(),
@@ -1600,13 +1494,6 @@ export class Test2 {
 
 export const Test2Schema = defineEntity({
   class: Test2,
-  uniques: [
-    {
-      name: 'test2_book_uuid_pk_unique',
-      expression: 'create unique index [test2_book_uuid_pk_unique] on [test2] (where ([book_uuid_pk] IS NOT NULL))',
-      properties: ['book'],
-    },
-  ],
   properties: {
     id: p.integer().primary(),
     name: p.string().nullable(),
@@ -1633,13 +1520,6 @@ export class User2 {
 
 export const User2Schema = defineEntity({
   class: User2,
-  uniques: [
-    {
-      name: 'user2_favourite_car_name_favourite_car_year_unique',
-      expression: 'create unique index [user2_favourite_car_name_favourite_car_year_unique] on [user2] (where ([favourite_car_name] IS NOT NULL AND [favourite_car_year] IS NOT NULL))',
-      properties: ['favouriteCarName'],
-    },
-  ],
   properties: {
     firstName: p.string().primary().length(100),
     lastName: p.string().primary().length(100),
