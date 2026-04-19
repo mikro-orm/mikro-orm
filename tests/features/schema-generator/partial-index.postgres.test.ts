@@ -122,4 +122,26 @@ describe('partial index [postgres]', () => {
 
     expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
   });
+
+  test('functional-column unique index with WHERE: introspection splits expression + where, round-trips cleanly', async () => {
+    const meta = orm.getMetadata();
+    // wipe previous test state
+    for (const [, m] of meta.getAll()) {
+      meta.reset(m.class);
+    }
+    await orm.schema.execute('drop table if exists "partial_fn_user" cascade');
+    await orm.schema.execute(
+      'create table "partial_fn_user" ("id" serial primary key, "email" varchar(255) not null, "tenant_id" int null)',
+    );
+    await orm.schema.execute(
+      `create unique index "partial_fn_user_email_tenant" on "partial_fn_user" (lower((email)::text), tenant_id) where (tenant_id is null)`,
+    );
+
+    const [dump] = await orm.entityGenerator.generate();
+    // expression no longer contains the trailing WHERE; `where` is extracted alongside it
+    expect(dump).toMatch(/expression: 'CREATE UNIQUE INDEX .+ \(lower\(\(email\)::text\), tenant_id\)'/);
+    expect(dump).toMatch(/where: 'tenant_id IS NULL'/);
+
+    await orm.schema.execute('drop table "partial_fn_user" cascade');
+  });
 });

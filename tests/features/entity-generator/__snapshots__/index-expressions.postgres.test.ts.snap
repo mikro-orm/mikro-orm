@@ -35,7 +35,8 @@ export const DcimDeviceSchema = defineEntity({
   uniques: [
     {
       name: 'dcim_device_unique_name_site',
-      expression: 'CREATE UNIQUE INDEX dcim_device_unique_name_site ON public.dcim_device USING btree (lower((name)::text), site_id) WHERE (tenant_id IS NULL)',
+      expression: 'CREATE UNIQUE INDEX dcim_device_unique_name_site ON public.dcim_device USING btree (lower((name)::text), site_id)',
+      where: 'tenant_id IS NULL',
     },
     {
       name: 'dcim_device_unique_name_site_tenant',

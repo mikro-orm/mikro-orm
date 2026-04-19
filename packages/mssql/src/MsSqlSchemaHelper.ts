@@ -651,7 +651,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   override getCreateIndexSQL(tableName: string, index: IndexDef, partialExpression = false): string {
     /* v8 ignore next */
     if (index.expression && !partialExpression) {
-      return index.expression;
+      return index.expression + this.getIndexWhereClause(index);
     }
 
     if (index.fillFactor != null && (index.fillFactor < 0 || index.fillFactor > 100)) {

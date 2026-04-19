@@ -151,7 +151,7 @@ export abstract class SchemaHelper {
   getCreateIndexSQL(tableName: string, index: IndexDef): string {
     /* v8 ignore next */
     if (index.expression) {
-      return index.expression;
+      return index.expression + this.getIndexWhereClause(index);
     }
 
     if (index.fillFactor != null && (index.fillFactor < 0 || index.fillFactor > 100)) {

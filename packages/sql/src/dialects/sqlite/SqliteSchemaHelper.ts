@@ -289,7 +289,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
   override getCreateIndexSQL(tableName: string, index: IndexDef): string {
     /* v8 ignore next */
     if (index.expression) {
-      return index.expression;
+      return index.expression + this.getIndexWhereClause(index);
     }
 
     // SQLite requires: CREATE INDEX schema.index_name ON table_name (columns)
