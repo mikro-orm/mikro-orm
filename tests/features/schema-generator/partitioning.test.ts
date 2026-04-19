@@ -231,6 +231,23 @@ describe('partitioning helpers', () => {
     expect(normalizePartitionBound('')).toBe('');
   });
 
+  test('case-folds MINVALUE/MAXVALUE/NULL keywords emitted by pg_get_expr', () => {
+    expect(normalizePartitionBound("FROM (MINVALUE) TO ('2026-01-01')")).toBe(
+      "for values from (minvalue) to ('2026-01-01')",
+    );
+    expect(normalizePartitionBound("from ('2025-01-01') TO (MAXVALUE)")).toBe(
+      "for values from ('2025-01-01') to (maxvalue)",
+    );
+    expect(normalizePartitionBound('IN (NULL)')).toBe('for values in (null)');
+    // The same keywords in a user-supplied bound should normalize to the same string as PG's
+    // uppercase catalog output, so diffPartitioning collapses both sides.
+    expect(normalizePartitionBound('from (minvalue) to (maxvalue)')).toBe(
+      normalizePartitionBound('FROM (MINVALUE) TO (MAXVALUE)'),
+    );
+    // Inside string literals the tokens stay untouched.
+    expect(normalizePartitionBound("in ('NULL', 'MINVALUE')")).toBe("for values in ('NULL', 'MINVALUE')");
+  });
+
   test('preserves content of single-quoted literals during normalization', () => {
     // Double-quote characters and whitespace inside literals must not be stripped/collapsed.
     expect(normalizePartitionBound(`in ('a"b')`)).toBe(`for values in ('a"b')`);
@@ -349,6 +366,19 @@ describe('partitioning helpers', () => {
         'public',
       ),
     ).toThrow("PartitionedEvent has invalid partitionBy option: unknown partition key 'unknown_column'");
+  });
+
+  test('rejects partition keys that map to a composite column', () => {
+    const meta = createPartitionedMeta({
+      type: 'hash',
+      expression: ['tenant'],
+      partitions: 1,
+    });
+    meta.root.properties.tenant.fieldNames = ['tenant_id', 'tenant_shard'];
+
+    expect(() => getTablePartitioning(meta, 'public')).toThrow(
+      "PartitionedEvent has invalid partitionBy option: partition key 'tenant' maps to multiple columns ('tenant_id', 'tenant_shard'); list them explicitly as partition keys",
+    );
   });
 
   test('converts catalog-style partitioning definitions back to lowercase entity metadata', () => {

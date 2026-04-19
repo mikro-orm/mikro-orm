@@ -221,8 +221,14 @@ const resolvePartitionKey = (meta: EntityMetadata, key: string, quoteIdentifier:
       candidate => candidate.fieldNames?.length === 1 && candidate.fieldNames[0] === trimmed,
     );
 
-  if (prop?.fieldNames?.length !== 1) {
+  if (!prop) {
     throw new Error(`Entity ${meta.className} has invalid partitionBy option: unknown partition key '${key.trim()}'`);
+  }
+
+  if (prop.fieldNames?.length !== 1) {
+    throw new Error(
+      `Entity ${meta.className} has invalid partitionBy option: partition key '${key.trim()}' maps to multiple columns ('${prop.fieldNames?.join("', '")}'); list them explicitly as partition keys`,
+    );
   }
 
   return quoteIdentifier(prop.fieldNames[0]);
@@ -273,11 +279,11 @@ export function normalizePartitionDefinition(value: string): string {
   return `${type} (${normalizePartitionSqlFragment(unwrapAllOuterParentheses(expression))})`;
 }
 
-const PARTITION_BOUND_KEYWORDS = /\b(for values|with|in|from|to)\b/gi;
+const PARTITION_BOUND_KEYWORDS = /\b(for values|with|in|from|to|minvalue|maxvalue|null)\b/gi;
 
 /** @internal */
 export function normalizePartitionBound(value: string): string {
-  const normalized = normalizeWhitespace(normalizePartitionLiterals(value));
+  const normalized = normalizeWhitespace(value);
 
   if (!normalized) {
     return '';
@@ -288,8 +294,10 @@ export function normalizePartitionBound(value: string): string {
   }
 
   // Prepend `for values` if the caller passed a bare `with/in/from … to …` clause, then lowercase
-  // PG bound keywords outside quoted literals (so `FROM ('x') TO ('hello TO world')` becomes
-  // `from ('x') to ('hello TO world')` with the inner TO inside the literal preserved).
+  // PG bound keywords outside quoted literals (so `FROM (MINVALUE) TO ('hello TO world')` becomes
+  // `from (minvalue) to ('hello TO world')` with the inner TO inside the literal preserved).
+  // PG's `pg_get_expr` emits `MINVALUE`/`MAXVALUE`/`NULL` in uppercase, so case-folding them here
+  // prevents a perpetual diff against user-supplied lowercase bounds.
   const prefixed = /^for values\b/i.test(normalized) ? normalized : `for values ${normalized}`;
   const lowered = mapOutsideLiterals(prefixed, segment =>
     segment.replace(PARTITION_BOUND_KEYWORDS, match => match.toLowerCase()),

@@ -214,6 +214,14 @@ export class MetadataValidator {
           );
         }
 
+        const duplicates = Utils.findDuplicates(partitions as string[]);
+
+        if (duplicates.length > 0) {
+          throw new MetadataError(
+            `Entity ${meta.className} has invalid partitionBy option: duplicate hash partition name '${duplicates[0]}'`,
+          );
+        }
+
         return;
       }
 
@@ -245,6 +253,17 @@ export class MetadataValidator {
     if (ambiguousName) {
       throw new MetadataError(
         `Entity ${meta.className} has invalid partitionBy option: partition name '${ambiguousName.name}' contains more than one '.' — use at most one '.' to separate schema from table`,
+      );
+    }
+
+    const explicitNames = meta.partitionBy.partitions
+      .map(partition => partition.name)
+      .filter((name): name is string => name != null);
+    const duplicateNames = Utils.findDuplicates(explicitNames);
+
+    if (duplicateNames.length > 0) {
+      throw new MetadataError(
+        `Entity ${meta.className} has invalid partitionBy option: duplicate partition name '${duplicateNames[0]}'`,
       );
     }
   }
@@ -377,13 +396,19 @@ export class MetadataValidator {
         candidate => candidate.fieldNames?.length === 1 && candidate.fieldNames[0] === trimmed,
       );
 
-    if (prop?.fieldNames?.length === 1) {
-      return prop.fieldNames[0];
+    if (!prop) {
+      throw new MetadataError(
+        `Entity ${meta.className} has invalid partitionBy option: unknown partition key '${key.trim()}'`,
+      );
     }
 
-    throw new MetadataError(
-      `Entity ${meta.className} has invalid partitionBy option: unknown partition key '${key.trim()}'`,
-    );
+    if (prop.fieldNames?.length !== 1) {
+      throw new MetadataError(
+        `Entity ${meta.className} has invalid partitionBy option: partition key '${key.trim()}' maps to multiple columns ('${prop.fieldNames?.join("', '")}'); list them explicitly as partition keys`,
+      );
+    }
+
+    return prop.fieldNames[0];
   }
 
   private getConstraintFields(meta: EntityMetadata, properties?: string | string[]): string[] | undefined {

@@ -546,6 +546,29 @@ describe('MetadataValidator', () => {
       ).not.toThrow();
     });
 
+    test('rejects duplicate hash partition names', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: ['type'],
+          partitions: ['p1', 'p2', 'p1'],
+        }),
+      ).toThrow("Entity PartitionedEntity has invalid partitionBy option: duplicate hash partition name 'p1'");
+    });
+
+    test('rejects duplicate list/range partition names', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'range',
+          expression: ['type'],
+          partitions: [
+            { name: 'part_a', values: "from ('2026-01-01') to ('2026-02-01')" },
+            { name: 'part_a', values: "from ('2026-02-01') to ('2026-03-01')" },
+          ],
+        }),
+      ).toThrow("Entity PartitionedEntity has invalid partitionBy option: duplicate partition name 'part_a'");
+    });
+
     test('accepts valid range partitioning with explicit child tables', async () => {
       expect(
         validatePartitionedSchema({
