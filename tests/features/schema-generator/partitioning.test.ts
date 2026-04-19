@@ -78,7 +78,6 @@ describe('partitioning helpers', () => {
           { values: " from ('2026-01-01') to ('2026-02-01') " },
           { name: 'archive.partitioned_event_default', values: ' default ' },
           { name: 'audit.partitioned_event_q1', values: "for values in ('q1')" },
-          { name: 'a.b.c', values: "for values in ('q2')" },
         ],
       }),
       'public',
@@ -101,11 +100,6 @@ describe('partitioning helpers', () => {
           name: 'partitioned_event_q1',
           schema: 'audit',
           bound: "for values in ('q1')",
-        },
-        {
-          name: 'b.c',
-          schema: 'a',
-          bound: "for values in ('q2')",
         },
       ],
     });
@@ -320,30 +314,30 @@ describe('partitioning helpers', () => {
     expect(partitioning?.definition).toBe('hash (tenant_id)');
   });
 
-  test('passes blank partition keys through untouched', () => {
-    const partitioning = getTablePartitioning(
-      createPartitionedMeta({
-        type: 'hash',
-        expression: ['   ', 'type'],
-        partitions: 1,
-      }),
-      'public',
-    );
-
-    expect(partitioning?.definition).toBe('hash (, type)');
+  test('rejects blank partition keys instead of emitting malformed SQL', () => {
+    expect(() =>
+      getTablePartitioning(
+        createPartitionedMeta({
+          type: 'hash',
+          expression: ['   ', 'type'],
+          partitions: 1,
+        }),
+        'public',
+      ),
+    ).toThrow('PartitionedEvent has invalid partitionBy option: empty partition key');
   });
 
-  test('falls back to raw key when property is unknown', () => {
-    const partitioning = getTablePartitioning(
-      createPartitionedMeta({
-        type: 'hash',
-        expression: ['unknown_column'],
-        partitions: 1,
-      }),
-      'public',
-    );
-
-    expect(partitioning?.definition).toBe('hash (unknown_column)');
+  test('rejects partition keys that do not resolve to entity properties', () => {
+    expect(() =>
+      getTablePartitioning(
+        createPartitionedMeta({
+          type: 'hash',
+          expression: ['unknown_column'],
+          partitions: 1,
+        }),
+        'public',
+      ),
+    ).toThrow("PartitionedEvent has invalid partitionBy option: unknown partition key 'unknown_column'");
   });
 
   test('converts catalog-style partitioning definitions back to lowercase entity metadata', () => {
@@ -394,6 +388,15 @@ describe('partitioning helpers', () => {
     });
   });
 
+  test('throws when catalog definition uses an unsupported partition type', () => {
+    expect(() =>
+      toEntityPartitionBy({
+        definition: 'reference (tenant_id)',
+        partitions: [],
+      }),
+    ).toThrow("Unsupported partition type 'reference' in definition 'reference (tenant_id)'");
+  });
+
   test('preserves expressions that are not wrapped by a single outer parenthesis pair', () => {
     expect(
       toEntityPartitionBy({
@@ -432,6 +435,28 @@ describe('partitioning helpers', () => {
         }),
       ),
     ).toThrow('Entity PartitionedEvent uses partitionBy, but SqlitePlatform does not support partitioned tables');
+  });
+
+  test('normalizes timestamp bounds with non-UTC offsets (session-local midnight)', () => {
+    // Catalog round-trip from a non-UTC session returns `YYYY-MM-DD 00:00:00±HH[:MM]`;
+    // the normalizer must collapse both UTC and non-UTC offsets so diffing converges.
+    expect(normalizePartitionBound("for values from ('2026-01-01 00:00:00-05') to ('2026-02-01 00:00:00+05:30')")).toBe(
+      "for values from ('2026-01-01') to ('2026-02-01')",
+    );
+
+    expect(normalizePartitionDefinition("range (('2026-01-01 00:00:00-05'::timestamptz))")).toBe(
+      "range ('2026-01-01'::timestamptz)",
+    );
+  });
+
+  test('preserves offset-less midnight literals so text list partitions do not false-negative-diff', () => {
+    // Without an explicit numeric offset the value may come from a text/varchar column; stripping
+    // the `00:00:00` suffix here would make `'2026-01-01 00:00:00'` compare equal to `'2026-01-01'`
+    // and hide genuine bound changes.
+    expect(normalizePartitionBound("for values in ('2026-01-01 00:00:00')")).toBe(
+      "for values in ('2026-01-01 00:00:00')",
+    );
+    expect(normalizePartitionBound("for values in ('2026-01-01')")).toBe("for values in ('2026-01-01')");
   });
 
   test('round-trips partitioning through sql schema metadata', () => {

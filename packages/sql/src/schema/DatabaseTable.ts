@@ -72,6 +72,7 @@ export class DatabaseTable {
     return this.partitioning;
   }
 
+  /** @internal */
   setPartitioning(partitioning?: TablePartitioning): void {
     this.partitioning = partitioning;
   }

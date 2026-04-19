@@ -42,7 +42,10 @@ export type EntityPartitionExpression<E = AnyEntity> =
 
 /** Explicit child partition definition for PostgreSQL `list` and `range` partitioning. */
 export interface EntityPartition<E = AnyEntity> {
-  /** Optional child table name. Defaults to `<tableName>_<index>`. The first `.` is treated as a `schema.table` separator. */
+  /**
+   * Optional child table name. Defaults to `<tableName>_<index>`. A single `.` is treated as a
+   * `schema.table` separator; names with more than one `.` are rejected to avoid ambiguity.
+   */
   name?: string;
   /** Partition bound clause, either as `for values ...` or the trailing part such as `in (...)`, `from ... to ...`, or `default`. */
   values: string;

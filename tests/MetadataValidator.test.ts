@@ -700,37 +700,32 @@ describe('MetadataValidator', () => {
       );
     });
 
-    test('skips key-column checks when all comma-separated identifiers fail to resolve', async () => {
+    test('rejects comma-separated identifiers that resolve to empty strings', async () => {
       expect(
         validatePartitionedSchema({
           type: 'hash',
           expression: '""',
           partitions: 1,
         }),
-      ).not.toThrow();
+      ).toThrow('Entity PartitionedEntity has invalid partitionBy option: empty partition key');
     });
 
-    test('validates resolved keys even when some identifiers are unknown', async () => {
+    test('rejects unresolved identifiers in partition expressions', async () => {
       expect(
         validatePartitionedSchema({
           type: 'hash',
           expression: 'type, unknown_column',
           partitions: 1,
         }),
-      ).not.toThrow();
+      ).toThrow("Entity PartitionedEntity has invalid partitionBy option: unknown partition key 'unknown_column'");
 
       expect(
-        validatePartitionedSchema(
-          {
-            type: 'hash',
-            expression: 'slug, unknown_column',
-            partitions: 1,
-          },
-          { typePrimary: false },
-        ),
-      ).toThrow(
-        "Entity PartitionedEntity has invalid partitionBy option: primary key must include partition key columns 'slug'",
-      );
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: ['type', 'unknown_column'],
+          partitions: 1,
+        }),
+      ).toThrow("Entity PartitionedEntity has invalid partitionBy option: unknown partition key 'unknown_column'");
     });
 
     test('ignores unique constraints with no properties declared', async () => {
@@ -744,6 +739,109 @@ describe('MetadataValidator', () => {
           { uniques: [{ name: 'no_props_uq' } as any] },
         ),
       ).not.toThrow();
+    });
+
+    test('rejects partitionBy combined with STI inheritance', async () => {
+      const schema = new EntitySchema<PartitionedEntity>({
+        name: 'PartitionedEntity',
+        tableName: 'partitioned_entity',
+        discriminatorColumn: 'type',
+        partitionBy: {
+          type: 'hash',
+          expression: ['type'],
+          partitions: 2,
+        },
+        properties: {
+          id: { primary: true, name: 'id', type: 'number', fieldName: 'id' },
+          type: { primary: true, name: 'type', type: 'string', fieldName: 'type' },
+          slug: { name: 'slug', type: 'string', fieldName: 'slug' },
+        },
+      }).init();
+      const storage = new MetadataStorage({ [schema.meta.className]: schema.meta } as any);
+
+      expect(() => validator.validateEntityDefinition(storage, schema as any, options)).toThrow(
+        'Entity PartitionedEntity has invalid partitionBy option: combining partitioning with inheritance is not supported',
+      );
+    });
+
+    test('rejects partitionBy combined with TPT inheritance', async () => {
+      const schema = new EntitySchema<PartitionedEntity>({
+        name: 'PartitionedEntity',
+        tableName: 'partitioned_entity',
+        partitionBy: {
+          type: 'hash',
+          expression: ['type'],
+          partitions: 2,
+        },
+        properties: {
+          id: { primary: true, name: 'id', type: 'number', fieldName: 'id' },
+          type: { primary: true, name: 'type', type: 'string', fieldName: 'type' },
+          slug: { name: 'slug', type: 'string', fieldName: 'slug' },
+        },
+      }).init();
+      (schema.meta as any).inheritanceType = 'tpt';
+      const storage = new MetadataStorage({ [schema.meta.className]: schema.meta } as any);
+
+      expect(() => validator.validateEntityDefinition(storage, schema as any, options)).toThrow(
+        'Entity PartitionedEntity has invalid partitionBy option: combining partitioning with inheritance is not supported',
+      );
+    });
+
+    test('rejects partitionBy on view entities', async () => {
+      const schema = new EntitySchema<PartitionedEntity>({
+        name: 'PartitionedView',
+        expression: 'select 1 as id, 1 as type, 1 as slug',
+        partitionBy: {
+          type: 'hash',
+          expression: ['type'],
+          partitions: 2,
+        },
+        properties: {
+          id: { primary: true, name: 'id', type: 'number', fieldName: 'id' },
+          type: { name: 'type', type: 'string', fieldName: 'type' },
+          slug: { name: 'slug', type: 'string', fieldName: 'slug' },
+        },
+      }).init();
+      (schema.meta as any).view = true;
+      const storage = new MetadataStorage({ [schema.meta.className]: schema.meta } as any);
+
+      expect(() => validator.validateEntityDefinition(storage, schema as any, options)).toThrow(
+        'View entity PartitionedView cannot define partitionBy',
+      );
+    });
+
+    test('rejects partition names containing more than one dot', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'range',
+          expression: ['type'],
+          partitions: [{ values: "from ('a') to ('b')" }, { name: 'a.b.c', values: "from ('c') to ('d')" }],
+        }),
+      ).toThrow(
+        "Entity PartitionedEntity has invalid partitionBy option: partition name 'a.b.c' contains more than one '.' — use at most one '.' to separate schema from table",
+      );
+    });
+
+    test('rejects partitionBy on virtual entities', async () => {
+      const schema = new EntitySchema<PartitionedEntity>({
+        name: 'PartitionedVirtual',
+        expression: 'select 1 as id, 1 as type, 1 as slug',
+        partitionBy: {
+          type: 'hash',
+          expression: ['type'],
+          partitions: 2,
+        },
+        properties: {
+          id: { name: 'id', type: 'number', fieldName: 'id' },
+          type: { name: 'type', type: 'string', fieldName: 'type' },
+          slug: { name: 'slug', type: 'string', fieldName: 'slug' },
+        },
+      }).init();
+      const storage = new MetadataStorage({ [schema.meta.className]: schema.meta } as any);
+
+      expect(() => validator.validateEntityDefinition(storage, schema as any, options)).toThrow(
+        'Virtual entity PartitionedVirtual cannot define partitionBy',
+      );
     });
   });
 

@@ -37,6 +37,10 @@ export class MetadataValidator {
     // Virtual entities (expression without view flag) have restrictions - no PKs, limited relation types
     // Note: meta.virtual is set later in sync(), so we check for expression && !view here
     if (meta.virtual || (meta.expression && !meta.view)) {
+      if (meta.partitionBy) {
+        throw new MetadataError(`Virtual entity ${meta.className} cannot define partitionBy`);
+      }
+
       for (const prop of Utils.values(meta.properties)) {
         if (
           ![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED, ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(
@@ -170,6 +174,19 @@ export class MetadataValidator {
       throw new MetadataError(`Entity ${meta.className} has invalid partitionBy option: missing expression`);
     }
 
+    // Inheritance (STI/TPT) and partitioning both drive table layout, so combining them would
+    // require non-trivial DDL coordination that the schema generator does not produce today.
+    const hasInheritance =
+      !!meta.root.discriminatorColumn ||
+      meta.root.inheritanceType === 'tpt' ||
+      (meta.root as { inheritance?: string }).inheritance === 'tpt';
+
+    if (hasInheritance) {
+      throw new MetadataError(
+        `Entity ${meta.className} has invalid partitionBy option: combining partitioning with inheritance is not supported`,
+      );
+    }
+
     this.validatePartitionKeyConstraints(meta);
 
     if (meta.partitionBy.type === 'hash') {
@@ -191,6 +208,16 @@ export class MetadataValidator {
     if (meta.partitionBy.partitions.some(partition => !partition.values?.trim())) {
       throw new MetadataError(
         `Entity ${meta.className} has invalid partitionBy option: every partition must define values`,
+      );
+    }
+
+    const ambiguousName = meta.partitionBy.partitions.find(
+      partition => (partition.name?.match(/\./g)?.length ?? 0) > 1,
+    );
+
+    if (ambiguousName) {
+      throw new MetadataError(
+        `Entity ${meta.className} has invalid partitionBy option: partition name '${ambiguousName.name}' contains more than one '.' — use at most one '.' to separate schema from table`,
       );
     }
   }
@@ -254,6 +281,13 @@ export class MetadataValidator {
     }
   }
 
+  /**
+   * Returns the list of physical field names that a partition expression references, or
+   * `undefined` when the expression is opaque (callback, or raw SQL like `date_trunc('day', x)`
+   * that we cannot statically parse). Opaque expressions intentionally bypass the primary-key /
+   * unique-constraint coverage checks — users are trusted to ensure the referenced columns are
+   * part of the partition key, since PostgreSQL will surface the violation at DDL execution.
+   */
   private getPartitionKeyFields(meta: EntityMetadata): string[] | undefined {
     const expression = meta.partitionBy?.expression;
 
@@ -261,23 +295,24 @@ export class MetadataValidator {
       return undefined;
     }
 
-    const value = String(expression).trim();
-    const values = Array.isArray(expression)
-      ? expression
-      : /^[\w".]+(?:\s*,\s*[\w".]+)*$/.test(value)
-        ? value.split(',').map((key: string) => key.trim())
-        : [value];
+    if (Array.isArray(expression)) {
+      return expression.map(key => this.resolvePartitionKeyField(meta, key));
+    }
 
-    return values
-      .map((key: string) => this.resolvePartitionKeyField(meta, key))
-      .filter((field: string | undefined): field is string => !!field);
+    const value = String(expression).trim();
+
+    if (!/^[\w".]+(?:\s*,\s*[\w".]+)*$/.test(value)) {
+      return undefined;
+    }
+
+    return value.split(',').map(key => this.resolvePartitionKeyField(meta, key));
   }
 
-  private resolvePartitionKeyField(meta: EntityMetadata, key: string): string | undefined {
+  private resolvePartitionKeyField(meta: EntityMetadata, key: string): string {
     const trimmed = key.trim().replaceAll('"', '');
 
     if (!trimmed) {
-      return undefined;
+      throw new MetadataError(`Entity ${meta.className} has invalid partitionBy option: empty partition key`);
     }
 
     const prop =
@@ -286,7 +321,13 @@ export class MetadataValidator {
         candidate => candidate.fieldNames?.length === 1 && candidate.fieldNames[0] === trimmed,
       );
 
-    return prop?.fieldNames?.length === 1 ? prop.fieldNames[0] : undefined;
+    if (prop?.fieldNames?.length === 1) {
+      return prop.fieldNames[0];
+    }
+
+    throw new MetadataError(
+      `Entity ${meta.className} has invalid partitionBy option: unknown partition key '${key.trim()}'`,
+    );
   }
 
   private getConstraintFields(meta: EntityMetadata, properties?: string | string[]): string[] | undefined {
@@ -633,6 +674,11 @@ export class MetadataValidator {
     // View entities must have an expression
     if (!meta.expression) {
       throw MetadataError.viewEntityWithoutExpression(meta);
+    }
+
+    // Views are not partitionable - reject explicitly instead of silently ignoring
+    if (meta.partitionBy) {
+      throw new MetadataError(`View entity ${meta.className} cannot define partitionBy`);
     }
 
     // Validate indexes if present

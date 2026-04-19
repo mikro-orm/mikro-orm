@@ -303,6 +303,74 @@ describe('SchemaHelper', () => {
       ]);
     });
 
+    test('getPreAlterTable tailors message for add/remove/change partitioning transitions', () => {
+      const helper = new PostgreSqlPlatform().getSchemaHelper()!;
+      const partitioning = { definition: 'hash (type)', partitions: [] } as any;
+
+      expect(() =>
+        helper.getPreAlterTable(
+          { name: 'evt', changedPartitioning: { from: undefined, to: partitioning } } as TableDifference,
+          true,
+        ),
+      ).toThrow(/Adding partition definitions.*'<none>' -> 'hash \(type\)'/);
+
+      expect(() =>
+        helper.getPreAlterTable(
+          { name: 'evt', changedPartitioning: { from: partitioning, to: undefined } } as TableDifference,
+          true,
+        ),
+      ).toThrow(/Removing partition definitions.*'hash \(type\)' -> '<none>'/);
+
+      expect(() =>
+        helper.getPreAlterTable(
+          {
+            name: 'evt',
+            changedPartitioning: {
+              from: partitioning,
+              to: { definition: 'hash (type, id)', partitions: [] } as any,
+            },
+          } as TableDifference,
+          true,
+        ),
+      ).toThrow(/Changing partition definitions.*'hash \(type\)' -> 'hash \(type, id\)'/);
+    });
+
+    test('splices partition definitions containing regex-replacement tokens verbatim', () => {
+      // `String.prototype.replace` interprets `$$`, `$&`, `$1`..`$9` in the replacement string as
+      // back-references, so definitions containing dollar-quoted literals or ampersands must be
+      // spliced into the CREATE TABLE statement literally, not via `.replace(/;$/, ...)`.
+      const config = new Configuration({ driver: PostgreSqlDriver }, false);
+      const platform = config.getPlatform() as PostgreSqlPlatform;
+      const helper = platform.getSchemaHelper() as PostgreSqlSchemaHelper;
+      const table = new DatabaseTable(platform, 'partitioned_event', 'public');
+
+      table.addColumn({
+        name: 'type',
+        type: 'varchar(255)',
+        mappedType: platform.getMappedType('varchar(255)'),
+        nullable: false,
+        primary: true,
+      } as Column);
+      table.setIndexes([
+        {
+          keyName: 'partitioned_event_pkey',
+          columnNames: ['type'],
+          composite: false,
+          unique: true,
+          primary: true,
+          constraint: true,
+        },
+      ]);
+      table.setPartitioning({
+        definition: 'hash (my_func($$a&b$$, $1))',
+        partitions: [{ name: 'partitioned_event_0', bound: 'for values with (modulus 1, remainder 0)' }],
+      });
+
+      const sql = helper.createTable(table);
+
+      expect(sql[0]).toContain('partition by hash (my_func($$a&b$$, $1));');
+    });
+
     test('creates partitioned table DDL with child partitions', () => {
       const config = new Configuration({ driver: PostgreSqlDriver }, false);
       const platform = config.getPlatform() as PostgreSqlPlatform;
@@ -394,8 +462,8 @@ describe('SchemaHelper', () => {
       );
 
       expect(connection.execute).toHaveBeenCalledTimes(1);
-      expect(connection.execute.mock.calls[0][0]).toContain(`parent_ns.nspname = 'archive'`);
-      expect(connection.execute.mock.calls[0][0]).toContain(`parent_ns.nspname = 'public'`);
+      expect(connection.execute.mock.calls[0][0]).toContain(`('archive'::text, 'event_rollup')`);
+      expect(connection.execute.mock.calls[0][0]).toContain(`('public'::text, 'partitioned_event')`);
       expect(partitions).toEqual({
         'archive.event_rollup': {
           definition: 'list (tenant_id)',
@@ -433,7 +501,7 @@ describe('SchemaHelper', () => {
 
       expect(partitions).toEqual({});
       expect(connection.execute).toHaveBeenCalledTimes(1);
-      expect(connection.execute.mock.calls[0][0]).toContain(`parent.relname in ('partitioned_event')`);
+      expect(connection.execute.mock.calls[0][0]).toContain(`(null::text, 'partitioned_event')`);
       expect(connection.execute.mock.calls[0][0]).not.toContain('parent_ns.nspname = NULL');
     });
 

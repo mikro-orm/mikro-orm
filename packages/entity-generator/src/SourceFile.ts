@@ -636,11 +636,20 @@ export class SourceFile {
 
   protected getPartitionByDecl(partitionBy: EntityPartitionBy): Dictionary {
     const result: Dictionary = { type: this.quote(partitionBy.type) };
-    const expression = partitionBy.expression;
+    // Introspected metadata from `toEntityPartitionBy` always emits a string or string[];
+    // callback-form expressions only exist in hand-written entity metadata. Fail loud if a
+    // callback ever reaches the generator — stringifying `fn.toString()` would produce source
+    // that re-imports nothing and will not compile.
+    if (typeof partitionBy.expression === 'function') {
+      throw new Error(
+        `Cannot emit entity source for ${this.meta.className}: partitionBy.expression is a callback. ` +
+          `Entity generator expects string or string[] expressions from catalog introspection.`,
+      );
+    }
 
-    if (typeof expression === 'function') {
-      result.expression = expression.toString();
-    } else if (Array.isArray(expression)) {
+    const expression = partitionBy.expression as string | readonly string[];
+
+    if (Array.isArray(expression)) {
       result.expression = expression.map(key => this.quote(String(key)));
     } else {
       result.expression = this.quote(String(expression));

@@ -83,7 +83,12 @@ const findMatchingParenthesis = (value: string, start: number): number => {
 const normalizePartitionLiterals = (value: string): string =>
   value
     .replace(/('(?:[^']|'')*')::text\b/gi, '$1')
-    .replace(/'(\d{4}-\d{2}-\d{2}) 00:00:00(?:[+-]00(?::00)?)?'/g, "'$1'");
+    // Strip the `00:00:00±HH[:MM]` time-with-offset suffix so catalog round-trips (timestamptz
+    // bounds formatted via the session TimeZone) match user metadata that omitted the time part.
+    // The numeric offset is required here so we don't collapse midnight-looking text values (e.g.
+    // `'2026-01-01 00:00:00'` stored in a text/varchar list partition), which would otherwise
+    // produce false-negative diffs.
+    .replace(/'(\d{4}-\d{2}-\d{2}) 00:00:00[+-]\d{2}(?::\d{2})?'/g, "'$1'");
 
 const unwrapOuterParentheses = (value: string): string => {
   const trimmed = value.trim();
@@ -166,7 +171,7 @@ const resolvePartitionKey = (meta: EntityMetadata, key: string, quoteIdentifier:
   const trimmed = key.trim().replaceAll('"', '');
 
   if (!trimmed) {
-    return key.trim();
+    throw new Error(`Entity ${meta.className} has invalid partitionBy option: empty partition key`);
   }
 
   const prop =
@@ -174,9 +179,12 @@ const resolvePartitionKey = (meta: EntityMetadata, key: string, quoteIdentifier:
     Object.values(meta.root.properties).find(
       candidate => candidate.fieldNames?.length === 1 && candidate.fieldNames[0] === trimmed,
     );
-  const fieldName = prop?.fieldNames?.length === 1 ? prop.fieldNames[0] : trimmed;
 
-  return quoteIdentifier(fieldName);
+  if (prop?.fieldNames?.length !== 1) {
+    throw new Error(`Entity ${meta.className} has invalid partitionBy option: unknown partition key '${key.trim()}'`);
+  }
+
+  return quoteIdentifier(prop.fieldNames[0]);
 };
 
 const resolvePartitionExpression = (
@@ -226,6 +234,8 @@ export function normalizePartitionDefinition(value: string): string {
   return `${type} (${normalizePartitionSqlFragment(unwrapAllOuterParentheses(expression))})`;
 }
 
+const PARTITION_BOUND_KEYWORDS = /\b(for values|with|in|from|to)\b/gi;
+
 /** @internal */
 export function normalizePartitionBound(value: string): string {
   const normalized = normalizeWhitespace(normalizePartitionLiterals(value));
@@ -238,20 +248,15 @@ export function normalizePartitionBound(value: string): string {
     return 'default';
   }
 
-  let ret = /^for values\b/i.test(normalized)
-    ? normalized.replace(/^for values\b/i, 'for values')
-    : `for values ${normalized}`;
+  // Prepend `for values` if the caller passed a bare `with/in/from … to …` clause, then lowercase
+  // PG bound keywords outside quoted literals (so `FROM ('x') TO ('hello TO world')` becomes
+  // `from ('x') to ('hello TO world')` with the inner TO inside the literal preserved).
+  const prefixed = /^for values\b/i.test(normalized) ? normalized : `for values ${normalized}`;
+  const lowered = mapOutsideLiterals(prefixed, segment =>
+    segment.replace(PARTITION_BOUND_KEYWORDS, match => match.toLowerCase()),
+  );
 
-  if (/^for values\s+with\b/i.test(ret)) {
-    ret = ret.replace(/^for values\s+with\b/i, 'for values with');
-  } else if (/^for values\s+in\b/i.test(ret)) {
-    ret = ret.replace(/^for values\s+in\b/i, 'for values in');
-  } else if (/^for values\s+from\b/i.test(ret)) {
-    ret = ret.replace(/^for values\s+from\b/i, 'for values from');
-    ret = mapOutsideLiterals(ret, segment => segment.replace(/\s+to\b/i, ' to'));
-  }
-
-  return normalizePartitionSqlFragment(ret);
+  return normalizePartitionSqlFragment(lowered);
 }
 
 const createPartitionBound = (value: string): string => normalizePartitionBound(value);
@@ -336,6 +341,11 @@ export const diffPartitioning = (
   return fromPartitions.some((partition, index) => partition !== toPartitions[index]);
 };
 
+const SUPPORTED_PARTITION_TYPES = ['hash', 'list', 'range'] as const;
+
+const isSupportedPartitionType = (value: string): value is EntityPartitionBy['type'] =>
+  (SUPPORTED_PARTITION_TYPES as readonly string[]).includes(value);
+
 /** @internal */
 export const toEntityPartitionBy = (partitioning: TablePartitioning | undefined): EntityPartitionBy | undefined => {
   if (!partitioning) {
@@ -347,9 +357,17 @@ export const toEntityPartitionBy = (partitioning: TablePartitioning | undefined)
     ...partition,
     bound: normalizePartitionBound(partition.bound),
   }));
-  const [rawType, ...rest] = normalizeWhitespace(normalizedDefinition).split(' ');
-  const type = rawType.toLowerCase() as EntityPartitionBy['type'];
-  const expression = unwrapOuterParentheses(rest.join(' '));
+  // Split the leading type keyword off of the definition without using `split(' ')`, which would
+  // shatter quoted literals containing spaces. Match a bareword prefix followed by whitespace.
+  const [, rawType = normalizedDefinition, rawExpression = ''] =
+    /^(\S+)(?:\s+([\s\S]*))?$/.exec(normalizeWhitespace(normalizedDefinition)) ?? [];
+  const type = rawType.toLowerCase();
+
+  if (!isSupportedPartitionType(type)) {
+    throw new Error(`Unsupported partition type '${rawType}' in definition '${partitioning.definition}'`);
+  }
+
+  const expression = unwrapOuterParentheses(rawExpression);
 
   if (type === 'hash') {
     return {

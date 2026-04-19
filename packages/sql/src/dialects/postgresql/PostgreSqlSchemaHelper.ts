@@ -51,14 +51,23 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   override getListTablesSQL(): string {
+    // The `pg_inherits` anti-join compares on (schema, table) pairs so cross-schema child
+    // partitions are excluded even when their schema is not on the session `search_path`
+    // (in which case `inhrelid::regclass::text` renders as `schema.name` rather than bare `name`,
+    // breaking a plain `table_name not in (...)` predicate).
     return (
       `select table_name, table_schema as schema_name, ` +
       `(select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c
           where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment ` +
-      `from information_schema.tables ` +
+      `from information_schema.tables t ` +
       `where ${this.getIgnoredNamespacesConditionSQL('table_schema')} ` +
       `and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' ` +
-      `and table_name not in (select inhrelid::regclass::text from pg_inherits) ` +
+      `and not exists (` +
+      `select 1 from pg_inherits i ` +
+      `join pg_class c on c.oid = i.inhrelid ` +
+      `join pg_namespace n on n.oid = c.relnamespace ` +
+      `where c.relname = t.table_name and n.nspname = t.table_schema` +
+      `) ` +
       `order by table_name`
     );
   }
@@ -172,7 +181,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       return `create table ${partitionName} partition of ${table.getQuotedName()} ${partition.bound}`;
     });
 
-    return [createTable.replace(/;$/, ` partition by ${partitioning.definition};`), ...rest, ...partitions];
+    // SchemaHelper.append() always terminates the CREATE TABLE with `;`; we rely on that to splice
+    // the `partition by ...` clause in before the terminator. Use slice instead of replace() so that
+    // regex replacement tokens like `$$`, `$&`, or `$1` inside user-supplied expressions (e.g., a
+    // callback that returns a dollar-quoted literal) are not interpreted as back-references.
+    const spliced = `${createTable.slice(0, -1)} partition by ${partitioning.definition};`;
+    return [spliced, ...rest, ...partitions];
   }
 
   override dropMaterializedViewIfExists(name: string, schema?: string): string {
@@ -252,36 +266,47 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }
   }
 
+  /**
+   * Introspects direct partitions only: the `pg_inherits` join surfaces a parent's children but
+   * does not recurse into sub-partitioning (e.g. hash-of-range). Declarative `partitionBy`
+   * metadata does not express multi-level partitioning either, so grandchildren are intentionally
+   * invisible to schema diffing.
+   */
   async getPartitions(
     connection: AbstractSqlConnection,
     tablesBySchemas: Map<string | undefined, Table[]>,
     ctx?: Transaction,
   ): Promise<Dictionary<TablePartitioning>> {
-    const predicates = [...tablesBySchemas.entries()]
-      .filter(([, tables]) => tables.length > 0)
-      .map(([schema, tables]) => {
-        const names = tables.map(t => this.platform.quoteValue(t.table_name)).join(',');
-        const schemaPredicate = schema != null ? `parent_ns.nspname = ${this.platform.quoteValue(schema)} and ` : '';
-        return `(${schemaPredicate}parent.relname in (${names}))`;
-      });
+    // Collapse every (schema, table) pair into a single `values (...)` relation and join against
+    // the catalog, instead of building an OR-tree of per-schema `in (...)` predicates. This keeps
+    // the query size O(pairs) rather than O(schemas × predicate_overhead) and stays sargable when
+    // many schemas are in play.
+    const pairs = [...tablesBySchemas.entries()].flatMap(([schema, tables]) =>
+      tables.map(t => {
+        const schemaLiteral = schema == null ? 'null::text' : `${this.platform.quoteValue(schema)}::text`;
+        return `(${schemaLiteral}, ${this.platform.quoteValue(t.table_name)})`;
+      }),
+    );
 
-    if (predicates.length === 0) {
+    if (pairs.length === 0) {
       return {} as Dictionary<TablePartitioning>;
     }
 
-    const sql = `select parent_ns.nspname as schema_name,
+    const sql = `with targets(schema_name, table_name) as (values ${pairs.join(', ')})
+      select parent_ns.nspname as schema_name,
       parent.relname as table_name,
       pg_get_partkeydef(parent.oid) as partition_definition,
       child_ns.nspname as partition_schema_name,
       child.relname as partition_name,
       pg_get_expr(child.relpartbound, child.oid) as partition_bound
-      from pg_class parent
+      from targets
+      join pg_class parent on parent.relname = targets.table_name
       join pg_namespace parent_ns on parent_ns.oid = parent.relnamespace
+        and (targets.schema_name is null or parent_ns.nspname = targets.schema_name)
       join pg_partitioned_table partitioned on partitioned.partrelid = parent.oid
       left join pg_inherits inherits on inherits.inhparent = parent.oid
       left join pg_class child on child.oid = inherits.inhrelid
       left join pg_namespace child_ns on child_ns.oid = child.relnamespace
-      where (${predicates.join(' or ')})
       order by parent_ns.nspname, parent.relname, child_ns.nspname, child.relname`;
     const rows = await connection.execute<
       {
@@ -983,10 +1008,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   override getPreAlterTable(tableDiff: TableDifference, safe: boolean): string[] {
     if (tableDiff.changedPartitioning) {
-      const from = tableDiff.changedPartitioning.from?.definition ?? '<none>';
-      const to = tableDiff.changedPartitioning.to?.definition ?? '<none>';
+      const from = tableDiff.changedPartitioning.from?.definition;
+      const to = tableDiff.changedPartitioning.to?.definition;
+      const action = !from ? 'Adding' : !to ? 'Removing' : 'Changing';
       throw new Error(
-        `Changing partition definitions for existing PostgreSQL tables is not supported automatically (${tableDiff.name}: '${from}' -> '${to}'); create a manual migration instead`,
+        `${action} partition definitions for existing PostgreSQL tables is not supported automatically (${tableDiff.name}: '${from ?? '<none>'}' -> '${to ?? '<none>'}'); create a manual migration instead`,
       );
     }
 
