@@ -116,6 +116,8 @@ export class MongoPlatform extends Platform {
   }
 
   override validateMetadata(meta: EntityMetadata): void {
+    super.validateMetadata(meta);
+
     if (meta.inheritanceType === 'tpt') {
       throw MetadataError.tptNotSupportedByDriver(meta);
     }
