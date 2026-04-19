@@ -271,6 +271,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
    * does not recurse into sub-partitioning (e.g. hash-of-range). Declarative `partitionBy`
    * metadata does not express multi-level partitioning either, so grandchildren are intentionally
    * invisible to schema diffing.
+   *
+   * Entries with an undefined schema bucket are resolved against `current_schema()` so they do
+   * not match same-named tables in unrelated schemas.
    */
   async getPartitions(
     connection: AbstractSqlConnection,
@@ -302,7 +305,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       from targets
       join pg_class parent on parent.relname = targets.table_name
       join pg_namespace parent_ns on parent_ns.oid = parent.relnamespace
-        and (targets.schema_name is null or parent_ns.nspname = targets.schema_name)
+        and parent_ns.nspname = coalesce(targets.schema_name, current_schema())
       join pg_partitioned_table partitioned on partitioned.partrelid = parent.oid
       left join pg_inherits inherits on inherits.inhparent = parent.oid
       left join pg_class child on child.oid = inherits.inhrelid

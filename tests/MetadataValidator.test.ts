@@ -588,6 +588,16 @@ describe('MetadataValidator', () => {
       ).toThrow('Entity PartitionedEntity has invalid partitionBy option: missing expression');
     });
 
+    test('rejects non-string entries inside expression arrays', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: [123 as unknown as string],
+          partitions: 4,
+        }),
+      ).toThrow('Entity PartitionedEntity has invalid partitionBy option: missing expression');
+    });
+
     test('rejects primary keys that omit partition columns', async () => {
       expect(
         validatePartitionedSchema(

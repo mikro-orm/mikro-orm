@@ -1,6 +1,7 @@
 import type { EntityMetadata, EntityName, EntityProperty } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import { type MetadataDiscoveryOptions } from '../utils/Configuration.js';
+import { splitCommaSeparatedIdentifiers } from '../utils/partition-utils.js';
 import { MetadataError } from '../errors.js';
 import { ReferenceKind } from '../enums.js';
 import type { MetadataStorage } from './MetadataStorage.js';
@@ -287,7 +288,7 @@ export class MetadataValidator {
     }
 
     if (Array.isArray(expression)) {
-      return expression.length > 0 && expression.every(key => key.trim().length > 0);
+      return expression.length > 0 && expression.every(key => typeof key === 'string' && key.trim().length > 0);
     }
 
     return String(expression).trim().length > 0;
@@ -354,13 +355,13 @@ export class MetadataValidator {
       return expression.map(key => this.resolvePartitionKeyField(meta, key));
     }
 
-    const value = String(expression).trim();
+    const keys = splitCommaSeparatedIdentifiers(String(expression).trim());
 
-    if (!/^[\w".]+(?:\s*,\s*[\w".]+)*$/.test(value)) {
+    if (!keys) {
       return undefined;
     }
 
-    return value.split(',').map(key => this.resolvePartitionKeyField(meta, key));
+    return keys.map(key => this.resolvePartitionKeyField(meta, key));
   }
 
   private resolvePartitionKeyField(meta: EntityMetadata, key: string): string {

@@ -9,6 +9,7 @@ import {
   getTablePartitioning,
   normalizePartitionBound,
   normalizePartitionDefinition,
+  splitCommaSeparatedIdentifiers,
   toEntityPartitionBy,
 } from '../../../packages/sql/src/schema/partitioning.js';
 
@@ -244,6 +245,16 @@ describe('partitioning helpers', () => {
   test('parses partition definitions without whitespace between type and parens', () => {
     expect(normalizePartitionDefinition('HASH(type)')).toBe('hash (type)');
     expect(normalizePartitionDefinition('RANGE(created_at)')).toBe('range (created_at)');
+  });
+
+  test('splitCommaSeparatedIdentifiers respects quoted identifiers containing commas', () => {
+    expect(splitCommaSeparatedIdentifiers('tenant_id, type')).toEqual(['tenant_id', 'type']);
+    expect(splitCommaSeparatedIdentifiers('"type"')).toEqual(['"type"']);
+    expect(splitCommaSeparatedIdentifiers('"weird,name", "type"')).toEqual(['"weird,name"', '"type"']);
+    expect(splitCommaSeparatedIdentifiers('"a""b", c')).toEqual(['"a""b"', 'c']);
+    expect(splitCommaSeparatedIdentifiers("date_trunc('day', created_at)")).toBeNull();
+    expect(splitCommaSeparatedIdentifiers('"unterminated, type')).toBeNull();
+    expect(splitCommaSeparatedIdentifiers('tenant_id, ')).toBeNull();
   });
 
   test('maps comma-separated string expressions to field names', () => {
@@ -627,6 +638,27 @@ describe('partitioning helpers', () => {
       type: "'hash'",
       expression: ["'tenant'", "'type'"],
       partitions: 4,
+    });
+  });
+
+  test('entity generator quotes custom hash partition names', () => {
+    const config = new Configuration({ driver: PostgreSqlDriver }, false);
+    const platform = config.getPlatform() as PostgreSqlPlatform;
+    const meta = createPartitionedMeta({
+      type: 'hash',
+      expression: 'tenant_id',
+      partitions: ['events_shard_a', 'events_shard_b', 'archive.events_shard_c'],
+    });
+
+    const source = new SourceFile(meta, config.getNamingStrategy(), platform, {}) as unknown as {
+      getEntityDeclOptions(): Record<string, unknown>;
+    };
+    const options = source.getEntityDeclOptions();
+
+    expect(options.partitionBy).toEqual({
+      type: "'hash'",
+      expression: "'tenant_id'",
+      partitions: ["'events_shard_a'", "'events_shard_b'", "'archive.events_shard_c'"],
     });
   });
 

@@ -1,5 +1,7 @@
-import type { EntityMetadata, EntityPartitionBy } from '@mikro-orm/core';
+import { splitCommaSeparatedIdentifiers, type EntityMetadata, type EntityPartitionBy } from '@mikro-orm/core';
 import type { TablePartition, TablePartitioning } from '../typings.js';
+
+export { splitCommaSeparatedIdentifiers };
 
 const skipQuotedLiteral = (value: string, start: number): number => {
   let i = start + 1;
@@ -17,7 +19,9 @@ const skipQuotedLiteral = (value: string, start: number): number => {
     i++;
   }
 
-  return value.length - 1;
+  // Unterminated literal — point past the end so callers' `slice(start, end + 1)` includes
+  // the full remaining tail instead of dropping its last character.
+  return value.length;
 };
 
 /**
@@ -204,8 +208,6 @@ const splitPartitionName = (name: string): { name: string; schema?: string } => 
   return { name: unquoteIdentifier(name) };
 };
 
-const COMMA_SEPARATED_IDENTIFIERS = /^[\w".]+(?:\s*,\s*[\w".]+)*$/;
-
 const resolvePartitionKey = (meta: EntityMetadata, key: string, quoteIdentifier: (id: string) => string): string => {
   const trimmed = key.trim().replaceAll('"', '');
 
@@ -240,12 +242,10 @@ const resolvePartitionExpression = (
   }
 
   const trimmed = (expression as string).trim();
+  const keys = splitCommaSeparatedIdentifiers(trimmed);
 
-  if (COMMA_SEPARATED_IDENTIFIERS.test(trimmed)) {
-    return trimmed
-      .split(',')
-      .map(key => resolvePartitionKey(meta, key, quoteIdentifier))
-      .join(', ');
+  if (keys) {
+    return keys.map(key => resolvePartitionKey(meta, key, quoteIdentifier)).join(', ');
   }
 
   return trimmed;

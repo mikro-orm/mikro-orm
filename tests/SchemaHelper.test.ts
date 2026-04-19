@@ -487,7 +487,7 @@ describe('SchemaHelper', () => {
       });
     });
 
-    test('omits schema predicate for undefined table-schema buckets', async () => {
+    test('restricts undefined table-schema buckets to current_schema()', async () => {
       const config = new Configuration({ driver: PostgreSqlDriver }, false);
       const helper = config.getPlatform().getSchemaHelper() as PostgreSqlSchemaHelper;
       const connection = {
@@ -501,8 +501,11 @@ describe('SchemaHelper', () => {
 
       expect(partitions).toEqual({});
       expect(connection.execute).toHaveBeenCalledTimes(1);
-      expect(connection.execute.mock.calls[0][0]).toContain(`(null::text, 'partitioned_event')`);
-      expect(connection.execute.mock.calls[0][0]).not.toContain('parent_ns.nspname = NULL');
+      const sql = connection.execute.mock.calls[0][0];
+      expect(sql).toContain(`(null::text, 'partitioned_event')`);
+      expect(sql).toContain('coalesce(targets.schema_name, current_schema())');
+      expect(sql).not.toContain('parent_ns.nspname = NULL');
+      expect(sql).not.toContain('targets.schema_name is null');
     });
 
     test('short-circuits when all schema buckets are empty', async () => {

@@ -656,7 +656,9 @@ export class SourceFile {
     }
 
     if (partitionBy.type === 'hash') {
-      result.partitions = partitionBy.partitions;
+      result.partitions = Array.isArray(partitionBy.partitions)
+        ? partitionBy.partitions.map(name => this.quote(String(name)))
+        : partitionBy.partitions;
     } else {
       result.partitions = partitionBy.partitions.map(partition => {
         const entry: Dictionary = {};
