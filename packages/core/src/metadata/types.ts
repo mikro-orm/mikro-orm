@@ -776,7 +776,7 @@ interface BaseOptions<T, H extends string> {
    * where the predicate holds). MariaDB is not supported — it has no inline expression indexes;
    * define a virtual generated column and index that instead.
    */
-  where?: string | (T extends EntityClass<infer P> ? FilterQuery<P> : FilterQuery<T>);
+  where?: string | FilterQuery<NoInfer<T> extends EntityClass<infer P> ? P : NoInfer<T>>;
 }
 
 export interface UniqueOptions<T, H extends string = string> extends BaseOptions<T, H> {
