@@ -2,12 +2,14 @@ import type { PopulatePath } from '../enums.js';
 import type { CreateOptions, EntityManager, MergeOptions } from '../EntityManager.js';
 import type { AssignOptions } from './EntityAssigner.js';
 import type {
+  Dictionary,
   EntityData,
-  EntityName,
-  Primary,
-  Loaded,
-  FilterQuery,
   EntityDictionary,
+  EntityKey,
+  EntityName,
+  FilterQuery,
+  Loaded,
+  Primary,
   AutoPath,
   RequiredEntityData,
   Ref,
@@ -18,8 +20,11 @@ import type {
   IsSubset,
   MergeLoaded,
   ArrayElement,
+  IndexFilterQuery,
+  WithUsingOptions,
 } from '../typings.js';
 import type {
+  CountByOptions,
   CountOptions,
   DeleteOptions,
   FindAllOptions,
@@ -50,11 +55,16 @@ export class EntityRepository<Entity extends object> {
   /**
    * Finds first entity matching your `where` query.
    */
-  async findOne<Hint extends string = never, Fields extends string = never, Excludes extends string = never>(
-    where: FilterQuery<Entity>,
-    options?: FindOneOptions<Entity, Hint, Fields, Excludes>,
+  async findOne<
+    Hint extends string = never,
+    Fields extends string = never,
+    Excludes extends string = never,
+    Using extends string = never,
+  >(
+    where: [Using] extends [never] ? FilterQuery<Entity> : IndexFilterQuery<Entity, Using>,
+    options?: FindOneOptions<Entity, Hint, Fields, Excludes> & { using?: Using | Using[] },
   ): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
-    return this.getEntityManager().findOne<Entity, Hint, Fields, Excludes>(this.entityName, where as any, options);
+    return this.getEntityManager().findOne(this.entityName, where as any, options as any);
   }
 
   /**
@@ -62,15 +72,16 @@ export class EntityRepository<Entity extends object> {
    * You can override the factory for creating this method via `options.failHandler` locally
    * or via `Configuration.findOneOrFailHandler` globally.
    */
-  async findOneOrFail<Hint extends string = never, Fields extends string = never, Excludes extends string = never>(
-    where: FilterQuery<Entity>,
-    options?: FindOneOrFailOptions<Entity, Hint, Fields, Excludes>,
+  async findOneOrFail<
+    Hint extends string = never,
+    Fields extends string = never,
+    Excludes extends string = never,
+    Using extends string = never,
+  >(
+    where: [Using] extends [never] ? FilterQuery<Entity> : IndexFilterQuery<Entity, Using>,
+    options?: FindOneOrFailOptions<Entity, Hint, Fields, Excludes> & { using?: Using | Using[] },
   ): Promise<Loaded<Entity, Hint, Fields, Excludes>> {
-    return this.getEntityManager().findOneOrFail<Entity, Hint, Fields, Excludes>(
-      this.entityName,
-      where as any,
-      options,
-    );
+    return this.getEntityManager().findOneOrFail(this.entityName, where as any, options as any);
   }
 
   /**
@@ -137,22 +148,32 @@ export class EntityRepository<Entity extends object> {
   /**
    * Finds all entities matching your `where` query. You can pass additional options via the `options` parameter.
    */
-  async find<Hint extends string = never, Fields extends string = never, Excludes extends string = never>(
-    where: FilterQuery<Entity>,
-    options?: FindOptions<Entity, Hint, Fields, Excludes>,
+  async find<
+    Hint extends string = never,
+    Fields extends string = never,
+    Excludes extends string = never,
+    Using extends string = never,
+  >(
+    where: [Using] extends [never] ? FilterQuery<Entity> : IndexFilterQuery<Entity, Using>,
+    options?: FindOptions<Entity, Hint, Fields, Excludes> & { using?: Using | Using[] },
   ): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
-    return this.getEntityManager().find(this.entityName, where as any, options);
+    return this.getEntityManager().find(this.entityName, where as any, options as any);
   }
 
   /**
    * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
    * where first element is the array of entities, and the second is the count.
    */
-  async findAndCount<Hint extends string = never, Fields extends string = never, Excludes extends string = never>(
-    where: FilterQuery<Entity>,
-    options?: FindOptions<Entity, Hint, Fields, Excludes>,
+  async findAndCount<
+    Hint extends string = never,
+    Fields extends string = never,
+    Excludes extends string = never,
+    Using extends string = never,
+  >(
+    where: [Using] extends [never] ? FilterQuery<Entity> : IndexFilterQuery<Entity, Using>,
+    options?: FindOptions<Entity, Hint, Fields, Excludes> & { using?: Using | Using[] },
   ): Promise<[Loaded<Entity, Hint, Fields, Excludes>[], number]> {
-    return this.getEntityManager().findAndCount(this.entityName, where as any, options);
+    return this.getEntityManager().findAndCount(this.entityName, where as any, options as any);
   }
 
   /**
@@ -163,28 +184,39 @@ export class EntityRepository<Entity extends object> {
     Fields extends string = never,
     Excludes extends string = never,
     IncludeCount extends boolean = true,
+    Using extends string = never,
   >(
-    options: FindByCursorOptions<Entity, Hint, Fields, Excludes, IncludeCount>,
+    options: WithUsingOptions<FindByCursorOptions<Entity, Hint, Fields, Excludes, IncludeCount>, Entity, Using>,
   ): Promise<Cursor<Entity, Hint, Fields, Excludes, IncludeCount>> {
-    return this.getEntityManager().findByCursor(this.entityName, options);
+    return this.getEntityManager().findByCursor(this.entityName, options as any);
   }
 
   /**
    * Finds all entities of given type. You can pass additional options via the `options` parameter.
    */
-  async findAll<Hint extends string = never, Fields extends string = never, Excludes extends string = never>(
-    options?: FindAllOptions<Entity, Hint, Fields, Excludes>,
+  async findAll<
+    Hint extends string = never,
+    Fields extends string = never,
+    Excludes extends string = never,
+    Using extends string = never,
+  >(
+    options?: WithUsingOptions<FindAllOptions<Entity, Hint, Fields, Excludes>, Entity, Using>,
   ): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
-    return this.getEntityManager().findAll(this.entityName, options);
+    return this.getEntityManager().findAll(this.entityName, options as any);
   }
 
   /**
    * @inheritDoc EntityManager.stream
    */
-  async *stream<Hint extends string = never, Fields extends string = never, Excludes extends string = never>(
-    options?: StreamOptions<Entity, Hint, Fields, Excludes>,
+  async *stream<
+    Hint extends string = never,
+    Fields extends string = never,
+    Excludes extends string = never,
+    Using extends string = never,
+  >(
+    options?: WithUsingOptions<StreamOptions<Entity, Hint, Fields, Excludes>, Entity, Using>,
   ): AsyncIterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
-    yield* this.getEntityManager().stream(this.entityName, options);
+    yield* this.getEntityManager().stream(this.entityName, options as any);
   }
 
   /**
@@ -402,6 +434,22 @@ export class EntityRepository<Entity extends object> {
     options: CountOptions<Entity, Hint> = {},
   ): Promise<number> {
     return this.getEntityManager().count<Entity, Hint>(this.entityName, where as any, options);
+  }
+
+  /**
+   * Counts entities grouped by one or more properties.
+   *
+   * @example
+   * ```ts
+   * const counts = await repo.countBy('status');
+   * // { 'active': 5, 'inactive': 2 }
+   * ```
+   */
+  async countBy(
+    groupBy: EntityKey<Entity> | readonly EntityKey<Entity>[],
+    options?: CountByOptions<Entity>,
+  ): Promise<Dictionary<number>> {
+    return this.getEntityManager().countBy<Entity>(this.entityName, groupBy, options);
   }
 
   /** Returns the entity class name associated with this repository. */

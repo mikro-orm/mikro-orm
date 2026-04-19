@@ -127,6 +127,25 @@ await article.author.load(); // no additional query, already loaded
 
 > As opposed to `wrap(e).init()` which always refreshes the entity, `Reference.load()` will query the database only if the entity is not already loaded in the Identity Map.
 
+### `LazyRef<T>` — type-only alternative
+
+If the `.$` / `.get()` indirection of `Reference` doesn't fit your style (e.g. when migrating from a non-`Ref` codebase), use `LazyRef<T>` instead. The runtime stays a plain entity — `article.author instanceof User` is `true`, no wrapper — but TypeScript still restricts non-PK access until `Loaded<>` narrows it:
+
+```ts title='article.entity.ts'
+author: () => p.manyToOne(UserSchema).lazyRef(),
+```
+
+```ts
+const article1 = await em.findOne(ArticleSchema, 1);
+article1.author.id;       // ok — PK always accessible
+article1.author.fullName; // type error — not loaded
+
+const article2 = await em.findOne(ArticleSchema, 1, { populate: ['author'] });
+article2.author.fullName; // ok — Loaded<> strips the LazyRef brand, no `.$` needed
+```
+
+See [Type-safe Relations → `LazyRef<T>`](../type-safe-relations.md#lazyreft--type-only-reference) for the full comparison with `Ref<T>` and the `unref()` escape hatch.
+
 ### `ScalarReference` wrapper
 
 Similarly to the `Reference` wrapper, you can also wrap scalars with `Ref` into a `ScalarReference` object. This is handy for lazy scalar properties.

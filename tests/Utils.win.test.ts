@@ -498,6 +498,22 @@ describe('Utils', () => {
         '    at Module.m._compile (/opt/app/node_modules/ts-node/src/index.ts:1618:23)',
       ]),
     ).toBe('/opt/app/entity/requirement.ts');
+
+    // TypeScript 5+ native ES decorators use `__esDecorate` helper (inlined into the user file)
+    // @see https://github.com/mikro-orm/mikro-orm/issues/7583
+    expect(
+      lookupPathFromDecorator('Hello', [
+        'Error',
+        '    at lookupPathFromDecorator (file:///private/tmp/app/node_modules/@mikro-orm/decorators/utils.js:86:20)',
+        '    at getMetadataFromDecorator (file:///private/tmp/app/node_modules/@mikro-orm/decorators/utils.js:131:14)',
+        '    at file:///private/tmp/app/node_modules/@mikro-orm/decorators/es/Entity.js:6:18',
+        '    at __esDecorate (file:///private/tmp/app/dist/entities/Hello.entity.js:12:40)',
+        '    at <static_initializer> (file:///private/tmp/app/dist/entities/Hello.entity.js:56:13)',
+        '    at file:///private/tmp/app/dist/entities/Hello.entity.js:48:17',
+        '    at file:///private/tmp/app/dist/entities/Hello.entity.js:69:3',
+        '    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)',
+      ]),
+    ).toBe('file:///private/tmp/app/dist/entities/Hello.entity.js');
   });
 
   test('lookup path from decorator with bun', () => {

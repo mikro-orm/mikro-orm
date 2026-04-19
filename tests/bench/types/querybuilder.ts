@@ -76,22 +76,22 @@ function useField<E, R extends string, C>(_field: Field<E, R, C>): void {}
 
 bench('Field<Author, "a", never> - no context', () => {
   useField<Author, 'a', never>('name');
-}).types([138, 'instantiations']);
+}).types([137, 'instantiations']);
 
 bench('Field<Author, "a", never> - wildcard', () => {
   useField<Author, 'a', never>('*');
-}).types([138, 'instantiations']);
+}).types([137, 'instantiations']);
 
 bench('Field<Author, "a", never> - alias wildcard', () => {
   useField<Author, 'a', never>('a.*');
-}).types([138, 'instantiations']);
+}).types([137, 'instantiations']);
 
 // Context uses tuple format: [Path, Alias, Type, Select]
 type SimpleContext = { b: ['books', 'b', Book, false] };
 
 bench('Field<Author, "a", SimpleContext> - with one join', () => {
   useField<Author, 'a', SimpleContext>('b.title');
-}).types([202, 'instantiations']);
+}).types([201, 'instantiations']);
 
 type TwoJoinContext = {
   b: ['books', 'b', Book, false];
@@ -100,7 +100,7 @@ type TwoJoinContext = {
 
 bench('Field<Author, "a", TwoJoinContext> - with two joins', () => {
   useField<Author, 'a', TwoJoinContext>('t.name');
-}).types([247, 'instantiations']);
+}).types([246, 'instantiations']);
 
 // ============================================
 // ModifyHint benchmarks
@@ -140,11 +140,11 @@ function useOrderBy<E, R extends string, C>(_order: ContextOrderByMap<E, R, C>):
 
 bench('ContextOrderByMap<Author, "a", never> - no context', () => {
   useOrderBy<Author, 'a', never>({ name: 'asc' });
-}).types([558, 'instantiations']);
+}).types([598, 'instantiations']);
 
 bench('ContextOrderByMap<Author, "a", SimpleContext> - with join', () => {
   useOrderBy<Author, 'a', SimpleContext>({ 'b.title': 'asc' });
-}).types([595, 'instantiations']);
+}).types([635, 'instantiations']);
 
 // ============================================
 // QBFilterQuery benchmarks
@@ -154,17 +154,17 @@ function useFilter<E, R extends string, C>(_filter: QBFilterQuery<E, R, C>): voi
 
 bench('QBFilterQuery<Author, "a", never> - no context', () => {
   useFilter<Author, 'a', never>({ name: 'test' });
-}).types([281, 'instantiations']);
+}).types([287, 'instantiations']);
 
 bench('QBFilterQuery<Author, "a", SimpleContext> - with join', () => {
   useFilter<Author, 'a', SimpleContext>({ 'b.title': 'test' });
-}).types([297, 'instantiations']);
+}).types([303, 'instantiations']);
 
 bench('QBFilterQuery<Author, "a", SimpleContext> - with $and', () => {
   useFilter<Author, 'a', SimpleContext>({
     $and: [{ 'b.title': 'test' }, { name: 'foo' }],
   });
-}).types([417, 'instantiations']);
+}).types([423, 'instantiations']);
 
 // ============================================
 // ModifyFields benchmarks (Fields tracking)
@@ -230,19 +230,19 @@ bench('execute() return - wildcard fields', () => {
   const r = {} as EntityDTOFlat<Author>;
   const _: string = r.name;
   void _;
-}).types([446, 'instantiations']);
+}).types([454, 'instantiations']);
 
 bench('execute() return - selected fields', () => {
   const r = {} as DirectDTO<Author, 'id' | 'email'>;
   const _: string = r.email;
   void _;
-}).types([21, 'instantiations']);
+}).types([29, 'instantiations']);
 
 bench('execute("get") return - selected fields (single)', () => {
   const r = {} as DirectDTO<Author, 'id' | 'email'>;
   const _: number = r.id;
   void _;
-}).types([21, 'instantiations']);
+}).types([29, 'instantiations']);
 
 bench('execute() return - with join hint', () => {
   const r = {} as DirectDTO<Author, 'id'> & {
@@ -250,7 +250,7 @@ bench('execute() return - with join hint', () => {
   };
   const _: number = r.id;
   void _;
-}).types([42, 'instantiations']);
+}).types([50, 'instantiations']);
 
 bench('execute() return - with join hint and wildcard', () => {
   const r = {} as Omit<EntityDTOFlat<Author>, 'books'> & {
@@ -258,19 +258,19 @@ bench('execute() return - with join hint and wildcard', () => {
   };
   const _: string = r.name;
   void _;
-}).types([647, 'instantiations']);
+}).types([655, 'instantiations']);
 
 bench('execute() return - 2-level nested wildcard', () => {
   const r = {} as SerializeDTO<Author, 'books' | 'books.publisher'>;
   const _: string = r.name;
   void _;
-}).types([589, 'instantiations']);
+}).types([593, 'instantiations']);
 
 bench('execute() return - 3-level nested wildcard', () => {
   const r = {} as SerializeDTO<Author, 'books' | 'books.publisher' | 'books.publisher.books'>;
   const _: string = r.name;
   void _;
-}).types([595, 'instantiations']);
+}).types([599, 'instantiations']);
 
 bench('execute() return - 3-level nested with fields', () => {
   const r = {} as EntityDTOFlat<
@@ -282,7 +282,7 @@ bench('execute() return - 3-level nested with fields', () => {
   >;
   const _: number = r.id;
   void _;
-}).types([1697, 'instantiations']);
+}).types([1716, 'instantiations']);
 
 // ============================================
 // EntityDTOFlat vs EntityDTO comparison (wide entities)
@@ -346,25 +346,25 @@ bench('EntityDTO<Loaded<WideAuthor, "books">> - 2-pass recursive', () => {
   const r = {} as EntityDTO<Loaded<WideAuthor, 'books'>>;
   const _: string = r.name;
   void _;
-}).types([5080, 'instantiations']);
+}).types([5104, 'instantiations']);
 
 bench('EntityDTOFlat<Loaded<WideAuthor, "books">> - 1-pass recursive', () => {
   const r = {} as EntityDTOFlat<Loaded<WideAuthor, 'books'>>;
   const _: string = r.name;
   void _;
-}).types([4071, 'instantiations']);
+}).types([4095, 'instantiations']);
 
 bench('EntityDTO<Loaded<WideAuthor, "books.publisher">> - 2-pass recursive 2-level', () => {
   const r = {} as EntityDTO<Loaded<WideAuthor, 'books' | 'books.publisher'>>;
   const _: string = r.name;
   void _;
-}).types([5112, 'instantiations']);
+}).types([5136, 'instantiations']);
 
 bench('EntityDTOFlat<Loaded<WideAuthor, "books.publisher">> - 1-pass recursive 2-level', () => {
   const r = {} as EntityDTOFlat<Loaded<WideAuthor, 'books' | 'books.publisher'>>;
   const _: string = r.name;
   void _;
-}).types([4103, 'instantiations']);
+}).types([4127, 'instantiations']);
 
 // ============================================
 // CTE type safety benchmarks
@@ -431,4 +431,4 @@ bench('with().from() then select() - type-safe field access', () => {
   // After from(), select should accept 'c.title' as a valid field for Book
   fromQb.select('c.title');
   void fromQb;
-}).types([2354, 'instantiations']);
+}).types([2455, 'instantiations']);

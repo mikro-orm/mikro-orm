@@ -72,7 +72,16 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
 
   shouldRename(payload: any): boolean {
     const type = this.prop ? this.prop.kind : null;
-    const composite = this.prop?.joinColumns ? this.prop.joinColumns.length > 1 : false;
+    // Polymorphic relations have a composite column set (discriminator + FK), but we only
+    // need tuple-renaming when the payload is itself a tuple (entity ref expanded by
+    // `convertCompositeEntityRefs`) or an array-valued operator like `$in`. Scalar payloads
+    // such as `null` or `{ $ne: null }` keep single-column semantics against `fieldNames[0]`.
+    const polymorphicComposite =
+      !!this.prop?.polymorphic &&
+      (this.prop.fieldNames?.length ?? 0) > 1 &&
+      (Array.isArray(payload) ||
+        (Utils.isPlainObject(payload) && Object.values(payload as Dictionary).some(v => Array.isArray(v))));
+    const composite = polymorphicComposite || (this.prop?.joinColumns ? this.prop.joinColumns.length > 1 : false);
     const rawField = RawQueryFragment.isKnownFragmentSymbol(this.key);
     const scalar =
       payload === null ||
@@ -111,7 +120,8 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
       this.prop!.owner
     ) {
       const alias = qb.getAliasForJoinPath(this.parent.getPath()) ?? ownerAlias ?? qb.alias;
-      return Utils.getPrimaryKeyHash(this.prop!.joinColumns.map(col => `${alias}.${col}`));
+      const columns = this.prop!.polymorphic ? this.prop!.fieldNames : this.prop!.joinColumns;
+      return Utils.getPrimaryKeyHash(columns.map(col => `${alias}.${col}`));
     }
 
     const alias = joinAlias ?? ownerAlias ?? qb.alias;

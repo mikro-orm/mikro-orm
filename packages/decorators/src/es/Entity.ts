@@ -1,8 +1,8 @@
-import { type Constructor, type EntityOptions, type EntityClass, Utils } from '@mikro-orm/core';
+import { type Constructor, type EntityCtor, type EntityOptions, type EntityClass, Utils } from '@mikro-orm/core';
 import { getMetadataFromDecorator } from '../utils.js';
 
 /** Marks a class as a MikroORM entity (TC39 decorator). */
-export function Entity<Owner extends EntityClass<unknown> & Constructor>(
+export function Entity<Owner extends EntityClass<unknown> & EntityCtor>(
   options: EntityOptions<Owner> = {},
 ): (target: Owner, context: ClassDecoratorContext<Owner>) => void {
   return function (target: Owner, context: ClassDecoratorContext<Owner>): void {

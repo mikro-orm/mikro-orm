@@ -28,7 +28,7 @@
     "prism-react-renderer": "^2.4.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "typescript": "6.0.2"
+    "typescript": "6.0.3"
   },
   "browserslist": {
     "production": [
@@ -49,5 +49,5 @@
     "@types/react-dom": "^19.1.5",
     "prettier": "^3.5.3"
   },
-  "packageManager": "yarn@4.13.0"
+  "packageManager": "yarn@4.14.1"
 }

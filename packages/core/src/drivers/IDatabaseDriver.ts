@@ -17,6 +17,7 @@ import type {
   EntityName,
   PopulateHintOptions,
   Prefixes,
+  IndexName,
 } from '../typings.js';
 import type { Connection, QueryResult, Transaction } from '../connections/Connection.js';
 import type {
@@ -129,6 +130,17 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
     entityName: EntityName<T>,
     where: FilterQuery<T>,
     options?: NativeDeleteOptions<T>,
+  ): Promise<QueryResult<T>>;
+
+  /**
+   * Clones rows matching the condition at the database level via INSERT...SELECT.
+   * Automatically excludes auto-increment PKs, generated columns, and resets version properties.
+   */
+  nativeClone<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    overrides?: EntityData<T>,
+    options?: NativeInsertUpdateOptions<T>,
   ): Promise<QueryResult<T>>;
 
   /** Persists changes to M:N collections (inserts/deletes pivot table rows). */
@@ -367,6 +379,20 @@ export interface FindOptions<
   connectionType?: ConnectionType;
   /** SQL: appended to FROM clause (e.g. `'force index(my_index)'`); MongoDB: index name or spec passed as `hint`. */
   indexHint?: string | Dictionary;
+  /**
+   * Named index(es) for this query. When provided:
+   * - Validates that `where` and `orderBy` only reference columns covered by the specified index(es).
+   * - Emits SQL index hints where supported (MySQL/MariaDB: `USE INDEX`, MSSQL: `WITH (INDEX(...))`).
+   * - If `indexHint` is also set, `indexHint` takes precedence for SQL generation.
+   *
+   * Accepts a single index name or an array. For `defineEntity` entities with named indexes
+   * and decorator entities with `[IndexHints]`, index names are autocompleted.
+   *
+   * @example
+   * await em.find(Book, { title: 'foo' }, { using: 'idx_book_title' });
+   * await em.find(Book, { title: 'foo', author: 1 }, { using: ['idx_book_title', 'idx_book_author'] });
+   */
+  using?: IndexName<Entity> | IndexName<Entity>[];
   /** sql only */
   comments?: string | string[];
   /** sql only */
@@ -424,6 +450,7 @@ export interface NativeInsertUpdateOptions<T> {
   /** `nativeUpdate()` only option */
   upsert?: boolean;
   loggerContext?: LogContext;
+  logging?: LoggingOptions;
   /** sql only */
   unionWhere?: ObjectQuery<T>[];
   /** sql only */
@@ -489,11 +516,24 @@ export interface CountOptions<T extends object, P extends string = never> {
   em?: EntityManager;
 }
 
+/** Options for `em.countBy()` queries. */
+export interface CountByOptions<T extends object> {
+  where?: FilterQuery<T>;
+  filters?: FilterOptions;
+  having?: FilterQuery<T>;
+  schema?: string;
+  flushMode?: FlushMode | `${FlushMode}`;
+  loggerContext?: LogContext;
+  logging?: LoggingOptions;
+}
+
 /** Options for `em.qb().update()` operations. */
 export interface UpdateOptions<T> {
   filters?: FilterOptions;
   schema?: string;
   ctx?: Transaction;
+  loggerContext?: LogContext;
+  logging?: LoggingOptions;
   /** sql only */
   unionWhere?: ObjectQuery<T>[];
   /** sql only */
@@ -535,6 +575,7 @@ export interface DriverMethodOptions {
   ctx?: Transaction;
   schema?: string;
   loggerContext?: LogContext;
+  logging?: LoggingOptions;
 }
 
 /** MongoDB-style collation options for locale-aware string comparison. */

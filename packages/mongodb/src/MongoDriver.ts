@@ -141,6 +141,14 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     const orderBy = Utils.asArray(options.orderBy).map(orderBy => this.renameFields(entityName, orderBy as T, true));
+    const partitionLimit = (options as Dictionary)._partitionLimit as
+      | { partitionBy: string; limit: number; offset?: number }
+      | undefined;
+
+    if (partitionLimit) {
+      return this.findWithPartitionLimit(entityName, where, orderBy, fields ?? [], partitionLimit, options);
+    }
+
     const res = await this.rethrow(
       this.getConnection('read').find(entityName, where, {
         orderBy,
@@ -153,6 +161,69 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     );
 
     return res.map(r => this.mapResult<T>(r, this.metadata.find<T>(entityName))!);
+  }
+
+  private async findWithPartitionLimit<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    orderBy: Dictionary[],
+    fields: string[],
+    partitionLimit: { partitionBy: string; limit: number; offset?: number },
+    options: FindOptions<T, any, any, any>,
+  ): Promise<EntityData<T>[]> {
+    const meta = this.metadata.find<T>(entityName)!;
+    const { limit, offset = 0 } = partitionLimit;
+
+    // Resolve the partition property to its DB field name; callers always pass
+    // a declared property on the target meta (FK of the owning side).
+    const prop = (meta.properties as Dictionary)[partitionLimit.partitionBy];
+    const partitionField = prop.fieldNames[0];
+
+    const pipeline: Dictionary[] = [];
+    pipeline.push({ $match: where });
+
+    if (orderBy.length > 0) {
+      const sortSpec: Dictionary = {};
+
+      for (const order of orderBy) {
+        for (const [key, dir] of Object.entries(order)) {
+          sortSpec[key] = dir === 'ASC' || dir === 'asc' || dir === 1 ? 1 : -1;
+        }
+      }
+
+      pipeline.push({ $sort: sortSpec });
+    }
+
+    // $sort before $group ensures $push collects in correct order
+    pipeline.push({
+      $group: {
+        _id: `$${partitionField}`,
+        __docs: { $push: '$$ROOT' },
+      },
+    });
+    pipeline.push({
+      $project: {
+        __docs: { $slice: ['$__docs', offset, limit] },
+      },
+    });
+    pipeline.push({ $unwind: '$__docs' });
+    pipeline.push({ $replaceRoot: { newRoot: '$__docs' } });
+
+    if (fields.length > 0) {
+      const projection: Dictionary = {};
+
+      for (const field of fields) {
+        projection[field] = 1;
+      }
+
+      pipeline.push({ $project: projection });
+    }
+
+    const res = await this.rethrow(
+      this.getConnection('read').aggregate<T>(entityName, pipeline, options.ctx, options.logging),
+    );
+
+    return res.map(r => this.mapResult<T>(r, meta)!);
   }
 
   async findOne<T extends object, P extends string = never, F extends string = never, E extends string = never>(
@@ -258,6 +329,42 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.rethrow(this.getConnection('write').insertOne(entityName, data, options.ctx)) as unknown as Promise<
       QueryResult<T>
     >;
+  }
+
+  override async nativeClone<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    overrides?: EntityData<T>,
+    options: NativeInsertUpdateOptions<T> = {},
+  ): Promise<QueryResult<T>> {
+    const meta = this.metadata.find(entityName)!;
+    const pk = meta.getPrimaryProps()[0].fieldNames[0] ?? '_id';
+    const normalizedWhere = Utils.isPrimaryKey(where) ? ({ [pk]: where } as FilterQuery<T>) : where;
+    const renameWhere = this.renameFields(entityName, normalizedWhere as unknown as EntityDictionary<T>);
+    const source = await this.rethrow(
+      this.getConnection('read').find<T>(entityName, renameWhere as FilterQuery<T>, { ctx: options.ctx, limit: 1 }),
+    );
+
+    if (!source.length) {
+      throw new Error('Cannot clone: no entity found matching the given condition');
+    }
+
+    const doc = source[0] as Dictionary;
+    delete doc[pk];
+
+    if (overrides) {
+      const mapped = this.renameFields(entityName, overrides as unknown as EntityDictionary<T>);
+      Object.assign(doc, mapped);
+    }
+
+    if (meta.versionProperty) {
+      const vProp = meta.properties[meta.versionProperty];
+      doc[vProp.fieldNames[0]] = vProp.runtimeType === 'Date' ? new Date() : 1;
+    }
+
+    return this.rethrow(
+      this.getConnection('write').insertOne<T>(entityName, doc as EntityDictionary<T>, options.ctx),
+    ) as unknown as Promise<QueryResult<T>>;
   }
 
   async nativeInsertMany<T extends object>(
@@ -418,7 +525,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   private buildQueryOptions(
-    options: Pick<FindOptions<any, any, any, any>, 'collation' | 'indexHint' | 'maxTimeMS' | 'allowDiskUse'>,
+    options: Pick<FindOptions<any, any, any, any>, 'collation' | 'indexHint' | 'using' | 'maxTimeMS' | 'allowDiskUse'>,
   ): MongoQueryOptions {
     if (options.collation != null && typeof options.collation === 'string') {
       throw new Error(
@@ -434,6 +541,16 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     if (options.indexHint != null) {
       ret.indexHint = options.indexHint;
+    } else if (options.using != null) {
+      const names = Utils.asArray(options.using);
+
+      if (names.length > 1) {
+        throw new Error(
+          'MongoDB only supports a single index hint per query. Provide one index name instead of an array.',
+        );
+      }
+
+      ret.indexHint = names[0];
     }
 
     if (options.maxTimeMS != null) {
@@ -447,7 +564,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return ret;
   }
 
-  private renameFields<T extends object>(
+  /** @internal */
+  renameFields<T extends object>(
     entityName: EntityName<T>,
     data: T,
     dotPaths = false,

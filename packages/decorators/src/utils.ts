@@ -136,9 +136,10 @@ export function lookupPathFromDecorator(name: string, stack?: string[]): string 
   // In some situations (e.g. swc 1.3.4+), the presence of a source map can obscure the call to
   // __decorate(), replacing it with the constructor name. To support these cases we look for
   // Reflect.decorate() as well. Also when babel is used, we need to check
-  // the `_applyDecoratedDescriptor` method instead.
+  // the `_applyDecoratedDescriptor` method instead. TypeScript 5+ emits `__esDecorate`
+  // (inlined into the user file) for TC39 stage-3 native decorators.
   let line = stack.findIndex(line =>
-    /__decorate|Reflect\.decorate|_applyDecoratedDescriptor|applyClassDecs/.exec(line),
+    /__decorate|__esDecorate|Reflect\.decorate|_applyDecoratedDescriptor|applyClassDecs/.exec(line),
   );
 
   // Bun can skip decorator helper frames. Native ES decorators expose the entity

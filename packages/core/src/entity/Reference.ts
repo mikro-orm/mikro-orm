@@ -5,6 +5,7 @@ import type {
   EntityClass,
   EntityKey,
   EntityProperty,
+  LazyRef,
   Loaded,
   LoadedReference,
   Primary,
@@ -19,8 +20,10 @@ import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseD
 import { NotFoundError } from '../errors.js';
 import { inspect } from '../logging/inspect.js';
 
-const referenceSymbol = Symbol('Reference');
-const scalarReferenceSymbol = Symbol('ScalarReference');
+// Globally registered so the markers survive the CJS/ESM dual-package hazard
+// (see entitySymbol rationale in EntityHelper.ts and #7515/#7534).
+const referenceSymbol = Symbol.for('@mikro-orm/core/Reference');
+const scalarReferenceSymbol = Symbol.for('@mikro-orm/core/ScalarReference');
 
 /** Wrapper around an entity that provides lazy loading capabilities and identity-preserving reference semantics. */
 export class Reference<T extends object> {
@@ -443,6 +446,64 @@ export function ref<T, PKV extends Primary<T> = Primary<T>>(
   }
 
   return Reference.createFromPK(entityOrType as EntityClass<T>, pk as PKV) as Ref<T>;
+}
+
+/**
+ * Unwraps a reference to its underlying value, returning the entity or scalar. Works on any of:
+ *
+ * - `Ref<T>` / `Reference<T>` (entity) — calls `.unwrap()` to extract the wrapped entity, returns `T`.
+ * - `LazyRef<T>` — type-only marker; runtime value is already `T`, so returned as-is.
+ * - plain entity `T` — returned as-is.
+ * - `ScalarReference<V>` / `ScalarRef<V>` — calls `.unwrap()` to extract the scalar value, returns `V | undefined`
+ *   (a scalar reference may be bound without an initial value).
+ *
+ * Inverse of the {@link ref} helper. Use as a typed escape hatch when you know a relation is populated
+ * but don't want to (or can't) thread `Loaded<T, 'relation'>` through a function signature.
+ *
+ * ```ts
+ * function logAuthor(book: Book) {
+ *   // `book.author` is typed as `LazyRef<Author>`, so `.name` is not directly accessible
+ *   console.log(unref(book.author).name);
+ * }
+ *
+ * // Scalar reference:
+ * const scalar = ref('hello');
+ * unref(scalar); // 'hello' (type: string | undefined)
+ * ```
+ *
+ * Note: `unref` is a compile-time narrowing only for entity refs. On a `LazyRef<T>` or plain entity
+ * relation that is a stub (PK only, never populated), reads of non-PK properties will still return
+ * `undefined` at runtime — same footgun as a plain non-`Ref` relation.
+ */
+export function unref<V>(value: ScalarReference<V>): V | undefined;
+
+export function unref<T extends object>(value: Ref<T> | LazyRef<T> | T): T;
+
+/**
+ * Unwraps a reference to its underlying value. Nullable variant — returns `null` unchanged.
+ */
+export function unref<T extends object>(value: Ref<T> | LazyRef<T> | T | null): T | null;
+
+/**
+ * Unwraps a reference to its underlying value. Optional variant — returns `undefined` unchanged.
+ */
+export function unref<T extends object>(value: Ref<T> | LazyRef<T> | T | undefined): T | undefined;
+
+/**
+ * Unwraps a reference to its underlying value. Nullable variant — returns `null`/`undefined` unchanged.
+ */
+export function unref<T extends object>(value: Ref<T> | LazyRef<T> | T | null | undefined): T | null | undefined;
+
+export function unref(value: any): any {
+  if (value == null) {
+    return value;
+  }
+
+  if (ScalarReference.isScalarReference(value)) {
+    return value.unwrap();
+  }
+
+  return Reference.unwrapReference(value);
 }
 
 /**

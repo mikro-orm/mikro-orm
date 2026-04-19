@@ -99,6 +99,7 @@ const DEFAULTS = {
   upsertManaged: true,
   forceEntityConstructor: false,
   forceUndefined: false,
+  initNullableProperties: false,
   forceUtcTimezone: true,
   processOnCreateHooksEarly: true,
   ensureDatabase: true,
@@ -178,7 +179,7 @@ export class Configuration<
   readonly #cache = new Map<string, any>();
   readonly #extensions = new Map<string, () => unknown>();
 
-  constructor(options: Partial<Options>, validate = true) {
+  constructor(options: Partial<Options<any, any, any>>, validate = true) {
     if (options.dynamicImportProvider) {
       (globalThis as any).dynamicImportProvider = options.dynamicImportProvider;
     }
@@ -506,7 +507,7 @@ export class Configuration<
 export function defineConfig<
   D extends IDatabaseDriver = IDatabaseDriver,
   EM extends EntityManager<D> = EntityManager<D>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -773,7 +774,7 @@ export interface Options<
   Driver extends IDatabaseDriver = IDatabaseDriver,
   EM extends EntityManager<Driver> & Driver[typeof EntityManagerType] = EntityManager<Driver> &
     Driver[typeof EntityManagerType],
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -947,6 +948,13 @@ export interface Options<
    * @default false
    */
   forceUndefined: boolean;
+  /**
+   * Initialize nullable properties to `null` (or `undefined` when `forceUndefined` is set)
+   * during `em.create()` when they are not provided in the data. Without this option,
+   * nullable properties remain `undefined` until the entity is loaded from the database.
+   * @default false
+   */
+  initNullableProperties: boolean;
   /**
    * Property `onCreate` hooks are normally executed during `flush` operation.
    * With this option, they will be processed early inside `em.create()` method.

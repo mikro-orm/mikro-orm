@@ -229,6 +229,35 @@ describe('check constraint [postgres]', () => {
     await orm.close();
   });
 
+  test('check constraint with != operator does not cause drift [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.schema.update();
+
+    // PostgreSQL canonicalizes `!=` to `<>` in stored constraint definitions, so without
+    // normalization in diffExpression this would drop+recreate the constraint on every run.
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+        kind: { type: 'string', name: 'kind', fieldName: 'kind', columnType: 'varchar(20)' },
+      },
+      name: 'NeqCheckTable',
+      tableName: 'neq_check_table',
+      checks: [{ name: 'chk_kind', expression: `kind != 'foo'` }],
+    }).init().meta;
+    meta.set(newTableMeta.class, newTableMeta);
+
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).not.toBe('');
+    await orm.schema.execute(diff);
+
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
   test('check constraint with multiline expression does not cause drift [postgres]', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();

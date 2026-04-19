@@ -134,6 +134,7 @@ module.exports = {
         'folder-based-discovery',
         'metadata-providers',
         'metadata-cache',
+        'canary-builds',
       ],
     },
     {

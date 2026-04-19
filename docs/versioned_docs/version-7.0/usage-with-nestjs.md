@@ -188,6 +188,24 @@ With that option specified, every entity registered through the `forFeature()` m
 
 > Using `autoLoadEntities` also has no effect on the MikroORM CLI - for that you still need CLI config with the full list of entities. On the other hand, you can use globs there, as the CLI won't go through webpack.
 
+As an alternative to both `autoLoadEntities` and folder-based discovery, you can use the `mikro-orm discovery:export` CLI command to generate a barrel file with all your entity imports. This works well with NestJS since the generated file provides explicit entity references that work with any bundler:
+
+```ts
+import { entities } from './entities.generated';
+
+@Module({
+  imports: [
+    MikroOrmModule.forRoot({
+      entities,
+      // ...
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+Run `npx mikro-orm discovery:export` to generate the file. See [Folder-based Discovery](./folder-based-discovery.md#generating-a-barrel-file-with-discoveryexport) for full details.
+
 ## Request scoped handlers in queues
 
 > `@CreateRequestContext()` decorator is available in `@mikro-orm/core` package.

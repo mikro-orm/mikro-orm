@@ -30,7 +30,9 @@ import type {
   InferEntity,
   MaybeReturnType,
   Ref,
+  LazyRef,
   IndexCallback,
+  TriggerCallback,
   FormulaCallback,
   EntityCtor,
   IsNever,
@@ -38,6 +40,8 @@ import type {
   DefineConfig,
   Config,
   MaybePromise,
+  IndexHints,
+  InferPropertyIndexMap,
 } from '../typings.js';
 import type { Raw } from '../utils/RawQueryFragment.js';
 import type { ScalarReference } from './Reference.js';
@@ -68,7 +72,7 @@ export type UniversalPropertyKeys =
   | keyof OneToOneOptions<any, any>
   | keyof ManyToManyOptions<any, any>;
 
-type BuilderExtraKeys = '~options' | '~type' | '$type' | 'strictNullable';
+type BuilderExtraKeys = '~options' | '~type' | '$type' | 'strictNullable' | 'lazyRef';
 type ExcludeKeys = 'entity' | 'items';
 type BuilderKeys = Exclude<UniversalPropertyKeys, ExcludeKeys> | BuilderExtraKeys;
 
@@ -104,7 +108,17 @@ export interface PropertyChain<Value, Options> {
     Value,
     Omit<Options, 'nullable' | 'strictNullable'> & { nullable: true; strictNullable: true }
   >;
-  ref(): PropertyChain<Value, Omit<Options, 'ref'> & { ref: true }>;
+  ref(): Options extends { lazyRef: true } ? never : PropertyChain<Value, Omit<Options, 'ref'> & { ref: true }>;
+  /**
+   * Mark a to-one relation (`m:1`/`1:1`) as a {@apilink LazyRef} — direct entity at runtime, type-restricted
+   * until `Loaded<>` narrows it. Type-level only, no `ref: true` wrapping. Not compatible with `.ref()` or
+   * `.mapToPk()` — those chains are rejected in both directions at compile time.
+   */
+  lazyRef(): HasKind<Options, 'm:1' | '1:1'> extends true
+    ? Options extends { ref: true } | { mapToPk: true }
+      ? never
+      : PropertyChain<Value, Omit<Options, 'lazyRef'> & { lazyRef: true }>
+    : never;
   primary(): PropertyChain<Value, Omit<Options, 'primary'> & { primary: true }>;
   hidden(): PropertyChain<Value, Omit<Options, 'hidden'> & { hidden: true }>;
   autoincrement(): PropertyChain<Value, Omit<Options, 'autoincrement'> & { autoincrement: true }>;
@@ -148,8 +162,12 @@ export interface PropertyChain<Value, Options> {
   customOrder(...customOrder: string[] | number[] | boolean[]): PropertyChain<Value, Options>;
   extra(extra: string): PropertyChain<Value, Options>;
   ignoreSchemaChanges(...ignoreSchemaChanges: ('type' | 'extra' | 'default')[]): PropertyChain<Value, Options>;
-  index(index?: boolean | string): PropertyChain<Value, Options>;
-  unique(unique?: boolean | string): PropertyChain<Value, Options>;
+  /** Explicitly specify index on a property. When a string name is passed, it enables type-safe `using` in `FindOptions`. */
+  index<N extends string>(name: N): PropertyChain<Value, Omit<Options, 'index'> & { index: N }>;
+  index(index?: boolean): PropertyChain<Value, Options>;
+  /** Set column as unique. When a string name is passed, it enables type-safe `using` in `FindOptions`. (SQL only) */
+  unique<N extends string>(name: N): PropertyChain<Value, Omit<Options, 'unique'> & { unique: N }>;
+  unique(unique?: boolean): PropertyChain<Value, Options>;
   comment(comment: string): PropertyChain<Value, Options>;
   accessor(accessor?: string | boolean): PropertyChain<Value, Options>;
 
@@ -179,7 +197,9 @@ export interface PropertyChain<Value, Options> {
     ? PropertyChain<Value, Omit<Options, 'owner'> & { owner: true }>
     : never;
   mapToPk(): HasKind<Options, 'm:1' | '1:1'> extends true
-    ? PropertyChain<Value, Omit<Options, 'mapToPk'> & { mapToPk: true }>
+    ? Options extends { lazyRef: true }
+      ? never
+      : PropertyChain<Value, Omit<Options, 'mapToPk'> & { mapToPk: true }>
     : never;
   orphanRemoval(
     orphanRemoval?: boolean,
@@ -201,10 +221,13 @@ export interface PropertyChain<Value, Options> {
     fixedOrderColumn: string,
   ): HasKind<Options, 'm:n'> extends true ? PropertyChain<Value, Options> : never;
 
+  array(): Options extends { kind: infer K extends string }
+    ? K extends 'embedded' | 'enum'
+      ? PropertyChain<Value, Omit<Options, 'array'> & { array: true }>
+      : never
+    : PropertyChain<Value, Omit<Options, 'array'> & { array: true }>;
+
   // Embedded-only methods
-  array(): HasKind<Options, 'embedded' | 'enum'> extends true
-    ? PropertyChain<Value, Omit<Options, 'array'> & { array: true }>
-    : never;
   prefix(prefix: string | boolean): HasKind<Options, 'embedded'> extends true ? PropertyChain<Value, Options> : never;
   prefixMode(
     prefixMode: EmbeddedPrefixMode,
@@ -567,8 +590,25 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   /**
    * Enable `ScalarReference` wrapper for lazy values. Use this in combination with `lazy: true` to have a type-safe accessor object in place of the value.
    */
-  ref(): UniversalPropertyOptionsBuilder<Value, Omit<Options, 'ref'> & { ref: true }, IncludeKeys> {
-    return this.assignOptions({ ref: true });
+  ref(): Options extends { lazyRef: true }
+    ? never
+    : UniversalPropertyOptionsBuilder<Value, Omit<Options, 'ref'> & { ref: true }, IncludeKeys> {
+    return this.assignOptions({ ref: true }) as any;
+  }
+
+  /**
+   * Mark a to-one relation (`m:1`/`1:1`) as a {@apilink LazyRef} — the runtime value stays a plain entity
+   * (no `Reference` wrapper) but the TypeScript type restricts access to the primary key until `Loaded<>`
+   * narrows it. Type-level only; does not set `ref: true`. Not compatible with `.ref()` or `.mapToPk()` —
+   * those chains are rejected in both directions at compile time.
+   */
+  lazyRef(): HasKind<Options, 'm:1' | '1:1'> extends true
+    ? Options extends { ref: true } | { mapToPk: true }
+      ? never
+      : UniversalPropertyOptionsBuilder<Value, Omit<Options, 'lazyRef'> & { lazyRef: true }, IncludeKeys>
+    : never {
+    // purely type-level — no runtime metadata change
+    return this as any;
   }
 
   /**
@@ -602,19 +642,25 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
 
   /**
    * Explicitly specify index on a property.
+   * When a string name is passed, it is captured as a literal type for use with the `using` option in `FindOptions`.
    */
-  index(
-    index: boolean | string = true,
-  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  index<N extends string>(
+    name: N,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'index'> & { index: N }, IncludeKeys>, IncludeKeys>;
+  index(index?: boolean): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys>;
+  index(index: boolean | string = true): any {
     return this.assignOptions({ index });
   }
 
   /**
    * Set column as unique for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
+   * When a string name is passed, it is captured as a literal type for use with the `using` option in `FindOptions`.
    */
-  unique(
-    unique: boolean | string = true,
-  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+  unique<N extends string>(
+    name: N,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'unique'> & { unique: N }, IncludeKeys>, IncludeKeys>;
+  unique(unique?: boolean): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys>;
+  unique(unique: boolean | string = true): any {
     return this.assignOptions({ unique });
   }
 
@@ -947,11 +993,13 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   }
 
   /** Map this relation to the primary key value instead of an entity. */
-  mapToPk(): Pick<
-    UniversalPropertyOptionsBuilder<Value, Omit<Options, 'mapToPk'> & { mapToPk: true }, IncludeKeys>,
-    IncludeKeys
-  > {
-    return this.assignOptions({ mapToPk: true });
+  mapToPk(): Options extends { lazyRef: true }
+    ? never
+    : Pick<
+        UniversalPropertyOptionsBuilder<Value, Omit<Options, 'mapToPk'> & { mapToPk: true }, IncludeKeys>,
+        IncludeKeys
+      > {
+    return this.assignOptions({ mapToPk: true }) as any;
   }
 
   /** Set the constraint type. Immediate constraints are checked for each statement, while deferred ones are only checked at the end of the transaction. Only for postgres unique constraints. */
@@ -1217,6 +1265,7 @@ export interface EntityMetadataWithProperties<
   | 'serializedPrimaryKey'
   | 'indexes'
   | 'uniques'
+  | 'triggers'
   | 'repository'
   | 'filters'
   | 'orderBy'
@@ -1284,6 +1333,15 @@ export interface EntityMetadataWithProperties<
     include?: NoInfer<AllKeys<TProperties, TBase>> | NoInfer<AllKeys<TProperties, TBase>>[];
     fillFactor?: number;
     disabled?: boolean;
+  }[];
+  triggers?: {
+    name?: string;
+    timing: 'before' | 'after' | 'instead of';
+    events: ('insert' | 'update' | 'delete' | 'truncate')[];
+    forEach?: 'row' | 'statement';
+    body?: string | Raw | TriggerCallback<InferEntityFromProperties<TProperties, TPK, TBase>>;
+    when?: string;
+    expression?: string;
   }[];
 }
 
@@ -1504,7 +1562,9 @@ export type InferEntityFromProperties<
     ? {}
     : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository }) &
   (IsNever<Base> extends true ? {} : Omit<Base, typeof PrimaryKeyProp>) &
-  (ForceObject extends true ? { [Config]?: DefineConfig<{ forceObject: true }> } : {});
+  (ForceObject extends true ? { [Config]?: DefineConfig<{ forceObject: true }> } : {}) & {
+    [IndexHints]?: [Properties];
+  };
 
 // Combines primary keys from child properties and base entity
 type InferCombinedPrimaryKey<Properties extends Record<string, any>, PK, Base> = PK extends undefined
@@ -1562,23 +1622,27 @@ type MaybeNullable<Value, Options> = Options extends { nullable: true }
 
 type MaybeRelationRef<Value, Options> = Options extends { mapToPk: true }
   ? Value
-  : Options extends { ref: true; kind: '1:1' }
+  : Options extends { lazyRef: true; kind: '1:1' | 'm:1' }
     ? Value extends object
-      ? Ref<Value>
+      ? LazyRef<Value>
       : never
-    : Options extends { ref: true; kind: 'm:1' }
+    : Options extends { ref: true; kind: '1:1' }
       ? Value extends object
         ? Ref<Value>
         : never
-      : Options extends { kind: '1:m' }
+      : Options extends { ref: true; kind: 'm:1' }
         ? Value extends object
-          ? Collection<Value>
+          ? Ref<Value>
           : never
-        : Options extends { kind: 'm:n' }
+        : Options extends { kind: '1:m' }
           ? Value extends object
             ? Collection<Value>
             : never
-          : Value;
+          : Options extends { kind: 'm:n' }
+            ? Value extends object
+              ? Collection<Value>
+              : never
+            : Value;
 
 type MaybeScalarRef<Value, Options> = Options extends { kind: '1:1' | 'm:1' | '1:m' | 'm:n' }
   ? Value

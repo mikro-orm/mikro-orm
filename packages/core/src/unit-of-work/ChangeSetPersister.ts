@@ -509,6 +509,10 @@ export class ChangeSetPersister {
     const primaryKeys = meta.primaryKeys.concat(...meta.concurrencyCheckKeys);
     options = this.prepareOptions(meta, options, {
       fields: primaryKeys,
+      orderBy: meta.primaryKeys.reduce((o, pk) => {
+        o[pk] = 'asc';
+        return o;
+      }, {} as Dictionary),
     });
     const res = await this.#driver.find<T>(meta.root.class, { $or } as FilterQuery<T>, options);
 
