@@ -515,6 +515,8 @@ export interface QBState<Entity extends object> {
   schema?: string;
   cond: Dictionary;
   data?: Dictionary;
+  insertSubQuery?: QueryBuilder<any>;
+  insertColumns?: string[];
   orderBy: QueryOrderMap<Entity>[];
   groupBy: InternalField<Entity>[];
   having: Dictionary;
@@ -541,9 +543,11 @@ export interface QBState<Entity extends object> {
     name: string;
     query: NativeQueryBuilder | RawQueryFragment;
     recursive?: boolean;
+    meta?: EntityMetadata;
   })[];
   tptJoinsApplied: boolean;
   autoJoinedPaths: string[];
+  partitionLimit?: { partitionBy: string; limit: number; offset?: number };
 }
 
 /**
@@ -854,6 +858,47 @@ export class QueryBuilder<
     data: RequiredEntityData<Entity> | RequiredEntityData<Entity>[],
   ): InsertQueryBuilder<Entity, RootAlias, Context> {
     return this.init(QueryType.INSERT, data) as unknown as InsertQueryBuilder<Entity, RootAlias, Context>;
+  }
+
+  /**
+   * Creates an INSERT ... SELECT query that copies rows from the source query.
+   *
+   * Column resolution (3 tiers):
+   * 1. No explicit select on source, no explicit columns → all cloneable columns derived from entity metadata
+   * 2. Explicit select on source, no explicit columns → columns derived from selected field names
+   * 3. Explicit `columns` option → user-provided column list
+   *
+   * @example
+   * ```ts
+   * // Clone all fields (columns auto-derived from metadata)
+   * const source = em.createQueryBuilder(User).where({ id: 1 });
+   * await em.createQueryBuilder(User).insertFrom(source).execute();
+   *
+   * // Clone with overrides via raw() aliases
+   * const source = em.createQueryBuilder(User)
+   *   .select(['name', raw("'new@email.com'").as('email')])
+   *   .where({ id: 1 });
+   * await em.createQueryBuilder(User).insertFrom(source).execute();
+   *
+   * // Explicit columns for full control
+   * await em.createQueryBuilder(User)
+   *   .insertFrom(source, { columns: ['name', 'email'] })
+   *   .execute();
+   * ```
+   */
+  insertFrom(
+    subQuery: QueryBuilder<any>,
+    options?: { columns?: Field<Entity, RootAlias, Context>[] },
+  ): InsertQueryBuilder<Entity, RootAlias, Context> {
+    this.ensureNotFinalized();
+    this.#state.type = QueryType.INSERT;
+    this.#state.insertSubQuery = subQuery;
+
+    if (options?.columns) {
+      this.#state.insertColumns = Utils.asArray(options.columns as string[]);
+    }
+
+    return this as unknown as InsertQueryBuilder<Entity, RootAlias, Context>;
   }
 
   /**
@@ -1993,6 +2038,13 @@ export class QueryBuilder<
     return this.#state.flags.has(flag);
   }
 
+  /** @internal */
+  setPartitionLimit(opts: { partitionBy: string; limit: number; offset?: number }): this {
+    this.ensureNotFinalized();
+    this.#state.partitionLimit = opts;
+    return this;
+  }
+
   cache(config: boolean | number | [string, number] = true): this {
     this.ensureNotFinalized();
     this.#state.cache = config;
@@ -2154,7 +2206,16 @@ export class QueryBuilder<
       this.helper.getLockSQL(qb, this.#state.lockMode, this.#state.lockTables, this.#state.joins);
     }
 
-    this.processReturningStatement(qb, this.mainAlias.meta, this.#state.data, this.#state.returning);
+    this.processReturningStatement(
+      qb,
+      this.mainAlias.meta,
+      this.#state.insertSubQuery ? undefined : this.#state.data,
+      this.#state.returning,
+    );
+
+    if (this.#state.partitionLimit) {
+      return (this.#query!.qb = this.wrapPartitionLimitSubQuery(qb));
+    }
 
     return (this.#query!.qb = qb);
   }
@@ -2167,7 +2228,11 @@ export class QueryBuilder<
   ): void {
     const usesReturningStatement = this.platform.usesReturningStatement() || this.platform.usesOutputStatement();
 
-    if (!meta || !data || !usesReturningStatement) {
+    if (!meta || !usesReturningStatement) {
+      return;
+    }
+
+    if (!data && !this.#state.insertSubQuery) {
       return;
     }
 
@@ -2184,7 +2249,7 @@ export class QueryBuilder<
           prop =>
             prop.returning || (prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw)),
         )
-        .filter(prop => !(prop.name in data));
+        .filter(prop => !data || !(prop.name in data));
 
       if (returningProps.length > 0) {
         qb.returning(Utils.flatten(returningProps.map(prop => prop.fieldNames)));
@@ -2193,7 +2258,7 @@ export class QueryBuilder<
       return;
     }
 
-    if (this.type === QueryType.UPDATE) {
+    if (this.type === QueryType.UPDATE && data) {
       const returningProps = meta.hydrateProps.filter(prop => prop.fieldNames && isRaw(data[prop.fieldNames[0]]));
 
       if (returningProps.length > 0) {
@@ -2538,11 +2603,10 @@ export class QueryBuilder<
       return row as Loaded<Entity, Hint, Fields>;
     }
 
-    const entity = this.em!.map<Entity>(this.mainAlias.entityName, row, { schema: this.#state.schema }) as Loaded<
-      Entity,
-      Hint,
-      Fields
-    >;
+    const entity = this.em!.map<Entity>(this.mainAlias.entityName, row, {
+      schema: this.#state.schema,
+      mapped: true,
+    }) as Loaded<Entity, Hint, Fields>;
     this.propagatePopulateHint(entity as Entity, this.#state.populate);
 
     return entity;
@@ -2809,6 +2873,7 @@ export class QueryBuilder<
       recursive,
       columns: options?.columns,
       materialized: options?.materialized,
+      meta: query instanceof QueryBuilder ? query.mainAlias.meta : undefined,
     });
     return this;
   }
@@ -3320,7 +3385,14 @@ export class QueryBuilder<
         break;
       }
       case QueryType.INSERT:
-        qb.insert(this.#state.data!);
+        if (this.#state.insertSubQuery) {
+          const columns = this.resolveInsertFromColumns();
+          const compiled = this.#state.insertSubQuery.toQuery();
+          qb.insertSelect(columns, raw(compiled.sql, compiled.params));
+        } else {
+          qb.insert(this.#state.data!);
+        }
+
         break;
       case QueryType.UPDATE:
         qb.update(this.#state.data!);
@@ -3336,6 +3408,87 @@ export class QueryBuilder<
     }
 
     return qb;
+  }
+
+  /**
+   * Resolves the INSERT column list for `insertFrom()`.
+   *
+   * Tier 1: Explicit `insertColumns` from `options.columns` → map property names to field names
+   * Tier 2: Source QB has explicit select fields → derive from those
+   * Tier 3: Derive from target entity metadata (all cloneable columns), auto-populate source select
+   */
+  private resolveInsertFromColumns(): string[] {
+    const meta = this.mainAlias.meta;
+    const subQuery = this.#state.insertSubQuery!;
+
+    // Tier 1: explicit columns
+    if (this.#state.insertColumns?.length) {
+      return this.#state.insertColumns.flatMap(col => {
+        const prop = meta?.properties[col as EntityKey<Entity>];
+        return prop?.fieldNames ?? [col];
+      });
+    }
+
+    // Tier 2: source QB has explicit select fields
+    const sourceFields = subQuery.state.fields;
+    if (sourceFields && subQuery.state.type === QueryType.SELECT) {
+      return sourceFields
+        .filter((field: any) => typeof field === 'string' || isRaw(field))
+        .flatMap((field: any) => {
+          if (typeof field === 'string') {
+            // Strip alias prefix like 'a0.'
+            const bare = field.replace(/^\w+\./, '');
+            const prop = meta?.properties[bare as EntityKey<Entity>];
+            return prop?.fieldNames ?? [bare];
+          }
+
+          // RawQueryFragment with alias: raw('...').as('name')
+          const alias = String(field.params[field.params.length - 1]);
+          const prop = meta?.properties[alias as EntityKey<Entity>];
+          return prop?.fieldNames ?? [alias];
+        });
+    }
+
+    // Tier 3: derive from metadata — all cloneable columns
+    const cloneableProps = this.getCloneableProps(meta!);
+    const selectFields: (string | RawQueryFragment)[] = [];
+    const columns: string[] = [];
+
+    for (const prop of cloneableProps) {
+      for (const fieldName of prop.fieldNames) {
+        columns.push(fieldName);
+        selectFields.push(fieldName);
+      }
+    }
+
+    // Auto-populate source select with matching fields
+    if (!sourceFields) {
+      subQuery.select(selectFields as any);
+    }
+
+    return columns;
+  }
+
+  /** Returns properties that are safe to clone (persistable, non-PK, non-generated). */
+  private getCloneableProps(meta: EntityMetadata): EntityProperty[] {
+    return meta.props.filter(prop => {
+      if (prop.persist === false) {
+        return false;
+      }
+      if (prop.primary) {
+        return false;
+      }
+      if (!prop.fieldNames?.length) {
+        return false;
+      }
+      if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
+        return false;
+      }
+      if (prop.kind === ReferenceKind.EMBEDDED && !prop.object) {
+        return false;
+      }
+      return true;
+    });
   }
 
   private applyDiscriminatorCondition(): void {
@@ -3568,6 +3721,10 @@ export class QueryBuilder<
       (this.#state.limit! > 0 || this.#state.offset! > 0)
     ) {
       this.wrapPaginateSubQuery(meta);
+    }
+
+    if (this.#state.partitionLimit) {
+      this.preparePartitionLimit();
     }
 
     if (
@@ -3844,6 +4001,56 @@ export class QueryBuilder<
   }
 
   /**
+   * Wraps the inner query (which has ROW_NUMBER in SELECT) with an outer query
+   * that filters by the __rn column to apply per-parent limiting.
+   */
+  protected wrapPartitionLimitSubQuery(innerQb: NativeQueryBuilder): NativeQueryBuilder {
+    const { limit, offset = 0 } = this.#state.partitionLimit!;
+    const rnCol = this.platform.quoteIdentifier('__rn');
+
+    innerQb.as(this.mainAlias.aliasName);
+
+    const outerQb = this.platform.createNativeQueryBuilder();
+    outerQb.select('*').from(innerQb);
+    outerQb.where(`${rnCol} > ? and ${rnCol} <= ?`, [offset, offset + limit]);
+    outerQb.orderBy(rnCol);
+
+    return outerQb;
+  }
+
+  /**
+   * Adds ROW_NUMBER() OVER (PARTITION BY ...) to the SELECT list and prepares
+   * the query state for per-parent limiting. The actual wrapping into a subquery
+   * with __rn filtering happens in getNativeQuery().
+   */
+  protected preparePartitionLimit(): void {
+    const { partitionBy } = this.#state.partitionLimit!;
+
+    // `partitionBy` is always a declared property name, so mapper returns a string here.
+    const partitionCol = this.helper.mapper(partitionBy, this.type, undefined, null) as string;
+    const quotedPartition = partitionCol
+      .split('.')
+      .map(e => this.platform.quoteIdentifier(e))
+      .join('.');
+
+    const queryOrder = this.helper.getQueryOrder(
+      this.type,
+      this.#state.orderBy as FlatQueryOrderMap[],
+      this.#state.populateMap,
+      this.#state.collation,
+    );
+    const orderBySql = queryOrder.length > 0 ? Utils.unique(queryOrder).join(', ') : quotedPartition;
+
+    const rnAlias = this.platform.quoteIdentifier('__rn');
+    this.#state.fields!.push(
+      raw(`row_number() over (partition by ${quotedPartition} order by ${orderBySql}) as ${rnAlias}`),
+    );
+
+    // Moved into the OVER clause; outer query re-applies via wrapPartitionLimitSubQuery
+    this.#state.orderBy = [];
+  }
+
+  /**
    * Computes the set of populate paths from the _populate hints.
    */
   protected getPopulatePaths(): Set<string> {
@@ -4061,14 +4268,21 @@ export class QueryBuilder<
 
   private fromRawTable(tableName: string, aliasName?: string): void {
     aliasName ??= this.#state.mainAlias?.aliasName ?? this.getNextAlias(tableName);
-    const meta = new EntityMetadata<Entity>({
-      className: tableName,
-      collection: tableName,
-    });
-    meta.root = meta;
+    // If the raw table name matches a CTE registered via `.with()` from a typed QueryBuilder,
+    // reuse the source entity meta so relation joins (`leftJoinAndSelect` etc.) keep working.
+    const cteMeta = this.#state.ctes.find(c => c.name === tableName)?.meta;
+    let meta: EntityMetadata<Entity>;
+
+    if (cteMeta) {
+      meta = cteMeta as EntityMetadata<Entity>;
+    } else {
+      meta = new EntityMetadata<Entity>({ className: tableName, collection: tableName });
+      meta.root = meta;
+    }
+
     this.#state.mainAlias = {
       aliasName,
-      entityName: tableName as unknown as EntityName<Entity>,
+      entityName: (cteMeta?.className ?? tableName) as unknown as EntityName<Entity>,
       meta,
       rawTableName: tableName,
     };

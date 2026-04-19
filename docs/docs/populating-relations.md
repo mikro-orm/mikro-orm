@@ -65,6 +65,8 @@ const tags = await em.find(BookTag, {}, {
 
 > This will always use select-in strategy to deal with possible cycles.
 
+> The `Loaded` type also narrows [`Ref<T>`](./type-safe-relations.md#reference-wrapper) and [`LazyRef<T>`](./type-safe-relations.md#lazyreft--type-only-reference) relations correctly — after `populate: ['*']` a `Ref<T>` becomes a `LoadedReference<T>` and a `LazyRef<T>` becomes the full `T`.
+
 ## Inferring populate hint from filter
 
 If you want to automatically select all the relations that are part of your filter query, use `populate: ['$infer']`:
@@ -134,7 +136,18 @@ const tags = await em.find(BookTag, {}, {
 });
 ```
 
-For more information see the [Loading Strategies section](./loading-strategies.md).
+You can also use `populateHints` to limit the number of items loaded per parent:
+
+```ts
+const users = await em.find(User, {}, {
+  populate: ['posts'],
+  populateHints: {
+    posts: { limit: 5, orderBy: { createdAt: 'desc' } },
+  },
+});
+```
+
+For more information see the [Loading Strategies section](./loading-strategies.md#per-parent-limiting).
 
 ## Populating already loaded entities
 

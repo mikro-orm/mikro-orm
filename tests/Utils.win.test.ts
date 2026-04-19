@@ -313,11 +313,36 @@ describe('Utils', () => {
       Cancelled,
     }
 
+    // GH #7500: enums merged with a namespace containing functions
+    // simulate the runtime shape produced by `enum X {} namespace X { export function f() {} }`
+    const NumericWithNs = {
+      0: 'Pending',
+      1: 'Success',
+      2: 'Error',
+      3: 'Running',
+      Pending: 0,
+      Success: 1,
+      Error: 2,
+      Running: 3,
+      isComplete(status: number) {
+        return status === 1 || status === 2;
+      },
+    };
+    const StringWithNs = {
+      LOCAL: 'local',
+      GLOBAL: 'global',
+      isLocal(type: string) {
+        return type === 'local';
+      },
+    };
+
     expect(Utils.extractEnumValues(PublisherType)).toEqual(['local', 'global']);
     expect(Utils.extractEnumValues(PublisherType2)).toEqual(['LOCAL', 'GLOBAL']);
     expect(Utils.extractEnumValues(PublisherType3)).toEqual(['local', 'GLOBAL']);
     expect(Utils.extractEnumValues(Enum2)).toEqual([1, 2]);
     expect(Utils.extractEnumValues(Enum3)).toEqual([0, 1, 2, 3]);
+    expect(Utils.extractEnumValues(NumericWithNs)).toEqual([0, 1, 2, 3]);
+    expect(Utils.extractEnumValues(StringWithNs)).toEqual(['local', 'global']);
   });
 
   test('lookup path from decorator', () => {
@@ -473,6 +498,22 @@ describe('Utils', () => {
         '    at Module.m._compile (/opt/app/node_modules/ts-node/src/index.ts:1618:23)',
       ]),
     ).toBe('/opt/app/entity/requirement.ts');
+
+    // TypeScript 5+ native ES decorators use `__esDecorate` helper (inlined into the user file)
+    // @see https://github.com/mikro-orm/mikro-orm/issues/7583
+    expect(
+      lookupPathFromDecorator('Hello', [
+        'Error',
+        '    at lookupPathFromDecorator (file:///private/tmp/app/node_modules/@mikro-orm/decorators/utils.js:86:20)',
+        '    at getMetadataFromDecorator (file:///private/tmp/app/node_modules/@mikro-orm/decorators/utils.js:131:14)',
+        '    at file:///private/tmp/app/node_modules/@mikro-orm/decorators/es/Entity.js:6:18',
+        '    at __esDecorate (file:///private/tmp/app/dist/entities/Hello.entity.js:12:40)',
+        '    at <static_initializer> (file:///private/tmp/app/dist/entities/Hello.entity.js:56:13)',
+        '    at file:///private/tmp/app/dist/entities/Hello.entity.js:48:17',
+        '    at file:///private/tmp/app/dist/entities/Hello.entity.js:69:3',
+        '    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)',
+      ]),
+    ).toBe('file:///private/tmp/app/dist/entities/Hello.entity.js');
   });
 
   test('lookup path from decorator with bun', () => {

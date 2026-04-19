@@ -45,8 +45,10 @@ test('calling toJSON on entity prototype should not corrupt subsequent queries (
   // Without the fix, this replaces the getter with a value on the prototype itself.
   const result = prototype.toJSON();
 
-  // The fix should return an empty object when called on prototype
-  expect(result).toEqual({});
+  // The fix returns undefined when called on prototype, so safe-stable-stringify
+  // and similar serializers skip the value instead of triggering the toObject path
+  // (which would corrupt `__helper`)
+  expect(result).toBeUndefined();
 
   // Verify __helper is still a getter after calling toJSON (the fix prevents corruption)
   const descriptorAfter = Object.getOwnPropertyDescriptor(prototype, '__helper');

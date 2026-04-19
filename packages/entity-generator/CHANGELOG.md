@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.11](https://github.com/mikro-orm/mikro-orm/compare/v7.0.10...v7.0.11) (2026-04-16)
+
+**Note:** Version bump only for package @mikro-orm/entity-generator
+
+## [7.0.10](https://github.com/mikro-orm/mikro-orm/compare/v7.0.9...v7.0.10) (2026-04-10)
+
+**Note:** Version bump only for package @mikro-orm/entity-generator
+
+## [7.0.9](https://github.com/mikro-orm/mikro-orm/compare/v7.0.8...v7.0.9) (2026-04-06)
+
+**Note:** Version bump only for package @mikro-orm/entity-generator
+
 ## [7.0.8](https://github.com/mikro-orm/mikro-orm/compare/v7.0.7...v7.0.8) (2026-04-01)
 
 **Note:** Version bump only for package @mikro-orm/entity-generator

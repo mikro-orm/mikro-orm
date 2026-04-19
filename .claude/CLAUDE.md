@@ -126,6 +126,7 @@ When reviewing or editing code, do NOT remove code (assertions, type casts, etc.
 
 - When fixing bugs, write the test FIRST that reproduces the issue, then implement the fix. Do not implement fixes before having a failing test.
 - In test files, never leave debug artifacts (console.log, debug mode flags, commented-out code). Clean up before committing.
+- **Never invent GitHub issue or PR numbers.** Only reference an issue/PR number if the user explicitly provided it, or if it came from a tool output (`gh issue view`, `gh pr create`, etc.). When fixing a bug reported inline (no issue number given), name the test using the `GHx<n>` convention (next free number under `tests/issues/GHx*.test.ts`) and describe the bug in comments instead of citing a fabricated `#NNNN`. Same rule applies to commit messages, PR descriptions, and code comments.
 
 ## PRs
 

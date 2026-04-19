@@ -8,8 +8,8 @@ import {
   EntitySchema,
   type IndexCallback,
   type IndexOptions,
+  isRaw,
   type NamingStrategy,
-  RawQueryFragment,
   ReferenceKind,
   t,
   Type,
@@ -18,7 +18,7 @@ import {
   Utils,
 } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper.js';
-import type { CheckDef, Column, ForeignKey, IndexDef, TablePartitioning } from '../typings.js';
+import type { CheckDef, Column, ForeignKey, IndexDef, TablePartitioning, SqlTriggerDef } from '../typings.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import { toEntityPartitionBy } from './partitioning.js';
 
@@ -29,6 +29,7 @@ export class DatabaseTable {
   #columns: Dictionary<Column> = {};
   #indexes: IndexDef[] = [];
   #checks: CheckDef[] = [];
+  #triggers: SqlTriggerDef[] = [];
   #foreignKeys: Dictionary<ForeignKey> = {};
   readonly #platform: AbstractSqlPlatform;
   public nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {}; // for postgres
@@ -75,6 +76,10 @@ export class DatabaseTable {
     this.partitioning = partitioning;
   }
 
+  getTriggers(): SqlTriggerDef[] {
+    return this.#triggers;
+  }
+
   /** @internal */
   setIndexes(indexes: IndexDef[]): void {
     this.#indexes = indexes;
@@ -83,6 +88,11 @@ export class DatabaseTable {
   /** @internal */
   setChecks(checks: CheckDef[]): void {
     this.#checks = checks;
+  }
+
+  /** @internal */
+  setTriggers(triggers: SqlTriggerDef[]): void {
+    this.#triggers = triggers;
   }
 
   /** @internal */
@@ -148,10 +158,9 @@ export class DatabaseTable {
       this.#columns[field] = {
         name: prop.fieldNames[idx],
         type: prop.columnTypes[idx],
-        generated:
-          prop.generated instanceof RawQueryFragment
-            ? this.#platform.formatQuery(prop.generated.sql, prop.generated.params)
-            : (prop.generated as string),
+        generated: isRaw(prop.generated)
+          ? this.#platform.formatQuery(prop.generated.sql, prop.generated.params)
+          : (prop.generated as string),
         mappedType,
         unsigned: prop.unsigned && this.#platform.isNumericColumn(mappedType),
         autoincrement:
@@ -823,6 +832,14 @@ export class DatabaseTable {
     return !!this.getCheck(checkName);
   }
 
+  getTrigger(triggerName: string): SqlTriggerDef | undefined {
+    return this.#triggers.find(t => t.name === triggerName);
+  }
+
+  hasTrigger(triggerName: string): boolean {
+    return !!this.getTrigger(triggerName);
+  }
+
   getPrimaryKey(): IndexDef | undefined {
     return this.#indexes.find(i => i.primary);
   }
@@ -1078,7 +1095,7 @@ export class DatabaseTable {
       };
       const columns = meta.createSchemaColumnMappingObject();
       const exp = expression(columns, table, indexName);
-      return exp instanceof RawQueryFragment ? this.#platform.formatQuery(exp.sql, exp.params) : exp;
+      return isRaw(exp) ? this.#platform.formatQuery(exp.sql, exp.params) : exp;
     }
 
     return expression;
@@ -1233,6 +1250,10 @@ export class DatabaseTable {
     this.#checks.push(check);
   }
 
+  addTrigger(trigger: SqlTriggerDef) {
+    this.#triggers.push(trigger);
+  }
+
   toJSON(): Dictionary {
     const columns = this.#columns;
     const columnsMapped = Utils.keys(columns).reduce((o, col) => {
@@ -1285,6 +1306,7 @@ export class DatabaseTable {
       columns: columnsMapped,
       indexes: this.#indexes,
       checks: this.#checks,
+      triggers: this.#triggers,
       foreignKeys: this.#foreignKeys,
       nativeEnums: this.nativeEnums,
       comment: this.comment,

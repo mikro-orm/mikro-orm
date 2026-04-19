@@ -10,6 +10,9 @@ process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH = './tests/tsconfig.dummy.json';
 vi.resetModules();
 vi.restoreAllMocks();
 MetadataStorage.clear();
+// Clear stale dynamicImportProvider so fs.dynamicImport uses a fresh import()
+// from the current module evaluation context after vi.resetModules().
+delete (globalThis as any).dynamicImportProvider;
 
 const cwd = process.cwd();
 

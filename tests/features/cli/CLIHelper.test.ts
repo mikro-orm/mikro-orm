@@ -742,6 +742,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
       'cache:clear',
       'cache:generate',
       'compile',
+      'discovery:export',
       'generate-entities',
       'database:create',
       'database:import',
@@ -758,6 +759,9 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
       'migration:check',
       'migration:pending',
       'migration:fresh',
+      'migration:log',
+      'migration:unlog',
+      'migration:rollup',
       'debug',
     ]);
   });

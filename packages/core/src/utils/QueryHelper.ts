@@ -24,10 +24,40 @@ export class QueryHelper {
   static readonly SUPPORTED_OPERATORS = ['>', '<', '<=', '>=', '!', '!='];
 
   /**
+   * True when the property has multiple polymorph target types. Covers two structurally-equivalent
+   * shapes routed through the same loading path:
+   *   1. Union-target owner side — `Post.attachments: Collection<Image | Video>` (one owner, many
+   *      target types, shared pivot with target-side discriminator).
+   *   2. Merged inverse of Rails-style polymorphic M:N — `Tag.owners: Collection<Post | Video>`
+   *      (many owner types pointing at one target, viewed from the target where "owners" looks
+   *      like a union of multiple types).
+   *
+   * Both cases are loaded via `loadFromUnionTargetPolymorphicPivotTable`, which buckets pivot rows
+   * by discriminator and hydrates each target class separately.
+   */
+  static isUnionTargetPolymorphic(prop: { polymorphic?: boolean; polymorphTargets?: readonly unknown[] }): boolean {
+    return !!prop.polymorphic && (prop.polymorphTargets?.length ?? 0) > 1;
+  }
+
+  /**
    * Finds the discriminator value (key) for a given entity class in a discriminator map.
+   * Walks up the prototype chain so TPT subclasses resolve to their root's key.
    */
   static findDiscriminatorValue<T>(discriminatorMap: Dictionary<T>, targetClass: T): string | undefined {
-    return Object.entries(discriminatorMap).find(([, cls]) => cls === targetClass)?.[0];
+    const entries = Object.entries(discriminatorMap);
+    let current = targetClass;
+
+    while (current != null) {
+      const hit = entries.find(([, cls]) => cls === current)?.[0];
+
+      if (hit) {
+        return hit;
+      }
+
+      current = Object.getPrototypeOf(current);
+    }
+
+    return undefined;
   }
 
   static processParams(params: unknown): any {
@@ -161,7 +191,10 @@ export class QueryHelper {
             !Utils.isPlainObject(where[k]) ||
             Object.keys(where[k]).every(v => {
               if (Utils.isOperator(v, false)) {
-                return true;
+                // multi-value operators (e.g. `$in`/`$nin`) cannot be inlined into a composite
+                // PK tuple — `getPrimaryKeyValues` would flatten the operator's array alongside
+                // the sibling PK values, producing a malformed `(col1, col2) IN ((a, b))` clause
+                return !meta.compositePK || !Array.isArray(where[k][v]);
               }
 
               if (
@@ -468,22 +501,33 @@ export class QueryHelper {
       }
 
       const prop = meta.properties[k as EntityKey<T>];
+      const polymorphic = !!prop?.polymorphic && (prop.fieldNames?.length ?? 0) > 1;
+      const composite = (prop?.joinColumns?.length ?? 0) > 1;
 
-      if (!prop?.joinColumns || prop.joinColumns.length <= 1) {
+      if (!polymorphic && !composite) {
         continue;
       }
 
+      const expand = (entity: any) =>
+        polymorphic
+          ? this.extractPolymorphicJoinColumnValues(entity, prop)
+          : this.extractJoinColumnValues(entity, prop);
+      const expandItem = (item: unknown) => {
+        const entity = Reference.isReference(item) ? item.unwrap() : item;
+        return Utils.isEntity(entity) ? expand(entity) : item;
+      };
       const w = where[k];
+      const expanded = expandItem(w);
 
-      if (Utils.isEntity(w)) {
-        where[k] = this.extractJoinColumnValues(w, prop);
+      if (expanded !== w) {
+        where[k] = expanded;
       } else if (Utils.isPlainObject(w)) {
         for (const op of Object.keys(w)) {
-          if (Utils.isOperator(op, false) && Array.isArray(w[op])) {
-            w[op] = w[op].map((item: unknown) =>
-              Utils.isEntity(item) ? this.extractJoinColumnValues(item, prop) : item,
-            );
+          if (!Utils.isOperator(op, false)) {
+            continue;
           }
+
+          w[op] = Array.isArray(w[op]) ? w[op].map(expandItem) : expandItem(w[op]);
         }
       }
     }
@@ -497,6 +541,15 @@ export class QueryHelper {
     return prop.referencedColumnNames.map(refCol => {
       return this.extractColumnValue(entity, prop.targetMeta!, refCol);
     });
+  }
+
+  /**
+   * Expands a polymorphic entity reference to `[discriminatorValue, ...joinColumnValues]`,
+   * matching the column order of `prop.fieldNames`.
+   */
+  private static extractPolymorphicJoinColumnValues(entity: any, prop: EntityProperty): any[] {
+    const discriminator = this.findDiscriminatorValue(prop.discriminatorMap!, entity.constructor);
+    return [discriminator, ...this.extractJoinColumnValues(entity, prop)];
   }
 
   /**

@@ -1,4 +1,4 @@
-import { type Dictionary, raw, RawQueryFragment, Utils } from '@mikro-orm/core';
+import { type Dictionary, isRaw, raw, Utils } from '@mikro-orm/core';
 import { QueryType } from '../../query/enums.js';
 import { NativeQueryBuilder } from '../../query/NativeQueryBuilder.js';
 
@@ -196,7 +196,7 @@ export class OracleNativeQueryBuilder extends NativeQueryBuilder {
     this.parts.push(`using (${parts.join(' union all ')}) tsource`);
 
     /* v8 ignore next 4: RawQueryFragment conflict fields branch */
-    if (clause.fields instanceof RawQueryFragment) {
+    if (isRaw(clause.fields)) {
       this.parts.push(clause.fields.sql);
       this.params.push(...clause.fields.params);
     } else if (clause.fields.length > 0) {

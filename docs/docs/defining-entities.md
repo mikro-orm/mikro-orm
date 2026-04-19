@@ -133,6 +133,8 @@ export class Book extends CustomBaseEntity {
 
 > Including `{ ref: true }` in your `Ref` property definitions will wrap the reference, providing access to helper methods like `.load` and `.unwrap`, which can be helpful for loading data and changing the type of your references where you plan to use them.
 
+> For a type-only alternative that keeps the runtime value as a plain entity (no `Reference` wrapper, no `.$` indirection) while still restricting access until `Loaded<>` narrows it, declare the property as `LazyRef<T>` instead. See [Type-safe Relations → `LazyRef<T>`](./type-safe-relations.md#lazyreft--type-only-reference).
+
 Here is another example of `Author` entity, that was referenced from the `Book` one, this time defined for mongo:
 
 <Tabs
@@ -1508,6 +1510,68 @@ export class Book {
 
   </TabItem>
 </Tabs>
+
+## Database Triggers
+
+You can define database triggers via the `@Trigger()` decorator or the `triggers` option in `defineEntity`/`EntitySchema`. Triggers are managed by the schema generator and migration system — they are created, updated, and removed automatically.
+
+Each trigger requires a `timing` (`before`, `after`, or `instead of`), one or more `events` (`insert`, `update`, `delete`, `truncate`), and either a `body` (the SQL to execute) or an `expression` (raw DDL escape hatch).
+
+The `body` can be a string or a callback that receives column name mappings, just like check constraints. The ORM generates the appropriate DDL for each database driver:
+
+- **PostgreSQL**: creates a separate function and trigger
+- **MySQL/MariaDB/SQLite**: creates one trigger per event (these databases require it)
+- **MSSQL**: creates a single trigger with multiple events (only `after` and `instead of` are supported — MSSQL does not support `before` triggers)
+
+```ts
+@Trigger({
+  name: 'update_timestamp',
+  timing: 'before',
+  events: ['insert', 'update'],
+  body: `NEW.updated_at = NOW(); RETURN NEW`,
+})
+@Entity()
+class Product {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  updatedAt!: Date;
+}
+```
+
+With `defineEntity`:
+
+```ts
+const Product = defineEntity({
+  name: 'Product',
+  properties: {
+    id: p.integer().primary(),
+    updatedAt: p.date(),
+  },
+  triggers: [{
+    name: 'update_timestamp',
+    timing: 'before',
+    events: ['insert', 'update'],
+    body: columns => raw`NEW.${columns.updatedAt} = NOW(); RETURN NEW`,
+  }],
+});
+```
+
+For full control over the generated DDL, use the `expression` escape hatch instead of `body`:
+
+```ts
+@Trigger({
+  name: 'my_trigger',
+  timing: 'after',
+  events: ['insert'],
+  expression: `create trigger "my_trigger" after insert on "product" for each row execute function my_existing_fn()`,
+})
+```
+
+> Database triggers are only supported by SQL drivers. Defining triggers on a MongoDB entity will throw an error.
+
+> When using `expression`, changes to the expression value are not detected by subsequent schema diffs. To update an expression-based trigger, drop and recreate it manually. Prefer `body` for triggers that should be fully managed by the migration system.
 
 ## Custom Types
 

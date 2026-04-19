@@ -27,6 +27,8 @@ MikroORM.init({
 
 > Be careful when overriding the `baseDir` with dynamic values like `__dirname`, as you can end up with valid paths from dev mode, but invalid paths from production build. Ideally you should keep the default of `process.cwd()` there to always have the same base path regardless of how you run the app.
 
+> You can also use the `mikro-orm discovery:export` CLI command to generate a barrel file with all entity imports from your source files. This works as a middle ground between folder-based discovery and manual entity arrays — see [Folder-based Discovery](./folder-based-discovery.md#generating-a-barrel-file-with-discoveryexport) for details.
+
 By default, `ReflectMetadataProvider` is used that leverages the `reflect-metadata`. You can also use `TsMorphMetadataProvider` by installing `@mikro-orm/reflection`. This provider will analyse your entity source files (or `.d.ts` type definition files). If you aim to use plain JavaScript instead of TypeScript, use `EntitySchema`.
 
 > You can also implement your own metadata provider and use it instead. To do so, extend the `MetadataProvider` class.
@@ -363,6 +365,18 @@ By default `null` values from nullable database columns are hydrated as `null`. 
 ```ts
 MikroORM.init({
   forceUndefined: true,
+});
+```
+
+## Initializing nullable properties to `null`
+
+By default, nullable properties that are not provided in `em.create()` data remain `undefined` on the entity object. This can lead to a mismatch between the runtime value (`undefined`) and what the database returns after loading (`null`).
+
+With `initNullableProperties` enabled, nullable properties are initialized to `null` (or `undefined` when `forceUndefined` is set) during `em.create()`. Properties with explicit `default`, `defaultRaw`, or `onCreate` are not affected.
+
+```ts
+MikroORM.init({
+  initNullableProperties: true,
 });
 ```
 

@@ -1,4 +1,12 @@
-import { type AnyEntity, type EntityKey, type EntityMetadata, raw, RawQueryFragment, Utils } from '@mikro-orm/core';
+import {
+  type AnyEntity,
+  type EntityKey,
+  type EntityMetadata,
+  isRaw,
+  raw,
+  RawQueryFragment,
+  Utils,
+} from '@mikro-orm/core';
 import { QueryBuilder } from '@mikro-orm/mysql';
 
 /**
@@ -66,7 +74,7 @@ export class MariaDbQueryBuilder<
             return field.__as === prop;
           }
 
-          if (field instanceof RawQueryFragment) {
+          if (isRaw(field)) {
             // not perfect, but should work most of the time, ideally we should check only the alias (`... as alias`)
             return field.sql.includes(prop);
           }
@@ -74,7 +82,7 @@ export class MariaDbQueryBuilder<
           return false;
         });
 
-        if (field instanceof RawQueryFragment) {
+        if (isRaw(field)) {
           innerQuery.select(this.platform.formatQuery(field.sql, field.params));
         } else if (field) {
           innerQuery.select(field as string);

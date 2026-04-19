@@ -114,7 +114,16 @@ export abstract class AbstractSqlDriver<
     return { alias, name: meta.tableName, schema: effectiveSchema, qualifiedName, toString: () => alias };
   }
 
-  private validateSqlOptions(options: { collation?: any; indexHint?: any }): void {
+  private validateSqlOptions(options: { collation?: any; indexHint?: any; using?: any }): void {
+    if (options.using && !options.indexHint) {
+      const names = Utils.asArray(options.using);
+      const hint = this.platform.formatIndexHint(names);
+
+      if (hint) {
+        options.indexHint = hint;
+      }
+    }
+
     if (options.collation != null && typeof options.collation !== 'string') {
       throw new Error(
         'Collation option for SQL drivers must be a string (collation name). Use a CollationOptions object only with MongoDB.',
@@ -201,6 +210,10 @@ export abstract class AbstractSqlDriver<
 
     if (options.em) {
       await qb.applyJoinedFilters(options.em, options.filters);
+    }
+
+    if ((options as Dictionary)._partitionLimit) {
+      qb.setPartitionLimit((options as Dictionary)._partitionLimit);
     }
 
     return qb;
@@ -324,7 +337,7 @@ export abstract class AbstractSqlDriver<
       );
     }
 
-    if (res instanceof RawQueryFragment) {
+    if (isRaw(res)) {
       const expr = this.platform.formatQuery(res.sql, res.params);
       return this.wrapVirtualExpressionInSubquery(meta, expr, where, options as FindOptions<T, any>, type);
     }
@@ -382,7 +395,7 @@ export abstract class AbstractSqlDriver<
       return;
     }
 
-    if (res instanceof RawQueryFragment) {
+    if (isRaw(res)) {
       const expr = this.platform.formatQuery(res.sql, res.params);
       yield* this.wrapVirtualExpressionInSubqueryStream(
         meta,
@@ -606,9 +619,12 @@ export abstract class AbstractSqlDriver<
               this.mapJoinedProp(relationPojo, p, relationAlias, root, tz, meta2);
             }
 
-            // Inject the entity class constructor so that the factory creates the correct type
+            // For TPT base targets, map child-specific fields and resolve the
+            // concrete class so the factory creates the correct subtype.
+            const concreteMeta = this.mapTPTChildFields(relationPojo, meta2, relationAlias, qb, root);
+
             Object.defineProperty(relationPojo, 'constructor', {
-              value: meta2.class,
+              value: concreteMeta?.class ?? meta2.class,
               enumerable: false,
               configurable: true,
             });
@@ -920,6 +936,189 @@ export abstract class AbstractSqlDriver<
     await this.processManyToMany(meta, pk, collections, false, options);
 
     return res;
+  }
+
+  override async nativeClone<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    overrides?: EntityData<T>,
+    options: NativeInsertUpdateOptions<T> = {},
+  ): Promise<QueryResult<T>> {
+    options.convertCustomTypes ??= true;
+    const meta = this.metadata.get(entityName);
+
+    if (meta.inheritanceType === 'tpt' || meta.tptParent) {
+      return this.nativeCloneTPT(meta, where, overrides, options);
+    }
+
+    return this.nativeCloneSimple(meta, where, overrides, options);
+  }
+
+  private async nativeCloneSimple<T extends object>(
+    meta: EntityMetadata<T>,
+    where: FilterQuery<T>,
+    overrides?: EntityData<T>,
+    options: NativeInsertUpdateOptions<T> = {},
+  ): Promise<QueryResult<T>> {
+    const props = this.getCloneableProps(meta);
+    const mappedOverrides = this.mapCloneOverrides(overrides, meta, options);
+    const { selectFields, insertColumns } = this.buildCloneFields(props, mappedOverrides, meta);
+
+    const selectQb = this.createQueryBuilder<T>(
+      meta.class,
+      options.ctx,
+      'read',
+      options.convertCustomTypes,
+      options.loggerContext,
+    ).withSchema(this.getSchemaName(meta, options));
+    selectQb.select(selectFields as any).where(where as any);
+
+    const insertQb = this.createQueryBuilder<T>(
+      meta.class,
+      options.ctx,
+      'write',
+      options.convertCustomTypes,
+      options.loggerContext,
+    ).withSchema(this.getSchemaName(meta, options));
+
+    return this.rethrow(
+      (insertQb as AnyQueryBuilder<T>)
+        .insertFrom(selectQb as AnyQueryBuilder<T>, { columns: insertColumns as any })
+        .execute('run', false),
+    );
+  }
+
+  private async nativeCloneTPT<T extends object>(
+    leafMeta: EntityMetadata<T>,
+    where: FilterQuery<T>,
+    overrides?: EntityData<T>,
+    options: NativeInsertUpdateOptions<T> = {},
+  ): Promise<QueryResult<T>> {
+    const hierarchy: EntityMetadata[] = [];
+    let current: EntityMetadata | undefined = leafMeta;
+
+    while (current) {
+      hierarchy.unshift(current);
+      current = current.tptParent;
+    }
+
+    const rootMeta = hierarchy[0];
+    let newPk: any;
+    let rootResult: QueryResult<T> | undefined;
+
+    for (const tableMeta of hierarchy) {
+      const props = this.getCloneableProps(tableMeta as EntityMetadata<T>, true);
+      const mappedOverrides = this.mapCloneOverrides(overrides, tableMeta as EntityMetadata<T>, options);
+      const { selectFields, insertColumns } = this.buildCloneFields(
+        props,
+        mappedOverrides,
+        tableMeta as EntityMetadata<T>,
+      );
+
+      // For child tables, prepend the new PK value
+      if (tableMeta !== rootMeta && newPk != null) {
+        for (const pkName of tableMeta.primaryKeys) {
+          const prop = tableMeta.properties[pkName as EntityKey<T>] as EntityProperty;
+
+          for (const fieldName of prop.fieldNames) {
+            insertColumns.unshift(fieldName);
+            selectFields.unshift(raw('? as ??', [newPk, fieldName]));
+          }
+        }
+      }
+
+      const sourceWhere =
+        tableMeta === rootMeta ? where : ((Utils.extractPK(where as any, tableMeta) as FilterQuery<T>) ?? where);
+
+      const selectQb = this.createQueryBuilder<T>(
+        tableMeta.class as any,
+        options.ctx,
+        'read',
+        options.convertCustomTypes,
+        options.loggerContext,
+      ).withSchema(this.getSchemaName(tableMeta as EntityMetadata<T>, options));
+      selectQb.select(selectFields as any).where(sourceWhere as any);
+
+      const insertQb = this.createQueryBuilder<T>(
+        tableMeta.class as any,
+        options.ctx,
+        'write',
+        options.convertCustomTypes,
+        options.loggerContext,
+      ).withSchema(this.getSchemaName(tableMeta as EntityMetadata<T>, options));
+
+      const res = await this.rethrow(
+        (insertQb as AnyQueryBuilder<T>)
+          .insertFrom(selectQb as AnyQueryBuilder<T>, { columns: insertColumns as any })
+          .execute('run', false),
+      );
+
+      if (tableMeta === rootMeta) {
+        rootResult = res;
+        newPk = res.insertId ?? res.row?.[rootMeta.primaryKeys[0]];
+      }
+    }
+
+    return rootResult!;
+  }
+
+  private mapCloneOverrides<T extends object>(
+    overrides: EntityData<T> | undefined,
+    meta: EntityMetadata<T>,
+    options: NativeInsertUpdateOptions<T>,
+  ): Dictionary | undefined {
+    if (!overrides) {
+      return undefined;
+    }
+
+    return super.mapDataToFieldNames(overrides as Dictionary, true, meta.properties as any, options.convertCustomTypes);
+  }
+
+  private buildCloneFields<T extends object>(
+    props: EntityProperty<T>[],
+    mappedOverrides: Dictionary | undefined,
+    meta: EntityMetadata<T>,
+  ): { selectFields: (string | RawQueryFragment)[]; insertColumns: string[] } {
+    const selectFields: (string | RawQueryFragment)[] = [];
+    const insertColumns: string[] = [];
+
+    for (const prop of props) {
+      for (const fieldName of prop.fieldNames) {
+        insertColumns.push(fieldName);
+
+        if (mappedOverrides && fieldName in mappedOverrides) {
+          selectFields.push(raw('? as ??', [mappedOverrides[fieldName], fieldName]));
+        } else if (meta.versionProperty === prop.name) {
+          const initial = prop.runtimeType === 'Date' ? new Date() : 1;
+          selectFields.push(raw('? as ??', [initial, fieldName]));
+        } else {
+          selectFields.push(fieldName);
+        }
+      }
+    }
+
+    return { selectFields, insertColumns };
+  }
+
+  private getCloneableProps<T extends object>(meta: EntityMetadata<T>, ownProps?: boolean): EntityProperty<T>[] {
+    return (ownProps ? (meta.ownProps ?? meta.props) : meta.props).filter(prop => {
+      if (prop.persist === false) {
+        return false;
+      }
+      if (prop.primary) {
+        return false;
+      }
+      if (!prop.fieldNames?.length) {
+        return false;
+      }
+      if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
+        return false;
+      }
+      if (prop.kind === ReferenceKind.EMBEDDED && !prop.object) {
+        return false;
+      }
+      return true;
+    });
   }
 
   async nativeInsertMany<T extends object>(
@@ -1462,8 +1661,33 @@ export abstract class AbstractSqlDriver<
       const pks = wrapped.getPrimaryKeys(true)!;
       const snap = coll.getSnapshot();
       const includes = <T>(arr: T[][], item: T[]) => !!arr.find(i => this.comparePrimaryKeyArrays(i, item));
-      const snapshot = snap ? snap.map(item => helper(item).getPrimaryKeys(true)!) : [];
-      const current = coll.getItems(false).map(item => helper(item).getPrimaryKeys(true)!);
+      // For union-target polymorphic M:N, prepend the per-row discriminator value so the pivot
+      // persister can write it alongside the FK id. Memoized per sync-run because a collection can
+      // hold hundreds of items of the same few types, and findDiscriminatorValue walks the prototype
+      // chain + re-scans Object.entries each call.
+      const isUnionTargetMN = QueryHelper.isUnionTargetPolymorphic(coll.property);
+      const classToDisc = new Map<Function, Primary<any>>();
+      const toDiff = (item: AnyEntity) => {
+        const keys = helper(item).getPrimaryKeys(true)!;
+        if (!isUnionTargetMN) {
+          return keys;
+        }
+        let disc = classToDisc.get(item.constructor);
+        if (!classToDisc.has(item.constructor)) {
+          disc = QueryHelper.findDiscriminatorValue(coll.property.discriminatorMap!, item.constructor) as Primary<any>;
+
+          if (disc === undefined) {
+            throw new Error(
+              `Cannot resolve discriminator value for ${item.constructor.name} in ${coll.property.name}; the class is not part of the union target list.`,
+            );
+          }
+
+          classToDisc.set(item.constructor, disc);
+        }
+        return [disc as Primary<any>, ...keys];
+      };
+      const snapshot = snap ? snap.map(toDiff) : [];
+      const current = coll.getItems(false).map(toDiff);
       const deleteDiff = snap ? snapshot.filter(item => !includes(current, item)) : true;
       const insertDiff = current.filter(item => !includes(snapshot, item));
       const target = snapshot.filter(item => includes(current, item)).concat(...insertDiff);
@@ -1566,6 +1790,10 @@ export abstract class AbstractSqlDriver<
 
     const pivotMeta = this.metadata.get(prop.pivotEntity);
 
+    if (prop.discriminatorColumn && QueryHelper.isUnionTargetPolymorphic(prop)) {
+      return this.loadFromUnionTargetPolymorphicPivotTable(prop, owners, where, orderBy, ctx, options, pivotJoin);
+    }
+
     if (prop.polymorphic && prop.discriminatorColumn && prop.discriminatorValue) {
       return this.loadFromPolymorphicPivotTable(prop, owners, where, orderBy, ctx, options, pivotJoin);
     }
@@ -1573,17 +1801,7 @@ export abstract class AbstractSqlDriver<
     const pivotProp1 = pivotMeta.relations[prop.owner ? 1 : 0];
     const pivotProp2 = pivotMeta.relations[prop.owner ? 0 : 1];
     const ownerMeta = pivotProp2.targetMeta as EntityMetadata<O>;
-
-    // The pivot query builder doesn't convert custom types, so we need to manually
-    // convert owner PKs to DB format for the query and convert result FKs back to
-    // JS format for consistent key hashing in buildPivotResultMap.
-    const pkProp = ownerMeta.properties[ownerMeta.primaryKeys[0]];
-    const needsConversion = pkProp?.customType?.ensureComparable(ownerMeta, pkProp) && !ownerMeta.compositePK;
-    let ownerPks = ownerMeta.compositePK ? owners : owners.map(o => o[0]);
-
-    if (needsConversion) {
-      ownerPks = ownerPks.map(v => pkProp.customType!.convertToDatabaseValue(v, this.platform, { mode: 'query' }));
-    }
+    const { ownerPks, needsConversion, pkProp } = this.convertOwnerPksForPivotQuery<O>(owners, ownerMeta);
 
     const cond = {
       [pivotProp2.name]: { $in: ownerPks },
@@ -1605,7 +1823,7 @@ export abstract class AbstractSqlDriver<
     const fields = pivotJoin
       ? ([pivotProp1.name, pivotProp2.name] as any[])
       : [pivotProp1.name, pivotProp2.name, ...childFields];
-    const res = await this.find(pivotMeta.class, where, {
+    const pivotFindOptions: Dictionary = {
       ctx,
       ...options,
       fields,
@@ -1621,10 +1839,15 @@ export abstract class AbstractSqlDriver<
         } as any,
       ],
       populateWhere: undefined,
-      // @ts-ignore
       _populateWhere: 'infer',
       populateFilter: this.wrapPopulateFilter(options, pivotProp2.name),
-    });
+    };
+
+    if (pivotFindOptions._partitionLimit) {
+      pivotFindOptions._partitionLimit.partitionBy = pivotProp2.name;
+    }
+
+    const res = await this.find(pivotMeta.class, where, pivotFindOptions);
 
     // Convert result FK values back to JS format so key hashing
     // in buildPivotResultMap is consistent with the owner keys.
@@ -1800,6 +2023,129 @@ export abstract class AbstractSqlDriver<
   }
 
   /**
+   * Load a union-target polymorphic M:N pivot (e.g. Post.attachments -> Image | Video).
+   * Each pivot row's discriminator column selects which target table to hydrate.
+   */
+  protected async loadFromUnionTargetPolymorphicPivotTable<T extends object, O extends object>(
+    prop: EntityProperty,
+    owners: Primary<O>[][],
+    where: FilterQuery<any> = {} as FilterQuery<any>,
+    orderBy?: OrderDefinition<T>,
+    ctx?: Transaction,
+    options: FindOptions<T, any, any, any> = {} as FindOptions<T, any, any, any>,
+    pivotJoin?: boolean,
+  ): Promise<Dictionary<T[]>> {
+    // :ref hints cannot be honored for union-target — EntityLoader.getReference needs a concrete
+    // class per item, but the ref-mode map only carries flat PK values and would hydrate every
+    // row as the first polymorph target. Fail loudly instead of silently corrupting the collection.
+    if (pivotJoin) {
+      throw new Error(
+        `The ':ref' populate hint is not supported for union-target polymorphic M:N on ${prop.name}. Use a regular populate hint instead.`,
+      );
+    }
+
+    const pivotMeta = this.metadata.get(prop.pivotEntity);
+    const targets = prop.polymorphTargets!;
+    const ownerProp = pivotMeta.relations.find(r => r.persist !== false && !r.polymorphic)!;
+    const discriminatorColumn = prop.discriminatorColumn!;
+
+    const ownerMeta = ownerProp.targetMeta as EntityMetadata<O>;
+    const { ownerPks, needsConversion, pkProp } = this.convertOwnerPksForPivotQuery<O>(owners, ownerMeta);
+
+    const pivotRows = (await this.find(pivotMeta.class, { [ownerProp.name]: { $in: ownerPks } } as any, {
+      ctx,
+      orderBy: this.getPivotOrderBy(prop, ownerProp, orderBy, options?.orderBy),
+      fields: [ownerProp.name, discriminatorColumn, prop.discriminator!] as any[],
+      populateWhere: undefined,
+      // @ts-ignore
+      _populateWhere: 'infer',
+    })) as EntityData<any>[];
+
+    /* v8 ignore next 7 - custom-type PK conversion, tested via loadFromPivotTable path */
+    if (needsConversion) {
+      for (const item of pivotRows) {
+        const fk = (item as any)[ownerProp.name];
+
+        if (fk != null) {
+          (item as any)[ownerProp.name] = pkProp.customType!.convertToJSValue(fk, this.platform);
+        }
+      }
+    }
+
+    const classMeta = new Map(targets.map(t => [t.class, t]));
+    const rowsByTarget = new Map<EntityMetadata, EntityData<any>[]>();
+    for (const row of pivotRows) {
+      const discValue = (row as Dictionary)[discriminatorColumn] as string;
+      const targetClass = prop.discriminatorMap![discValue];
+      const targetMeta = classMeta.get(targetClass as any);
+
+      /* v8 ignore next 3 - defensive: unknown discriminator value */
+      if (!targetMeta) {
+        continue;
+      }
+
+      const list = rowsByTarget.get(targetMeta) ?? [];
+      list.push(row);
+      rowsByTarget.set(targetMeta, list);
+    }
+
+    // Strip the outer find's orderBy/fields/exclude before bulk-loading targets by PK — those apply
+    // to the owner query, not each polymorph target (Image and Video wouldn't share an orderBy field).
+    // populateFilter is a filter on the populated collection; since union-target splits the pivot
+    // and target queries, we merge it into the target-level `where` instead of wrapping it on the
+    // pivot query (where joins to target tables aren't available).
+    // Hoisted above the loop since `options` doesn't change per target.
+    const { orderBy: _o, fields: _f, exclude: _e, populateFilter, ...childOptions } = options as Dictionary;
+    const populate = (options.populate as PopulateOptions<T>[]) ?? [];
+    const orphanedRows = new Set<EntityData<any>>();
+
+    for (const [targetMeta, rows] of rowsByTarget) {
+      const targetIds = rows.map(r => (r as Dictionary)[prop.discriminator!]);
+      // Union-target pivot stores one scalar FK per row; composite-PK targets are rejected at
+      // metadata validation time, so a single primary key column is guaranteed here.
+      const pkCol = targetMeta.primaryKeys[0];
+      let cond: Dictionary = { [pkCol]: { $in: targetIds } };
+
+      if (!Utils.isEmpty(where)) {
+        cond = { $and: [cond, where] };
+      }
+
+      if (!Utils.isEmpty(populateFilter)) {
+        cond = { $and: [cond, populateFilter] };
+      }
+
+      const results = (await this.find<any>(targetMeta.class, cond as FilterQuery<any>, {
+        ctx,
+        ...childOptions,
+        populate: populate as any,
+      })) as EntityData<any>[];
+      const byPk = new Map<string, EntityData<any>>();
+      for (const row of results) {
+        Object.defineProperty(row, 'constructor', {
+          value: targetMeta.class,
+          enumerable: false,
+          configurable: true,
+        });
+        byPk.set(Utils.getPrimaryKeyHash([(row as Dictionary)[pkCol]] as string[]), row);
+      }
+      for (const row of rows) {
+        const pkHash = Utils.getPrimaryKeyHash([(row as Dictionary)[prop.discriminator!]] as string[]);
+        const entity = byPk.get(pkHash);
+
+        if (entity == null) {
+          orphanedRows.add(row);
+          continue;
+        }
+
+        (row as Dictionary)[prop.discriminator!] = entity;
+      }
+    }
+
+    const result = orphanedRows.size > 0 ? pivotRows.filter(r => !orphanedRows.has(r)) : pivotRows;
+    return this.buildPivotResultMap<T, O>(owners, result, ownerProp.name, prop.discriminator!);
+  }
+
+  /**
    * Build a map from owner PKs to their related entities from pivot table results.
    */
   private buildPivotResultMap<T extends object, O extends object>(
@@ -1833,6 +2179,29 @@ export abstract class AbstractSqlDriver<
     }
 
     return undefined;
+  }
+
+  /**
+   * The pivot query builder doesn't convert custom types — manually convert owner PKs to the DB
+   * representation. Returns `needsConversion` + `pkProp` so the caller can convert result FKs back
+   * to JS format for consistent key hashing in `buildPivotResultMap`.
+   */
+  private convertOwnerPksForPivotQuery<O extends object>(
+    owners: Primary<O>[][],
+    ownerMeta: EntityMetadata<O>,
+  ): { ownerPks: Primary<O>[] | Primary<O>[][]; needsConversion: boolean; pkProp: EntityProperty<O> } {
+    const pkProp = ownerMeta.properties[ownerMeta.primaryKeys[0]];
+    const needsConversion = !!pkProp?.customType?.ensureComparable(ownerMeta, pkProp) && !ownerMeta.compositePK;
+    let ownerPks: Primary<O>[] | Primary<O>[][] = ownerMeta.compositePK ? owners : owners.map(o => o[0]);
+
+    /* v8 ignore next 4 - custom-type PK conversion, tested via loadFromPivotTable path */
+    if (needsConversion) {
+      ownerPks = (ownerPks as Primary<O>[]).map(v =>
+        pkProp.customType!.convertToDatabaseValue(v, this.platform, { mode: 'query' }),
+      );
+    }
+
+    return { ownerPks, needsConversion, pkProp };
   }
 
   private getPivotOrderBy<T>(
@@ -1943,6 +2312,13 @@ export abstract class AbstractSqlDriver<
 
       if (ref && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind)) {
         return true;
+      }
+
+      // Union-target polymorphic M:N cannot be loaded via a single JOIN because rows span multiple
+      // target tables; fall through to SELECT_IN which dispatches through `loadFromPivotTable`.
+      // Polymorphic M:1 (to-one with target_type discriminator) is handled via LEFT JOINs elsewhere.
+      if (prop.kind === ReferenceKind.MANY_TO_MANY && QueryHelper.isUnionTargetPolymorphic(prop) && prop.owner) {
+        return false;
       }
 
       // skip redundant joins for 1:1 owner population hints when using `mapToPk`
@@ -2126,6 +2502,13 @@ export abstract class AbstractSqlDriver<
             targetPath,
             schema,
           );
+
+          // For polymorphic targets that are TPT base classes, also LEFT JOIN
+          // all descendant tables so child-specific fields can be selected.
+          if (targetMeta.inheritanceType === 'tpt' && targetMeta.tptChildren?.length && !ref) {
+            const tptMeta = this.metadata.get(targetMeta.class);
+            this.addTPTPolymorphicJoinsForRelation(qb, tptMeta, tableAlias, fields);
+          }
 
           if (ref) {
             // For filter :ref hints, schedule filter check for each target (no field selection)
@@ -2357,13 +2740,11 @@ export abstract class AbstractSqlDriver<
     relationAlias: string,
     qb: AnyQueryBuilder<T>,
     root: EntityData<T>,
-  ): void {
-    // Check if this is a TPT base with polymorphic children
+  ): EntityMetadata | undefined {
     if (meta.inheritanceType !== 'tpt' || !meta.root.tptDiscriminatorColumn) {
       return;
     }
 
-    // Read the discriminator value
     const discriminatorAlias = `${relationAlias}__${meta.root.tptDiscriminatorColumn}` as EntityKey<T>;
     const discriminatorValue = root[discriminatorAlias] as string;
 
@@ -2371,10 +2752,8 @@ export abstract class AbstractSqlDriver<
       return;
     }
 
-    // Set the discriminator in the pojo for EntityFactory
     relationPojo[meta.root.tptDiscriminatorColumn as EntityKey<T>] = discriminatorValue as EntityDataValue<T>;
 
-    // Find the concrete metadata from discriminator map
     const concreteClass = meta.root.discriminatorMap?.[discriminatorValue];
     /* v8 ignore next 3 - defensive check for invalid discriminator values */
     if (!concreteClass) {
@@ -2382,11 +2761,10 @@ export abstract class AbstractSqlDriver<
     }
 
     const concreteMeta = this.metadata.get(concreteClass);
+    delete root[discriminatorAlias];
 
     if (concreteMeta === meta) {
-      // Already the concrete type, no child fields to map
-      delete root[discriminatorAlias];
-      return;
+      return concreteMeta;
     }
 
     // Traverse up from concrete type and map fields from each level's table
@@ -2408,8 +2786,7 @@ export abstract class AbstractSqlDriver<
       currentMeta = currentMeta.tptParent;
     }
 
-    // Clean up the discriminator alias
-    delete root[discriminatorAlias];
+    return concreteMeta;
   }
 
   /**

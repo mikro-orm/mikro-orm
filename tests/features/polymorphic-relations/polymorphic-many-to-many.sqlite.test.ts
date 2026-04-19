@@ -16,6 +16,10 @@ class Tag {
   @ManyToMany(() => Video, video => video.tags)
   videos = new Collection<Video>(this);
 
+  // Merged inverse — single union collection across all polymorphic owners
+  @ManyToMany({ entity: () => [Post, Video], mappedBy: 'tags' })
+  owners = new Collection<Post | Video>(this);
+
   constructor(name: string) {
     this.name = name;
   }
@@ -382,6 +386,73 @@ describe('polymorphic many-to-many relations', () => {
     // Only posts matching the filter should be populated
     expect(loadedTag.posts).toHaveLength(1);
     expect(loadedTag.posts[0].title).toBe('Post Alpha');
+  });
+
+  test('merged inverse: Tag.owners loads all owner types in one collection', async () => {
+    const tag = new Tag('Shared');
+    const post = new Post('Post 1');
+    const video = new Video('https://example.com/v1.mp4');
+
+    post.tags.add(tag);
+    video.tags.add(tag);
+
+    await orm.em.persist([post, video]).flush();
+    orm.em.clear();
+
+    const loaded = await orm.em.findOneOrFail(Tag, tag.id, { populate: ['owners'] });
+    const owners = loaded.owners.getItems();
+    expect(owners).toHaveLength(2);
+    expect(owners.some(o => o instanceof Post)).toBe(true);
+    expect(owners.some(o => o instanceof Video)).toBe(true);
+  });
+
+  test('merged inverse: adding via Tag.owners propagates to owning side', async () => {
+    const tag = new Tag('Propagated');
+    const post = new Post('Post via inverse');
+    await orm.em.persist([tag, post]).flush();
+    orm.em.clear();
+
+    const loaded = await orm.em.findOneOrFail(Tag, tag.id, { populate: ['owners'] });
+    expect(loaded.owners).toHaveLength(0);
+
+    const existingPost = await orm.em.findOneOrFail(Post, post.id, { populate: ['tags'] });
+    loaded.owners.add(existingPost);
+
+    // Propagation should add tag to the owning side
+    expect(existingPost.tags.contains(loaded)).toBe(true);
+
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Verify persisted via owning side
+    const reloaded = await orm.em.findOneOrFail(Tag, tag.id, { populate: ['owners'] });
+    expect(reloaded.owners).toHaveLength(1);
+    expect(reloaded.owners[0]).toBeInstanceOf(Post);
+  });
+
+  test('merged inverse: removing via Tag.owners propagates to owning side', async () => {
+    const tag = new Tag('Removable');
+    const post = new Post('Post to remove');
+    const video = new Video('https://example.com/keep.mp4');
+
+    post.tags.add(tag);
+    video.tags.add(tag);
+    await orm.em.persist([post, video]).flush();
+    orm.em.clear();
+
+    const loaded = await orm.em.findOneOrFail(Tag, tag.id, { populate: ['owners'] });
+    expect(loaded.owners).toHaveLength(2);
+
+    const postOwner = loaded.owners.getItems().find(o => o instanceof Post)!;
+    loaded.owners.remove(postOwner);
+
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Only the video should remain
+    const reloaded = await orm.em.findOneOrFail(Tag, tag.id, { populate: ['owners'] });
+    expect(reloaded.owners).toHaveLength(1);
+    expect(reloaded.owners[0]).toBeInstanceOf(Video);
   });
 });
 

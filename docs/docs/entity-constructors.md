@@ -96,6 +96,18 @@ constructor(dto: { title: string; author: number }) {
 }
 ```
 
+Or, to keep the runtime as a plain entity (no wrapper) while still getting compile-time populate-state safety, declare the property as [`LazyRef<T>`](./type-safe-relations.md#lazyreft--type-only-reference) and assign with `rel()`:
+
+```ts
+@ManyToOne({ entity: () => Author })
+author: LazyRef<Author>;
+
+constructor(dto: { title: string; author: number }) {
+  this.title = dto.title;
+  this.author = rel(Author, dto.author);
+}
+```
+
 The `rel` and `ref` helpers will accept both primary key and entity instance, as well as empty value (`null` or `undefined`).
 
 ```ts
@@ -107,6 +119,10 @@ book.author = ref(Author, 1);
 book.author = ref(Author, author);
 book.author = ref(author);
 ```
+
+## Property initializers with `defineEntity` and `extends`
+
+When using `defineEntity` with the `extends` option, property initializers from the base class are inherited and run automatically via `super()`. This allows you to define defaults like `id = v4()` or `createdAt = new Date()` on the base class and have them work in all child entities created via `new`. See [Reusing base properties via `extends`](./define-entity.md#extends-initializers) for a full example.
 
 ## Using native private properties
 

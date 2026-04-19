@@ -72,6 +72,7 @@ type InternalKeys =
   | 'OptionalProps'
   | 'EagerProps'
   | 'HiddenProps'
+  | 'IndexHints'
   | '__selectedType'
   | '__loadedType';
 /** Filters out function, symbol, and internal keys from an entity type. When `B = true`, also excludes scalar keys. */
@@ -149,7 +150,7 @@ type LoadedReferenceShape<T = any> = ReferenceShape & { $: T };
  * Using this instead of `Loadable<any>` in conditional type checks prevents
  * TypeScript from evaluating the full Collection/Reference interfaces.
  */
-type LoadableShape = CollectionShape | ReferenceShape | readonly any[];
+type LoadableShape = CollectionShape | ReferenceShape | LazyRef.Brand<any> | readonly any[];
 
 /** Gets all keys from all members of a union type (distributes over the union). */
 export type UnionKeys<T> = T extends any ? keyof T : never;
@@ -208,6 +209,50 @@ export const EntityName = Symbol('EntityName');
 
 /** Extracts the entity name string literal from an entity type that declares `[EntityName]`. */
 export type InferEntityName<T> = T extends { [EntityName]?: infer Name } ? (Name extends string ? Name : never) : never;
+
+/**
+ * Symbol used to declare index-to-column mappings on an entity type.
+ * For decorator entities, declare as a phantom property:
+ * ```typescript
+ * [IndexHints]?: { idx_email: 'email'; idx_name_age: 'name' | 'age' };
+ * ```
+ * For `defineEntity` entities, index hints are inferred automatically from
+ * named indexes (property-level `.index('name')` and entity-level `indexes`/`uniques`).
+ */
+export const IndexHints = Symbol('IndexHints');
+
+/**
+ * Extracts the index hints map from an entity type. Returns `never` when no hints are declared.
+ * For decorator entities, `[IndexHints]` contains a pre-computed `{ idxName: 'prop' }` map.
+ * For `defineEntity` entities, `[IndexHints]` contains `[Properties]` (a tuple wrapping the
+ * raw property builders), which is lazily converted to the index map when first accessed.
+ */
+export type ExtractIndexHints<T> = T extends { [IndexHints]?: infer H }
+  ? H extends [infer P extends Record<string, any>]
+    ? InferPropertyIndexMap<P>
+    : H
+  : never;
+
+/**
+ * Extracts `{ indexName: propertyKey }` from property builder options.
+ * Checks `.index('name')` and `.unique('name')` on each property in a single pass.
+ */
+export type InferPropertyIndexMap<Properties extends Record<string, any>> = {
+  [K in keyof Properties as MaybeReturnType<Properties[K]> extends { '~options': { index: infer N extends string } }
+    ? N
+    : MaybeReturnType<Properties[K]> extends { '~options': { unique: infer N extends string } }
+      ? N
+      : never]: K & string;
+};
+
+/** Union of declared index names on an entity. Falls back to `string` when no `[IndexHints]` are declared. */
+export type IndexName<T> = [ExtractIndexHints<T>] extends [never]
+  ? string
+  : (keyof ExtractIndexHints<T> & string) | (string & {});
+
+/** Properties covered by the named index on entity T. Falls back to all entity keys when the index is unknown. */
+export type IndexColumns<T, Name extends string> =
+  ExtractIndexHints<T> extends Record<Name, infer Cols> ? Cols & string : EntityKey<T>;
 
 /**
  * Branded type that marks a property as optional in `em.create()`.
@@ -469,6 +514,30 @@ export type FilterQuery<T> =
   | NonNullable<EntityProps<T> & OperatorMap<T>>
   | FilterQuery<T>[];
 
+/**
+ * `FilterQuery` restricted to only properties covered by the specified index(es).
+ * Used when `using` option is set in `FindOptions` to enforce type-safe index usage.
+ */
+export type IndexFilterQuery<T, Using extends string> = [Using] extends [never]
+  ? FilterQuery<T>
+  :
+      | (OperatorMap<T> & {
+          -readonly [K in Extract<EntityKey<T>, IndexColumns<T, Using>>]?:
+            | ExpandQuery<ExpandProperty<FilterObjectProp<T, K>>>
+            | ExpandQueryMerged<ExpandProperty<FilterObjectProp<T, K>>>
+            | FilterValue<ExpandProperty<FilterObjectProp<T, K>>>
+            | ElemMatchFilter<FilterObjectProp<T, K>>
+            | null;
+        })
+      | NonNullable<ExpandScalar<Primary<T>>>
+      | IndexFilterQuery<T, Using>[];
+
+/** Replaces `where` and `using` on an options type with index-aware variants when `Using` is specified. */
+export type WithUsingOptions<Opts, Entity, Using extends string> = Omit<Opts, 'where' | 'using'> & {
+  using?: Using | Using[];
+  where?: [Using] extends [never] ? FilterQuery<Entity> : IndexFilterQuery<Entity, Using>;
+};
+
 /** Public interface for the entity wrapper, accessible via `wrap(entity)`. Provides helper methods for entity state management. */
 export interface IWrappedEntity<Entity extends object> {
   isInitialized(): boolean;
@@ -491,9 +560,17 @@ export interface IWrappedEntity<Entity extends object> {
     Naked extends FromEntityType<Entity> = FromEntityType<Entity>,
     Hint extends string = never,
     Exclude extends string = never,
+    Fields extends string = never,
   >(
-    options?: SerializeOptions<Naked, Hint, Exclude>,
-  ): SerializeDTO<Naked, Hint, Exclude>;
+    options?: SerializeOptions<Naked, Hint, Exclude, Fields>,
+  ): SerializeDTO<
+    Naked,
+    Hint,
+    Exclude,
+    never,
+    ResolveSerializeFields<Fields, ExtractFieldsHint<Entity>>,
+    SerializeFieldsKeepPK<Fields>
+  >;
   setSerializationContext<Hint extends string = never, Fields extends string = never, Exclude extends string = never>(
     options: LoadHint<Entity, Hint, Fields, Exclude>,
   ): void;
@@ -615,15 +692,17 @@ export type EntityDataProp<T, C extends boolean> = T extends Date
         ? C extends true
           ? Raw
           : Runtime
-        : T extends ReferenceShape<infer U>
+        : T extends LazyRef.Brand<infer U>
           ? EntityDataNested<U, C>
-          : T extends CollectionShape<infer U>
-            ? U | U[] | EntityDataNested<U & object, C> | EntityDataNested<U & object, C>[]
-            : T extends readonly (infer U)[]
-              ? U extends NonArrayObject
-                ? U | U[] | EntityDataNested<U, C> | EntityDataNested<U, C>[]
-                : U[] | EntityDataNested<U, C>[]
-              : EntityDataNested<T, C>;
+          : T extends ReferenceShape<infer U>
+            ? EntityDataNested<U, C>
+            : T extends CollectionShape<infer U>
+              ? U | U[] | EntityDataNested<U & object, C> | EntityDataNested<U & object, C>[]
+              : T extends readonly (infer U)[]
+                ? U extends NonArrayObject
+                  ? U | U[] | EntityDataNested<U, C> | EntityDataNested<U, C>[]
+                  : U[] | EntityDataNested<U, C>[]
+                : EntityDataNested<T, C>;
 
 /** Like `EntityDataProp` but used in `RequiredEntityData` context with required/optional key distinction. */
 export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
@@ -638,15 +717,17 @@ export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
           ? C extends true
             ? Raw
             : Runtime
-          : T extends ReferenceShape<infer U>
+          : T extends LazyRef.Brand<infer U>
             ? RequiredEntityDataNested<U, O, C>
-            : T extends CollectionShape<infer U>
-              ? U | U[] | RequiredEntityDataNested<U & object, O, C> | RequiredEntityDataNested<U & object, O, C>[]
-              : T extends readonly (infer U)[]
-                ? U extends NonArrayObject
-                  ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
-                  : U[] | RequiredEntityDataNested<U, O, C>[]
-                : RequiredEntityDataNested<T, O, C>;
+            : T extends ReferenceShape<infer U>
+              ? RequiredEntityDataNested<U, O, C>
+              : T extends CollectionShape<infer U>
+                ? U | U[] | RequiredEntityDataNested<U & object, O, C> | RequiredEntityDataNested<U & object, O, C>[]
+                : T extends readonly (infer U)[]
+                  ? U extends NonArrayObject
+                    ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
+                    : U[] | RequiredEntityDataNested<U, O, C>[]
+                  : RequiredEntityDataNested<T, O, C>;
 
 /** Nested entity data shape for embedded or related entities within `EntityData`. */
 export type EntityDataNested<T, C extends boolean = false> = T extends undefined
@@ -676,6 +757,14 @@ type ProbablyOptionalProps<T> =
   | ExplicitlyOptionalProps<T>
   | Exclude<NonNullable<NullableKeys<T, null | undefined>>, RequiredNullableKeys<T>>;
 
+// `Opt<unknown>` collapses to `Opt.Brand` (since `unknown & T = T`), losing the `unknown`.
+// Detect this case and restore `unknown` so that `unknown`-typed values are assignable.
+type RestoreOptUnknown<T> = [Exclude<T, null | undefined>] extends [Opt.Brand]
+  ? [Opt.Brand] extends [Exclude<T, null | undefined>]
+    ? unknown
+    : T
+  : T;
+
 type IsOptional<T, K extends keyof T, I> = T[K] extends CollectionShape
   ? true
   : ExtractType<T[K]> extends I
@@ -686,7 +775,9 @@ type IsOptional<T, K extends keyof T, I> = T[K] extends CollectionShape
 type RequiredKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? CleanKeys<T, K> : never;
 type OptionalKeys<T, K extends keyof T, I> = IsOptional<T, K, I> extends false ? never : CleanKeys<T, K>;
 /** Data shape for creating or updating entities. All properties are optional. Used in `em.create()` and `em.assign()`. */
-export type EntityData<T, C extends boolean = false> = { [K in EntityKey<T>]?: EntityDataItem<T[K] & {}, C> };
+export type EntityData<T, C extends boolean = false> = {
+  [K in EntityKey<T>]?: RestoreOptUnknown<T[K]> | EntityDataItem<T[K] & {}, C>;
+};
 
 /**
  * Data shape for `em.create()` with required/optional distinction based on entity metadata.
@@ -695,14 +786,14 @@ export type EntityData<T, C extends boolean = false> = { [K in EntityKey<T>]?: E
  */
 export type RequiredEntityData<T, I = never, C extends boolean = false> = {
   [K in keyof T as RequiredKeys<T, K, I>]:
-    | T[K]
+    | RestoreOptUnknown<T[K]>
     | RequiredEntityDataProp<T[K], T, C>
     | Primary<T[K]>
     | PolymorphicPrimary<T[K]>
     | Raw;
 } & {
   [K in keyof T as OptionalKeys<T, K, I>]?:
-    | T[K]
+    | RestoreOptUnknown<T[K]>
     | RequiredEntityDataProp<T[K], T, C>
     | Primary<T[K]>
     | PolymorphicPrimary<T[K]>
@@ -723,6 +814,37 @@ export type Rel<T> = T;
 
 /** Alias for `ScalarReference` (see {@apilink Ref}). */
 export type ScalarRef<T> = ScalarReference<T>;
+
+/**
+ * Type-level marker for a to-one relation that is **direct at runtime** (no `Reference` wrapper) but
+ * **restricted at compile time** until narrowed via `Loaded<>`.
+ *
+ * Use as the property type on a `@ManyToOne`/`@OneToOne` relation that does **not** have `ref: true`:
+ *
+ * ```ts
+ * @ManyToOne(() => User)
+ * author!: LazyRef<User>;
+ * ```
+ *
+ * Semantics:
+ * - **Runtime**: identical to a plain direct relation — `article.author` is a `User` instance (stub or hydrated),
+ *   `article.author instanceof User` is `true`, no `Reference` object is created.
+ * - **Type (unloaded view)**: only the primary key is accessible. Accessing other properties is a compile error.
+ * - **Type (loaded view)**: once the relation is in the populate hint of a `Loaded<Entity, 'author'>`, it narrows
+ *   back to the full entity — no `.$` or `.get()` indirection needed.
+ *
+ * Note: the safety is purely compile-time. JS code or `as any` casts bypass it.
+ */
+export type LazyRef<T extends object> =
+  IsAny<T> extends true ? LazyRef.Brand<T> : { [K in PrimaryProperty<T> & keyof T]: T[K] } & LazyRef.Brand<T>;
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export declare namespace LazyRef {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const __lazyRef: unique symbol;
+  export interface Brand<T> {
+    [__lazyRef]?: (arg: T) => T;
+  }
+}
 
 /** Alias for `Reference<T> & { id: number }` (see {@apilink Ref}). */
 export type EntityRef<T extends object> =
@@ -760,7 +882,11 @@ type DTOWrapper<T, C extends TypeConfig, Flat extends boolean> = Flat extends tr
 
 /** Resolves the serialized (DTO) type for a single entity property. Unwraps references, collections, and custom serialized types. */
 export type EntityDTOProp<E, T, C extends TypeConfig = never, Flat extends boolean = false> = T extends Scalar
-  ? T
+  ? T extends { __serialized?: infer U }
+    ? IsUnknown<U> extends false
+      ? U
+      : T
+    : T
   : T extends ScalarReference<infer U>
     ? U
     : T extends { __serialized?: infer U }
@@ -834,7 +960,9 @@ type SerializeSubFields<K extends string, F extends string> = K extends F
     : F extends `${K & string}.${infer Rest}`
       ? Rest
       : never;
-type SerializeFieldsFilter<T, K extends keyof T, F extends string> = K extends Prefix<T, F> | PrimaryProperty<T>
+type SerializeFieldsFilter<T, K extends keyof T, F extends string, KeepPK extends boolean = true> = K extends
+  | Prefix<T, F>
+  | (KeepPK extends true ? PrimaryProperty<T> : never)
   ? K
   : never;
 type SerializePropValue<T, K extends keyof T, H extends string, C extends TypeConfig = never> =
@@ -843,24 +971,58 @@ type SerializePropValue<T, K extends keyof T, H extends string, C extends TypeCo
       ? SerializeDTO<U & object, SerializeSubHints<K & string, H>, never, C>[]
       : SerializeDTO<ExpandProperty<T[K]>, SerializeSubHints<K & string, H>, never, C> | Extract<T[K], null | undefined>
     : EntityDTOProp<T, T[K], C>;
-type SerializePropValueWithFields<T, K extends keyof T, H extends string, C extends TypeConfig, F extends string> =
+type SerializePropValueWithFields<
+  T,
+  K extends keyof T,
+  H extends string,
+  C extends TypeConfig,
+  F extends string,
+  KeepPK extends boolean = true,
+> =
   K & string extends SerializeTopHints<H>
     ? NonNullable<T[K]> extends CollectionShape<infer U>
-      ? SerializeDTO<U & object, SerializeSubHints<K & string, H>, never, C, SerializeSubFields<K & string, F>>[]
+      ? SerializeDTO<
+          U & object,
+          SerializeSubHints<K & string, H>,
+          never,
+          C,
+          SerializeSubFields<K & string, F>,
+          KeepPK
+        >[]
       :
           | SerializeDTO<
               ExpandProperty<T[K]>,
               SerializeSubHints<K & string, H>,
               never,
               C,
-              SerializeSubFields<K & string, F>
+              SerializeSubFields<K & string, F>,
+              KeepPK
             >
           | Extract<T[K], null | undefined>
     : EntityDTOProp<T, T[K], C>;
 
 /**
+ * Resolves a user-provided `Fields` generic to the value passed to `SerializeDTO`'s `F` parameter:
+ * `never` (no `fields` option) falls back to `Default` (typically `'*'` or the entity's `ExtractFieldsHint`).
+ */
+export type ResolveSerializeFields<Fields extends string, Default extends string = '*'> = [Fields] extends [never]
+  ? Default
+  : Fields;
+
+/**
+ * Whether the explicit `serialize()` path should keep primary keys in the output. When the user does not provide
+ * a `fields` option (`Fields = never`), behave like `toObject()` and keep PKs; when they do, treat it as a strict
+ * whitelist so PKs are dropped unless listed.
+ */
+export type SerializeFieldsKeepPK<Fields extends string> = [Fields] extends [never] ? true : false;
+
+/**
  * Return type of `serialize()`. Combines Loaded + EntityDTO in a single pass for better performance.
  * Respects populate hints (`H`), exclude hints (`E`), and fields hints (`F`).
+ *
+ * `KeepPK` controls whether primary keys are auto-included when narrowing by `F`. The `toObject()` path keeps the
+ * default `true` (PKs always present); the explicit `serialize()` path passes `false` so the user-provided `fields`
+ * option is a strict whitelist that can drop PKs from the output.
  */
 export type SerializeDTO<
   T,
@@ -868,6 +1030,7 @@ export type SerializeDTO<
   E extends string = never,
   C extends TypeConfig = never,
   F extends string = '*',
+  KeepPK extends boolean = true,
 > = string extends H
   ? EntityDTOFlat<T, C>
   : [F] extends ['*']
@@ -880,8 +1043,8 @@ export type SerializeDTO<
         [K in keyof T as ExcludeHidden<T, K> &
           CleanKeys<T, K> &
           (IsNever<E> extends true ? K : Exclude<K, E>) &
-          SerializeFieldsFilter<T, K, F>]:
-          | SerializePropValueWithFields<T, K, H, C, F>
+          SerializeFieldsFilter<T, K, F, KeepPK>]:
+          | SerializePropValueWithFields<T, K, H, C, F, KeepPK>
           | Extract<T[K], null | undefined>;
       };
 
@@ -933,6 +1096,9 @@ export type FormulaCallback<T> = (columns: FormulaColumns<T>, table: FormulaTabl
 /** Callback for CHECK constraint expressions. Receives column mappings and table info. */
 export type CheckCallback<T> = (columns: Record<PropertyName<T>, string>, table: SchemaTable) => string | Raw;
 
+/** Callback for trigger body expressions. Receives column mappings and table info. */
+export type TriggerCallback<T> = (columns: Record<PropertyName<T>, string>, table: SchemaTable) => string | Raw;
+
 /** Callback for generated (computed) column expressions. Receives column mappings and table info. */
 export type GeneratedColumnCallback<T> = (columns: Record<PropertyName<T>, string>, table: SchemaTable) => string | Raw;
 
@@ -941,6 +1107,24 @@ export interface CheckConstraint<T = any> {
   name?: string;
   property?: string;
   expression: string | Raw | CheckCallback<T>;
+}
+
+/** Definition of a database trigger on a table. */
+export interface TriggerDef<T = any> {
+  /** Trigger name. Auto-generated if omitted. */
+  name?: string;
+  /** When the trigger fires relative to the event. */
+  timing: 'before' | 'after' | 'instead of';
+  /** Which DML events activate the trigger. */
+  events: ('insert' | 'update' | 'delete' | 'truncate')[];
+  /** Whether the trigger fires once per row or per statement. Defaults to `'row'`. */
+  forEach?: 'row' | 'statement';
+  /** SQL body of the trigger. Can be a string, Raw query, or callback receiving column name mappings. */
+  body?: string | Raw | TriggerCallback<T>;
+  /** Optional SQL WHEN condition for the trigger. */
+  when?: string;
+  /** Raw DDL escape hatch — full CREATE TRIGGER statement. Mutually exclusive with `body`. */
+  expression?: string;
 }
 
 /** Branded string that accepts any string value while preserving autocompletion for known literals. */
@@ -1069,14 +1253,22 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
     this.indexes = [];
     this.uniques = [];
     this.checks = [];
+    this.triggers = [];
     this.referencingProperties = [];
     this.concurrencyCheckKeys = new Set();
     Object.assign(this, meta);
     const name = meta.className ?? meta.name;
 
     if (!this.class && name) {
-      const Class =
-        this.extends === BaseEntity ? { [name]: class extends BaseEntity {} }[name] : { [name]: class {} }[name];
+      let Parent: any;
+
+      if (typeof this.extends === 'function') {
+        Parent = this.extends;
+      } else if (this.extends != null && typeof (this.extends as any).class === 'function') {
+        Parent = (this.extends as any).class;
+      }
+
+      const Class = Parent ? { [name]: class extends Parent {} }[name] : { [name]: class {} }[name];
       this.class = Class as any;
     }
   }
@@ -1457,6 +1649,7 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
     disabled?: boolean;
   }[];
   checks: CheckConstraint<Entity>[];
+  triggers: TriggerDef<Entity>[];
   repositoryClass?: string; // for EntityGenerator
   repository: () => EntityClass<EntityRepository<any>>;
   hooks: { [K in EventType]?: (keyof Entity | EventSubscriber<Entity>[EventType])[] };
@@ -1690,6 +1883,12 @@ export interface IMigrator {
   down(options?: string | string[] | Omit<MigrateOptions, 'from'>): Promise<MigrationInfo[]>;
 
   /**
+   * Combines multiple executed migrations into a single migration file.
+   * Concatenates source code without touching the database schema.
+   */
+  rollup(migrations?: string[]): Promise<MigrationResult>;
+
+  /**
    * Registers event handler.
    */
   on(event: MigratorEvent, listener: (event: MigrationInfo) => MaybePromise<void>): IMigrator;
@@ -1698,6 +1897,16 @@ export interface IMigrator {
    * Removes event handler.
    */
   off(event: MigratorEvent, listener: (event: MigrationInfo) => MaybePromise<void>): IMigrator;
+
+  /**
+   * Marks a migration as executed without actually running it.
+   */
+  logMigration(name: string): Promise<void>;
+
+  /**
+   * Removes a migration from the executed list without reverting it.
+   */
+  unlogMigration(name: string): Promise<void>;
 
   /**
    * @internal
@@ -1785,12 +1994,24 @@ export type PopulateOptions<T> = {
   children?: PopulateOptions<T[keyof T]>[];
   /** When true, ignores `mapToPk` on the property and returns full entity data instead of just PKs. */
   dataOnly?: boolean;
+  /** Limit the number of items loaded per parent entity. Collections will be marked as partial and readonly. */
+  limit?: number;
+  /** Offset for per-parent limiting (used with `limit`). */
+  offset?: number;
+  /** Order by clause for per-parent limiting. Takes precedence over nested `FindOptions.orderBy`. */
+  orderBy?: QueryOrderMap<T[keyof T]>;
 };
 
 /** Inline options that can be appended to populate hint strings (e.g., strategy, join type). */
 export type PopulateHintOptions = {
   strategy?: LoadStrategy.JOINED | LoadStrategy.SELECT_IN | 'joined' | 'select-in';
   joinType?: 'inner join' | 'left join';
+  /** Limit the number of items loaded per parent entity. Collections will be marked as partial and readonly. */
+  limit?: number;
+  /** Offset for per-parent limiting (used with `limit`). */
+  offset?: number;
+  /** Order by clause for per-parent limiting. Takes precedence over nested `FindOptions.orderBy`. */
+  orderBy?: QueryOrderMap<any>;
 };
 
 type ExtractType<T> =
@@ -1804,14 +2025,24 @@ type ExtractType<T> =
           ? U
           : T;
 
+/**
+ * Like {@link ExtractType} but also unwraps {@link LazyRef}. Kept separate so {@link ExtractType}'s
+ * hot path (used by `IsOptional`, `EntityData`, `RequiredEntityData`) doesn't pay the cost of the
+ * extra branch — those contexts handle `LazyRef` in their own earlier branches (see
+ * `EntityDataProp` / `RequiredEntityDataProp`) before delegating to `ExtractType`.
+ */
+type ExtractTypeWithLazyRef<T> = T extends LazyRef.Brand<infer U> ? U : ExtractType<T>;
+
 type ExtractStringKeys<T> = { [K in keyof T]-?: CleanKeys<T, K> }[keyof T] & {};
 /**
  * Extracts string keys from an entity type, handling Collection/Reference wrappers.
  * Simplified to just check `T extends object` since ExtractType handles the unwrapping.
  */
-type StringKeys<T, E extends string = never> = T extends object ? ExtractStringKeys<ExtractType<T>> | E : never;
+type StringKeys<T, E extends string = never> = T extends object
+  ? ExtractStringKeys<ExtractTypeWithLazyRef<T>> | E
+  : never;
 type GetStringKey<T, K extends StringKeys<T, string>, E extends string> = K extends keyof T
-  ? ExtractType<T[K]>
+  ? ExtractTypeWithLazyRef<T[K]>
   : K extends E
     ? keyof T
     : never;
@@ -1861,27 +2092,31 @@ export type ArrayElement<ArrayType extends unknown[]> = ArrayType extends (infer
 
 /** Unwraps a property type from its wrapper (Reference, Collection, or array) to the inner entity type. */
 export type ExpandProperty<T> =
-  T extends ReferenceShape<infer U>
+  T extends LazyRef.Brand<infer U>
     ? NonNullable<U>
-    : T extends CollectionShape<infer U>
+    : T extends ReferenceShape<infer U>
       ? NonNullable<U>
-      : T extends (infer U)[]
+      : T extends CollectionShape<infer U>
         ? NonNullable<U>
-        : NonNullable<T>;
+        : T extends (infer U)[]
+          ? NonNullable<U>
+          : NonNullable<T>;
 
 type LoadedLoadable<T, E extends object> = T extends CollectionShape
   ? LoadedCollection<E>
   : T extends ScalarReference<infer U>
     ? LoadedScalarReference<U>
-    : T extends ReferenceShape
-      ? T & LoadedReference<E> // intersect with T (which is `Ref`) to include the PK props
-      : T extends Scalar
-        ? T
-        : T extends (infer U)[]
-          ? U extends Scalar
-            ? T // preserve scalar arrays (e.g., string[]) without Loaded<> wrapping
-            : E[]
-          : E;
+    : T extends LazyRef.Brand<any>
+      ? E // LazyRef narrows directly to the loaded entity (no wrapper at type level)
+      : T extends ReferenceShape
+        ? T & LoadedReference<E> // intersect with T (which is `Ref`) to include the PK props
+        : T extends Scalar
+          ? T
+          : T extends (infer U)[]
+            ? U extends Scalar
+              ? T // preserve scalar arrays (e.g., string[]) without Loaded<> wrapping
+              : E[]
+            : E;
 
 type IsTrue<T> = IsNever<T> extends true ? false : T extends boolean ? (T extends true ? true : false) : false;
 type StringLiteral<T> = T extends string ? (string extends T ? never : T) : never;
@@ -1957,7 +2192,7 @@ export type AddOptional<T> = undefined | null extends T
       : never;
 type LoadedProp<T, L extends string = never, F extends string = '*', E extends string = never> = LoadedLoadable<
   T,
-  Loaded<ExtractType<T>, L, F, E>
+  Loaded<ExtractTypeWithLazyRef<T>, L, F, E>
 >;
 /** Extracts the eager-loaded property names declared via `[EagerProps]` as a string union. */
 export type AddEager<T> = ExtractEagerProps<T> & string;

@@ -1601,23 +1601,24 @@ export class UnitOfWork {
 
   private getCommitOrder(): EntityMetadata[] {
     const calc = new CommitOrderCalculator();
-    const set = new Set<EntityMetadata>();
+    // keyed by `_id` so we return the SAME instances as the change set groups (GH #7511)
+    const metaById = new Map<number, EntityMetadata>();
 
     this.#changeSets.forEach(cs => {
       if (cs.meta.inheritanceType === 'tpt') {
-        set.add(cs.meta);
+        metaById.set(cs.meta._id, cs.meta);
 
         for (const parentCs of cs.tptChangeSets ?? []) {
-          set.add(parentCs.meta);
+          metaById.set(parentCs.meta._id, parentCs.meta);
         }
       } else {
-        set.add(cs.rootMeta);
+        metaById.set(cs.rootMeta._id, cs.rootMeta);
       }
     });
 
-    set.forEach(meta => calc.addNode(meta._id));
+    metaById.forEach(meta => calc.addNode(meta._id));
 
-    for (const meta of set) {
+    for (const meta of metaById.values()) {
       for (const prop of meta.relations) {
         if (prop.polymorphTargets) {
           for (const targetMeta of prop.polymorphTargets) {
@@ -1629,12 +1630,12 @@ export class UnitOfWork {
       }
 
       // For TPT, parent table must be inserted BEFORE child tables
-      if (meta.inheritanceType === 'tpt' && meta.tptParent && set.has(meta.tptParent)) {
+      if (meta.inheritanceType === 'tpt' && meta.tptParent && metaById.has(meta.tptParent._id)) {
         calc.addDependency(meta.tptParent._id, meta._id, 1);
       }
     }
 
-    return calc.sort().map(id => this.#metadata.getById(id));
+    return calc.sort().map(id => metaById.get(id)!);
   }
 
   private resetTransaction(oldTx?: Transaction): void {

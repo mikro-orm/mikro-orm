@@ -40,13 +40,23 @@ export function compareObjects(a: any, b: any): boolean {
     return true;
   }
 
-  if (!a || !b || typeof a !== 'object' || typeof b !== 'object' || !compareConstructors(a, b)) {
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object') {
     return false;
   }
 
+  // Raw fragments are compared by `sql` + `params` *before* the constructor
+  // check, so that two fragments carrying the same SQL but constructed by
+  // different CJS/ESM copies of this module (different classes, different
+  // prototypes) still compare as equal. Without this, the dual-package hazard
+  // would produce spurious change-set diffs when a raw fragment is used as a
+  // property value.
   if (isRaw(a) && isRaw(b)) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     return a.sql === b.sql && compareArrays(a.params, b.params);
+  }
+
+  if (!compareConstructors(a, b)) {
+    return false;
   }
 
   if (a instanceof Date && b instanceof Date) {
@@ -714,7 +724,7 @@ export class Utils {
     return classOrName.name as string;
   }
 
-  static extractChildElements(items: string[], prefix: string, allSymbol?: string): string[] {
+  static extractChildElements(items: readonly string[], prefix: string, allSymbol?: string): string[] {
     return items
       .filter(field => field === allSymbol || field.startsWith(`${prefix}.`))
       .map(field => (field === allSymbol ? allSymbol : field.substring(prefix.length + 1)));
@@ -853,8 +863,10 @@ export class Utils {
    * Extracts all possible values of a TS enum. Works with both string and numeric enums.
    */
   static extractEnumValues(target: Dictionary): (string | number)[] {
-    const keys = Object.keys(target);
-    const values = Object.values<string | number>(target);
+    // skip namespace-merged functions (GH #7500)
+    const entries = Object.entries(target).filter(([, v]) => typeof v !== 'function');
+    const keys = entries.map(([k]) => k);
+    const values = entries.map(([, v]) => v) as (string | number)[];
     const numeric = !!values.find(v => typeof v === 'number');
     const constEnum =
       values.length % 2 === 0 && // const enum will have even number of items

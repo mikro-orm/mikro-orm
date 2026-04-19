@@ -133,6 +133,17 @@ export interface CheckDef<T = unknown> {
   columnName?: string;
 }
 
+/** Resolved trigger definition for schema operations (all callbacks resolved to strings). */
+export interface SqlTriggerDef {
+  name: string;
+  timing: 'before' | 'after' | 'instead of';
+  events: ('insert' | 'update' | 'delete' | 'truncate')[];
+  forEach: 'row' | 'statement';
+  body: string;
+  when?: string;
+  expression?: string;
+}
+
 export interface TablePartition {
   name: string;
   schema?: string;
@@ -168,6 +179,9 @@ export interface TableDifference {
   addedChecks: Dictionary<CheckDef>;
   changedChecks: Dictionary<CheckDef>;
   removedChecks: Dictionary<CheckDef>;
+  addedTriggers: Dictionary<SqlTriggerDef>;
+  changedTriggers: Dictionary<SqlTriggerDef>;
+  removedTriggers: Dictionary<SqlTriggerDef>;
   addedForeignKeys: Dictionary<ForeignKey>;
   changedForeignKeys: Dictionary<ForeignKey>;
   removedForeignKeys: Dictionary<ForeignKey>;

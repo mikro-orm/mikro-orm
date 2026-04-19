@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.11](https://github.com/mikro-orm/mikro-orm/compare/v7.0.10...v7.0.11) (2026-04-16)
+
+### Bug Fixes
+
+- **core:** support TPT inheritance targets in polymorphic relations ([#7564](https://github.com/mikro-orm/mikro-orm/issues/7564)) ([0e818fa](https://github.com/mikro-orm/mikro-orm/commit/0e818fabfafdc453c4e6c3c9e6a1d5e8ac38f332)), closes [#7563](https://github.com/mikro-orm/mikro-orm/issues/7563)
+- **postgres:** normalize `!=` to `<>` in check constraint diffing ([#7541](https://github.com/mikro-orm/mikro-orm/issues/7541)) ([b8ad2b0](https://github.com/mikro-orm/mikro-orm/commit/b8ad2b0ba87a6771ff27f9aa824c7bf131551154)), closes [#7540](https://github.com/mikro-orm/mikro-orm/issues/7540)
+- **schema:** detect native enum value changes on array columns ([#7561](https://github.com/mikro-orm/mikro-orm/issues/7561)) ([ec20701](https://github.com/mikro-orm/mikro-orm/commit/ec2070144acbece47b397c175f2e5674df3611e8)), closes [#7560](https://github.com/mikro-orm/mikro-orm/issues/7560)
+
+## [7.0.10](https://github.com/mikro-orm/mikro-orm/compare/v7.0.9...v7.0.10) (2026-04-10)
+
+### Bug Fixes
+
+- **core:** brand raw query fragments via prototype property ([#7519](https://github.com/mikro-orm/mikro-orm/issues/7519)) ([f596bdd](https://github.com/mikro-orm/mikro-orm/commit/f596bdd77f6de6edd2c27c5a293af8c6cf0f2b9f)), closes [#7518](https://github.com/mikro-orm/mikro-orm/issues/7518)
+- **sql:** allow joining relations on entity-typed CTE in `from()` ([#7523](https://github.com/mikro-orm/mikro-orm/issues/7523)) ([514fb4e](https://github.com/mikro-orm/mikro-orm/commit/514fb4ed52dde2db3815c64f4dcdd0229f762fce)), closes [mikro-orm/mikro-orm#7485](https://github.com/mikro-orm/mikro-orm/issues/7485)
+- **sql:** skip redundant mapResult in QB when row is already mapped ([#7533](https://github.com/mikro-orm/mikro-orm/issues/7533)) ([1e654a9](https://github.com/mikro-orm/mikro-orm/commit/1e654a9ec5642ed172bb7bb6142bd0c8963d7b1d)), closes [#7527](https://github.com/mikro-orm/mikro-orm/issues/7527)
+
+## [7.0.9](https://github.com/mikro-orm/mikro-orm/compare/v7.0.8...v7.0.9) (2026-04-06)
+
+### Bug Fixes
+
+- **sql:** fix null composite FK producing `undefined` column values in `nativeInsertMany` ([#7476](https://github.com/mikro-orm/mikro-orm/issues/7476)) ([7043886](https://github.com/mikro-orm/mikro-orm/commit/7043886ff95287eb8359a3f0a1ce24b1a4353417)), closes [#7475](https://github.com/mikro-orm/mikro-orm/issues/7475)
+- **sql:** fix populate of 1:1 on TPT leaf entity with joined strategy ([#7474](https://github.com/mikro-orm/mikro-orm/issues/7474)) ([053881c](https://github.com/mikro-orm/mikro-orm/commit/053881cf6a3fdaffd8ac7af7cc8ab58115e6604e)), closes [#7469](https://github.com/mikro-orm/mikro-orm/issues/7469)
+- **sql:** skip relation props without fieldNames in TPT column mapping ([#7472](https://github.com/mikro-orm/mikro-orm/issues/7472)) ([b63d6ba](https://github.com/mikro-orm/mikro-orm/commit/b63d6ba72841a31390569a4eb193b8558c85e071)), closes [#7471](https://github.com/mikro-orm/mikro-orm/issues/7471)
+
 ## [7.0.8](https://github.com/mikro-orm/mikro-orm/compare/v7.0.7...v7.0.8) (2026-04-01)
 
 ### Bug Fixes

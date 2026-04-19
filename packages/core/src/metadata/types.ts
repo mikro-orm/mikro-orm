@@ -14,6 +14,7 @@ import type {
   ObjectQuery,
   Raw,
   SchemaColumns,
+  TriggerDef,
 } from '../typings.js';
 import type { Cascade, LoadStrategy, DeferMode, QueryOrderMap, EmbeddedPrefixMode } from '../enums.js';
 import type { Type, types } from '../types/index.js';
@@ -117,6 +118,8 @@ export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   view?: boolean | { materialized?: boolean; withData?: boolean };
   /** Used to make ORM aware of externally defined triggers. This is needed for MS SQL Server multi inserts, ignored in other dialects. */
   hasTriggers?: boolean;
+  /** Database triggers to create for this entity's table. (SQL drivers only) */
+  triggers?: TriggerDef<E>[];
   /**
    * PostgreSQL partitioning definition for this table.
    *
@@ -284,6 +287,12 @@ export interface PropertyOptions<Owner> {
    */
   lazy?: boolean;
   /**
+   * Marks this property as an array. When used with a custom type, the type is automatically
+   * wrapped in an `ArrayType` that delegates element conversion to the inner type.
+   * The column type is inferred as `innerType[]` (e.g. `int[]`, `time[]`).
+   */
+  array?: boolean;
+  /**
    * Set true to define entity's unique primary key identifier.
    * Alias for `@PrimaryKey()` decorator
    *
@@ -416,7 +425,7 @@ export interface PropertyOptions<Owner> {
 
 export interface ReferenceOptions<Owner, Target> extends PropertyOptions<Owner> {
   /** Set target entity type. For polymorphic relations, pass an array of entity types. */
-  entity?: () => EntityName<Target> | EntityName<Target>[];
+  entity?: () => EntityName<Target> | EntityName[];
 
   /** Set what actions on owning entity should be cascaded to the relationship. Defaults to [Cascade.PERSIST, Cascade.MERGE] (see {@doclink cascading}). */
   cascade?: Cascade[];

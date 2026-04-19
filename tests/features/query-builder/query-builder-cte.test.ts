@@ -155,6 +155,28 @@ describe.each(Utils.keys(options))('CTE [%s]', type => {
     expect(sql).not.toMatch(/custom_schema.*my_cte/);
   });
 
+  test('CTE from() supports joining relations on the inferred entity type (#7485)', async () => {
+    const sub = orm.em.createQueryBuilder(Book, 'b').select('*');
+    const qb = orm.em
+      .createQueryBuilder(Book)
+      .with('updated_books', sub)
+      .select('*')
+      .from('updated_books', 'ub')
+      .leftJoinAndSelect('ub.author', 'a');
+
+    // strip dialect-specific identifier quote chars (`, ", [, ]) for portable assertions
+    const sql = qb.getFormattedQuery().replace(/[`"[\]]/g, '');
+    expect(sql).toMatch(/with updated_books as \(select .* from book/i);
+    expect(sql).toMatch(/from updated_books/i);
+    expect(sql).toMatch(/left join author as a on ub\.author_id = a\.id/i);
+
+    const rows = await qb.execute<{ id: number; title: string; author: { id: number; name: string } }[]>();
+    expect(rows).toHaveLength(2);
+    const byTitle = Object.fromEntries(rows.map(r => [r.title, r.author]));
+    expect(byTitle['Alice Book']).toMatchObject({ name: 'Alice' });
+    expect(byTitle['Bob Book']).toMatchObject({ name: 'Bob' });
+  });
+
   test('CTE type-safe from() infers entity type', async () => {
     const sub = orm.em.createQueryBuilder(Author, 'a').select(['a.id', 'a.name']).where({ name: 'Alice' });
     const qb = orm.em.createQueryBuilder(Author).with('typed_cte', sub).select('*').from('typed_cte', 'tc');

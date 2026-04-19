@@ -382,6 +382,22 @@ export class MetadataValidator {
   private validatePolymorphicTargets(meta: EntityMetadata, prop: EntityProperty): void {
     const targets = prop.polymorphTargets!;
 
+    // Union-target M:N stores one scalar target FK per pivot row, so composite-PK targets
+    // can't round-trip through this schema.
+    if (prop.kind === ReferenceKind.MANY_TO_MANY && targets.length > 1) {
+      for (const target of targets) {
+        if (target.compositePK) {
+          throw MetadataError.incompatiblePolymorphicTargets(
+            meta,
+            prop,
+            targets[0],
+            target,
+            `${target.className} has a composite primary key; union-target polymorphic M:N does not support composite-PK targets.`,
+          );
+        }
+      }
+    }
+
     // Validate targetKey exists and is compatible across all targets
     if (prop.targetKey) {
       for (const target of targets) {
@@ -536,9 +552,13 @@ export class MetadataValidator {
   ): void {
     for (const index of indexes) {
       for (const propName of Utils.asArray(index.properties)) {
-        const prop = meta.root.properties[propName];
+        const prop = meta.properties[propName] ?? meta.root.properties[propName];
 
-        if (!prop && !Object.values(meta.root.properties).some(p => propName.startsWith(p.name + '.'))) {
+        if (
+          !prop &&
+          !Object.values(meta.properties).some(p => propName.startsWith(p.name + '.')) &&
+          !Object.values(meta.root.properties).some(p => propName.startsWith(p.name + '.'))
+        ) {
           throw MetadataError.unknownIndexProperty(meta, propName, type);
         }
       }

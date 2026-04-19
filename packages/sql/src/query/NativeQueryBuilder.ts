@@ -1,9 +1,10 @@
 import {
   type Dictionary,
+  isRaw,
   LockMode,
   type QueryFlag,
   raw,
-  RawQueryFragment,
+  type RawQueryFragment,
   type Subquery,
   Utils,
 } from '@mikro-orm/core';
@@ -39,6 +40,7 @@ interface Options {
   limit?: number;
   offset?: number;
   data?: Dictionary;
+  insertSubQuery?: { sql: string; params: unknown[]; columns: string[] };
   onConflict?: OnConflictClause;
   lockMode?: LockMode;
   lockTables?: string[];
@@ -272,7 +274,7 @@ export class NativeQueryBuilder implements Subquery {
 
     this.parts.push('on conflict');
 
-    if (clause.fields instanceof RawQueryFragment) {
+    if (isRaw(clause.fields)) {
       this.parts.push(clause.fields.sql);
       this.params.push(...clause.fields.params);
     } else if (clause.fields.length > 0) {
@@ -335,6 +337,14 @@ export class NativeQueryBuilder implements Subquery {
   insert(data: Dictionary): this {
     this.type = QueryType.INSERT;
     this.options.data = data;
+    return this;
+  }
+
+  insertSelect(columns: string[], subQuery: NativeQueryBuilder | RawQueryFragment): this {
+    this.type = QueryType.INSERT;
+    const { sql, params } =
+      subQuery instanceof NativeQueryBuilder ? subQuery.compile() : { sql: subQuery.sql, params: [...subQuery.params] };
+    this.options.insertSubQuery = { sql, params, columns: columns.map(c => this.quote(c)) };
     return this;
   }
 
@@ -510,7 +520,7 @@ export class NativeQueryBuilder implements Subquery {
   }
 
   protected compileInsert() {
-    if (!this.options.data) {
+    if (!this.options.data && !this.options.insertSubQuery) {
       throw new Error('No data provided');
     }
 
@@ -518,7 +528,18 @@ export class NativeQueryBuilder implements Subquery {
     this.addHintComment();
     this.parts.push(`into ${this.getTableName()}`);
 
-    if (Object.keys(this.options.data).length === 0) {
+    if (this.options.insertSubQuery) {
+      if (this.options.insertSubQuery.columns.length) {
+        this.parts.push(`(${this.options.insertSubQuery.columns.join(', ')})`);
+      }
+
+      this.addOutputClause('inserted');
+      this.parts.push(this.options.insertSubQuery.sql);
+      this.params.push(...this.options.insertSubQuery.params);
+      return;
+    }
+
+    if (Object.keys(this.options.data!).length === 0) {
       this.addOutputClause('inserted');
       this.parts.push('default values');
       return;
@@ -664,7 +685,7 @@ export class NativeQueryBuilder implements Subquery {
 
     const indexHint = this.options.indexHint ? ' ' + this.options.indexHint : '';
 
-    if (this.options.tableName instanceof RawQueryFragment) {
+    if (isRaw(this.options.tableName)) {
       this.params.push(...this.options.tableName.params);
       return this.options.tableName.sql + indexHint;
     }
@@ -673,7 +694,7 @@ export class NativeQueryBuilder implements Subquery {
   }
 
   protected quote(id: string | RawQueryFragment | NativeQueryBuilder): string {
-    if (id instanceof RawQueryFragment) {
+    if (isRaw(id)) {
       return this.platform.formatQuery(id.sql, id.params);
     }
 

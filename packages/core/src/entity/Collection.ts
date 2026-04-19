@@ -36,7 +36,9 @@ export interface MatchingOptions<T extends object, P extends string = never> ext
   ctx?: Transaction;
 }
 
-const collectionSymbol = Symbol('Collection');
+// Globally registered so the marker survives the CJS/ESM dual-package hazard
+// (see entitySymbol rationale in EntityHelper.ts and #7515/#7534).
+const collectionSymbol = Symbol.for('@mikro-orm/core/Collection');
 
 /** Represents a to-many relation (1:m or m:n) as an iterable, managed collection of entities. */
 export class Collection<T extends object, O extends object = object> {
@@ -134,10 +136,11 @@ export class Collection<T extends object, O extends object = object> {
   /**
    * Gets the count of collection items from database instead of counting loaded items.
    * The value is cached (unless you use the `where` option), use `refresh: true` to force reload it.
+   * When the dataloader is enabled (globally or per-query), multiple calls are batched into a single grouped query.
    */
   async loadCount(options: LoadCountOptions<T> | boolean = {}): Promise<number> {
     options = typeof options === 'boolean' ? { refresh: options } : options;
-    const { refresh, where, ...countOptions } = options;
+    const { refresh, where, dataloader, ...countOptions } = options;
 
     if (!refresh && !where && this.#count != null) {
       return this.#count;
@@ -153,8 +156,15 @@ export class Collection<T extends object, O extends object = object> {
       return (this.#count = this.length);
     }
 
-    const cond = this.createLoadCountCondition(where ?? ({} as FilterQuery<T>));
-    const count = await em.count(this.property.targetMeta!.class, cond, countOptions as any);
+    let count: number;
+
+    if (dataloader ?? [DataloaderType.ALL, DataloaderType.COLLECTION].includes(em.config.getDataloaderType())) {
+      const loader = await em.getDataLoader('count');
+      count = await loader.load([this, { where, ...countOptions }]);
+    } else {
+      const cond = this.createLoadCountCondition(where ?? ({} as FilterQuery<T>));
+      count = await em.count(this.property.targetMeta!.class, cond, countOptions as any);
+    }
 
     if (!where) {
       this.#count = count;
@@ -225,9 +235,9 @@ export class Collection<T extends object, O extends object = object> {
   /** Adds one or more items to the collection, propagating the change to the inverse side. Returns the number of items added. */
   add<TT extends T>(
     entity: TT | Reference<TT> | Iterable<TT | Reference<TT>>,
-    ...entities: (TT | Reference<TT>)[]
+    ...entities: (T | Reference<T>)[]
   ): number {
-    entities = Utils.asArray(entity).concat(entities);
+    entities = (Utils.asArray(entity) as (T | Reference<T>)[]).concat(entities);
     const unwrapped = entities.map(i => Reference.unwrapReference(i)) as T[];
     this.validateModification(unwrapped);
     const em = this.getEntityManager(entities as T[], false);
@@ -262,14 +272,14 @@ export class Collection<T extends object, O extends object = object> {
    * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
    */
   remove<TT extends T>(
-    entity: TT | Reference<TT> | Iterable<TT | Reference<TT>> | ((item: TT) => boolean),
-    ...entities: (TT | Reference<TT>)[]
+    entity: TT | Reference<TT> | Iterable<TT | Reference<TT>> | ((item: T) => boolean),
+    ...entities: (T | Reference<T>)[]
   ): number {
     if (entity instanceof Function) {
       let removed = 0;
 
       for (const item of this.#items) {
-        if (entity(item as TT)) {
+        if (entity(item as T)) {
           removed += this.remove(item);
         }
       }
@@ -278,7 +288,7 @@ export class Collection<T extends object, O extends object = object> {
     }
 
     this.checkInitialized();
-    entities = Utils.asArray(entity).concat(entities);
+    entities = (Utils.asArray(entity) as (T | Reference<T>)[]).concat(entities);
     const unwrapped = entities.map(i => Reference.unwrapReference(i)) as T[];
     this.validateModification(unwrapped);
     const em = this.getEntityManager(entities as T[], false);
@@ -629,7 +639,7 @@ export class Collection<T extends object, O extends object = object> {
   /**
    * @internal
    */
-  hydrate(items: T[], forcePropagate?: boolean, partial?: boolean): void {
+  hydrate(items: T[], forcePropagate?: boolean, partial?: boolean, readonly?: boolean): void {
     for (let i = 0; i < this.#items.size; i++) {
       delete this[i];
     }
@@ -640,6 +650,10 @@ export class Collection<T extends object, O extends object = object> {
     this.#count = 0;
     this.add(items);
     this.takeSnapshot(forcePropagate);
+
+    if (readonly) {
+      this.#readonly = true;
+    }
   }
 
   /**
@@ -1030,4 +1044,6 @@ export interface LoadCountOptions<T extends object> extends CountOptions<T, '*'>
   refresh?: boolean;
   /** Additional filtering conditions for the count query. */
   where?: FilterQuery<T>;
+  /** Whether to use the dataloader for batching count operations. */
+  dataloader?: boolean;
 }
