@@ -270,6 +270,34 @@ describe('partitioning helpers', () => {
     expect(partitioning?.definition).toBe('hash ("tenant_id", "type")');
   });
 
+  test('ignores the quoter for callback partition expressions', () => {
+    const partitioning = getTablePartitioning(
+      createPartitionedMeta({
+        type: 'range',
+        expression: columns => `date_trunc('day', ${columns.createdAt})`,
+        partitions: [{ values: "from ('2026-01-01') to ('2026-02-01')" }],
+      }),
+      'public',
+      id => `"${id}"`,
+    );
+
+    expect(partitioning?.definition).toBe("range (date_trunc('day', created_at))");
+  });
+
+  test('quotes partition key identifiers from comma-separated string expressions', () => {
+    const partitioning = getTablePartitioning(
+      createPartitionedMeta({
+        type: 'hash',
+        expression: 'tenant, type',
+        partitions: 1,
+      }),
+      'public',
+      id => `"${id}"`,
+    );
+
+    expect(partitioning?.definition).toBe('hash ("tenant_id", "type")');
+  });
+
   test('resolves partition keys referenced by physical column name', () => {
     const partitioning = getTablePartitioning(
       createPartitionedMeta({
@@ -497,6 +525,24 @@ describe('partitioning helpers', () => {
       expression: ["'tenant'", "'type'"],
       partitions: 4,
     });
+  });
+
+  test('entity generator emits callback partition expressions verbatim', () => {
+    const config = new Configuration({ driver: PostgreSqlDriver }, false);
+    const platform = config.getPlatform() as PostgreSqlPlatform;
+    const expression = (columns: Record<string, string>) => `date_trunc('month', ${columns.createdAt})`;
+    const meta = createPartitionedMeta({
+      type: 'range',
+      expression,
+      partitions: [{ values: "from ('2026-01-01') to ('2026-02-01')" }],
+    });
+
+    const source = new SourceFile(meta, config.getNamingStrategy(), platform, {}) as unknown as {
+      getEntityDeclOptions(): Record<string, unknown>;
+    };
+    const options = source.getEntityDeclOptions() as { partitionBy: { expression: string } };
+
+    expect(options.partitionBy.expression).toBe(expression.toString());
   });
 
   test('surfaces partitioning changes through the schema comparator', () => {
