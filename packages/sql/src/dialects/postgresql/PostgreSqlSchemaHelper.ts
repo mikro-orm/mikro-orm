@@ -28,6 +28,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     'null::timestamp without time zone': ['null'],
   };
 
+  private static readonly PARTIAL_WHERE_RE = /\swhere\s+(.+)$/is;
+  private static readonly FUNCTIONAL_COL_RE = /[(): ,"'`]/;
+
   override getSchemaBeginning(charset: string, disableForeignKeys?: boolean): string {
     if (disableForeignKeys) {
       return `set names '${charset}';\n${this.disableForeignKeysSQL()}\n\n`;
@@ -268,8 +271,23 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         indexDef.deferMode = index.condeferred ? DeferMode.INITIALLY_DEFERRED : DeferMode.INITIALLY_IMMEDIATE;
       }
 
-      if (index.index_def.some((col: string) => /[(): ,"'`]/.exec(col)) || index.expression?.match(/ where /i)) {
+      const hasFunctionalColumns = index.index_def.some((col: string) =>
+        PostgreSqlSchemaHelper.FUNCTIONAL_COL_RE.exec(col),
+      );
+      const whereMatch = hasFunctionalColumns
+        ? null
+        : PostgreSqlSchemaHelper.PARTIAL_WHERE_RE.exec(index.expression ?? '');
+
+      if (hasFunctionalColumns) {
+        // Functional-column expression can't be diffed structurally — keep the whole CREATE
+        // statement (WHERE included) on `expression`; don't try to split the predicate.
         indexDef.expression = index.expression;
+      } else if (whereMatch) {
+        let where = whereMatch[1].trim();
+        if (where.startsWith('(') && where.endsWith(')') && this.isBalancedWrap(where)) {
+          where = where.slice(1, -1).trim();
+        }
+        indexDef.where = where;
       }
 
       if (index.deferrable) {

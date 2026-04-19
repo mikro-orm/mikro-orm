@@ -1,0 +1,13 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`partial index [mssql] > end-to-end create / no-op / change predicate > 1-create-with-where 1`] = `
+"create table [partial_user] ([id] int identity(1,1) not null primary key, [email] varchar(255) not null, [deleted_at] datetime2 null);
+create unique index [partial_user_email_uniq] on [partial_user] ([email]) where [deleted_at] is null;
+"
+`;
+
+exports[`partial index [mssql] > end-to-end create / no-op / change predicate > 3-change-where 1`] = `
+"drop index [partial_user_email_uniq] on [partial_user];
+create unique index [partial_user_email_uniq] on [partial_user] ([email]) where [deleted_at] is not null;
+"
+`;

@@ -2867,6 +2867,71 @@ export abstract class AbstractSqlDriver<
     return qb;
   }
 
+  /**
+   * Renders a `FilterQuery` predicate into a SQL fragment (without the `WHERE` keyword and
+   * without table-alias prefixes) suitable for inlining into a partial-index DDL statement.
+   * Used by `DatabaseTable.addIndex` when the user passes an object `where` on `@Index` /
+   * `@Unique`. Strings are returned unchanged.
+   */
+  renderPartialIndexWhere<T extends object>(entityName: EntityName<T>, where: string | FilterQuery<T>): string {
+    if (typeof where === 'string') {
+      return where;
+    }
+
+    const name = Utils.className(entityName);
+
+    if (where == null || (Utils.isPlainObject(where) && Object.keys(where as Dictionary).length === 0)) {
+      throw new Error(`Cannot render partial-index predicate for entity '${name}': \`where\` is empty.`);
+    }
+
+    const alias = '__p';
+    const qb = this.createQueryBuilder(entityName, undefined, undefined, undefined, undefined, alias);
+    qb.where(where as any);
+    const sql = qb.getFormattedQuery();
+
+    // Relation traversal produces join clauses whose aliased identifiers can't be inlined
+    // into a CREATE INDEX ... WHERE clause — reject with a clear error rather than emitting broken DDL.
+    if (/\bjoin\b/i.test(sql.split(/\bwhere\b/i)[0])) {
+      throw new Error(
+        `Cannot render partial-index predicate for entity '${name}': \`where\` may not traverse relations.`,
+      );
+    }
+
+    // Anchor at end-of-string only — the synthetic QB has no top-level order by / limit /
+    // group by / having / offset, so any such keyword inside the captured predicate is
+    // inside a subquery and must not terminate the match.
+    const match = /\bwhere\s+([\s\S]+)$/i.exec(sql);
+
+    if (!match) {
+      throw new Error(`Failed to render partial-index predicate for entity '${name}': ${sql}`);
+    }
+
+    const quote = (s: string) => this.platform.quoteIdentifier(s);
+    const aliasPrefix = new RegExp(`${quote(alias).replace(/[[\]]/g, '\\$&')}\\.`, 'g');
+    const stripped = match[1].replace(aliasPrefix, '').trim();
+
+    // Any qualified column reference remaining after the alias strip points at another table or
+    // subquery and can't be inlined into a CREATE INDEX ... WHERE predicate. Covers both
+    // QB-generated sub-aliases (quoted, e.g. `"e0"."col"`) and raw fragments with bare refs
+    // (e.g. `raw('other_table.col = 1')`). String literals are erased first so dots inside
+    // them (e.g. JSON path operands like `'$.path'`) don't trip the guard.
+    // Both patterns use a `(?!\s*\()` lookahead so schema-qualified function calls
+    // (`pg_catalog.lower(name)`, `"public".my_func(col)`) are accepted — only `<id>.<id>` not
+    // followed by `(` is treated as a cross-table column reference.
+    const withoutStrings = stripped.replace(/'(?:[^']|'')*'/g, "''");
+    const quotedIdent = String.raw`(?:"(?:[^"]|"")+"|\`(?:[^\`]|\`\`)+\`|\[(?:[^\]]|\]\])+\])`;
+    const anyIdent = `(?:${quotedIdent}|[A-Za-z_]\\w*)`;
+    const quotedCrossRef = new RegExp(`${quotedIdent}\\s*\\.\\s*${anyIdent}(?!\\s*\\()`);
+    const bareCrossRef = /\b[A-Za-z_]\w*\s*\.\s*[A-Za-z_]\w*\b(?!\s*\()/;
+    if (quotedCrossRef.test(withoutStrings) || bareCrossRef.test(withoutStrings)) {
+      throw new Error(
+        `Cannot render partial-index predicate for entity '${name}': \`where\` references another table or subquery which cannot be inlined into a CREATE INDEX ... WHERE clause.`,
+      );
+    }
+
+    return stripped;
+  }
+
   protected resolveConnectionType(args: { ctx?: Transaction; connectionType?: ConnectionType }): ConnectionType {
     if (args.ctx) {
       return 'write';
