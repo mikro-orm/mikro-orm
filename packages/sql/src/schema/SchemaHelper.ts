@@ -171,7 +171,7 @@ export abstract class SchemaHelper {
       // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
       sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName}`;
       const columns = this.platform.getJsonIndexDefinition(index);
-      return `${sql} (${columns.join(', ')})${this.getCreateIndexSuffix(index)}${defer}`;
+      return `${sql} (${columns.join(', ')})${this.getCreateIndexSuffix(index)}${this.getIndexWhereClause(index)}${defer}`;
     }
 
     // Build column list with advanced options
@@ -183,7 +183,7 @@ export abstract class SchemaHelper {
       sql += ` include (${index.include.map(c => this.quote(c)).join(', ')})`;
     }
 
-    return sql + this.getCreateIndexSuffix(index) + defer;
+    return sql + this.getCreateIndexSuffix(index) + this.getIndexWhereClause(index) + defer;
   }
 
   /**
@@ -191,6 +191,166 @@ export abstract class SchemaHelper {
    */
   protected getCreateIndexSuffix(_index: IndexDef): string {
     return '';
+  }
+
+  /**
+   * Default emits ` where <predicate>` for partial indexes. Only Oracle overrides this to
+   * return `''` (it emulates partials via CASE-WHEN columns). MySQL sidesteps the whole path
+   * with its own `getCreateIndexSQL` that never calls this, and MariaDB refuses the feature
+   * entirely via an override on `getIndexColumns`.
+   */
+  protected getIndexWhereClause(index: IndexDef): string {
+    return index.where ? ` where ${index.where}` : '';
+  }
+
+  /**
+   * Wraps each indexed column in `(CASE WHEN <predicate> THEN <col> END)` for dialects that
+   * emulate partial indexes via functional indexes (MySQL/MariaDB/Oracle). Combined with NULL
+   * being treated as distinct in unique indexes, this enforces uniqueness only where the
+   * predicate holds. Throws if combined with the advanced `columns` option.
+   */
+  protected emulatePartialIndexColumns(index: IndexDef): string {
+    if (index.columns?.length) {
+      throw new Error(
+        `Index '${index.keyName}': combining \`where\` with advanced \`columns\` options is not supported when emulating a partial index via functional expressions; use plain \`properties\` (or \`columnNames\`).`,
+      );
+    }
+
+    const predicate = index.where!;
+    return index.columnNames.map(c => `(case when ${predicate} then ${this.quote(c)} end)`).join(', ');
+  }
+
+  /**
+   * Strips `<col> IS NOT NULL` clauses (with the dialect's identifier quoting) from an
+   * introspected partial-index predicate when the column matches one of the index's own
+   * columns. MikroORM auto-emits this guard for unique indexes on nullable columns
+   * (MSSQL, Oracle) — it's an internal artifact, not user intent.
+   *
+   * Strips at most one guard per column (the tail-most occurrence), matching how MikroORM
+   * appends a single guard per index column. This preserves user intent when they redundantly
+   * include the same `<col> IS NOT NULL` in their predicate — the guard we added is removed,
+   * their copy survives.
+   */
+  protected stripAutoNotNullFilter(filterDef: string, columnNames: string[], identifierPattern: RegExp): string {
+    // Peel off any number of balanced wrapping paren layers. Introspection sources differ
+    // (MSSQL `filter_definition` wraps once, Oracle `INDEX_EXPRESSIONS` typically not at all),
+    // and a user `where` round-tripped through a dialect that double-wraps would otherwise slip
+    // past the auto-NOT-NULL recognizer below.
+    let inner = filterDef.trim();
+    while (inner.startsWith('(') && inner.endsWith(')') && this.isBalancedWrap(inner)) {
+      inner = inner.slice(1, -1).trim();
+    }
+    const clauses = this.splitTopLevelAnd(inner);
+    const autoCol = (clause: string): string | null => {
+      let trimmed = clause.trim();
+      while (trimmed.startsWith('(') && trimmed.endsWith(')') && this.isBalancedWrap(trimmed)) {
+        trimmed = trimmed.slice(1, -1).trim();
+      }
+      const match = identifierPattern.exec(trimmed);
+      return match && columnNames.includes(match[1]) ? match[1] : null;
+    };
+    const seen = new Set<string>();
+    const kept: string[] = [];
+    for (let i = clauses.length - 1; i >= 0; i--) {
+      const col = autoCol(clauses[i]);
+      if (col && !seen.has(col)) {
+        seen.add(col);
+        continue;
+      }
+      kept.unshift(clauses[i]);
+    }
+    return kept.join(' and ').trim();
+  }
+
+  /**
+   * Whether `[…]` is a quoted identifier (MSSQL convention). Other dialects either reuse
+   * `[` for array literals/constructors or never produce it in introspected predicates,
+   * so the default is `false` and the MSSQL helper opts in.
+   */
+  protected get bracketQuotedIdentifiers(): boolean {
+    return false;
+  }
+
+  /**
+   * Splits on top-level ` AND ` (case-insensitive), ignoring matches that sit inside string
+   * literals, quoted identifiers, or parenthesized groups — so a predicate like
+   * `'foo AND bar' = col` or `(a AND b) OR c` is not mis-split.
+   */
+  protected splitTopLevelAnd(s: string): string[] {
+    const parts: string[] = [];
+    let depth = 0;
+    let quote: string | null = null;
+    let start = 0;
+    let i = 0;
+
+    while (i < s.length) {
+      const c = s[i];
+
+      if (quote) {
+        // Handle SQL's doubled-delimiter escape inside quoted strings/identifiers:
+        // `'` → `''`, `"` → `""`, `` ` `` → ```` `` ````, MSSQL `]` → `]]`.
+        if (c === quote && s[i + 1] === quote) {
+          i += 2;
+          continue;
+        }
+        if (c === quote) {
+          quote = null;
+        }
+        i++;
+        continue;
+      }
+
+      if (c === "'" || c === '"' || c === '`') {
+        quote = c;
+        i++;
+        continue;
+      }
+      if (c === '[' && this.bracketQuotedIdentifiers) {
+        quote = ']';
+        i++;
+        continue;
+      }
+      if (c === '(') {
+        depth++;
+        i++;
+        continue;
+      }
+      if (c === ')') {
+        depth--;
+        i++;
+        continue;
+      }
+
+      if (depth === 0 && /\s/.test(c)) {
+        const m = /^\s+and\s+/i.exec(s.slice(i));
+        if (m) {
+          parts.push(s.slice(start, i).trim());
+          i += m[0].length;
+          start = i;
+          continue;
+        }
+      }
+      i++;
+    }
+
+    parts.push(s.slice(start).trim());
+    return parts.filter(p => p.length > 0);
+  }
+
+  /** Returns true iff the leading `(` matches the trailing `)` (i.e. they wrap the whole string). */
+  protected isBalancedWrap(s: string): boolean {
+    let depth = 0;
+    for (let i = 0; i < s.length; i++) {
+      if (s[i] === '(') {
+        depth++;
+      } else if (s[i] === ')') {
+        depth--;
+        if (depth === 0 && i < s.length - 1) {
+          return false;
+        }
+      }
+    }
+    return depth === 0;
   }
 
   /**

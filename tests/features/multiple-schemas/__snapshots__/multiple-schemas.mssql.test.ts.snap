@@ -22,13 +22,6 @@ export class Author {
 export const AuthorSchema = defineEntity({
   class: Author,
   schema: 'n1',
-  uniques: [
-    {
-      name: 'author_mentor_id_unique',
-      expression: 'create unique index [author_mentor_id_unique] on [author] (where ([mentor_id] IS NOT NULL))',
-      properties: ['mentor'],
-    },
-  ],
   properties: {
     id: p.integer().primary(),
     name: p.string(),
