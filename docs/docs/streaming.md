@@ -9,7 +9,6 @@ const stream = em.stream(Book, {
   populate: ['author'],
   where: { price: { $gt: 100 } },
   orderBy: { id: 'ASC' },
-  chunkSize: 100,
 });
 
 for await (const book of stream) {
@@ -25,7 +24,19 @@ There are several constraints when using streaming:
 - When populating to-many relations, only fully hydrated entities will be returned.
 - You should provide an `orderBy` clause to ensure consistent ordering.
 - With mongodb driver, only root entities can be streamed, `populate` option is ignored.
-- The `chunkSize` option is only honored on PostgreSQL, MSSQL, Oracle and MongoDB. On MySQL, MariaDB, SQLite and libSQL the underlying driver always streams row-by-row and the option is ignored.
+
+## Chunk size
+
+The ORM fetches rows from the database in batches; the `chunkSize` option controls how many rows are pulled per round-trip. Lower values reduce memory usage but cost more round-trips; higher values do the opposite. Regardless of the value, the async iterator always yields one entity at a time.
+
+```ts
+const stream = em.stream(Book, {
+  orderBy: { id: 'ASC' },
+  chunkSize: 100, // 100 is the default
+});
+```
+
+The option is honored on PostgreSQL, MSSQL, Oracle and MongoDB. On MySQL, MariaDB, SQLite and libSQL the underlying driver always streams row-by-row with no batching knob, so the option has no effect there.
 
 ## Streaming row-by-row
 
@@ -36,7 +47,6 @@ const stream = em.stream(Book, {
   populate: ['author'],
   where: { price: { $gt: 100 } },
   orderBy: { id: 'ASC' },
-  chunkSize: 100,
   mergeResults: false,
 });
 ```
@@ -49,7 +59,7 @@ To stream raw results instead of entities, you can use the `QueryBuilder` with `
 const stream = em.createQueryBuilder(Author, 'a')
   .leftJoinAndSelect('books', 'b')
   .orderBy({ id: 'desc', books: { title: 'asc' } })
-  .stream({ chunkSize: 100, mapResults: true });
+  .stream({ mapResults: true });
 ```
 
 This will disable mapping to entities, returning POJOs instead, but still convert the column names to entity property names.
@@ -60,7 +70,7 @@ Alternatively, you can use `rawResults: true` to stream the raw values without a
 const stream = em.createQueryBuilder(Author, 'a')
   .leftJoinAndSelect('books', 'b')
   .orderBy({ id: 'desc', books: { title: 'asc' } })
-  .stream({ chunkSize: 100, rawResults: true });
+  .stream({ rawResults: true });
 ```
 
 ## Virtual entities
@@ -94,7 +104,6 @@ When using MongoDB driver, only root entities can be streamed. The `populate` op
 const stream = em.stream(Book, {
   where: { price: { $gt: 100 } },
   orderBy: { id: 'ASC' },
-  chunkSize: 100,
 });
 
 for await (const book of stream) {
