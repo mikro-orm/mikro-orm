@@ -3,7 +3,7 @@ import { Configuration, EntitySchema } from '@mikro-orm/core';
 import { SourceFile } from '../../../packages/entity-generator/src/SourceFile.js';
 import { DatabaseSchema, SchemaComparator, type TablePartitioning } from '@mikro-orm/sql';
 import { PostgreSqlDriver, PostgreSqlPlatform } from '@mikro-orm/postgresql';
-import { MikroORM as SqliteMikroORM, SqliteDriver } from '@mikro-orm/sqlite';
+import { MikroORM as SqliteMikroORM, type Options as SqliteOptions, SqliteDriver } from '@mikro-orm/sqlite';
 import {
   diffPartitioning,
   getTablePartitioning,
@@ -515,7 +515,7 @@ describe('partitioning helpers', () => {
             partitions: 4,
           }).class,
         ],
-      }),
+      } as SqliteOptions),
     ).rejects.toThrow(
       'Entity PartitionedEvent uses partitionBy, but SqlitePlatform does not support partitioned tables',
     );
