@@ -1326,6 +1326,7 @@ export interface EntityMetadataWithProperties<
     type?: string;
     options?: Dictionary;
     expression?: string | IndexCallback<InferEntityFromProperties<TProperties, TPK, TBase>>;
+    where?: string | FilterQuery<InferEntityFromProperties<TProperties, TPK, TBase>>;
     columns?: IndexColumnOptions[];
     include?: NoInfer<AllKeys<TProperties, TBase>> | NoInfer<AllKeys<TProperties, TBase>>[];
     fillFactor?: number;
@@ -1338,6 +1339,7 @@ export interface EntityMetadataWithProperties<
     name?: string;
     options?: Dictionary;
     expression?: string | IndexCallback<InferEntityFromProperties<TProperties, TPK, TBase>>;
+    where?: string | FilterQuery<InferEntityFromProperties<TProperties, TPK, TBase>>;
     deferMode?: DeferMode | `${DeferMode}`;
     columns?: IndexColumnOptions[];
     include?: NoInfer<AllKeys<TProperties, TBase>> | NoInfer<AllKeys<TProperties, TBase>>[];
