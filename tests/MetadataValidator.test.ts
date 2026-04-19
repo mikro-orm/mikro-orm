@@ -609,6 +609,119 @@ describe('MetadataValidator', () => {
         }),
       ).toThrow('Entity PartitionedEntity has invalid partitionBy option: every partition must define values');
     });
+
+    test('accepts callback expression and skips key-column checks', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: (columns: { slug: string }) => `upper(${columns.slug})`,
+          partitions: 4,
+        }),
+      ).not.toThrow();
+    });
+
+    test('accepts comma-separated property name expressions', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: 'type, id',
+          partitions: 2,
+        }),
+      ).not.toThrow();
+    });
+
+    test('accepts raw SQL expressions that do not map to entity properties', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: "date_trunc('month', created_at)",
+          partitions: 2,
+        }),
+      ).not.toThrow();
+    });
+
+    test('accepts quoted identifiers in comma-separated expressions', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: '"type"',
+          partitions: 2,
+        }),
+      ).not.toThrow();
+    });
+
+    test('rejects unique property not covering partition key columns', async () => {
+      const schema = new EntitySchema<PartitionedEntity>({
+        name: 'PartitionedEntity',
+        tableName: 'partitioned_entity',
+        partitionBy: {
+          type: 'hash',
+          expression: ['type'],
+          partitions: 4,
+        },
+        properties: {
+          id: { primary: true, name: 'id', type: 'number', fieldName: 'id' },
+          type: { primary: true, name: 'type', type: 'string', fieldName: 'type' },
+          slug: { name: 'slug', type: 'string', fieldName: 'slug', unique: true },
+        },
+      }).init();
+      const storage = new MetadataStorage({ [schema.meta.className]: schema.meta } as any);
+
+      expect(() => validator.validateEntityDefinition(storage, schema as any, options)).toThrow(
+        "Entity PartitionedEntity has invalid partitionBy option: unique property PartitionedEntity.slug must include partition key columns 'type'",
+      );
+    });
+
+    test('skips unique constraints whose properties do not resolve to columns', async () => {
+      expect(
+        validatePartitionedSchema(
+          {
+            type: 'hash',
+            expression: ['type'],
+            partitions: 4,
+          },
+          { uniques: [{ properties: [] }] },
+        ),
+      ).not.toThrow();
+    });
+
+    test('names unique constraints with an explicit name when reporting coverage errors', async () => {
+      expect(
+        validatePartitionedSchema(
+          {
+            type: 'hash',
+            expression: ['type'],
+            partitions: 4,
+          },
+          { uniques: [{ name: 'partitioned_entity_slug_uq', properties: ['slug'] }] },
+        ),
+      ).toThrow(
+        "Entity PartitionedEntity has invalid partitionBy option: unique constraint 'partitioned_entity_slug_uq' must include partition key columns 'type'",
+      );
+    });
+
+    test('skips key-column checks when comma-separated identifiers fail to resolve', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: '""',
+          partitions: 1,
+        }),
+      ).not.toThrow();
+    });
+
+    test('ignores unique constraints with no properties declared', async () => {
+      expect(
+        validatePartitionedSchema(
+          {
+            type: 'hash',
+            expression: ['type'],
+            partitions: 2,
+          },
+          { uniques: [{ name: 'no_props_uq' } as any] },
+        ),
+      ).not.toThrow();
+    });
   });
 
   describe('targetKey validation', () => {

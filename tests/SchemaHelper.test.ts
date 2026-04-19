@@ -436,5 +436,18 @@ describe('SchemaHelper', () => {
       expect(connection.execute.mock.calls[0][0]).toContain(`parent.relname in ('partitioned_event')`);
       expect(connection.execute.mock.calls[0][0]).not.toContain('parent_ns.nspname = NULL');
     });
+
+    test('short-circuits when all schema buckets are empty', async () => {
+      const config = new Configuration({ driver: PostgreSqlDriver }, false);
+      const helper = config.getPlatform().getSchemaHelper() as PostgreSqlSchemaHelper;
+      const connection = {
+        execute: vi.fn().mockResolvedValue([]),
+      } as any;
+
+      const partitions = await helper.getPartitions(connection, new Map([['public', []]]));
+
+      expect(partitions).toEqual({});
+      expect(connection.execute).not.toHaveBeenCalled();
+    });
   });
 });

@@ -232,6 +232,8 @@ describe('partitioning helpers', () => {
     expect(normalizePartitionBound("in ('O''Reilly')")).toBe("for values in ('O''Reilly')");
     expect(normalizePartitionBound('with (modulus 2')).toBe('for values with (modulus 2');
     expect(normalizePartitionBound("in ('unterminated")).toBe("for values in ('unterminated");
+    expect(normalizePartitionBound("from ('a')")).toBe("for values from ('a')");
+    expect(normalizePartitionBound('')).toBe('for values');
   });
 
   test('preserves content of single-quoted literals during normalization', () => {
@@ -266,6 +268,45 @@ describe('partitioning helpers', () => {
     );
 
     expect(partitioning?.definition).toBe('hash ("tenant_id", "type")');
+  });
+
+  test('resolves partition keys referenced by physical column name', () => {
+    const partitioning = getTablePartitioning(
+      createPartitionedMeta({
+        type: 'hash',
+        expression: ['tenant_id'],
+        partitions: 1,
+      }),
+      'public',
+    );
+
+    expect(partitioning?.definition).toBe('hash (tenant_id)');
+  });
+
+  test('passes blank partition keys through untouched', () => {
+    const partitioning = getTablePartitioning(
+      createPartitionedMeta({
+        type: 'hash',
+        expression: ['   ', 'type'],
+        partitions: 1,
+      }),
+      'public',
+    );
+
+    expect(partitioning?.definition).toBe('hash (, type)');
+  });
+
+  test('falls back to raw key when property is unknown', () => {
+    const partitioning = getTablePartitioning(
+      createPartitionedMeta({
+        type: 'hash',
+        expression: ['unknown_column'],
+        partitions: 1,
+      }),
+      'public',
+    );
+
+    expect(partitioning?.definition).toBe('hash (unknown_column)');
   });
 
   test('converts catalog-style partitioning definitions back to lowercase entity metadata', () => {
