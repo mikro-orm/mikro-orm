@@ -983,8 +983,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   override getPreAlterTable(tableDiff: TableDifference, safe: boolean): string[] {
     if (tableDiff.changedPartitioning) {
+      const from = tableDiff.changedPartitioning.from?.definition ?? '<none>';
+      const to = tableDiff.changedPartitioning.to?.definition ?? '<none>';
       throw new Error(
-        `Changing partition definitions for existing PostgreSQL tables is not supported automatically (${tableDiff.name}); create a manual migration instead`,
+        `Changing partition definitions for existing PostgreSQL tables is not supported automatically (${tableDiff.name}: '${from}' -> '${to}'); create a manual migration instead`,
       );
     }
 

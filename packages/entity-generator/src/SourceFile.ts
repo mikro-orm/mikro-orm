@@ -621,7 +621,7 @@ export class SourceFile {
     }
 
     if (this.meta.partitionBy) {
-      options.partitionBy = this.getPartitionByDecl(this.meta.partitionBy) as unknown as typeof options.partitionBy;
+      options.partitionBy = this.getPartitionByDecl(this.meta.partitionBy) as EntityPartitionBy<unknown>;
     }
 
     if (this.meta.readonly && !this.meta.virtual) {
@@ -638,7 +638,9 @@ export class SourceFile {
     const result: Dictionary = { type: this.quote(partitionBy.type) };
     const expression = partitionBy.expression;
 
-    if (Array.isArray(expression)) {
+    if (typeof expression === 'function') {
+      result.expression = expression.toString();
+    } else if (Array.isArray(expression)) {
       result.expression = expression.map(key => this.quote(String(key)));
     } else {
       result.expression = this.quote(String(expression));

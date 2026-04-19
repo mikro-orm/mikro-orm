@@ -233,13 +233,13 @@ export class MetadataValidator {
 
       if (partitionFields.some(field => !prop.fieldNames!.includes(field))) {
         throw new MetadataError(
-          `Entity ${meta.className} has invalid partitionBy option: unique property ${meta.className}.${prop.name} must include partition key columns '${partitionFields.join("', '")}'`,
+          `Entity ${meta.root.className} has invalid partitionBy option: unique property ${meta.root.className}.${prop.name} must include partition key columns '${partitionFields.join("', '")}'`,
         );
       }
     }
 
     for (const unique of meta.root.uniques ?? []) {
-      const fields = this.getConstraintFields(meta, unique.properties);
+      const fields = this.getConstraintFields(meta.root, unique.properties);
 
       if (!fields?.length) {
         continue;
@@ -248,7 +248,7 @@ export class MetadataValidator {
       if (partitionFields.some(field => !fields.includes(field))) {
         const constraint = unique.name ? `unique constraint '${unique.name}'` : 'unique constraint';
         throw new MetadataError(
-          `Entity ${meta.className} has invalid partitionBy option: ${constraint} must include partition key columns '${partitionFields.join("', '")}'`,
+          `Entity ${meta.root.className} has invalid partitionBy option: ${constraint} must include partition key columns '${partitionFields.join("', '")}'`,
         );
       }
     }
