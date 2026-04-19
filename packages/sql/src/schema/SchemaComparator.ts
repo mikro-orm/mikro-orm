@@ -344,6 +344,20 @@ export class SchemaComparator {
         continue;
       }
 
+      // Constraint-vs-index form mismatch needs drop+create with the OLD form's drop SQL,
+      // which `changedIndexes` (uses new form only) can't do. Primary keys stay on the
+      // changed path which emits `add primary key`.
+      if (!index.primary && !!index.constraint !== !!toTableIndex!.constraint) {
+        tableDifferences.removedIndexes[index.keyName] = index;
+        tableDifferences.addedIndexes[index.keyName] = toTableIndex!;
+        this.log(`index ${index.keyName} changed form in table ${tableDifferences.name}`, {
+          fromTableIndex: index,
+          toTableIndex,
+        });
+        changes += 2;
+        continue;
+      }
+
       tableDifferences.changedIndexes[index.keyName] = toTableIndex!;
       this.log(`index ${index.keyName} changed in table ${tableDifferences.name}`, {
         fromTableIndex: index,
@@ -733,7 +747,8 @@ export class SchemaComparator {
    * Compares index1 with index2 and returns index2 if there are any differences or false in case there are no differences.
    */
   diffIndex(index1: IndexDef, index2: IndexDef): boolean {
-    // if one of them is a custom expression or full text index, compare only by name
+    // Opaque raw expressions (`expression` escape hatch) and full-text indexes can't be
+    // compared structurally — fall back to name-only matching.
     if (index1.expression || index2.expression || index1.type === 'fulltext' || index2.type === 'fulltext') {
       return index1.keyName !== index2.keyName;
     }
@@ -794,6 +809,12 @@ export class SchemaComparator {
 
     // Compare clustered flag
     if (!!index1.clustered !== !!index2.clustered) {
+      return false;
+    }
+
+    // Compare WHERE predicate of partial indexes structurally (whitespace/quoting/casing
+    // are normalized via the same helper used for check constraints).
+    if (this.diffExpression(index1.where ?? '', index2.where ?? '')) {
       return false;
     }
 

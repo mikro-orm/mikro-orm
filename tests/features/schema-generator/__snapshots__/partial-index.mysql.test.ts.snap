@@ -1,0 +1,13 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`partial index [mysql] > emits CASE WHEN functional index and round-trips through introspection > 1-create-with-where 1`] = `
+"create table \`partial_user\` (\`id\` int unsigned not null auto_increment primary key, \`email\` varchar(255) not null, \`deleted_at\` datetime null) default character set utf8mb4 engine = InnoDB;
+alter table \`partial_user\` add unique \`partial_user_email_uniq\` ((case when \`deleted_at\` is null then \`email\` end));
+"
+`;
+
+exports[`partial index [mysql] > emits CASE WHEN functional index and round-trips through introspection > 3-change-where 1`] = `
+"alter table \`partial_user\` drop index \`partial_user_email_uniq\`;
+alter table \`partial_user\` add unique \`partial_user_email_uniq\` ((case when \`deleted_at\` is not null then \`email\` end));
+"
+`;

@@ -193,11 +193,25 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       const collection = this.connection.getCollection(meta.class);
 
       if (Array.isArray(index.options) && index.options.length === 2 && properties.length === 0) {
-        res.push([collection.collectionName, collection.createIndex(index.options[0], index.options[1])]);
+        // The array-form escape hatch passes raw [spec, options] to the driver; fold `where`
+        // into the options dict (on a clone, to avoid mutating the user's metadata).
+        const opts = { ...index.options[1] };
+        this.applyPartialFilter(opts, index.where, index.name, meta.className);
+        res.push([collection.collectionName, collection.createIndex(index.options[0], opts)]);
         return;
       }
 
       if (index.options && properties.length === 0) {
+        // The plain escape hatch forwards `index.options` as the sole argument; there is
+        // no options slot for `partialFilterExpression`, so warn instead of silently dropping.
+        if (index.where != null) {
+          this.config
+            .getLogger()
+            .warn(
+              'schema',
+              `Index '${index.name ?? '(unnamed)'}' on entity '${meta.className}': \`where\` was ignored because \`options\` is used as the raw index spec and leaves no slot for \`partialFilterExpression\` — pass \`options: [spec, { partialFilterExpression }]\` (array form) to combine both.`,
+            );
+        }
         res.push([collection.collectionName, collection.createIndex(index.options)]);
         return;
       }
@@ -228,10 +242,45 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
         indexOptions.hidden = true;
       }
 
+      this.applyPartialFilter(indexOptions, index.where, index.name, meta.className);
+
       res.push([collection.collectionName, this.executeQuery(collection, 'createIndex', fieldOrSpec, indexOptions)]);
     });
 
     return res;
+  }
+
+  /**
+   * An explicit `options.partialFilterExpression` wins over `where` — this preserves the
+   * long-standing `options: { partialFilterExpression }` escape hatch.
+   */
+  private applyPartialFilter(
+    options: Dictionary,
+    where: unknown,
+    indexName: string | undefined,
+    entityName: string,
+  ): void {
+    if (where == null) {
+      return;
+    }
+
+    if (options.partialFilterExpression != null) {
+      this.config
+        .getLogger()
+        .warn(
+          'schema',
+          `Index '${indexName ?? '(unnamed)'}' on entity '${entityName}': both \`where\` and \`options.partialFilterExpression\` are set; \`options.partialFilterExpression\` wins.`,
+        );
+      return;
+    }
+
+    if (typeof where === 'string') {
+      throw new Error(
+        `Index '${indexName ?? '(unnamed)'}' on entity '${entityName}': string \`where\` is not supported on MongoDB; pass an object/FilterQuery (it maps to MongoDB's \`partialFilterExpression\`).`,
+      );
+    }
+
+    options.partialFilterExpression = where;
   }
 
   private async executeQuery(collection: Collection, method: keyof Collection, ...args: unknown[]) {
@@ -258,14 +307,13 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
         return o;
       }, {} as Dictionary);
       const collection = this.connection.getCollection(meta.class);
-      res.push([
-        collection.collectionName,
-        this.executeQuery(collection, 'createIndex', fieldOrSpec, {
-          name: index.name,
-          unique: true,
-          ...index.options,
-        }),
-      ]);
+      const indexOptions: Dictionary = {
+        name: index.name,
+        unique: true,
+        ...index.options,
+      };
+      this.applyPartialFilter(indexOptions, index.where, index.name, meta.className);
+      res.push([collection.collectionName, this.executeQuery(collection, 'createIndex', fieldOrSpec, indexOptions)]);
     });
 
     return res;
