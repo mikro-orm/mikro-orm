@@ -20,6 +20,7 @@ import {
 import type { SchemaHelper } from './SchemaHelper.js';
 import type { CheckDef, Column, ForeignKey, IndexDef } from '../typings.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
+import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
 
 /**
  * @internal
@@ -1228,10 +1229,10 @@ export class DatabaseTable {
       return undefined;
     }
 
-    const driver = this.#platform.getConfig().getDriver() as unknown as {
-      renderPartialIndexWhere(entityName: string, where: string | Dictionary): string;
-    };
-    return driver.renderPartialIndexWhere(meta.className, where);
+    // The driver is always an `AbstractSqlDriver` here — `DatabaseTable` is only instantiated
+    // by SQL-side schema code, so the platform's config-bound driver is guaranteed to be one.
+    const driver = this.#platform.getConfig().getDriver() as AbstractSqlDriver;
+    return driver.renderPartialIndexWhere(meta.class, where);
   }
 
   addCheck(check: CheckDef) {
