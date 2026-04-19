@@ -73,6 +73,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       offset: options.offset,
       fields,
       ctx: options.ctx,
+      chunkSize: options.chunkSize ?? 100,
       ...this.buildQueryOptions(options),
     });
 
