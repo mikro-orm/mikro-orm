@@ -25,6 +25,19 @@ There are several constraints when using streaming:
 - You should provide an `orderBy` clause to ensure consistent ordering.
 - With mongodb driver, only root entities can be streamed, `populate` option is ignored.
 
+## Chunk size
+
+The ORM fetches rows from the database in batches; the `chunkSize` option controls how many rows are pulled per round-trip. Lower values reduce memory usage but cost more round-trips; higher values do the opposite. Regardless of the value, the async iterator always yields one entity at a time.
+
+```ts
+const stream = em.stream(Book, {
+  orderBy: { id: 'ASC' },
+  chunkSize: 100, // 100 is the default
+});
+```
+
+The option is honored on PostgreSQL, MSSQL, Oracle and MongoDB. On MySQL, MariaDB, SQLite and libSQL the underlying driver always streams row-by-row with no batching knob, so the option has no effect there.
+
 ## Streaming row-by-row
 
 When populating to-many relations, the ORM streams fully merged entities instead of yielding every row. You can opt out of this behavior by specifying `mergeResults: false`. This will yield every row from the SQL result, but still mapped to entities, meaning that to-many collections will contain at most one item, and you will get duplicate root entities when they have multiple items in the populated collection.
