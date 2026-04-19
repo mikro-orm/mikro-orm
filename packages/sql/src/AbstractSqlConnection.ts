@@ -306,7 +306,7 @@ export abstract class AbstractSqlConnection extends Connection {
     } as unknown as CompiledQuery;
 
     try {
-      const res = (ctx ?? this.getClient()).getExecutor().stream(compiled, chunkSize || 1);
+      const res = (ctx ?? this.getClient()).getExecutor().stream(compiled, chunkSize ?? 100);
 
       this.logQuery(sql, {
         sql,

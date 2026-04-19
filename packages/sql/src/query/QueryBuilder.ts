@@ -75,7 +75,11 @@ export interface QBStreamOptions {
    * Higher values will result in fewer queries and network bandwidth, but higher memory usage.
    * Note that the results are iterated one row at a time regardless of this value.
    *
-   * @default 1
+   * Honored on PostgreSQL (cursor-based fetch) and MSSQL (tedious stream chunk size).
+   * Ignored on MySQL, MariaDB, SQLite and libSQL, where the underlying driver already
+   * streams row-by-row with no batching knob.
+   *
+   * @default 100 on dialects that honor it.
    */
   chunkSize?: number;
   /**
@@ -2530,13 +2534,13 @@ export class QueryBuilder<
    */
   async *stream(options?: QBStreamOptions): AsyncIterableIterator<Loaded<Entity, Hint, Fields>> {
     options ??= {};
-    options.chunkSize ??= 1;
     options.mergeResults ??= true;
     options.mapResults ??= true;
+    const chunkSize = options.chunkSize ?? 100;
 
     const query = this.toQuery();
     const loggerContext = { id: this.em?.id, ...this.loggerContext };
-    const res = this.getConnection().stream(query.sql, query.params, this.context, loggerContext, options.chunkSize);
+    const res = this.getConnection().stream(query.sql, query.params, this.context, loggerContext, chunkSize);
     const meta = this.mainAlias.meta;
 
     if (options.rawResults || !meta) {
