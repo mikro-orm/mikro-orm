@@ -125,8 +125,66 @@ Partial indexes (also called filtered indexes) only index the rows that match a 
 
 Use the `where` option on `@Index` or `@Unique`. SQL drivers accept a raw SQL fragment; MongoDB accepts an object that maps to its `partialFilterExpression`.
 
-```ts
+<Tabs
+  groupId="entity-def"
+  defaultValue="define-entity-class"
+  values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+]
+  }
+>
+  <TabItem value="define-entity-class">
+
+```ts title="./entities/User.ts"
+import { defineEntity, p } from '@mikro-orm/core';
+
+const UserSchema = defineEntity({
+  name: 'User',
+  properties: {
+    id: p.integer().primary(),
+    email: p.string(),
+    deletedAt: p.datetime().nullable(),
+  },
+  uniques: [
+    { properties: ['email'], where: '"deleted_at" is null' },
+  ],
+});
+
+export class User extends UserSchema.class {}
+UserSchema.setClass(User);
+```
+
+  </TabItem>
+
+  <TabItem value="define-entity">
+
+```ts title="./entities/User.ts"
+import { type InferEntity, defineEntity, p } from '@mikro-orm/core';
+
+export const User = defineEntity({
+  name: 'User',
+  properties: {
+    id: p.integer().primary(),
+    email: p.string(),
+    deletedAt: p.datetime().nullable(),
+  },
+  uniques: [
+    { properties: ['email'], where: '"deleted_at" is null' },
+  ],
+});
+
+export type IUser = InferEntity<typeof User>;
+```
+
+  </TabItem>
+  <TabItem value="reflect-metadata">
+
+```ts title="./entities/User.ts"
 @Entity()
+@Unique({ properties: ['email'], where: '"deleted_at" is null' })
 export class User {
 
   @PrimaryKey()
@@ -138,17 +196,94 @@ export class User {
   @Property({ nullable: true })
   deletedAt?: Date;
 
-  // Enforce email uniqueness only for non-deleted users (SQL form)
-  @Unique({ properties: ['email'], where: '"deleted_at" is null' })
-  static readonly emailUnique: never;
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts title="./entities/User.ts"
+@Entity()
+@Unique({ properties: ['email'], where: '"deleted_at" is null' })
+export class User {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  email!: string;
+
+  @Property({ nullable: true })
+  deletedAt?: Date;
 
 }
 ```
 
+  </TabItem>
+</Tabs>
+
 For MongoDB, pass the object form — it lands directly on the `partialFilterExpression` index option:
 
-```ts
+<Tabs
+  groupId="entity-def"
+  defaultValue="define-entity-class"
+  values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+]
+  }
+>
+  <TabItem value="define-entity-class">
+
+```ts title="./entities/User.ts"
+import { defineEntity, p } from '@mikro-orm/core';
+
+const UserSchema = defineEntity({
+  name: 'User',
+  properties: {
+    _id: p.type(ObjectId).primary(),
+    email: p.string(),
+    deletedAt: p.datetime().nullable(),
+  },
+  uniques: [
+    { properties: ['email'], where: { deletedAt: null } },
+  ],
+});
+
+export class User extends UserSchema.class {}
+UserSchema.setClass(User);
+```
+
+  </TabItem>
+
+  <TabItem value="define-entity">
+
+```ts title="./entities/User.ts"
+import { type InferEntity, defineEntity, p } from '@mikro-orm/core';
+
+export const User = defineEntity({
+  name: 'User',
+  properties: {
+    _id: p.type(ObjectId).primary(),
+    email: p.string(),
+    deletedAt: p.datetime().nullable(),
+  },
+  uniques: [
+    { properties: ['email'], where: { deletedAt: null } },
+  ],
+});
+
+export type IUser = InferEntity<typeof User>;
+```
+
+  </TabItem>
+  <TabItem value="reflect-metadata">
+
+```ts title="./entities/User.ts"
 @Entity()
+@Unique({ properties: ['email'], where: { deletedAt: null } })
 export class User {
 
   @PrimaryKey()
@@ -160,14 +295,31 @@ export class User {
   @Property({ nullable: true })
   deletedAt?: Date;
 
-  @Unique({
-    properties: ['email'],
-    where: { deletedAt: null },
-  })
-  static readonly emailUnique: never;
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts title="./entities/User.ts"
+@Entity()
+@Unique({ properties: ['email'], where: { deletedAt: null } })
+export class User {
+
+  @PrimaryKey()
+  _id!: ObjectId;
+
+  @Property()
+  email!: string;
+
+  @Property({ nullable: true })
+  deletedAt?: Date;
 
 }
 ```
+
+  </TabItem>
+</Tabs>
 
 **Generated DDL by dialect** (for `where: '"deleted_at" is null'`):
 
