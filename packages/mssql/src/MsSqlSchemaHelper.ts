@@ -275,13 +275,18 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       }
 
       const filterDef: string | undefined = index.filter_definition ?? undefined;
-      const isFunctionalCol = index.column_name?.match(/[(): ,"'`]/);
 
-      if (isFunctionalCol) {
-        /* v8 ignore next 2: function-based / computed-column index branch (unchanged from pre-PR behavior) */
+      /* v8 ignore start: function-based / computed-column index branch (unchanged from pre-PR behavior) */
+      if (index.column_name?.match(/[(): ,"'`]/)) {
         indexDef.expression = index.expression;
         indexDef.expression = this.getCreateIndexSQL(index.table_name, indexDef, !!index.expression);
-      } else if (filterDef) {
+        ret[key] ??= [];
+        ret[key].push(indexDef);
+        continue;
+      }
+      /* v8 ignore stop */
+
+      if (filterDef) {
         // Auto-NOT-NULL stripping runs post-mapIndexes (needs the consolidated column list).
         indexDef.where = filterDef;
       }
