@@ -12,6 +12,22 @@ import { type Dictionary, type Transaction, type Type } from '@mikro-orm/core';
 
 /** Schema introspection helper for MariaDB. */
 export class MariaDbSchemaHelper extends MySqlSchemaHelper {
+  /**
+   * MariaDB does not support inline expression indexes the way MySQL 8.0+ does, so the
+   * `(CASE WHEN <pred> THEN <col> END)` emulation MikroORM uses on MySQL would error out.
+   * For partial indexes on MariaDB, define a virtual generated column and index that instead.
+   */
+  protected override getIndexColumns(index: IndexDef): string {
+    if (index.where) {
+      throw new Error(
+        `Index '${index.keyName}': partial indexes (\`where\`) are not supported on MariaDB. ` +
+          `MariaDB does not support inline expression indexes; define a virtual generated column with the predicate and index that column instead.`,
+      );
+    }
+
+    return super.getIndexColumns(index);
+  }
+
   protected override appendMySqlIndexSuffix(sql: string, index: IndexDef): string {
     // MariaDB uses IGNORED instead of MySQL's INVISIBLE keyword
     if (index.invisible) {
