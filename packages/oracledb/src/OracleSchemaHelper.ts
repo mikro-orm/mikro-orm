@@ -28,6 +28,13 @@ export class OracleSchemaHelper extends SchemaHelper {
     sysdate: ['current_timestamp'],
   };
 
+  // `stripAutoNotNullFilter` unwraps balanced per-clause parens before calling `.exec`, so we
+  // only need to match the bare form here.
+  private static readonly AUTO_NOT_NULL_RE = /^"?([^"\s()]+)"?\s+is\s+not\s+null$/i;
+  // Greedy `(.+)` so nested CASE expressions inside the predicate don't trip the match on
+  // an inner `then <col> end`.
+  private static readonly PARTIAL_INDEX_RE = /^\s*\(?\s*case\s+when\s+(.+)\s+then\s+"?([^"\s)]+)"?\s+end\s*\)?\s*$/is;
+
   override getDatabaseExistsSQL(name: string): string {
     return `select 1 from all_users where username = ${this.platform.quoteValue(name)}`;
   }
@@ -293,17 +300,21 @@ export class OracleSchemaHelper extends SchemaHelper {
         continue;
       }
 
+      const partialMatch =
+        typeof index.expression === 'string' ? OracleSchemaHelper.PARTIAL_INDEX_RE.exec(index.expression) : null;
+
       const indexDef: IndexDef = {
-        columnNames: [index.column_name],
+        columnNames: [partialMatch ? partialMatch[2] : index.column_name],
         keyName: index.index_name,
         unique: index.is_unique === 'YES',
-        primary: false, // We skip PK indexes above, so this is always false
+        primary: false,
         constraint: isConstraintIndex || index.is_unique === 'YES',
       };
 
-      // Handle function-based indexes (expression indexes)
-      /* v8 ignore start: expression index branches */
-      if (index.expression) {
+      /* v8 ignore start: function-based (non-partial) index branches */
+      if (partialMatch) {
+        indexDef.where = partialMatch[1].trim();
+      } else if (index.expression) {
         indexDef.expression = index.expression;
       } else if (index.column_name?.match(/[(): ,"'`]/)) {
         indexDef.expression = this.getCreateIndexSQL(index.table_name, indexDef, true);
@@ -316,6 +327,17 @@ export class OracleSchemaHelper extends SchemaHelper {
 
     for (const key of Object.keys(ret)) {
       ret[key] = await this.mapIndexes(ret[key]);
+
+      for (const idx of ret[key]) {
+        if (idx.where) {
+          const stripped = this.stripAutoNotNullFilter(idx.where, idx.columnNames, OracleSchemaHelper.AUTO_NOT_NULL_RE);
+          if (stripped === '') {
+            delete idx.where;
+          } else {
+            idx.where = stripped;
+          }
+        }
+      }
     }
 
     return ret;
@@ -680,6 +702,19 @@ export class OracleSchemaHelper extends SchemaHelper {
     return super.getCreateIndexSQL(tableName, index);
   }
 
+  protected override getIndexColumns(index: IndexDef): string {
+    if (index.where) {
+      return this.emulatePartialIndexColumns(index);
+    }
+
+    return super.getIndexColumns(index);
+  }
+
+  /** Oracle has no native WHERE clause for indexes; the predicate is folded into CASE-WHEN columns. */
+  protected override getIndexWhereClause(_index: IndexDef): string {
+    return '';
+  }
+
   override createIndex(index: IndexDef, table: DatabaseTable, createPrimary = false): string {
     if (index.primary) {
       return '';
@@ -706,10 +741,23 @@ export class OracleSchemaHelper extends SchemaHelper {
 
     if (index.unique) {
       const nullableCols = index.columnNames.filter(column => table.getColumn(column)?.nullable);
+      const autoNotNull = nullableCols.length
+        ? nullableCols.map(c => `${this.quote(c)} is not null`).join(' and ')
+        : '';
+
+      if (index.where) {
+        // Wrap the user predicate in parens before ANDing the auto-NOT-NULL guard — otherwise a
+        // disjunctive `a = 1 or b = 2` would rebind as `a = 1 or (b = 2 and <col> is not null)`.
+        const predicate = autoNotNull ? `(${index.where}) and ${autoNotNull}` : index.where;
+        return `create unique index ${this.quote(index.keyName)} on ${quotedTableName} (${index.columnNames
+          .map(c => `case when ${predicate} then ${this.quote(c)} end`)
+          .join(', ')})`;
+      }
+
       return `create unique index ${this.quote(index.keyName)} on ${quotedTableName} (${index.columnNames
         .map(c => {
           if (table.getColumn(c)?.nullable) {
-            return `case when ${nullableCols.map(c => `${this.quote(c)} is not null`).join(' and ')} then ${this.quote(c)} end`;
+            return `case when ${autoNotNull} then ${this.quote(c)} end`;
           }
 
           return this.quote(c);
