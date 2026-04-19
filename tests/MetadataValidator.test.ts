@@ -576,6 +576,16 @@ describe('MetadataValidator', () => {
       ).toThrow('Entity PartitionedEntity has invalid partitionBy option: duplicate hash partition name \'"part_1"\'');
     });
 
+    test('treats embedded "" inside quoted hash partition names as a literal quote', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: ['type'],
+          partitions: ['"a""b"', '"a""b"'],
+        }),
+      ).toThrow('Entity PartitionedEntity has invalid partitionBy option: duplicate hash partition name \'"a""b"\'');
+    });
+
     test('accepts quoted and unquoted hash partition names that differ after folding', async () => {
       expect(
         validatePartitionedSchema({

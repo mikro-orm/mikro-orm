@@ -315,6 +315,19 @@ describe('partitioning helpers', () => {
     expect(partitioning?.definition).toBe("range (date_trunc('day', created_at))");
   });
 
+  test('parses quoted partition names with embedded "" escape sequences', () => {
+    const partitioning = getTablePartitioning(
+      createPartitionedMeta({
+        type: 'list',
+        expression: ['type'],
+        partitions: [{ name: '"a""b"."c""d"', values: "in ('x')" }],
+      }),
+      'public',
+    );
+
+    expect(partitioning?.partitions).toEqual([{ name: 'c"d', schema: 'a"b', bound: "for values in ('x')" }]);
+  });
+
   test('quotes partition key identifiers from comma-separated string expressions', () => {
     const partitioning = getTablePartitioning(
       createPartitionedMeta({
@@ -427,6 +440,17 @@ describe('partitioning helpers', () => {
         },
       ],
     });
+  });
+
+  test('normalizes empty and malformed partition definitions without throwing', () => {
+    expect(normalizePartitionDefinition('')).toBe('');
+    expect(normalizePartitionDefinition('   ')).toBe('');
+  });
+
+  test('falls back to the normalized definition when the type keyword cannot be split', () => {
+    expect(() => toEntityPartitionBy({ definition: '', partitions: [] })).toThrow(
+      "Unsupported partition type '' in definition ''",
+    );
   });
 
   test('throws when catalog definition uses an unsupported partition type', () => {
