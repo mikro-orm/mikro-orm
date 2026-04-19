@@ -1126,6 +1126,32 @@ describe('check typings', () => {
     };
   });
 
+  test('GH #6944', async () => {
+    class Test {
+      type!: string;
+      createdAt!: Date;
+    }
+
+    const hashPartitioned: EntityOptions<typeof Test> = {
+      partitionBy: {
+        type: 'hash',
+        expression: ['type'],
+        partitions: 4,
+      },
+    };
+
+    const rangePartitioned: EntityOptions<typeof Test> = {
+      partitionBy: {
+        type: 'range',
+        expression: columns => `date_trunc('day', ${columns.createdAt})`,
+        partitions: [{ values: "from ('2026-01-01') to ('2026-02-01')" }],
+      },
+    };
+
+    expect(hashPartitioned.partitionBy?.type).toBe('hash');
+    expect(rangePartitioned.partitionBy?.type).toBe('range');
+  });
+
   test('GH #6609', async () => {
     class User {
       id!: number;
