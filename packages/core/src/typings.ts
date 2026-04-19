@@ -22,7 +22,7 @@ import type { SerializationContext } from './serialization/SerializationContext.
 import type { SerializeOptions } from './serialization/EntitySerializer.js';
 import type { MetadataStorage } from './metadata/MetadataStorage.js';
 import type { EntitySchema } from './metadata/EntitySchema.js';
-import type { IndexColumnOptions } from './metadata/types.js';
+import type { EntityPartitionBy, IndexColumnOptions } from './metadata/types.js';
 import type { Type, types } from './types/index.js';
 import type { Platform } from './platforms/Platform.js';
 import type { Configuration } from './utils/Configuration.js';
@@ -1634,6 +1634,8 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   materialized?: boolean;
   /** For materialized views, whether data is populated on creation. Defaults to true. */
   withData?: boolean;
+  /** PostgreSQL partitioning definition for this table. */
+  partitionBy?: EntityPartitionBy<Entity>;
   // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`
   // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
   expression?:
@@ -1716,6 +1718,8 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   polymorphicDiscriminatorMap?: Dictionary<EntityClass>;
   /** Inheritance type: 'sti' (Single Table Inheritance) or 'tpt' (Table-Per-Type). Only set on root entities. */
   inheritanceType?: 'sti' | 'tpt';
+  /** Legacy alias populated from `EntityOptions.inheritance`; mirrored to `inheritanceType` during discovery. */
+  inheritance?: 'tpt';
   /** For TPT: direct parent entity metadata (the entity this one extends). */
   tptParent?: EntityMetadata;
   /** For TPT: direct child entities (entities that extend this one). */

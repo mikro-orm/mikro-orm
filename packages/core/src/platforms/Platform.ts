@@ -17,6 +17,7 @@ import type {
   FilterKey,
 } from '../typings.js';
 import { ExceptionConverter } from './ExceptionConverter.js';
+import { MetadataError } from '../errors.js';
 import type { EntityManager } from '../EntityManager.js';
 import type { Configuration } from '../utils/Configuration.js';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
@@ -129,6 +130,11 @@ export abstract class Platform {
 
   /** Whether this platform supports materialized views. */
   supportsMaterializedViews(): boolean {
+    return false;
+  }
+
+  /** Whether this platform supports declarative table partitioning in schema generation. */
+  supportsPartitionedTables(): boolean {
     return false;
   }
 
@@ -919,7 +925,11 @@ export abstract class Platform {
 
   /** Platform-specific validation of entity metadata. */
   validateMetadata(meta: EntityMetadata): void {
-    return;
+    if (meta.partitionBy && !this.supportsPartitionedTables()) {
+      throw new MetadataError(
+        `Entity ${meta.className} uses partitionBy, but ${this.constructor.name} does not support partitioned tables`,
+      );
+    }
   }
 
   /**
