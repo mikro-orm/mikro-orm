@@ -133,13 +133,14 @@ class OracleConnection implements DatabaseConnection {
     };
   }
 
-  async *streamQuery<R>(compiledQuery: CompiledQuery, _chunkSize?: number): AsyncIterableIterator<QueryResult<R>> {
+  async *streamQuery<R>(compiledQuery: CompiledQuery, chunkSize?: number): AsyncIterableIterator<QueryResult<R>> {
     const { sql, bindParams } = this.formatQuery(compiledQuery);
     const result = await this.#connection.execute<R>(sql, bindParams, {
       resultSet: true,
       autoCommit: (compiledQuery as any).autoCommit,
       outFormat: OUT_FORMAT_OBJECT,
       ...this.#executeOptions,
+      ...(chunkSize != null ? { fetchArraySize: chunkSize } : {}),
     });
     const rs = result.resultSet!;
     try {
