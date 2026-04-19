@@ -1198,7 +1198,7 @@ export class DatabaseTable {
       );
     }
 
-    const where = this.processIndexWhere(name, index.where, meta);
+    const where = this.processIndexWhere(index.where, meta);
 
     this.#indexes.push({
       keyName: name,
@@ -1223,11 +1223,7 @@ export class DatabaseTable {
     });
   }
 
-  private processIndexWhere(
-    _indexName: string,
-    where: string | Dictionary | undefined,
-    meta: EntityMetadata,
-  ): string | undefined {
+  private processIndexWhere(where: string | Dictionary | undefined, meta: EntityMetadata): string | undefined {
     if (where == null) {
       return undefined;
     }
