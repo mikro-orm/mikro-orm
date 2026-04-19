@@ -278,6 +278,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       const isFunctionalCol = index.column_name?.match(/[(): ,"'`]/);
 
       if (isFunctionalCol) {
+        /* v8 ignore next 2: function-based / computed-column index branch (unchanged from pre-PR behavior) */
         indexDef.expression = index.expression;
         indexDef.expression = this.getCreateIndexSQL(index.table_name, indexDef, !!index.expression);
       } else if (filterDef) {

@@ -1,4 +1,4 @@
-import { EntitySchema, MikroORM } from '@mikro-orm/mssql';
+import { EntitySchema, MikroORM, MsSqlSchemaHelper } from '@mikro-orm/mssql';
 
 function makeMeta(opts: { where?: string }) {
   return new EntitySchema({
@@ -95,5 +95,36 @@ describe('partial index [mssql]', () => {
     expect(diff).toMatch(/where \[deleted_at\] is null and \[slug\] is not null/);
     await orm.schema.execute(diff);
     expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+  });
+
+  test('introspection drops pure auto-NOT-NULL filters (unique on nullable without user where)', async () => {
+    const meta = orm.getMetadata();
+    const e = new EntitySchema({
+      name: 'AutoNotNullOnly',
+      tableName: 'auto_not_null_only',
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+        code: { name: 'code', type: 'string', fieldName: 'code', columnType: 'varchar(255)', nullable: true },
+      },
+      uniques: [{ name: 'auto_not_null_only_code_uniq', properties: ['code'] as never }],
+    }).init().meta;
+    meta.set(e.class, e as any);
+    await orm.schema.execute(await orm.schema.getUpdateSchemaSQL({ wrap: false }));
+
+    // Re-running the diff must be a no-op: MSSQL stored `filter_definition = '([code] IS NOT NULL)'`
+    // but that's MikroORM's auto-emitted guard, not user intent — stripping should clear it
+    // entirely (exercises `delete idx.where`).
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+  });
+
+  test('stripAutoNotNullFilter handles edge-case paren shapes', () => {
+    const helper = new MsSqlSchemaHelper(orm.em.getPlatform() as any);
+    const autoRe = /^\(?\[([^\]]+)\]\s+IS\s+NOT\s+NULL\)?$/i;
+    const strip = (s: string) => (helper as any).stripAutoNotNullFilter(s, ['email'], autoRe);
+
+    // purely auto-NOT-NULL: strip the wrapping parens, drop the clause, leave empty
+    expect(strip('([email] IS NOT NULL)')).toBe('');
+    // non-wrapping parens (`(a) AND (b)`) must not be stripped as a block — exercises isBalancedWrap's false path
+    expect(strip('([email] IS NOT NULL) AND ([other] = 1)')).toBe('([other] = 1)');
   });
 });

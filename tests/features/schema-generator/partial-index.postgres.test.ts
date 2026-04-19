@@ -85,6 +85,29 @@ describe('partial index [postgres]', () => {
     expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
   });
 
+  test('partial index on a JSON property renders WHERE after the json expression', async () => {
+    const meta = orm.getMetadata();
+    const e = new EntitySchema({
+      name: 'PartialJson',
+      tableName: 'partial_json',
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+        data: { name: 'data', type: 'json', fieldName: 'data', columnType: 'jsonb' },
+      },
+      indexes: [
+        {
+          name: 'partial_json_data_email_idx',
+          properties: ['data.email'] as never,
+          where: `data->>'active' = 'true'` as never,
+        },
+      ],
+    }).init().meta;
+    meta.set(e.class, e as any);
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatch(/create index "partial_json_data_email_idx" .+ where data->>'active' = 'true'/);
+    await orm.schema.execute(diff);
+  });
+
   test('whitespace / quoting / casing differences in DB are ignored by the diff', async () => {
     const meta = orm.getMetadata();
     const e = makeMeta({ where: '"deleted_at" is null' });
