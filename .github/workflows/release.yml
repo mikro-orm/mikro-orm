@@ -174,3 +174,59 @@ jobs:
           git reset --hard HEAD~1
           git tag "v$VERSION"
           git push origin "refs/tags/v$VERSION"
+
+  version-docs:
+    needs: manual-release
+    runs-on: ubuntu-latest
+    if: inputs.ref == 'master' && (inputs.version == 'minor' || inputs.version == 'major')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.ref }}
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Enable corepack
+        run: |
+          corepack enable
+          corepack prepare yarn@stable --activate
+
+      - name: Activate cache for Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          cache: yarn
+          cache-dependency-path: docs/yarn.lock
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: |
+          cd docs
+          yarn
+
+      - name: Snapshot the current version
+        run: |
+          cd docs
+          VERSION=$(jq -r '.version' ../lerna.json)
+          if [ -z "$VERSION" ]; then
+              echo "Error: VERSION is empty. Ensure lerna.json exists and contains a valid .version field."
+              exit 1
+          fi
+          MAJOR_MINOR=$(echo $VERSION | cut -d. -f1,2)
+          yarn docusaurus docs:version $MAJOR_MINOR
+          yarn docusaurus api:version $MAJOR_MINOR
+
+      - name: Commit and push the version snapshot
+        run: |
+          git config --global user.name 'MikroORM Release Bot'
+          git config --global user.email 'noreply@mikro-orm.io'
+          git add .
+          git diff-index --quiet HEAD || git commit -m 'docs: update docs for ${{ inputs.version }} version'
+          git push
