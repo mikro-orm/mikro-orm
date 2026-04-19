@@ -74,30 +74,43 @@ describe('partial index [sqlite]', () => {
     expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
   });
 
-  test('rejects object `where` on SQL drivers with a clear message', async () => {
+  test('object (FilterQuery) `where` renders to a SQL fragment', async () => {
     const meta = orm.getMetadata();
-    const broken = new EntitySchema({
-      name: 'PartialUserBroken',
-      tableName: 'partial_user_broken',
+    for (const [, m] of meta.getAll()) {
+      meta.reset(m.class);
+    }
+    const e = new EntitySchema({
+      name: 'PartialObjUser',
+      tableName: 'partial_obj_user',
       properties: {
         id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'integer' },
         email: { name: 'email', type: 'string', fieldName: 'email', columnType: 'text' },
+        deletedAt: {
+          name: 'deletedAt',
+          type: 'Date',
+          fieldName: 'deleted_at',
+          columnType: 'datetime',
+          nullable: true,
+        },
       },
       uniques: [
         {
-          name: 'partial_user_broken_email_uniq',
+          name: 'partial_obj_user_email_uniq',
           properties: ['email'] as never,
-          where: { email: { $ne: null } } as never,
+          where: { deletedAt: null } as never,
         },
       ],
     }).init().meta;
-    meta.set(broken.class, broken as any);
+    meta.set(e.class, e as any);
 
-    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).rejects.toThrow(
-      /object form of `where` is not supported on SQL drivers/,
-    );
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    // FilterQuery `{ deletedAt: null }` renders with the dialect's identifier quoting (backticks on SQLite)
+    expect(diff).toMatch(/where `deleted_at` is null/);
+    await orm.schema.execute(diff);
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
 
-    meta.reset(broken.class);
+    meta.reset(e.class);
+    await orm.schema.execute('drop table if exists `partial_obj_user`');
   });
 
   test('entity generator round-trips a partial index/unique back into clean `where:` options', async () => {

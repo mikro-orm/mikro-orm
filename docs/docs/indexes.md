@@ -123,7 +123,7 @@ export class Author {
 
 Partial indexes (also called filtered indexes) only index the rows that match a predicate. They are useful for enforcing uniqueness on a subset of rows, or for accelerating queries that target a specific slice of data while keeping the index small.
 
-Use the `where` option on `@Index` or `@Unique`. SQL drivers accept a raw SQL fragment; MongoDB accepts an object that maps to its `partialFilterExpression`.
+Use the `where` option on `@Index` or `@Unique`. The portable form is a `FilterQuery` object — same operators you'd use in `em.find()` — and it works on every driver. MikroORM renders it to dialect-specific SQL on PostgreSQL / SQLite / MSSQL / MySQL / Oracle, and to `partialFilterExpression` on MongoDB.
 
 <Tabs
   groupId="entity-def"
@@ -149,7 +149,7 @@ const UserSchema = defineEntity({
     deletedAt: p.datetime().nullable(),
   },
   uniques: [
-    { properties: ['email'], where: '"deleted_at" is null' },
+    { properties: ['email'], where: { deletedAt: null } },
   ],
 });
 
@@ -172,7 +172,7 @@ export const User = defineEntity({
     deletedAt: p.datetime().nullable(),
   },
   uniques: [
-    { properties: ['email'], where: '"deleted_at" is null' },
+    { properties: ['email'], where: { deletedAt: null } },
   ],
 });
 
@@ -184,7 +184,7 @@ export type IUser = InferEntity<typeof User>;
 
 ```ts title="./entities/User.ts"
 @Entity()
-@Unique({ properties: ['email'], where: '"deleted_at" is null' })
+@Unique({ properties: ['email'], where: { deletedAt: null } })
 export class User {
 
   @PrimaryKey()
@@ -204,7 +204,7 @@ export class User {
 
 ```ts title="./entities/User.ts"
 @Entity()
-@Unique({ properties: ['email'], where: '"deleted_at" is null' })
+@Unique({ properties: ['email'], where: { deletedAt: null } })
 export class User {
 
   @PrimaryKey()
@@ -222,7 +222,7 @@ export class User {
   </TabItem>
 </Tabs>
 
-For MongoDB, pass the object form — it lands directly on the `partialFilterExpression` index option:
+SQL drivers also accept a raw SQL fragment as `where` — useful for predicates that don't fit the FilterQuery shape (custom operators, function calls, dialect-specific syntax). Quoting is your responsibility:
 
 <Tabs
   groupId="entity-def"
@@ -238,22 +238,13 @@ For MongoDB, pass the object form — it lands directly on the `partialFilterExp
   <TabItem value="define-entity-class">
 
 ```ts title="./entities/User.ts"
-import { defineEntity, p } from '@mikro-orm/core';
-
 const UserSchema = defineEntity({
   name: 'User',
-  properties: {
-    _id: p.type(ObjectId).primary(),
-    email: p.string(),
-    deletedAt: p.datetime().nullable(),
-  },
+  properties: { /* ... */ },
   uniques: [
-    { properties: ['email'], where: { deletedAt: null } },
+    { properties: ['email'], where: 'lower("email") <> \'\'' },
   ],
 });
-
-export class User extends UserSchema.class {}
-UserSchema.setClass(User);
 ```
 
   </TabItem>
@@ -261,21 +252,13 @@ UserSchema.setClass(User);
   <TabItem value="define-entity">
 
 ```ts title="./entities/User.ts"
-import { type InferEntity, defineEntity, p } from '@mikro-orm/core';
-
 export const User = defineEntity({
   name: 'User',
-  properties: {
-    _id: p.type(ObjectId).primary(),
-    email: p.string(),
-    deletedAt: p.datetime().nullable(),
-  },
+  properties: { /* ... */ },
   uniques: [
-    { properties: ['email'], where: { deletedAt: null } },
+    { properties: ['email'], where: 'lower("email") <> \'\'' },
   ],
 });
-
-export type IUser = InferEntity<typeof User>;
 ```
 
   </TabItem>
@@ -283,19 +266,8 @@ export type IUser = InferEntity<typeof User>;
 
 ```ts title="./entities/User.ts"
 @Entity()
-@Unique({ properties: ['email'], where: { deletedAt: null } })
-export class User {
-
-  @PrimaryKey()
-  _id!: ObjectId;
-
-  @Property()
-  email!: string;
-
-  @Property({ nullable: true })
-  deletedAt?: Date;
-
-}
+@Unique({ properties: ['email'], where: 'lower("email") <> \'\'' })
+export class User { /* ... */ }
 ```
 
   </TabItem>
@@ -303,23 +275,14 @@ export class User {
 
 ```ts title="./entities/User.ts"
 @Entity()
-@Unique({ properties: ['email'], where: { deletedAt: null } })
-export class User {
-
-  @PrimaryKey()
-  _id!: ObjectId;
-
-  @Property()
-  email!: string;
-
-  @Property({ nullable: true })
-  deletedAt?: Date;
-
-}
+@Unique({ properties: ['email'], where: 'lower("email") <> \'\'' })
+export class User { /* ... */ }
 ```
 
   </TabItem>
 </Tabs>
+
+Raw fragments are SQL-only — MongoDB rejects them.
 
 **Generated DDL by dialect** (for `where: '"deleted_at" is null'`):
 
@@ -341,8 +304,8 @@ export class User {
 
 | Form | Native | Emulated (CASE WHEN) | Not supported |
 |------|--------|----------------------|---------------|
-| SQL string `where` | PostgreSQL, SQLite, MSSQL | MySQL 8.0.13+, Oracle | MariaDB (use a virtual column instead) |
-| Object `where` | MongoDB (`partialFilterExpression`) | — | SQL drivers (use string form) |
+| Object `where` (FilterQuery) | PostgreSQL, SQLite, MSSQL, MongoDB | MySQL 8.0.13+, Oracle | MariaDB (use a virtual column instead) |
+| Raw SQL string `where` | PostgreSQL, SQLite, MSSQL | MySQL 8.0.13+, Oracle | MariaDB, MongoDB |
 
 :::note Schema diffing
 

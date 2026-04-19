@@ -1224,7 +1224,7 @@ export class DatabaseTable {
   }
 
   private processIndexWhere(
-    indexName: string,
+    _indexName: string,
     where: string | Dictionary | undefined,
     meta: EntityMetadata,
   ): string | undefined {
@@ -1232,13 +1232,10 @@ export class DatabaseTable {
       return undefined;
     }
 
-    if (typeof where === 'string') {
-      return where;
-    }
-
-    throw new Error(
-      `Index '${indexName}' on entity '${meta.className}': object form of \`where\` is not supported on SQL drivers; pass a SQL string fragment instead (e.g. \`where: '"deleted_at" is null'\`).`,
-    );
+    const driver = this.#platform.getConfig().getDriver() as unknown as {
+      renderPartialIndexWhere(entityName: string, where: string | Dictionary): string;
+    };
+    return driver.renderPartialIndexWhere(meta.className, where);
   }
 
   addCheck(check: CheckDef) {

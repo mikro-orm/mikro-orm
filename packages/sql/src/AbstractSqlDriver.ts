@@ -2511,6 +2511,32 @@ export abstract class AbstractSqlDriver<
     return qb;
   }
 
+  /**
+   * Renders a `FilterQuery` predicate into a SQL fragment (without the `WHERE` keyword and
+   * without table-alias prefixes) suitable for inlining into a partial-index DDL statement.
+   * Used by `DatabaseTable.addIndex` when the user passes an object `where` on `@Index` /
+   * `@Unique`. Strings are returned unchanged.
+   */
+  renderPartialIndexWhere<T extends object>(entityName: EntityName<T>, where: string | FilterQuery<T>): string {
+    if (typeof where === 'string') {
+      return where;
+    }
+
+    const alias = '__p';
+    const qb = this.createQueryBuilder(entityName, undefined, undefined, undefined, undefined, alias);
+    qb.where(where as any);
+    const sql = qb.getFormattedQuery();
+    const match = /\bwhere\s+(.+?)(?:\s+order\s+by|\s+group\s+by|\s+having|\s+limit|\s+offset|$)/is.exec(sql);
+
+    if (!match) {
+      throw new Error(`Failed to render partial-index predicate from FilterQuery: ${sql}`);
+    }
+
+    const quote = (s: string) => this.platform.quoteIdentifier(s);
+    const aliasPrefix = new RegExp(`${quote(alias).replace(/[[\]]/g, '\\$&')}\\.`, 'g');
+    return match[1].replace(aliasPrefix, '').trim();
+  }
+
   protected resolveConnectionType(args: { ctx?: Transaction; connectionType?: ConnectionType }): ConnectionType {
     if (args.ctx) {
       return 'write';
