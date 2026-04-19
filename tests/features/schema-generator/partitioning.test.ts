@@ -3,7 +3,7 @@ import { Configuration, EntitySchema } from '@mikro-orm/core';
 import { SourceFile } from '../../../packages/entity-generator/src/SourceFile.js';
 import { DatabaseSchema, SchemaComparator, type TablePartitioning } from '@mikro-orm/sql';
 import { PostgreSqlDriver, PostgreSqlPlatform } from '@mikro-orm/postgresql';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { MikroORM as SqliteMikroORM, SqliteDriver } from '@mikro-orm/sqlite';
 import {
   diffPartitioning,
   getTablePartitioning,
@@ -502,6 +502,25 @@ describe('partitioning helpers', () => {
     ).toThrow('Entity PartitionedEvent uses partitionBy, but SqlitePlatform does not support partitioned tables');
   });
 
+  test('surfaces the unsupported-platform error through MikroORM.init metadata discovery', async () => {
+    await expect(
+      SqliteMikroORM.init({
+        driver: SqliteDriver,
+        dbName: ':memory:',
+        connect: false,
+        entities: [
+          createPartitionedMeta({
+            type: 'hash',
+            expression: ['type'],
+            partitions: 4,
+          }).class,
+        ],
+      }),
+    ).rejects.toThrow(
+      'Entity PartitionedEvent uses partitionBy, but SqlitePlatform does not support partitioned tables',
+    );
+  });
+
   test('normalizes timestamp bounds with non-UTC offsets (session-local midnight)', () => {
     // Catalog round-trip from a non-UTC session returns `YYYY-MM-DD 00:00:00±HH[:MM]`;
     // the normalizer must collapse both UTC and non-UTC offsets so diffing converges.
@@ -714,6 +733,24 @@ describe('partitioning helpers', () => {
       expression: "'tenant_id'",
       partitions: ["'events_shard_a'", "'events_shard_b'", "'archive.events_shard_c'"],
     });
+  });
+
+  test('entity generator rejects callback-form partition expressions', () => {
+    const config = new Configuration({ driver: PostgreSqlDriver }, false);
+    const platform = config.getPlatform() as PostgreSqlPlatform;
+    const meta = createPartitionedMeta({
+      type: 'range',
+      expression: columns => `date_trunc('day', ${columns.createdAt})`,
+      partitions: [{ values: "from ('2026-01-01') to ('2026-02-01')" }],
+    });
+
+    const source = new SourceFile(meta, config.getNamingStrategy(), platform, {}) as unknown as {
+      getEntityDeclOptions(): Record<string, unknown>;
+    };
+
+    expect(() => source.getEntityDeclOptions()).toThrow(
+      'Cannot emit entity source for PartitionedEvent: partitionBy.expression is a callback.',
+    );
   });
 
   test('surfaces partitioning changes through the schema comparator', () => {

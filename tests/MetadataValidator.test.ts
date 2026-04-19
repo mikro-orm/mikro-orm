@@ -965,6 +965,32 @@ describe('MetadataValidator', () => {
       );
     });
 
+    test('rejects hash partition names containing more than one dot', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: ['type'],
+          partitions: ['a.b.c'],
+        }),
+      ).toThrow(
+        "Entity PartitionedEntity has invalid partitionBy option: partition name 'a.b.c' contains more than one '.' — use at most one '.' to separate schema from table",
+      );
+    });
+
+    test('rejects partition expressions that resolve to multi-column properties', async () => {
+      const schema = createPartitionedSchema({
+        type: 'hash',
+        expression: ['type'],
+        partitions: 2,
+      });
+      schema.meta.properties.type.fieldNames = ['type_a', 'type_b'];
+      const storage = new MetadataStorage({ [schema.meta.className]: schema.meta } as any);
+
+      expect(() => validator.validateEntityDefinition(storage, schema as any, options)).toThrow(
+        "Entity PartitionedEntity has invalid partitionBy option: partition key 'type' maps to multiple columns ('type_a', 'type_b'); list them explicitly as partition keys",
+      );
+    });
+
     test('rejects partitionBy on virtual entities', async () => {
       const schema = new EntitySchema<PartitionedEntity>({
         name: 'PartitionedVirtual',
