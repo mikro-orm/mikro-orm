@@ -242,6 +242,77 @@ describe('SchemaGenerator [postgres]', () => {
     await orm.close(true);
   });
 
+  test('partitioned tables coexist with indexes, checks, and triggers [postgres] (GH #6944)', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.em.execute('drop table if exists partitioned_event_extras cascade');
+    await orm.schema.update();
+
+    interface PartitionedExtras {
+      createdAt: Date;
+      id: number;
+      priority: number;
+    }
+
+    const partitionedMeta = new EntitySchema<PartitionedExtras>({
+      name: 'PartitionedExtras',
+      tableName: 'partitioned_event_extras',
+      partitionBy: {
+        type: 'range',
+        expression: ['createdAt'],
+        partitions: [
+          { values: "from ('2026-01-01') to ('2026-02-01')" },
+          { name: 'partitioned_event_extras_default', values: 'default' },
+        ],
+      },
+      indexes: [{ name: 'partitioned_event_extras_priority_idx', properties: ['priority'] }],
+      checks: [{ name: 'partitioned_event_extras_priority_chk', expression: 'priority >= 0' }],
+      triggers: [
+        {
+          name: 'partitioned_event_extras_audit',
+          timing: 'before',
+          events: ['insert'],
+          forEach: 'row',
+          body: 'RETURN NEW',
+        },
+      ],
+      properties: {
+        createdAt: {
+          type: 'Date',
+          primary: true,
+          fieldName: 'created_at',
+          columnType: 'timestamptz',
+        },
+        id: {
+          type: 'number',
+          primary: true,
+          fieldName: 'id',
+          columnType: 'int',
+        },
+        priority: {
+          type: 'number',
+          fieldName: 'priority',
+          columnType: 'int',
+        },
+      },
+    }).init().meta;
+    meta.set(partitionedMeta.class, partitionedMeta);
+
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('partition by range ("created_at");');
+    expect(diff).toContain('"partitioned_event_extras_priority_chk" check (priority >= 0)');
+    expect(diff).toContain(
+      'create index "partitioned_event_extras_priority_idx" on "partitioned_event_extras" ("priority");',
+    );
+    expect(diff).toContain('create trigger "partitioned_event_extras_audit"');
+    await orm.schema.execute(diff, { wrap: true });
+
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+
+    await orm.em.execute('drop table if exists partitioned_event_extras cascade');
+    await orm.close(true);
+  });
+
   test('postgres canonicalizes complex range partition expressions [postgres] (GH #6944)', async () => {
     const orm = await initORMPostgreSql();
     await orm.em.execute('drop table if exists partitioned_event_range_expr cascade');

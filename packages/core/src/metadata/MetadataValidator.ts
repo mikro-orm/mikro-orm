@@ -1,7 +1,7 @@
 import type { EntityMetadata, EntityName, EntityProperty } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import { type MetadataDiscoveryOptions } from '../utils/Configuration.js';
-import { splitCommaSeparatedIdentifiers } from '../utils/partition-utils.js';
+import { normalizePartitionNameForComparison, splitCommaSeparatedIdentifiers } from '../utils/partition-utils.js';
 import { MetadataError } from '../errors.js';
 import { ReferenceKind } from '../enums.js';
 import type { MetadataStorage } from './MetadataStorage.js';
@@ -214,11 +214,11 @@ export class MetadataValidator {
           );
         }
 
-        const duplicates = Utils.findDuplicates(partitions as string[]);
+        const duplicate = this.findDuplicatePartitionName(partitions as string[]);
 
-        if (duplicates.length > 0) {
+        if (duplicate !== undefined) {
           throw new MetadataError(
-            `Entity ${meta.className} has invalid partitionBy option: duplicate hash partition name '${duplicates[0]}'`,
+            `Entity ${meta.className} has invalid partitionBy option: duplicate hash partition name '${duplicate}'`,
           );
         }
 
@@ -256,16 +256,40 @@ export class MetadataValidator {
       );
     }
 
-    const explicitNames = meta.partitionBy.partitions
-      .map(partition => partition.name)
-      .filter((name): name is string => name != null);
-    const duplicateNames = Utils.findDuplicates(explicitNames);
+    // Include auto-generated default names (`${tableName}_${index}`, matching
+    // `createExplicitPartitions` in the sql package) so an explicit name that collides with
+    // an unnamed peer's default is caught here rather than at DDL execution time.
+    const resolvedNames = meta.partitionBy.partitions.map(
+      (partition, index) => partition.name ?? `${meta.tableName}_${index}`,
+    );
+    const duplicate = this.findDuplicatePartitionName(resolvedNames);
 
-    if (duplicateNames.length > 0) {
+    if (duplicate !== undefined) {
       throw new MetadataError(
-        `Entity ${meta.className} has invalid partitionBy option: duplicate partition name '${duplicateNames[0]}'`,
+        `Entity ${meta.className} has invalid partitionBy option: duplicate partition name '${duplicate}'`,
       );
     }
+  }
+
+  /**
+   * Find the first partition name whose normalized form (case-folded for unquoted segments,
+   * quoted segments preserved) has already been seen. Returns the offending name in its
+   * original form for the error message.
+   */
+  private findDuplicatePartitionName(names: string[]): string | undefined {
+    const seen = new Set<string>();
+
+    for (const name of names) {
+      const normalized = normalizePartitionNameForComparison(name);
+
+      if (seen.has(normalized)) {
+        return name;
+      }
+
+      seen.add(normalized);
+    }
+
+    return undefined;
   }
 
   /**

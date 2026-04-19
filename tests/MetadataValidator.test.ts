@@ -556,6 +556,36 @@ describe('MetadataValidator', () => {
       ).toThrow("Entity PartitionedEntity has invalid partitionBy option: duplicate hash partition name 'p1'");
     });
 
+    test('rejects hash partition names colliding only by case folding', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: ['type'],
+          partitions: ['Part_1', 'part_1'],
+        }),
+      ).toThrow("Entity PartitionedEntity has invalid partitionBy option: duplicate hash partition name 'part_1'");
+    });
+
+    test('rejects hash partition names where a quoted identifier collides with a bare one', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: ['type'],
+          partitions: ['part_1', '"part_1"'],
+        }),
+      ).toThrow('Entity PartitionedEntity has invalid partitionBy option: duplicate hash partition name \'"part_1"\'');
+    });
+
+    test('accepts quoted and unquoted hash partition names that differ after folding', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'hash',
+          expression: ['type'],
+          partitions: ['"Part_1"', 'part_1'],
+        }),
+      ).not.toThrow();
+    });
+
     test('rejects duplicate list/range partition names', async () => {
       expect(
         validatePartitionedSchema({
@@ -564,6 +594,34 @@ describe('MetadataValidator', () => {
           partitions: [
             { name: 'part_a', values: "from ('2026-01-01') to ('2026-02-01')" },
             { name: 'part_a', values: "from ('2026-02-01') to ('2026-03-01')" },
+          ],
+        }),
+      ).toThrow("Entity PartitionedEntity has invalid partitionBy option: duplicate partition name 'part_a'");
+    });
+
+    test('rejects an explicit list/range name that collides with a default-named peer', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'range',
+          expression: ['type'],
+          partitions: [
+            { values: "from ('2026-01-01') to ('2026-02-01')" },
+            { name: 'partitioned_entity_0', values: "from ('2026-02-01') to ('2026-03-01')" },
+          ],
+        }),
+      ).toThrow(
+        "Entity PartitionedEntity has invalid partitionBy option: duplicate partition name 'partitioned_entity_0'",
+      );
+    });
+
+    test('rejects list/range partition names colliding only by case folding', async () => {
+      expect(
+        validatePartitionedSchema({
+          type: 'list',
+          expression: ['type'],
+          partitions: [
+            { name: 'Part_A', values: "in ('a')" },
+            { name: 'part_a', values: "in ('b')" },
           ],
         }),
       ).toThrow("Entity PartitionedEntity has invalid partitionBy option: duplicate partition name 'part_a'");

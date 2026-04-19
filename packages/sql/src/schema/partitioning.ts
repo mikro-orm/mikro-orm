@@ -234,6 +234,13 @@ const resolvePartitionKey = (meta: EntityMetadata, key: string, quoteIdentifier:
   return quoteIdentifier(prop.fieldNames[0]);
 };
 
+/**
+ * Resolve the partition expression to a SQL fragment. Column-reference forms (array of keys
+ * or a clean comma-list of identifiers) are rewritten to the backing `fieldNames` and passed
+ * through `quoteIdentifier`. The callback form and the raw-SQL fallback (anything that isn't
+ * a clean identifier list, e.g. `date_trunc('day', created_at)`) are emitted verbatim — the
+ * user owns identifier quoting inside a raw expression.
+ */
 const resolvePartitionExpression = (
   meta: EntityMetadata,
   expression: NonNullable<EntityPartitionBy['expression']>,
