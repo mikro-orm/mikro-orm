@@ -25,7 +25,7 @@ There are several constraints when using streaming:
 - When populating to-many relations, only fully hydrated entities will be returned.
 - You should provide an `orderBy` clause to ensure consistent ordering.
 - With mongodb driver, only root entities can be streamed, `populate` option is ignored.
-- The `chunkSize` option is only honored on PostgreSQL, MSSQL and MongoDB. On MySQL, MariaDB, SQLite, libSQL and Oracle the underlying driver always streams row-by-row and the option is ignored.
+- The `chunkSize` option is only honored on PostgreSQL, MSSQL, Oracle and MongoDB. On MySQL, MariaDB, SQLite and libSQL the underlying driver always streams row-by-row and the option is ignored.
 
 ## Streaming row-by-row
 

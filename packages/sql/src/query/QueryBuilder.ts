@@ -75,9 +75,10 @@ export interface QBStreamOptions {
    * Higher values will result in fewer queries and network bandwidth, but higher memory usage.
    * Note that the results are iterated one row at a time regardless of this value.
    *
-   * Honored on PostgreSQL (cursor-based fetch) and MSSQL (tedious stream chunk size).
-   * Ignored on MySQL, MariaDB, SQLite, libSQL and Oracle, where the underlying driver
-   * already streams row-by-row with no batching knob.
+   * Honored on PostgreSQL (cursor-based fetch), MSSQL (tedious stream chunk size)
+   * and Oracle (mapped to `fetchArraySize`). Ignored on MySQL, MariaDB, SQLite and
+   * libSQL, where the underlying driver already streams row-by-row with no batching
+   * knob.
    *
    * @default 100 on dialects that honor it.
    */
