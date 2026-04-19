@@ -10,3 +10,4 @@ export * from './EntityComparator.js';
 export * from './RawQueryFragment.js';
 export * from './env-vars.js';
 export * from './upsert-utils.js';
+export * from './partition-utils.js';
