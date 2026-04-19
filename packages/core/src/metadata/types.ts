@@ -13,6 +13,7 @@ import type {
   IndexCallback,
   ObjectQuery,
   Raw,
+  SchemaColumns,
   TriggerDef,
 } from '../typings.js';
 import type { Cascade, LoadStrategy, DeferMode, QueryOrderMap, EmbeddedPrefixMode } from '../enums.js';
@@ -20,6 +21,59 @@ import type { Type, types } from '../types/index.js';
 import type { EntityManager } from '../EntityManager.js';
 import type { FilterOptions, FindOptions } from '../drivers/IDatabaseDriver.js';
 import type { SerializeOptions } from '../serialization/EntitySerializer.js';
+
+/** Supported PostgreSQL partitioning strategies. */
+export type EntityPartitionType = 'hash' | 'list' | 'range';
+
+/**
+ * Partition key expression for PostgreSQL partitioned tables.
+ *
+ * You can use:
+ * - a property name, e.g. `'type'`
+ * - a list of property names for composite expressions, e.g. `['tenant', 'createdAt']`
+ * - a raw SQL expression string, e.g. `"date_trunc('month', created_at)"`
+ * - a callback that receives schema column mappings and returns SQL
+ */
+export type EntityPartitionExpression<E = AnyEntity> =
+  | (keyof E & string)
+  | readonly (keyof E & string)[]
+  | AnyString
+  | ((columns: SchemaColumns<E>) => string);
+
+/** Explicit child partition definition for PostgreSQL `list` and `range` partitioning. */
+export interface EntityPartition<E = AnyEntity> {
+  /**
+   * Optional child table name. Defaults to `<tableName>_<index>`. A single `.` is treated as a
+   * `schema.table` separator; names with more than one `.` are rejected to avoid ambiguity.
+   */
+  name?: string;
+  /** Partition bound clause, either as `for values ...` or the trailing part such as `in (...)`, `from ... to ...`, or `default`. */
+  values: string;
+}
+
+/**
+ * PostgreSQL table partitioning definition.
+ *
+ * - `hash` partitions generate child tables automatically from the partition count
+ * - `list` and `range` partitions require explicit child partition definitions
+ */
+export type EntityPartitionBy<E = AnyEntity> =
+  | {
+      type: Extract<EntityPartitionType, 'hash'>;
+      expression: EntityPartitionExpression<E>;
+      /**
+       * Hash partition fan-out: either a number (auto-named as `${tableName}_N`) or an array of
+       * explicit partition names in remainder order. Names may be `schema.name` to create the
+       * child in a non-default schema.
+       */
+      partitions: number | readonly string[];
+    }
+  | {
+      type: Exclude<EntityPartitionType, 'hash'>;
+      expression: EntityPartitionExpression<E>;
+      /** Explicit child partitions created in the order provided. */
+      partitions: EntityPartition<E>[];
+    };
 
 export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   /** Override default collection/table name. Alias for `collection`. */
@@ -73,6 +127,13 @@ export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   hasTriggers?: boolean;
   /** Database triggers to create for this entity's table. (SQL drivers only) */
   triggers?: TriggerDef<E>[];
+  /**
+   * PostgreSQL partitioning definition for this table.
+   *
+   * Partitioned tables are tracked by the schema generator and introspected back from PostgreSQL.
+   * Changing an existing partition layout still requires a manual migration.
+   */
+  partitionBy?: EntityPartitionBy<E>;
   // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`
   // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
   /** SQL query that maps to a {@doclink virtual-entities | virtual entity}, or for view entities, the view definition. */

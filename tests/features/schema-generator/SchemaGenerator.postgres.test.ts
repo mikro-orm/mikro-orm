@@ -128,6 +128,236 @@ describe('SchemaGenerator [postgres]', () => {
     await orm.close(true);
   });
 
+  test('update schema partitioned tables [postgres] (GH #6944)', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.em.execute('drop table if exists partitioned_event cascade');
+    await orm.schema.update();
+
+    interface PartitionedEvent {
+      type: string;
+      id: number;
+    }
+
+    const partitionedMeta = new EntitySchema<PartitionedEvent>({
+      name: 'PartitionedEvent',
+      tableName: 'partitioned_event',
+      partitionBy: {
+        type: 'hash',
+        expression: ['type'],
+        partitions: 4,
+      },
+      properties: {
+        type: {
+          type: 'string',
+          primary: true,
+          fieldName: 'type',
+          columnType: 'varchar(255)',
+        },
+        id: {
+          type: 'number',
+          primary: true,
+          fieldName: 'id',
+          columnType: 'int',
+        },
+      },
+    }).init().meta;
+    meta.set(partitionedMeta.class, partitionedMeta);
+
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('partition by hash ("type");');
+    expect(diff).toContain(
+      'create table "partitioned_event_0" partition of "partitioned_event" for values with (modulus 4, remainder 0);',
+    );
+    expect(diff).toContain(
+      'create table "partitioned_event_3" partition of "partitioned_event" for values with (modulus 4, remainder 3);',
+    );
+    await orm.schema.execute(diff, { wrap: true });
+
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    partitionedMeta.partitionBy = {
+      type: 'hash',
+      expression: ['type'],
+      partitions: 8,
+    };
+
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).rejects.toThrow(
+      /Changing partition definitions for existing PostgreSQL tables is not supported automatically/,
+    );
+
+    await orm.close(true);
+  });
+
+  test('update schema range partitioned timestamptz tables [postgres] (GH #6944)', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.em.execute('drop table if exists partitioned_event_range cascade');
+    await orm.schema.update();
+
+    interface PartitionedRangeEvent {
+      createdAt: Date;
+      id: number;
+    }
+
+    const partitionedMeta = new EntitySchema<PartitionedRangeEvent>({
+      name: 'PartitionedRangeEvent',
+      tableName: 'partitioned_event_range',
+      partitionBy: {
+        type: 'range',
+        expression: ['createdAt'],
+        partitions: [
+          { values: "from ('2026-01-01') to ('2026-02-01')" },
+          { name: 'partitioned_event_range_default', values: 'default' },
+        ],
+      },
+      properties: {
+        createdAt: {
+          type: 'Date',
+          primary: true,
+          fieldName: 'created_at',
+          columnType: 'timestamptz',
+        },
+        id: {
+          type: 'number',
+          primary: true,
+          fieldName: 'id',
+          columnType: 'int',
+        },
+      },
+    }).init().meta;
+    meta.set(partitionedMeta.class, partitionedMeta);
+
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('partition by range ("created_at");');
+    expect(diff).toContain(
+      'create table "partitioned_event_range_0" partition of "partitioned_event_range" for values from (\'2026-01-01\') to (\'2026-02-01\');',
+    );
+    await orm.schema.execute(diff, { wrap: true });
+
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.close(true);
+  });
+
+  test('partitioned tables coexist with indexes, checks, and triggers [postgres] (GH #6944)', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.em.execute('drop table if exists partitioned_event_extras cascade');
+    await orm.schema.update();
+
+    interface PartitionedExtras {
+      createdAt: Date;
+      id: number;
+      priority: number;
+    }
+
+    const partitionedMeta = new EntitySchema<PartitionedExtras>({
+      name: 'PartitionedExtras',
+      tableName: 'partitioned_event_extras',
+      partitionBy: {
+        type: 'range',
+        expression: ['createdAt'],
+        partitions: [
+          { values: "from ('2026-01-01') to ('2026-02-01')" },
+          { name: 'partitioned_event_extras_default', values: 'default' },
+        ],
+      },
+      indexes: [{ name: 'partitioned_event_extras_priority_idx', properties: ['priority'] }],
+      checks: [{ name: 'partitioned_event_extras_priority_chk', expression: 'priority >= 0' }],
+      triggers: [
+        {
+          name: 'partitioned_event_extras_audit',
+          timing: 'before',
+          events: ['insert'],
+          forEach: 'row',
+          body: 'RETURN NEW',
+        },
+      ],
+      properties: {
+        createdAt: {
+          type: 'Date',
+          primary: true,
+          fieldName: 'created_at',
+          columnType: 'timestamptz',
+        },
+        id: {
+          type: 'number',
+          primary: true,
+          fieldName: 'id',
+          columnType: 'int',
+        },
+        priority: {
+          type: 'number',
+          fieldName: 'priority',
+          columnType: 'int',
+        },
+      },
+    }).init().meta;
+    meta.set(partitionedMeta.class, partitionedMeta);
+
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('partition by range ("created_at");');
+    expect(diff).toContain('"partitioned_event_extras_priority_chk" check (priority >= 0)');
+    expect(diff).toContain(
+      'create index "partitioned_event_extras_priority_idx" on "partitioned_event_extras" ("priority");',
+    );
+    expect(diff).toContain('create trigger "partitioned_event_extras_audit"');
+    await orm.schema.execute(diff, { wrap: true });
+
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+
+    await orm.em.execute('drop table if exists partitioned_event_extras cascade');
+    await orm.close(true);
+  });
+
+  test('postgres canonicalizes complex range partition expressions [postgres] (GH #6944)', async () => {
+    const orm = await initORMPostgreSql();
+    await orm.em.execute('drop table if exists partitioned_event_range_expr cascade');
+
+    try {
+      await orm.em.execute(`
+        create table "partitioned_event_range_expr" (
+          "created_at" timestamptz not null,
+          "id" int not null
+        ) partition by range (((created_at at time zone 'UTC')::date));
+      `);
+      await orm.em.execute(
+        'create table "partitioned_event_range_expr_0" partition of "partitioned_event_range_expr" for values from (\'2026-01-01\') to (\'2026-02-01\')',
+      );
+      await orm.em.execute(
+        'create table "partitioned_event_range_expr_default" partition of "partitioned_event_range_expr" default',
+      );
+
+      const rows = await orm.em.getConnection().execute(`
+        select pg_get_partkeydef(parent.oid) as partition_definition,
+               pg_get_expr(child.relpartbound, child.oid) as partition_bound,
+               child.relname as partition_name
+        from pg_class parent
+        join pg_inherits inh on inh.inhparent = parent.oid
+        join pg_class child on child.oid = inh.inhrelid
+        join pg_namespace parent_ns on parent_ns.oid = parent.relnamespace
+        where parent.relname = 'partitioned_event_range_expr'
+          and parent_ns.nspname = 'public'
+        order by child.relname
+      `);
+
+      expect(rows).toHaveLength(2);
+      expect(rows[0].partition_name).toBe('partitioned_event_range_expr_0');
+      expect(rows[0].partition_definition.toLowerCase()).toBe(
+        "range ((((created_at at time zone 'utc'::text))::date))",
+      );
+      expect(rows[0].partition_bound.toLowerCase()).toBe("for values from ('2026-01-01') to ('2026-02-01')");
+      expect(rows[1].partition_name).toBe('partitioned_event_range_expr_default');
+      expect(rows[1].partition_bound.toLowerCase()).toBe('default');
+    } finally {
+      await orm.em.execute('drop table if exists partitioned_event_range_expr cascade');
+      await orm.close(true);
+    }
+  });
+
   test('create/drop database [postgresql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({

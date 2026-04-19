@@ -180,6 +180,64 @@ Then run this script via `tsx` (or compile it to plain JS and use `node`):
 $ tsx create-schema
 ```
 
+## PostgreSQL partitioned tables
+
+PostgreSQL declarative partitioning can be described directly in entity metadata via `@Entity({ partitionBy })` or the equivalent `EntitySchema` / `defineEntity` options.
+
+```ts
+@Entity({
+  partitionBy: {
+    type: 'hash',
+    expression: ['type'],
+    partitions: 16,
+  },
+})
+export class Event {
+  @PrimaryKey()
+  type!: string;
+
+  @PrimaryKey()
+  id!: number;
+}
+```
+
+For hash partitioning, MikroORM creates the parent table with `partition by hash (...)` and generates child partitions automatically:
+
+```sql
+create table "event" ("type" varchar(255) not null, "id" int not null, primary key ("type", "id")) partition by hash (type);
+create table "event_0" partition of "event" for values with (modulus 16, remainder 0);
+-- ...
+create table "event_15" partition of "event" for values with (modulus 16, remainder 15);
+```
+
+`list` and `range` partitioning use explicit child partitions:
+
+```ts
+@Entity({
+  partitionBy: {
+    type: 'range',
+    expression: cols => `date_trunc('month', ${cols.createdAt})`,
+    partitions: [
+      { name: 'event_2026_01', values: "from ('2026-01-01') to ('2026-02-01')" },
+      { name: 'event_2026_02', values: "from ('2026-02-01') to ('2026-03-01')" },
+      { name: 'event_default', values: 'default' },
+    ],
+  },
+})
+export class Event {
+  // ...
+}
+```
+
+Notes:
+
+- This feature is PostgreSQL-only.
+- `expression` can be a property name, a list of property names, a raw SQL expression string, or a callback receiving schema column mappings.
+- Property-name expressions are mapped to physical column names automatically.
+- For `list` and `range`, each `values` entry can be either the full `for values ...` clause or just its trailing part, such as `in (...)`, `from ... to ...`, or `default`.
+- Existing partitioned tables are introspected back from PostgreSQL, so `schema:update` will not keep recreating them.
+- Changing the partition definition of an existing table is not auto-migrated. Generate a manual migration for repartitioning work.
+
 ## Ignoring specific column changes
 
 When using generated columns, you'll get a perpetual diff on every `SchemaGenerator` run unless you set `ignoreSchemaChanges` to ignore changes to `type` and `extra`.

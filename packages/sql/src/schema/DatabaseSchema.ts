@@ -11,6 +11,7 @@ import { DatabaseTable } from './DatabaseTable.js';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
 import type { DatabaseView } from '../typings.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
+import { getTablePartitioning } from './partitioning.js';
 
 /**
  * @internal
@@ -260,6 +261,12 @@ export class DatabaseSchema {
 
       const table = schema.addTable(meta.collection, this.getSchemaName(meta, config, schemaName));
       table.comment = meta.comment;
+
+      if (meta.partitionBy) {
+        table.setPartitioning(
+          getTablePartitioning(meta, this.getSchemaName(meta, config, schemaName), id => platform.quoteIdentifier(id)),
+        );
+      }
 
       // For TPT child entities, only use ownProps (properties defined in this entity only)
       // For all other entities (including TPT root), use all props

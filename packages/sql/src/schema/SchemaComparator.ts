@@ -15,6 +15,7 @@ import type { DatabaseSchema } from './DatabaseSchema.js';
 import { DatabaseTable } from './DatabaseTable.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import type { SchemaHelper } from './SchemaHelper.js';
+import { diffPartitioning } from './partitioning.js';
 
 /**
  * Compares two Schemas and return an instance of SchemaDifference.
@@ -260,6 +261,20 @@ export class SchemaComparator {
       this.log(`table comment changed for ${tableDifferences.name}`, {
         fromTableComment: fromTable.comment,
         toTableComment: toTable.comment,
+      });
+      changes++;
+    }
+
+    if (
+      diffPartitioning(fromTable.getPartitioning(), toTable.getPartitioning(), this.#platform.getDefaultSchemaName())
+    ) {
+      tableDifferences.changedPartitioning = {
+        from: fromTable.getPartitioning(),
+        to: toTable.getPartitioning(),
+      };
+      this.log(`table partitioning changed for ${tableDifferences.name}`, {
+        fromPartitioning: fromTable.getPartitioning(),
+        toPartitioning: toTable.getPartitioning(),
       });
       changes++;
     }

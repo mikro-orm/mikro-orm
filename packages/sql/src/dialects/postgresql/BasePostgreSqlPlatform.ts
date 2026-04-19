@@ -52,6 +52,10 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
+  override supportsPartitionedTables(): boolean {
+    return true;
+  }
+
   override supportsCustomPrimaryKeyNames(): boolean {
     return true;
   }
