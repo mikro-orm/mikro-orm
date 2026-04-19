@@ -110,8 +110,8 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
     }
   }
 
-  renameFieldToPK<T>(qb: IQueryBuilder<T>, ownerAlias?: string): string {
-    const joinAlias = qb.getAliasForJoinPath(this.getPath(), { matchPopulateJoins: true });
+  renameFieldToPK<T>(qb: IQueryBuilder<T>, ownerAlias?: string, options?: ICriteriaNodeProcessOptions): string {
+    const joinAlias = qb.getAliasForJoinPath(this.getPath(), { ...options, matchPopulateJoins: true });
 
     if (
       !joinAlias &&
