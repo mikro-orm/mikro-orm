@@ -702,8 +702,9 @@ interface BaseOptions<T, H extends string> {
    * SQL drivers and MongoDB; string form is a raw SQL fragment (SQL drivers only).
    *
    * Native support: PostgreSQL, SQLite, MSSQL (`WHERE`), MongoDB (`partialFilterExpression`).
-   * MySQL 8.0.13+ / MariaDB 10.5+ / Oracle: emulated via `CASE WHEN` functional index
-   * (uniqueness only enforced where the predicate holds).
+   * MySQL 8.0.13+ / Oracle: emulated via `CASE WHEN` functional index (uniqueness only enforced
+   * where the predicate holds). MariaDB is not supported — it has no inline expression indexes;
+   * define a virtual generated column and index that instead.
    */
   where?: string | (T extends EntityClass<infer P> ? FilterQuery<P> : FilterQuery<T>);
 }

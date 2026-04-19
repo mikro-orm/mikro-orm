@@ -225,6 +225,11 @@ export abstract class SchemaHelper {
    * introspected partial-index predicate when the column matches one of the index's own
    * columns. MikroORM auto-emits this guard for unique indexes on nullable columns
    * (MSSQL, Oracle) — it's an internal artifact, not user intent.
+   *
+   * Strips at most one guard per column (the tail-most occurrence), matching how MikroORM
+   * appends a single guard per index column. This preserves user intent when they redundantly
+   * include the same `<col> IS NOT NULL` in their predicate — the guard we added is removed,
+   * their copy survives.
    */
   protected stripAutoNotNullFilter(filterDef: string, columnNames: string[], identifierPattern: RegExp): string {
     // Strip a single layer of balanced wrapping parens (anything beyond is a deliberate sub-clause group).
@@ -232,15 +237,91 @@ export abstract class SchemaHelper {
     if (inner.startsWith('(') && inner.endsWith(')') && this.isBalancedWrap(inner)) {
       inner = inner.slice(1, -1).trim();
     }
-    const isAutoForCol = (clause: string): boolean => {
-      const match = identifierPattern.exec(clause.trim());
-      return !!match && columnNames.includes(match[1]);
+    const clauses = this.splitTopLevelAnd(inner);
+    const autoCol = (clause: string): string | null => {
+      let trimmed = clause.trim();
+      if (trimmed.startsWith('(') && trimmed.endsWith(')') && this.isBalancedWrap(trimmed)) {
+        trimmed = trimmed.slice(1, -1).trim();
+      }
+      const match = identifierPattern.exec(trimmed);
+      return match && columnNames.includes(match[1]) ? match[1] : null;
     };
-    return inner
-      .split(/\s+and\s+/i)
-      .filter(p => !isAutoForCol(p))
-      .join(' and ')
-      .trim();
+    const seen = new Set<string>();
+    const kept: string[] = [];
+    for (let i = clauses.length - 1; i >= 0; i--) {
+      const col = autoCol(clauses[i]);
+      if (col && !seen.has(col)) {
+        seen.add(col);
+        continue;
+      }
+      kept.unshift(clauses[i]);
+    }
+    return kept.join(' and ').trim();
+  }
+
+  /**
+   * Splits on top-level ` AND ` (case-insensitive), ignoring matches that sit inside string
+   * literals, quoted identifiers, or parenthesized groups — so a predicate like
+   * `'foo AND bar' = col` or `(a AND b) OR c` is not mis-split.
+   */
+  protected splitTopLevelAnd(s: string): string[] {
+    const parts: string[] = [];
+    let depth = 0;
+    let quote: string | null = null;
+    let start = 0;
+    let i = 0;
+
+    while (i < s.length) {
+      const c = s[i];
+
+      if (quote) {
+        // Handle SQL's doubled-quote escape inside single/double-quoted strings.
+        if (c === quote && (quote === "'" || quote === '"') && s[i + 1] === quote) {
+          i += 2;
+          continue;
+        }
+        if (c === quote) {
+          quote = null;
+        }
+        i++;
+        continue;
+      }
+
+      if (c === "'" || c === '"' || c === '`') {
+        quote = c;
+        i++;
+        continue;
+      }
+      if (c === '[') {
+        quote = ']';
+        i++;
+        continue;
+      }
+      if (c === '(') {
+        depth++;
+        i++;
+        continue;
+      }
+      if (c === ')') {
+        depth--;
+        i++;
+        continue;
+      }
+
+      if (depth === 0 && /\s/.test(c)) {
+        const m = /^\s+and\s+/i.exec(s.slice(i));
+        if (m) {
+          parts.push(s.slice(start, i).trim());
+          i += m[0].length;
+          start = i;
+          continue;
+        }
+      }
+      i++;
+    }
+
+    parts.push(s.slice(start).trim());
+    return parts.filter(p => p.length > 0);
   }
 
   /** Returns true iff the leading `(` matches the trailing `)` (i.e. they wrap the whole string). */

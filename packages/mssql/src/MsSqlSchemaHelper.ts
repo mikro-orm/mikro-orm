@@ -28,7 +28,10 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     'getdate()': ['current_timestamp'],
   };
 
-  private static readonly AUTO_NOT_NULL_RE = /^\(?\[([^\]]+)\]\s+IS\s+NOT\s+NULL\)?$/i;
+  // `stripAutoNotNullFilter` unwraps balanced per-clause parens before calling `.exec`, so we
+  // only need to match the bare form here — previously the pattern allowed independently
+  // optional leading/trailing parens, which accepted unbalanced strings like `([col] IS NOT NULL`.
+  private static readonly AUTO_NOT_NULL_RE = /^\[([^\]]+)\]\s+IS\s+NOT\s+NULL$/i;
 
   override getManagementDbName(): string {
     return 'master';
@@ -732,10 +735,12 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       return this.getCreateIndexSQL(table.getShortestName(), index);
     }
 
-    // Generate without disabled suffix, then merge auto NOT-NULL with the user-provided WHERE
-    let sql = this.getCreateIndexSQL(table.getShortestName(), { ...index, disabled: false });
+    // Strip `index.where` from the base SQL so we can combine it with the auto NOT-NULL guard
+    // ourselves, wrapping the user predicate in parens to defuse operator precedence
+    // (a bare `a = 1 or b = 2 and [col] is not null` would bind as `a = 1 or (b = 2 and …)`).
+    let sql = this.getCreateIndexSQL(table.getShortestName(), { ...index, where: undefined, disabled: false });
     const autoNotNull = index.columnNames.map(c => `${this.quote(c)} is not null`).join(' and ');
-    sql += index.where ? ` and ${autoNotNull}` : ` where ${autoNotNull}`;
+    sql += index.where ? ` where (${index.where}) and ${autoNotNull}` : ` where ${autoNotNull}`;
 
     if (index.disabled) {
       sql += `;\nalter index ${this.quote(index.keyName)} on ${table.getQuotedName()} disable`;

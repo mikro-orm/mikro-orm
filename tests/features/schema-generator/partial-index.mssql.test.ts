@@ -97,8 +97,9 @@ describe('partial index [mssql]', () => {
     }).init().meta;
     meta.set(e.class, e as any);
     const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    // user `where` is AND-ed with the auto-emitted `[slug] is not null` guard
-    expect(diff).toMatch(/where \[deleted_at\] is null and \[slug\] is not null/);
+    // user `where` is AND-ed with the auto-emitted `[slug] is not null` guard, wrapped in
+    // parens to defuse operator-precedence issues with disjunctive user predicates
+    expect(diff).toMatch(/where \(\[deleted_at\] is null\) and \[slug\] is not null/);
     await orm.schema.execute(diff);
     expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
   });
@@ -125,12 +126,19 @@ describe('partial index [mssql]', () => {
 
   test('stripAutoNotNullFilter handles edge-case paren shapes', () => {
     const helper = new MsSqlSchemaHelper(orm.em.getPlatform() as any);
-    const autoRe = /^\(?\[([^\]]+)\]\s+IS\s+NOT\s+NULL\)?$/i;
+    const autoRe = /^\[([^\]]+)\]\s+IS\s+NOT\s+NULL$/i;
     const strip = (s: string) => (helper as any).stripAutoNotNullFilter(s, ['email'], autoRe);
 
     // purely auto-NOT-NULL: strip the wrapping parens, drop the clause, leave empty
     expect(strip('([email] IS NOT NULL)')).toBe('');
     // non-wrapping parens (`(a) AND (b)`) must not be stripped as a block — exercises isBalancedWrap's false path
     expect(strip('([email] IS NOT NULL) AND ([other] = 1)')).toBe('([other] = 1)');
+    // user redundantly writes `[email] IS NOT NULL` themselves — strip only one guard (the tail),
+    // preserve the user copy so the diff stays idempotent
+    expect(strip('([email] IS NOT NULL AND [email] IS NOT NULL)')).toBe('[email] IS NOT NULL');
+    // ` AND ` inside a quoted identifier must not trigger a top-level split
+    expect(strip("([some and col] = 'x' AND [email] IS NOT NULL)")).toBe("[some and col] = 'x'");
+    // ` AND ` inside a string literal must not trigger a top-level split either
+    expect(strip("([label] = 'a AND b' AND [email] IS NOT NULL)")).toBe("[label] = 'a AND b'");
   });
 });

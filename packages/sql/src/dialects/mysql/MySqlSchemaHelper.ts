@@ -14,7 +14,10 @@ export class MySqlSchemaHelper extends SchemaHelper {
     '0': ['0', 'false'],
   };
 
-  private static readonly PARTIAL_INDEX_RE = /^\s*\(\s*case\s+when\s+(.+?)\s+then\s+`([^`]+)`\s+end\s*\)\s*$/is;
+  // Greedy `(.+)` so nested CASE expressions inside the predicate don't trip the match on
+  // an inner `then <col> end` — the trailing `$` anchor forces the regex engine to extend
+  // the capture to the outermost case-end boundary.
+  private static readonly PARTIAL_INDEX_RE = /^\s*\(\s*case\s+when\s+(.+)\s+then\s+`([^`]+)`\s+end\s*\)\s*$/is;
 
   override getSchemaBeginning(charset: string, disableForeignKeys?: boolean): string {
     if (disableForeignKeys) {

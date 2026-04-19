@@ -28,8 +28,12 @@ export class OracleSchemaHelper extends SchemaHelper {
     sysdate: ['current_timestamp'],
   };
 
-  private static readonly AUTO_NOT_NULL_RE = /^\(?"?([^"\s]+)"?\s+is\s+not\s+null\)?$/i;
-  private static readonly PARTIAL_INDEX_RE = /^\s*\(?\s*case\s+when\s+(.+?)\s+then\s+"?([^"\s)]+)"?\s+end\s*\)?\s*$/is;
+  // `stripAutoNotNullFilter` unwraps balanced per-clause parens before calling `.exec`, so we
+  // only need to match the bare form here.
+  private static readonly AUTO_NOT_NULL_RE = /^"?([^"\s()]+)"?\s+is\s+not\s+null$/i;
+  // Greedy `(.+)` so nested CASE expressions inside the predicate don't trip the match on
+  // an inner `then <col> end`.
+  private static readonly PARTIAL_INDEX_RE = /^\s*\(?\s*case\s+when\s+(.+)\s+then\s+"?([^"\s)]+)"?\s+end\s*\)?\s*$/is;
 
   override getDatabaseExistsSQL(name: string): string {
     return `select 1 from all_users where username = ${this.platform.quoteValue(name)}`;
@@ -742,7 +746,9 @@ export class OracleSchemaHelper extends SchemaHelper {
         : '';
 
       if (index.where) {
-        const predicate = [index.where, autoNotNull].filter(Boolean).join(' and ');
+        // Wrap the user predicate in parens before ANDing the auto-NOT-NULL guard — otherwise a
+        // disjunctive `a = 1 or b = 2` would rebind as `a = 1 or (b = 2 and <col> is not null)`.
+        const predicate = autoNotNull ? `(${index.where}) and ${autoNotNull}` : index.where;
         return `create unique index ${this.quote(index.keyName)} on ${quotedTableName} (${index.columnNames
           .map(c => `case when ${predicate} then ${this.quote(c)} end`)
           .join(', ')})`;
