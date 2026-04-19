@@ -706,6 +706,11 @@ export class OracleSchemaHelper extends SchemaHelper {
     return super.getIndexColumns(index);
   }
 
+  /** Oracle has no native WHERE clause for indexes; the predicate is folded into CASE-WHEN columns. */
+  protected override getIndexWhereClause(_index: IndexDef): string {
+    return '';
+  }
+
   override createIndex(index: IndexDef, table: DatabaseTable, createPrimary = false): string {
     if (index.primary) {
       return '';

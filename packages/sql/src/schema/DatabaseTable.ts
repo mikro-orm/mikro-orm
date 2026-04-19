@@ -278,6 +278,7 @@ export class DatabaseTable {
         name: index.keyName,
         deferMode: index.deferMode,
         expression: index.expression,
+        where: index.where,
         // Advanced index options - convert column names to property names
         columns: index.columns?.map(col => ({
           ...col,
@@ -311,7 +312,7 @@ export class DatabaseTable {
         index.invisible ||
         index.disabled ||
         index.clustered;
-      const isTrivial = !index.deferMode && !index.expression && !hasAdvancedOptions;
+      const isTrivial = !index.deferMode && !index.expression && !index.where && !hasAdvancedOptions;
 
       if (isTrivial) {
         // Index is for FK. Map to the FK prop and move on.

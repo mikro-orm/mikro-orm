@@ -225,10 +225,10 @@ export abstract class SchemaHelper {
    * (MSSQL, Oracle) — it's an internal artifact, not user intent.
    */
   protected stripAutoNotNullFilter(filterDef: string, columnNames: string[], identifierPattern: RegExp): string {
+    // Strip a single layer of balanced wrapping parens (anything beyond is a deliberate sub-clause group).
     let inner = filterDef.trim();
-    let m: RegExpExecArray | null;
-    while ((m = /^\((.*)\)$/s.exec(inner))) {
-      inner = m[1].trim();
+    if (inner.startsWith('(') && inner.endsWith(')') && this.isBalancedWrap(inner)) {
+      inner = inner.slice(1, -1).trim();
     }
     const isAutoForCol = (clause: string): boolean => {
       const match = identifierPattern.exec(clause.trim());
@@ -239,6 +239,22 @@ export abstract class SchemaHelper {
       .filter(p => !isAutoForCol(p))
       .join(' and ')
       .trim();
+  }
+
+  /** Returns true iff the leading `(` matches the trailing `)` (i.e. they wrap the whole string). */
+  private isBalancedWrap(s: string): boolean {
+    let depth = 0;
+    for (let i = 0; i < s.length; i++) {
+      if (s[i] === '(') {
+        depth++;
+      } else if (s[i] === ')') {
+        depth--;
+        if (depth === 0 && i < s.length - 1) {
+          return false;
+        }
+      }
+    }
+    return depth === 0;
   }
 
   /**

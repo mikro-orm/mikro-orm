@@ -64,4 +64,36 @@ describe('partial index [mssql]', () => {
     await orm.schema.execute(diff);
     expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
   });
+
+  test('combines user `where` with the auto-NOT-NULL guard for unique indexes on nullable columns', async () => {
+    const meta = orm.getMetadata();
+    const e = new EntitySchema({
+      name: 'PartialNullable',
+      tableName: 'partial_nullable',
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+        slug: { name: 'slug', type: 'string', fieldName: 'slug', columnType: 'varchar(255)', nullable: true },
+        deletedAt: {
+          name: 'deletedAt',
+          type: 'string',
+          fieldName: 'deleted_at',
+          columnType: 'datetime2',
+          nullable: true,
+        },
+      },
+      uniques: [
+        {
+          name: 'partial_nullable_slug_uniq',
+          properties: ['slug'] as never,
+          where: '[deleted_at] is null' as never,
+        },
+      ],
+    }).init().meta;
+    meta.set(e.class, e as any);
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    // user `where` is AND-ed with the auto-emitted `[slug] is not null` guard
+    expect(diff).toMatch(/where \[deleted_at\] is null and \[slug\] is not null/);
+    await orm.schema.execute(diff);
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+  });
 });

@@ -1,7 +1,7 @@
 import { EntitySchema, MikroORM, OracleDriver } from '@mikro-orm/oracledb';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
-function makeMeta(opts: { where?: string }) {
+function makeMeta(opts: { where?: string; nonUniqueWhere?: string }) {
   return new EntitySchema({
     name: 'PartialUser',
     tableName: 'partial_user',
@@ -23,6 +23,15 @@ function makeMeta(opts: { where?: string }) {
         ...(opts.where ? { where: opts.where as never } : {}),
       },
     ],
+    indexes: opts.nonUniqueWhere
+      ? [
+          {
+            name: 'partial_user_deleted_at_partial_idx',
+            properties: ['deletedAt'] as never,
+            where: opts.nonUniqueWhere as never,
+          },
+        ]
+      : [],
   }).init().meta;
 }
 
@@ -74,6 +83,24 @@ describe('partial index [oracle]', () => {
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('3-change-where');
     expect(diff).toMatch(/case when "deleted_at" is not null then "email" end/);
+    await orm.schema.execute(diff);
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+  });
+
+  test('non-unique partial index emits CASE WHEN columns without a stray WHERE clause', async () => {
+    const meta = orm.getMetadata();
+    const e = makeMeta({
+      where: '"deleted_at" is null',
+      nonUniqueWhere: '"deleted_at" is null',
+    });
+    meta.set(e.class, e);
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    // Non-unique partial index goes through `getIndexColumns` + base `getCreateIndexSQL`;
+    // verify Oracle's `getIndexWhereClause` override suppresses the otherwise-invalid WHERE clause.
+    expect(diff).toMatch(
+      /create index "partial_user_deleted_at_partial_idx" on "partial_user" \(\(case when "deleted_at" is null then "deleted_at" end\)\)/,
+    );
+    expect(diff).not.toMatch(/partial_user_deleted_at_partial_idx".+where /);
     await orm.schema.execute(diff);
     expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
   });
