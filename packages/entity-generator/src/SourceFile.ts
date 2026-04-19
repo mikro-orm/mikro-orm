@@ -7,6 +7,7 @@ import {
   type EmbeddableOptions,
   type EntityMetadata,
   type EntityOptions,
+  type EntityPartitionBy,
   type EntityProperty,
   type GenerateOptions,
   type IndexOptions,
@@ -627,6 +628,10 @@ export class SourceFile {
       options.comment = this.quote(this.meta.comment);
     }
 
+    if (this.meta.partitionBy) {
+      options.partitionBy = this.getPartitionByDecl(this.meta.partitionBy) as EntityPartitionBy<unknown>;
+    }
+
     if (this.meta.readonly && !this.meta.virtual) {
       options.readonly = this.meta.readonly;
     }
@@ -635,6 +640,45 @@ export class SourceFile {
     }
 
     return this.getCollectionDecl(options);
+  }
+
+  protected getPartitionByDecl(partitionBy: EntityPartitionBy): Dictionary {
+    const result: Dictionary = { type: this.quote(partitionBy.type) };
+    // Introspected metadata from `toEntityPartitionBy` always emits a string or string[];
+    // callback-form expressions only exist in hand-written entity metadata. Fail loud if a
+    // callback ever reaches the generator — stringifying `fn.toString()` would produce source
+    // that re-imports nothing and will not compile.
+    if (typeof partitionBy.expression === 'function') {
+      throw new Error(
+        `Cannot emit entity source for ${this.meta.className}: partitionBy.expression is a callback. ` +
+          `Entity generator expects string or string[] expressions from catalog introspection.`,
+      );
+    }
+
+    const expression = partitionBy.expression as string | readonly string[];
+
+    if (Array.isArray(expression)) {
+      result.expression = expression.map(key => this.quote(String(key)));
+    } else {
+      result.expression = this.quote(String(expression));
+    }
+
+    if (partitionBy.type === 'hash') {
+      result.partitions = Array.isArray(partitionBy.partitions)
+        ? partitionBy.partitions.map(name => this.quote(String(name)))
+        : partitionBy.partitions;
+    } else {
+      result.partitions = partitionBy.partitions.map(partition => {
+        const entry: Dictionary = {};
+        if (partition.name) {
+          entry.name = this.quote(partition.name);
+        }
+        entry.values = this.quote(partition.values);
+        return entry;
+      });
+    }
+
+    return result;
   }
 
   protected getEmbeddableDeclOptions() {

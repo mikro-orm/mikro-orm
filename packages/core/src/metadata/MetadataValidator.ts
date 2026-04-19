@@ -1,9 +1,12 @@
 import type { EntityMetadata, EntityName, EntityProperty } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import { type MetadataDiscoveryOptions } from '../utils/Configuration.js';
+import { normalizePartitionNameForComparison, splitCommaSeparatedIdentifiers } from '../utils/partition-utils.js';
 import { MetadataError } from '../errors.js';
 import { ReferenceKind } from '../enums.js';
 import type { MetadataStorage } from './MetadataStorage.js';
+
+type PartitionExpression = NonNullable<EntityMetadata['partitionBy']>['expression'];
 
 /**
  * List of property names that could lead to prototype pollution vulnerabilities.
@@ -35,6 +38,10 @@ export class MetadataValidator {
     // Virtual entities (expression without view flag) have restrictions - no PKs, limited relation types
     // Note: meta.virtual is set later in sync(), so we check for expression && !view here
     if (meta.virtual || (meta.expression && !meta.view)) {
+      if (meta.partitionBy) {
+        throw new MetadataError(`Virtual entity ${meta.className} cannot define partitionBy`);
+      }
+
       for (const prop of Utils.values(meta.properties)) {
         if (
           ![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED, ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(
@@ -65,6 +72,7 @@ export class MetadataValidator {
     this.validateDuplicateFieldNames(meta, options);
     this.validateIndexes(meta, meta.indexes ?? [], 'index');
     this.validateIndexes(meta, meta.uniques ?? [], 'unique');
+    this.validatePartitioning(meta);
     this.validatePropertyNames(meta);
 
     for (const prop of Utils.values(meta.properties)) {
@@ -156,6 +164,288 @@ export class MetadataValidator {
         );
       }
     });
+  }
+
+  private validatePartitioning(meta: EntityMetadata): void {
+    if (!meta.partitionBy) {
+      return;
+    }
+
+    if (!this.hasPartitionExpression(meta.partitionBy.expression)) {
+      throw new MetadataError(`Entity ${meta.className} has invalid partitionBy option: missing expression`);
+    }
+
+    // Inheritance (STI/TPT) and partitioning both drive table layout, so combining them would
+    // require non-trivial DDL coordination that the schema generator does not produce today.
+    const hasInheritance =
+      !!meta.root.discriminatorColumn || meta.root.inheritanceType === 'tpt' || meta.root.inheritance === 'tpt';
+
+    if (hasInheritance) {
+      throw new MetadataError(
+        `Entity ${meta.className} has invalid partitionBy option: combining partitioning with inheritance is not supported`,
+      );
+    }
+
+    this.validatePartitionKeyConstraints(meta);
+
+    if (meta.partitionBy.type === 'hash') {
+      const { partitions } = meta.partitionBy;
+
+      if (Array.isArray(partitions)) {
+        if (partitions.length === 0) {
+          throw new MetadataError(
+            `Entity ${meta.className} has invalid partitionBy option: hash partition name list must not be empty`,
+          );
+        }
+
+        const blank = partitions.find(name => typeof name !== 'string' || !name.trim());
+
+        if (blank !== undefined) {
+          throw new MetadataError(
+            `Entity ${meta.className} has invalid partitionBy option: hash partition names must be non-empty strings`,
+          );
+        }
+
+        const ambiguous = partitions.find(name => !this.hasValidPartitionName(name));
+
+        if (ambiguous) {
+          throw new MetadataError(
+            `Entity ${meta.className} has invalid partitionBy option: partition name '${ambiguous}' contains more than one '.' — use at most one '.' to separate schema from table`,
+          );
+        }
+
+        const duplicate = this.findDuplicatePartitionName(partitions as string[]);
+
+        if (duplicate !== undefined) {
+          throw new MetadataError(
+            `Entity ${meta.className} has invalid partitionBy option: duplicate hash partition name '${duplicate}'`,
+          );
+        }
+
+        return;
+      }
+
+      if (typeof partitions !== 'number' || !Number.isInteger(partitions) || partitions < 1) {
+        throw new MetadataError(
+          `Entity ${meta.className} has invalid partitionBy option: hash partition count must be a positive integer`,
+        );
+      }
+
+      return;
+    }
+
+    if (!Array.isArray(meta.partitionBy.partitions) || meta.partitionBy.partitions.length === 0) {
+      throw new MetadataError(
+        `Entity ${meta.className} has invalid partitionBy option: list/range partitions must be a non-empty array`,
+      );
+    }
+
+    if (meta.partitionBy.partitions.some(partition => !partition.values?.trim())) {
+      throw new MetadataError(
+        `Entity ${meta.className} has invalid partitionBy option: every partition must define values`,
+      );
+    }
+
+    const ambiguousName = meta.partitionBy.partitions.find(
+      partition => partition.name != null && !this.hasValidPartitionName(partition.name),
+    );
+
+    if (ambiguousName) {
+      throw new MetadataError(
+        `Entity ${meta.className} has invalid partitionBy option: partition name '${ambiguousName.name}' contains more than one '.' — use at most one '.' to separate schema from table`,
+      );
+    }
+
+    // Include auto-generated default names (`${tableName}_${index}`, matching
+    // `createExplicitPartitions` in the sql package) so an explicit name that collides with
+    // an unnamed peer's default is caught here rather than at DDL execution time.
+    const resolvedNames = meta.partitionBy.partitions.map(
+      (partition, index) => partition.name ?? `${meta.tableName}_${index}`,
+    );
+    const duplicate = this.findDuplicatePartitionName(resolvedNames);
+
+    if (duplicate !== undefined) {
+      throw new MetadataError(
+        `Entity ${meta.className} has invalid partitionBy option: duplicate partition name '${duplicate}'`,
+      );
+    }
+  }
+
+  /**
+   * Find the first partition name whose normalized form (case-folded for unquoted segments,
+   * quoted segments preserved) has already been seen. Returns the offending name in its
+   * original form for the error message.
+   */
+  private findDuplicatePartitionName(names: string[]): string | undefined {
+    const seen = new Set<string>();
+
+    for (const name of names) {
+      const normalized = normalizePartitionNameForComparison(name);
+
+      if (seen.has(normalized)) {
+        return name;
+      }
+
+      seen.add(normalized);
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Partition names may be bare (`child`), schema-qualified (`schema.child`), or use quoted
+   * identifiers (`"my.schema"."child"`). Reject anything with more than one unquoted `.`.
+   */
+  private hasValidPartitionName(name: string): boolean {
+    let depth = 0;
+    let dots = 0;
+
+    for (let i = 0; i < name.length; i++) {
+      const ch = name[i];
+
+      if (ch === '"') {
+        if (name[i + 1] === '"') {
+          i++;
+          continue;
+        }
+
+        depth = depth === 0 ? 1 : 0;
+        continue;
+      }
+
+      if (ch === '.' && depth === 0) {
+        dots++;
+      }
+    }
+
+    return dots <= 1;
+  }
+
+  private hasPartitionExpression(expression: PartitionExpression | undefined): boolean {
+    if (expression == null) {
+      return false;
+    }
+
+    if (typeof expression === 'function') {
+      return true;
+    }
+
+    if (Array.isArray(expression)) {
+      return expression.length > 0 && expression.every(key => typeof key === 'string' && key.trim().length > 0);
+    }
+
+    return String(expression).trim().length > 0;
+  }
+
+  private validatePartitionKeyConstraints(meta: EntityMetadata): void {
+    const partitionFields = this.getPartitionKeyFields(meta);
+
+    if (!partitionFields?.length) {
+      return;
+    }
+
+    const primaryKeyFields = meta.root.getPrimaryProps().flatMap(prop => prop.fieldNames);
+
+    if (partitionFields.some(field => !primaryKeyFields.includes(field))) {
+      throw new MetadataError(
+        `Entity ${meta.className} has invalid partitionBy option: primary key must include partition key columns '${partitionFields.join("', '")}'`,
+      );
+    }
+
+    for (const prop of Object.values(meta.root.properties)) {
+      if (!prop.unique || !prop.fieldNames?.length) {
+        continue;
+      }
+
+      if (partitionFields.some(field => !prop.fieldNames!.includes(field))) {
+        throw new MetadataError(
+          `Entity ${meta.root.className} has invalid partitionBy option: unique property ${meta.root.className}.${prop.name} must include partition key columns '${partitionFields.join("', '")}'`,
+        );
+      }
+    }
+
+    for (const unique of meta.root.uniques ?? []) {
+      const fields = this.getConstraintFields(meta.root, unique.properties);
+
+      if (!fields?.length) {
+        continue;
+      }
+
+      if (partitionFields.some(field => !fields.includes(field))) {
+        const constraint = unique.name ? `unique constraint '${unique.name}'` : 'unique constraint';
+        throw new MetadataError(
+          `Entity ${meta.root.className} has invalid partitionBy option: ${constraint} must include partition key columns '${partitionFields.join("', '")}'`,
+        );
+      }
+    }
+  }
+
+  /**
+   * Returns the list of physical field names that a partition expression references, or
+   * `undefined` when the expression is opaque (callback, or raw SQL like `date_trunc('day', x)`
+   * that we cannot statically parse). Opaque expressions intentionally bypass the primary-key /
+   * unique-constraint coverage checks — users are trusted to ensure the referenced columns are
+   * part of the partition key, since PostgreSQL will surface the violation at DDL execution.
+   */
+  private getPartitionKeyFields(meta: EntityMetadata): string[] | undefined {
+    const expression = meta.partitionBy?.expression;
+
+    if (!expression || typeof expression === 'function') {
+      return undefined;
+    }
+
+    if (Array.isArray(expression)) {
+      return expression.map(key => this.resolvePartitionKeyField(meta, key));
+    }
+
+    const keys = splitCommaSeparatedIdentifiers(String(expression).trim());
+
+    if (!keys) {
+      return undefined;
+    }
+
+    return keys.map(key => this.resolvePartitionKeyField(meta, key));
+  }
+
+  private resolvePartitionKeyField(meta: EntityMetadata, key: string): string {
+    const trimmed = key.trim().replaceAll('"', '');
+
+    if (!trimmed) {
+      throw new MetadataError(`Entity ${meta.className} has invalid partitionBy option: empty partition key`);
+    }
+
+    const prop =
+      meta.root.properties[trimmed] ??
+      Object.values(meta.root.properties).find(
+        candidate => candidate.fieldNames?.length === 1 && candidate.fieldNames[0] === trimmed,
+      );
+
+    if (!prop) {
+      throw new MetadataError(
+        `Entity ${meta.className} has invalid partitionBy option: unknown partition key '${key.trim()}'`,
+      );
+    }
+
+    if (prop.fieldNames?.length !== 1) {
+      throw new MetadataError(
+        `Entity ${meta.className} has invalid partitionBy option: partition key '${key.trim()}' maps to multiple columns ('${prop.fieldNames?.join("', '")}'); list them explicitly as partition keys`,
+      );
+    }
+
+    return prop.fieldNames[0];
+  }
+
+  private getConstraintFields(meta: EntityMetadata, properties?: string | string[]): string[] | undefined {
+    if (!properties) {
+      return undefined;
+    }
+
+    const fields = Utils.asArray(properties).flatMap(propName => {
+      const prop = meta.root.properties[propName];
+      return prop?.fieldNames ?? [];
+    });
+
+    return fields.length > 0 ? fields : undefined;
   }
 
   private validateReference(meta: EntityMetadata, prop: EntityProperty, options: MetadataDiscoveryOptions): void {
@@ -489,6 +779,11 @@ export class MetadataValidator {
     // View entities must have an expression
     if (!meta.expression) {
       throw MetadataError.viewEntityWithoutExpression(meta);
+    }
+
+    // Views are not partitionable - reject explicitly instead of silently ignoring
+    if (meta.partitionBy) {
+      throw new MetadataError(`View entity ${meta.className} cannot define partitionBy`);
     }
 
     // Validate indexes if present

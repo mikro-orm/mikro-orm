@@ -748,6 +748,12 @@ export class MetadataDiscovery {
     }
 
     meta.forceConstructor ??= this.shouldForceConstructorUsage(meta);
+    // Fail fast when the platform rejects the metadata, so users see the platform-specific
+    // error (e.g. "SqlitePlatform does not support partitioned tables") instead of a
+    // downstream core validator message that assumes partitioning is supported.
+    if (meta.partitionBy && !this.#platform.supportsPartitionedTables()) {
+      this.#platform.validateMetadata(meta);
+    }
     this.#validator.validateEntityDefinition(this.#metadata, meta.class, this.#config.get('discovery'));
 
     for (const prop of Object.values(meta.properties)) {
