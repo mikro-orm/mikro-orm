@@ -1,5 +1,6 @@
 import type { EntityPartitionBy } from '@mikro-orm/core';
 import { Configuration, EntitySchema } from '@mikro-orm/core';
+import { SourceFile } from '../../../packages/entity-generator/src/SourceFile.js';
 import { DatabaseSchema, SchemaComparator, type TablePartitioning } from '@mikro-orm/sql';
 import { PostgreSqlDriver, PostgreSqlPlatform } from '@mikro-orm/postgresql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -102,8 +103,8 @@ describe('partitioning helpers', () => {
           bound: "for values in ('q1')",
         },
         {
-          name: 'a.b.c',
-          schema: 'public',
+          name: 'b.c',
+          schema: 'a',
           bound: "for values in ('q2')",
         },
       ],
@@ -233,6 +234,40 @@ describe('partitioning helpers', () => {
     expect(normalizePartitionBound("in ('unterminated")).toBe("for values in ('unterminated");
   });
 
+  test('preserves content of single-quoted literals during normalization', () => {
+    // Double-quote characters and whitespace inside literals must not be stripped/collapsed.
+    expect(normalizePartitionBound(`in ('a"b')`)).toBe(`for values in ('a"b')`);
+    expect(normalizePartitionBound("in ('a  b', 'c\td')")).toBe("for values in ('a  b', 'c\td')");
+    expect(normalizePartitionDefinition(`list ('x"y')`)).toBe(`list ('x"y')`);
+  });
+
+  test('maps comma-separated string expressions to field names', () => {
+    const partitioning = getTablePartitioning(
+      createPartitionedMeta({
+        type: 'hash',
+        expression: 'tenant, type',
+        partitions: 2,
+      }),
+      'public',
+    );
+
+    expect(partitioning?.definition).toBe('hash (tenant_id, type)');
+  });
+
+  test('quotes partition key identifiers when a quoter is provided', () => {
+    const partitioning = getTablePartitioning(
+      createPartitionedMeta({
+        type: 'hash',
+        expression: ['tenant', 'type'],
+        partitions: 1,
+      }),
+      'public',
+      id => `"${id}"`,
+    );
+
+    expect(partitioning?.definition).toBe('hash ("tenant_id", "type")');
+  });
+
   test('converts catalog-style partitioning definitions back to lowercase entity metadata', () => {
     expect(toEntityPartitionBy(undefined)).toBeUndefined();
 
@@ -343,7 +378,7 @@ describe('partitioning helpers', () => {
     const table = schema.getTable('partitioned_event')!;
 
     expect(table.getPartitioning()).toEqual({
-      definition: 'range (created_at)',
+      definition: 'range ("created_at")',
       partitions: [
         {
           name: 'partitioned_event_0',
@@ -372,6 +407,54 @@ describe('partitioning helpers', () => {
           values: 'default',
         },
       ],
+    });
+  });
+
+  test('entity generator emits partitionBy entity option', () => {
+    const config = new Configuration({ driver: PostgreSqlDriver }, false);
+    const platform = config.getPlatform() as PostgreSqlPlatform;
+    const meta = createPartitionedMeta({
+      type: 'range',
+      expression: 'createdAt',
+      partitions: [
+        { values: "from ('2026-01-01') to ('2026-02-01')" },
+        { name: 'archive.partitioned_event_default', values: 'default' },
+      ],
+    });
+
+    const source = new SourceFile(meta, config.getNamingStrategy(), platform, {}) as unknown as {
+      getEntityDeclOptions(): Record<string, unknown>;
+    };
+    const options = source.getEntityDeclOptions();
+
+    expect(options.partitionBy).toEqual({
+      type: "'range'",
+      expression: "'createdAt'",
+      partitions: [
+        { values: "'from (\\'2026-01-01\\') to (\\'2026-02-01\\')'" },
+        { name: "'archive.partitioned_event_default'", values: "'default'" },
+      ],
+    });
+  });
+
+  test('entity generator emits hash partition count', () => {
+    const config = new Configuration({ driver: PostgreSqlDriver }, false);
+    const platform = config.getPlatform() as PostgreSqlPlatform;
+    const meta = createPartitionedMeta({
+      type: 'hash',
+      expression: ['tenant', 'type'],
+      partitions: 4,
+    });
+
+    const source = new SourceFile(meta, config.getNamingStrategy(), platform, {}) as unknown as {
+      getEntityDeclOptions(): Record<string, unknown>;
+    };
+    const options = source.getEntityDeclOptions();
+
+    expect(options.partitionBy).toEqual({
+      type: "'hash'",
+      expression: ["'tenant'", "'type'"],
+      partitions: 4,
     });
   });
 

@@ -1,10 +1,6 @@
 import type { EntityMetadata, EntityPartitionBy } from '@mikro-orm/core';
 import type { TablePartition, TablePartitioning } from '../typings.js';
 
-const normalizeWhitespace = (value: string): string => value.replace(/\s+/g, ' ').trim();
-
-const normalizeQuotedIdentifiers = (value: string): string => normalizeWhitespace(value).replaceAll('"', '');
-
 const skipQuotedLiteral = (value: string, start: number): number => {
   let i = start + 1;
 
@@ -23,6 +19,40 @@ const skipQuotedLiteral = (value: string, start: number): number => {
 
   return value.length - 1;
 };
+
+/**
+ * Apply `transform` only to segments of `value` that lie outside single-quoted
+ * SQL literals, leaving literal content (including escaped `''`) untouched.
+ */
+const mapOutsideLiterals = (value: string, transform: (segment: string) => string): string => {
+  let ret = '';
+  let buffer = '';
+  let i = 0;
+
+  while (i < value.length) {
+    if (value[i] === "'") {
+      ret += transform(buffer);
+      buffer = '';
+      const end = skipQuotedLiteral(value, i);
+      ret += value.slice(i, end + 1);
+      i = end + 1;
+      continue;
+    }
+
+    buffer += value[i];
+    i++;
+  }
+
+  return ret + transform(buffer);
+};
+
+const collapseWhitespace = (value: string): string => value.replace(/\s+/g, ' ');
+
+const normalizeWhitespace = (value: string): string => mapOutsideLiterals(value, collapseWhitespace).trim();
+
+const stripDoubleQuotes = (value: string): string => mapOutsideLiterals(value, s => s.replaceAll('"', ''));
+
+const normalizeQuotedIdentifiers = (value: string): string => stripDoubleQuotes(normalizeWhitespace(value));
 
 const findMatchingParenthesis = (value: string, start: number): number => {
   let depth = 0;
@@ -86,7 +116,7 @@ const unwrapAllOuterParentheses = (value: string): string => {
 };
 
 const normalizePartitionSqlFragment = (value: string): string => {
-  const normalized = normalizeWhitespace(normalizePartitionLiterals(value).replaceAll('"', ''));
+  const normalized = stripDoubleQuotes(normalizeWhitespace(normalizePartitionLiterals(value)));
   let ret = '';
 
   for (let i = 0; i < normalized.length; i++) {
@@ -118,41 +148,60 @@ const normalizePartitionSqlFragment = (value: string): string => {
 };
 
 const splitPartitionName = (name: string): { name: string; schema?: string } => {
-  const parts = name.split('.');
+  const firstDot = name.indexOf('.');
 
-  if (parts.length !== 2) {
+  if (firstDot === -1) {
     return { name };
   }
 
   return {
-    schema: parts[0],
-    name: parts[1],
+    schema: name.slice(0, firstDot),
+    name: name.slice(firstDot + 1),
   };
 };
 
-const resolvePartitionKey = (meta: EntityMetadata, key: string): string => {
-  const prop = meta.properties[key as keyof typeof meta.properties];
+const COMMA_SEPARATED_IDENTIFIERS = /^[\w".]+(?:\s*,\s*[\w".]+)*$/;
 
-  if (prop?.fieldNames?.length === 1) {
-    return prop.fieldNames[0];
+const resolvePartitionKey = (meta: EntityMetadata, key: string, quoteIdentifier: (id: string) => string): string => {
+  const trimmed = key.trim().replaceAll('"', '');
+
+  if (!trimmed) {
+    return key.trim();
   }
 
-  return key.trim();
+  const prop =
+    meta.properties[trimmed as keyof typeof meta.properties] ??
+    Object.values(meta.properties).find(
+      candidate => candidate.fieldNames?.length === 1 && candidate.fieldNames[0] === trimmed,
+    );
+  const fieldName = prop?.fieldNames?.length === 1 ? prop.fieldNames[0] : trimmed;
+
+  return quoteIdentifier(fieldName);
 };
 
 const resolvePartitionExpression = (
   meta: EntityMetadata,
   expression: NonNullable<EntityPartitionBy['expression']>,
+  quoteIdentifier: (id: string) => string,
 ): string => {
   if (typeof expression === 'function') {
     return normalizeWhitespace(expression(meta.createSchemaColumnMappingObject()));
   }
 
-  if (typeof expression === 'string') {
-    return resolvePartitionKey(meta, expression);
+  if (Array.isArray(expression)) {
+    return (expression as readonly string[]).map(key => resolvePartitionKey(meta, key, quoteIdentifier)).join(', ');
   }
 
-  return expression.map(key => resolvePartitionKey(meta, key)).join(', ');
+  const trimmed = (expression as string).trim();
+
+  if (COMMA_SEPARATED_IDENTIFIERS.test(trimmed)) {
+    return trimmed
+      .split(',')
+      .map(key => resolvePartitionKey(meta, key, quoteIdentifier))
+      .join(', ');
+  }
+
+  return trimmed;
 };
 
 const createPartitionDefinition = (type: EntityPartitionBy['type'], expression: string): string =>
@@ -229,6 +278,7 @@ const createExplicitPartitions = (
 export const getTablePartitioning = (
   meta: EntityMetadata,
   tableSchema: string | undefined,
+  quoteIdentifier: (id: string) => string = id => id,
 ): TablePartitioning | undefined => {
   if (!meta.partitionBy) {
     return undefined;
@@ -236,7 +286,7 @@ export const getTablePartitioning = (
 
   const definition = createPartitionDefinition(
     meta.partitionBy.type,
-    resolvePartitionExpression(meta, meta.partitionBy.expression),
+    resolvePartitionExpression(meta, meta.partitionBy.expression, quoteIdentifier),
   );
   const partitions =
     meta.partitionBy.type === 'hash'

@@ -172,7 +172,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       return `create table ${partitionName} partition of ${table.getQuotedName()} ${partition.bound}`;
     });
 
-    return [createTable.replace(/;$/, ` partition by ${partitioning.definition};`), ...partitions, ...rest];
+    return [createTable.replace(/;$/, ` partition by ${partitioning.definition};`), ...rest, ...partitions];
   }
 
   override dropMaterializedViewIfExists(name: string, schema?: string): string {

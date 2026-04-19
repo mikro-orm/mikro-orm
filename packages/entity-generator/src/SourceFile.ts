@@ -7,6 +7,7 @@ import {
   type EmbeddableOptions,
   type EntityMetadata,
   type EntityOptions,
+  type EntityPartitionBy,
   type EntityProperty,
   type GenerateOptions,
   type IndexOptions,
@@ -619,6 +620,10 @@ export class SourceFile {
       options.comment = this.quote(this.meta.comment);
     }
 
+    if (this.meta.partitionBy) {
+      options.partitionBy = this.getPartitionByDecl(this.meta.partitionBy) as unknown as typeof options.partitionBy;
+    }
+
     if (this.meta.readonly && !this.meta.virtual) {
       options.readonly = this.meta.readonly;
     }
@@ -627,6 +632,34 @@ export class SourceFile {
     }
 
     return this.getCollectionDecl(options);
+  }
+
+  protected getPartitionByDecl(partitionBy: EntityPartitionBy): Dictionary {
+    const result: Dictionary = { type: this.quote(partitionBy.type) };
+    const expression = partitionBy.expression;
+
+    if (Array.isArray(expression)) {
+      result.expression = expression.map(key => this.quote(String(key)));
+    } else if (typeof expression === 'function') {
+      result.expression = expression.toString();
+    } else {
+      result.expression = this.quote(String(expression));
+    }
+
+    if (partitionBy.type === 'hash') {
+      result.partitions = partitionBy.partitions;
+    } else {
+      result.partitions = partitionBy.partitions.map(partition => {
+        const entry: Dictionary = {};
+        if (partition.name) {
+          entry.name = this.quote(partition.name);
+        }
+        entry.values = this.quote(partition.values);
+        return entry;
+      });
+    }
+
+    return result;
   }
 
   protected getEmbeddableDeclOptions() {

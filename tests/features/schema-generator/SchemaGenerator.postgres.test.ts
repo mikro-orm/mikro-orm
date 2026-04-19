@@ -165,7 +165,7 @@ describe('SchemaGenerator [postgres]', () => {
     meta.set(partitionedMeta.class, partitionedMeta);
 
     let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff).toContain('partition by hash (type);');
+    expect(diff).toContain('partition by hash ("type");');
     expect(diff).toContain(
       'create table "partitioned_event_0" partition of "partitioned_event" for values with (modulus 4, remainder 0);',
     );
@@ -230,7 +230,7 @@ describe('SchemaGenerator [postgres]', () => {
     meta.set(partitionedMeta.class, partitionedMeta);
 
     let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff).toContain('partition by range (created_at);');
+    expect(diff).toContain('partition by range ("created_at");');
     expect(diff).toContain(
       'create table "partitioned_event_range_0" partition of "partitioned_event_range" for values from (\'2026-01-01\') to (\'2026-02-01\');',
     );
