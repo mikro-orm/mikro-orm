@@ -640,8 +640,6 @@ export class SourceFile {
 
     if (Array.isArray(expression)) {
       result.expression = expression.map(key => this.quote(String(key)));
-    } else if (typeof expression === 'function') {
-      result.expression = expression.toString();
     } else {
       result.expression = this.quote(String(expression));
     }

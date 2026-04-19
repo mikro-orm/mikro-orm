@@ -233,7 +233,7 @@ describe('partitioning helpers', () => {
     expect(normalizePartitionBound('with (modulus 2')).toBe('for values with (modulus 2');
     expect(normalizePartitionBound("in ('unterminated")).toBe("for values in ('unterminated");
     expect(normalizePartitionBound("from ('a')")).toBe("for values from ('a')");
-    expect(normalizePartitionBound('')).toBe('for values');
+    expect(normalizePartitionBound('')).toBe('');
   });
 
   test('preserves content of single-quoted literals during normalization', () => {
@@ -241,6 +241,15 @@ describe('partitioning helpers', () => {
     expect(normalizePartitionBound(`in ('a"b')`)).toBe(`for values in ('a"b')`);
     expect(normalizePartitionBound("in ('a  b', 'c\td')")).toBe("for values in ('a  b', 'c\td')");
     expect(normalizePartitionDefinition(`list ('x"y')`)).toBe(`list ('x"y')`);
+    // `TO` tokens inside quoted literals must not be lowercased while normalizing range bounds.
+    expect(normalizePartitionBound("from ('x') TO ('hello TO world')")).toBe(
+      "for values from ('x') to ('hello TO world')",
+    );
+  });
+
+  test('parses partition definitions without whitespace between type and parens', () => {
+    expect(normalizePartitionDefinition('HASH(type)')).toBe('hash (type)');
+    expect(normalizePartitionDefinition('RANGE(created_at)')).toBe('range (created_at)');
   });
 
   test('maps comma-separated string expressions to field names', () => {
@@ -521,24 +530,6 @@ describe('partitioning helpers', () => {
       expression: ["'tenant'", "'type'"],
       partitions: 4,
     });
-  });
-
-  test('entity generator emits callback partition expressions verbatim', () => {
-    const config = new Configuration({ driver: PostgreSqlDriver }, false);
-    const platform = config.getPlatform() as PostgreSqlPlatform;
-    const expression = (columns: Record<string, string>) => `date_trunc('month', ${columns.createdAt})`;
-    const meta = createPartitionedMeta({
-      type: 'range',
-      expression,
-      partitions: [{ values: "from ('2026-01-01') to ('2026-02-01')" }],
-    });
-
-    const source = new SourceFile(meta, config.getNamingStrategy(), platform, {}) as unknown as {
-      getEntityDeclOptions(): Record<string, unknown>;
-    };
-    const options = source.getEntityDeclOptions() as { partitionBy: { expression: string } };
-
-    expect(options.partitionBy.expression).toBe(expression.toString());
   });
 
   test('surfaces partitioning changes through the schema comparator', () => {

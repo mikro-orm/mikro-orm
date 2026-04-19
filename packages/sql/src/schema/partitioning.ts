@@ -170,8 +170,8 @@ const resolvePartitionKey = (meta: EntityMetadata, key: string, quoteIdentifier:
   }
 
   const prop =
-    meta.properties[trimmed as keyof typeof meta.properties] ??
-    Object.values(meta.properties).find(
+    meta.root.properties[trimmed as keyof typeof meta.root.properties] ??
+    Object.values(meta.root.properties).find(
       candidate => candidate.fieldNames?.length === 1 && candidate.fieldNames[0] === trimmed,
     );
   const fieldName = prop?.fieldNames?.length === 1 ? prop.fieldNames[0] : trimmed;
@@ -210,9 +210,10 @@ const createPartitionDefinition = (type: EntityPartitionBy['type'], expression: 
 /** @internal */
 export function normalizePartitionDefinition(value: string): string {
   const normalized = normalizeWhitespace(value);
-  const [rawType, ...rest] = normalized.split(' ');
+  const match = /^(\w+)\s*(.*)$/.exec(normalized);
+  const rawType = match ? match[1] : normalized;
   const type = rawType.toLowerCase();
-  const expression = rest.join(' ').trim();
+  const expression = match ? match[2].trim() : '';
 
   if (!expression) {
     return type;
@@ -229,6 +230,10 @@ export function normalizePartitionDefinition(value: string): string {
 export function normalizePartitionBound(value: string): string {
   const normalized = normalizeWhitespace(normalizePartitionLiterals(value));
 
+  if (!normalized) {
+    return '';
+  }
+
   if (/^default$/i.test(normalized)) {
     return 'default';
   }
@@ -243,7 +248,7 @@ export function normalizePartitionBound(value: string): string {
     ret = ret.replace(/^for values\s+in\b/i, 'for values in');
   } else if (/^for values\s+from\b/i.test(ret)) {
     ret = ret.replace(/^for values\s+from\b/i, 'for values from');
-    ret = ret.replace(/\s+to\b/i, ' to');
+    ret = mapOutsideLiterals(ret, segment => segment.replace(/\s+to\b/i, ' to'));
   }
 
   return normalizePartitionSqlFragment(ret);
