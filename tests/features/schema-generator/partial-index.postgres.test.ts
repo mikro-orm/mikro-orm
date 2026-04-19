@@ -1,7 +1,13 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/postgresql';
 
+interface PartialUser {
+  id: number;
+  email: string;
+  deletedAt: Date | null;
+}
+
 function makeMeta(opts: { where?: string }) {
-  return new EntitySchema({
+  return new EntitySchema<PartialUser>({
     name: 'PartialUser',
     tableName: 'partial_user',
     properties: {
@@ -18,8 +24,8 @@ function makeMeta(opts: { where?: string }) {
     uniques: [
       {
         name: 'partial_user_email_uniq',
-        properties: ['email'] as never,
-        ...(opts.where ? { where: opts.where as never } : {}),
+        properties: ['email'],
+        ...(opts.where ? { where: opts.where } : {}),
       },
     ],
   }).init().meta;
@@ -87,7 +93,7 @@ describe('partial index [postgres]', () => {
 
   test('partial index on a JSON property renders WHERE after the json expression', async () => {
     const meta = orm.getMetadata();
-    const e = new EntitySchema({
+    const e = new EntitySchema<{ id: number; data: { email?: string; active?: string } }>({
       name: 'PartialJson',
       tableName: 'partial_json',
       properties: {
@@ -97,8 +103,9 @@ describe('partial index [postgres]', () => {
       indexes: [
         {
           name: 'partial_json_data_email_idx',
+          // nested JSON path, not an entity property — cast through the typed surface
           properties: ['data.email'] as never,
-          where: `data->>'active' = 'true'` as never,
+          where: `data->>'active' = 'true'`,
         },
       ],
     }).init().meta;

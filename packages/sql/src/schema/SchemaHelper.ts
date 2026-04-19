@@ -194,8 +194,10 @@ export abstract class SchemaHelper {
   }
 
   /**
-   * Default emits ` where <predicate>` for partial indexes. Dialects that emulate partials via
-   * `(CASE WHEN ... THEN col END)` columns (MySQL/MariaDB/Oracle) override to return `''`.
+   * Default emits ` where <predicate>` for partial indexes. Only Oracle overrides this to
+   * return `''` (it emulates partials via CASE-WHEN columns). MySQL sidesteps the whole path
+   * with its own `getCreateIndexSQL` that never calls this, and MariaDB refuses the feature
+   * entirely via an override on `getIndexColumns`.
    */
   protected getIndexWhereClause(index: IndexDef): string {
     return index.where ? ` where ${index.where}` : '';
@@ -242,7 +244,7 @@ export abstract class SchemaHelper {
   }
 
   /** Returns true iff the leading `(` matches the trailing `)` (i.e. they wrap the whole string). */
-  private isBalancedWrap(s: string): boolean {
+  protected isBalancedWrap(s: string): boolean {
     let depth = 0;
     for (let i = 0; i < s.length; i++) {
       if (s[i] === '(') {

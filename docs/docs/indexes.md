@@ -319,6 +319,43 @@ The advanced `columns` option (sort order, prefix length, collation) is not supp
 
 :::
 
+### Inherited properties via `defineEntity({ extends })`
+
+The `where` predicate is resolved against the entity's full property set, so a child entity can reference a property from its base — useful for reusing a `deletedAt` column or any other discriminator across a hierarchy:
+
+```ts title="./entities/SoftDeleteBase.ts"
+import { defineEntity, p } from '@mikro-orm/core';
+
+export const SoftDeleteBase = defineEntity({
+  name: 'SoftDeleteBase',
+  abstract: true,
+  properties: {
+    id: p.integer().primary(),
+    deletedAt: p.datetime().nullable(),
+  },
+});
+```
+
+```ts title="./entities/User.ts"
+import { defineEntity, p } from '@mikro-orm/core';
+import { SoftDeleteBase } from './SoftDeleteBase';
+
+export const UserSchema = defineEntity({
+  extends: SoftDeleteBase,
+  name: 'User',
+  properties: {
+    email: p.string(),
+  },
+  uniques: [
+    // `deletedAt` is inherited from SoftDeleteBase
+    { properties: ['email'], where: { deletedAt: null } },
+  ],
+});
+
+export class User extends UserSchema.class {}
+UserSchema.setClass(User);
+```
+
 ## Index Types
 
 You can specify the index type using the `type` option. This is particularly useful for fulltext indexes, spatial indexes, or database-specific index types like `hash` or `btree`.

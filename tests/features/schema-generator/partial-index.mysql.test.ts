@@ -1,7 +1,13 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/mysql';
 
+interface PartialUser {
+  id: number;
+  email: string;
+  deletedAt: Date | null;
+}
+
 function makeMeta(opts: { where?: string; columns?: boolean }) {
-  return new EntitySchema({
+  return new EntitySchema<PartialUser>({
     name: 'PartialUser',
     tableName: 'partial_user',
     properties: {
@@ -12,8 +18,8 @@ function makeMeta(opts: { where?: string; columns?: boolean }) {
     uniques: [
       {
         name: 'partial_user_email_uniq',
-        properties: ['email'] as never,
-        ...(opts.where ? { where: opts.where as never } : {}),
+        properties: ['email'],
+        ...(opts.where ? { where: opts.where } : {}),
         ...(opts.columns ? { columns: [{ name: 'email', length: 50 }] } : {}),
       },
     ],

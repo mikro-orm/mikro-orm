@@ -1,8 +1,14 @@
 import { EntitySchema, MikroORM, OracleDriver } from '@mikro-orm/oracledb';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
+interface PartialUser {
+  id: number;
+  email: string;
+  deletedAt: string | null;
+}
+
 function makeMeta(opts: { where?: string; nonUniqueWhere?: string }) {
-  return new EntitySchema({
+  return new EntitySchema<PartialUser>({
     name: 'PartialUser',
     tableName: 'partial_user',
     properties: {
@@ -19,16 +25,16 @@ function makeMeta(opts: { where?: string; nonUniqueWhere?: string }) {
     uniques: [
       {
         name: 'partial_user_email_uniq',
-        properties: ['email'] as never,
-        ...(opts.where ? { where: opts.where as never } : {}),
+        properties: ['email'],
+        ...(opts.where ? { where: opts.where } : {}),
       },
     ],
     indexes: opts.nonUniqueWhere
       ? [
           {
             name: 'partial_user_deleted_at_partial_idx',
-            properties: ['deletedAt'] as never,
-            where: opts.nonUniqueWhere as never,
+            properties: ['deletedAt'],
+            where: opts.nonUniqueWhere,
           },
         ]
       : [],

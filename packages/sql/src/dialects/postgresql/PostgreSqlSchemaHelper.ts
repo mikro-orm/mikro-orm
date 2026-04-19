@@ -278,10 +278,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         // statement (WHERE included) on `expression`; don't try to split the predicate.
         indexDef.expression = index.expression;
       } else if (whereMatch) {
-        indexDef.where = whereMatch[1]
-          .trim()
-          .replace(/^\((.*)\)$/s, '$1')
-          .trim();
+        let where = whereMatch[1].trim();
+        if (where.startsWith('(') && where.endsWith(')') && this.isBalancedWrap(where)) {
+          where = where.slice(1, -1).trim();
+        }
+        indexDef.where = where;
       }
 
       if (index.deferrable) {

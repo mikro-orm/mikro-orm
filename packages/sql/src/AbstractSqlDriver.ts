@@ -2522,14 +2522,32 @@ export abstract class AbstractSqlDriver<
       return where;
     }
 
+    const name = Utils.className(entityName);
+
+    if (where == null || (Utils.isPlainObject(where) && Object.keys(where as Dictionary).length === 0)) {
+      throw new Error(`Cannot render partial-index predicate for entity '${name}': \`where\` is empty.`);
+    }
+
     const alias = '__p';
     const qb = this.createQueryBuilder(entityName, undefined, undefined, undefined, undefined, alias);
     qb.where(where as any);
     const sql = qb.getFormattedQuery();
-    const match = /\bwhere\s+(.+?)(?:\s+order\s+by|\s+group\s+by|\s+having|\s+limit|\s+offset|$)/is.exec(sql);
+
+    // Relation traversal produces join clauses whose aliased identifiers can't be inlined
+    // into a CREATE INDEX ... WHERE clause — reject with a clear error rather than emitting broken DDL.
+    if (/\bjoin\b/i.test(sql.split(/\bwhere\b/i)[0])) {
+      throw new Error(
+        `Cannot render partial-index predicate for entity '${name}': \`where\` may not traverse relations.`,
+      );
+    }
+
+    // Anchor at end-of-string only — the synthetic QB has no top-level order by / limit /
+    // group by / having / offset, so any such keyword inside the captured predicate is
+    // inside a subquery and must not terminate the match.
+    const match = /\bwhere\s+([\s\S]+)$/i.exec(sql);
 
     if (!match) {
-      throw new Error(`Failed to render partial-index predicate from FilterQuery: ${sql}`);
+      throw new Error(`Failed to render partial-index predicate for entity '${name}': ${sql}`);
     }
 
     const quote = (s: string) => this.platform.quoteIdentifier(s);

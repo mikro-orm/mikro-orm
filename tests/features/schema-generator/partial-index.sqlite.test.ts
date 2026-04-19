@@ -1,8 +1,36 @@
-import { EntitySchema, MikroORM } from '@mikro-orm/sqlite';
+import { defineEntity, EntitySchema, MikroORM, p } from '@mikro-orm/sqlite';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
+import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+
+interface PartialUser {
+  id: number;
+  email: string;
+  deletedAt: Date | null;
+}
+
+@Entity({ tableName: 'tag_rel' })
+class TagRel {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+}
+
+@Entity({ tableName: 'post_rel' })
+class PostRel {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  title!: string;
+
+  @ManyToOne(() => TagRel)
+  tag!: TagRel;
+}
 
 function makeMeta(opts: { where?: string }) {
-  return new EntitySchema({
+  return new EntitySchema<PartialUser>({
     name: 'PartialUser',
     tableName: 'partial_user',
     properties: {
@@ -13,8 +41,8 @@ function makeMeta(opts: { where?: string }) {
     uniques: [
       {
         name: 'partial_user_email_uniq',
-        properties: ['email'] as never,
-        ...(opts.where ? { where: opts.where as never } : {}),
+        properties: ['email'],
+        ...(opts.where ? { where: opts.where } : {}),
       },
     ],
   }).init().meta;
@@ -79,7 +107,7 @@ describe('partial index [sqlite]', () => {
     for (const [, m] of meta.getAll()) {
       meta.reset(m.class);
     }
-    const e = new EntitySchema({
+    const e = new EntitySchema<PartialUser>({
       name: 'PartialObjUser',
       tableName: 'partial_obj_user',
       properties: {
@@ -96,8 +124,8 @@ describe('partial index [sqlite]', () => {
       uniques: [
         {
           name: 'partial_obj_user_email_uniq',
-          properties: ['email'] as never,
-          where: { deletedAt: null } as never,
+          properties: ['email'],
+          where: { deletedAt: null },
         },
       ],
     }).init().meta;
@@ -111,6 +139,44 @@ describe('partial index [sqlite]', () => {
 
     meta.reset(e.class);
     await orm.schema.execute('drop table if exists `partial_obj_user`');
+  });
+
+  test('renderPartialIndexWhere rejects empty and relation-traversing FilterQuery', async () => {
+    const meta = orm.getMetadata();
+    for (const [, m] of meta.getAll()) {
+      meta.reset(m.class);
+    }
+
+    // Decorator-based entities wire up relation metadata (EntitySchema's string `entity`
+    // reference isn't enough for the QB to resolve join targets).
+    const rtOrm = await MikroORM.init({
+      entities: [TagRel, PostRel],
+      dbName: ':memory:',
+      metadataProvider: ReflectMetadataProvider,
+      discovery: { warnWhenNoEntities: false },
+    });
+
+    try {
+      const driver = rtOrm.em.getDriver() as unknown as {
+        renderPartialIndexWhere: (entity: unknown, where: unknown) => string;
+      };
+
+      // strings pass through unchanged
+      expect(driver.renderPartialIndexWhere(TagRel, `"name" = 'x'`)).toBe(`"name" = 'x'`);
+
+      // empty object is rejected with a clear error naming the entity
+      expect(() => driver.renderPartialIndexWhere(TagRel, {})).toThrow(/entity 'TagRel': `where` is empty/);
+
+      // relation traversal is rejected
+      expect(() => driver.renderPartialIndexWhere(PostRel, { tag: { name: 'x' } })).toThrow(
+        /`where` may not traverse relations/,
+      );
+
+      // object FilterQuery on own columns renders with no alias prefix
+      expect(driver.renderPartialIndexWhere(TagRel, { name: 'x' })).toMatch(/`name` = 'x'/);
+    } finally {
+      await rtOrm.close(true);
+    }
   });
 
   test('entity generator round-trips a partial index/unique back into clean `where:` options', async () => {
@@ -136,5 +202,46 @@ describe('partial index [sqlite]', () => {
     expect(dump).toMatch(/partial_gen_user_email_uniq/);
 
     await orm.schema.execute('drop table if exists `partial_gen_user`');
+  });
+});
+
+describe('partial index [sqlite] — defineEntity extends', () => {
+  test('`where` (FilterQuery) resolves against properties inherited from a parent defineEntity', async () => {
+    const SoftDeleteBase = defineEntity({
+      name: 'SoftDeleteBase',
+      abstract: true,
+      properties: {
+        id: p.integer().primary(),
+        deletedAt: p.datetime().nullable(),
+      },
+    });
+
+    const PartialChildSchema = defineEntity({
+      extends: SoftDeleteBase,
+      name: 'PartialChild',
+      tableName: 'partial_child',
+      properties: {
+        email: p.string(),
+      },
+      uniques: [
+        // `deletedAt` is inherited — the FilterQuery → SQL render must see it
+        { properties: ['email'], where: { deletedAt: null } },
+      ],
+    });
+
+    class PartialChild extends PartialChildSchema.class {}
+    PartialChildSchema.setClass(PartialChild);
+
+    const orm2 = await MikroORM.init({
+      entities: [PartialChild],
+      dbName: ':memory:',
+    });
+
+    const create = await orm2.schema.getCreateSchemaSQL({ wrap: false });
+    expect(create).toMatch(/where `deleted_at` is null/);
+    await orm2.schema.execute(create);
+    expect(await orm2.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+
+    await orm2.close(true);
   });
 });

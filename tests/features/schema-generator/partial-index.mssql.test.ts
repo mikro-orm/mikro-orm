@@ -1,7 +1,13 @@
 import { EntitySchema, MikroORM, MsSqlSchemaHelper } from '@mikro-orm/mssql';
 
+interface PartialUser {
+  id: number;
+  email: string;
+  deletedAt: string | null;
+}
+
 function makeMeta(opts: { where?: string }) {
-  return new EntitySchema({
+  return new EntitySchema<PartialUser>({
     name: 'PartialUser',
     tableName: 'partial_user',
     properties: {
@@ -18,8 +24,8 @@ function makeMeta(opts: { where?: string }) {
     uniques: [
       {
         name: 'partial_user_email_uniq',
-        properties: ['email'] as never,
-        ...(opts.where ? { where: opts.where as never } : {}),
+        properties: ['email'],
+        ...(opts.where ? { where: opts.where } : {}),
       },
     ],
   }).init().meta;
@@ -67,7 +73,7 @@ describe('partial index [mssql]', () => {
 
   test('combines user `where` with the auto-NOT-NULL guard for unique indexes on nullable columns', async () => {
     const meta = orm.getMetadata();
-    const e = new EntitySchema({
+    const e = new EntitySchema<{ id: number; slug: string | null; deletedAt: string | null }>({
       name: 'PartialNullable',
       tableName: 'partial_nullable',
       properties: {
@@ -84,8 +90,8 @@ describe('partial index [mssql]', () => {
       uniques: [
         {
           name: 'partial_nullable_slug_uniq',
-          properties: ['slug'] as never,
-          where: '[deleted_at] is null' as never,
+          properties: ['slug'],
+          where: '[deleted_at] is null',
         },
       ],
     }).init().meta;
@@ -99,14 +105,14 @@ describe('partial index [mssql]', () => {
 
   test('introspection drops pure auto-NOT-NULL filters (unique on nullable without user where)', async () => {
     const meta = orm.getMetadata();
-    const e = new EntitySchema({
+    const e = new EntitySchema<{ id: number; code: string | null }>({
       name: 'AutoNotNullOnly',
       tableName: 'auto_not_null_only',
       properties: {
         id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
         code: { name: 'code', type: 'string', fieldName: 'code', columnType: 'varchar(255)', nullable: true },
       },
-      uniques: [{ name: 'auto_not_null_only_code_uniq', properties: ['code'] as never }],
+      uniques: [{ name: 'auto_not_null_only_code_uniq', properties: ['code'] }],
     }).init().meta;
     meta.set(e.class, e as any);
     await orm.schema.execute(await orm.schema.getUpdateSchemaSQL({ wrap: false }));
