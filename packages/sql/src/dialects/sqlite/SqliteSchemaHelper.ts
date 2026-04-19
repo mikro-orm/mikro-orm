@@ -21,6 +21,8 @@ const SPATIALITE_VIEWS = [
 ];
 
 export class SqliteSchemaHelper extends SchemaHelper {
+  private static readonly PARTIAL_WHERE_RE = /\swhere\s+(.+?)\s*$/is;
+
   override disableForeignKeysSQL(): string {
     return 'pragma foreign_keys = off;';
   }
@@ -315,11 +317,11 @@ export class SqliteSchemaHelper extends SchemaHelper {
     if (index.columnNames.some(column => column.includes('.'))) {
       // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
       const columns = this.platform.getJsonIndexDefinition(index);
-      return `${sqlPrefix} (${columns.join(', ')})`;
+      return `${sqlPrefix} (${columns.join(', ')})${this.getIndexWhereClause(index)}`;
     }
 
     // Use getIndexColumns to support advanced options like sort order and collation
-    return `${sqlPrefix} (${this.getIndexColumns(index)})`;
+    return `${sqlPrefix} (${this.getIndexColumns(index)})${this.getIndexWhereClause(index)}`;
   }
 
   private parseTableDefinition(sql: string, cols: any[]) {
@@ -500,6 +502,22 @@ export class SqliteSchemaHelper extends SchemaHelper {
     const sql = `pragma ${prefix}table_info(\`${tableName}\`)`;
     const cols = await connection.execute<{ pk: number; name: string }[]>(sql, [], 'all', ctx);
     const indexes = await connection.execute<any[]>(`pragma ${prefix}index_list(\`${tableName}\`)`, [], 'all', ctx);
+    // sqlite_master.sql holds the original CREATE INDEX statement — the only place a partial
+    // index's WHERE predicate is preserved (PRAGMA index_* don't expose it).
+    const indexSqls = await connection.execute<{ name: string; sql: string | null }[]>(
+      `select name, sql from ${prefix}sqlite_master where type = 'index' and tbl_name = ?`,
+      [tableName],
+      'all',
+      ctx,
+    );
+    const wherePredicates = new Map<string, string>();
+    for (const row of indexSqls) {
+      const match = row.sql && SqliteSchemaHelper.PARTIAL_WHERE_RE.exec(row.sql);
+      if (match) {
+        wherePredicates.set(row.name, match[1].trim());
+      }
+    }
+
     const ret: IndexDef[] = [];
 
     for (const col of cols.filter(c => c.pk)) {
@@ -519,6 +537,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
         'all',
         ctx,
       );
+      const where = wherePredicates.get(index.name);
       ret.push(
         ...res.map(row => ({
           columnNames: [row.name],
@@ -526,6 +545,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
           unique: !!index.unique,
           constraint: !!index.unique,
           primary: false,
+          ...(where ? { where } : {}),
         })),
       );
     }

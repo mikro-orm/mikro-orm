@@ -1,0 +1,25 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`partial index [sqlite] > end-to-end create / no-op / change / drop / re-add > 1-create-with-where 1`] = `
+"create table \`partial_user\` (\`id\` integer not null primary key autoincrement, \`email\` text not null, \`deleted_at\` datetime null);
+create unique index \`partial_user_email_uniq\` on \`partial_user\` (\`email\`) where "deleted_at" is null;
+"
+`;
+
+exports[`partial index [sqlite] > end-to-end create / no-op / change / drop / re-add > 3-change-where 1`] = `
+"drop index \`partial_user_email_uniq\`;
+create unique index \`partial_user_email_uniq\` on \`partial_user\` (\`email\`) where "deleted_at" is not null;
+"
+`;
+
+exports[`partial index [sqlite] > end-to-end create / no-op / change / drop / re-add > 4-drop-where 1`] = `
+"drop index \`partial_user_email_uniq\`;
+create unique index \`partial_user_email_uniq\` on \`partial_user\` (\`email\`);
+"
+`;
+
+exports[`partial index [sqlite] > end-to-end create / no-op / change / drop / re-add > 5-readd-where 1`] = `
+"drop index \`partial_user_email_uniq\`;
+create unique index \`partial_user_email_uniq\` on \`partial_user\` (\`email\`) where "deleted_at" is null;
+"
+`;
