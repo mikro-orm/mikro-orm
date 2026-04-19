@@ -6,6 +6,7 @@ import {
   type DeleteResult,
   type Filter,
   type FindCursor,
+  type FindOptions,
   type InsertManyResult,
   type InsertOneResult,
   MongoClient,
@@ -210,7 +211,7 @@ export class MongoConnection extends Connection {
   ): Promise<{ cursor: FindCursor<T>; query: string }> {
     await this.ensureConnection();
     const collection = this.getCollectionName(entityName);
-    const options: Dictionary = opts.ctx ? { session: opts.ctx } : {};
+    const options: FindOptions = opts.ctx ? { session: opts.ctx } : {};
 
     if (opts.fields) {
       options.projection = opts.fields.reduce((o, k) => Object.assign(o, { [k]: 1 }), {});
@@ -230,6 +231,9 @@ export class MongoConnection extends Connection {
 
     if (opts.allowDiskUse != null) {
       options.allowDiskUse = opts.allowDiskUse;
+    }
+    if (opts.chunkSize != null) {
+      options.batchSize = opts.chunkSize;
     }
 
     const resultSet = this.getCollection<T>(entityName).find(where as Filter<T>, options);
@@ -676,6 +680,7 @@ export interface MongoFindOptions<T extends object> extends MongoQueryOptions {
   limit?: number;
   offset?: number;
   fields?: string[];
+  chunkSize?: number;
   ctx?: Transaction<ClientSession>;
   loggerContext?: LoggingOptions;
 }
