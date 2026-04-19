@@ -355,7 +355,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       ctx: em.#transactionContext,
       mapResults: false,
       ...options,
-    } as FindOptions<Entity>);
+    } as StreamOptions<Entity>);
 
     for await (const data of stream) {
       const fork = em.fork();
