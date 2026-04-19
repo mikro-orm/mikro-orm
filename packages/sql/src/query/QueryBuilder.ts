@@ -70,6 +70,20 @@ export interface ExecuteOptions {
 
 export interface QBStreamOptions {
   /**
+   * How many rows to fetch in one round-trip.
+   * Lower values will result in more queries and network bandwidth, but less memory usage.
+   * Higher values will result in fewer queries and network bandwidth, but higher memory usage.
+   * Note that the results are iterated one row at a time regardless of this value.
+   *
+   * Honored on PostgreSQL (cursor-based fetch), MSSQL (tedious stream chunk size)
+   * and Oracle (mapped to `fetchArraySize`). Ignored on MySQL, MariaDB, SQLite and
+   * libSQL, where the underlying driver already streams row-by-row with no batching
+   * knob.
+   *
+   * @default 100 on dialects that honor it.
+   */
+  chunkSize?: number;
+  /**
    * Results are mapped to entities, if you set `mapResults: false` you will get POJOs instead.
    *
    * @default true
@@ -2523,10 +2537,11 @@ export class QueryBuilder<
     options ??= {};
     options.mergeResults ??= true;
     options.mapResults ??= true;
+    const chunkSize = options.chunkSize ?? 100;
 
     const query = this.toQuery();
     const loggerContext = { id: this.em?.id, ...this.loggerContext };
-    const res = this.getConnection().stream(query.sql, query.params, this.context, loggerContext);
+    const res = this.getConnection().stream(query.sql, query.params, this.context, loggerContext, chunkSize);
     const meta = this.mainAlias.meta;
 
     if (options.rawResults || !meta) {

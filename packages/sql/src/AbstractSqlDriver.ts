@@ -359,13 +359,7 @@ export abstract class AbstractSqlDriver<
     }
 
     if (typeof meta.expression === 'string') {
-      yield* this.wrapVirtualExpressionInSubqueryStream(
-        meta,
-        meta.expression,
-        where,
-        options as FindOptions<T, any>,
-        QueryType.SELECT,
-      );
+      yield* this.wrapVirtualExpressionInSubqueryStream(meta, meta.expression, where, options, QueryType.SELECT);
       return;
     }
 
@@ -374,13 +368,7 @@ export abstract class AbstractSqlDriver<
     const res = meta.expression(em, where as any, options as FindOptions<T, any, any, any>, true);
 
     if (typeof res === 'string') {
-      yield* this.wrapVirtualExpressionInSubqueryStream(
-        meta,
-        res,
-        where,
-        options as FindOptions<T, any>,
-        QueryType.SELECT,
-      );
+      yield* this.wrapVirtualExpressionInSubqueryStream(meta, res, where, options, QueryType.SELECT);
       return;
     }
 
@@ -389,7 +377,7 @@ export abstract class AbstractSqlDriver<
         meta,
         res.getFormattedQuery(),
         where,
-        options as FindOptions<T, any>,
+        options,
         QueryType.SELECT,
       );
       return;
@@ -397,13 +385,7 @@ export abstract class AbstractSqlDriver<
 
     if (isRaw(res)) {
       const expr = this.platform.formatQuery(res.sql, res.params);
-      yield* this.wrapVirtualExpressionInSubqueryStream(
-        meta,
-        expr,
-        where,
-        options as FindOptions<T, any>,
-        QueryType.SELECT,
-      );
+      yield* this.wrapVirtualExpressionInSubqueryStream(meta, expr, where, options, QueryType.SELECT);
       return;
     }
 
@@ -447,7 +429,7 @@ export abstract class AbstractSqlDriver<
     meta: EntityMetadata<T>,
     expression: string,
     where: FilterQuery<T>,
-    options: FindOptions<T, any, any, any>,
+    options: StreamOptions<T, any, any, any>,
     type: QueryType.SELECT,
   ): AsyncIterableIterator<T> {
     const qb = await this.createQueryBuilderFromOptions(meta, where, this.forceBalancedStrategy(options));
@@ -463,6 +445,7 @@ export abstract class AbstractSqlDriver<
       query.params,
       options.ctx,
       options.loggerContext,
+      options.chunkSize,
     );
 
     for await (const row of res) {
