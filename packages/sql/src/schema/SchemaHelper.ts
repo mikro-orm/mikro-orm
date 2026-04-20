@@ -47,8 +47,10 @@ export abstract class SchemaHelper {
 
   /**
    * Returns SQL that sets the current/default schema for the session (e.g. `SET search_path`).
-   * Drivers without a session-level schema context (MSSQL, SQLite) return an empty string.
+   * Unreachable via the default resolver path (only called when `supportsMigrationSchema()` is true);
+   * defined here so custom schema helpers can override without having to re-declare the signature.
    */
+  /* v8 ignore next 3 */
   getSetSchemaSQL(_schema: string): string {
     return '';
   }
