@@ -186,12 +186,10 @@ export abstract class SchemaHelper {
     ctx?: Transaction,
   ): Promise<boolean> {
     const qv = (v: string | undefined) => this.platform.quoteValue(v ?? '');
-    const schemaClause = schemaName
-      ? `table_schema = ${qv(schemaName)}`
-      : /* v8 ignore next: callers always resolve a concrete schema before hitting the default impl */
-        `table_schema = ${qv(this.platform.getDefaultSchemaName())}`;
+    /* v8 ignore next: callers always resolve a concrete schema before reaching the default impl */
+    const resolved = schemaName ?? this.platform.getDefaultSchemaName();
     const rows = await connection.execute<Dictionary[]>(
-      `select 1 from information_schema.tables where ${schemaClause} and table_name = ${qv(tableName)}`,
+      `select 1 from information_schema.tables where table_schema = ${qv(resolved)} and table_name = ${qv(tableName)}`,
       [],
       'all',
       ctx,
