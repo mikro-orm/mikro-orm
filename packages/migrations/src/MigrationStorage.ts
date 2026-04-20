@@ -15,6 +15,7 @@ export class MigrationStorage {
   #masterTransaction?: Transaction;
   #runSchema?: string;
   readonly #platform: AbstractSqlPlatform;
+  readonly #ensuredSchemas = new Set<string>();
 
   constructor(
     protected readonly driver: AbstractSqlDriver,
@@ -69,8 +70,14 @@ export class MigrationStorage {
 
   async ensureTable(): Promise<void> {
     const { tableName, schemaName } = this.getTableName();
+    const cacheKey = `${schemaName ?? ''}.${tableName}`;
+
+    if (this.#ensuredSchemas.has(cacheKey)) {
+      return;
+    }
 
     if (await this.#helper.tableExists(this.#connection, tableName, schemaName, this.#masterTransaction)) {
+      this.#ensuredSchemas.add(cacheKey);
       return;
     }
 
@@ -104,6 +111,7 @@ export class MigrationStorage {
     });
     const sql = this.#helper.createTable(table);
     await this.#connection.execute(sql.join(';\n'), [], 'run', this.#masterTransaction);
+    this.#ensuredSchemas.add(cacheKey);
   }
 
   setMasterMigration(trx: Transaction) {
