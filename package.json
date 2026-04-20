@@ -167,7 +167,7 @@
     "tsx": "4.21.0",
     "typescript": "6.0.3",
     "unplugin-swc": "1.5.9",
-    "uuid": "11.1.0",
+    "uuid": "14.0.0",
     "vitest": "4.1.4"
   },
   "packageManager": "yarn@4.14.1"
