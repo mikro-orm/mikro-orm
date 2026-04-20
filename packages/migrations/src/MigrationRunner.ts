@@ -58,6 +58,7 @@ export class MigrationRunner {
 
     const sql = this.#helper.getResetSchemaSQL(this.config.get('dbName')!);
 
+    /* v8 ignore next 3: every driver that enables `supportsMigrationSchema` also overrides `getResetSchemaSQL` */
     if (!sql) {
       return;
     }

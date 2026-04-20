@@ -188,7 +188,8 @@ export abstract class SchemaHelper {
     const qv = (v: string | undefined) => this.platform.quoteValue(v ?? '');
     const schemaClause = schemaName
       ? `table_schema = ${qv(schemaName)}`
-      : `table_schema = ${qv(this.platform.getDefaultSchemaName())}`;
+      : /* v8 ignore next: callers always resolve a concrete schema before hitting the default impl */
+        `table_schema = ${qv(this.platform.getDefaultSchemaName())}`;
     const rows = await connection.execute<Dictionary[]>(
       `select 1 from information_schema.tables where ${schemaClause} and table_name = ${qv(tableName)}`,
       [],

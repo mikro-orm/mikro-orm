@@ -527,3 +527,22 @@ describe('Migrator (mongo) - rollup coverage', () => {
     await orm.close();
   });
 });
+
+describe('Migrator (mongo) - runtime schema', () => {
+  let orm: MikroORM<MongoDriver>;
+
+  beforeAll(async () => {
+    orm = await initORMMongo(true);
+  });
+
+  afterAll(async () => orm.close());
+
+  test('runtime schema option is rejected on mongo', async () => {
+    await expect(orm.migrator.up({ schema: 'foo' })).rejects.toThrow(
+      /Runtime schema for migrations is not supported by the MongoDriver/,
+    );
+    await expect(orm.migrator.getExecuted({ schema: 'foo' })).rejects.toThrow(
+      /Runtime schema for migrations is not supported by the MongoDriver/,
+    );
+  });
+});

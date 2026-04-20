@@ -137,6 +137,25 @@ describe('migrations with runtime schema (postgres)', () => {
     expect(fullDiff.up).not.toMatch(/create table "[^"]+"\."article"/);
   });
 
+  test('runtime schema is rejected when the migration is non-transactional', async () => {
+    await orm.em.getConnection().execute('drop schema if exists "tenant_c" cascade');
+    await orm.em.getConnection().execute('create schema "tenant_c"');
+
+    const original = orm.config.get('migrations');
+    orm.config.set('migrations', { ...original, transactional: false });
+    orm.config.resetServiceCache();
+
+    try {
+      await expect(orm.migrator.up({ schema: 'tenant_c' })).rejects.toThrow(
+        /Runtime schema .* is only supported with transactional migrations/,
+      );
+    } finally {
+      orm.config.set('migrations', original);
+      orm.config.resetServiceCache();
+      await orm.em.getConnection().execute('drop schema if exists "tenant_c" cascade');
+    }
+  });
+
   test('migrations.schema config acts as default when no override is passed', async () => {
     await orm.em.getConnection().execute('drop schema if exists "tenant_b" cascade');
     await orm.em.getConnection().execute('create schema "tenant_b"');
