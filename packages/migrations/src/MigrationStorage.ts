@@ -134,23 +134,7 @@ export class MigrationStorage {
   }
 
   setRunSchema(schema?: string) {
-    if (!schema) {
-      this.#runSchema = undefined;
-      return;
-    }
-
-    if (!this.#helper.supportsMigrationSchema()) {
-      // schemaless drivers (sqlite, libsql) silently ignore — the schema concept does not apply
-      if (!this.#platform.supportsSchemas()) {
-        return;
-      }
-
-      throw new Error(
-        `Runtime schema for migrations is not supported by the ${this.#platform.constructor.name} driver`,
-      );
-    }
-
-    this.#runSchema = schema;
+    this.#runSchema = this.#helper.resolveMigrationSchema(schema);
   }
 
   unsetRunSchema() {
@@ -172,6 +156,7 @@ export class MigrationStorage {
     const tableName = parts.length > 1 ? parts[1] : parts[0];
     const schemaName =
       this.#runSchema ??
+      this.options.schema ??
       (parts.length > 1
         ? parts[0]
         : this.driver.config.get('schema', this.driver.getPlatform().getDefaultSchemaName()));

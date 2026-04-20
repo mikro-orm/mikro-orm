@@ -660,18 +660,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     return /^\d{14}$/.exec(name) ? this.options.fileName!(name) : name;
   }
 
-  private prefix<
-    T extends
-      | string
-      | string[]
-      | {
-          from?: string | number;
-          to?: string | number;
-          migrations?: string[];
-          transaction?: Transaction;
-          schema?: string;
-        },
-  >(options?: T): NormalizedMigrateOptions {
+  private prefix<T extends string | string[] | MigrateOptions>(options?: T): NormalizedMigrateOptions {
     const base: NormalizedMigrateOptions = {};
 
     if (this.options.schema) {
@@ -715,7 +704,8 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
   ): Promise<MigrationInfo[]> {
     await this.init();
     const normalized = this.prefix(options);
-    this.applyRunSchema(normalized.schema);
+    this.runner.setRunSchema?.(normalized.schema);
+    this.storage.setRunSchema?.(normalized.schema);
 
     try {
       if (normalized.schema) {
@@ -732,7 +722,8 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
 
       return await this.driver.getConnection().transactional(trx => this.runInTransaction(trx, method, normalized));
     } finally {
-      this.clearRunSchema();
+      this.runner.unsetRunSchema?.();
+      this.storage.unsetRunSchema?.();
     }
   }
 
@@ -746,15 +737,5 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
       this.runner.unsetMasterMigration();
       this.storage.unsetMasterMigration();
     }
-  }
-
-  private applyRunSchema(schema?: string): void {
-    this.runner.setRunSchema?.(schema);
-    this.storage.setRunSchema?.(schema);
-  }
-
-  private clearRunSchema(): void {
-    this.runner.unsetRunSchema?.();
-    this.storage.unsetRunSchema?.();
   }
 }

@@ -40,7 +40,7 @@ export class OracleSchemaHelper extends SchemaHelper {
   }
 
   override getSetSchemaSQL(schema: string): string {
-    return `alter session set current_schema = ${this.platform.quoteIdentifier(schema)}`;
+    return `alter session set current_schema = ${this.quote(schema)}`;
   }
 
   override supportsMigrationSchema(): boolean {

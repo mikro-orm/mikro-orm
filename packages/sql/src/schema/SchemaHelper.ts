@@ -62,6 +62,23 @@ export abstract class SchemaHelper {
     return false;
   }
 
+  /**
+   * Validates and normalises the user-requested runtime schema against the driver's capabilities.
+   * Returns `undefined` when the driver has no schema concept (sqlite/libsql), the requested schema
+   * when the driver supports it, or throws when the driver has schemas but no session-level switch (mssql).
+   */
+  resolveMigrationSchema(schema: string | undefined): string | undefined {
+    if (!schema || this.supportsMigrationSchema()) {
+      return schema;
+    }
+
+    if (!this.platform.supportsSchemas()) {
+      return undefined;
+    }
+
+    throw new Error(`Runtime schema for migrations is not supported by the ${this.platform.constructor.name} driver`);
+  }
+
   finalizeTable(table: DatabaseTable, charset: string, collate?: string): string {
     return '';
   }
