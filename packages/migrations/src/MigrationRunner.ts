@@ -7,6 +7,7 @@ export class MigrationRunner {
   readonly #connection: AbstractSqlConnection;
   readonly #helper: SchemaHelper;
   #masterTransaction?: Transaction;
+  #runSchema?: string;
 
   constructor(
     protected readonly driver: AbstractSqlDriver,
@@ -43,11 +44,40 @@ export class MigrationRunner {
     this.#masterTransaction = undefined;
   }
 
+  setRunSchema(schema?: string) {
+    if (!schema) {
+      this.#runSchema = undefined;
+      return;
+    }
+
+    const platform = this.driver.getPlatform();
+
+    if (!this.#helper.supportsMigrationSchema()) {
+      // schemaless drivers (sqlite, libsql) silently ignore — the schema concept does not apply
+      if (!platform.supportsSchemas()) {
+        return;
+      }
+
+      throw new Error(`Runtime schema for migrations is not supported by the ${platform.constructor.name} driver`);
+    }
+
+    this.#runSchema = schema;
+  }
+
+  unsetRunSchema() {
+    this.#runSchema = undefined;
+  }
+
   private async getQueries(migration: Migration, method: 'up' | 'down') {
     await migration[method]();
     const charset = this.config.get('charset')!;
     let queries = migration.getQueries();
     queries.unshift(...this.#helper.getSchemaBeginning(charset, this.options.disableForeignKeys).split('\n'));
+
+    if (this.#runSchema) {
+      queries.unshift(this.#helper.getSetSchemaSQL(this.#runSchema));
+    }
+
     queries.push(...this.#helper.getSchemaEnd(this.options.disableForeignKeys).split('\n'));
     queries = queries.filter(sql => typeof sql !== 'string' || sql.trim().length > 0);
 

@@ -45,6 +45,23 @@ export abstract class SchemaHelper {
     return '';
   }
 
+  /**
+   * Returns SQL that sets the current/default schema for the session (e.g. `SET search_path`).
+   * Drivers without a session-level schema context (MSSQL, SQLite) return an empty string.
+   */
+  getSetSchemaSQL(_schema: string): string {
+    return '';
+  }
+
+  /**
+   * Whether the driver supports applying a runtime schema context for migrations.
+   * Used to raise a clear error when a user opts into `migrations.schema` / `migrator.up({ schema })`
+   * on a driver that cannot honour it.
+   */
+  supportsMigrationSchema(): boolean {
+    return false;
+  }
+
   finalizeTable(table: DatabaseTable, charset: string, collate?: string): string {
     return '';
   }

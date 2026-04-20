@@ -39,6 +39,14 @@ export class OracleSchemaHelper extends SchemaHelper {
     return `select 1 from all_users where username = ${this.platform.quoteValue(name)}`;
   }
 
+  override getSetSchemaSQL(schema: string): string {
+    return `alter session set current_schema = ${this.platform.quoteIdentifier(schema)}`;
+  }
+
+  override supportsMigrationSchema(): boolean {
+    return true;
+  }
+
   override async getAllTables(
     connection: AbstractSqlConnection,
     schemas?: string[],

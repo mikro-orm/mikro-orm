@@ -49,6 +49,17 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `set names '${charset}';\n\n`;
   }
 
+  override getSetSchemaSQL(schema: string): string {
+    // Session-level `SET` works both inside and outside a transaction (unlike `SET LOCAL`).
+    // Inside a transaction, it is rolled back on failure; on commit it persists on the connection
+    // until it is returned to the pool. Run migrations on a dedicated connection if that is a concern.
+    return `set search_path to ${this.quote(schema)}, "public"`;
+  }
+
+  override supportsMigrationSchema(): boolean {
+    return true;
+  }
+
   override getCreateDatabaseSQL(name: string): string {
     return `create database ${this.quote(name)}`;
   }

@@ -375,7 +375,10 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
       up.push('select 1');
       down.push('select 1');
     } else if (initial) {
-      const dump = await this.#schemaGenerator.getCreateSchemaSQL({ wrap: false });
+      const dump = await this.#schemaGenerator.getCreateSchemaSQL({
+        wrap: false,
+        includeWildcardSchema: this.options.includeWildcardSchema,
+      });
       up.push(...splitStatements(dump));
     } else {
       const diff = await this.#schemaGenerator.getUpdateSchemaMigrationSQL({
@@ -383,6 +386,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
         safe: this.options.safe,
         dropTables: this.options.dropTables,
         fromSchema: await this.getSchemaFromSnapshot(),
+        includeWildcardSchema: this.options.includeWildcardSchema,
       });
       up.push(...splitStatements(diff.up));
       down.push(...splitStatements(diff.down));

@@ -334,9 +334,9 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         this.options.skipTables,
         this.options.skipViews,
       ));
-    const wildcardSchemaTables = [...this.metadata.getAll().values()]
-      .filter(meta => meta.schema === '*')
-      .map(meta => meta.tableName);
+    const wildcardSchemaTables = options.includeWildcardSchema
+      ? []
+      : [...this.metadata.getAll().values()].filter(meta => meta.schema === '*').map(meta => meta.tableName);
     fromSchema.prune(options.schema, wildcardSchemaTables);
     toSchema.prune(options.schema, wildcardSchemaTables);
 

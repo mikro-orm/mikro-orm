@@ -27,6 +27,14 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `set names ${charset};\n\n`;
   }
 
+  override getSetSchemaSQL(schema: string): string {
+    return `use ${this.quote(schema)}`;
+  }
+
+  override supportsMigrationSchema(): boolean {
+    return true;
+  }
+
   override disableForeignKeysSQL(): string {
     return 'set foreign_key_checks = 0;';
   }

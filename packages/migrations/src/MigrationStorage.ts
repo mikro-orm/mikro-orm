@@ -14,6 +14,7 @@ export class MigrationStorage {
   readonly #connection: AbstractSqlConnection;
   readonly #helper: SchemaHelper;
   #masterTransaction?: Transaction;
+  #runSchema?: string;
   readonly #platform: AbstractSqlPlatform;
 
   constructor(
@@ -117,6 +118,30 @@ export class MigrationStorage {
     this.#masterTransaction = undefined;
   }
 
+  setRunSchema(schema?: string) {
+    if (!schema) {
+      this.#runSchema = undefined;
+      return;
+    }
+
+    if (!this.#helper.supportsMigrationSchema()) {
+      // schemaless drivers (sqlite, libsql) silently ignore — the schema concept does not apply
+      if (!this.#platform.supportsSchemas()) {
+        return;
+      }
+
+      throw new Error(
+        `Runtime schema for migrations is not supported by the ${this.#platform.constructor.name} driver`,
+      );
+    }
+
+    this.#runSchema = schema;
+  }
+
+  unsetRunSchema() {
+    this.#runSchema = undefined;
+  }
+
   /**
    * @internal
    */
@@ -131,7 +156,10 @@ export class MigrationStorage {
     const parts = this.options.tableName!.split('.');
     const tableName = parts.length > 1 ? parts[1] : parts[0];
     const schemaName =
-      parts.length > 1 ? parts[0] : this.driver.config.get('schema', this.driver.getPlatform().getDefaultSchemaName());
+      this.#runSchema ??
+      (parts.length > 1
+        ? parts[0]
+        : this.driver.config.get('schema', this.driver.getPlatform().getDefaultSchemaName()));
 
     const entity = defineEntity({
       name: 'Migration',

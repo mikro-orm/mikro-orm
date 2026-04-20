@@ -28,6 +28,7 @@ type NormalizedMigrateOptions = {
   /** After normalization, `to` is either a migration name (string) or `0` to revert all. */
   to?: string | 0;
   migrations?: string[];
+  schema?: string;
 };
 
 type MigrateOptions = {
@@ -35,6 +36,7 @@ type MigrateOptions = {
   to?: string | number;
   migrations?: string[];
   transaction?: Transaction;
+  schema?: string;
 };
 
 export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMigrator {
@@ -662,17 +664,29 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     T extends
       | string
       | string[]
-      | { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction },
+      | {
+          from?: string | number;
+          to?: string | number;
+          migrations?: string[];
+          transaction?: Transaction;
+          schema?: string;
+        },
   >(options?: T): NormalizedMigrateOptions {
+    const base: NormalizedMigrateOptions = {};
+
+    if (this.options.schema) {
+      base.schema = this.options.schema;
+    }
+
     if (typeof options === 'string' || Array.isArray(options)) {
-      return { migrations: Utils.asArray(options).map(name => this.getMigrationFilename(name)) };
+      return { ...base, migrations: Utils.asArray(options).map(name => this.getMigrationFilename(name)) };
     }
 
     if (!options) {
-      return {};
+      return base;
     }
 
-    const result: NormalizedMigrateOptions = {};
+    const result: NormalizedMigrateOptions = base;
 
     if (options.migrations) {
       result.migrations = options.migrations.map(name => this.getMigrationFilename(name));
@@ -688,6 +702,10 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
       result.to = 0;
     }
 
+    if (options.schema !== undefined) {
+      result.schema = options.schema;
+    }
+
     return result;
   }
 
@@ -696,31 +714,47 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     options?: string | string[] | MigrateOptions,
   ): Promise<MigrationInfo[]> {
     await this.init();
+    const normalized = this.prefix(options);
+    this.applyRunSchema(normalized.schema);
 
-    if (!this.options.transactional || !this.options.allOrNothing) {
-      return this.executeMigrations(method, this.prefix(options as string[]));
+    try {
+      if (normalized.schema) {
+        await this.storage.ensureTable?.();
+      }
+
+      if (!this.options.transactional || !this.options.allOrNothing) {
+        return await this.executeMigrations(method, normalized);
+      }
+
+      if (Utils.isObject<MigrateOptions>(options) && options.transaction) {
+        return await this.runInTransaction(options.transaction, method, normalized);
+      }
+
+      return await this.driver.getConnection().transactional(trx => this.runInTransaction(trx, method, normalized));
+    } finally {
+      this.clearRunSchema();
     }
-
-    if (Utils.isObject<MigrateOptions>(options) && options.transaction) {
-      return this.runInTransaction(options.transaction, method, options);
-    }
-
-    return this.driver.getConnection().transactional(trx => this.runInTransaction(trx, method, options));
   }
 
-  private async runInTransaction(
-    trx: Transaction,
-    method: 'up' | 'down',
-    options: string | string[] | undefined | MigrateOptions,
-  ) {
+  private async runInTransaction(trx: Transaction, method: 'up' | 'down', options: NormalizedMigrateOptions) {
     this.runner.setMasterMigration(trx);
     this.storage.setMasterMigration(trx);
 
     try {
-      return await this.executeMigrations(method, this.prefix(options));
+      return await this.executeMigrations(method, options);
     } finally {
       this.runner.unsetMasterMigration();
       this.storage.unsetMasterMigration();
     }
+  }
+
+  private applyRunSchema(schema?: string): void {
+    this.runner.setRunSchema?.(schema);
+    this.storage.setRunSchema?.(schema);
+  }
+
+  private clearRunSchema(): void {
+    this.runner.unsetRunSchema?.();
+    this.storage.unsetRunSchema?.();
   }
 }

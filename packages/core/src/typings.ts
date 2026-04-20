@@ -1704,6 +1704,11 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
 export interface CreateSchemaOptions {
   wrap?: boolean;
   schema?: string;
+  /**
+   * When true, entities with a wildcard schema (`schema: '*'`) are included in the generated DDL.
+   * Without this, wildcard tables are skipped.
+   */
+  includeWildcardSchema?: boolean;
 }
 
 /** Options for `ISchemaGenerator.clear()` to truncate/clear database tables. */
@@ -1737,6 +1742,12 @@ export interface UpdateSchemaOptions<DatabaseSchema = unknown> {
   dropTables?: boolean;
   schema?: string;
   fromSchema?: DatabaseSchema;
+  /**
+   * When true, entities with a wildcard schema (`schema: '*'`) are included in the diff so migrations
+   * can be generated for them. The emitted SQL will be unqualified when `schema` is not set, so it can
+   * be applied at runtime against any target schema.
+   */
+  includeWildcardSchema?: boolean;
 }
 
 /** Options for `ISchemaGenerator.refresh()` which drops and recreates the schema. */
@@ -1818,6 +1829,12 @@ export type MigrateOptions = {
   to?: string | number;
   migrations?: string[];
   transaction?: Transaction;
+  /**
+   * Target schema to run migrations against. Issues a driver-specific "set current schema"
+   * statement (e.g. `SET search_path` on PostgreSQL) before each migration, and places the
+   * tracking table in this schema. Overrides `migrations.schema` from config. Not supported on MSSQL.
+   */
+  schema?: string;
 };
 /** Result of creating a new migration file, including the generated code and schema diff. */
 export type MigrationResult = { fileName: string; code: string; diff: MigrationDiff };
@@ -1832,6 +1849,8 @@ export interface IMigrationRunner {
   run(migration: Migration, method: 'up' | 'down'): Promise<void>;
   setMasterMigration(trx: Transaction): void;
   unsetMasterMigration(): void;
+  setRunSchema?(schema?: string): void;
+  unsetRunSchema?(): void;
 }
 
 /**
@@ -1845,6 +1864,8 @@ export interface IMigratorStorage {
   ensureTable?(): Promise<void>;
   setMasterMigration(trx: Transaction): void;
   unsetMasterMigration(): void;
+  setRunSchema?(schema?: string): void;
+  unsetRunSchema?(): void;
   getMigrationName(name: string): string;
   getTableName?(): { schemaName?: string; tableName: string };
 }
