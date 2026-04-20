@@ -80,7 +80,13 @@ export abstract class SchemaHelper {
    * when the driver supports it, or throws when the driver has schemas but no session-level switch (mssql).
    */
   resolveMigrationSchema(schema: string | undefined): string | undefined {
-    if (!schema || this.supportsMigrationSchema()) {
+    // Normalise empty string to undefined so the downstream falsy/nullish checks agree on
+    // "no runtime schema requested".
+    if (!schema) {
+      return undefined;
+    }
+
+    if (this.supportsMigrationSchema()) {
       return schema;
     }
 

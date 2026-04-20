@@ -22,6 +22,16 @@ export class MigrationRunner {
     migration.reset();
 
     if (!this.options.transactional || !migration.isTransactional()) {
+      // Without a pinned transaction each query may land on a different pooled connection —
+      // the `SET search_path` / `USE` / `ALTER SESSION` would not cover the migration's DDL,
+      // and the reset we emit afterwards could leave the original connection poisoned. Refuse
+      // up-front rather than silently running in the default schema.
+      if (this.#runSchema) {
+        throw new Error(
+          'Runtime schema (migrations.schema / migrator.up({ schema })) is only supported with transactional migrations',
+        );
+      }
+
       try {
         const queries = await this.getQueries(migration, method);
         await Utils.runSerial(queries, sql => this.driver.execute(sql));
