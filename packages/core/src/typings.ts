@@ -1893,12 +1893,12 @@ export interface IMigrator {
   /**
    * Returns list of already executed migrations.
    */
-  getExecuted(): Promise<MigrationRow[]>;
+  getExecuted(options?: { schema?: string }): Promise<MigrationRow[]>;
 
   /**
    * Returns list of pending (not yet executed) migrations found in the migration directory.
    */
-  getPending(): Promise<MigrationInfo[]>;
+  getPending(options?: { schema?: string }): Promise<MigrationInfo[]>;
 
   /**
    * Executes specified migrations. Without parameter it will migrate up to the latest version.

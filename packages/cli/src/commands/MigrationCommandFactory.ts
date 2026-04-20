@@ -86,6 +86,11 @@ export class MigrationCommandFactory {
       type: 'string',
       desc: 'Migrate only specified versions',
     });
+    args.option('s', {
+      alias: 'schema',
+      type: 'string',
+      desc: 'Target schema to run the migration against (PostgreSQL, MySQL, Oracle)',
+    });
 
     return args as Argv<CliUpDownOptions>;
   }
@@ -280,12 +285,22 @@ export class MigrationCommandFactory {
 
   private static getUpDownOptions(flags: CliUpDownOptions): MigrateOptions {
     if (!flags.to && !flags.from && flags.only) {
-      return { migrations: flags.only.split(/[, ]+/) };
+      const ret: MigrateOptions = { migrations: flags.only.split(/[, ]+/) };
+
+      if (flags.schema) {
+        ret.schema = flags.schema;
+      }
+
+      return ret;
     }
 
     const ret: MigrateOptions = {};
 
     (['from', 'to'] as const).filter(k => flags[k]).forEach(k => (ret[k] = flags[k] === '0' ? 0 : flags[k]));
+
+    if (flags.schema) {
+      ret.schema = flags.schema;
+    }
 
     return ret;
   }
@@ -318,7 +333,7 @@ export class MigrationCommandFactory {
   }
 }
 
-type CliUpDownOptions = BaseArgs & { to?: string | number; from?: string | number; only?: string };
+type CliUpDownOptions = BaseArgs & { to?: string | number; from?: string | number; only?: string; schema?: string };
 type MigratorFreshOptions = BaseArgs & { dropDb?: boolean; seed?: string };
 type MigratorCreateOptions = BaseArgs & {
   blank?: boolean;

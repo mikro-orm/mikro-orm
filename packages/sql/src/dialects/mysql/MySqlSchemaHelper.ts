@@ -31,8 +31,31 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `use ${this.quote(schema)}`;
   }
 
+  override getResetSchemaSQL(defaultSchema: string): string {
+    return `use ${this.quote(defaultSchema)}`;
+  }
+
   override supportsMigrationSchema(): boolean {
     return true;
+  }
+
+  override async tableExists(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName: string | undefined,
+    ctx?: Transaction,
+  ): Promise<boolean> {
+    // MySQL's `schema` is the database. When not explicitly targeting one, probe the connection's
+    // current database via `schema()` rather than falling through the base impl's empty-string literal.
+    const qv = (v: string) => this.platform.quoteValue(v);
+    const schemaClause = schemaName ? `table_schema = ${qv(schemaName)}` : `table_schema = schema()`;
+    const rows = await connection.execute<Dictionary[]>(
+      `select 1 from information_schema.tables where ${schemaClause} and table_name = ${qv(tableName)}`,
+      [],
+      'all',
+      ctx,
+    );
+    return rows.length > 0;
   }
 
   override disableForeignKeysSQL(): string {

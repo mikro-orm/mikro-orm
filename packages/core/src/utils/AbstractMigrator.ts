@@ -98,20 +98,33 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
   /**
    * @inheritDoc
    */
-  async getExecuted(): Promise<MigrationRow[]> {
+  async getExecuted(options?: { schema?: string }): Promise<MigrationRow[]> {
     await this.init();
-    return this.storage.getExecutedMigrations();
+    const schema = options?.schema ?? this.options.schema;
+    this.storage.setRunSchema?.(schema);
+
+    try {
+      return await this.storage.getExecutedMigrations();
+    } finally {
+      this.storage.unsetRunSchema?.();
+    }
   }
 
   /**
    * @inheritDoc
    */
-  async getPending(): Promise<MigrationInfo[]> {
+  async getPending(options?: { schema?: string }): Promise<MigrationInfo[]> {
     await this.init();
-    const all = await this.discoverMigrations();
-    const executed = new Set(await this.storage.executed());
+    const schema = options?.schema ?? this.options.schema;
+    this.storage.setRunSchema?.(schema);
 
-    return all.filter(m => !executed.has(m.name)).map(m => ({ name: m.name, path: m.path }));
+    try {
+      const all = await this.discoverMigrations();
+      const executed = new Set(await this.storage.executed());
+      return all.filter(m => !executed.has(m.name)).map(m => ({ name: m.name, path: m.path }));
+    } finally {
+      this.storage.unsetRunSchema?.();
+    }
   }
 
   /**

@@ -43,8 +43,28 @@ export class OracleSchemaHelper extends SchemaHelper {
     return `alter session set current_schema = ${this.quote(schema)}`;
   }
 
+  override getResetSchemaSQL(defaultSchema: string): string {
+    return `alter session set current_schema = ${this.quote(defaultSchema)}`;
+  }
+
   override supportsMigrationSchema(): boolean {
     return true;
+  }
+
+  override async tableExists(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName: string | undefined,
+    ctx?: Transaction,
+  ): Promise<boolean> {
+    const schema = schemaName ?? this.platform.getDefaultSchemaName();
+    const rows = await connection.execute<Dictionary[]>(
+      `select 1 from all_tables where owner = ${this.platform.quoteValue(schema!)} and table_name = ${this.platform.quoteValue(tableName)}`,
+      [],
+      'all',
+      ctx,
+    );
+    return rows.length > 0;
   }
 
   override async getAllTables(

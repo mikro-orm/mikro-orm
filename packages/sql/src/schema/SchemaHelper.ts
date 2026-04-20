@@ -65,6 +65,16 @@ export abstract class SchemaHelper {
   }
 
   /**
+   * Returns SQL that restores the session's schema back to the connection's default, so the
+   * pooled connection does not leak the migration's schema context into subsequent queries.
+   * Empty string for drivers without a session-level schema concept.
+   */
+  /* v8 ignore next 3 */
+  getResetSchemaSQL(_defaultSchema: string): string {
+    return '';
+  }
+
+  /**
    * Validates and normalises the user-requested runtime schema against the driver's capabilities.
    * Returns `undefined` when the driver has no schema concept (sqlite/libsql), the requested schema
    * when the driver supports it, or throws when the driver has schemas but no session-level switch (mssql).
@@ -156,6 +166,30 @@ export abstract class SchemaHelper {
   /** Retrieves all tables from the database. */
   async getAllTables(connection: AbstractSqlConnection, schemas?: string[], ctx?: Transaction): Promise<Table[]> {
     return connection.execute<Table[]>(this.getListTablesSQL(), [], 'all', ctx);
+  }
+
+  /**
+   * Checks whether a specific table exists in a given schema. Scoped lookup — does not rely on the
+   * connection's current-session schema, so it stays correct when migrations run against a runtime
+   * target schema via `migrator.up({ schema })`.
+   */
+  async tableExists(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName: string | undefined,
+    ctx?: Transaction,
+  ): Promise<boolean> {
+    const qv = (v: string | undefined) => this.platform.quoteValue(v ?? '');
+    const schemaClause = schemaName
+      ? `table_schema = ${qv(schemaName)}`
+      : `table_schema = ${qv(this.platform.getDefaultSchemaName())}`;
+    const rows = await connection.execute<Dictionary[]>(
+      `select 1 from information_schema.tables where ${schemaClause} and table_name = ${qv(tableName)}`,
+      [],
+      'all',
+      ctx,
+    );
+    return rows.length > 0;
   }
 
   getListViewsSQL(): string {

@@ -50,10 +50,15 @@ describe('migrations with runtime schema (postgres)', () => {
     await orm.close(true);
   });
 
-  test('migrator.up({ schema }) creates table + tracking table in the target schema', async () => {
+  test('migrator.up({ schema }) does not leak search_path onto the pooled connection', async () => {
     await orm.em.getConnection().execute('create schema "tenant_a"');
     await orm.migrator.up({ schema: 'tenant_a' });
 
+    const [{ search_path }] = await orm.em.getConnection().execute<{ search_path: string }[]>(`show search_path`);
+    expect(search_path).not.toContain('tenant_a');
+  });
+
+  test('migrator.up({ schema }) creates table + tracking table in the target schema', async () => {
     const [tableInTenant] = await orm.em
       .getConnection()
       .execute<{ exists: boolean }[]>(

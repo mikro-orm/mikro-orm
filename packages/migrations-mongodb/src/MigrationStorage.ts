@@ -56,6 +56,16 @@ export class MigrationStorage {
     delete this.masterTransaction;
   }
 
+  setRunSchema(schema?: string) {
+    if (schema) {
+      throw new Error('Runtime schema for migrations is not supported by the MongoDriver');
+    }
+  }
+
+  unsetRunSchema() {
+    /* nothing to do — mongo never accepts a runtime schema */
+  }
+
   /**
    * @internal
    */

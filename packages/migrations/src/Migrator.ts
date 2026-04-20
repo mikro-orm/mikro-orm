@@ -113,25 +113,31 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     };
   }
 
-  override async getPending(): Promise<MigrationInfo[]> {
+  override async getPending(options?: { schema?: string }): Promise<MigrationInfo[]> {
     if (!(await this.hasSnapshot())) {
-      return super.getPending();
+      return super.getPending(options);
     }
 
     await this.initPaths();
     const all = await this.discoverMigrations();
+    const schema = options?.schema ?? this.options.schema;
+    this.storage.setRunSchema?.(schema);
 
-    // probe the DB via `ensureTable` — if it fails, the DB is unreachable and
-    // we treat every discovered migration as pending; otherwise let errors
-    // from `storage.executed()` propagate so real bugs are not swallowed
     try {
-      await (this.storage as MigrationStorage).ensureTable();
-    } catch {
-      return all.map(m => ({ name: m.name, path: m.path }));
-    }
+      // probe the DB via `ensureTable` — if it fails, the DB is unreachable and
+      // we treat every discovered migration as pending; otherwise let errors
+      // from `storage.executed()` propagate so real bugs are not swallowed
+      try {
+        await (this.storage as MigrationStorage).ensureTable();
+      } catch {
+        return all.map(m => ({ name: m.name, path: m.path }));
+      }
 
-    const executed = new Set(await this.storage.executed());
-    return all.filter(m => !executed.has(m.name)).map(m => ({ name: m.name, path: m.path }));
+      const executed = new Set(await this.storage.executed());
+      return all.filter(m => !executed.has(m.name)).map(m => ({ name: m.name, path: m.path }));
+    } finally {
+      this.storage.unsetRunSchema?.();
+    }
   }
 
   private async hasSnapshot(): Promise<boolean> {

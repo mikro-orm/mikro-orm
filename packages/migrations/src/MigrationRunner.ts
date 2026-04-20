@@ -22,18 +22,44 @@ export class MigrationRunner {
     migration.reset();
 
     if (!this.options.transactional || !migration.isTransactional()) {
-      const queries = await this.getQueries(migration, method);
-      await Utils.runSerial(queries, sql => this.driver.execute(sql));
+      try {
+        const queries = await this.getQueries(migration, method);
+        await Utils.runSerial(queries, sql => this.driver.execute(sql));
+      } finally {
+        await this.resetSessionSchema();
+      }
     } else {
       await this.#connection.transactional(
         async tx => {
           migration.setTransactionContext(tx);
-          const queries = await this.getQueries(migration, method);
-          await Utils.runSerial(queries, sql => this.driver.execute(sql, undefined, 'all', tx));
+
+          try {
+            const queries = await this.getQueries(migration, method);
+            await Utils.runSerial(queries, sql => this.driver.execute(sql, undefined, 'all', tx));
+          } finally {
+            await this.resetSessionSchema(tx);
+          }
         },
         { ctx: this.#masterTransaction },
       );
     }
+  }
+
+  private async resetSessionSchema(ctx?: Transaction): Promise<void> {
+    if (!this.#runSchema) {
+      return;
+    }
+
+    const sql = this.#helper.getResetSchemaSQL(this.config.get('dbName')!);
+
+    if (!sql) {
+      return;
+    }
+
+    // Best-effort: if the reset itself fails, the subsequent pool consumer may see a stale schema,
+    // but there is nothing actionable we can surface from here — the original migration error
+    // (if any) is what the caller needs to see.
+    await this.driver.execute(sql, undefined, 'all', ctx).catch(() => void 0);
   }
 
   setMasterMigration(trx: Transaction) {

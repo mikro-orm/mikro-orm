@@ -23,6 +23,16 @@ class CreateArticleMigration extends Migration {
   }
 }
 
+class AddViewColumnMigration extends Migration {
+  override async up(): Promise<void> {
+    this.addSql('alter table `article` add column `views` int unsigned not null default 0');
+  }
+
+  override async down(): Promise<void> {
+    this.addSql('alter table `article` drop column `views`');
+  }
+}
+
 describe('migrations with runtime schema (mysql)', () => {
   let orm: MikroORM;
   const tenants = ['mikro_orm_rt_schema_mysql_a', 'mikro_orm_rt_schema_mysql_b'];
@@ -35,7 +45,10 @@ describe('migrations with runtime schema (mysql)', () => {
       user: 'root',
       extensions: [Migrator],
       migrations: {
-        migrationsList: [{ class: CreateArticleMigration, name: 'CreateArticleMigration' }],
+        migrationsList: [
+          { class: CreateArticleMigration, name: 'CreateArticleMigration' },
+          { class: AddViewColumnMigration, name: 'AddViewColumnMigration' },
+        ],
         snapshot: false,
         silent: true,
       },
@@ -56,35 +69,52 @@ describe('migrations with runtime schema (mysql)', () => {
     await orm.close(true);
   });
 
-  test('migrator.up({ schema }) runs in the target MySQL database', async () => {
+  test('runs all pending migrations in the target MySQL database', async () => {
     await orm.migrator.up({ schema: tenants[0] });
 
-    const [table] = await orm.em
+    const [cols] = await orm.em
       .getConnection()
       .execute<{ c: number }[]>(
-        `select count(*) c from information_schema.tables where table_schema = ? and table_name = 'article'`,
+        `select count(*) c from information_schema.columns where table_schema = ? and table_name = 'article' and column_name in ('id', 'title', 'views')`,
         [tenants[0]],
       );
-    expect(table.c).toBe(1);
+    expect(cols.c).toBe(3);
 
-    const [tracking] = await orm.em
-      .getConnection()
-      .execute<{ c: number }[]>(
-        `select count(*) c from information_schema.tables where table_schema = ? and table_name = 'mikro_orm_migrations'`,
-        [tenants[0]],
-      );
-    expect(tracking.c).toBe(1);
+    const executed = await orm.migrator.getExecuted({ schema: tenants[0] });
+    expect(executed.map(r => r.name)).toEqual(['CreateArticleMigration', 'AddViewColumnMigration']);
+  });
+
+  test('second up({ schema }) against the same tenant is a no-op', async () => {
+    await expect(orm.migrator.up({ schema: tenants[0] })).resolves.not.toThrow();
+
+    const pending = await orm.migrator.getPending({ schema: tenants[0] });
+    expect(pending).toHaveLength(0);
+  });
+
+  test('pool connection does not leak the runtime database', async () => {
+    const [{ db }] = await orm.em.getConnection().execute<{ db: string }[]>(`select database() as db`);
+    expect(db).toBe('mikro_orm_rt_schema_mysql_ctl');
   });
 
   test('applies independently to a second database', async () => {
     await orm.migrator.up({ schema: tenants[1] });
 
-    const [table] = await orm.em
+    const [cols] = await orm.em
       .getConnection()
       .execute<{ c: number }[]>(
-        `select count(*) c from information_schema.tables where table_schema = ? and table_name = 'article'`,
+        `select count(*) c from information_schema.columns where table_schema = ? and table_name = 'article'`,
         [tenants[1]],
       );
-    expect(table.c).toBe(1);
+    expect(cols.c).toBe(3);
+  });
+
+  test('down reverts one step in the target schema only', async () => {
+    await orm.migrator.down({ schema: tenants[0] });
+
+    const executedA = await orm.migrator.getExecuted({ schema: tenants[0] });
+    expect(executedA.map(r => r.name)).toEqual(['CreateArticleMigration']);
+
+    const executedB = await orm.migrator.getExecuted({ schema: tenants[1] });
+    expect(executedB.map(r => r.name)).toEqual(['CreateArticleMigration', 'AddViewColumnMigration']);
   });
 });
