@@ -79,14 +79,14 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     return false;
   }
 
-  getTargetSchema(schema?: string): DatabaseSchema {
-    const metadata = this.getOrderedMetadata(schema);
+  getTargetSchema(schema?: string, includeWildcardSchema = false): DatabaseSchema {
+    const metadata = this.getOrderedMetadata(schema, includeWildcardSchema);
     const schemaName = schema ?? this.config.get('schema') ?? this.platform.getDefaultSchemaName();
     return DatabaseSchema.fromMetadata(metadata, this.platform, this.config, schemaName, this.em);
   }
 
-  protected override getOrderedMetadata(schema?: string): EntityMetadata[] {
-    const metadata = super.getOrderedMetadata(schema);
+  protected override getOrderedMetadata(schema?: string, includeWildcardSchema = false): EntityMetadata[] {
+    const metadata = super.getOrderedMetadata(schema, includeWildcardSchema);
 
     // Filter out skipped tables
     return metadata.filter(meta => {
@@ -97,7 +97,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   }
 
   override async getCreateSchemaSQL(options: CreateSchemaOptions = {}): Promise<string> {
-    const toSchema = this.getTargetSchema(options.schema);
+    const toSchema = this.getTargetSchema(options.schema, options.includeWildcardSchema);
     const ret: string[] = [];
 
     for (const namespace of toSchema.getNamespaces()) {
@@ -320,7 +320,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   private async prepareSchemaForComparison(options: UpdateSchemaOptions<DatabaseSchema>) {
     options.safe ??= false;
     options.dropTables ??= true;
-    const toSchema = this.getTargetSchema(options.schema);
+    const toSchema = this.getTargetSchema(options.schema, options.includeWildcardSchema);
     const schemas = toSchema.getNamespaces();
     const fromSchema =
       options.fromSchema ??
