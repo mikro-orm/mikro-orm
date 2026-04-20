@@ -397,6 +397,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
    */
   async logMigration(name: string): Promise<void> {
     await this.init();
+    await this.storage.ensureTable?.();
     await this.storage.logMigration({ name });
   }
 
@@ -405,6 +406,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
    */
   async unlogMigration(name: string): Promise<void> {
     await this.init();
+    await this.storage.ensureTable?.();
     await this.storage.unlogMigration({ name });
   }
 
