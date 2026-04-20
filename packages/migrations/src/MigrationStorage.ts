@@ -74,7 +74,22 @@ export class MigrationStorage {
     );
     const { tableName, schemaName } = this.getTableName();
 
-    if (tables.find(t => t.table_name === tableName && (!t.schema_name || t.schema_name === schemaName))) {
+    // `!t.schema_name` means the row came from the connection's current schema — only treat
+    // that as a match when we are looking at that same schema (no runtime override in play),
+    // otherwise we would skip creating the table in the target schema.
+    const matches = (t: Table) => {
+      if (t.table_name !== tableName) {
+        return false;
+      }
+
+      if (this.#runSchema) {
+        return t.schema_name === this.#runSchema;
+      }
+
+      return !t.schema_name || t.schema_name === schemaName;
+    };
+
+    if (tables.find(matches)) {
       return;
     }
 
