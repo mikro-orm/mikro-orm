@@ -31,12 +31,14 @@ export class MigrationStorage {
   }
 
   async logMigration(params: { name: string }): Promise<void> {
+    await this.ensureTable();
     const { entity } = this.getTableName();
     const name = this.getMigrationName(params.name);
     await this.driver.nativeInsert(entity, { name }, { ctx: this.#masterTransaction });
   }
 
   async unlogMigration(params: { name: string }): Promise<void> {
+    await this.ensureTable();
     const { entity } = this.getTableName();
     const withoutExt = this.getMigrationName(params.name);
     const names = [withoutExt, withoutExt + '.js', withoutExt + '.ts'];
@@ -48,6 +50,7 @@ export class MigrationStorage {
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
+    await this.ensureTable();
     const { entity, schemaName } = this.getTableName();
     const res = await this.driver
       .createQueryBuilder<MigrationRow>(entity, this.#masterTransaction)
@@ -71,11 +74,11 @@ export class MigrationStorage {
       return;
     }
 
-    const schemas = await this.#helper.getNamespaces(this.#connection);
+    const schemas = await this.#helper.getNamespaces(this.#connection, this.#masterTransaction);
 
     if (schemaName && !schemas.includes(schemaName)) {
       const sql = this.#helper.getCreateNamespaceSQL(schemaName);
-      await this.#connection.execute(sql);
+      await this.#connection.execute(sql, [], 'run', this.#masterTransaction);
     }
 
     const table = new DatabaseTable(this.#platform, tableName, schemaName);

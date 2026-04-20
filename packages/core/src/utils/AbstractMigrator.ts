@@ -104,7 +104,6 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     this.storage.setRunSchema?.(schema);
 
     try {
-      await this.storage.ensureTable?.();
       return await this.storage.getExecutedMigrations();
     } finally {
       this.storage.unsetRunSchema?.();
@@ -120,7 +119,6 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     this.storage.setRunSchema?.(schema);
 
     try {
-      await this.storage.ensureTable?.();
       const all = await this.discoverMigrations();
       const executed = new Set(await this.storage.executed());
       return all.filter(m => !executed.has(m.name)).map(m => ({ name: m.name, path: m.path }));
@@ -399,7 +397,6 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
    */
   async logMigration(name: string): Promise<void> {
     await this.init();
-    await this.storage.ensureTable?.();
     await this.storage.logMigration({ name });
   }
 
@@ -408,7 +405,6 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
    */
   async unlogMigration(name: string): Promise<void> {
     await this.init();
-    await this.storage.ensureTable?.();
     await this.storage.unlogMigration({ name });
   }
 
@@ -723,8 +719,6 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     this.storage.setRunSchema?.(normalized.schema);
 
     try {
-      await this.storage.ensureTable?.();
-
       if (!this.options.transactional || !this.options.allOrNothing) {
         return await this.executeMigrations(method, normalized);
       }

@@ -1744,8 +1744,9 @@ export interface UpdateSchemaOptions<DatabaseSchema = unknown> {
   fromSchema?: DatabaseSchema;
   /**
    * When true, entities with a wildcard schema (`schema: '*'`) are included in the diff so migrations
-   * can be generated for them. The emitted SQL will be unqualified when `schema` is not set, so it can
-   * be applied at runtime against any target schema.
+   * can be generated for them. The emitted SQL is unqualified — and therefore safe to apply against
+   * any schema at runtime — only when neither `options.schema` nor `config.schema` is set; otherwise
+   * wildcard tables inherit that schema qualifier.
    */
   includeWildcardSchema?: boolean;
 }

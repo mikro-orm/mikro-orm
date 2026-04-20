@@ -662,9 +662,11 @@ export type MigrationsOptions = {
    */
   schema?: string;
   /**
-   * When set, entities with a wildcard schema (`schema: '*'`) are included in generated migrations,
-   * and the emitted SQL is unqualified so it can be applied to any schema at runtime via
-   * `migrator.up({ schema })` (or `migrations.schema`).
+   * When set, entities with a wildcard schema (`schema: '*'`) are included in generated migrations.
+   * The emitted SQL is unqualified — and therefore safe to apply against any schema at runtime via
+   * `migrator.up({ schema })` — only when neither `options.schema` nor the ORM's `config.schema`
+   * is set. If `config.schema` is set, wildcard tables are qualified with it (useful for local
+   * dev runs); in that case, generate migrations from an environment where `config.schema` is unset.
    * @default false
    */
   includeWildcardSchema?: boolean;

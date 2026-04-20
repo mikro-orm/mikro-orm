@@ -32,12 +32,8 @@ export class MigrationRunner {
         );
       }
 
-      try {
-        const queries = await this.getQueries(migration, method);
-        await Utils.runSerial(queries, sql => this.driver.execute(sql));
-      } finally {
-        await this.resetSessionSchema();
-      }
+      const queries = await this.getQueries(migration, method);
+      await Utils.runSerial(queries, sql => this.driver.execute(sql));
     } else {
       await this.#connection.transactional(
         async tx => {
