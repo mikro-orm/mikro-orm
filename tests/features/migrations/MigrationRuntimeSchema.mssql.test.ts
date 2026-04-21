@@ -39,7 +39,7 @@ describe('migrations with runtime schema (mssql — unsupported)', () => {
 
   test('passing schema to up() throws a clear error on MSSQL', async () => {
     await expect(orm.migrator.up({ schema: 'anything' })).rejects.toThrow(
-      /Runtime schema for migrations is not supported/,
+      /Runtime schema for migrations is not supported by the MsSqlDriver/,
     );
   });
 });

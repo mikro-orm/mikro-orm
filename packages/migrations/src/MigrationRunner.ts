@@ -22,10 +22,8 @@ export class MigrationRunner {
     migration.reset();
 
     if (!this.options.transactional || !migration.isTransactional()) {
-      // Without a pinned transaction each query may land on a different pooled connection —
-      // the `SET search_path` / `USE` / `ALTER SESSION` would not cover the migration's DDL,
-      // and the reset we emit afterwards could leave the original connection poisoned. Refuse
-      // up-front rather than silently running in the default schema.
+      // Without a pinned transaction the set/reset statements may land on different pooled
+      // connections than the DDL, so refuse rather than silently running in the default schema.
       if (this.#runSchema) {
         throw new Error(
           'Runtime schema (migrations.schema / migrator.up({ schema })) is only supported with transactional migrations',
@@ -58,14 +56,12 @@ export class MigrationRunner {
 
     const sql = this.#helper.getResetSchemaSQL(this.config.get('dbName')!);
 
-    /* v8 ignore next 3: every driver that enables `supportsMigrationSchema` also overrides `getResetSchemaSQL` */
+    /* v8 ignore next 3 */
     if (!sql) {
       return;
     }
 
-    // Best-effort: if the reset itself fails, the subsequent pool consumer may see a stale schema,
-    // but there is nothing actionable we can surface from here — the original migration error
-    // (if any) is what the caller needs to see.
+    // best-effort — surfacing a reset failure would mask the real migration error
     await this.driver.execute(sql, undefined, 'all', ctx).catch(() => void 0);
   }
 

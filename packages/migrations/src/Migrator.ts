@@ -83,9 +83,8 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
       this.initServices();
     }
 
-    // Tracking-table creation is deferred to the first read/write on `MigrationStorage`, which
-    // runs after `setRunSchema` so the table lands in the correct target schema rather than
-    // leaving a stray `mikro_orm_migrations` in the default schema on every runtime-schema call.
+    // tracking-table creation is lazy — deferred until after `setRunSchema` so it lands
+    // in the runtime target schema, not the default
   }
 
   /**

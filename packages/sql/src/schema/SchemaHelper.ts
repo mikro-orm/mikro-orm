@@ -45,43 +45,25 @@ export abstract class SchemaHelper {
     return '';
   }
 
-  /**
-   * Returns SQL that sets the current/default schema for the session (e.g. `SET search_path`).
-   * Unreachable via the default resolver path (only called when `supportsMigrationSchema()` is true);
-   * defined here so custom schema helpers can override without having to re-declare the signature.
-   */
+  /** Sets the current schema for the session (e.g. `SET search_path`). */
   /* v8 ignore next 3 */
   getSetSchemaSQL(_schema: string): string {
     return '';
   }
 
-  /**
-   * Whether the driver supports applying a runtime schema context for migrations.
-   * Used to raise a clear error when a user opts into `migrations.schema` / `migrator.up({ schema })`
-   * on a driver that cannot honour it.
-   */
+  /** Whether the driver supports setting a runtime schema per migration run. */
   supportsMigrationSchema(): boolean {
     return false;
   }
 
-  /**
-   * Returns SQL that restores the session's schema back to the connection's default, so the
-   * pooled connection does not leak the migration's schema context into subsequent queries.
-   * Empty string for drivers without a session-level schema concept.
-   */
+  /** Restores the session's schema to the connection's default after a migration. */
   /* v8 ignore next 3 */
   getResetSchemaSQL(_defaultSchema: string): string {
     return '';
   }
 
-  /**
-   * Validates and normalises the user-requested runtime schema against the driver's capabilities.
-   * Returns `undefined` when the driver has no schema concept (sqlite/libsql), the requested schema
-   * when the driver supports it, or throws when the driver has schemas but no session-level switch (mssql).
-   */
+  /** Returns `undefined` for schemaless drivers, throws for drivers that have schemas but no session switch. */
   resolveMigrationSchema(schema: string | undefined): string | undefined {
-    // Normalise empty string to undefined so the downstream falsy/nullish checks agree on
-    // "no runtime schema requested".
     if (!schema) {
       return undefined;
     }
@@ -94,7 +76,8 @@ export abstract class SchemaHelper {
       return undefined;
     }
 
-    throw new Error(`Runtime schema for migrations is not supported by the ${this.platform.constructor.name} driver`);
+    const driverName = this.platform.constructor.name.replace(/Platform$/, 'Driver');
+    throw new Error(`Runtime schema for migrations is not supported by the ${driverName}`);
   }
 
   finalizeTable(table: DatabaseTable, charset: string, collate?: string): string {
@@ -174,11 +157,7 @@ export abstract class SchemaHelper {
     return connection.execute<Table[]>(this.getListTablesSQL(), [], 'all', ctx);
   }
 
-  /**
-   * Checks whether a specific table exists in a given schema. Scoped lookup — does not rely on the
-   * connection's current-session schema, so it stays correct when migrations run against a runtime
-   * target schema via `migrator.up({ schema })`.
-   */
+  /** Checks whether a specific table exists in a given schema (not the connection's current schema). */
   async tableExists(
     connection: AbstractSqlConnection,
     tableName: string,

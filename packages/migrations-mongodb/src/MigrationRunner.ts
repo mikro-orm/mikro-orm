@@ -1,6 +1,7 @@
 import type { MigrationsOptions, Transaction } from '@mikro-orm/core';
 import type { MongoDriver, MongoConnection } from '@mikro-orm/mongodb';
 import type { Migration } from './Migration.js';
+import { rejectRuntimeSchema } from './typings.js';
 
 /** Executes individual MongoDB migration files within optional transaction contexts. */
 export class MigrationRunner {
@@ -42,12 +43,10 @@ export class MigrationRunner {
   }
 
   setRunSchema(schema?: string) {
-    if (schema) {
-      throw new Error('Runtime schema for migrations is not supported by the MongoDriver');
-    }
+    rejectRuntimeSchema(schema);
   }
 
   unsetRunSchema() {
-    /* nothing to do — mongo never accepts a runtime schema */
+    /* nothing to do */
   }
 }

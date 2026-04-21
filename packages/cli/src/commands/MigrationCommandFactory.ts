@@ -284,17 +284,7 @@ export class MigrationCommandFactory {
   }
 
   private static getUpDownOptions(flags: CliUpDownOptions): MigrateOptions {
-    if (!flags.to && !flags.from && flags.only) {
-      const ret: MigrateOptions = { migrations: flags.only.split(/[, ]+/) };
-
-      if (flags.schema) {
-        ret.schema = flags.schema;
-      }
-
-      return ret;
-    }
-
-    const ret: MigrateOptions = {};
+    const ret: MigrateOptions = !flags.to && !flags.from && flags.only ? { migrations: flags.only.split(/[, ]+/) } : {};
 
     (['from', 'to'] as const).filter(k => flags[k]).forEach(k => (ret[k] = flags[k] === '0' ? 0 : flags[k]));
 

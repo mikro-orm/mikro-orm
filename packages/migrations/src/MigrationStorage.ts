@@ -69,8 +69,9 @@ export class MigrationStorage {
   }
 
   async ensureTable(): Promise<void> {
-    const { tableName, schemaName } = this.getTableName();
-    const cacheKey = `${schemaName ?? ''}.${tableName}`;
+    const { tableName, schemaName } = this.resolveTableName();
+    // `\x00` can't appear in SQL identifiers — unambiguous pair encoding
+    const cacheKey = `${schemaName ?? ''}\x00${tableName}`;
 
     if (this.#ensuredSchemas.has(cacheKey)) {
       return;
@@ -141,14 +142,7 @@ export class MigrationStorage {
    * @internal
    */
   getTableName(): { tableName: string; schemaName: string; entity: EntitySchema } {
-    const parts = this.options.tableName!.split('.');
-    const tableName = parts.length > 1 ? parts[1] : parts[0];
-    const schemaName =
-      this.#runSchema ??
-      this.options.schema ??
-      (parts.length > 1
-        ? parts[0]
-        : this.driver.config.get('schema', this.driver.getPlatform().getDefaultSchemaName()));
+    const { tableName, schemaName } = this.resolveTableName();
 
     const entity = defineEntity({
       name: 'Migration',
@@ -163,5 +157,17 @@ export class MigrationStorage {
     entity.meta.sync();
 
     return { tableName, schemaName, entity };
+  }
+
+  private resolveTableName(): { tableName: string; schemaName: string } {
+    const parts = this.options.tableName!.split('.');
+    const tableName = parts.length > 1 ? parts[1] : parts[0];
+    const schemaName =
+      this.#runSchema ??
+      this.options.schema ??
+      (parts.length > 1
+        ? parts[0]
+        : this.driver.config.get('schema', this.driver.getPlatform().getDefaultSchemaName()));
+    return { tableName, schemaName };
   }
 }

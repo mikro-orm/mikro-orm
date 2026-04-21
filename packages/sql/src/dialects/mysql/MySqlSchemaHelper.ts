@@ -45,12 +45,13 @@ export class MySqlSchemaHelper extends SchemaHelper {
     schemaName: string | undefined,
     ctx?: Transaction,
   ): Promise<boolean> {
-    // MySQL's `schema` is the database. When not explicitly targeting one, probe the connection's
-    // current database via `schema()` rather than falling through the base impl's empty-string literal.
-    const qv = (v: string) => this.platform.quoteValue(v);
-    const schemaClause = schemaName ? `table_schema = ${qv(schemaName)}` : `table_schema = schema()`;
+    // MySQL "schema" = database — when none is requested, probe the connection's current DB
+    // via `schema()` rather than the base impl's `getDefaultSchemaName()` (which is undefined here).
+    const schemaClause = schemaName
+      ? `table_schema = ${this.platform.quoteValue(schemaName)}`
+      : `table_schema = schema()`;
     const rows = await connection.execute<Dictionary[]>(
-      `select 1 from information_schema.tables where ${schemaClause} and table_name = ${qv(tableName)}`,
+      `select 1 from information_schema.tables where ${schemaClause} and table_name = ${this.platform.quoteValue(tableName)}`,
       [],
       'all',
       ctx,

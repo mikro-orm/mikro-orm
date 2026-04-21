@@ -50,9 +50,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   override getSetSchemaSQL(schema: string): string {
-    // Session-level `SET` works both inside and outside a transaction (unlike `SET LOCAL`).
-    // Inside a transaction, it is rolled back on failure; on commit it persists — the runner
-    // issues `getResetSchemaSQL` afterwards so it cannot leak onto the pooled connection.
+    // session-level `SET` (not `SET LOCAL`) so it also works outside a transaction; the runner
+    // emits `getResetSchemaSQL` afterwards to avoid leaking onto the pooled connection
     return `set search_path to ${this.quote(schema)}`;
   }
 
