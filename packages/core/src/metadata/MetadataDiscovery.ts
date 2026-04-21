@@ -1550,6 +1550,19 @@ export class MetadataDiscovery {
     }
   }
 
+  private sameRelationTargetRoot(rootProp: EntityProperty | undefined, prop: EntityProperty): boolean {
+    if (!rootProp || rootProp.kind !== prop.kind) {
+      return false;
+    }
+
+    if (prop.kind !== ReferenceKind.MANY_TO_ONE && prop.kind !== ReferenceKind.ONE_TO_ONE) {
+      return false;
+    }
+
+    const aRoot = this.#metadata.getByClassName(prop.type, false)?.root;
+    return aRoot != null && aRoot === this.#metadata.getByClassName(rootProp.type, false)?.root;
+  }
+
   private initSingleTableInheritance(meta: EntityMetadata, metadata: EntityMetadata[]): void {
     if (meta.root !== meta && !(meta as Dictionary).__processed) {
       meta.root = metadata.find(m => m.class === meta.root.class)!;
@@ -1601,6 +1614,14 @@ export class MetadataDiscovery {
     Object.values(meta.properties).forEach(prop => {
       const newProp = { ...prop };
       const rootProp = meta.root.properties[prop.name];
+
+      // Relation overrides narrowing to the same STI root share the FK column;
+      // leave the root's declaration alone so it keeps the full target union
+      // (otherwise populates via the abstract root would only resolve the last
+      // child processed).
+      if (this.sameRelationTargetRoot(rootProp, prop)) {
+        return;
+      }
 
       // stiMerged is set during inlineProperties when a property was merged
       // from multiple polymorphic variants with different types. The flag is
