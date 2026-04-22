@@ -1415,7 +1415,6 @@ __metadata:
     "@types/picomatch": "npm:4.0.3"
     "@types/semver": "npm:7.7.1"
     "@types/sqlstring": "npm:2.3.2"
-    "@types/uuid": "npm:11.0.0"
     "@types/yargs": "npm:17.0.35"
     "@vitest/coverage-v8": "npm:4.1.5"
     bson: "npm:7.2.0"
@@ -1437,7 +1436,6 @@ __metadata:
     tsx: "npm:4.21.0"
     typescript: "npm:6.0.3"
     unplugin-swc: "npm:1.5.9"
-    uuid: "npm:14.0.0"
     vitest: "npm:4.1.5"
   dependenciesMeta:
     "@swc/core":
@@ -3079,15 +3077,6 @@ __metadata:
   version: 2.3.2
   resolution: "@types/sqlstring@npm:2.3.2"
   checksum: 10/9c73ebd9c9205db63c6da0e5d362bf05e6f6bbba2e0b8196b84df066a33352826c833e3a669ad1edb68c0fc7d5d55ab1788289198c6cf64a87a97e8e64dba72b
-  languageName: node
-  linkType: hard
-
-"@types/uuid@npm:11.0.0":
-  version: 11.0.0
-  resolution: "@types/uuid@npm:11.0.0"
-  dependencies:
-    uuid: "npm:*"
-  checksum: 10/9f94bd34e5d220c53cc58ea9f48a0061d3bc343e29bc33a17edc705f5e21fedda21553318151f2bc227c2b2b03727bbb536da2b82a61f84d2e1ca38abc5e5c3f
   languageName: node
   linkType: hard
 
@@ -10008,24 +9997,6 @@ __metadata:
   version: 1.0.2
   resolution: "util-deprecate@npm:1.0.2"
   checksum: 10/474acf1146cb2701fe3b074892217553dfcf9a031280919ba1b8d651a068c9b15d863b7303cb15bd00a862b498e6cf4ad7b4a08fb134edd5a6f7641681cb54a2
-  languageName: node
-  linkType: hard
-
-"uuid@npm:*":
-  version: 13.0.0
-  resolution: "uuid@npm:13.0.0"
-  bin:
-    uuid: dist-node/bin/uuid
-  checksum: 10/2742b24d1e00257e60612572e4d28679423469998cafbaf1fe9f1482e3edf9c40754b31bfdb3d08d71b29239f227a304588f75210b3b48f2609f0673f1feccef
-  languageName: node
-  linkType: hard
-
-"uuid@npm:14.0.0":
-  version: 14.0.0
-  resolution: "uuid@npm:14.0.0"
-  bin:
-    uuid: dist-node/bin/uuid
-  checksum: 10/8ee9b98f9650e25555515f7a28d3c3ae9364e72f7bb19b9e08b681bc135338beba5509b2830f6ae1cfaba4d45401da0d16d4d109b977097bc3d6ba0c5583341b
   languageName: node
   linkType: hard
 
