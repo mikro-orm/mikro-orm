@@ -198,15 +198,15 @@ id!: string;
 
 See [Defining Entities](./defining-entities.md#enums).
 
-| Parameter | Type                                                   | Optional | Description                    |
-|-----------|--------------------------------------------------------|----------|--------------------------------|
-| `items`   | `number[]` &#124; `string[]` &#124; `() => Dictionary` | yes      | Specify enum items explicitly. |
+| Parameter | Type                                                                         | Optional | Description                    |
+|-----------|------------------------------------------------------------------------------|----------|--------------------------------|
+| `items`   | `number[]` &#124; `string[]` &#124; `Dictionary` &#124; `() => Dictionary`   | yes      | Specify enum items explicitly. |
 
 ```ts
 @Enum() // with ts-morph metadata provider we do not need to specify anything
 enum0 = MyEnum1.VALUE_1;
 
-@Enum(() => MyEnum1) // or @Enum({ items: () => MyEnum1 })
+@Enum(() => MyEnum1) // or @Enum({ items: MyEnum1 }) / @Enum({ items: () => MyEnum1 })
 enum1 = MyEnum1.VALUE_1;
 
 @Enum({ type: 'MyEnum2', nullable: true })
