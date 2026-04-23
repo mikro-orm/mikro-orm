@@ -90,6 +90,13 @@ This will create the initial migration, containing the schema dump from `schema:
 
 Creating new migration will automatically save the target schema snapshot into migrations folder. This snapshot will be then used if you try to create new migration, instead of using current database schema. This means that if you try to create new migration before you run the pending ones, you still get the right schema diff.
 
+The snapshot file is written from two different sources depending on the command:
+
+- `migration:create` (and `migration:create --initial`) write the snapshot from the target schema derived from your entity metadata.
+- `migration:up` and `migration:down` rewrite the snapshot from the real database schema via introspection, after the migrations have been applied.
+
+The snapshot is primarily internal state used for diffing and conflict detection, not a stable human-review artifact. Running `migration:up`/`migration:down` may rewrite it with details produced by introspection (column type normalization, index and foreign key naming, table ordering, additional column metadata, etc.) that differ from the metadata-derived form written by `migration:create`. If you want the committed snapshot to reflect the real database state, run the pending migrations before committing.
+
 > Snapshots should be versioned just like the regular migration files.
 
 Snapshotting can be disabled via `migrations.snapshot: false` in the ORM config.

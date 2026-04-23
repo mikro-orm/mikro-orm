@@ -655,6 +655,8 @@ npx mikro-orm migration:list
 
 Creating new migration will automatically save the target schema snapshot into the migrations folder. This snapshot will be then used if you try to create a new migration, instead of using the current database schema. This means that if you try to create new migration before you run the pending ones, you still get the right schema diff.
 
+Note that `migration:up` and `migration:down` rewrite the snapshot from the real database schema via introspection, so the committed snapshot may drift from the metadata-derived form produced by `migration:create` until the migrations are actually applied. See the [Snapshots section](../migrations#snapshots) of the migrations reference for details.
+
 > Snapshots should be versioned just like the regular migration files.
 
 Snapshotting can be disabled via `migrations.snapshot: false` in the ORM config.
