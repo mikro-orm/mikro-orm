@@ -705,6 +705,35 @@ describe('defineEntity', () => {
     assert<IsExact<IFoo['status'], Status7446>>(true);
   });
 
+  it('should define entity with enum passed directly', () => {
+    enum BaZ {
+      FOO = 'foo',
+      BAR = 'bar',
+      BAZ = 1,
+    }
+
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: p => ({
+        id: p.integer().primary().autoincrement(),
+        baz: p.enum(BaZ),
+      }),
+    });
+
+    type IFoo = InferEntity<typeof Foo>;
+    assert<IsExact<IFoo['baz'], BaZ>>(true);
+
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
+      properties: {
+        id: { type: types.integer, primary: true, autoincrement: true },
+        baz: { enum: true, items: BaZ },
+      },
+    });
+
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
+  });
+
   it('should define entity with embedded', () => {
     const Address = defineEntity({
       name: 'Address',
