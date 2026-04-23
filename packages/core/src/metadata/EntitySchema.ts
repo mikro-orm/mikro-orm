@@ -175,11 +175,16 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
   addEnum(name: EntityKey<Entity>, type?: TypeType, options: EnumOptions<Entity> = {}): void {
     if (options.items instanceof Function) {
       options.items = Utils.extractEnumValues(options.items());
+    } else if (options.items && !Array.isArray(options.items) && typeof options.items === 'object') {
+      options.items = Utils.extractEnumValues(options.items as Dictionary);
     }
 
     // enum arrays are simple numeric/string arrays, the constraint is enforced in the custom type only
     if (options.array && !options.type) {
-      options.type = new EnumArrayType(`${this._meta.className}.${name}`, options.items);
+      options.type = new EnumArrayType(
+        `${this._meta.className}.${name}`,
+        options.items as readonly (number | string)[],
+      );
       (options as EntityProperty).enum = false;
     }
 
