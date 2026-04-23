@@ -960,7 +960,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       return `alter table ${this.quote(table)} drop constraint ${this.quote(oldIndexName)}`;
     }
 
-    return `drop index ${this.quote(oldIndexName)}`;
+    const [schemaName] = this.splitTableName(table);
+    return `drop index ${this.quote(schemaName, oldIndexName)}`;
   }
 
   /**
