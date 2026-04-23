@@ -641,6 +641,17 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `alter index ${oldIndexName} rename to ${keyName}`;
   }
 
+  override getDropIndexSQL(tableName: string, index: IndexDef): string {
+    const [schemaName] = this.splitTableName(tableName);
+    const indexName = this.platform.quoteIdentifier(index.keyName);
+
+    if (schemaName && schemaName !== this.platform.getDefaultSchemaName()) {
+      return `drop index ${this.platform.quoteIdentifier(schemaName)}.${indexName}`;
+    }
+
+    return `drop index ${indexName}`;
+  }
+
   private getIndexesSQL(tables: Table[]): string {
     return `select indrelid::regclass as table_name, ns.nspname as schema_name, relname as constraint_name, idx.indisunique as unique, idx.indisprimary as primary, contype, condeferrable, condeferred,
       array(
