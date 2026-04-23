@@ -469,12 +469,20 @@ export class DatabaseSchema {
   }
 
   toJSON(): Dictionary {
+    // Sort collections to keep the serialized snapshot stable regardless of
+    // discovery/introspection order (GH #7607). Use plain string comparison
+    // (not `localeCompare`) so the order is locale-independent.
+    const byString = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+    const tableKey = (t: { schema?: string; name: string }) => `${t.schema ?? ''}.${t.name}`;
+    const byTable = (a: { schema?: string; name: string }, b: { schema?: string; name: string }) =>
+      byString(tableKey(a), tableKey(b));
+
     return {
       name: this.name,
-      namespaces: [...this.#namespaces],
-      tables: this.#tables,
-      views: this.#views,
-      nativeEnums: this.#nativeEnums,
+      namespaces: [...this.#namespaces].sort(),
+      tables: [...this.#tables].sort(byTable),
+      views: [...this.#views].sort(byTable),
+      nativeEnums: Object.fromEntries(Object.entries(this.#nativeEnums).sort(([a], [b]) => byString(a, b))),
     };
   }
 

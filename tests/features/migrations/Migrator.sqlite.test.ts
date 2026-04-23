@@ -185,6 +185,65 @@ describe('Migrator (sqlite)', () => {
     }
   });
 
+  test('snapshot serialization is stable across metadata and introspection paths (GH #7607)', async () => {
+    const migrations = orm.config.get('migrations');
+    migrations.snapshot = true;
+
+    const { readFileSync } = await import('node:fs');
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const path = process.cwd() + '/temp/migrations-3';
+    const migrator = new Migrator(orm.em);
+
+    const migration1 = await migrator.create(path, true);
+    const snapshotPath = path + '/.snapshot-memory.json';
+    const afterCreate = JSON.parse(readFileSync(snapshotPath, 'utf8'));
+
+    const downMock = vi.spyOn(Migration.prototype, 'down');
+    downMock.mockImplementation(async () => void 0);
+
+    try {
+      await migrator.up(migration1.fileName);
+      const afterUp = JSON.parse(readFileSync(snapshotPath, 'utf8'));
+
+      // tables, columns, indexes and foreign keys all serialize in a stable
+      // alphabetic order so metadata-derived and introspection-derived
+      // snapshots don't swap things around on `migration:up`/`migration:down`
+      const tableOrderA = afterCreate.tables.map((t: any) => t.name);
+      const tableOrderB = afterUp.tables.map((t: any) => t.name);
+      expect(tableOrderB).toEqual(tableOrderA);
+      expect(tableOrderA).toEqual([...tableOrderA].sort());
+
+      for (const tableA of afterCreate.tables) {
+        const tableB = afterUp.tables.find((t: any) => t.name === tableA.name);
+        expect(tableB).toBeDefined();
+
+        expect(Object.keys(tableB.columns)).toEqual(Object.keys(tableA.columns));
+        expect(Object.keys(tableA.columns)).toEqual([...Object.keys(tableA.columns)].sort());
+
+        expect(tableB.indexes.map((i: any) => i.keyName)).toEqual(tableA.indexes.map((i: any) => i.keyName));
+        expect(Object.keys(tableB.foreignKeys)).toEqual(Object.keys(tableA.foreignKeys));
+
+        // legacy singular FK aliases from sqlite introspection must not leak
+        // into the serialized snapshot
+        for (const fk of Object.values<any>(tableB.foreignKeys)) {
+          expect(fk).not.toHaveProperty('columnName');
+          expect(fk).not.toHaveProperty('referencedColumnName');
+        }
+
+        // every index must carry an explicit boolean `composite`
+        for (const idx of [...tableA.indexes, ...tableB.indexes]) {
+          expect(typeof idx.composite).toBe('boolean');
+        }
+      }
+    } finally {
+      await rm(path + '/' + migration1.fileName, { force: true });
+      await rm(snapshotPath, { force: true });
+      downMock.mockRestore();
+      migrations.snapshot = false;
+    }
+  });
+
   test('snapshot from create and up have identical column fields and consistent primary flag (GH #7234)', async () => {
     const migrations = orm.config.get('migrations');
     migrations.snapshot = true;

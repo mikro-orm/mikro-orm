@@ -1223,17 +1223,22 @@ export class DatabaseTable {
 
   toJSON(): Dictionary {
     const columns = this.#columns;
-    const columnsMapped = Utils.keys(columns).reduce((o, col) => {
+    // Sort column keys alphabetically so the serialized snapshot is stable
+    // regardless of property discovery or DB introspection order (GH #7607).
+    // Plain string comparison keeps the ordering locale-independent.
+    const byString = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+    const sortedColumnKeys = (Utils.keys(columns) as string[]).sort(byString);
+    const columnsMapped = sortedColumnKeys.reduce((o, col) => {
       const c = columns[col];
       const normalized: Dictionary = {
         name: c.name,
-        type: c.type,
+        type: c.type?.toLowerCase(),
         unsigned: !!c.unsigned,
         autoincrement: !!c.autoincrement,
         primary: !!c.primary,
         nullable: !!c.nullable,
         unique: !!c.unique,
-        length: c.length ?? null,
+        length: c.length || null,
         precision: c.precision ?? null,
         scale: c.scale ?? null,
         default: c.default ?? null,
@@ -1267,14 +1272,106 @@ export class DatabaseTable {
       return o;
     }, {} as Dictionary);
 
+    // Pick only the declared fields from IndexDef, drop defaults that vary
+    // between metadata and introspection paths (GH #7607).
+    const normalizeIndex = (idx: IndexDef): Dictionary => {
+      const out: Dictionary = {
+        columnNames: idx.columnNames,
+        composite: !!idx.composite,
+        constraint: !!idx.constraint,
+        keyName: idx.keyName,
+        primary: !!idx.primary,
+        unique: !!idx.unique,
+      };
+
+      if (idx.expression) {
+        out.expression = idx.expression;
+      }
+      if (idx.type) {
+        out.type = idx.type;
+      }
+      if (idx.deferMode) {
+        out.deferMode = idx.deferMode;
+      }
+      if (idx.columns) {
+        out.columns = idx.columns;
+      }
+      if (idx.include) {
+        out.include = idx.include;
+      }
+      if (idx.fillFactor != null) {
+        out.fillFactor = idx.fillFactor;
+      }
+      if (idx.invisible) {
+        out.invisible = true;
+      }
+      if (idx.disabled) {
+        out.disabled = true;
+      }
+      if (idx.clustered) {
+        out.clustered = true;
+      }
+
+      return out;
+    };
+
+    // Pick only the declared fields from ForeignKey, drop singular legacy
+    // aliases (`columnName`, `referencedColumnName`) some introspection paths
+    // still emit, and drop the "no action" default so metadata and
+    // introspection serialize the same (GH #7607).
+    const normalizeFk = (fk: ForeignKey): Dictionary => {
+      const out: Dictionary = {
+        columnNames: fk.columnNames,
+        constraintName: fk.constraintName,
+        localTableName: fk.localTableName,
+        referencedColumnNames: fk.referencedColumnNames,
+        referencedTableName: fk.referencedTableName,
+      };
+
+      if (fk.updateRule && fk.updateRule.toLowerCase() !== 'no action') {
+        out.updateRule = fk.updateRule;
+      }
+      if (fk.deleteRule && fk.deleteRule.toLowerCase() !== 'no action') {
+        out.deleteRule = fk.deleteRule;
+      }
+      if (fk.deferMode) {
+        out.deferMode = fk.deferMode;
+      }
+
+      return out;
+    };
+
+    const normalizeCheck = (check: CheckDef): Dictionary => {
+      const out: Dictionary = { name: check.name };
+      if (typeof check.expression === 'string') {
+        out.expression = check.expression;
+      }
+      if (check.definition) {
+        out.definition = check.definition;
+      }
+      if (check.columnName) {
+        out.columnName = check.columnName;
+      }
+      return out;
+    };
+
+    const sortedIndexes = [...this.#indexes].sort((a, b) => byString(a.keyName, b.keyName)).map(normalizeIndex);
+    const sortedChecks = [...this.#checks].sort((a, b) => byString(a.name, b.name)).map(normalizeCheck);
+    const sortedForeignKeys = Object.fromEntries(
+      Object.entries(this.#foreignKeys)
+        .sort(([a], [b]) => byString(a, b))
+        .map(([k, v]) => [k, normalizeFk(v)]),
+    );
+    const sortedNativeEnums = Object.fromEntries(Object.entries(this.nativeEnums).sort(([a], [b]) => byString(a, b)));
+
     return {
       name: this.name,
       schema: this.schema,
       columns: columnsMapped,
-      indexes: this.#indexes,
-      checks: this.#checks,
-      foreignKeys: this.#foreignKeys,
-      nativeEnums: this.nativeEnums,
+      indexes: sortedIndexes,
+      checks: sortedChecks,
+      foreignKeys: sortedForeignKeys,
+      nativeEnums: sortedNativeEnums,
       comment: this.comment,
     };
   }
