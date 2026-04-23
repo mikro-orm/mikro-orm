@@ -92,10 +92,10 @@ Creating new migration will automatically save the target schema snapshot into m
 
 The snapshot file is written from two different sources depending on the command:
 
-- `migration:create` (and `migration:create --initial`) write the snapshot from the target schema derived from your entity metadata.
-- `migration:up` and `migration:down` rewrite the snapshot from the real database schema via introspection, after the migrations have been applied.
+- `migration:create` (and `migration:create --initial`) write it from the target schema derived from your entity metadata.
+- `migration:up` and `migration:down` rewrite it from the real database schema via introspection, after the migrations have been applied.
 
-The snapshot is primarily internal state used for diffing and conflict detection, not a stable human-review artifact. Running `migration:up`/`migration:down` may rewrite it with details produced by introspection (column type normalization, index and foreign key naming, table ordering, additional column metadata, etc.) that differ from the metadata-derived form written by `migration:create`. If you want the committed snapshot to reflect the real database state, run the pending migrations before committing.
+Both paths produce the same serialized shape for a given schema, so running migrations after `migration:create` does not normally rewrite the snapshot in a meaningful way. Some DB-specific details (e.g. postgres type aliases like `int` vs `int4`) can still produce small diffs.
 
 > Snapshots should be versioned just like the regular migration files.
 
