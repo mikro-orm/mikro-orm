@@ -638,7 +638,7 @@ To define an enum property, use `@Enum()` decorator. Enums can be either numeric
 
 For schema generator to work properly in case of string enums, you need to define the enum in the same file as where it is used, so its values can be automatically discovered. If you want to define the enum in another file, you should re-export it also in place where you use it.
 
-You can also provide the reference to the enum implementation in the decorator via `@Enum(() => UserRole)`.
+You can also provide the reference to the enum implementation in the decorator via `@Enum(() => UserRole)`, or pass the enum object directly via `@Enum({ items: UserRole })` — the callback form is only needed when the enum is declared after the class it's used in.
 
 > You can also set enum items manually via `items: string[]` attribute.
 

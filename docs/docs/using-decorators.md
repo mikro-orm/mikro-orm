@@ -172,7 +172,7 @@ export class Article {
 | `Ref<T>` wrapper    | Automatic            | Requires `ref: true`            |
 | `LazyRef<T>` marker | Automatic (type-only, no wrapper) | No metadata flag — type-only |
 | Array element types | Automatic            | Requires explicit `type`        |
-| Enums               | Automatic            | Requires `items: () => Enum`    |
+| Enums               | Automatic            | Requires `items: Enum`          |
 | Union types         | Supported            | Not supported                   |
 
 :::warning ES Spec Decorators
