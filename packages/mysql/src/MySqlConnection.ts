@@ -20,12 +20,18 @@ export class MySqlConnection extends AbstractSqlConnection {
 
       // mysql2 reads pool.config.connectionConfig.password when creating new physical
       // connections, so updating it before getConnection() ensures fresh tokens are used.
-      // Existing idle connections are already authenticated and unaffected.
+      // Existing idle connections are already authenticated and unaffected, so we skip
+      // the callback when the pool has a free connection to reuse.
       const pool: MysqlPool = {
         getConnection(cb: (error: unknown, connection: MysqlPoolConnection) => void) {
+          const inner = innerPool as Dictionary;
+          if ((inner._freeConnections?.length ?? 0) > 0) {
+            innerPool.getConnection(cb as Parameters<Pool['getConnection']>[0]);
+            return;
+          }
           Promise.resolve(password())
             .then(pw => {
-              ((innerPool as Dictionary).config.connectionConfig as Dictionary).password = pw;
+              (inner.config.connectionConfig as Dictionary).password = pw;
               innerPool.getConnection(cb as Parameters<Pool['getConnection']>[0]);
             })
             .catch(err => cb(err, undefined as unknown as MysqlPoolConnection));

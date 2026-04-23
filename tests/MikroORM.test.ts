@@ -383,6 +383,25 @@ describe('MikroORM', () => {
     await o.close();
   });
 
+  test('should not re-invoke password callback when reusing pooled connections [mysql]', async () => {
+    const passwordFn = vi.fn(async () => '');
+    const o = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [Test],
+      driver: MySqlDriver,
+      dbName: 'mysql',
+      port: 3308,
+      ensureDatabase: false,
+      password: passwordFn,
+    });
+    await o.driver.execute('select 1');
+    const callsAfterFirst = passwordFn.mock.calls.length;
+    await o.driver.execute('select 1');
+    // reusing the pooled connection must not re-invoke the callback
+    expect(passwordFn.mock.calls.length).toBe(callsAfterFirst);
+    await o.close();
+  });
+
   test('should propagate password callback errors [mysql]', async () => {
     const passwordFn = vi
       .fn()
