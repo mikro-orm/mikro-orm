@@ -89,7 +89,6 @@ alter table "book" alter column "sudoku_square" type integer[3][3] using ("sudok
     const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toBe(`alter table "book" drop column "sudoku_square";
 alter table "book" alter column "my_column" drop not null;
-alter table "book" alter column "my_str_col" type character varying using ("my_str_col"::character varying);
 `);
     await orm.schema.execute(diff3);
 
