@@ -523,9 +523,14 @@ export class SourceFile {
     );
     const padding = ' '.repeat(padLeft);
     const enumValues = prop.items as string[];
+    // Items reach us as strings (introspection always serializes them that
+    // way), but numeric enums should be emitted as raw numbers so the
+    // generated TS uses `Foo: 1` rather than `Foo: '1'`.
+    const allNumeric = enumValues.length > 0 && enumValues.every(item => /^-?\d+$/.test(item));
+    const formatValue = (item: string) => (allNumeric ? item : this.quote(item));
 
     if (enumMode === 'union-type') {
-      return `export type ${enumTypeName} = ${enumValues.map(item => this.quote(item)).join(' | ')};\n`;
+      return `export type ${enumTypeName} = ${enumValues.map(formatValue).join(' | ')};\n`;
     }
 
     let ret = '';
@@ -545,9 +550,9 @@ export class SourceFile {
       );
 
       if (enumMode === 'dictionary') {
-        ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quote(enumName)}: ${this.quote(enumValue)},\n`;
+        ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quote(enumName)}: ${formatValue(enumValue)},\n`;
       } else {
-        ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quote(enumName)} = ${this.quote(enumValue)},\n`;
+        ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quote(enumName)} = ${formatValue(enumValue)},\n`;
       }
     }
 
@@ -909,7 +914,9 @@ export class SourceFile {
 
     if (prop.enum) {
       if (this.options.enumMode === 'union-type') {
-        options.items = `[${(prop.items as string[]).map(item => this.quote(item)).join(', ')}]`;
+        const items = prop.items as string[];
+        const allNumeric = items.length > 0 && items.every(item => /^-?\d+$/.test(item));
+        options.items = `[${items.map(item => (allNumeric ? item : this.quote(item))).join(', ')}]`;
       } else if (prop.nativeEnumName) {
         const enumClassName = this.namingStrategy.getEnumClassName(prop.nativeEnumName, undefined, this.meta.schema);
         options.items = `() => ${enumClassName}`;

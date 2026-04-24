@@ -216,9 +216,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -572,9 +572,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -902,9 +902,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -1276,9 +1276,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -1621,9 +1621,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -1990,9 +1990,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -2323,9 +2323,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -2697,9 +2697,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -3036,9 +3036,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -3393,9 +3393,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -3723,9 +3723,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -4097,9 +4097,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -4442,9 +4442,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -4811,9 +4811,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -5144,9 +5144,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -5518,9 +5518,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -5857,9 +5857,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -6219,9 +6219,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -6553,9 +6553,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -6927,9 +6927,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -7273,9 +7273,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -7642,9 +7642,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -7976,9 +7976,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -8350,9 +8350,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -8690,9 +8690,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -9053,9 +9053,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -9387,9 +9387,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -9761,9 +9761,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -10107,9 +10107,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -10476,9 +10476,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -10810,9 +10810,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
@@ -11184,9 +11184,9 @@ export const Publisher4Type = {
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
 export const Publisher4Enum3 = {
-  '1': '1',
-  '2': '2',
-  '3': '3',
+  '1': 1,
+  '2': 2,
+  '3': 3,
 } as const;
 
 export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
