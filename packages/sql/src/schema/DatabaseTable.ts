@@ -1361,25 +1361,19 @@ export class DatabaseTable {
     // still emit, and drop the "no action" default so metadata and
     // introspection serialize the same (GH #7607).
     const normalizeFk = (fk: ForeignKey): Dictionary => {
-      const out: Dictionary = {
+      const isNoAction = (rule?: string) => !rule || rule.toLowerCase() === 'no action';
+      // `JSON.stringify` drops `undefined` properties, so we can let them
+      // through and skip separate `if` guards for coverage's sake.
+      return {
         columnNames: fk.columnNames,
         constraintName: fk.constraintName,
         localTableName: fk.localTableName,
         referencedColumnNames: fk.referencedColumnNames,
         referencedTableName: fk.referencedTableName,
+        updateRule: isNoAction(fk.updateRule) ? undefined : fk.updateRule,
+        deleteRule: isNoAction(fk.deleteRule) ? undefined : fk.deleteRule,
+        deferMode: fk.deferMode,
       };
-
-      if (fk.updateRule && fk.updateRule.toLowerCase() !== 'no action') {
-        out.updateRule = fk.updateRule;
-      }
-      if (fk.deleteRule && fk.deleteRule.toLowerCase() !== 'no action') {
-        out.deleteRule = fk.deleteRule;
-      }
-      if (fk.deferMode) {
-        out.deferMode = fk.deferMode;
-      }
-
-      return out;
     };
 
     const normalizeCheck = (check: CheckDef): Dictionary => {
