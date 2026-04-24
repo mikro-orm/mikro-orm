@@ -165,7 +165,12 @@ export class DatabaseTable {
         precision: prop.precision,
         scale: prop.scale,
         default: prop.defaultRaw,
-        enumItems: this.resolveEnumItems(prop),
+        enumItems:
+          prop.nativeEnumName ||
+          prop.items?.every(i => typeof i === 'string') ||
+          (prop.items?.length && this.#platform.usesNumericEnumCheckConstraints())
+            ? (prop.items as unknown[]).map(String)
+            : undefined,
         comment: prop.comment,
         extra: prop.extra,
         ignoreSchemaChanges: prop.ignoreSchemaChanges,
@@ -1230,30 +1235,6 @@ export class DatabaseTable {
 
   addCheck(check: CheckDef) {
     this.#checks.push(check);
-  }
-
-  /**
-   * Resolve the `enumItems` to store on the metadata-derived column. Native
-   * enums and plain string-item enums pass through. Numeric-item enums get
-   * stringified only on platforms that can recover the values from the DDL
-   * (those that emit a CHECK constraint for numeric enums) — otherwise
-   * introspection returns `enumItems: []` and the schema comparator would
-   * flag the column as drifted on every diff.
-   */
-  private resolveEnumItems(prop: EntityProperty): string[] | undefined {
-    if (!prop.items?.length) {
-      return undefined;
-    }
-
-    if (prop.nativeEnumName || prop.items.every(i => typeof i === 'string')) {
-      return prop.items as string[];
-    }
-
-    if (this.#platform.usesNumericEnumCheckConstraints()) {
-      return prop.items.map(String);
-    }
-
-    return undefined;
   }
 
   toJSON(): Dictionary {
