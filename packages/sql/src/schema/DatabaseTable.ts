@@ -92,6 +92,8 @@ export class DatabaseTable {
     this.#checks = checks;
     this.#foreignKeys = fks;
 
+    const helper = this.#platform.getSchemaHelper();
+
     this.#columns = cols.reduce((o, v) => {
       const index = indexes.filter(i => i.columnNames[0] === v.name);
       v.primary = v.primary || pks.includes(v.name);
@@ -100,6 +102,16 @@ export class DatabaseTable {
       v.mappedType = this.#platform.getMappedType(type);
       v.default = v.default?.toString().startsWith('nextval(') ? null : v.default;
       v.enumItems ??= enums[v.name] || [];
+      // Mirror `addColumnFromProperty`: if the introspected column didn't
+      // carry a length, try to recover it from the declared type (`time(3)`
+      // → 3) so metadata and introspection snapshots agree when the DDL
+      // does preserve the precision. Scoped to types that define a
+      // `getDefaultLength` (datetime, time, timestamp, varchar, char,
+      // interval) — length on booleans/ints is a display-width artifact
+      // the ORM does not otherwise track.
+      if (v.length == null && v.type && helper && typeof v.mappedType.getDefaultLength !== 'undefined') {
+        v.length = helper.inferLengthFromColumnType(v.type);
+      }
       o[v.name] = v;
 
       return o;
@@ -153,8 +165,7 @@ export class DatabaseTable {
         precision: prop.precision,
         scale: prop.scale,
         default: prop.defaultRaw,
-        enumItems:
-          prop.nativeEnumName || prop.items?.every(i => typeof i === 'string') ? (prop.items as string[]) : undefined,
+        enumItems: this.resolveEnumItems(prop),
         comment: prop.comment,
         extra: prop.extra,
         ignoreSchemaChanges: prop.ignoreSchemaChanges,
@@ -1219,6 +1230,30 @@ export class DatabaseTable {
 
   addCheck(check: CheckDef) {
     this.#checks.push(check);
+  }
+
+  /**
+   * Resolve the `enumItems` to store on the metadata-derived column. Native
+   * enums and plain string-item enums pass through. Numeric-item enums get
+   * stringified only on platforms that can recover the values from the DDL
+   * (those that emit a CHECK constraint for numeric enums) — otherwise
+   * introspection returns `enumItems: []` and the schema comparator would
+   * flag the column as drifted on every diff.
+   */
+  private resolveEnumItems(prop: EntityProperty): string[] | undefined {
+    if (!prop.items?.length) {
+      return undefined;
+    }
+
+    if (prop.nativeEnumName || prop.items.every(i => typeof i === 'string')) {
+      return prop.items as string[];
+    }
+
+    if (this.#platform.usesNumericEnumCheckConstraints()) {
+      return prop.items.map(String);
+    }
+
+    return undefined;
   }
 
   toJSON(): Dictionary {

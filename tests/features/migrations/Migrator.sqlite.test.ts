@@ -202,36 +202,15 @@ describe('Migrator (sqlite)', () => {
     const downMock = vi.spyOn(Migration.prototype, 'down');
     downMock.mockImplementation(async () => void 0);
 
-    // Fields sqlite cannot round-trip today:
-    //  - `mappedType` for numeric enums (sqlite emits no CHECK constraint, so
-    //    introspection sees them as integer and can't recover the enum-ness)
-    //  - `length` on time/datetime columns (metadata carries a default
-    //    precision, sqlite DDL doesn't persist it)
-    // Strip them from both sides so the rest of the snapshot can assert
-    // byte-for-byte equality (GH #7607).
-    const strip = (snap: any) => {
-      for (const table of snap.tables) {
-        for (const col of Object.values<any>(table.columns)) {
-          if (col.mappedType === 'enum' || col.mappedType === 'integer') {
-            delete col.mappedType;
-          }
-          if (/^(time|datetime|timestamp)/i.test(col.type ?? '')) {
-            delete col.length;
-          }
-        }
-      }
-      return snap;
-    };
-
     try {
       await migrator.up(migration1.fileName);
       const afterUp = JSON.parse(readFileSync(snapshotPath, 'utf8'));
 
-      // full deep equality (modulo the documented sqlite-specific gaps) —
-      // this locks down ordering, normalized type aliases, derived
-      // primary/unique flags, index/FK normalization, schema-level
-      // `nativeEnums` deduplication (GH #7610), and everything else.
-      expect(strip(afterUp)).toEqual(strip(afterCreate));
+      // full byte-for-byte equality — locks down ordering, normalized type
+      // aliases, derived primary/unique flags, index/FK normalization, the
+      // schema-level `nativeEnums` deduplication (GH #7610), and the
+      // numeric-enum CHECK round-trip.
+      expect(afterUp).toEqual(afterCreate);
 
       // `nativeEnums` lives on the schema only — not on every table.
       for (const table of afterCreate.tables) {

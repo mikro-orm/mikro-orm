@@ -107,6 +107,16 @@ export abstract class Platform {
     return false;
   }
 
+  /**
+   * Whether the platform emits CHECK constraints for numeric enum columns
+   * as well. Off by default — mssql/postgres normalize CHECK expressions
+   * differently from how the ORM writes them, which trips schema diffs.
+   * Sqlite stores the expression verbatim so it opts in.
+   */
+  usesNumericEnumCheckConstraints(): boolean {
+    return false;
+  }
+
   /** Returns the check constraint expression for an enum column. */
   getEnumCheckConstraintExpression(column: string, items: string[]): string {
     return `${this.quoteIdentifier(column)} in (${items.map(v => this.quoteValue(v)).join(', ')})`;

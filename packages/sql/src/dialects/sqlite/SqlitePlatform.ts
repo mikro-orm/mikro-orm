@@ -25,12 +25,24 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return true;
   }
 
+  override usesNumericEnumCheckConstraints(): boolean {
+    return true;
+  }
+
   override getCurrentTimestampSQL(length: number): string {
     return `(strftime('%s', 'now') * 1000)`;
   }
 
   override getDateTimeTypeDeclarationSQL(column: { length: number }): string {
     return 'datetime';
+  }
+
+  // sqlite stores `datetime` without precision in DDL and the current-ts
+  // expression hardcodes the millisecond scaling, so the default version
+  // length is purely ornamental and only creates snapshot drift between
+  // metadata and introspection. Drop the default so the field stays unset.
+  override getDefaultVersionLength(): number {
+    return 0;
   }
 
   override getBeginTransactionSQL(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean }): string[] {

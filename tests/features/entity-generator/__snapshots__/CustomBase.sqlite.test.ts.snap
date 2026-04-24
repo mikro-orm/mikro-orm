@@ -36,7 +36,7 @@ export class Author4 {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -215,6 +215,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 @MikroORM_Entity()
 export class Publisher4 {
 
@@ -233,8 +241,8 @@ export class Publisher4 {
   @MikroORM_Enum({ items: () => Publisher4Type })
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
 
-  @MikroORM_Property({ nullable: true })
-  enum3?: number;
+  @MikroORM_Enum({ items: () => Publisher4Enum3, nullable: true })
+  enum3?: TPublisher4Enum3;
 
   @MikroORM_OneToMany({ entity: () => Book4, mappedBy: 'publisher' })
   book4Collection = new MikroORM_Collection<Book4>(this);
@@ -358,7 +366,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -551,7 +559,7 @@ export class Publisher4 {
   updatedAt?: Date;
   name: string & MikroORM_Opt = 'asd';
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
-  enum3?: number;
+  enum3?: TPublisher4Enum3;
   book4Collection = new MikroORM_Collection<Book4>(this);
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 }
@@ -563,6 +571,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 export const Publisher4Schema = new MikroORM_EntitySchema({
   class: Publisher4,
   properties: {
@@ -571,7 +587,7 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'integer', nullable: true },
+    enum3: { enum: true, items: () => Publisher4Enum3, nullable: true },
     book4Collection: { kind: '1:m', entity: () => Book4, mappedBy: 'publisher' },
     publisher4TestsCollection: {
       kind: '1:m',
@@ -701,7 +717,7 @@ export class Author4 extends BaseEntity {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -885,6 +901,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 @MikroORM_Entity()
 export class Publisher4 extends BaseEntity {
 
@@ -903,8 +927,8 @@ export class Publisher4 extends BaseEntity {
   @MikroORM_Enum({ items: () => Publisher4Type })
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
 
-  @MikroORM_Property({ nullable: true })
-  enum3?: number;
+  @MikroORM_Enum({ items: () => Publisher4Enum3, nullable: true })
+  enum3?: TPublisher4Enum3;
 
   @MikroORM_OneToMany({ entity: () => Book4, mappedBy: 'publisher' })
   book4Collection = new MikroORM_Collection<Book4>(this);
@@ -1041,7 +1065,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -1239,7 +1263,7 @@ export class Publisher4 extends BaseEntity {
   updatedAt?: Date;
   name: string & MikroORM_Opt = 'asd';
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
-  enum3?: number;
+  enum3?: TPublisher4Enum3;
   book4Collection = new MikroORM_Collection<Book4>(this);
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 }
@@ -1251,6 +1275,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 export const Publisher4Schema = new MikroORM_EntitySchema({
   class: Publisher4,
   properties: {
@@ -1259,7 +1291,7 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'integer', nullable: true },
+    enum3: { enum: true, items: () => Publisher4Enum3, nullable: true },
     book4Collection: { kind: '1:m', entity: () => Book4, mappedBy: 'publisher' },
     publisher4TestsCollection: {
       kind: '1:m',
@@ -1404,7 +1436,7 @@ export class Author4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -1588,6 +1620,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 @MikroORM_Entity()
 export class Publisher4 extends BaseEntity2 {
 
@@ -1606,8 +1646,8 @@ export class Publisher4 extends BaseEntity2 {
   @MikroORM_Enum({ items: () => Publisher4Type })
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
 
-  @MikroORM_Property({ nullable: true })
-  enum3?: number;
+  @MikroORM_Enum({ items: () => Publisher4Enum3, nullable: true })
+  enum3?: TPublisher4Enum3;
 
   @MikroORM_OneToMany({ entity: () => Book4, mappedBy: 'publisher' })
   book4Collection = new MikroORM_Collection<Book4>(this);
@@ -1739,7 +1779,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -1937,7 +1977,7 @@ export class Publisher4 extends BaseEntity2 {
   updatedAt?: Date;
   name: string & MikroORM_Opt = 'asd';
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
-  enum3?: number;
+  enum3?: TPublisher4Enum3;
   book4Collection = new MikroORM_Collection<Book4>(this);
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 }
@@ -1949,6 +1989,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 export const Publisher4Schema = new MikroORM_EntitySchema({
   class: Publisher4,
   properties: {
@@ -1957,7 +2005,7 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'integer', nullable: true },
+    enum3: { enum: true, items: () => Publisher4Enum3, nullable: true },
     book4Collection: { kind: '1:m', entity: () => Book4, mappedBy: 'publisher' },
     publisher4TestsCollection: {
       kind: '1:m',
@@ -2090,7 +2138,7 @@ export class Author4 extends CustomBase {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -2274,6 +2322,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 @MikroORM_Entity()
 export class Publisher4 extends CustomBase {
 
@@ -2292,8 +2348,8 @@ export class Publisher4 extends CustomBase {
   @MikroORM_Enum({ items: () => Publisher4Type })
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
 
-  @MikroORM_Property({ nullable: true })
-  enum3?: number;
+  @MikroORM_Enum({ items: () => Publisher4Enum3, nullable: true })
+  enum3?: TPublisher4Enum3;
 
   @MikroORM_OneToMany({ entity: () => Book4, mappedBy: 'publisher' })
   book4Collection = new MikroORM_Collection<Book4>(this);
@@ -2430,7 +2486,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -2628,7 +2684,7 @@ export class Publisher4 extends CustomBase {
   updatedAt?: Date;
   name: string & MikroORM_Opt = 'asd';
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
-  enum3?: number;
+  enum3?: TPublisher4Enum3;
   book4Collection = new MikroORM_Collection<Book4>(this);
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 }
@@ -2640,6 +2696,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 export const Publisher4Schema = new MikroORM_EntitySchema({
   class: Publisher4,
   properties: {
@@ -2648,7 +2712,7 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'integer', nullable: true },
+    enum3: { enum: true, items: () => Publisher4Enum3, nullable: true },
     book4Collection: { kind: '1:m', entity: () => Book4, mappedBy: 'publisher' },
     publisher4TestsCollection: {
       kind: '1:m',
@@ -2792,7 +2856,7 @@ export class Author4 extends MikroORM_BaseEntity {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -2971,6 +3035,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 @MikroORM_Entity()
 export class Publisher4 extends MikroORM_BaseEntity {
 
@@ -2989,8 +3061,8 @@ export class Publisher4 extends MikroORM_BaseEntity {
   @MikroORM_Enum({ items: () => Publisher4Type })
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
 
-  @MikroORM_Property({ nullable: true })
-  enum3?: number;
+  @MikroORM_Enum({ items: () => Publisher4Enum3, nullable: true })
+  enum3?: TPublisher4Enum3;
 
   @MikroORM_OneToMany({ entity: () => Book4, mappedBy: 'publisher' })
   book4Collection = new MikroORM_Collection<Book4>(this);
@@ -3115,7 +3187,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -3308,7 +3380,7 @@ export class Publisher4 extends MikroORM_BaseEntity {
   updatedAt?: Date;
   name: string & MikroORM_Opt = 'asd';
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
-  enum3?: number;
+  enum3?: TPublisher4Enum3;
   book4Collection = new MikroORM_Collection<Book4>(this);
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 }
@@ -3320,6 +3392,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 export const Publisher4Schema = new MikroORM_EntitySchema({
   class: Publisher4,
   properties: {
@@ -3328,7 +3408,7 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'integer', nullable: true },
+    enum3: { enum: true, items: () => Publisher4Enum3, nullable: true },
     book4Collection: { kind: '1:m', entity: () => Book4, mappedBy: 'publisher' },
     publisher4TestsCollection: {
       kind: '1:m',
@@ -3458,7 +3538,7 @@ export class Author4 extends BaseEntity {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -3642,6 +3722,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 @MikroORM_Entity()
 export class Publisher4 extends BaseEntity {
 
@@ -3660,8 +3748,8 @@ export class Publisher4 extends BaseEntity {
   @MikroORM_Enum({ items: () => Publisher4Type })
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
 
-  @MikroORM_Property({ nullable: true })
-  enum3?: number;
+  @MikroORM_Enum({ items: () => Publisher4Enum3, nullable: true })
+  enum3?: TPublisher4Enum3;
 
   @MikroORM_OneToMany({ entity: () => Book4, mappedBy: 'publisher' })
   book4Collection = new MikroORM_Collection<Book4>(this);
@@ -3798,7 +3886,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -3996,7 +4084,7 @@ export class Publisher4 extends BaseEntity {
   updatedAt?: Date;
   name: string & MikroORM_Opt = 'asd';
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
-  enum3?: number;
+  enum3?: TPublisher4Enum3;
   book4Collection = new MikroORM_Collection<Book4>(this);
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 }
@@ -4008,6 +4096,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 export const Publisher4Schema = new MikroORM_EntitySchema({
   class: Publisher4,
   properties: {
@@ -4016,7 +4112,7 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'integer', nullable: true },
+    enum3: { enum: true, items: () => Publisher4Enum3, nullable: true },
     book4Collection: { kind: '1:m', entity: () => Book4, mappedBy: 'publisher' },
     publisher4TestsCollection: {
       kind: '1:m',
@@ -4161,7 +4257,7 @@ export class Author4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -4345,6 +4441,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 @MikroORM_Entity()
 export class Publisher4 extends BaseEntity2 {
 
@@ -4363,8 +4467,8 @@ export class Publisher4 extends BaseEntity2 {
   @MikroORM_Enum({ items: () => Publisher4Type })
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
 
-  @MikroORM_Property({ nullable: true })
-  enum3?: number;
+  @MikroORM_Enum({ items: () => Publisher4Enum3, nullable: true })
+  enum3?: TPublisher4Enum3;
 
   @MikroORM_OneToMany({ entity: () => Book4, mappedBy: 'publisher' })
   book4Collection = new MikroORM_Collection<Book4>(this);
@@ -4496,7 +4600,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -4694,7 +4798,7 @@ export class Publisher4 extends BaseEntity2 {
   updatedAt?: Date;
   name: string & MikroORM_Opt = 'asd';
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
-  enum3?: number;
+  enum3?: TPublisher4Enum3;
   book4Collection = new MikroORM_Collection<Book4>(this);
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 }
@@ -4706,6 +4810,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 export const Publisher4Schema = new MikroORM_EntitySchema({
   class: Publisher4,
   properties: {
@@ -4714,7 +4826,7 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'integer', nullable: true },
+    enum3: { enum: true, items: () => Publisher4Enum3, nullable: true },
     book4Collection: { kind: '1:m', entity: () => Book4, mappedBy: 'publisher' },
     publisher4TestsCollection: {
       kind: '1:m',
@@ -4847,7 +4959,7 @@ export class Author4 extends CustomBase {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -5031,6 +5143,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 @MikroORM_Entity()
 export class Publisher4 extends CustomBase {
 
@@ -5049,8 +5169,8 @@ export class Publisher4 extends CustomBase {
   @MikroORM_Enum({ items: () => Publisher4Type })
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
 
-  @MikroORM_Property({ nullable: true })
-  enum3?: number;
+  @MikroORM_Enum({ items: () => Publisher4Enum3, nullable: true })
+  enum3?: TPublisher4Enum3;
 
   @MikroORM_OneToMany({ entity: () => Book4, mappedBy: 'publisher' })
   book4Collection = new MikroORM_Collection<Book4>(this);
@@ -5187,7 +5307,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -5385,7 +5505,7 @@ export class Publisher4 extends CustomBase {
   updatedAt?: Date;
   name: string & MikroORM_Opt = 'asd';
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
-  enum3?: number;
+  enum3?: TPublisher4Enum3;
   book4Collection = new MikroORM_Collection<Book4>(this);
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 }
@@ -5397,6 +5517,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 export const Publisher4Schema = new MikroORM_EntitySchema({
   class: Publisher4,
   properties: {
@@ -5405,7 +5533,7 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'integer', nullable: true },
+    enum3: { enum: true, items: () => Publisher4Enum3, nullable: true },
     book4Collection: { kind: '1:m', entity: () => Book4, mappedBy: 'publisher' },
     publisher4TestsCollection: {
       kind: '1:m',
@@ -5549,7 +5677,7 @@ export class Author4 {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -5728,6 +5856,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 @MikroORM_Entity()
 export class Publisher4 {
 
@@ -5746,8 +5882,8 @@ export class Publisher4 {
   @MikroORM_Enum({ items: () => Publisher4Type })
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
 
-  @MikroORM_Property({ nullable: true })
-  enum3?: number;
+  @MikroORM_Enum({ items: () => Publisher4Enum3, nullable: true })
+  enum3?: TPublisher4Enum3;
 
   @MikroORM_OneToMany({ entity: () => Book4, mappedBy: 'publisher' })
   book4Collection = new MikroORM_Collection<Book4>(this);
@@ -5872,7 +6008,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -6070,7 +6206,7 @@ export class Publisher4 {
   updatedAt?: Date;
   name: string & MikroORM_Opt = 'asd';
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
-  enum3?: number;
+  enum3?: TPublisher4Enum3;
   book4Collection = new MikroORM_Collection<Book4>(this);
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 }
@@ -6082,6 +6218,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 export const Publisher4Schema = new MikroORM_EntitySchema({
   class: Publisher4,
   properties: {
@@ -6090,7 +6234,7 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'integer', nullable: true },
+    enum3: { enum: true, items: () => Publisher4Enum3, nullable: true },
     book4Collection: { kind: '1:m', entity: () => Book4, mappedBy: 'publisher' },
     publisher4TestsCollection: {
       kind: '1:m',
@@ -6224,7 +6368,7 @@ export class Author4 extends BaseEntity {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -6408,6 +6552,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 @MikroORM_Entity()
 export class Publisher4 extends BaseEntity {
 
@@ -6426,8 +6578,8 @@ export class Publisher4 extends BaseEntity {
   @MikroORM_Enum({ items: () => Publisher4Type })
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
 
-  @MikroORM_Property({ nullable: true })
-  enum3?: number;
+  @MikroORM_Enum({ items: () => Publisher4Enum3, nullable: true })
+  enum3?: TPublisher4Enum3;
 
   @MikroORM_OneToMany({ entity: () => Book4, mappedBy: 'publisher' })
   book4Collection = new MikroORM_Collection<Book4>(this);
@@ -6564,7 +6716,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -6762,7 +6914,7 @@ export class Publisher4 extends BaseEntity {
   updatedAt?: Date;
   name: string & MikroORM_Opt = 'asd';
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
-  enum3?: number;
+  enum3?: TPublisher4Enum3;
   book4Collection = new MikroORM_Collection<Book4>(this);
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 }
@@ -6774,6 +6926,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 export const Publisher4Schema = new MikroORM_EntitySchema({
   class: Publisher4,
   properties: {
@@ -6782,7 +6942,7 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'integer', nullable: true },
+    enum3: { enum: true, items: () => Publisher4Enum3, nullable: true },
     book4Collection: { kind: '1:m', entity: () => Book4, mappedBy: 'publisher' },
     publisher4TestsCollection: {
       kind: '1:m',
@@ -6928,7 +7088,7 @@ export class Author4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -7112,6 +7272,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 @MikroORM_Entity()
 export class Publisher4 extends BaseEntity2 {
 
@@ -7130,8 +7298,8 @@ export class Publisher4 extends BaseEntity2 {
   @MikroORM_Enum({ items: () => Publisher4Type })
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
 
-  @MikroORM_Property({ nullable: true })
-  enum3?: number;
+  @MikroORM_Enum({ items: () => Publisher4Enum3, nullable: true })
+  enum3?: TPublisher4Enum3;
 
   @MikroORM_OneToMany({ entity: () => Book4, mappedBy: 'publisher' })
   book4Collection = new MikroORM_Collection<Book4>(this);
@@ -7263,7 +7431,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -7461,7 +7629,7 @@ export class Publisher4 extends BaseEntity2 {
   updatedAt?: Date;
   name: string & MikroORM_Opt = 'asd';
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
-  enum3?: number;
+  enum3?: TPublisher4Enum3;
   book4Collection = new MikroORM_Collection<Book4>(this);
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 }
@@ -7473,6 +7641,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 export const Publisher4Schema = new MikroORM_EntitySchema({
   class: Publisher4,
   properties: {
@@ -7481,7 +7657,7 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'integer', nullable: true },
+    enum3: { enum: true, items: () => Publisher4Enum3, nullable: true },
     book4Collection: { kind: '1:m', entity: () => Book4, mappedBy: 'publisher' },
     publisher4TestsCollection: {
       kind: '1:m',
@@ -7615,7 +7791,7 @@ export class Author4 extends CustomBase {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -7799,6 +7975,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 @MikroORM_Entity()
 export class Publisher4 extends CustomBase {
 
@@ -7817,8 +8001,8 @@ export class Publisher4 extends CustomBase {
   @MikroORM_Enum({ items: () => Publisher4Type })
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
 
-  @MikroORM_Property({ nullable: true })
-  enum3?: number;
+  @MikroORM_Enum({ items: () => Publisher4Enum3, nullable: true })
+  enum3?: TPublisher4Enum3;
 
   @MikroORM_OneToMany({ entity: () => Book4, mappedBy: 'publisher' })
   book4Collection = new MikroORM_Collection<Book4>(this);
@@ -7955,7 +8139,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -8153,7 +8337,7 @@ export class Publisher4 extends CustomBase {
   updatedAt?: Date;
   name: string & MikroORM_Opt = 'asd';
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
-  enum3?: number;
+  enum3?: TPublisher4Enum3;
   book4Collection = new MikroORM_Collection<Book4>(this);
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 }
@@ -8165,6 +8349,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 export const Publisher4Schema = new MikroORM_EntitySchema({
   class: Publisher4,
   properties: {
@@ -8173,7 +8365,7 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'integer', nullable: true },
+    enum3: { enum: true, items: () => Publisher4Enum3, nullable: true },
     book4Collection: { kind: '1:m', entity: () => Book4, mappedBy: 'publisher' },
     publisher4TestsCollection: {
       kind: '1:m',
@@ -8318,7 +8510,7 @@ export class Author4 extends MikroORM_BaseEntity {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -8497,6 +8689,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 @MikroORM_Entity()
 export class Publisher4 extends MikroORM_BaseEntity {
 
@@ -8515,8 +8715,8 @@ export class Publisher4 extends MikroORM_BaseEntity {
   @MikroORM_Enum({ items: () => Publisher4Type })
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
 
-  @MikroORM_Property({ nullable: true })
-  enum3?: number;
+  @MikroORM_Enum({ items: () => Publisher4Enum3, nullable: true })
+  enum3?: TPublisher4Enum3;
 
   @MikroORM_OneToMany({ entity: () => Book4, mappedBy: 'publisher' })
   book4Collection = new MikroORM_Collection<Book4>(this);
@@ -8642,7 +8842,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -8840,7 +9040,7 @@ export class Publisher4 extends MikroORM_BaseEntity {
   updatedAt?: Date;
   name: string & MikroORM_Opt = 'asd';
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
-  enum3?: number;
+  enum3?: TPublisher4Enum3;
   book4Collection = new MikroORM_Collection<Book4>(this);
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 }
@@ -8852,6 +9052,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 export const Publisher4Schema = new MikroORM_EntitySchema({
   class: Publisher4,
   properties: {
@@ -8860,7 +9068,7 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'integer', nullable: true },
+    enum3: { enum: true, items: () => Publisher4Enum3, nullable: true },
     book4Collection: { kind: '1:m', entity: () => Book4, mappedBy: 'publisher' },
     publisher4TestsCollection: {
       kind: '1:m',
@@ -8994,7 +9202,7 @@ export class Author4 extends BaseEntity {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -9178,6 +9386,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 @MikroORM_Entity()
 export class Publisher4 extends BaseEntity {
 
@@ -9196,8 +9412,8 @@ export class Publisher4 extends BaseEntity {
   @MikroORM_Enum({ items: () => Publisher4Type })
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
 
-  @MikroORM_Property({ nullable: true })
-  enum3?: number;
+  @MikroORM_Enum({ items: () => Publisher4Enum3, nullable: true })
+  enum3?: TPublisher4Enum3;
 
   @MikroORM_OneToMany({ entity: () => Book4, mappedBy: 'publisher' })
   book4Collection = new MikroORM_Collection<Book4>(this);
@@ -9334,7 +9550,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -9532,7 +9748,7 @@ export class Publisher4 extends BaseEntity {
   updatedAt?: Date;
   name: string & MikroORM_Opt = 'asd';
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
-  enum3?: number;
+  enum3?: TPublisher4Enum3;
   book4Collection = new MikroORM_Collection<Book4>(this);
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 }
@@ -9544,6 +9760,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 export const Publisher4Schema = new MikroORM_EntitySchema({
   class: Publisher4,
   properties: {
@@ -9552,7 +9776,7 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'integer', nullable: true },
+    enum3: { enum: true, items: () => Publisher4Enum3, nullable: true },
     book4Collection: { kind: '1:m', entity: () => Book4, mappedBy: 'publisher' },
     publisher4TestsCollection: {
       kind: '1:m',
@@ -9698,7 +9922,7 @@ export class Author4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -9882,6 +10106,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 @MikroORM_Entity()
 export class Publisher4 extends BaseEntity2 {
 
@@ -9900,8 +10132,8 @@ export class Publisher4 extends BaseEntity2 {
   @MikroORM_Enum({ items: () => Publisher4Type })
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
 
-  @MikroORM_Property({ nullable: true })
-  enum3?: number;
+  @MikroORM_Enum({ items: () => Publisher4Enum3, nullable: true })
+  enum3?: TPublisher4Enum3;
 
   @MikroORM_OneToMany({ entity: () => Book4, mappedBy: 'publisher' })
   book4Collection = new MikroORM_Collection<Book4>(this);
@@ -10033,7 +10265,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -10231,7 +10463,7 @@ export class Publisher4 extends BaseEntity2 {
   updatedAt?: Date;
   name: string & MikroORM_Opt = 'asd';
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
-  enum3?: number;
+  enum3?: TPublisher4Enum3;
   book4Collection = new MikroORM_Collection<Book4>(this);
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 }
@@ -10243,6 +10475,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 export const Publisher4Schema = new MikroORM_EntitySchema({
   class: Publisher4,
   properties: {
@@ -10251,7 +10491,7 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'integer', nullable: true },
+    enum3: { enum: true, items: () => Publisher4Enum3, nullable: true },
     book4Collection: { kind: '1:m', entity: () => Book4, mappedBy: 'publisher' },
     publisher4TestsCollection: {
       kind: '1:m',
@@ -10385,7 +10625,7 @@ export class Author4 extends CustomBase {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -10569,6 +10809,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 @MikroORM_Entity()
 export class Publisher4 extends CustomBase {
 
@@ -10587,8 +10835,8 @@ export class Publisher4 extends CustomBase {
   @MikroORM_Enum({ items: () => Publisher4Type })
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
 
-  @MikroORM_Property({ nullable: true })
-  enum3?: number;
+  @MikroORM_Enum({ items: () => Publisher4Enum3, nullable: true })
+  enum3?: TPublisher4Enum3;
 
   @MikroORM_OneToMany({ entity: () => Book4, mappedBy: 'publisher' })
   book4Collection = new MikroORM_Collection<Book4>(this);
@@ -10725,7 +10973,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -10923,7 +11171,7 @@ export class Publisher4 extends CustomBase {
   updatedAt?: Date;
   name: string & MikroORM_Opt = 'asd';
   type: TPublisher4Type & MikroORM_Opt = Publisher4Type.LOCAL;
-  enum3?: number;
+  enum3?: TPublisher4Enum3;
   book4Collection = new MikroORM_Collection<Book4>(this);
   publisher4TestsCollection = new MikroORM_Collection<Publisher4Tests>(this);
 }
@@ -10935,6 +11183,14 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
+export const Publisher4Enum3 = {
+  '1': '1',
+  '2': '2',
+  '3': '3',
+} as const;
+
+export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
+
 export const Publisher4Schema = new MikroORM_EntitySchema({
   class: Publisher4,
   properties: {
@@ -10943,7 +11199,7 @@ export const Publisher4Schema = new MikroORM_EntitySchema({
     updatedAt: { type: 'datetime', nullable: true },
     name: { type: 'text' },
     type: { enum: true, items: () => Publisher4Type },
-    enum3: { type: 'integer', nullable: true },
+    enum3: { enum: true, items: () => Publisher4Enum3, nullable: true },
     book4Collection: { kind: '1:m', entity: () => Book4, mappedBy: 'publisher' },
     publisher4TestsCollection: {
       kind: '1:m',

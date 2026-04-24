@@ -1961,7 +1961,12 @@ export class MetadataDiscovery {
       // called, so `meta.props` is still the pre-flatten array and would miss
       // enum properties that live inside embeddables.
       for (const prop of Object.values(meta.properties)) {
-        if (prop.persist === false || prop.nativeEnumName || !prop.items?.every(item => typeof item === 'string')) {
+        if (prop.persist === false || prop.nativeEnumName || !prop.items?.length) {
+          continue;
+        }
+
+        const allStrings = prop.items.every(item => typeof item === 'string');
+        if (!allStrings && !this.#platform.usesNumericEnumCheckConstraints()) {
           continue;
         }
 
