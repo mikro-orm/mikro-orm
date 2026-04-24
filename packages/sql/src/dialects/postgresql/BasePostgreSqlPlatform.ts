@@ -177,6 +177,10 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
       return this.getFloatDeclarationSQL();
     }
 
+    if (['timestamptz', 'timestamp with time zone'].includes(simpleType)) {
+      return this.getDateTimeTypeDeclarationSQL(options);
+    }
+
     if (['varchar', 'character varying'].includes(simpleType)) {
       return this.getVarcharTypeDeclarationSQL(options);
     }
