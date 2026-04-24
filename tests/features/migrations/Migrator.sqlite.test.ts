@@ -202,39 +202,40 @@ describe('Migrator (sqlite)', () => {
     const downMock = vi.spyOn(Migration.prototype, 'down');
     downMock.mockImplementation(async () => void 0);
 
+    // Fields sqlite cannot round-trip today:
+    //  - `mappedType` for numeric enums (sqlite emits no CHECK constraint, so
+    //    introspection sees them as integer and can't recover the enum-ness)
+    //  - `length` on time/datetime columns (metadata carries a default
+    //    precision, sqlite DDL doesn't persist it)
+    // Strip them from both sides so the rest of the snapshot can assert
+    // byte-for-byte equality (GH #7607).
+    const strip = (snap: any) => {
+      for (const table of snap.tables) {
+        for (const col of Object.values<any>(table.columns)) {
+          if (col.mappedType === 'enum' || col.mappedType === 'integer') {
+            delete col.mappedType;
+          }
+          if (/^(time|datetime|timestamp)/i.test(col.type ?? '')) {
+            delete col.length;
+          }
+        }
+      }
+      return snap;
+    };
+
     try {
       await migrator.up(migration1.fileName);
       const afterUp = JSON.parse(readFileSync(snapshotPath, 'utf8'));
 
-      // tables, columns, indexes and foreign keys all serialize in a stable
-      // alphabetic order so metadata-derived and introspection-derived
-      // snapshots don't swap things around on `migration:up`/`migration:down`
-      const tableOrderA = afterCreate.tables.map((t: any) => t.name);
-      const tableOrderB = afterUp.tables.map((t: any) => t.name);
-      expect(tableOrderB).toEqual(tableOrderA);
-      expect(tableOrderA).toEqual([...tableOrderA].sort());
+      // full deep equality (modulo the documented sqlite-specific gaps) —
+      // this locks down ordering, normalized type aliases, derived
+      // primary/unique flags, index/FK normalization, schema-level
+      // `nativeEnums` deduplication (GH #7610), and everything else.
+      expect(strip(afterUp)).toEqual(strip(afterCreate));
 
-      for (const tableA of afterCreate.tables) {
-        const tableB = afterUp.tables.find((t: any) => t.name === tableA.name);
-        expect(tableB).toBeDefined();
-
-        expect(Object.keys(tableB.columns)).toEqual(Object.keys(tableA.columns));
-        expect(Object.keys(tableA.columns)).toEqual([...Object.keys(tableA.columns)].sort());
-
-        expect(tableB.indexes.map((i: any) => i.keyName)).toEqual(tableA.indexes.map((i: any) => i.keyName));
-        expect(Object.keys(tableB.foreignKeys)).toEqual(Object.keys(tableA.foreignKeys));
-
-        // legacy singular FK aliases from sqlite introspection must not leak
-        // into the serialized snapshot
-        for (const fk of Object.values<any>(tableB.foreignKeys)) {
-          expect(fk).not.toHaveProperty('columnName');
-          expect(fk).not.toHaveProperty('referencedColumnName');
-        }
-
-        // every index must carry an explicit boolean `composite`
-        for (const idx of [...tableA.indexes, ...tableB.indexes]) {
-          expect(typeof idx.composite).toBe('boolean');
-        }
+      // `nativeEnums` lives on the schema only — not on every table.
+      for (const table of afterCreate.tables) {
+        expect(table).not.toHaveProperty('nativeEnums');
       }
     } finally {
       await rm(path + '/' + migration1.fileName, { force: true });

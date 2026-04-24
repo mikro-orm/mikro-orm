@@ -1228,43 +1228,78 @@ export class DatabaseTable {
     // Plain string comparison keeps the ordering locale-independent.
     const byString = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
     const sortedColumnKeys = (Utils.keys(columns) as string[]).sort(byString);
+
+    // Derive column-level `primary`/`unique` from index membership so the
+    // metadata path (which keeps `primary: false` on composite PK columns for
+    // DDL reasons) and the introspection path (which reads the flags straight
+    // from the DB) agree on the serialized shape (GH #7607).
+    const primaryColumns = new Set<string>();
+    const uniqueColumns = new Set<string>();
+
+    for (const idx of this.#indexes) {
+      if (idx.primary) {
+        idx.columnNames.forEach(c => primaryColumns.add(c));
+      }
+      // Mirror `DatabaseTable.init()` for introspection: the first column of
+      // a (non-primary) unique index is marked unique. Composite uniques are
+      // handled the same way on both paths this way.
+      if (idx.unique && !idx.primary && idx.columnNames.length > 0) {
+        uniqueColumns.add(idx.columnNames[0]);
+      }
+    }
+
+    // Integer- and float-family types carry their width/precision in the
+    // type name itself (`int2`, `int4`, `int8`, `float4`, `float8`), so
+    // dropping the redundant pg precision/scale readings keeps metadata and
+    // introspection snapshots aligned (GH #7607).
+    const isFixedPrecisionFamily = (type: string | undefined) =>
+      !!type &&
+      /^(smallint|int|int2|int4|int8|integer|bigint|tinyint|mediumint|serial|bigserial|smallserial|real|float4|float8|double|double precision)$/i.test(
+        type,
+      );
+
+    const supportsUnsigned = this.#platform.supportsUnsigned();
+
     const columnsMapped = sortedColumnKeys.reduce((o, col) => {
       const c = columns[col];
+      // Normalize type aliases via the platform (e.g. postgres collapses
+      // `int`/`int4`/`integer` so the metadata path and introspection path
+      // agree on the stored name). `autoincrement` is intentionally omitted
+      // from the options so `serial` (metadata) and `int4` (introspection)
+      // both collapse to the same canonical form — the autoincrement bit is
+      // stored separately on the column.
+      const rawType = c.type?.toLowerCase();
+      const normOptions = { length: c.length, precision: c.precision, scale: c.scale };
+      const type = this.#platform.normalizeColumnType(c.type ?? '', normOptions)?.toLowerCase() || rawType;
       const normalized: Dictionary = {
         name: c.name,
-        type: c.type?.toLowerCase(),
-        unsigned: !!c.unsigned,
+        type,
+        unsigned: supportsUnsigned && !!c.unsigned,
         autoincrement: !!c.autoincrement,
-        primary: !!c.primary,
+        primary: primaryColumns.has(c.name) || !!c.primary,
         nullable: !!c.nullable,
-        unique: !!c.unique,
+        unique: uniqueColumns.has(c.name) || !!c.unique,
         length: c.length || null,
-        precision: c.precision ?? null,
-        scale: c.scale ?? null,
-        default: c.default ?? null,
+        precision: isFixedPrecisionFamily(type) ? null : (c.precision ?? null),
+        scale: isFixedPrecisionFamily(type) ? null : (c.scale ?? null),
+        // Treat the string literal "null" the same as an unset default so
+        // metadata and introspection agree on a single canonical encoding.
+        default: c.default == null || String(c.default).toLowerCase() === 'null' ? null : c.default,
         comment: c.comment ?? null,
         enumItems: c.enumItems ?? [],
         mappedType: Utils.keys(t).find(k => t[k] === c.mappedType.constructor),
       };
 
-      if (c.generated) {
-        normalized.generated = c.generated;
-      }
-
-      if (c.nativeEnumName) {
-        normalized.nativeEnumName = c.nativeEnumName;
-      }
-
-      if (c.extra) {
-        normalized.extra = c.extra;
-      }
-
-      if (c.ignoreSchemaChanges) {
-        normalized.ignoreSchemaChanges = c.ignoreSchemaChanges;
-      }
-
-      if (c.defaultConstraint) {
-        normalized.defaultConstraint = c.defaultConstraint;
+      for (const field of [
+        'generated',
+        'nativeEnumName',
+        'extra',
+        'ignoreSchemaChanges',
+        'defaultConstraint',
+      ] as const) {
+        if (c[field]) {
+          normalized[field] = c[field];
+        }
       }
 
       o[col] = normalized;
@@ -1278,38 +1313,30 @@ export class DatabaseTable {
       const out: Dictionary = {
         columnNames: idx.columnNames,
         composite: !!idx.composite,
-        constraint: !!idx.constraint,
+        // PK indexes are always backed by a constraint — force it so the
+        // postgres introspection path (which keys `constraint` off
+        // `contype === 'u'`) matches the metadata path.
+        constraint: !!idx.constraint || !!idx.primary,
         keyName: idx.keyName,
         primary: !!idx.primary,
         unique: !!idx.unique,
       };
 
-      if (idx.expression) {
-        out.expression = idx.expression;
-      }
-      if (idx.type) {
-        out.type = idx.type;
-      }
-      if (idx.deferMode) {
-        out.deferMode = idx.deferMode;
-      }
-      if (idx.columns) {
-        out.columns = idx.columns;
-      }
-      if (idx.include) {
-        out.include = idx.include;
-      }
-      if (idx.fillFactor != null) {
-        out.fillFactor = idx.fillFactor;
-      }
-      if (idx.invisible) {
-        out.invisible = true;
-      }
-      if (idx.disabled) {
-        out.disabled = true;
-      }
-      if (idx.clustered) {
-        out.clustered = true;
+      const optional = [
+        'expression',
+        'type',
+        'deferMode',
+        'columns',
+        'include',
+        'fillFactor',
+        'invisible',
+        'disabled',
+        'clustered',
+      ] as const;
+      for (const field of optional) {
+        if (idx[field] != null && idx[field] !== false) {
+          out[field] = idx[field];
+        }
       }
 
       return out;
@@ -1343,14 +1370,10 @@ export class DatabaseTable {
 
     const normalizeCheck = (check: CheckDef): Dictionary => {
       const out: Dictionary = { name: check.name };
-      if (typeof check.expression === 'string') {
-        out.expression = check.expression;
-      }
-      if (check.definition) {
-        out.definition = check.definition;
-      }
-      if (check.columnName) {
-        out.columnName = check.columnName;
+      for (const field of ['expression', 'definition', 'columnName'] as const) {
+        if (field === 'expression' ? typeof check.expression === 'string' : check[field]) {
+          out[field] = check[field];
+        }
       }
       return out;
     };
@@ -1362,8 +1385,6 @@ export class DatabaseTable {
         .sort(([a], [b]) => byString(a, b))
         .map(([k, v]) => [k, normalizeFk(v)]),
     );
-    const sortedNativeEnums = Object.fromEntries(Object.entries(this.nativeEnums).sort(([a], [b]) => byString(a, b)));
-
     return {
       name: this.name,
       schema: this.schema,
@@ -1371,8 +1392,11 @@ export class DatabaseTable {
       indexes: sortedIndexes,
       checks: sortedChecks,
       foreignKeys: sortedForeignKeys,
-      nativeEnums: sortedNativeEnums,
-      comment: this.comment,
+      // Always emit `comment` as null when unset so metadata and introspection
+      // snapshots don't differ on the field's presence (GH #7607).
+      // `nativeEnums` lives on the schema (same reference is shared across
+      // tables) — emitting it here would duplicate it per table (GH #7610).
+      comment: this.comment ?? null,
     };
   }
 }
