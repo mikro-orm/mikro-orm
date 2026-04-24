@@ -1282,9 +1282,7 @@ export class DatabaseTable {
         length: c.length || null,
         precision: isFixedPrecisionFamily(type) ? null : (c.precision ?? null),
         scale: isFixedPrecisionFamily(type) ? null : (c.scale ?? null),
-        // Treat the string literal "null" the same as an unset default so
-        // metadata and introspection agree on a single canonical encoding.
-        default: c.default == null || String(c.default).toLowerCase() === 'null' ? null : c.default,
+        default: c.default ?? null,
         comment: c.comment ?? null,
         enumItems: c.enumItems ?? [],
         mappedType: Utils.keys(t).find(k => t[k] === c.mappedType.constructor),

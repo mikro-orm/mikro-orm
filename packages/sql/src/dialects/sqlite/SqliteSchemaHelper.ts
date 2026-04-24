@@ -156,7 +156,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
       const checks = await this.getChecks(connection, table.name, table.schema, ctx);
       const pks = await this.getPrimaryKeys(connection, indexes, table.name, table.schema, ctx);
       const fks = await this.getForeignKeys(connection, table.name, table.schema, ctx);
-      const enums = await this.getEnumDefinitions(connection, table.name, table.schema, ctx);
+      const enums = this.extractEnumValuesFromChecks(checks);
       table.init(cols, indexes, checks, pks, fks, enums);
     }
   }
@@ -447,34 +447,27 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return `(${value})`;
   }
 
-  private async getEnumDefinitions(
-    connection: AbstractSqlConnection,
-    tableName: string,
-    schemaName?: string,
-    ctx?: Transaction,
-  ): Promise<Dictionary<string[]>> {
-    const prefix = this.getSchemaPrefix(schemaName);
-    const sql = `select sql from ${prefix}sqlite_master where type = ? and name = ?`;
-    const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get', ctx);
+  /**
+   * Extract enum values from the already-parsed CHECK constraints, e.g.
+   * `` `type` in ('local', 'global') `` → `['local', 'global']`. Sqlite
+   * only emits CHECK constraints for string enums today, so numeric
+   * enum columns stay as plain integers in the introspected schema.
+   */
+  private extractEnumValuesFromChecks(checks: CheckDef[]): Dictionary<string[]> {
+    const result: Dictionary<string[]> = {};
 
-    const checkConstraints = [...(tableDefinition.sql.match(/[`["'][^`\]"']+[`\]"'] text check \(.*?\)/gi) ?? [])];
-    return checkConstraints.reduce(
-      (o, item) => {
-        // check constraints are defined as (note that last closing paren is missing):
-        // `type` text check (`type` in ('local', 'global')
-        const match = /[`["']([^`\]"']+)[`\]"'] text check \(.* \((.*)\)/i.exec(item);
+    for (const check of checks) {
+      if (!check.columnName || typeof check.expression !== 'string') {
+        continue;
+      }
 
-        /* v8 ignore next */
-        if (match) {
-          o[match[1]] = match[2]
-            .split(/,(?=\s*'(?:[^']|'')*'(?:\s*\)|$))/)
-            .map((item: string) => /^\(?'((?:[^']|'')*)'/.exec(item.trim())![1].replace(/''/g, "'"));
-        }
+      const items = [...check.expression.matchAll(/'((?:[^']|'')*)'/g)].map(m => m[1].replace(/''/g, "'"));
+      if (items.length > 0) {
+        result[check.columnName] = items;
+      }
+    }
 
-        return o;
-      },
-      {} as Dictionary<string[]>,
-    );
+    return result;
   }
 
   override async getPrimaryKeys(
