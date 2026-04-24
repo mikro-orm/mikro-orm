@@ -41,7 +41,6 @@ export class CLIHelper {
 
     contextName ??= process.env.MIKRO_ORM_CONTEXT_NAME ?? 'default';
     const env = await this.loadEnvironmentVars();
-    await loadOptionalDependencies(options);
 
     // oxfmt-ignore
     const configFinder = (cfg: unknown) => {
@@ -55,13 +54,13 @@ export class CLIHelper {
     const result = await this.getConfigFile(paths);
     if (!result[0]) {
       if (Utils.hasObjectKeys(env)) {
-        return new Configuration(
-          Utils.mergeConfig(
-            { contextName },
-            options.preferEnvVars ? options : env,
-            options.preferEnvVars ? env : options,
-          ),
+        const merged = Utils.mergeConfig(
+          { contextName },
+          options.preferEnvVars ? options : env,
+          options.preferEnvVars ? env : options,
         );
+        await loadOptionalDependencies(merged);
+        return new Configuration(merged);
       }
       throw new Error(`MikroORM config file not found in ['${paths.join(`', '`)}']`);
     }

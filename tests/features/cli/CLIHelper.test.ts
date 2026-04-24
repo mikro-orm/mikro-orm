@@ -3,6 +3,7 @@ import { MikroORM } from '@mikro-orm/core';
 import { configure, CLIHelper } from '@mikro-orm/cli';
 import { fs } from '@mikro-orm/core/fs-utils';
 import { Configuration, Options, Utils, MongoDriver } from '@mikro-orm/mongodb';
+import { Migrator as MongoMigrator } from '@mikro-orm/migrations-mongodb';
 import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory.js';
 
 const pkg = { type: 'module', 'mikro-orm': {} } as any;
@@ -411,6 +412,28 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     const orm = await CLIHelper.getORM(undefined, undefined, { discovery: { warnWhenNoEntities: false } });
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.config.get('preferTs')).toBe(true);
+    await orm.close(true);
+  });
+
+  test('preserves user-provided extensions when passing CLI opts (GH #7613)', async () => {
+    const mongoConfig = { ...config, extensions: [MongoMigrator] };
+    dynamicImportMock.mockImplementation(id => {
+      const str = id as string;
+      if (/\/mikro-orm\.config\.(ts|js)$/.test(str)) {
+        return mongoConfig;
+      }
+      return resolve(id);
+    });
+    pathExistsMock.mockImplementation(async path => {
+      const str = path as string;
+      return str.includes('/mikro-orm.config.js') && !str.includes('/src/mikro-orm.config.js');
+    });
+    delete pkg['mikro-orm'].preferTs;
+    const orm = await CLIHelper.getORM(undefined, undefined, {
+      pool: { min: 1, max: 2 },
+      discovery: { warnWhenNoEntities: false },
+    });
+    expect(orm.migrator).toBeInstanceOf(MongoMigrator);
     await orm.close(true);
   });
 
