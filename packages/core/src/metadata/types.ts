@@ -420,6 +420,11 @@ export interface PropertyOptions<Owner> {
    * Specify comment of column for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
    */
   comment?: string;
+  /**
+   * Specify column-level collation for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}.
+   * Supported on PostgreSQL, MySQL, MariaDB, and SQLite (via `COLLATE` clause on the column definition).
+   */
+  collation?: string;
   /** mysql only */
   extra?: string;
   /**
@@ -427,7 +432,7 @@ export interface PropertyOptions<Owner> {
    *
    * @see https://mikro-orm.io/docs/defining-entities#sql-generated-columns
    */
-  ignoreSchemaChanges?: ('type' | 'extra' | 'default')[];
+  ignoreSchemaChanges?: ('type' | 'extra' | 'default' | 'collation')[];
 }
 
 export interface ReferenceOptions<Owner, Target> extends PropertyOptions<Owner> {

@@ -179,10 +179,16 @@ export abstract class AbstractSqlPlatform extends Platform {
     return this.quoteIdentifier(collation);
   }
 
-  /** @internal */
-  protected validateCollationName(collation: string): void {
-    if (!/^[\w]+$/.test(collation)) {
-      throw new Error(`Invalid collation name: '${collation}'. Collation names must contain only word characters.`);
+  /**
+   * PG ICU locale names include hyphens (`en-US-x-icu`) and libc locales include dots (`en_US.utf8`),
+   * so word-chars alone would reject valid real-world collations.
+   * @internal
+   */
+  validateCollationName(collation: string): void {
+    if (!/^[\w\-.]+$/.test(collation)) {
+      throw new Error(
+        `Invalid collation name: '${collation}'. Collation names must contain only word characters, hyphens, and dots.`,
+      );
     }
   }
 

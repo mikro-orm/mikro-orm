@@ -69,6 +69,7 @@ export interface Column {
   default?: string | null;
   defaultConstraint?: string;
   comment?: string;
+  collation?: string;
   generated?: string;
   nativeEnumName?: string;
   enumItems?: string[];
@@ -76,7 +77,7 @@ export interface Column {
   unique?: boolean;
   /** mysql only */
   extra?: string;
-  ignoreSchemaChanges?: ('type' | 'extra' | 'default')[];
+  ignoreSchemaChanges?: ('type' | 'extra' | 'default' | 'collation')[];
 }
 
 export interface ForeignKey {

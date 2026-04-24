@@ -177,7 +177,8 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       numeric_scale as numeric_scale,
       datetime_precision as datetime_precision,
       character_maximum_length as character_maximum_length,
-      columnproperty(sc.object_id, column_name, 'IsIdentity') is_identity
+      columnproperty(sc.object_id, column_name, 'IsIdentity') is_identity,
+      nullif(ic.collation_name, convert(nvarchar(128), databasepropertyex(db_name(), 'Collation'))) as collation_name
       from information_schema.columns ic
       inner join sys.columns sc on sc.name = ic.column_name and sc.object_id = object_id(ic.table_schema + '.' + ic.table_name)
       left join sys.computed_columns cmp on cmp.name = ic.column_name and cmp.object_id = object_id(ic.table_schema + '.' + ic.table_name)
@@ -236,6 +237,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
         precision: col.numeric_precision,
         scale: col.numeric_scale,
         comment: col.column_comment,
+        collation: col.collation_name ?? undefined,
         generated,
       });
     }
@@ -561,10 +563,17 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     const checks = await this.getAllChecks(connection, tablesBySchema, ctx);
     const fks = await this.getAllForeignKeys(connection, tablesBySchema, ctx);
     const triggers = await this.getAllTriggers(connection, tablesBySchema);
+    const [{ collation: dbCollation } = { collation: undefined }] = await connection.execute<{ collation: string }[]>(
+      `select convert(nvarchar(128), databasepropertyex(db_name(), 'Collation')) as collation`,
+      [],
+      'all',
+      ctx,
+    );
 
     for (const t of tables) {
       const key = this.getTableKey(t);
       const table = schema.addTable(t.table_name, t.schema_name, t.table_comment);
+      table.collation = dbCollation;
       const pks = await this.getPrimaryKeys(connection, indexes[key], table.name, table.schema);
       const enums = this.getEnumDefinitions(checks[key] ?? []);
       table.init(columns[key], indexes[key], checks[key], pks, fks[key], enums);
@@ -729,6 +738,10 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       col.push(columnType);
     }
 
+    if (column.collation) {
+      col.push(this.getCollateSQL(column.collation));
+    }
+
     Utils.runIfNotEmpty(() => col.push('identity(1,1)'), column.autoincrement);
     Utils.runIfNotEmpty(() => col.push('null'), column.nullable);
     Utils.runIfNotEmpty(() => col.push('not null'), !column.nullable && !column.generated);
@@ -759,7 +772,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       parts.push(constraint);
     }
 
-    if (changedProperties.has('type') || changedProperties.has('nullable')) {
+    if (changedProperties.has('type') || changedProperties.has('nullable') || changedProperties.has('collation')) {
       const col = this.createTableColumn(column, table, changedProperties);
       parts.push(`alter table ${table.getQuotedName()} alter column ${col}`);
     }

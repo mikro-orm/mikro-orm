@@ -727,6 +727,14 @@ export class SchemaComparator {
       changedProperties.add('comment');
     }
 
+    if (
+      !(fromColumn.ignoreSchemaChanges?.includes('collation') || toColumn.ignoreSchemaChanges?.includes('collation')) &&
+      this.diffCollation(fromColumn.collation, toColumn.collation, fromTable.collation)
+    ) {
+      log(`'collation' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumn, toColumn });
+      changedProperties.add('collation');
+    }
+
     const isNonNativeEnumArray =
       !(fromColumn.nativeEnumName || toColumn.nativeEnumName) &&
       (fromColumn.mappedType instanceof ArrayType || toColumn.mappedType instanceof ArrayType);
@@ -755,6 +763,25 @@ export class SchemaComparator {
     // A null value and an empty string are actually equal for a comment so they should not trigger a change.
     // eslint-disable-next-line eqeqeq
     return comment1 != comment2 && !(comment1 == null && comment2 === '') && !(comment2 == null && comment1 === '');
+  }
+
+  /**
+   * `from` is the introspected DB state, `to` is the target metadata. When the metadata side is
+   * unset we never diff — that's the "no opinion, accept the platform/table default" contract.
+   * When the metadata side is set, we diff against the DB unless they match; if introspection
+   * filtered the DB collation (because the column uses the table/database default), we fall back
+   * to `tableDefault` so a property naming the table default doesn't flap. Comparison is
+   * case-insensitive for MySQL parity (introspection returns lowercase names).
+   */
+  diffCollation(fromCollation?: string, toCollation?: string, tableDefault?: string): boolean {
+    if (toCollation == null) {
+      return false;
+    }
+    const from = fromCollation ?? tableDefault;
+    if (from == null) {
+      return true;
+    }
+    return from.toLowerCase() !== toCollation.toLowerCase();
   }
 
   /**

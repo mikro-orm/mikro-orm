@@ -249,6 +249,10 @@ export class SqliteSchemaHelper extends SchemaHelper {
       checks.splice(check, 1);
     }
 
+    if (column.collation) {
+      col.push(this.getCollateSQL(column.collation));
+    }
+
     Utils.runIfNotEmpty(() => col.push('null'), column.nullable);
     Utils.runIfNotEmpty(() => col.push('not null'), !column.nullable && !column.generated);
     Utils.runIfNotEmpty(() => col.push('primary key'), column.primary);
@@ -411,6 +415,15 @@ export class SqliteSchemaHelper extends SchemaHelper {
         }
       }
 
+      const definition = columnDefinitions[col.name]?.definition;
+      // Strip parenthesized groups (check/default expressions) and string literals
+      // so `collate` tokens inside them can't be mistaken for column collation.
+      const cleanDef = (definition ?? '')
+        .replace(/\([^)]*\)/g, '')
+        .replace(/'[^']*'/g, '')
+        .replace(/"[^"]*"/g, '');
+      const collationMatch = /\bcollate\s+([`"']?)([\w\-.]+)\1/i.exec(cleanDef);
+
       return {
         name: col.name,
         type: col.type,
@@ -421,6 +434,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
         unsigned: false,
         autoincrement: !composite && col.pk && this.platform.isNumericColumn(mappedType) && hasAutoincrement,
         generated,
+        collation: collationMatch ? collationMatch[2] : undefined,
       };
     });
   }

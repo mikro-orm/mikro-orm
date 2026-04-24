@@ -250,10 +250,20 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const fks = await this.getAllForeignKeys(connection, tablesBySchema, ctx);
     const partitionings = await this.getPartitions(connection, tablesBySchema, ctx);
     const triggers = await this.getAllTriggers(connection, tablesBySchema);
+    // Resolves the real name of the implicit 'default' collation (the DB's datcollate),
+    // so the comparator can treat `@Property({ collation: '<datcollate>' })` as equivalent
+    // to a column that introspects as using the default.
+    const [{ collation: dbCollation } = { collation: undefined }] = await connection.execute<{ collation: string }[]>(
+      `select datcollate as collation from pg_database where datname = current_database()`,
+      [],
+      'all',
+      ctx,
+    );
 
     for (const t of tables) {
       const key = this.getTableKey(t);
       const table = schema.addTable(t.table_name, t.schema_name, t.table_comment);
+      table.collation = dbCollation;
       const pks = await this.getPrimaryKeys(connection, indexes[key], table.name, table.schema);
       const enums = this.getEnumDefinitions(checks[key] ?? []);
 
@@ -533,10 +543,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       is_identity,
       identity_generation,
       generation_expression,
-      pg_catalog.col_description(pgc.oid, cols.ordinal_position::int) column_comment
+      pg_catalog.col_description(pgc.oid, cols.ordinal_position::int) column_comment,
+      coll.collname as collation_name
       from information_schema.columns cols
       join pg_class pgc on cols.table_name = pgc.relname
       join pg_attribute pga on pgc.oid = pga.attrelid and cols.column_name = pga.attname
+      left join pg_collation coll on pga.attcollation = coll.oid and coll.collname <> 'default'
       where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(table_schema = ${this.platform.quoteValue(schema)} and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}))`).join(' or ')})
       order by ordinal_position`;
 
@@ -599,6 +611,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
               ? col.generation_expression + ' stored'
               : undefined,
         comment: col.column_comment,
+        collation: col.collation_name ?? undefined,
       };
 
       let enumKey = column.type;
@@ -978,6 +991,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     );
   }
 
+  protected override getCollateSQL(collation: string): string {
+    return `collate ${this.platform.quoteCollation(collation)}`;
+  }
+
   override createTableColumn(column: Column, table: DatabaseTable): string | undefined {
     const pk = table.getPrimaryKey();
     const compositePK = pk?.composite;
@@ -1012,6 +1029,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       }
 
       col.push(columnType);
+
+      if (column.collation) {
+        col.push(this.getCollateSQL(column.collation));
+      }
 
       Utils.runIfNotEmpty(() => col.push('null'), column.nullable);
       Utils.runIfNotEmpty(() => col.push('not null'), !column.nullable);

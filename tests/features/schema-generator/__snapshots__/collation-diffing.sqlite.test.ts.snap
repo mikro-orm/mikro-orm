@@ -1,0 +1,16 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`collation diffing [sqlite] > create schema emits column-level collate clause 1`] = `
+"create table \`book\` (\`id\` integer not null primary key autoincrement, \`code\` text collate NOCASE not null, \`name\` text not null);
+"
+`;
+
+exports[`collation diffing [sqlite] > explicit-to-explicit collation change rebuilds the table 1`] = `
+"pragma foreign_keys = off;
+create table \`book__temp_alter\` (\`id\` integer not null primary key autoincrement, \`code\` text collate BINARY not null, \`name\` text not null);
+insert into \`book__temp_alter\` select \`id\`, \`code\`, \`name\` from \`book\`;
+drop table \`book\`;
+alter table \`book__temp_alter\` rename to \`book\`;
+pragma foreign_keys = on;
+"
+`;
