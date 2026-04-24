@@ -1718,10 +1718,10 @@ export class MetadataDiscovery {
 
     if (inheritance === 'tpt' && meta.root === meta) {
       meta.inheritanceType = 'tpt';
-      meta.tptChildren = [];
+      meta.tptChildren ??= [];
     }
 
-    if (meta.root.inheritanceType !== 'tpt') {
+    if (meta.root.inheritanceType !== 'tpt' && (meta.root as Dictionary).inheritance !== 'tpt') {
       return;
     }
 

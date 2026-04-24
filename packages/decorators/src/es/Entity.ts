@@ -11,7 +11,7 @@ export function Entity<Owner extends EntityClass<unknown> & EntityCtor>(
     Utils.mergeConfig(meta, metadata, options);
     meta.class = target as unknown as Constructor<Owner>;
 
-    if (!options.abstract || meta.discriminatorColumn) {
+    if (!options.abstract || meta.discriminatorColumn || options.inheritance === 'tpt') {
       meta.name = context.name;
     }
   };

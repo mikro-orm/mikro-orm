@@ -3451,4 +3451,54 @@ describe('GH #7469 - populate 1:1 on TPT leaf entity with reverse declared', () 
 
     await orm.close();
   });
+
+  // https://github.com/mikro-orm/mikro-orm/issues/7609
+  test('GH #7609: TPT subclass registered before abstract parent must not be silently dropped from MetadataStorage', async () => {
+    @Entity({ tableName: 'tpt7609_likes', abstract: true, inheritance: 'tpt' })
+    abstract class Like7609 {
+      @PrimaryKey()
+      id!: number;
+
+      @Property()
+      createdAt: Date = new Date();
+    }
+
+    // Alphabetically before Like7609 to reproduce the ordering bug
+    @Entity({ tableName: 'tpt7609_comment_likes' })
+    class CommentLike7609 extends Like7609 {
+      @Property()
+      commentId!: number;
+    }
+
+    @Entity({ tableName: 'tpt7609_post_likes' })
+    class PostLike7609 extends Like7609 {
+      @Property()
+      postId!: number;
+    }
+
+    // Intentionally pass subclasses before the abstract base to exercise the ordering bug
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: ':memory:',
+      entities: [CommentLike7609, PostLike7609, Like7609],
+    });
+
+    // All three entities must be present in MetadataStorage
+    expect(() => orm.em.getRepository(Like7609)).not.toThrow();
+    expect(() => orm.em.getRepository(CommentLike7609)).not.toThrow();
+    expect(() => orm.em.getRepository(PostLike7609)).not.toThrow();
+
+    const meta = orm.getMetadata();
+    expect(meta.has(Like7609)).toBe(true);
+    expect(meta.has(CommentLike7609)).toBe(true);
+    expect(meta.has(PostLike7609)).toBe(true);
+
+    // Schema must include all three tables
+    const sql = await orm.schema.getCreateSchemaSQL();
+    expect(sql).toContain('tpt7609_likes');
+    expect(sql).toContain('tpt7609_comment_likes');
+    expect(sql).toContain('tpt7609_post_likes');
+
+    await orm.close();
+  });
 });
