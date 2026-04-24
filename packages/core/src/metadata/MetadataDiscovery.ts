@@ -1714,11 +1714,10 @@ export class MetadataDiscovery {
       meta.root = metadata.find(m => m.class === meta.root.class)!;
     }
 
-    const inheritance = (meta as Dictionary).inheritance;
-
-    if (inheritance === 'tpt' && meta.root === meta) {
-      meta.inheritanceType = 'tpt';
-      meta.tptChildren = [];
+    // init the root eagerly so children iterated before the root (e.g. alphabetical glob order) still get linked
+    if ((meta.root as Dictionary).inheritance === 'tpt' && meta.root.inheritanceType !== 'tpt') {
+      meta.root.inheritanceType = 'tpt';
+      meta.root.tptChildren ??= [];
     }
 
     if (meta.root.inheritanceType !== 'tpt') {
