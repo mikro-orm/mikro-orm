@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
@@ -57,7 +56,6 @@ test('GH #7609: TPT subclass is linked even when registered before its abstract 
     dbName: ':memory:',
     entities: [Avatar, Comment, CommentLike, Like, PostLike, Post],
     metadataProvider: ReflectMetadataProvider,
-    allowGlobalContext: true,
   });
 
   const sql = await orm.schema.getCreateSchemaSQL();
