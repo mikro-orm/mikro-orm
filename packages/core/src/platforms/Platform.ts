@@ -343,9 +343,31 @@ export abstract class Platform {
     return this.getVarcharTypeDeclarationSQL(column);
   }
 
-  /** Extracts the base type name from a full SQL type declaration (e.g. "varchar(255)" -> "varchar"). */
+  /**
+   * Extracts the base type name from a full SQL type declaration (e.g.
+   * `varchar(255)` -> `varchar`). Recognizes a few multi-word SQL type
+   * names up front so they don't get truncated at the first space —
+   * anything else falls back to the first whitespace/paren/comma token
+   * (so trailing modifiers like mysql's `unsigned` are stripped).
+   */
   extractSimpleType(type: string): string {
-    return /[^(), ]+/.exec(type.toLowerCase())![0];
+    const lower = type.toLowerCase();
+
+    for (const multiWord of [
+      'timestamp with time zone',
+      'timestamp without time zone',
+      'time with time zone',
+      'time without time zone',
+      'character varying',
+      'double precision',
+      'bit varying',
+    ]) {
+      if (lower.startsWith(multiWord)) {
+        return multiWord;
+      }
+    }
+
+    return /[^(), ]+/.exec(lower)![0];
   }
 
   /**
