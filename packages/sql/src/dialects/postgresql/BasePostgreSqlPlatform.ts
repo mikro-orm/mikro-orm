@@ -314,6 +314,59 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
       });
   }
 
+  override escape(value: any): string {
+    if (typeof value === 'bigint') {
+      value = value.toString();
+    }
+
+    if (typeof value === 'string') {
+      return this.escapeLiteral(value);
+    }
+
+    if (value instanceof Date) {
+      return `'${this.formatDate(value)}'`;
+    }
+
+    if (ArrayBuffer.isView(value)) {
+      return `E'\\\\x${(value as Buffer).toString('hex')}'`;
+    }
+
+    if (Array.isArray(value)) {
+      return value.map(v => this.escape(v)).join(', ');
+    }
+
+    return value;
+  }
+
+  /**
+   * Ported from PostgreSQL 9.2.4 source code (`src/interfaces/libpq/fe-exec.c`),
+   * matching `pg.Client.prototype.escapeLiteral` so we don't need a `pg` dep here.
+   */
+  private escapeLiteral(str: string): string {
+    let hasBackslash = false;
+    let escaped = `'`;
+
+    for (let i = 0; i < str.length; i++) {
+      const c = str[i];
+      if (c === `'`) {
+        escaped += c + c;
+      } else if (c === '\\') {
+        escaped += c + c;
+        hasBackslash = true;
+      } else {
+        escaped += c;
+      }
+    }
+
+    escaped += `'`;
+
+    if (hasBackslash) {
+      escaped = ` E${escaped}`;
+    }
+
+    return escaped;
+  }
+
   override getVarcharTypeDeclarationSQL(column: { length?: number }): string {
     if (column.length === -1) {
       return 'varchar';

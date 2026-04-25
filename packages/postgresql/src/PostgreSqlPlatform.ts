@@ -1,4 +1,3 @@
-import { Client } from 'pg';
 import array from 'postgres-array';
 import parseDate from 'postgres-date';
 import PostgresInterval, { type IPostgresInterval } from 'postgres-interval';
@@ -20,30 +19,6 @@ export class PostgreSqlPlatform extends BasePostgreSqlPlatform {
 
   override unmarshallArray(value: string): string[] {
     return array.parse(value);
-  }
-
-  override escape(value: any): string {
-    if (typeof value === 'bigint') {
-      value = value.toString();
-    }
-
-    if (typeof value === 'string') {
-      return Client.prototype.escapeLiteral(value);
-    }
-
-    if (value instanceof Date) {
-      return `'${this.formatDate(value)}'`;
-    }
-
-    if (ArrayBuffer.isView(value)) {
-      return `E'\\\\x${(value as Buffer).toString('hex')}'`;
-    }
-
-    if (Array.isArray(value)) {
-      return value.map(v => this.escape(v)).join(', ');
-    }
-
-    return value;
   }
 
   /**
