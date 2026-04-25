@@ -44,12 +44,14 @@ export class AppModule {}
 
 The `forRoot()` method accepts the same configuration object as `init()` from the MikroORM package. Check [this page](./configuration.md) for the complete configuration documentation.
 
-Alternatively you can [configure the CLI](./quick-start.md#setting-up-the-commandline-tool) by creating a configuration file `mikro-orm.config.ts` and then call the `forRoot()` without any arguments. This won't work when you use a build tools that use tree shaking.
+Since v7, the configuration must be passed explicitly — `forRoot()` no longer accepts an empty argument list (see the [v6 to v7 upgrading guide](./upgrading-v6-to-v7.md#mikroorminit-requires-options-parameter)). If you keep your config in a separate file (e.g. `mikro-orm.config.ts`), import it and pass it in:
 
 ```ts
+import config from './mikro-orm.config';
+
 @Module({
   imports: [
-    MikroOrmModule.forRoot(),
+    MikroOrmModule.forRoot(config),
   ],
   ...
 })
