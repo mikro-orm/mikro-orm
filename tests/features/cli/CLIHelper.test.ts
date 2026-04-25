@@ -1,4 +1,5 @@
 import { type MockInstance } from 'vitest';
+import os from 'node:os';
 import { MikroORM } from '@mikro-orm/core';
 import { configure, CLIHelper } from '@mikro-orm/cli';
 import { fs } from '@mikro-orm/core/fs-utils';
@@ -573,8 +574,10 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     const ret1 = fs.getPackageConfig(import.meta.dirname);
     expect(ret1['mikro-orm'].preferTs).toBe(true);
 
-    // check we fallback to `{}` if we reach root folder
-    const ret2 = fs.getPackageConfig(process.cwd() + '/../..');
+    // check we fallback to `{}` if we reach root folder. Use `os.tmpdir()` so the
+    // upward walk reaches FS root regardless of where the repo is checked out
+    // (e.g. when running from a git worktree nested inside the main repo).
+    const ret2 = fs.getPackageConfig(os.tmpdir());
     expect(ret2).toEqual({});
 
     pkg['mikro-orm'] = undefined;
