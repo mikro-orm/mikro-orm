@@ -193,7 +193,7 @@ jobs:
 
       - name: Install & pull docker images
         run: |
-          docker compose pull &
+          for i in 1 2 3; do docker compose pull && break || sleep $((i*15)); done &
           yarn
           wait
 
@@ -360,7 +360,7 @@ jobs:
 
       - name: Install & build & pull docker images
         run: |
-          docker compose pull mongo &
+          for i in 1 2 3; do docker compose pull mongo && break || sleep $((i*15)); done &
           yarn
           yarn build
           wait
