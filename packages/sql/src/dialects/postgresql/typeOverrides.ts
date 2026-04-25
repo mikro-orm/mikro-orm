@@ -8,10 +8,11 @@
  *
  * Use `select typname, oid, typarray from pg_type order by oid` to look up OIDs.
  */
-export function createPostgreSqlTypeParsers(
-  arrayParse: (value: string) => string[],
-): Record<number, (value: string) => unknown> {
-  const parsers: Record<number, (value: string) => unknown> = {};
+type PostgreSqlArrayParser = (value: string) => string[];
+type PostgreSqlValueParser = (value: string) => unknown;
+
+export function createPostgreSqlTypeParsers(arrayParse: PostgreSqlArrayParser): Record<number, PostgreSqlValueParser> {
+  const parsers: Record<number, PostgreSqlValueParser> = {};
 
   for (const oid of [1082, 1114, 1184, 1186]) {
     // date, timestamp, timestamptz, interval — kept as raw strings

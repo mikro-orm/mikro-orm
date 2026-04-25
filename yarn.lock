@@ -513,6 +513,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@electric-sql/pglite@npm:0.4.4":
+  version: 0.4.4
+  resolution: "@electric-sql/pglite@npm:0.4.4"
+  checksum: 10/192892eb075b5d8d9fa5620c57f4539b1c47d2de43a7b4ca4b16354a06effb82951cae40e4488bf508a52cecc9b8a8841cd43d69cb3f1a0e87f6d96e79991a63
+  languageName: node
+  linkType: hard
+
 "@emnapi/core@npm:1.9.1":
   version: 1.9.1
   resolution: "@emnapi/core@npm:1.9.1"
@@ -1359,6 +1366,22 @@ __metadata:
     "@mikro-orm/sql": "npm:7.0.15"
     kysely: "npm:0.29.0"
     oracledb: "npm:6.10.0"
+  peerDependencies:
+    "@mikro-orm/core": 7.0.15
+  languageName: unknown
+  linkType: soft
+
+"@mikro-orm/pglite@workspace:packages/pglite":
+  version: 0.0.0-use.local
+  resolution: "@mikro-orm/pglite@workspace:packages/pglite"
+  dependencies:
+    "@electric-sql/pglite": "npm:0.4.4"
+    "@mikro-orm/core": "npm:^7.0.15"
+    "@mikro-orm/sql": "npm:7.0.15"
+    kysely: "npm:0.29.0"
+    postgres-array: "npm:3.0.4"
+    postgres-date: "npm:2.1.0"
+    postgres-interval: "npm:4.0.2"
   peerDependencies:
     "@mikro-orm/core": 7.0.15
   languageName: unknown

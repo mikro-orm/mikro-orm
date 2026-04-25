@@ -271,6 +271,15 @@ export class CLIHelper {
       case 'postgresql':
         ret.driver ??= await import('@mikro-orm/postgresql').then(m => m.PostgreSqlDriver);
         break;
+      case 'pglite': {
+        // Variable specifier (instead of a literal) keeps `@electric-sql/pglite`'s
+        // d.ts — which references DOM/Emscripten ambient globals not in our TS
+        // lib — out of the CLI's compile graph. Safe here: the CLI is a Node
+        // binary, not bundled into end-user apps.
+        const name = '@mikro-orm/pglite';
+        ret.driver ??= (await import(name)).PgliteDriver;
+        break;
+      }
       case 'sqlite':
         ret.driver ??= await import('@mikro-orm/sqlite').then(m => m.SqliteDriver);
         break;
