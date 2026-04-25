@@ -185,6 +185,41 @@ describe('Migrator (sqlite)', () => {
     }
   });
 
+  test('snapshot serialization is stable across metadata and introspection paths (GH #7607)', async () => {
+    const migrations = orm.config.get('migrations');
+    migrations.snapshot = true;
+
+    const { readFileSync } = await import('node:fs');
+    const dateMock = vi.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const path = process.cwd() + '/temp/migrations-3';
+    const migrator = new Migrator(orm.em);
+
+    const migration1 = await migrator.create(path, true);
+    const snapshotPath = path + '/.snapshot-memory.json';
+    const afterCreate = JSON.parse(readFileSync(snapshotPath, 'utf8'));
+
+    const downMock = vi.spyOn(Migration.prototype, 'down');
+    downMock.mockImplementation(async () => void 0);
+
+    try {
+      await migrator.up(migration1.fileName);
+      const afterUp = JSON.parse(readFileSync(snapshotPath, 'utf8'));
+
+      expect(afterUp).toEqual(afterCreate);
+
+      // nativeEnums lives on the schema, not duplicated per table
+      for (const table of afterCreate.tables) {
+        expect(table).not.toHaveProperty('nativeEnums');
+      }
+    } finally {
+      await rm(path + '/' + migration1.fileName, { force: true });
+      await rm(snapshotPath, { force: true });
+      downMock.mockRestore();
+      migrations.snapshot = false;
+    }
+  });
+
   test('snapshot from create and up have identical column fields and consistent primary flag (GH #7234)', async () => {
     const migrations = orm.config.get('migrations');
     migrations.snapshot = true;

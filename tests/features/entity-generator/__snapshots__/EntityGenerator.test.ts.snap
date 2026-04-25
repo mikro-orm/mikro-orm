@@ -33,7 +33,7 @@ export const Author4Schema = defineEntity({
     termsAccepted: p.integer(),
     identities: p.text().nullable(),
     born: p.date().nullable(),
-    bornTime: p.time().nullable(),
+    bornTime: p.time().length(3).nullable(),
     favouriteBook: () => p.manyToOne(Book4).ref().updateRule('no action').nullable(),
     identity: p.json().nullable(),
     book4Collection: () => p.oneToMany(Book4).mappedBy('author'),

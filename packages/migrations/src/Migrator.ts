@@ -279,9 +279,12 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     const data = fs.readJSONSync(snapshotPath);
     const schema = new DatabaseSchema(this.driver.getPlatform(), this.config.get('schema'));
     const { tables, namespaces, ...rest } = data;
+    // share schema-level native enums by reference; fall back to per-table copy on older snapshots
+    const sharedNativeEnums = rest.nativeEnums ?? {};
+    const hasSharedNativeEnums = Object.keys(sharedNativeEnums).length > 0;
     const tableInstances = tables.map((tbl: Dictionary) => {
       const table = new DatabaseTable(this.driver.getPlatform(), tbl.name, tbl.schema);
-      table.nativeEnums = tbl.nativeEnums ?? {};
+      table.nativeEnums = hasSharedNativeEnums ? sharedNativeEnums : (tbl.nativeEnums ?? {});
       table.comment = tbl.comment;
 
       if (tbl.indexes) {

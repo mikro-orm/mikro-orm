@@ -33,6 +33,11 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return 'datetime';
   }
 
+  // sqlite's datetime DDL drops precision and the current-ts expression hardcodes ms scaling
+  override getDefaultVersionLength(): number {
+    return 0;
+  }
+
   override getBeginTransactionSQL(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean }): string[] {
     return ['begin'];
   }

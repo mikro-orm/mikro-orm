@@ -153,20 +153,32 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
   ): string {
     const simpleType = this.extractSimpleType(type);
 
-    if (['int', 'int4', 'integer'].includes(simpleType)) {
+    if (['int', 'int4', 'integer', 'serial'].includes(simpleType)) {
       return this.getIntegerTypeDeclarationSQL({});
     }
 
-    if (['bigint', 'int8'].includes(simpleType)) {
+    if (['bigint', 'int8', 'bigserial'].includes(simpleType)) {
       return this.getBigIntTypeDeclarationSQL({});
     }
 
-    if (['smallint', 'int2'].includes(simpleType)) {
+    if (['smallint', 'int2', 'smallserial'].includes(simpleType)) {
       return this.getSmallIntTypeDeclarationSQL({});
     }
 
     if (['boolean', 'bool'].includes(simpleType)) {
       return this.getBooleanTypeDeclarationSQL();
+    }
+
+    if (['double', 'double precision', 'float8'].includes(simpleType)) {
+      return this.getDoubleDeclarationSQL();
+    }
+
+    if (['real', 'float4'].includes(simpleType)) {
+      return this.getFloatDeclarationSQL();
+    }
+
+    if (['timestamptz', 'timestamp with time zone'].includes(simpleType)) {
+      return this.getDateTimeTypeDeclarationSQL(options);
     }
 
     if (['varchar', 'character varying'].includes(simpleType)) {

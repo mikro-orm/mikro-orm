@@ -92,6 +92,8 @@ export class DatabaseTable {
     this.#checks = checks;
     this.#foreignKeys = fks;
 
+    const helper = this.#platform.getSchemaHelper();
+
     this.#columns = cols.reduce((o, v) => {
       const index = indexes.filter(i => i.columnNames[0] === v.name);
       v.primary = v.primary || pks.includes(v.name);
@@ -100,6 +102,11 @@ export class DatabaseTable {
       v.mappedType = this.#platform.getMappedType(type);
       v.default = v.default?.toString().startsWith('nextval(') ? null : v.default;
       v.enumItems ??= enums[v.name] || [];
+      // recover length from the declared type so introspection matches `addColumnFromProperty`;
+      // scoped to types with `getDefaultLength` to skip mysql's `tinyint(1)` boolean width
+      if (v.length == null && v.type && helper && typeof v.mappedType.getDefaultLength !== 'undefined') {
+        v.length = helper.inferLengthFromColumnType(v.type);
+      }
       o[v.name] = v;
 
       return o;
@@ -112,7 +119,9 @@ export class DatabaseTable {
 
   addColumnFromProperty(prop: EntityProperty, meta: EntityMetadata, config: Configuration) {
     prop.fieldNames?.forEach((field, idx) => {
-      const type = prop.enum ? 'enum' : prop.columnTypes[idx];
+      // numeric enums fall through to the underlying numeric type — no platform emits a CHECK we could parse back
+      const isStringEnum = !!prop.nativeEnumName || !!prop.items?.every(item => typeof item === 'string');
+      const type = prop.enum && isStringEnum ? 'enum' : prop.columnTypes[idx];
       const mappedType = this.#platform.getMappedType(type);
 
       if (mappedType instanceof DecimalType) {
@@ -1223,43 +1232,70 @@ export class DatabaseTable {
 
   toJSON(): Dictionary {
     const columns = this.#columns;
-    const columnsMapped = Utils.keys(columns).reduce((o, col) => {
+    // locale-independent comparison so the snapshot is stable across machines
+    const byString = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+    const sortedColumnKeys = (Utils.keys(columns) as string[]).sort(byString);
+
+    // mirror `DatabaseTable.init()`: derive `primary`/`unique` from index membership
+    // so metadata (which keeps `primary: false` on composite PK columns) and introspection agree
+    const primaryColumns = new Set<string>();
+    const uniqueColumns = new Set<string>();
+
+    for (const idx of this.#indexes) {
+      if (idx.primary) {
+        idx.columnNames.forEach(c => primaryColumns.add(c));
+      }
+      if (idx.unique && !idx.primary && idx.columnNames.length > 0) {
+        uniqueColumns.add(idx.columnNames[0]);
+      }
+    }
+
+    // integer/float widths live in the type name (`int2`/`int4`/`float8`) — drop redundant precision/scale
+    const isFixedPrecisionFamily = (mappedType: unknown) =>
+      mappedType instanceof t.integer ||
+      mappedType instanceof t.smallint ||
+      mappedType instanceof t.tinyint ||
+      mappedType instanceof t.mediumint ||
+      mappedType instanceof t.bigint ||
+      mappedType instanceof t.float ||
+      mappedType instanceof t.double;
+
+    const supportsUnsigned = this.#platform.supportsUnsigned();
+
+    const columnsMapped = sortedColumnKeys.reduce((o, col) => {
       const c = columns[col];
+      // omit `autoincrement` from options so `serial` (metadata) and `int4` (introspection) collapse the same
+      const rawType = c.type?.toLowerCase();
+      const normOptions = { length: c.length, precision: c.precision, scale: c.scale };
+      const type = this.#platform.normalizeColumnType(c.type ?? '', normOptions)?.toLowerCase() || rawType;
+      const fixedPrecision = isFixedPrecisionFamily(c.mappedType);
       const normalized: Dictionary = {
         name: c.name,
-        type: c.type,
-        unsigned: !!c.unsigned,
+        type,
+        unsigned: supportsUnsigned && !!c.unsigned,
         autoincrement: !!c.autoincrement,
-        primary: !!c.primary,
+        primary: primaryColumns.has(c.name) || !!c.primary,
         nullable: !!c.nullable,
-        unique: !!c.unique,
-        length: c.length ?? null,
-        precision: c.precision ?? null,
-        scale: c.scale ?? null,
+        unique: uniqueColumns.has(c.name) || !!c.unique,
+        length: c.length || null,
+        precision: fixedPrecision ? null : (c.precision ?? null),
+        scale: fixedPrecision ? null : (c.scale ?? null),
         default: c.default ?? null,
         comment: c.comment ?? null,
         enumItems: c.enumItems ?? [],
         mappedType: Utils.keys(t).find(k => t[k] === c.mappedType.constructor),
       };
 
-      if (c.generated) {
-        normalized.generated = c.generated;
-      }
-
-      if (c.nativeEnumName) {
-        normalized.nativeEnumName = c.nativeEnumName;
-      }
-
-      if (c.extra) {
-        normalized.extra = c.extra;
-      }
-
-      if (c.ignoreSchemaChanges) {
-        normalized.ignoreSchemaChanges = c.ignoreSchemaChanges;
-      }
-
-      if (c.defaultConstraint) {
-        normalized.defaultConstraint = c.defaultConstraint;
+      for (const field of [
+        'generated',
+        'nativeEnumName',
+        'extra',
+        'ignoreSchemaChanges',
+        'defaultConstraint',
+      ] as const) {
+        if (c[field]) {
+          normalized[field] = c[field];
+        }
       }
 
       o[col] = normalized;
@@ -1267,15 +1303,81 @@ export class DatabaseTable {
       return o;
     }, {} as Dictionary);
 
+    const normalizeIndex = (idx: IndexDef): Dictionary => {
+      const out: Dictionary = {
+        columnNames: idx.columnNames,
+        composite: !!idx.composite,
+        // PK indexes are always backed by a constraint — force it so postgres introspection matches
+        constraint: !!idx.constraint || !!idx.primary,
+        keyName: idx.keyName,
+        primary: !!idx.primary,
+        unique: !!idx.unique,
+      };
+
+      const optional = [
+        'expression',
+        'type',
+        'deferMode',
+        'columns',
+        'include',
+        'fillFactor',
+        'invisible',
+        'disabled',
+        'clustered',
+      ] as const;
+      for (const field of optional) {
+        if (idx[field] != null && idx[field] !== false) {
+          out[field] = idx[field];
+        }
+      }
+
+      return out;
+    };
+
+    const normalizeFk = (fk: ForeignKey): Dictionary => {
+      const isNoAction = (rule?: string) => !rule || rule.toLowerCase() === 'no action';
+      // JSON.stringify drops undefined properties — let them through instead of guarding
+      return {
+        columnNames: fk.columnNames,
+        constraintName: fk.constraintName,
+        localTableName: fk.localTableName,
+        referencedColumnNames: fk.referencedColumnNames,
+        referencedTableName: fk.referencedTableName,
+        updateRule: isNoAction(fk.updateRule) ? undefined : fk.updateRule,
+        deleteRule: isNoAction(fk.deleteRule) ? undefined : fk.deleteRule,
+        deferMode: fk.deferMode,
+      };
+    };
+
+    const normalizeCheck = (check: CheckDef): Dictionary => {
+      const out: Dictionary = { name: check.name };
+      if (typeof check.expression === 'string') {
+        out.expression = check.expression;
+      }
+      for (const field of ['definition', 'columnName'] as const) {
+        if (check[field]) {
+          out[field] = check[field];
+        }
+      }
+      return out;
+    };
+
+    const sortedIndexes = [...this.#indexes].sort((a, b) => byString(a.keyName, b.keyName)).map(normalizeIndex);
+    const sortedChecks = [...this.#checks].sort((a, b) => byString(a.name, b.name)).map(normalizeCheck);
+    const sortedForeignKeys = Object.fromEntries(
+      Object.entries(this.#foreignKeys)
+        .sort(([a], [b]) => byString(a, b))
+        .map(([k, v]) => [k, normalizeFk(v)]),
+    );
     return {
       name: this.name,
       schema: this.schema,
       columns: columnsMapped,
-      indexes: this.#indexes,
-      checks: this.#checks,
-      foreignKeys: this.#foreignKeys,
-      nativeEnums: this.nativeEnums,
-      comment: this.comment,
+      indexes: sortedIndexes,
+      checks: sortedChecks,
+      foreignKeys: sortedForeignKeys,
+      // emit `comment` even when unset so introspection (which always reads it) matches metadata
+      comment: this.comment ?? null,
     };
   }
 }

@@ -55,6 +55,16 @@ import { Raw } from '../utils/RawQueryFragment.js';
 /** Symbol used to tag cloned embeddable data for JSON serialization handling. */
 export const JsonProperty = Symbol('JsonProperty');
 
+const MULTI_WORD_SQL_TYPES = [
+  'timestamp with time zone',
+  'timestamp without time zone',
+  'time with time zone',
+  'time without time zone',
+  'character varying',
+  'double precision',
+  'bit varying',
+] as const;
+
 /** Abstract base class providing database-specific behavior and SQL dialect differences. */
 export abstract class Platform {
   protected readonly exceptionConverter: ExceptionConverter = new ExceptionConverter();
@@ -333,9 +343,17 @@ export abstract class Platform {
     return this.getVarcharTypeDeclarationSQL(column);
   }
 
-  /** Extracts the base type name from a full SQL type declaration (e.g. "varchar(255)" -> "varchar"). */
+  /** Extracts the base type name from a full SQL type declaration (e.g. `varchar(255)` -> `varchar`). */
   extractSimpleType(type: string): string {
-    return /[^(), ]+/.exec(type.toLowerCase())![0];
+    const lower = type.toLowerCase();
+
+    for (const multiWord of MULTI_WORD_SQL_TYPES) {
+      if (lower.startsWith(multiWord)) {
+        return multiWord;
+      }
+    }
+
+    return /[^(), ]+/.exec(lower)![0];
   }
 
   /**
@@ -363,6 +381,7 @@ export abstract class Platform {
         return Type.getType(CharacterType);
       case 'string':
       case 'varchar':
+      case 'character varying':
         return Type.getType(StringType);
       case 'interval':
         return Type.getType(IntervalType);
@@ -382,6 +401,7 @@ export abstract class Platform {
       case 'float':
         return Type.getType(FloatType);
       case 'double':
+      case 'double precision':
         return Type.getType(DoubleType);
       case 'integer':
         return Type.getType(IntegerType);
@@ -401,8 +421,12 @@ export abstract class Platform {
         return Type.getType(DateType);
       case 'datetime':
       case 'timestamp':
+      case 'timestamp with time zone':
+      case 'timestamp without time zone':
         return Type.getType(DateTimeType);
       case 'time':
+      case 'time with time zone':
+      case 'time without time zone':
         return Type.getType(TimeType);
       case 'object':
       case 'json':

@@ -69,7 +69,7 @@ export abstract class SchemaHelper {
 
   inferLengthFromColumnType(type: string): number | undefined {
     const match = /^\w+\s*(?:\(\s*(\d+)\s*\)|$)/.exec(type);
-    if (!match) {
+    if (match?.[1] == null) {
       return;
     }
 

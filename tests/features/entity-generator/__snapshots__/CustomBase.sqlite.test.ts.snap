@@ -36,7 +36,7 @@ export class Author4 {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -358,7 +358,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -701,7 +701,7 @@ export class Author4 extends BaseEntity {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -1041,7 +1041,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -1404,7 +1404,7 @@ export class Author4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -1739,7 +1739,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -2090,7 +2090,7 @@ export class Author4 extends CustomBase {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -2430,7 +2430,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -2792,7 +2792,7 @@ export class Author4 extends MikroORM_BaseEntity {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -3115,7 +3115,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -3458,7 +3458,7 @@ export class Author4 extends BaseEntity {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -3798,7 +3798,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -4161,7 +4161,7 @@ export class Author4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -4496,7 +4496,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -4847,7 +4847,7 @@ export class Author4 extends CustomBase {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -5187,7 +5187,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -5549,7 +5549,7 @@ export class Author4 {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -5872,7 +5872,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -6224,7 +6224,7 @@ export class Author4 extends BaseEntity {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -6564,7 +6564,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -6928,7 +6928,7 @@ export class Author4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -7263,7 +7263,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -7615,7 +7615,7 @@ export class Author4 extends CustomBase {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -7955,7 +7955,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -8318,7 +8318,7 @@ export class Author4 extends MikroORM_BaseEntity {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -8642,7 +8642,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -8994,7 +8994,7 @@ export class Author4 extends BaseEntity {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -9334,7 +9334,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -9698,7 +9698,7 @@ export class Author4 extends BaseEntity2 {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -10033,7 +10033,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
@@ -10385,7 +10385,7 @@ export class Author4 extends CustomBase {
   @MikroORM_Property({ type: 'date', nullable: true })
   born?: string;
 
-  @MikroORM_Property({ type: 'time', nullable: true })
+  @MikroORM_Property({ type: 'time', length: 3, nullable: true })
   bornTime?: string;
 
   @MikroORM_Index({ name: 'author4_favourite_book_id_index' })
@@ -10725,7 +10725,7 @@ export const Author4Schema = new MikroORM_EntitySchema({
     termsAccepted: { type: 'integer' },
     identities: { type: 'text', nullable: true },
     born: { type: 'date', nullable: true },
-    bornTime: { type: 'time', nullable: true },
+    bornTime: { type: 'time', length: 3, nullable: true },
     favouriteBook: {
       kind: 'm:1',
       entity: () => Book4,
