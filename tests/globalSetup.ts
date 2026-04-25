@@ -154,10 +154,9 @@ async function dropExtras(t: SqlTarget, extras: string[]): Promise<string[]> {
           for (const name of extras) {
             const q = name.replace(/]/g, ']]');
             try {
-              await mssqlQuery(
-                c,
-                `ALTER DATABASE [${q}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [${q}]`,
-              );
+              // `set offline` over `set single_user` to avoid the 3702 race where a torn-down
+              // pool connection grabs the single-user slot before the drop executes.
+              await mssqlQuery(c, `ALTER DATABASE [${q}] SET OFFLINE WITH ROLLBACK IMMEDIATE; DROP DATABASE [${q}]`);
               dropped.push(name);
             } catch {
               /* skip */

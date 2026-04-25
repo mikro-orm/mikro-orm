@@ -33,8 +33,11 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   override getDropDatabaseSQL(name: string): string {
+    // `set offline` rejects all connections including the issuing session, so there is no
+    // single-user race window where a torn-down pool connection can reconnect between the
+    // mode switch and the drop (SQL Server error 3702 "currently in use").
     const quoted = this.quote(name);
-    return `if db_id(${this.platform.quoteValue(name)}) is not null begin alter database ${quoted} set single_user with rollback immediate; drop database ${quoted}; end`;
+    return `if db_id(${this.platform.quoteValue(name)}) is not null begin alter database ${quoted} set offline with rollback immediate; drop database ${quoted}; end`;
   }
 
   override disableForeignKeysSQL(): string {
