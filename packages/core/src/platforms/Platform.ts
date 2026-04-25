@@ -385,6 +385,7 @@ export abstract class Platform {
         return Type.getType(CharacterType);
       case 'string':
       case 'varchar':
+      case 'character varying':
         return Type.getType(StringType);
       case 'interval':
         return Type.getType(IntervalType);
@@ -404,6 +405,7 @@ export abstract class Platform {
       case 'float':
         return Type.getType(FloatType);
       case 'double':
+      case 'double precision':
         return Type.getType(DoubleType);
       case 'integer':
         return Type.getType(IntegerType);
@@ -423,8 +425,12 @@ export abstract class Platform {
         return Type.getType(DateType);
       case 'datetime':
       case 'timestamp':
+      case 'timestamp with time zone':
+      case 'timestamp without time zone':
         return Type.getType(DateTimeType);
       case 'time':
+      case 'time with time zone':
+      case 'time without time zone':
         return Type.getType(TimeType);
       case 'object':
       case 'json':
