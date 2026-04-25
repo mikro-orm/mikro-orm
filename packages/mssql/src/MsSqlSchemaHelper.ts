@@ -35,9 +35,29 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   override getDropDatabaseSQL(name: string): string {
     // `set offline` rejects all connections including the issuing session, so there is no
     // single-user race window where a torn-down pool connection can reconnect between the
-    // mode switch and the drop (SQL Server error 3702 "currently in use").
+    // mode switch and the drop (SQL Server error 3702 "currently in use"). Dropping an
+    // offline database leaves the underlying `.mdf`/`.ldf` files behind though, which
+    // makes a subsequent `create database` with the same name fail with error 5170
+    // ("file already exists"). Capture the physical paths up front and call
+    // `master.sys.xp_delete_files` after the drop to clean them up.
     const quoted = this.quote(name);
-    return `if db_id(${this.platform.quoteValue(name)}) is not null begin alter database ${quoted} set offline with rollback immediate; drop database ${quoted}; end`;
+    const literal = this.platform.quoteValue(name);
+    return (
+      `if db_id(${literal}) is not null begin ` +
+      `declare @drop_files table (path nvarchar(260)); ` +
+      `insert into @drop_files (path) select physical_name from sys.master_files where database_id = db_id(${literal}); ` +
+      `alter database ${quoted} set offline with rollback immediate; ` +
+      `drop database ${quoted}; ` +
+      `declare @drop_path nvarchar(260); ` +
+      `declare drop_files_cursor cursor local fast_forward for select path from @drop_files; ` +
+      `open drop_files_cursor; fetch next from drop_files_cursor into @drop_path; ` +
+      `while @@fetch_status = 0 begin ` +
+      `begin try exec master.sys.xp_delete_files @drop_path; end try begin catch end catch; ` +
+      `fetch next from drop_files_cursor into @drop_path; ` +
+      `end ` +
+      `close drop_files_cursor; deallocate drop_files_cursor; ` +
+      `end`
+    );
   }
 
   override disableForeignKeysSQL(): string {
