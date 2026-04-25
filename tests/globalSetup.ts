@@ -155,8 +155,26 @@ async function dropExtras(t: SqlTarget, extras: string[]): Promise<string[]> {
             const q = name.replace(/]/g, ']]');
             try {
               // `set offline` over `set single_user` to avoid the 3702 race where a torn-down
-              // pool connection grabs the single-user slot before the drop executes.
-              await mssqlQuery(c, `ALTER DATABASE [${q}] SET OFFLINE WITH ROLLBACK IMMEDIATE; DROP DATABASE [${q}]`);
+              // pool connection grabs the single-user slot before the drop executes. Dropping
+              // an offline database leaves the underlying `.mdf`/`.ldf` files behind, so
+              // capture the physical paths first and explicitly remove them after the drop —
+              // otherwise a subsequent run that creates the same DB name fails with error
+              // 5170 ("file already exists").
+              await mssqlQuery(
+                c,
+                `declare @drop_files table (path nvarchar(260)); ` +
+                  `insert into @drop_files (path) select physical_name from sys.master_files where database_id = db_id(N'${q}'); ` +
+                  `alter database [${q}] set offline with rollback immediate; ` +
+                  `drop database [${q}]; ` +
+                  `declare @drop_path nvarchar(260); ` +
+                  `declare drop_files_cursor cursor local fast_forward for select path from @drop_files; ` +
+                  `open drop_files_cursor; fetch next from drop_files_cursor into @drop_path; ` +
+                  `while @@fetch_status = 0 begin ` +
+                  `begin try exec master.sys.xp_delete_files @drop_path; end try begin catch end catch; ` +
+                  `fetch next from drop_files_cursor into @drop_path; ` +
+                  `end ` +
+                  `close drop_files_cursor; deallocate drop_files_cursor`,
+              );
               dropped.push(name);
             } catch {
               /* skip */
@@ -177,6 +195,46 @@ async function dropExtras(t: SqlTarget, extras: string[]): Promise<string[]> {
 // developer's hand-made DB on a shared instance is never touched at startup. Tests using other
 // names (e.g. GH-issue numbers) are still cleaned up by the diff-baseline teardown below.
 const STALE_TEST_DB_PATTERN = /^mikro[_-]orm[_-]test/i;
+
+// Default data directory inside the official `mssql/server` images. Orphan `.mdf`/`.ldf`
+// files accumulate here when previous runs aborted between `set offline` and `drop database`,
+// or when `drop database` was issued against an offline DB (which keeps the files). Subsequent
+// `create database` calls with the same name then fail with SQL Server error 5170 ("file
+// already exists"), cascading skips across the affected mssql test files.
+const MSSQL_DEFAULT_DATA_DIR = '/var/opt/mssql/data/';
+
+async function cleanupMssqlOrphanFiles(t: SqlTarget): Promise<number> {
+  try {
+    return await withMssql(t.port, async c => {
+      const sql =
+        `declare @path nvarchar(260) = N'${MSSQL_DEFAULT_DATA_DIR}'; ` +
+        `declare @files table (subdirectory nvarchar(260), depth int, isfile bit); ` +
+        `insert into @files exec master.sys.xp_dirtree @path, 1, 1; ` +
+        `declare @full nvarchar(260); ` +
+        `declare @count int = 0; ` +
+        `declare orphan_cursor cursor local fast_forward for ` +
+        `select @path + subdirectory from @files f ` +
+        `where isfile = 1 ` +
+        `and (subdirectory like N'%.mdf' or subdirectory like N'%.ldf') ` +
+        `and (lower(subdirectory) like N'mikro[_-]orm[_-]test%') ` +
+        `and not exists ( ` +
+        `select 1 from sys.master_files mf where mf.physical_name = @path + f.subdirectory ` +
+        `); ` +
+        `open orphan_cursor; fetch next from orphan_cursor into @full; ` +
+        `while @@fetch_status = 0 begin ` +
+        `begin try exec master.sys.xp_delete_files @full; set @count = @count + 1; end try begin catch end catch; ` +
+        `fetch next from orphan_cursor into @full; ` +
+        `end ` +
+        `close orphan_cursor; deallocate orphan_cursor; ` +
+        `select @count as deleted`;
+      const rows = await mssqlQuery(c, sql);
+      const deleted = rows.length > 0 ? Number((rows[0] as any)[0].value) : 0;
+      return deleted;
+    });
+  } catch {
+    return 0;
+  }
+}
 
 export async function setup() {
   if (!(globalThis as any).__MONGOINSTANCE) {
@@ -215,6 +273,16 @@ export async function setup() {
           // eslint-disable-next-line no-console
           console.log(
             `[globalSetup] ${t.kind}:${t.port} dropped ${dropped.length} stale test DB(s): ${preview}${suffix}`,
+          );
+        }
+      }
+
+      if (t.kind === 'mssql') {
+        const orphanFiles = await cleanupMssqlOrphanFiles(t);
+        if (orphanFiles > 0) {
+          // eslint-disable-next-line no-console
+          console.log(
+            `[globalSetup] ${t.kind}:${t.port} deleted ${orphanFiles} orphan .mdf/.ldf file(s) under ${MSSQL_DEFAULT_DATA_DIR}`,
           );
         }
       }
