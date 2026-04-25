@@ -87,6 +87,10 @@ services:
       ACCEPT_EULA: 1
     healthcheck:
       test: /opt/mssql-tools18/bin/sqlcmd -b -C -S tcp:localhost -U sa -P 'Root.Root' -Q 'select 1'
+      start_period: 60s
+      interval: 5s
+      timeout: 10s
+      retries: 24
 
   oracledb:
     image: container-registry.oracle.com/database/free:latest-lite
