@@ -173,6 +173,12 @@ async function dropExtras(t: SqlTarget, extras: string[]): Promise<string[]> {
   return dropped;
 }
 
+// Matches test DB names created by `bootstrap.ts` and most ad-hoc test files.
+// Conservative on purpose — only drops names that clearly came from a previous test run, so a
+// developer's hand-made DB on a shared instance is never touched at startup. Tests using other
+// names (e.g. GH-issue numbers) are still cleaned up by the diff-baseline teardown below.
+const STALE_TEST_DB_PATTERN = /^mikro[_-]orm[_-]test/i;
+
 export async function setup() {
   if (!(globalThis as any).__MONGOINSTANCE) {
     try {
@@ -190,13 +196,32 @@ export async function setup() {
     }
   }
 
+  // Drop test DBs leftover from prior crashed runs. MSSQL in particular spends idle CPU on
+  // every attached DB, so accumulated leftovers slow the container enough to cause connection
+  // drops mid-run; cleaning them here stabilises parallel test execution.
   const baseline: Record<string, string[]> = {};
   await Promise.all(
     SQL_TARGETS.map(async t => {
-      const dbs = await listDbs(t);
-      if (dbs) {
-        baseline[`${t.kind}:${t.port}`] = dbs;
+      const initial = await listDbs(t);
+      if (!initial) {
+        return;
       }
+
+      const stale = initial.filter(name => STALE_TEST_DB_PATTERN.test(name));
+      if (stale.length > 0) {
+        const dropped = await dropExtras(t, stale);
+        if (dropped.length > 0) {
+          const preview = dropped.slice(0, 3).join(', ');
+          const suffix = dropped.length > 3 ? `, ...+${dropped.length - 3} more` : '';
+          // eslint-disable-next-line no-console
+          console.log(
+            `[globalSetup] ${t.kind}:${t.port} dropped ${dropped.length} stale test DB(s): ${preview}${suffix}`,
+          );
+        }
+      }
+
+      const cleaned = await listDbs(t);
+      baseline[`${t.kind}:${t.port}`] = cleaned ?? initial;
     }),
   );
   (globalThis as any)[BASELINE_KEY] = baseline;
