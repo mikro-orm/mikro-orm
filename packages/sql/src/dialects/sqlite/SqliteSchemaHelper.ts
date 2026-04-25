@@ -448,10 +448,10 @@ export class SqliteSchemaHelper extends SchemaHelper {
   }
 
   /**
-   * Extract enum values from the already-parsed CHECK constraints — both
-   * string enums (`` `type` in ('local', 'global') ``) and numeric enums
-   * (`` `enum3` in (1, 2, 3) ``). Non-`IN (…)` checks are ignored so a
-   * range guard like `` `age` >= 0 `` is not misread as a single-item enum.
+   * Extract enum values from the already-parsed CHECK constraints, e.g.
+   * `` `type` in ('local', 'global') `` → `['local', 'global']`. Sqlite
+   * only emits CHECK constraints for string enums today, so numeric
+   * enum columns stay as plain integers in the introspected schema.
    */
   private extractEnumValuesFromChecks(checks: CheckDef[]): Dictionary<string[]> {
     const result: Dictionary<string[]> = {};
@@ -461,19 +461,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
         continue;
       }
 
-      const body = /\bin\s*\(([^)]*)\)/i.exec(check.expression)?.[1];
-      if (!body) {
-        continue;
-      }
-
-      const items = body
-        .split(',')
-        .map(item => {
-          const quoted = /^\s*'((?:[^']|'')*)'\s*$/.exec(item);
-          return quoted ? quoted[1].replace(/''/g, "'") : item.trim();
-        })
-        .filter(item => item.length > 0);
-
+      const items = [...check.expression.matchAll(/'((?:[^']|'')*)'/g)].map(m => m[1].replace(/''/g, "'"));
       if (items.length > 0) {
         result[check.columnName] = items;
       }

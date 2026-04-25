@@ -25,10 +25,6 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return true;
   }
 
-  override usesNumericEnumCheckConstraints(): boolean {
-    return true;
-  }
-
   override getCurrentTimestampSQL(length: number): string {
     return `(strftime('%s', 'now') * 1000)`;
   }

@@ -124,7 +124,13 @@ export class DatabaseTable {
 
   addColumnFromProperty(prop: EntityProperty, meta: EntityMetadata, config: Configuration) {
     prop.fieldNames?.forEach((field, idx) => {
-      const type = prop.enum ? 'enum' : prop.columnTypes[idx];
+      // Only treat string-item enums (and native enums) as `EnumType` here —
+      // numeric enums round-trip from introspection as their underlying
+      // numeric column type (no platform emits a CHECK we could parse back),
+      // so keeping them aligned avoids a phantom `mappedType` diff in the
+      // migration snapshot.
+      const isStringEnum = !!prop.nativeEnumName || !!prop.items?.every(item => typeof item === 'string');
+      const type = prop.enum && isStringEnum ? 'enum' : prop.columnTypes[idx];
       const mappedType = this.#platform.getMappedType(type);
 
       if (mappedType instanceof DecimalType) {
@@ -166,11 +172,7 @@ export class DatabaseTable {
         scale: prop.scale,
         default: prop.defaultRaw,
         enumItems:
-          prop.nativeEnumName ||
-          prop.items?.every(i => typeof i === 'string') ||
-          (prop.items?.length && this.#platform.usesNumericEnumCheckConstraints())
-            ? (prop.items as unknown[]).map(String)
-            : undefined,
+          prop.nativeEnumName || prop.items?.every(i => typeof i === 'string') ? (prop.items as string[]) : undefined,
         comment: prop.comment,
         extra: prop.extra,
         ignoreSchemaChanges: prop.ignoreSchemaChanges,

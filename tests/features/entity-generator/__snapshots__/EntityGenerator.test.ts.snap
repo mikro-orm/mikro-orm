@@ -174,7 +174,7 @@ export class Publisher4 {
   updatedAt?: Date;
   name: string & Opt = 'asd';
   type: TPublisher4Type & Opt = Publisher4Type.LOCAL;
-  enum3?: TPublisher4Enum3;
+  enum3?: number;
   book4Collection = new Collection<Book4>(this);
   publisher4TestsCollection = new Collection<Publisher4Tests>(this);
 }
@@ -186,14 +186,6 @@ export const Publisher4Type = {
 
 export type TPublisher4Type = (typeof Publisher4Type)[keyof typeof Publisher4Type];
 
-export const Publisher4Enum3 = {
-  '1': 1,
-  '2': 2,
-  '3': 3,
-} as const;
-
-export type TPublisher4Enum3 = (typeof Publisher4Enum3)[keyof typeof Publisher4Enum3];
-
 export const Publisher4Schema = defineEntity({
   class: Publisher4,
   properties: {
@@ -202,7 +194,7 @@ export const Publisher4Schema = defineEntity({
     updatedAt: p.datetime().nullable(),
     name: p.text(),
     type: p.enum(() => Publisher4Type),
-    enum3: p.enum(() => Publisher4Enum3).nullable(),
+    enum3: p.integer().nullable(),
     book4Collection: () => p.oneToMany(Book4).mappedBy('publisher'),
     publisher4TestsCollection: () => p.oneToMany(Publisher4Tests).mappedBy('publisher4'),
   },

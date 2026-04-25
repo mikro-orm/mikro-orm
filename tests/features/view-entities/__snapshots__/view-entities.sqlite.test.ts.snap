@@ -9,7 +9,7 @@ create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`
 create unique index \`foo_bar4_baz_id_unique\` on \`foo_bar4\` (\`baz_id\`);
 create unique index \`foo_bar4_foo_bar_id_unique\` on \`foo_bar4\` (\`foo_bar_id\`);
 
-create table \`publisher4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`type\` text check (\`type\` in ('local', 'global')) not null default 'local', \`enum3\` integer check (\`enum3\` in (1, 2, 3)) null);
+create table \`publisher4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`type\` text check (\`type\` in ('local', 'global')) not null default 'local', \`enum3\` integer null);
 
 create table \`book4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` text not null, \`price\` real null, \`author_id\` integer null, \`publisher_id\` integer null, \`meta\` json null, constraint \`book4_author_id_foreign\` foreign key (\`author_id\`) references \`author4\` (\`id\`) on delete set null, constraint \`book4_publisher_id_foreign\` foreign key (\`publisher_id\`) references \`publisher4\` (\`id\`) on delete set null);
 create index \`book4_author_id_index\` on \`book4\` (\`author_id\`);
