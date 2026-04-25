@@ -73,6 +73,19 @@ describe('collation diffing [sqlite]', () => {
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
   });
 
+  test('adding a collation to an existing column is detected as a change', async () => {
+    const orm2 = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [Book0],
+      dbName: ':memory:',
+    });
+    await orm2.schema.create();
+    orm2.discoverEntity(Book1, Book0);
+    const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('collate NOCASE');
+    await orm2.close(true);
+  });
+
   test('ignoreSchemaChanges: [collation] suppresses diffs even when collation changes', async () => {
     @Entity({ tableName: 'book' })
     class BookIgnored {
