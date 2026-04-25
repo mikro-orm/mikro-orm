@@ -523,9 +523,7 @@ export class SourceFile {
     );
     const padding = ' '.repeat(padLeft);
     const enumValues = prop.items as string[];
-    // Items reach us as strings (introspection always serializes them that
-    // way), but numeric enums should be emitted as raw numbers so the
-    // generated TS uses `Foo: 1` rather than `Foo: '1'`.
+    // numeric enums arrive as strings; emit raw numbers so the generated TS reads `Foo: 1` not `Foo: '1'`
     const allNumeric = enumValues.length > 0 && enumValues.every(item => /^-?\d+$/.test(item));
     const formatValue = (item: string) => (allNumeric ? item : this.quote(item));
 

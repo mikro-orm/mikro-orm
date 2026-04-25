@@ -55,6 +55,16 @@ import { Raw } from '../utils/RawQueryFragment.js';
 /** Symbol used to tag cloned embeddable data for JSON serialization handling. */
 export const JsonProperty = Symbol('JsonProperty');
 
+const MULTI_WORD_SQL_TYPES = [
+  'timestamp with time zone',
+  'timestamp without time zone',
+  'time with time zone',
+  'time without time zone',
+  'character varying',
+  'double precision',
+  'bit varying',
+] as const;
+
 /** Abstract base class providing database-specific behavior and SQL dialect differences. */
 export abstract class Platform {
   protected readonly exceptionConverter: ExceptionConverter = new ExceptionConverter();
@@ -333,25 +343,11 @@ export abstract class Platform {
     return this.getVarcharTypeDeclarationSQL(column);
   }
 
-  /**
-   * Extracts the base type name from a full SQL type declaration (e.g.
-   * `varchar(255)` -> `varchar`). Recognizes a few multi-word SQL type
-   * names up front so they don't get truncated at the first space —
-   * anything else falls back to the first whitespace/paren/comma token
-   * (so trailing modifiers like mysql's `unsigned` are stripped).
-   */
+  /** Extracts the base type name from a full SQL type declaration (e.g. `varchar(255)` -> `varchar`). */
   extractSimpleType(type: string): string {
     const lower = type.toLowerCase();
 
-    for (const multiWord of [
-      'timestamp with time zone',
-      'timestamp without time zone',
-      'time with time zone',
-      'time without time zone',
-      'character varying',
-      'double precision',
-      'bit varying',
-    ]) {
+    for (const multiWord of MULTI_WORD_SQL_TYPES) {
       if (lower.startsWith(multiWord)) {
         return multiWord;
       }

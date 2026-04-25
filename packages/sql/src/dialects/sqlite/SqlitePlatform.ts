@@ -33,10 +33,7 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return 'datetime';
   }
 
-  // sqlite stores `datetime` without precision in DDL and the current-ts
-  // expression hardcodes the millisecond scaling, so the default version
-  // length is purely ornamental and only creates snapshot drift between
-  // metadata and introspection. Drop the default so the field stays unset.
+  // sqlite's datetime DDL drops precision and the current-ts expression hardcodes ms scaling
   override getDefaultVersionLength(): number {
     return 0;
   }

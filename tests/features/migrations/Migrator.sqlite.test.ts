@@ -206,12 +206,9 @@ describe('Migrator (sqlite)', () => {
       await migrator.up(migration1.fileName);
       const afterUp = JSON.parse(readFileSync(snapshotPath, 'utf8'));
 
-      // full byte-for-byte equality — locks down ordering, normalized type
-      // aliases, derived primary/unique flags, index/FK normalization, and
-      // schema-level `nativeEnums` deduplication (GH #7610).
       expect(afterUp).toEqual(afterCreate);
 
-      // `nativeEnums` lives on the schema only — not on every table.
+      // nativeEnums lives on the schema, not duplicated per table
       for (const table of afterCreate.tables) {
         expect(table).not.toHaveProperty('nativeEnums');
       }
