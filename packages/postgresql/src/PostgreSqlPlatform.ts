@@ -131,7 +131,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return `create index ${quotedIndexName} on ${quotedTableName} using gin(to_tsvector('simple', ${quotedColumnNames.join(` || ' ' || `)}))`;
   }
 
-  override normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number; autoincrement?: boolean } = {}): string {
+  override normalizeColumnType(type: string, options: { length?: number; precision?: number; scale?: number; autoincrement?: boolean; columnTypes?: string[] } = {}): string {
     const simpleType = this.extractSimpleType(type);
 
     if (['int', 'int4', 'integer'].includes(simpleType)) {
@@ -164,6 +164,13 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
     if (['interval'].includes(simpleType)) {
       return this.getIntervalTypeDeclarationSQL(options);
+    }
+
+    // TimeType.getColumnType drops the timezone qualifier, so detect tz aliases from the original column type.
+    const originalType = options.columnTypes?.[0]?.toLowerCase() ?? type;
+    if (/^timetz\b/.test(originalType) || /^time\s+with\s+time\s+zone\b/.test(originalType)) {
+      const length = options.length ?? this.getDefaultDateTimeLength();
+      return `timetz(${length})`;
     }
 
     return super.normalizeColumnType(type, options);
