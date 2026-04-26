@@ -744,7 +744,13 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     }
 
     Utils.runIfNotEmpty(() => col.push(this.getCollateSQL(column.collation!)), column.collation);
-    Utils.runIfNotEmpty(() => col.push('identity(1,1)'), column.autoincrement);
+    // `IDENTITY(1,1)` is rejected inside `ALTER COLUMN`, so it must only be emitted when the
+    // change actually involves the identity attribute or is a fresh column (no `changedProperties`).
+    Utils.runIfNotEmpty(
+      () => col.push('identity(1,1)'),
+      column.autoincrement &&
+        (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type')),
+    );
     Utils.runIfNotEmpty(() => col.push('null'), column.nullable);
     Utils.runIfNotEmpty(() => col.push('not null'), !column.nullable && !column.generated);
 
