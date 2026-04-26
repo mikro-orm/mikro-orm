@@ -7028,6 +7028,7 @@ __metadata:
     "@types/react": "npm:^19.1.6"
     "@types/react-dom": "npm:^19.1.5"
     classnames: "npm:^2.5.1"
+    marked: "npm:16.4.2"
     prettier: "npm:^3.5.3"
     prism-react-renderer: "npm:^2.4.1"
     react: "npm:^19.2.4"
@@ -9950,7 +9951,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"marked@npm:^16.2.1":
+"marked@npm:16.4.2, marked@npm:^16.2.1":
   version: 16.4.2
   resolution: "marked@npm:16.4.2"
   bin:

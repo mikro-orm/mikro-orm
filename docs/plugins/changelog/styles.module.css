@@ -1,0 +1,85 @@
+.toc {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 2rem;
+  background: var(--ifm-color-emphasis-100);
+  border-radius: var(--ifm-global-radius);
+}
+
+.tocLabel {
+  font-weight: 600;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.tocLink {
+  font-weight: 600;
+}
+
+.majorSection {
+  margin-bottom: 3rem;
+}
+
+.majorHeading {
+  margin-top: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--ifm-color-emphasis-200);
+}
+
+.release {
+  padding: 1rem 0 1.5rem;
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.release:last-child {
+  border-bottom: none;
+}
+
+.releaseHeading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.releaseTitle {
+  font-weight: 700;
+}
+
+.releaseMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.prereleaseBadge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: var(--ifm-color-warning);
+  color: var(--ifm-alert-color);
+  border-radius: var(--ifm-global-radius);
+}
+
+.releaseBody h2,
+.releaseBody h3,
+.releaseBody h4 {
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.releaseBody h2:first-child {
+  /* GitHub release bodies typically repeat the version as an h2 — hide it. */
+  display: none;
+}
+
+.releaseBody ul {
+  padding-left: 1.5rem;
+}

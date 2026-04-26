@@ -62,7 +62,7 @@ const docsPluginOptions = {
 /** @type {import('docusaurus-plugin-typedoc-api/lib/types').DocusaurusPluginTypeDocApiOptions} */
 const docusaurusPluginTypedocApiOptions = {
   projectRoot: `${__dirname}/..`,
-  changelogs: true,
+  changelogs: false,
   packages,
   exclude: ['**/node_modules/*'],
   readmes: false,
@@ -189,9 +189,9 @@ module.exports = {
           position: 'left',
         },
         { to: 'docs/quick-start', label: 'Docs', position: 'left' },
-        { to: 'api', label: 'API', position: 'left', activeBaseRegex: 'api/(?!core/changelog)' },
+        { to: 'api', label: 'API', position: 'left' },
         { to: 'blog', label: 'Blog', position: 'left' },
-        { to: 'api/core/changelog', label: 'Changelog', position: 'left', className: 'changelog' },
+        { to: 'changelog', label: 'Changelog', position: 'left', className: 'changelog' },
         {
           'to': '/versions',
           'label': `latest: v${pkg.version}`,
@@ -287,6 +287,7 @@ module.exports = {
   ],
   plugins: [
     ['@apify/docusaurus-plugin-typedoc-api', docusaurusPluginTypedocApiOptions],
+    require.resolve('./plugins/changelog'),
     [
       '@signalwire/docusaurus-plugin-llms-txt',
       {
@@ -306,6 +307,9 @@ module.exports = {
     [
       '@docusaurus/plugin-client-redirects',
       {
+        redirects: [
+          { from: '/api/core/changelog', to: '/changelog' },
+        ],
         /**
          * @param {string} to
          * @return {string|string[]|undefined}
