@@ -2476,15 +2476,8 @@ export class QueryBuilder<
       return cached.data as unknown as U;
     }
 
-    const loggerContext = { id: this.em?.id, ...this.loggerContext };
-    const res = await this.getConnection().execute(
-      query.sql,
-      query.params,
-      method,
-      this.context,
-      loggerContext,
-      this.#abortOptions,
-    );
+    const loggerContext = { id: this.em?.id, ...this.loggerContext, ...this.#abortOptions };
+    const res = await this.getConnection().execute(query.sql, query.params, method, this.context, loggerContext);
     const meta = this.mainAlias.meta;
 
     if (!options.mapResults || !meta) {
@@ -2549,15 +2542,8 @@ export class QueryBuilder<
     const chunkSize = options.chunkSize ?? 100;
 
     const query = this.toQuery();
-    const loggerContext = { id: this.em?.id, ...this.loggerContext };
-    const res = this.getConnection().stream(
-      query.sql,
-      query.params,
-      this.context,
-      loggerContext,
-      chunkSize,
-      this.#abortOptions,
-    );
+    const loggerContext = { id: this.em?.id, ...this.loggerContext, ...this.#abortOptions };
+    const res = this.getConnection().stream(query.sql, query.params, this.context, loggerContext, chunkSize);
     const meta = this.mainAlias.meta;
 
     if (options.rawResults || !meta) {

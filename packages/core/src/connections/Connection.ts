@@ -1,6 +1,6 @@
 import { type Configuration, type ConnectionOptions } from '../utils/Configuration.js';
 import { Utils } from '../utils/Utils.js';
-import type { LogContext, Logger, LoggingOptions } from '../logging/Logger.js';
+import type { LogContext, Logger } from '../logging/Logger.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import type { ConnectionType, Dictionary, ISchemaGenerator, MaybePromise, Primary } from '../typings.js';
 import type { Platform } from '../platforms/Platform.js';
@@ -157,8 +157,6 @@ export abstract class Connection {
     params?: any[],
     method?: 'all' | 'get' | 'run',
     ctx?: Transaction,
-    loggerContext?: LoggingOptions,
-    abortOptions?: AbortQueryOptions,
   ): Promise<QueryResult<T> | any | any[]>;
 
   /** Parses and returns the resolved connection configuration (host, port, user, etc.). */

@@ -127,11 +127,11 @@ test('signal aborts em.count', async () => {
   await expect(orm.em.fork().count(CancellationUser, {}, { signal: ac.signal })).rejects.toThrow('count-aborted');
 });
 
-test('signal aborts em.execute (raw SQL)', async () => {
+test('signal aborts em.execute (raw SQL) via fork-level signal', async () => {
   const ac = new AbortController();
   ac.abort(new Error('raw-aborted'));
 
-  await expect(
-    orm.em.fork().execute('select * from cancellation_user', [], 'all', undefined, { signal: ac.signal }),
-  ).rejects.toThrow('raw-aborted');
+  await expect(orm.em.fork({ signal: ac.signal }).execute('select * from cancellation_user')).rejects.toThrow(
+    'raw-aborted',
+  );
 });

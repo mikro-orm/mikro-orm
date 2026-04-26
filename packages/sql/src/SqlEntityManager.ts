@@ -26,6 +26,14 @@ import type { Kysely } from 'kysely';
 import type { InferClassEntityDB, InferKyselyDB } from './typings.js';
 import { MikroKyselyPlugin, type MikroKyselyPluginOptions } from './plugin/index.js';
 
+/** Options for the modern signature of `SqlEntityManager.execute()`. */
+export interface EmExecuteOptions extends AbortQueryOptions {
+  /** Result shape — `'all'` for rows, `'get'` for a single row, `'run'` for affected count. Defaults to `'all'`. */
+  method?: 'all' | 'get' | 'run';
+  /** Logger context payload forwarded to `Logger.logQuery`. */
+  loggerContext?: LoggingOptions;
+}
+
 /** Options for `SqlEntityManager.getKysely()`. */
 export interface GetKyselyOptions extends MikroKyselyPluginOptions {
   /** Connection type to use (`'read'` or `'write'`). */
@@ -46,7 +54,7 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
     loggerContext?: LoggingOptions,
   ): QueryBuilder<Entity, RootAlias> {
     const context = this.getContext(false);
-    return this.driver.createQueryBuilder(
+    const qb = this.driver.createQueryBuilder(
       entityName as EntityName<Entity>,
       context.getTransactionContext(),
       type,
@@ -54,8 +62,9 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
       loggerContext ?? context.loggerContext,
       alias,
       this,
-      context.getAbortOptions(),
-    ) as any;
+    );
+    qb.setAbortOptions(context.getAbortOptions());
+    return qb as any;
   }
 
   /**
@@ -93,23 +102,54 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
     return kysely;
   }
 
-  /** Executes a raw SQL query, using the current transaction context if available. */
+  /**
+   * Executes a raw SQL query, using the current transaction context if available. The fork-level
+   * `signal` / `inflightQueryAbortStrategy` (set via `em.fork({ signal })`) is applied automatically.
+   * For per-call cancellation use the options-bag overload below.
+   */
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(
+    query: string | NativeQueryBuilder | RawQueryFragment,
+    params?: any[],
+    method?: 'all' | 'get' | 'run',
+    loggerContext?: LoggingOptions,
+  ): Promise<T>;
+  /**
+   * Executes a raw SQL query with an options bag carrying `method`, `loggerContext`, `signal`
+   * and `inflightQueryAbortStrategy`. Per-call `signal` / `inflightQueryAbortStrategy` override
+   * the fork-level defaults set via `em.fork({ signal })`. The current transaction context is
+   * applied automatically.
+   */
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(
+    query: string | NativeQueryBuilder | RawQueryFragment,
+    params: any[],
+    options: EmExecuteOptions,
+  ): Promise<T>;
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(
     query: string | NativeQueryBuilder | RawQueryFragment,
     params: any[] = [],
-    method: 'all' | 'get' | 'run' = 'all',
+    methodOrOptions: 'all' | 'get' | 'run' | EmExecuteOptions = 'all',
     loggerContext?: LoggingOptions,
-    abortOptions?: AbortQueryOptions,
   ): Promise<T> {
+    const opts: EmExecuteOptions =
+      typeof methodOrOptions === 'string' ? { method: methodOrOptions, loggerContext } : methodOrOptions;
     const context = this.getContext(false);
+    // Per-field fallback to fork-level abort, matching `EntityManager.prepareOptions` semantics.
+    const fork = context.getAbortOptions();
+    const hasAbort = opts.signal != null || opts.inflightQueryAbortStrategy != null || fork != null;
+    // Connection layer carries abort piggy-backed on `loggerContext`; merge only when needed.
+    const merged: (LoggingOptions & Partial<AbortQueryOptions>) | undefined =
+      hasAbort || opts.loggerContext ? { ...(opts.loggerContext as Dictionary | undefined) } : undefined;
+    if (merged && hasAbort) {
+      merged.signal = opts.signal ?? fork?.signal;
+      merged.inflightQueryAbortStrategy = opts.inflightQueryAbortStrategy ?? fork?.inflightQueryAbortStrategy;
+    }
     return this.getDriver().execute(
       query,
       params,
-      method,
+      opts.method ?? 'all',
       context.getTransactionContext(),
-      loggerContext,
-      abortOptions ?? context.getAbortOptions(),
-    );
+      merged,
+    ) as Promise<T>;
   }
 
   /**

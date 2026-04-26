@@ -31,14 +31,10 @@ afterAll(async () => {
 test('"cancel query" actually kills a long-running query on the server', async () => {
   const ac = new AbortController();
   setTimeout(() => ac.abort(new Error('user-cancelled')), 100);
+  const fork = orm.em.fork({ signal: ac.signal, inflightQueryAbortStrategy: 'cancel query' });
 
   const start = Date.now();
-  await expect(
-    orm.em.fork().execute('select pg_sleep(30)', [], 'all', undefined, {
-      signal: ac.signal,
-      inflightQueryAbortStrategy: 'cancel query',
-    }),
-  ).rejects.toThrow('user-cancelled');
+  await expect(fork.execute('select pg_sleep(30)')).rejects.toThrow('user-cancelled');
   const elapsed = Date.now() - start;
 
   // pg_cancel_backend should kill the query within a couple of seconds; if we're still running
@@ -49,14 +45,10 @@ test('"cancel query" actually kills a long-running query on the server', async (
 test('"ignore query" lets the abort throw quickly without waiting for the query', async () => {
   const ac = new AbortController();
   setTimeout(() => ac.abort(new Error('ignored')), 50);
+  const fork = orm.em.fork({ signal: ac.signal, inflightQueryAbortStrategy: 'ignore query' });
 
   const start = Date.now();
-  await expect(
-    orm.em.fork().execute('select pg_sleep(2)', [], 'all', undefined, {
-      signal: ac.signal,
-      inflightQueryAbortStrategy: 'ignore query',
-    }),
-  ).rejects.toThrow('ignored');
+  await expect(fork.execute('select pg_sleep(2)')).rejects.toThrow('ignored');
   // returned roughly when signal fired, not after pg_sleep(2)
   expect(Date.now() - start).toBeLessThan(500);
 });

@@ -25,7 +25,16 @@ try {
 }
 ```
 
-`signal` is supported on all read/write methods that take an options bag — `find`/`findOne`/`findAll`/`count`/`countBy`/`insert`/`update`/`delete`/`upsert`/`nativeUpdate`/`nativeDelete`/`stream`/`lock` and the matching `QueryBuilder` methods, plus `em.execute()` for raw queries (passed via `loggerContext`).
+`signal` is supported on all read/write methods that take an options bag — `find`/`findOne`/`findAll`/`count`/`countBy`/`insert`/`update`/`delete`/`upsert`/`nativeUpdate`/`nativeDelete`/`stream`/`lock` and the matching `QueryBuilder` methods. For raw queries, `em.execute()` accepts an options object as its 3rd argument:
+
+```ts
+await em.execute('select * from users where id = ?', [1], {
+  signal: ctrl.signal,
+  inflightQueryAbortStrategy: 'cancel query',
+});
+```
+
+The legacy positional form (`em.execute(sql, params, method, loggerContext)`) keeps working for backward compatibility.
 
 ## Fork-level signal
 
