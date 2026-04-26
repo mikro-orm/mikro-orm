@@ -483,6 +483,16 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return this.quote(name);
   }
 
+  async getDatabaseCollation(connection: AbstractSqlConnection, ctx?: Transaction): Promise<string | undefined> {
+    const [row] = await connection.execute<{ collation: string }[]>(
+      `select convert(nvarchar(128), databasepropertyex(db_name(), 'Collation')) as collation`,
+      [],
+      'all',
+      ctx,
+    );
+    return row?.collation;
+  }
+
   async getAllTriggers(
     connection: AbstractSqlConnection,
     tablesBySchemas: Map<string | undefined, Table[]>,
@@ -563,12 +573,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     const checks = await this.getAllChecks(connection, tablesBySchema, ctx);
     const fks = await this.getAllForeignKeys(connection, tablesBySchema, ctx);
     const triggers = await this.getAllTriggers(connection, tablesBySchema);
-    const [{ collation: dbCollation } = { collation: undefined }] = await connection.execute<{ collation: string }[]>(
-      `select convert(nvarchar(128), databasepropertyex(db_name(), 'Collation')) as collation`,
-      [],
-      'all',
-      ctx,
-    );
+    const dbCollation = await this.getDatabaseCollation(connection, ctx);
 
     for (const t of tables) {
       const key = this.getTableKey(t);

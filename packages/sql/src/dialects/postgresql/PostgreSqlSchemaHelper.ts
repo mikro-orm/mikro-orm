@@ -250,15 +250,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const fks = await this.getAllForeignKeys(connection, tablesBySchema, ctx);
     const partitionings = await this.getPartitions(connection, tablesBySchema, ctx);
     const triggers = await this.getAllTriggers(connection, tablesBySchema);
-    // Resolves the real name of the implicit 'default' collation (the DB's datcollate),
-    // so the comparator can treat `@Property({ collation: '<datcollate>' })` as equivalent
-    // to a column that introspects as using the default.
-    const [{ collation: dbCollation } = { collation: undefined }] = await connection.execute<{ collation: string }[]>(
-      `select datcollate as collation from pg_database where datname = current_database()`,
-      [],
-      'all',
-      ctx,
-    );
+    const dbCollation = await this.getDatabaseCollation(connection, ctx);
 
     for (const t of tables) {
       const key = this.getTableKey(t);
@@ -724,6 +716,21 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }
 
     return this.platform.quoteIdentifier(rawName);
+  }
+
+  /**
+   * Resolves the real name of the implicit 'default' collation (the DB's `datcollate`),
+   * so the comparator can treat `@Property({ collation: '<datcollate>' })` as equivalent
+   * to a column that introspects as using the default.
+   */
+  async getDatabaseCollation(connection: AbstractSqlConnection, ctx?: Transaction): Promise<string | undefined> {
+    const [row] = await connection.execute<{ collation: string }[]>(
+      `select datcollate as collation from pg_database where datname = current_database()`,
+      [],
+      'all',
+      ctx,
+    );
+    return row?.collation;
   }
 
   async getAllTriggers(

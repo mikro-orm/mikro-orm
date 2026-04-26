@@ -484,6 +484,16 @@ export class OracleSchemaHelper extends SchemaHelper {
     return ret;
   }
 
+  async getDatabaseCollation(connection: AbstractSqlConnection, ctx?: Transaction): Promise<string | undefined> {
+    const [row] = await connection.execute<{ collation: string }[]>(
+      `select property_value as collation from database_properties where property_name = 'DEFAULT_COLLATION'`,
+      [],
+      'all',
+      ctx,
+    );
+    return row?.collation;
+  }
+
   override async loadInformationSchema(
     schema: DatabaseSchema,
     connection: AbstractSqlConnection,
@@ -500,12 +510,7 @@ export class OracleSchemaHelper extends SchemaHelper {
     const indexes = await this.getAllIndexes(connection, tablesBySchema, ctx);
     const checks = await this.getAllChecks(connection, tablesBySchema, ctx);
     const fks = await this.getAllForeignKeys(connection, tablesBySchema, ctx);
-    const [{ collation: dbCollation } = { collation: undefined }] = await connection.execute<{ collation: string }[]>(
-      `select property_value as collation from database_properties where property_name = 'DEFAULT_COLLATION'`,
-      [],
-      'all',
-      ctx,
-    );
+    const dbCollation = await this.getDatabaseCollation(connection, ctx);
 
     for (const t of tables) {
       const key = this.getTableKey(t);
