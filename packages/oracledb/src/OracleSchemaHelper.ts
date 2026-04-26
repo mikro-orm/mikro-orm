@@ -685,7 +685,10 @@ export class OracleSchemaHelper extends SchemaHelper {
     ) {
       const colParts = [this.quote(column.name), column.type];
 
-      if (column.collation && (changedProperties.has('collation') || changedProperties.has('type'))) {
+      // Oracle's MODIFY restates the column type, so re-emit COLLATE whenever the column has
+      // one — even if the trigger was a nullable/default change — so we can't accidentally
+      // drop the column collation by omitting it from the new type spec.
+      if (column.collation) {
         colParts.push(this.getCollateSQL(column.collation));
       }
 
