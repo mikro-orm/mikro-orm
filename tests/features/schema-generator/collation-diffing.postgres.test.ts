@@ -37,45 +37,52 @@ class Book2 {
   name!: string;
 }
 
-let orm: MikroORM;
-
-beforeAll(async () => {
-  orm = await MikroORM.init({
+async function bootstrap<T extends new (...args: any[]) => any>(initial: T) {
+  const orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
-    entities: [Book1],
+    entities: [initial],
     schema: 'foo',
     dbName: `mikro_orm_test_collation`,
   });
   await orm.schema.refresh();
-});
+  return orm;
+}
 
-afterAll(() => orm.close(true));
+describe('collation diffing [postgres]', () => {
+  test('create schema emits column-level collate clause', async () => {
+    const orm = await bootstrap(Book1);
+    const sql = await orm.schema.getCreateSchemaSQL();
+    expect(sql).toContain('collate "C"');
+    expect(sql).toMatchSnapshot();
+    await orm.close(true);
+  });
 
-test('create schema emits column-level collate clause', async () => {
-  const sql = await orm.schema.getCreateSchemaSQL();
-  expect(sql).toContain('collate "C"');
-  expect(sql).toMatchSnapshot();
-});
+  test('schema introspection round-trips column collation', async () => {
+    const orm = await bootstrap(Book1);
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.close(true);
+  });
 
-test('schema introspection round-trips column collation', async () => {
-  await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
-});
+  test('explicit-to-explicit collation change produces an alter', async () => {
+    const orm = await bootstrap(Book1);
+    orm.discoverEntity(Book2, Book1);
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('collate "POSIX"');
+    expect(diff).toMatchSnapshot();
+    await orm.schema.execute(diff);
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.close(true);
+  });
 
-test('explicit-to-explicit collation change produces an alter', async () => {
-  orm.discoverEntity(Book2, Book1);
-  const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-  expect(diff).toMatchSnapshot();
-  await orm.schema.execute(diff);
-});
-
-test('dropping the property collation is a no-op (accept platform default)', async () => {
-  orm.discoverEntity(Book0, Book2);
-  await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
-});
-
-test('re-adding a matching collation against live DB state produces no diff', async () => {
-  // Book1 specifies `collation: 'C'`; the live DB column was set to 'POSIX' via the previous step,
-  // so this round-trip still emits an alter. Using Book2 (the DB's current collation) should be a no-op.
-  orm.discoverEntity(Book2, Book0);
-  await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+  test('dropping the property collation alters the column back to the platform default', async () => {
+    const orm = await bootstrap(Book1);
+    orm.discoverEntity(Book0, Book1);
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).not.toContain('collate "C"');
+    expect(diff).toMatch(/alter table .* alter column/i);
+    expect(diff).toMatchSnapshot();
+    await orm.schema.execute(diff);
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.close(true);
+  });
 });

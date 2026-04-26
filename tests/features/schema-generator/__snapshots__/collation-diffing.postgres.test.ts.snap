@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`create schema emits column-level collate clause 1`] = `
+exports[`collation diffing [postgres] > create schema emits column-level collate clause 1`] = `
 "set names 'utf8';
 
 create schema if not exists "foo";
@@ -8,7 +8,12 @@ create table "foo"."book" ("id" serial primary key, "code" varchar(26) collate "
 "
 `;
 
-exports[`explicit-to-explicit collation change produces an alter 1`] = `
+exports[`collation diffing [postgres] > dropping the property collation alters the column back to the platform default 1`] = `
+"alter table "foo"."book" alter column "code" type varchar(26) using ("code"::varchar(26));
+"
+`;
+
+exports[`collation diffing [postgres] > explicit-to-explicit collation change produces an alter 1`] = `
 "alter table "foo"."book" alter column "code" type varchar(26) collate "POSIX" using ("code"::varchar(26));
 "
 `;

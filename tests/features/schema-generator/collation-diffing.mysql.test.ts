@@ -37,43 +37,55 @@ class Book2 {
   name!: string;
 }
 
-describe('collation diffing in mysql', () => {
-  let orm: MikroORM;
-
-  beforeAll(async () => {
-    orm = await MikroORM.init({
-      metadataProvider: ReflectMetadataProvider,
-      entities: [Book1],
-      dbName: `mikro_orm_test_collation`,
-      port: 3308,
-    });
-    await orm.schema.ensureDatabase();
-    await orm.schema.execute('drop table if exists book');
-    await orm.schema.create();
+async function bootstrap<T extends new (...args: any[]) => any>(initial: T, dbName = 'mikro_orm_test_collation') {
+  const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
+    entities: [initial],
+    dbName,
+    port: 3308,
   });
+  await orm.schema.ensureDatabase();
+  await orm.schema.execute('drop table if exists book');
+  await orm.schema.create();
+  return orm;
+}
 
-  afterAll(() => orm.close(true));
-
+describe('collation diffing [mysql]', () => {
   test('create schema emits column-level collate clause', async () => {
+    const orm = await bootstrap(Book1);
     const sql = await orm.schema.getCreateSchemaSQL();
     expect(sql).toContain('collate utf8mb4_bin');
     expect(sql).toMatchSnapshot();
+    await orm.close(true);
   });
 
   test('schema introspection round-trips column collation', async () => {
+    const orm = await bootstrap(Book1);
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.close(true);
   });
 
   test('explicit-to-explicit collation change produces a modify', async () => {
+    const orm = await bootstrap(Book1);
     orm.discoverEntity(Book2, Book1);
     const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('collate utf8mb4_unicode_ci');
     expect(diff).toMatchSnapshot();
     await orm.schema.execute(diff);
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.close(true);
   });
 
-  test('dropping the property collation is a no-op (accept table default)', async () => {
-    orm.discoverEntity(Book0, Book2);
+  test('dropping the property collation modifies the column back to the table default', async () => {
+    const orm = await bootstrap(Book1);
+    orm.discoverEntity(Book0, Book1);
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).not.toContain('collate utf8mb4_bin');
+    expect(diff).toMatch(/alter table .* modify/i);
+    expect(diff).toMatchSnapshot();
+    await orm.schema.execute(diff);
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.close(true);
   });
 });
 
@@ -89,23 +101,8 @@ class BookMinimal {
 }
 
 describe('property naming the table default collation does not flap [mysql]', () => {
-  let orm: MikroORM;
-
-  beforeAll(async () => {
-    orm = await MikroORM.init({
-      metadataProvider: ReflectMetadataProvider,
-      entities: [BookMinimal],
-      dbName: `mikro_orm_test_collation_default`,
-      port: 3308,
-    });
-    await orm.schema.ensureDatabase();
-    await orm.schema.execute('drop table if exists book');
-    await orm.schema.create();
-  });
-
-  afterAll(() => orm.close(true));
-
   test('explicit table-default collation is a no-op diff', async () => {
+    const orm = await bootstrap(BookMinimal, 'mikro_orm_test_collation_default');
     const [{ c: tableDefault }] = await orm.em
       .getConnection()
       .execute<{ c: string }[]>(
@@ -123,6 +120,7 @@ describe('property naming the table default collation does not flap [mysql]', ()
 
     orm.discoverEntity(BookExplicitDefault, BookMinimal);
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.close(true);
   });
 });
 
@@ -154,28 +152,14 @@ class BookBinWithComment {
 }
 
 describe('comment-only edit preserves column collation [mysql]', () => {
-  let orm: MikroORM;
-
-  beforeAll(async () => {
-    orm = await MikroORM.init({
-      metadataProvider: ReflectMetadataProvider,
-      entities: [BookBinNoComment],
-      dbName: `mikro_orm_test_collation_comment`,
-      port: 3308,
-    });
-    await orm.schema.ensureDatabase();
-    await orm.schema.execute('drop table if exists book');
-    await orm.schema.create();
-  });
-
-  afterAll(() => orm.close(true));
-
   test('adding a comment re-emits the existing collation', async () => {
+    const orm = await bootstrap(BookBinNoComment, 'mikro_orm_test_collation_comment');
     orm.discoverEntity(BookBinWithComment, BookBinNoComment);
     const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toContain('collate utf8mb4_bin');
     expect(diff).toContain("comment 'the code'");
     await orm.schema.execute(diff);
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.close(true);
   });
 });

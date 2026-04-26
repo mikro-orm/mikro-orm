@@ -766,22 +766,16 @@ export class SchemaComparator {
   }
 
   /**
-   * `from` is the introspected DB state, `to` is the target metadata. When the metadata side is
-   * unset we never diff — that's the "no opinion, accept the platform/table default" contract.
-   * When the metadata side is set, we diff against the DB unless they match; if introspection
-   * filtered the DB collation (because the column uses the table/database default), we fall back
-   * to `tableDefault` so a property naming the table default doesn't flap. Comparison is
-   * case-insensitive for MySQL parity (introspection returns lowercase names).
+   * `from` is the introspected DB state, `to` is the target metadata. A column-level `COLLATE`
+   * clause naming the table/database default is just verbose syntax for inheriting that default,
+   * so both sides are normalized — anything matching `tableDefault` collapses to `undefined` and
+   * compares equal to "no explicit collation". Comparison is case-insensitive for MySQL parity
+   * (introspection returns lowercase names).
    */
   diffCollation(fromCollation?: string, toCollation?: string, tableDefault?: string): boolean {
-    if (toCollation == null) {
-      return false;
-    }
-    const from = fromCollation ?? tableDefault;
-    if (from == null) {
-      return true;
-    }
-    return from.toLowerCase() !== toCollation.toLowerCase();
+    const norm = (c?: string) =>
+      c && tableDefault && c.toLowerCase() === tableDefault.toLowerCase() ? undefined : c?.toLowerCase();
+    return norm(fromCollation) !== norm(toCollation);
   }
 
   /**

@@ -37,53 +37,61 @@ class Book2 {
   name!: string;
 }
 
-describe('collation diffing [sqlite]', () => {
-  let orm: MikroORM;
-
-  beforeAll(async () => {
-    orm = await MikroORM.init({
-      metadataProvider: ReflectMetadataProvider,
-      entities: [Book1],
-      dbName: ':memory:',
-    });
-    await orm.schema.create();
+async function bootstrap<T extends new (...args: any[]) => any>(initial: T) {
+  const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
+    entities: [initial],
+    dbName: ':memory:',
   });
+  await orm.schema.create();
+  return orm;
+}
 
-  afterAll(() => orm.close(true));
-
+describe('collation diffing [sqlite]', () => {
   test('create schema emits column-level collate clause', async () => {
+    const orm = await bootstrap(Book1);
     const sql = await orm.schema.getCreateSchemaSQL();
     expect(sql).toContain('collate NOCASE');
     expect(sql).toMatchSnapshot();
+    await orm.close(true);
   });
 
   test('schema introspection round-trips column collation', async () => {
+    const orm = await bootstrap(Book1);
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.close(true);
   });
 
   test('explicit-to-explicit collation change rebuilds the table', async () => {
+    const orm = await bootstrap(Book1);
     orm.discoverEntity(Book2, Book1);
     const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('collate BINARY');
     expect(diff).toMatchSnapshot();
     await orm.schema.execute(diff);
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.close(true);
   });
 
-  test('dropping the property collation is a no-op (accept default)', async () => {
-    orm.discoverEntity(Book0, Book2);
+  test('dropping the property collation rebuilds the column without COLLATE', async () => {
+    const orm = await bootstrap(Book1);
+    orm.discoverEntity(Book0, Book1);
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).not.toContain('collate');
+    expect(diff).toMatchSnapshot();
+    await orm.schema.execute(diff);
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.close(true);
   });
 
   test('adding a collation to an existing column is detected as a change', async () => {
-    const orm2 = await MikroORM.init({
-      metadataProvider: ReflectMetadataProvider,
-      entities: [Book0],
-      dbName: ':memory:',
-    });
-    await orm2.schema.create();
-    orm2.discoverEntity(Book1, Book0);
-    const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    const orm = await bootstrap(Book0);
+    orm.discoverEntity(Book1, Book0);
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toContain('collate NOCASE');
-    await orm2.close(true);
+    await orm.schema.execute(diff);
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.close(true);
   });
 
   test('ignoreSchemaChanges: [collation] suppresses diffs even when collation changes', async () => {
@@ -103,7 +111,9 @@ describe('collation diffing [sqlite]', () => {
       name!: string;
     }
 
-    orm.discoverEntity(BookIgnored, Book0);
+    const orm = await bootstrap(Book2);
+    orm.discoverEntity(BookIgnored, Book2);
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.close(true);
   });
 });
