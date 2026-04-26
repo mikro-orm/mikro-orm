@@ -1,6 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Layout from '@theme/Layout';
-import Link from '@docusaurus/Link';
 import styles from './styles.module.css';
 
 function formatDate(iso) {
@@ -35,53 +34,132 @@ function groupByMajor(releases) {
   return ordered;
 }
 
+function Sidebar({ groups }) {
+  const [expandedMajor, setExpandedMajor] = useState(() => groups[0]?.[0] ?? null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.location.hash) {
+      return;
+    }
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    const major = majorOf(id);
+    if (major && major !== 'other') {
+      setExpandedMajor(major);
+    }
+  }, []);
+
+  const toggle = key => {
+    setExpandedMajor(prev => (prev === key ? null : key));
+  };
+
+  return (
+    <aside className={styles.sidebar} aria-label="Versions">
+      <nav>
+        <ul className={styles.sidebarList}>
+          {groups.map(([major, items]) => {
+            const isOpen = expandedMajor === major;
+            return (
+              <li key={major} className={styles.sidebarMajor}>
+                <button
+                  type="button"
+                  className={styles.sidebarMajorButton}
+                  onClick={() => toggle(major)}
+                  aria-expanded={isOpen}>
+                  <span className={styles.sidebarCaret} aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
+                  <span className={styles.sidebarMajorLabel}>{major}</span>
+                  <span className={styles.sidebarCount}>{items.length}</span>
+                </button>
+                {isOpen && (
+                  <ul className={styles.sidebarVersions}>
+                    {items.map(release => (
+                      <li key={release.tagName}>
+                        <a href={`#${release.tagName}`} className={styles.sidebarVersionLink}>
+                          {release.tagName}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    </aside>
+  );
+}
+
+function useScrollToHashAfterMount() {
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.location.hash) {
+      return;
+    }
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    // Wait for layout/paint to settle so `content-visibility: auto`
+    // sections can lay out at their real height before we anchor.
+    const raf1 = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.scrollIntoView({ block: 'start' });
+        }
+      });
+    });
+    return () => cancelAnimationFrame(raf1);
+  }, []);
+}
+
 export default function Changelog({ releases = [] }) {
   const groups = useMemo(() => groupByMajor(releases), [releases]);
+  useScrollToHashAfterMount();
 
   return (
     <Layout
       title="Changelog"
       description="MikroORM release changelog, sourced from GitHub Releases."
       permalink="/changelog">
-      <div className="container margin-vert--xl">
-        <h1>Changelog</h1>
-        <p>
-          Release notes are sourced from{' '}
-          <Link to="https://github.com/mikro-orm/mikro-orm/releases">GitHub Releases</Link>{' '}
-          across the entire monorepo.
-        </p>
+      <div className={styles.layout}>
+        <Sidebar groups={groups} />
+        <main className={styles.content}>
+          <h1>Changelog</h1>
+          <p>
+            Release notes are sourced from{' '}
+            <a
+              href="https://github.com/mikro-orm/mikro-orm/releases"
+              target="_blank"
+              rel="noopener noreferrer">
+              GitHub Releases
+            </a>{' '}
+            across the entire monorepo.
+          </p>
 
-        {groups.length > 1 && (
-          <nav className={styles.toc} aria-label="Major versions">
-            <span className={styles.tocLabel}>Jump to:</span>
-            {groups.map(([major]) => (
-              <a key={major} href={`#${major}`} className={styles.tocLink}>{major}</a>
-            ))}
-          </nav>
-        )}
-
-        {groups.map(([major, items]) => (
-          <section key={major} className={styles.majorSection}>
-            <h2 id={major} className={styles.majorHeading}>{major}</h2>
-            {items.map(release => (
-              <article key={release.tagName} className={styles.release} id={release.tagName}>
-                <h3 className={styles.releaseHeading}>
-                  <Link to={release.htmlUrl} className={styles.releaseTitle}>
-                    {release.name || release.tagName}
-                  </Link>
-                  <span className={styles.releaseMeta}>
-                    {release.prerelease && <span className={styles.prereleaseBadge}>pre-release</span>}
-                    <time dateTime={release.publishedAt}>{formatDate(release.publishedAt)}</time>
-                  </span>
-                </h3>
-                <div
-                  className={styles.releaseBody}
-                  dangerouslySetInnerHTML={{ __html: release.bodyHtml }}
-                />
-              </article>
-            ))}
-          </section>
-        ))}
+          {groups.map(([major, items]) => (
+            <section key={major} className={styles.majorSection}>
+              <h2 id={major} className={styles.majorHeading}>{major}</h2>
+              {items.map(release => (
+                <article key={release.tagName} className={styles.release} id={release.tagName}>
+                  <h3 className={styles.releaseHeading}>
+                    <a
+                      href={release.htmlUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.releaseTitle}>
+                      {release.name || release.tagName}
+                    </a>
+                    <span className={styles.releaseMeta}>
+                      {release.prerelease && <span className={styles.prereleaseBadge}>pre-release</span>}
+                      <time dateTime={release.publishedAt}>{formatDate(release.publishedAt)}</time>
+                    </span>
+                  </h3>
+                  <div
+                    className={styles.releaseBody}
+                    dangerouslySetInnerHTML={{ __html: release.bodyHtml }}
+                  />
+                </article>
+              ))}
+            </section>
+          ))}
+        </main>
       </div>
     </Layout>
   );
