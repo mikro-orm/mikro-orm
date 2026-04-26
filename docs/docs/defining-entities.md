@@ -1643,7 +1643,9 @@ console.log(populatedReport.reportParameters.$);
 
 When using a private property backed by a public get/set pair, use the `accessor` option to point to the other side.
 
-> The `fieldName` will be inferred based on the accessor name unless specified explicitly.
+> For scalar/embedded properties, the column name is inferred from the accessor name (e.g. `_email` with `accessor: 'email'` produces column `email`, not `_email`). For to-one relations, this inference only kicks in when the property name follows the conventional `_`-prefixed backing-field shape — `_draft` with `accessor: 'draft'` produces FK column `draft_id`, while a non-prefixed property name is kept as-is.
+
+> Relying on the convention is fragile. Prefer setting the column name explicitly via `fieldName` (scalars) or `joinColumn` (to-one relations) — both override the inferred value.
 
 If the `accessor` option points to something, the ORM will use the backing property directly:
 
