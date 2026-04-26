@@ -221,7 +221,7 @@ export class MetadataValidator {
    * Composite unique constraints are not sufficient for targetKey.
    */
   private isPropertyUnique(prop: EntityProperty, meta: EntityMetadata): boolean {
-    if (prop.unique) {
+    if (prop.unique || (prop.primary && meta.primaryKeys.length === 1)) {
       return true;
     }
 

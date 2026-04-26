@@ -694,6 +694,42 @@ describe('MetadataValidator', () => {
       expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Book, options)).not.toThrow();
     });
 
+    test('does not throw when targetKey references a primary key', async () => {
+      class Author {}
+      class Book {}
+      const meta = {
+        Author: {
+          name: 'Author',
+          className: 'Author',
+          class: Author,
+          primaryKeys: ['id'],
+          properties: {
+            id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+          },
+        },
+        Book: {
+          name: 'Book',
+          className: 'Book',
+          class: Book,
+          primaryKeys: ['id'],
+          properties: {
+            id: { name: 'id', kind: ReferenceKind.SCALAR, type: 'number', primary: true },
+            author: {
+              name: 'author',
+              kind: ReferenceKind.MANY_TO_ONE,
+              type: 'Author',
+              targetKey: 'id',
+            },
+          },
+        },
+      } as any;
+      meta.Author.root = meta.Author;
+      meta.Book.root = meta.Book;
+      meta.Book.properties.author.targetMeta = meta.Author;
+
+      expect(() => validator.validateEntityDefinition(new MetadataStorage(meta), Book, options)).not.toThrow();
+    });
+
     test('throws when targetKey references property in composite unique index (not sufficient)', async () => {
       class Author {}
       class Book {}
