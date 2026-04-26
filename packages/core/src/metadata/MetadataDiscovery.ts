@@ -160,7 +160,12 @@ export class MetadataDiscovery {
       } else {
         const name = prop.name;
 
-        if (prop.kind === ReferenceKind.SCALAR || prop.kind === ReferenceKind.EMBEDDED) {
+        // For to-one relations, only swap to the accessor for the documented
+        // backing-field convention (a `_`-prefixed property like `_draft` paired
+        // with `accessor: 'draft'`). The non-prefixed sibling-helper pattern
+        // (`author` + `accessor: 'authorId'`) keeps the property name as the
+        // canonical FK column source, so this stays non-breaking.
+        if (prop.kind === ReferenceKind.SCALAR || prop.kind === ReferenceKind.EMBEDDED || name.startsWith('_')) {
           prop.name = prop.accessor;
         }
 
