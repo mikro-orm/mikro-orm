@@ -192,6 +192,16 @@ export abstract class AbstractSqlPlatform extends Platform {
     }
   }
 
+  /**
+   * Whether collation names compare case-insensitively in this dialect. MySQL/MariaDB, MSSQL, and
+   * SQLite use case-insensitive collation identifiers; PostgreSQL stores them as case-sensitive
+   * names in `pg_collation` (e.g. `en-US-x-icu` is distinct from `EN-US-X-ICU`).
+   * @internal
+   */
+  caseInsensitiveCollationNames(): boolean {
+    return true;
+  }
+
   /** @internal */
   validateJsonPropertyName(name: string): void {
     if (!AbstractSqlPlatform.#JSON_PROPERTY_NAME_RE.test(name)) {

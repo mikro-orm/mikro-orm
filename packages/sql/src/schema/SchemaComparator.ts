@@ -769,12 +769,14 @@ export class SchemaComparator {
    * `from` is the introspected DB state, `to` is the target metadata. A column-level `COLLATE`
    * clause naming the table/database default is just verbose syntax for inheriting that default,
    * so both sides are normalized — anything matching `tableDefault` collapses to `undefined` and
-   * compares equal to "no explicit collation". Comparison is case-insensitive for MySQL parity
-   * (introspection returns lowercase names).
+   * compares equal to "no explicit collation". Comparison is case-insensitive on dialects that
+   * treat collation identifiers as case-insensitive (MySQL/MSSQL/SQLite); PostgreSQL's
+   * `pg_collation.collname` is case-sensitive and is compared verbatim.
    */
   diffCollation(fromCollation?: string, toCollation?: string, tableDefault?: string): boolean {
+    const fold = this.#platform.caseInsensitiveCollationNames() ? (s: string) => s.toLowerCase() : (s: string) => s;
     const norm = (c?: string) =>
-      c && tableDefault && c.toLowerCase() === tableDefault.toLowerCase() ? undefined : c?.toLowerCase();
+      c && tableDefault && fold(c) === fold(tableDefault) ? undefined : c == null ? undefined : fold(c);
     return norm(fromCollation) !== norm(toCollation);
   }
 
