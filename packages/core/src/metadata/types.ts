@@ -421,8 +421,8 @@ export interface PropertyOptions<Owner> {
    */
   comment?: string;
   /**
-   * Specify column-level collation for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}.
-   * Supported on PostgreSQL, MySQL, MariaDB, and SQLite (via `COLLATE` clause on the column definition).
+   * Specify column-level collation for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
+   * Emits a `COLLATE` clause on the column definition; the accepted collation names are dialect-specific.
    */
   collation?: string;
   /** mysql only */

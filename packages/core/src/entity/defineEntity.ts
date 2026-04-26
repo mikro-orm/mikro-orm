@@ -802,8 +802,8 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   }
 
   /**
-   * Specify column-level collation for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}.
-   * Supported on PostgreSQL, MySQL, MariaDB, and SQLite.
+   * Specify column-level collation for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
+   * Emits a `COLLATE` clause on the column definition; the accepted collation names are dialect-specific.
    */
   collation(collation: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ collation });
