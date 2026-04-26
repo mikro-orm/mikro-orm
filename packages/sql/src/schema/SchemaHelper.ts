@@ -651,9 +651,7 @@ export abstract class SchemaHelper {
 
     const col = [this.quote(column.name), columnType];
     Utils.runIfNotEmpty(() => col.push('unsigned'), column.unsigned && this.platform.supportsUnsigned());
-    if (column.collation) {
-      col.push(this.getCollateSQL(column.collation));
-    }
+    Utils.runIfNotEmpty(() => col.push(this.getCollateSQL(column.collation!)), column.collation);
     Utils.runIfNotEmpty(() => col.push('null'), column.nullable);
     Utils.runIfNotEmpty(() => col.push('not null'), !column.nullable && !column.generated);
     Utils.runIfNotEmpty(() => col.push('auto_increment'), column.autoincrement);

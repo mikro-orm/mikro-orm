@@ -249,10 +249,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
       checks.splice(check, 1);
     }
 
-    if (column.collation) {
-      col.push(this.getCollateSQL(column.collation));
-    }
-
+    Utils.runIfNotEmpty(() => col.push(this.getCollateSQL(column.collation!)), column.collation);
     Utils.runIfNotEmpty(() => col.push('null'), column.nullable);
     Utils.runIfNotEmpty(() => col.push('not null'), !column.nullable && !column.generated);
     Utils.runIfNotEmpty(() => col.push('primary key'), column.primary);

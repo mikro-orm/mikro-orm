@@ -1030,10 +1030,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
       col.push(columnType);
 
-      if (column.collation) {
-        col.push(this.getCollateSQL(column.collation));
-      }
-
+      Utils.runIfNotEmpty(() => col.push(this.getCollateSQL(column.collation!)), column.collation);
       Utils.runIfNotEmpty(() => col.push('null'), column.nullable);
       Utils.runIfNotEmpty(() => col.push('not null'), !column.nullable);
     }
