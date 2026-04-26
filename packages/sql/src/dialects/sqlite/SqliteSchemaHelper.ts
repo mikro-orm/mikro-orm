@@ -412,13 +412,16 @@ export class SqliteSchemaHelper extends SchemaHelper {
         }
       }
 
-      const definition = columnDefinitions[col.name]?.definition;
-      // Strip parenthesized groups (check/default expressions) and string literals
-      // so `collate` tokens inside them can't be mistaken for column collation.
-      const cleanDef = (definition ?? '')
-        .replace(/\([^)]*\)/g, '')
-        .replace(/'[^']*'/g, '')
-        .replace(/"[^"]*"/g, '');
+      // Strip string literals first (their contents could contain unbalanced parens), then
+      // repeatedly strip the innermost balanced `(...)` until none remain — a single pass would
+      // only remove the innermost level, leaving `collate` tokens inside nested CHECK/default
+      // expressions exposed to the column-collation regex.
+      let cleanDef = (columnDefinitions[col.name]?.definition ?? '').replace(/'[^']*'/g, '').replace(/"[^"]*"/g, '');
+      let prev: string;
+      do {
+        prev = cleanDef;
+        cleanDef = cleanDef.replace(/\([^()]*\)/g, '');
+      } while (cleanDef !== prev);
       const collationMatch = /\bcollate\s+([`"']?)([\w\-.]+)\1/i.exec(cleanDef);
 
       return {
