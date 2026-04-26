@@ -127,6 +127,38 @@ test('signal aborts em.count', async () => {
   await expect(orm.em.fork().count(CancellationUser, {}, { signal: ac.signal })).rejects.toThrow('count-aborted');
 });
 
+test('signal aborts em.insertMany', async () => {
+  const ac = new AbortController();
+  ac.abort(new Error('insertMany-aborted'));
+
+  await expect(
+    orm.em.fork().insertMany(CancellationUser, [{ name: 'x' }, { name: 'y' }], { signal: ac.signal }),
+  ).rejects.toThrow('insertMany-aborted');
+});
+
+test('signal aborts em.upsert', async () => {
+  const ac = new AbortController();
+  ac.abort(new Error('upsert-aborted'));
+
+  await expect(orm.em.fork().upsert(CancellationUser, { id: 1, name: 'A' }, { signal: ac.signal })).rejects.toThrow(
+    'upsert-aborted',
+  );
+});
+
+test('signal aborts qb.stream()', async () => {
+  const ac = new AbortController();
+  ac.abort(new Error('stream-aborted'));
+  const qb = orm.em.fork().qb(CancellationUser);
+  qb.setAbortOptions({ signal: ac.signal });
+
+  const consume = async () => {
+    for await (const _ of qb.stream()) {
+      // drain
+    }
+  };
+  await expect(consume()).rejects.toThrow('stream-aborted');
+});
+
 test('signal aborts em.execute (raw SQL) via fork-level signal', async () => {
   const ac = new AbortController();
   ac.abort(new Error('raw-aborted'));
