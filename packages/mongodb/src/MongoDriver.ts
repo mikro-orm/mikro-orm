@@ -326,9 +326,9 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   ): Promise<QueryResult<T>> {
     this.handleVersionProperty(entityName, data);
     data = this.renameFields(entityName, data);
-    return this.rethrow(this.getConnection('write').insertOne(entityName, data, options.ctx)) as unknown as Promise<
-      QueryResult<T>
-    >;
+    return this.rethrow(
+      this.getConnection('write').insertOne(entityName, data, options.ctx, options.signal),
+    ) as unknown as Promise<QueryResult<T>>;
   }
 
   override async nativeClone<T extends object>(
@@ -379,7 +379,9 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     const meta = this.metadata.find(entityName);
     /* v8 ignore next */
     const pk = meta?.getPrimaryProps()[0].fieldNames[0] ?? '_id';
-    const res = await this.rethrow(this.getConnection('write').insertMany(entityName, data as any[], options.ctx));
+    const res = await this.rethrow(
+      this.getConnection('write').insertMany(entityName, data as any[], options.ctx, options.signal),
+    );
     res.rows = res.insertedIds!.map(id => ({ [pk]: id }));
 
     return res as unknown as QueryResult<T>;
@@ -425,6 +427,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         options.ctx,
         options.upsert,
         options,
+        options.signal,
       ),
     );
   }
@@ -475,6 +478,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         options.ctx,
         options.upsert,
         options,
+        options.signal,
       ),
     );
 
@@ -495,7 +499,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   async nativeDelete<T extends object>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
-    options: { ctx?: Transaction<ClientSession> } = {},
+    options: { ctx?: Transaction<ClientSession>; signal?: AbortSignal } = {},
   ): Promise<QueryResult<T>> {
     if (Utils.isPrimaryKey(where)) {
       where = this.buildFilterById(entityName, where as string);
@@ -504,7 +508,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     where = this.renameFields(entityName, where as T, true);
 
     return this.rethrow(
-      this.getConnection('write').deleteMany(entityName, where as object, options.ctx),
+      this.getConnection('write').deleteMany(entityName, where as object, options.ctx, options.signal),
     ) as unknown as Promise<QueryResult<T>>;
   }
 
@@ -525,7 +529,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   private buildQueryOptions(
-    options: Pick<FindOptions<any, any, any, any>, 'collation' | 'indexHint' | 'using' | 'maxTimeMS' | 'allowDiskUse'>,
+    options: Pick<
+      FindOptions<any, any, any, any>,
+      'collation' | 'indexHint' | 'using' | 'maxTimeMS' | 'allowDiskUse' | 'signal'
+    >,
   ): MongoQueryOptions {
     if (options.collation != null && typeof options.collation === 'string') {
       throw new Error(
@@ -559,6 +566,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     if (options.allowDiskUse != null) {
       ret.allowDiskUse = options.allowDiskUse;
+    }
+
+    if (options.signal) {
+      ret.signal = options.signal;
     }
 
     return ret;

@@ -1,4 +1,5 @@
 import {
+  type AbortQueryOptions,
   type EntitySchemaWithMeta,
   EntityManager,
   raw,
@@ -53,6 +54,7 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
       loggerContext ?? context.loggerContext,
       alias,
       this,
+      context.getAbortOptions(),
     ) as any;
   }
 
@@ -97,13 +99,16 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
     params: any[] = [],
     method: 'all' | 'get' | 'run' = 'all',
     loggerContext?: LoggingOptions,
+    abortOptions?: AbortQueryOptions,
   ): Promise<T> {
+    const context = this.getContext(false);
     return this.getDriver().execute(
       query,
       params,
       method,
-      this.getContext(false).getTransactionContext(),
+      context.getTransactionContext(),
       loggerContext,
+      abortOptions ?? context.getAbortOptions(),
     );
   }
 

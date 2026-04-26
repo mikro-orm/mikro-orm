@@ -1,6 +1,6 @@
 import { type Configuration, type ConnectionOptions } from '../utils/Configuration.js';
 import { Utils } from '../utils/Utils.js';
-import type { LogContext, Logger } from '../logging/Logger.js';
+import type { LogContext, Logger, LoggingOptions } from '../logging/Logger.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import type { ConnectionType, Dictionary, ISchemaGenerator, MaybePromise, Primary } from '../typings.js';
 import type { Platform } from '../platforms/Platform.js';
@@ -157,6 +157,8 @@ export abstract class Connection {
     params?: any[],
     method?: 'all' | 'get' | 'run',
     ctx?: Transaction,
+    loggerContext?: LoggingOptions,
+    abortOptions?: AbortQueryOptions,
   ): Promise<QueryResult<T> | any | any[]>;
 
   /** Parses and returns the resolved connection configuration (host, port, user, etc.). */
@@ -272,3 +274,26 @@ export interface ConnectionConfig {
 
 /** Opaque transaction context type, wrapping the driver-specific transaction object. */
 export type Transaction<T = any> = T & {};
+
+/**
+ * Strategy applied when an `AbortSignal` fires while a query is in flight.
+ *
+ * - `'ignore query'` — stop awaiting; the query keeps running on the server until it settles
+ *   (the connection returns to the pool only when the database replies).
+ * - `'cancel query'` — ask the database to cancel the running query (e.g. `pg_cancel_backend`,
+ *   `KILL QUERY`). Falls back to `'ignore query'` if the dialect cannot cancel.
+ *   Most engines do not cancel writes; partial commits are possible.
+ * - `'kill session'` — terminate the database session/process the query runs in
+ *   (`pg_terminate_backend` etc.). Falls back to `'cancel query'` if not supported.
+ *
+ * Default: `'ignore query'`.
+ */
+export type InflightQueryAbortStrategy = 'ignore query' | 'cancel query' | 'kill session';
+
+/** Per-query cancellation controls forwarded to the underlying driver. */
+export interface AbortQueryOptions {
+  /** AbortSignal that cancels the query when fired. */
+  signal?: AbortSignal;
+  /** Strategy used when the signal fires while the query is in flight. */
+  inflightQueryAbortStrategy?: InflightQueryAbortStrategy;
+}

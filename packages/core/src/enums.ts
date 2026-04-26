@@ -1,5 +1,5 @@
 import type { EntityKey, ExpandProperty } from './typings.js';
-import type { Transaction } from './connections/Connection.js';
+import type { InflightQueryAbortStrategy, Transaction } from './connections/Connection.js';
 import type { LogContext } from './logging/Logger.js';
 
 /** Controls when the `EntityManager` flushes pending changes to the database. */
@@ -354,6 +354,13 @@ export interface TransactionOptions {
   flushMode?: FlushMode | `${FlushMode}`;
   ignoreNestedTransactions?: boolean;
   loggerContext?: LogContext;
+  /**
+   * `AbortSignal` cancelling every query within the transaction (including the implicit flush).
+   * Cancelling mid-transaction triggers a rollback once the in-flight query settles.
+   */
+  signal?: AbortSignal;
+  /** Cancellation strategy paired with {@link signal}. */
+  inflightQueryAbortStrategy?: InflightQueryAbortStrategy;
 }
 
 export abstract class PlainObject {}

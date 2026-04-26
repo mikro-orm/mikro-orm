@@ -1,4 +1,5 @@
 import {
+  type AbortQueryOptions,
   ALIAS_REPLACEMENT_RE,
   type AnyEntity,
   type Collection,
@@ -68,6 +69,17 @@ import { JoinType, QueryType } from './query/enums.js';
 import { SqlEntityManager } from './SqlEntityManager.js';
 import type { InternalField } from './typings.js';
 import { PivotCollectionPersister } from './PivotCollectionPersister.js';
+
+/** Extracts cancellation controls from any options bag that extends `AbortQueryOptions`. */
+function pickAbortOptions(options?: AbortQueryOptions): AbortQueryOptions | undefined {
+  if (!options || (options.signal == null && options.inflightQueryAbortStrategy == null)) {
+    return undefined;
+  }
+  return {
+    signal: options.signal,
+    inflightQueryAbortStrategy: options.inflightQueryAbortStrategy,
+  };
+}
 
 /** Base class for SQL database drivers, implementing find/insert/update/delete using QueryBuilder. */
 export abstract class AbstractSqlDriver<
@@ -163,6 +175,7 @@ export abstract class AbstractSqlDriver<
       options.logging,
       undefined,
       options.em as any,
+      pickAbortOptions(options),
     )
       .withSchema(schema)
       .cache(false);
@@ -448,6 +461,7 @@ export abstract class AbstractSqlDriver<
       options.ctx,
       options.loggerContext,
       options.chunkSize,
+      pickAbortOptions(options),
     );
 
     for await (const row of res) {
@@ -854,7 +868,16 @@ export abstract class AbstractSqlDriver<
     const populate = options.populate as unknown as PopulateOptions<T>[];
     const joinedProps = this.joinedProps(meta, populate, options as FindOptions<T>);
     const schema = this.getSchemaName(meta, options);
-    const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false, options.logging);
+    const qb = this.createQueryBuilder<T>(
+      entityName,
+      options.ctx,
+      options.connectionType,
+      false,
+      options.logging,
+      undefined,
+      undefined,
+      pickAbortOptions(options),
+    );
     const populateWhere = this.buildPopulateWhere(meta, joinedProps, options);
 
     if (meta && !Utils.isEmpty(populate)) {
@@ -899,6 +922,9 @@ export abstract class AbstractSqlDriver<
       'write',
       options.convertCustomTypes,
       options.loggerContext,
+      undefined,
+      undefined,
+      pickAbortOptions(options),
     ).withSchema(this.getSchemaName(meta, options));
     const res = await this.rethrow(qb.insert(data as unknown as RequiredEntityData<T>).execute('run', false));
     res.row = res.row || {};
@@ -1285,7 +1311,14 @@ export abstract class AbstractSqlDriver<
       sql = transform(sql);
     }
 
-    const res = await this.execute<QueryResult<T>>(sql, params, 'run', options.ctx, options.loggerContext);
+    const res = await this.execute<QueryResult<T>>(
+      sql,
+      params,
+      'run',
+      options.ctx,
+      options.loggerContext,
+      pickAbortOptions(options),
+    );
     let pk: any[];
 
     /* v8 ignore next */
@@ -1334,6 +1367,9 @@ export abstract class AbstractSqlDriver<
         'write',
         options.convertCustomTypes,
         options.loggerContext,
+        undefined,
+        undefined,
+        pickAbortOptions(options),
       ).withSchema(this.getSchemaName(meta, options));
 
       if (options.upsert) {
@@ -1403,6 +1439,9 @@ export abstract class AbstractSqlDriver<
         'write',
         options.convertCustomTypes,
         options.loggerContext,
+        undefined,
+        undefined,
+        pickAbortOptions(options),
       ).withSchema(this.getSchemaName(meta, options));
       const returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options);
       qb.insert(data as T[])
@@ -1580,7 +1619,7 @@ export abstract class AbstractSqlDriver<
     }
 
     const res = await this.rethrow(
-      this.execute<QueryResult<T>>(sql, params, 'run', options.ctx, options.loggerContext),
+      this.execute<QueryResult<T>>(sql, params, 'run', options.ctx, options.loggerContext, pickAbortOptions(options)),
     );
 
     for (let i = 0; i < collections.length; i++) {
@@ -1606,7 +1645,16 @@ export abstract class AbstractSqlDriver<
       where = await this.applyUnionWhere(meta, where as ObjectQuery<T>, options, true);
     }
 
-    const qb = this.createQueryBuilder(entityName, options.ctx, 'write', false, options.loggerContext)
+    const qb = this.createQueryBuilder(
+      entityName,
+      options.ctx,
+      'write',
+      false,
+      options.loggerContext,
+      undefined,
+      undefined,
+      pickAbortOptions(options),
+    )
       .delete(where)
       .withSchema(this.getSchemaName(meta, options));
 
@@ -1693,9 +1741,16 @@ export abstract class AbstractSqlDriver<
 
       if (coll.property.kind === ReferenceKind.ONE_TO_MANY) {
         const cols = coll.property.referencedColumnNames;
-        const qb = this.createQueryBuilder(coll.property.targetMeta!.class, options?.ctx, 'write').withSchema(
-          this.getSchemaName(meta, options),
-        );
+        const qb = this.createQueryBuilder(
+          coll.property.targetMeta!.class,
+          options?.ctx,
+          'write',
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          pickAbortOptions(options),
+        ).withSchema(this.getSchemaName(meta, options));
 
         if (coll.getSnapshot() === undefined) {
           if (coll.property.orphanRemoval) {
@@ -2222,8 +2277,9 @@ export abstract class AbstractSqlDriver<
     method: 'all' | 'get' | 'run' = 'all',
     ctx?: Transaction,
     loggerContext?: LoggingOptions,
+    abortOptions?: AbortQueryOptions,
   ): Promise<T> {
-    return this.rethrow(this.connection.execute(query, params, method, ctx, loggerContext));
+    return this.rethrow(this.connection.execute(query, params, method, ctx, loggerContext, abortOptions));
   }
 
   async *stream<T extends object>(
@@ -2846,6 +2902,7 @@ export abstract class AbstractSqlDriver<
     loggerContext?: LoggingOptions,
     alias?: string,
     em?: SqlEntityManager,
+    abortOptions?: AbortQueryOptions,
   ): AnyQueryBuilder<T> {
     // do not compute the connectionType if EM is provided as it will be computed from it in the QB later on
     const connectionType = em
@@ -2864,6 +2921,10 @@ export abstract class AbstractSqlDriver<
 
     if (!convertCustomTypes) {
       qb.unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
+    }
+
+    if (abortOptions) {
+      qb.setAbortOptions(abortOptions);
     }
 
     return qb;
@@ -2988,9 +3049,16 @@ export abstract class AbstractSqlDriver<
 
   override async lockPessimistic<T extends object>(entity: T, options: LockOptions): Promise<void> {
     const meta = helper(entity).__meta;
-    const qb = this.createQueryBuilder(meta.class, options.ctx, undefined, undefined, options.logging).withSchema(
-      options.schema ?? meta.schema,
-    );
+    const qb = this.createQueryBuilder(
+      meta.class,
+      options.ctx,
+      undefined,
+      undefined,
+      options.logging,
+      undefined,
+      undefined,
+      pickAbortOptions(options),
+    ).withSchema(options.schema ?? meta.schema);
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
     qb.select(raw('1'))
       .where(cond as any)

@@ -1,5 +1,6 @@
 import { CompiledQuery, type ControlledTransaction, type Dialect, Kysely } from 'kysely';
 import {
+  type AbortQueryOptions,
   type AnyEntity,
   Connection,
   type Dictionary,
@@ -268,6 +269,7 @@ export abstract class AbstractSqlConnection extends Connection {
     method: 'all' | 'get' | 'run' = 'all',
     ctx?: Transaction,
     loggerContext?: LoggingOptions,
+    abortOptions?: AbortQueryOptions,
   ): Promise<T> {
     await this.ensureConnection();
     const q = this.prepareQuery(query, params);
@@ -277,7 +279,7 @@ export abstract class AbstractSqlConnection extends Connection {
       sql,
       async () => {
         const compiled = CompiledQuery.raw(q.formatted);
-        const res = await (ctx ?? this.#client).executeQuery(compiled);
+        const res = await (ctx ?? this.#client).executeQuery(compiled, abortOptions);
         return this.transformRawResult<T>(res, method);
       },
       { ...q, ...loggerContext },
@@ -291,6 +293,7 @@ export abstract class AbstractSqlConnection extends Connection {
     ctx?: Transaction<Kysely<any>>,
     loggerContext?: LoggingOptions,
     chunkSize?: number,
+    abortOptions?: AbortQueryOptions,
   ): AsyncIterableIterator<T> {
     await this.ensureConnection();
     const q = this.prepareQuery(query, params);
@@ -306,7 +309,9 @@ export abstract class AbstractSqlConnection extends Connection {
     } as unknown as CompiledQuery;
 
     try {
-      const res = (ctx ?? this.getClient()).getExecutor().stream(compiled, chunkSize ?? 100);
+      const res = (ctx ?? this.getClient())
+        .getExecutor()
+        .stream(compiled, chunkSize ?? 100, abortOptions ? { signal: abortOptions.signal } : undefined);
 
       this.logQuery(sql, {
         sql,
