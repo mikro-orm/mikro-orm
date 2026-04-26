@@ -259,7 +259,11 @@ export class OracleSchemaHelper extends SchemaHelper {
         precision: col.numeric_precision,
         scale: col.numeric_scale,
         comment: col.column_comment,
-        collation: col.collation_name ?? undefined,
+        // `USING_NLS_COMP` is the Oracle sentinel for "inherit from the session NLS settings", so
+        // a column without an explicit `COLLATE` clause introspects as `USING_NLS_COMP` rather
+        // than NULL. Treat it as "no explicit collation" so the comparator doesn't flag every
+        // string column as changed when the database default is something else (e.g. `BINARY`).
+        collation: col.collation_name && col.collation_name !== 'USING_NLS_COMP' ? col.collation_name : undefined,
         generated,
       });
     }
