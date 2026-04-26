@@ -4,7 +4,11 @@ const path = require('node:path');
 const { marked } = require('marked');
 const { fetchReleases } = require('./fetch-releases');
 
-marked.setOptions({ gfm: true, breaks: false });
+marked.setOptions({ gfm: true, breaks: true });
+
+function externalizeLinks(html) {
+  return html.replace(/<a (?![^>]*\btarget=)/g, '<a target="_blank" rel="noopener noreferrer" ');
+}
 
 module.exports = function changelogPlugin(context, options = {}) {
   const cachePath = path.resolve(__dirname, 'releases.json');
@@ -25,7 +29,7 @@ module.exports = function changelogPlugin(context, options = {}) {
           publishedAt: r.publishedAt,
           htmlUrl: r.htmlUrl,
           prerelease: !!r.prerelease,
-          bodyHtml: marked.parse(r.body || ''),
+          bodyHtml: externalizeLinks(marked.parse(r.body || '')),
         }));
     },
 
