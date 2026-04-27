@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.13](https://github.com/mikro-orm/mikro-orm/compare/v7.0.12...v7.0.13) (2026-04-27)
+
+
+### Bug Fixes
+
+* **core:** allow `targetKey` to point at a primary key ([#7626](https://github.com/mikro-orm/mikro-orm/issues/7626)) ([be4c04f](https://github.com/mikro-orm/mikro-orm/commit/be4c04f8d34f078321d377fe2b53d05244ce693c)), closes [#7625](https://github.com/mikro-orm/mikro-orm/issues/7625)
+* **core:** infer FK column from accessor name for backing-field relations ([#7627](https://github.com/mikro-orm/mikro-orm/issues/7627)) ([c136f42](https://github.com/mikro-orm/mikro-orm/commit/c136f422725e251d986c9348faef3542a4ddfad3))
+* **core:** link TPT subclass iterated before its abstract parent ([#7611](https://github.com/mikro-orm/mikro-orm/issues/7611)) ([0468716](https://github.com/mikro-orm/mikro-orm/commit/0468716625f28b058675667542beb74d091fb3f7)), closes [#7609](https://github.com/mikro-orm/mikro-orm/issues/7609)
+* **core:** merge nested `fields` paths into explicit `populate` ([#7605](https://github.com/mikro-orm/mikro-orm/issues/7605)) ([5489104](https://github.com/mikro-orm/mikro-orm/commit/548910426dcebac07ac0da35c66391c7682a5eb0))
+* **sql:** stabilize migration snapshot serialization ([#7608](https://github.com/mikro-orm/mikro-orm/issues/7608)) ([caec061](https://github.com/mikro-orm/mikro-orm/commit/caec0616cebf111dd32e89d5a0c798ec840d3c36)), closes [#7607](https://github.com/mikro-orm/mikro-orm/issues/7607) [pre-#7607](https://github.com/pre-/issues/7607) [#7610](https://github.com/mikro-orm/mikro-orm/issues/7610) [#7607](https://github.com/mikro-orm/mikro-orm/issues/7607) [#7610](https://github.com/mikro-orm/mikro-orm/issues/7610)
+
+
+
+
+
 ## [7.0.12](https://github.com/mikro-orm/mikro-orm/compare/v7.0.11...v7.0.12) (2026-04-23)
 
 ### Bug Fixes

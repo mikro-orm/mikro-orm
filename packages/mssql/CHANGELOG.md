@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.13](https://github.com/mikro-orm/mikro-orm/compare/v7.0.12...v7.0.13) (2026-04-27)
+
+
+### Bug Fixes
+
+* **mssql:** clean up `.mdf/.ldf` files on drop ([#7621](https://github.com/mikro-orm/mikro-orm/issues/7621)) ([5d6ed58](https://github.com/mikro-orm/mikro-orm/commit/5d6ed583b5ec3e8b34e6e5133e071c17473b8085))
+* **mssql:** use `set offline` instead of `set single_user` to drop databases ([#7620](https://github.com/mikro-orm/mikro-orm/issues/7620)) ([921cd81](https://github.com/mikro-orm/mikro-orm/commit/921cd81e2abaeb3dfe34ef02d2f012641e0f0601))
+
+
+
+
+
 ## [7.0.12](https://github.com/mikro-orm/mikro-orm/compare/v7.0.11...v7.0.12) (2026-04-23)
 
 **Note:** Version bump only for package @mikro-orm/mssql

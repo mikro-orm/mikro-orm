@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.13](https://github.com/mikro-orm/mikro-orm/compare/v7.0.12...v7.0.13) (2026-04-27)
+
+
+### Bug Fixes
+
+* **cli:** don't auto-register extensions on CLI-passed options ([#7614](https://github.com/mikro-orm/mikro-orm/issues/7614)) ([2a4cd8a](https://github.com/mikro-orm/mikro-orm/commit/2a4cd8a66577939836d8a24ccacaee446bb4cd3d)), closes [#7613](https://github.com/mikro-orm/mikro-orm/issues/7613)
+* **core:** allow `targetKey` to point at a primary key ([#7626](https://github.com/mikro-orm/mikro-orm/issues/7626)) ([be4c04f](https://github.com/mikro-orm/mikro-orm/commit/be4c04f8d34f078321d377fe2b53d05244ce693c)), closes [#7625](https://github.com/mikro-orm/mikro-orm/issues/7625)
+* **core:** infer FK column from accessor name for backing-field relations ([#7627](https://github.com/mikro-orm/mikro-orm/issues/7627)) ([c136f42](https://github.com/mikro-orm/mikro-orm/commit/c136f422725e251d986c9348faef3542a4ddfad3))
+* **core:** link TPT subclass iterated before its abstract parent ([#7611](https://github.com/mikro-orm/mikro-orm/issues/7611)) ([0468716](https://github.com/mikro-orm/mikro-orm/commit/0468716625f28b058675667542beb74d091fb3f7)), closes [#7609](https://github.com/mikro-orm/mikro-orm/issues/7609)
+* **core:** merge nested `fields` paths into explicit `populate` ([#7605](https://github.com/mikro-orm/mikro-orm/issues/7605)) ([5489104](https://github.com/mikro-orm/mikro-orm/commit/548910426dcebac07ac0da35c66391c7682a5eb0))
+* **mssql:** clean up `.mdf/.ldf` files on drop ([#7621](https://github.com/mikro-orm/mikro-orm/issues/7621)) ([5d6ed58](https://github.com/mikro-orm/mikro-orm/commit/5d6ed583b5ec3e8b34e6e5133e071c17473b8085))
+* **mssql:** use `set offline` instead of `set single_user` to drop databases ([#7620](https://github.com/mikro-orm/mikro-orm/issues/7620)) ([921cd81](https://github.com/mikro-orm/mikro-orm/commit/921cd81e2abaeb3dfe34ef02d2f012641e0f0601))
+* **mysql:** skip password callback when reusing a pooled connection ([#7604](https://github.com/mikro-orm/mikro-orm/issues/7604)) ([1965155](https://github.com/mikro-orm/mikro-orm/commit/1965155f2647601319579c9aa5560794409ab9a7)), closes [#7576](https://github.com/mikro-orm/mikro-orm/issues/7576)
+* **postgres:** treat `timetz` / `time with time zone` as aliases in schema diff ([#7618](https://github.com/mikro-orm/mikro-orm/issues/7618)) ([57080c5](https://github.com/mikro-orm/mikro-orm/commit/57080c514fc62eea84ee50ad7f7850ea32becca9)), closes [#7616](https://github.com/mikro-orm/mikro-orm/issues/7616)
+* **sql:** stabilize migration snapshot serialization ([#7608](https://github.com/mikro-orm/mikro-orm/issues/7608)) ([caec061](https://github.com/mikro-orm/mikro-orm/commit/caec0616cebf111dd32e89d5a0c798ec840d3c36)), closes [#7607](https://github.com/mikro-orm/mikro-orm/issues/7607) [pre-#7607](https://github.com/pre-/issues/7607) [#7610](https://github.com/mikro-orm/mikro-orm/issues/7610) [#7607](https://github.com/mikro-orm/mikro-orm/issues/7607) [#7610](https://github.com/mikro-orm/mikro-orm/issues/7610)
+
+
+
+
+
 ## [7.0.12](https://github.com/mikro-orm/mikro-orm/compare/v7.0.11...v7.0.12) (2026-04-23)
 
 
