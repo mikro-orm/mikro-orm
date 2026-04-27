@@ -5,15 +5,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.13](https://github.com/mikro-orm/mikro-orm/compare/v7.0.12...v7.0.13) (2026-04-27)
 
-
 ### Bug Fixes
 
-* **postgres:** treat `timetz` / `time with time zone` as aliases in schema diff ([#7618](https://github.com/mikro-orm/mikro-orm/issues/7618)) ([57080c5](https://github.com/mikro-orm/mikro-orm/commit/57080c514fc62eea84ee50ad7f7850ea32becca9)), closes [#7616](https://github.com/mikro-orm/mikro-orm/issues/7616)
-* **sql:** stabilize migration snapshot serialization ([#7608](https://github.com/mikro-orm/mikro-orm/issues/7608)) ([caec061](https://github.com/mikro-orm/mikro-orm/commit/caec0616cebf111dd32e89d5a0c798ec840d3c36)), closes [#7607](https://github.com/mikro-orm/mikro-orm/issues/7607) [pre-#7607](https://github.com/pre-/issues/7607) [#7610](https://github.com/mikro-orm/mikro-orm/issues/7610) [#7607](https://github.com/mikro-orm/mikro-orm/issues/7607) [#7610](https://github.com/mikro-orm/mikro-orm/issues/7610)
-
-
-
-
+- **postgres:** treat `timetz` / `time with time zone` as aliases in schema diff ([#7618](https://github.com/mikro-orm/mikro-orm/issues/7618)) ([57080c5](https://github.com/mikro-orm/mikro-orm/commit/57080c514fc62eea84ee50ad7f7850ea32becca9)), closes [#7616](https://github.com/mikro-orm/mikro-orm/issues/7616)
+- **sql:** stabilize migration snapshot serialization ([#7608](https://github.com/mikro-orm/mikro-orm/issues/7608)) ([caec061](https://github.com/mikro-orm/mikro-orm/commit/caec0616cebf111dd32e89d5a0c798ec840d3c36)), closes [#7607](https://github.com/mikro-orm/mikro-orm/issues/7607) [pre-#7607](https://github.com/pre-/issues/7607) [#7610](https://github.com/mikro-orm/mikro-orm/issues/7610) [#7607](https://github.com/mikro-orm/mikro-orm/issues/7607) [#7610](https://github.com/mikro-orm/mikro-orm/issues/7610)
 
 ## [7.0.12](https://github.com/mikro-orm/mikro-orm/compare/v7.0.11...v7.0.12) (2026-04-23)
 

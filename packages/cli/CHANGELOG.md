@@ -5,14 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.13](https://github.com/mikro-orm/mikro-orm/compare/v7.0.12...v7.0.13) (2026-04-27)
 
-
 ### Bug Fixes
 
-* **cli:** don't auto-register extensions on CLI-passed options ([#7614](https://github.com/mikro-orm/mikro-orm/issues/7614)) ([2a4cd8a](https://github.com/mikro-orm/mikro-orm/commit/2a4cd8a66577939836d8a24ccacaee446bb4cd3d)), closes [#7613](https://github.com/mikro-orm/mikro-orm/issues/7613)
-
-
-
-
+- **cli:** don't auto-register extensions on CLI-passed options ([#7614](https://github.com/mikro-orm/mikro-orm/issues/7614)) ([2a4cd8a](https://github.com/mikro-orm/mikro-orm/commit/2a4cd8a66577939836d8a24ccacaee446bb4cd3d)), closes [#7613](https://github.com/mikro-orm/mikro-orm/issues/7613)
 
 ## [7.0.12](https://github.com/mikro-orm/mikro-orm/compare/v7.0.11...v7.0.12) (2026-04-23)
 

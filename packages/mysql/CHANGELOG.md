@@ -5,14 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.13](https://github.com/mikro-orm/mikro-orm/compare/v7.0.12...v7.0.13) (2026-04-27)
 
-
 ### Bug Fixes
 
-* **mysql:** skip password callback when reusing a pooled connection ([#7604](https://github.com/mikro-orm/mikro-orm/issues/7604)) ([1965155](https://github.com/mikro-orm/mikro-orm/commit/1965155f2647601319579c9aa5560794409ab9a7)), closes [#7576](https://github.com/mikro-orm/mikro-orm/issues/7576)
-
-
-
-
+- **mysql:** skip password callback when reusing a pooled connection ([#7604](https://github.com/mikro-orm/mikro-orm/issues/7604)) ([1965155](https://github.com/mikro-orm/mikro-orm/commit/1965155f2647601319579c9aa5560794409ab9a7)), closes [#7576](https://github.com/mikro-orm/mikro-orm/issues/7576)
 
 ## [7.0.12](https://github.com/mikro-orm/mikro-orm/compare/v7.0.11...v7.0.12) (2026-04-23)
 
