@@ -15,15 +15,14 @@ MongoDB, MySQL, MariaDB, PostgreSQL, SQLite, libSQL, MSSQL, and Oracle databases
 
 **IMPORTANT: These commands take significant time. Set appropriate timeouts and never cancel them.**
 
-| Command                | Purpose                         | Timeout |
-|------------------------|---------------------------------|---------|
-| `yarn build`           | Build all packages              | 180s    |
-| `yarn tsc-check-tests` | TypeScript validation for tests | 90s     |
-| `yarn format`          | Code formatting (oxfmt)         | 30s     |
-| `yarn lint`            | ESLint validation               | 120s    |
-| `yarn test`            | Full test suite (all databases) | 1800s   |
-| `yarn bench`           | Simple CRUD benchmark           | 180s    |
-| `yarn bench:types`     | Type system benchmark           | 120s    |
+| Command            | Purpose                                          | Timeout |
+|--------------------|--------------------------------------------------|---------|
+| `yarn build`       | Build all packages                               | 180s    |
+| `yarn format`      | Code formatting (oxfmt)                          | 30s     |
+| `yarn lint`        | Lint + type-aware rules + tsgo type diagnostics  | 120s    |
+| `yarn test`        | Full test suite (all databases)                  | 1800s   |
+| `yarn bench`       | Simple CRUD benchmark                            | 180s    |
+| `yarn bench:types` | Type system benchmark                            | 120s    |
 
 ### Setup
 
@@ -56,9 +55,8 @@ Always run these before committing (run this from project root):
 
 1. `yarn build` - if package source changed
 2. `yarn format` - always (also runs automatically via lint-staged pre-commit hook)
-3. `yarn lint` - always
-4. `yarn tsc-check-tests` - if test files changed
-5. `yarn test` - always run the **full** test suite before declaring work done; do not rely solely on targeted test runs
+3. `yarn lint` - always (covers oxlint rules, type-aware rules, and tsgo type diagnostics via `--type-check`)
+4. `yarn test` - always run the **full** test suite before declaring work done; do not rely solely on targeted test runs
 
 ## Project Structure
 
@@ -116,7 +114,7 @@ Heavy use of TypeScript generics. Key types in `packages/core/src/typings.ts`:
 
 ## Pre-Commit Checks
 
-Always run `yarn tsc-check-tests` before committing any TypeScript changes. Never assume type safety — verify it.
+Always run `yarn lint` before committing any TypeScript changes — it includes tsgo type diagnostics via `oxlint --type-check`. Never assume type safety — verify it.
 
 ## Code Editing Rules
 

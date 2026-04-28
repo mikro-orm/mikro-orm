@@ -11,8 +11,7 @@ Always reference these instructions first and fallback to search or bash command
 
 ### Building and Testing
 - Build all packages: `yarn build` -- takes 2 minutes. NEVER CANCEL. Set timeout to 180+ seconds.
-- TypeScript check: `yarn tsc-check-tests` -- takes 42 seconds. NEVER CANCEL. Set timeout to 90+ seconds.
-- Lint code: `yarn lint` -- takes 56 seconds. NEVER CANCEL. Set timeout to 120+ seconds.
+- Lint and type-check: `yarn lint` -- takes ~30 seconds. NEVER CANCEL. Set timeout to 120+ seconds. Runs oxlint, type-aware rules, and tsgo type diagnostics via `--type-check`.
 - Run all tests: `yarn test` -- takes 15+ minutes. NEVER CANCEL. Set timeout to 1800+ seconds.
 - Run fast tests (excludes schema generator): `yarn test:fast` -- takes 10+ minutes. NEVER CANCEL. Set timeout to 1200+ seconds.
 - Clean test artifacts: `yarn clean-tests`
@@ -33,8 +32,7 @@ docker compose up -d
 
 ### Mandatory Validation Steps
 - ALWAYS run `yarn build` before committing any package changes.
-- ALWAYS run `yarn lint` before committing or the CI (.github/workflows/tests.yml) will fail.
-- ALWAYS run `yarn tsc-check-tests` to validate TypeScript in test files.
+- ALWAYS run `yarn lint` before committing or the CI (.github/workflows/tests.yml) will fail. `yarn lint` already covers TypeScript type-checking via `oxlint --type-check`.
 - Test CLI functionality: `node ./packages/cli/dist/cli --help`
 
 ### Testing Limitations and Workarounds
@@ -140,7 +138,7 @@ node ./packages/cli/dist/cli schema:update --run
 - **MongoDB memory server fails**: Network restrictions prevent binary download
 - **Docker services not starting**: Check Docker daemon and port conflicts
 - **Build failures after git pull**: Run environment reset commands
-- **TypeScript errors in tests**: Run `yarn tsc-check-tests` to validate
+- **TypeScript errors in tests**: Run `yarn lint` to validate (includes tsgo type diagnostics)
 - **Linting failures**: Run `yarn lint` before committing
 
 ### Performance Notes
