@@ -1412,9 +1412,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       if (!helper(data).__managed) {
-        // the entity might have been created via `em.create()`, which adds it to the persist stack automatically
-        em.unitOfWork.getPersistStack().delete(data);
-        // it can be also in the identity map if it had a PK value already
         em.unitOfWork.unsetIdentity(data);
       }
 
@@ -1461,10 +1458,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         }
 
         if (!helper(row).__managed) {
-          // the entity might have been created via `em.create()`, which adds it to the persist stack automatically
-          em.unitOfWork.getPersistStack().delete(row);
-
-          // it can be also in the identity map if it had a PK value already
           em.unitOfWork.unsetIdentity(row);
         }
 
