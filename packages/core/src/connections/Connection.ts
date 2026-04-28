@@ -285,6 +285,11 @@ export type Transaction<T = any> = T & {};
  *   (`pg_terminate_backend` etc.). Falls back to `'cancel query'` if not supported.
  *
  * Default: `'ignore query'`.
+ *
+ * **Streaming queries (`em.stream()` / `qb.stream()`):** the strategy is silently treated as
+ * `'ignore query'` because the underlying driver only accepts a plain `AbortSignal` for
+ * streamed reads — there is no server-side cancel for an open cursor. The MongoDB driver also
+ * has no notion of strategies; only the signal is honored there.
  */
 export type InflightQueryAbortStrategy = 'ignore query' | 'cancel query' | 'kill session';
 
@@ -292,6 +297,9 @@ export type InflightQueryAbortStrategy = 'ignore query' | 'cancel query' | 'kill
 export interface AbortQueryOptions {
   /** AbortSignal that cancels the query when fired. */
   signal?: AbortSignal;
-  /** Strategy used when the signal fires while the query is in flight. */
+  /**
+   * Strategy used when the signal fires while the query is in flight. See
+   * {@apilink InflightQueryAbortStrategy} for caveats around streams and MongoDB.
+   */
   inflightQueryAbortStrategy?: InflightQueryAbortStrategy;
 }

@@ -159,6 +159,27 @@ test('signal aborts qb.stream()', async () => {
   await expect(consume()).rejects.toThrow('stream-aborted');
 });
 
+test('fork-level signal aborts UoW flush', async () => {
+  const ac = new AbortController();
+  ac.abort(new Error('flush-aborted'));
+  const fork = orm.em.fork({ signal: ac.signal });
+  fork.create(CancellationUser, { name: 'flushed' });
+
+  await expect(fork.flush()).rejects.toThrow('flush-aborted');
+  // entity was never persisted
+  await expect(orm.em.fork().count(CancellationUser, { name: 'flushed' })).resolves.toBe(0);
+});
+
+test('per-call signal on em.execute overrides fork-level', async () => {
+  const forkAc = new AbortController();
+  forkAc.abort(new Error('fork-ignored'));
+  const fork = orm.em.fork({ signal: forkAc.signal });
+
+  // pass a non-aborted per-call signal; should win over fork-level
+  const callAc = new AbortController();
+  await expect(fork.execute('select * from cancellation_user', [], { signal: callAc.signal })).resolves.toHaveLength(3);
+});
+
 test('signal aborts em.execute (raw SQL) via fork-level signal', async () => {
   const ac = new AbortController();
   ac.abort(new Error('raw-aborted'));

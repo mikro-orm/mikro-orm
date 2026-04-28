@@ -2952,8 +2952,6 @@ export class QueryBuilder<
   /**
    * Configures cancellation behavior for this query builder. The signal is forwarded to the
    * underlying database client; see {@apilink AbortQueryOptions} for the available strategies.
-   *
-   * @internal
    */
   setAbortOptions(options: AbortQueryOptions | undefined): void {
     this.#abortOptions = options;

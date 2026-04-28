@@ -1701,6 +1701,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options: LockOptions | number | Date = {},
   ): Promise<void> {
     options = Utils.isPlainObject(options) ? (options as LockOptions) : { lockVersion: options };
+    this.getContext(false).prepareOptions(options as FindOptions<any, any, any, any>);
     await this.getUnitOfWork().lock(entity, { lockMode, ...options });
   }
 
@@ -3018,7 +3019,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const { ...opts } = options;
 
     // ignore some irrelevant options, e.g. logger context can contain dynamic data for the same query
-    for (const k of ['ctx', 'strategy', 'flushMode', 'logging', 'loggerContext']) {
+    for (const k of [
+      'ctx',
+      'strategy',
+      'flushMode',
+      'logging',
+      'loggerContext',
+      'signal',
+      'inflightQueryAbortStrategy',
+    ]) {
       delete opts[k as keyof typeof opts];
     }
 

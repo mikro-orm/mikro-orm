@@ -83,8 +83,8 @@ function pickAbortOptions(options?: AbortQueryOptions): AbortQueryOptions | unde
 
 /**
  * Returns a `loggerContext` payload that carries the abort fields alongside any existing
- * context. The connection layer reads them via the matching `extractAbortOptions` helper
- * — this avoids widening the public `Connection.execute()` signature.
+ * context. The connection layer strips them before logging — this avoids widening the public
+ * `Connection.execute()` signature.
  */
 function withAbortContext(
   loggerContext: LoggingOptions | undefined,
@@ -443,7 +443,13 @@ export abstract class AbstractSqlDriver<
     const asKeyword = this.platform.usesAsKeyword() ? ' as ' : ' ';
     native.from(raw(`(${expression})${asKeyword}${this.platform.quoteIdentifier(qb.alias)}`));
     const query = native.compile();
-    const res = await this.execute<T[]>(query.sql, query.params, 'all', options.ctx);
+    const res = await this.execute<T[]>(
+      query.sql,
+      query.params,
+      'all',
+      options.ctx,
+      withAbortContext(options.loggerContext, options),
+    );
 
     if (type === QueryType.COUNT) {
       return (res[0] as Dictionary).count;
@@ -980,6 +986,7 @@ export abstract class AbstractSqlDriver<
     const mappedOverrides = this.mapCloneOverrides(overrides, meta, options);
     const { selectFields, insertColumns } = this.buildCloneFields(props, mappedOverrides, meta);
 
+    const abort = pickAbortOptions(options);
     const selectQb = this.createQueryBuilder<T>(
       meta.class,
       options.ctx,
@@ -988,6 +995,7 @@ export abstract class AbstractSqlDriver<
       options.loggerContext,
     ).withSchema(this.getSchemaName(meta, options));
     selectQb.select(selectFields as any).where(where as any);
+    selectQb.setAbortOptions(abort);
 
     const insertQb = this.createQueryBuilder<T>(
       meta.class,
@@ -996,6 +1004,7 @@ export abstract class AbstractSqlDriver<
       options.convertCustomTypes,
       options.loggerContext,
     ).withSchema(this.getSchemaName(meta, options));
+    insertQb.setAbortOptions(abort);
 
     return this.rethrow(
       (insertQb as AnyQueryBuilder<T>)
@@ -1046,6 +1055,7 @@ export abstract class AbstractSqlDriver<
       const sourceWhere =
         tableMeta === rootMeta ? where : ((Utils.extractPK(where as any, tableMeta) as FilterQuery<T>) ?? where);
 
+      const abort = pickAbortOptions(options);
       const selectQb = this.createQueryBuilder<T>(
         tableMeta.class as any,
         options.ctx,
@@ -1054,6 +1064,7 @@ export abstract class AbstractSqlDriver<
         options.loggerContext,
       ).withSchema(this.getSchemaName(tableMeta as EntityMetadata<T>, options));
       selectQb.select(selectFields as any).where(sourceWhere as any);
+      selectQb.setAbortOptions(abort);
 
       const insertQb = this.createQueryBuilder<T>(
         tableMeta.class as any,
@@ -1062,6 +1073,7 @@ export abstract class AbstractSqlDriver<
         options.convertCustomTypes,
         options.loggerContext,
       ).withSchema(this.getSchemaName(tableMeta as EntityMetadata<T>, options));
+      insertQb.setAbortOptions(abort);
 
       const res = await this.rethrow(
         (insertQb as AnyQueryBuilder<T>)
@@ -1791,6 +1803,7 @@ export abstract class AbstractSqlDriver<
         options?.ctx,
         schema,
         options?.loggerContext,
+        pickAbortOptions(options),
       ));
       persister.enqueueUpdate(coll.property, insertDiff, deleteDiff, pks, coll.isInitialized());
     }
@@ -3020,6 +3033,7 @@ export abstract class AbstractSqlDriver<
           options?.ctx,
           options?.schema,
           options?.loggerContext,
+          pickAbortOptions(options),
         );
         persister.enqueueUpdate(prop, collections[prop.name] as Primary<T>[][], clear, pks);
         await this.rethrow(persister.execute());

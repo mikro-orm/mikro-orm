@@ -220,7 +220,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     const res = await this.rethrow(
-      this.getConnection('read').aggregate<T>(entityName, pipeline, options.ctx, options.logging),
+      this.getConnection('read').aggregate<T>(entityName, pipeline, options.ctx, options.logging, options.signal),
     );
 
     return res.map(r => this.mapResult<T>(r, meta)!);
@@ -512,16 +512,22 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     ) as unknown as Promise<QueryResult<T>>;
   }
 
-  override async aggregate(entityName: EntityName, pipeline: any[], ctx?: Transaction<ClientSession>): Promise<any[]> {
-    return this.rethrow(this.getConnection('read').aggregate(entityName, pipeline, ctx));
+  override async aggregate(
+    entityName: EntityName,
+    pipeline: any[],
+    ctx?: Transaction<ClientSession>,
+    signal?: AbortSignal,
+  ): Promise<any[]> {
+    return this.rethrow(this.getConnection('read').aggregate(entityName, pipeline, ctx, undefined, signal));
   }
 
   async *streamAggregate<T extends object>(
     entityName: EntityName<T>,
     pipeline: any[],
     ctx?: Transaction<ClientSession>,
+    signal?: AbortSignal,
   ): AsyncIterableIterator<T> {
-    yield* this.getConnection('read').streamAggregate<T>(entityName, pipeline, ctx);
+    yield* this.getConnection('read').streamAggregate<T>(entityName, pipeline, ctx, undefined, false, signal);
   }
 
   override getPlatform(): MongoPlatform {
