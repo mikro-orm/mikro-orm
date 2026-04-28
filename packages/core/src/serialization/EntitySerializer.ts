@@ -37,7 +37,7 @@ function isVisible<T extends object>(
 
   if (
     Array.isArray(options.populate) &&
-    options.populate?.find(item => item === propName || item.startsWith(propName + '.') || item === '*')
+    options.populate?.find(item => item === propName || item.startsWith(propName + '.'))
   ) {
     return true;
   }
