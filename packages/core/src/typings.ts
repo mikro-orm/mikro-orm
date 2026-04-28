@@ -1225,11 +1225,12 @@ export interface EntityProperty<Owner = any, Target = any> {
   serializer?: (value: any, options?: SerializeOptions<any>) => any;
   serializedName?: string;
   comment?: string;
+  collation?: string;
   /** mysql only */
   extra?: string;
   userDefined?: boolean;
   optional?: boolean; // for ts-morph
-  ignoreSchemaChanges?: ('type' | 'extra' | 'default')[];
+  ignoreSchemaChanges?: ('type' | 'extra' | 'default' | 'collation')[];
   deferMode?: DeferMode;
   createForeignKeyConstraint: boolean; // To enable/disable foreign-key constraint creation, per relation
   foreignKeyName?: string;

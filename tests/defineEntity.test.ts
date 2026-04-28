@@ -1541,6 +1541,7 @@ describe('PropertyOptionsBuilder', () => {
         tags: p.array().customOrder('tag1', 'tag2', 'tag3'),
         extra: p.string().extra('VIRTUAL'),
         ignoreChanges: p.string().ignoreSchemaChanges('type', 'extra', 'default'),
+        collated: p.string().collation('utf8mb4_unicode_ci'),
       }),
     });
 
@@ -1559,6 +1560,7 @@ describe('PropertyOptionsBuilder', () => {
         tags: { type: new types.array(), customOrder: ['tag1', 'tag2', 'tag3'] },
         extra: { type: types.string, extra: 'VIRTUAL' },
         ignoreChanges: { type: types.string, ignoreSchemaChanges: ['type', 'extra', 'default'] },
+        collated: { type: types.string, collation: 'utf8mb4_unicode_ci' },
       },
     });
 
