@@ -2333,6 +2333,7 @@ export class MetadataDiscovery {
       prop.customType &&
       !(prop.customType instanceof t.array) &&
       !(prop.customType instanceof t.enumArray) &&
+      !(prop.customType instanceof t.json) &&
       prop.kind === ReferenceKind.SCALAR
     ) {
       const innerType = prop.customType;
