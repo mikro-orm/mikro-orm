@@ -727,6 +727,14 @@ export class SchemaComparator {
       changedProperties.add('comment');
     }
 
+    if (
+      !(fromColumn.ignoreSchemaChanges?.includes('collation') || toColumn.ignoreSchemaChanges?.includes('collation')) &&
+      this.diffCollation(fromColumn.collation, toColumn.collation, fromTable.collation)
+    ) {
+      log(`'collation' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumn, toColumn });
+      changedProperties.add('collation');
+    }
+
     const isNonNativeEnumArray =
       !(fromColumn.nativeEnumName || toColumn.nativeEnumName) &&
       (fromColumn.mappedType instanceof ArrayType || toColumn.mappedType instanceof ArrayType);
@@ -755,6 +763,21 @@ export class SchemaComparator {
     // A null value and an empty string are actually equal for a comment so they should not trigger a change.
     // eslint-disable-next-line eqeqeq
     return comment1 != comment2 && !(comment1 == null && comment2 === '') && !(comment2 == null && comment1 === '');
+  }
+
+  /**
+   * `from` is the introspected DB state, `to` is the target metadata. A column-level `COLLATE`
+   * clause naming the table/database default is just verbose syntax for inheriting that default,
+   * so both sides are normalized — anything matching `tableDefault` collapses to `undefined` and
+   * compares equal to "no explicit collation". Comparison is case-insensitive on dialects that
+   * treat collation identifiers as case-insensitive (MySQL/MSSQL/SQLite); PostgreSQL's
+   * `pg_collation.collname` is case-sensitive and is compared verbatim.
+   */
+  diffCollation(fromCollation?: string, toCollation?: string, tableDefault?: string): boolean {
+    const fold = this.#platform.caseInsensitiveCollationNames() ? (s: string) => s.toLowerCase() : (s: string) => s;
+    const norm = (c?: string) =>
+      c && tableDefault && fold(c) === fold(tableDefault) ? undefined : c == null ? undefined : fold(c);
+    return norm(fromCollation) !== norm(toCollation);
   }
 
   /**

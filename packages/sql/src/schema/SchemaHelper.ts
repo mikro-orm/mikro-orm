@@ -494,7 +494,9 @@ export abstract class SchemaHelper {
       diff.changedProperties.has('comment'),
     )) {
       if (
-        ['type', 'nullable', 'autoincrement', 'unsigned', 'default', 'enumItems'].some(t => changedProperties.has(t))
+        ['type', 'nullable', 'autoincrement', 'unsigned', 'default', 'enumItems', 'collation'].some(t =>
+          changedProperties.has(t),
+        )
       ) {
         continue; // will be handled via column update
       }
@@ -596,7 +598,7 @@ export abstract class SchemaHelper {
       sql.push(`alter table ${table.getQuotedName()} alter column ${this.quote(column.name)} drop default`);
     }
 
-    if (changedProperties.has('type')) {
+    if (changedProperties.has('type') || changedProperties.has('collation')) {
       let type = column.type + (column.generated ? ` generated always as ${column.generated}` : '');
 
       if (column.nativeEnumName) {
@@ -611,8 +613,10 @@ export abstract class SchemaHelper {
         type = this.quote(type);
       }
 
+      const collateClause = column.collation ? ` ${this.getCollateSQL(column.collation)}` : '';
+
       sql.push(
-        `alter table ${table.getQuotedName()} alter column ${this.quote(column.name)} type ${type + this.castColumn(column.name, type)}`,
+        `alter table ${table.getQuotedName()} alter column ${this.quote(column.name)} type ${type + collateClause + this.castColumn(column.name, type)}`,
       );
     }
 
@@ -630,6 +634,12 @@ export abstract class SchemaHelper {
     return sql;
   }
 
+  /** Returns the bare `collate <name>` clause for column DDL. Overridden by PostgreSQL to quote the identifier. */
+  protected getCollateSQL(collation: string): string {
+    this.platform.validateCollationName(collation);
+    return `collate ${collation}`;
+  }
+
   createTableColumn(column: Column, table: DatabaseTable, changedProperties?: Set<string>): string | undefined {
     const compositePK = table.getPrimaryKey()?.composite;
     const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(table);
@@ -638,6 +648,7 @@ export abstract class SchemaHelper {
 
     const col = [this.quote(column.name), columnType];
     Utils.runIfNotEmpty(() => col.push('unsigned'), column.unsigned && this.platform.supportsUnsigned());
+    Utils.runIfNotEmpty(() => col.push(this.getCollateSQL(column.collation!)), column.collation);
     Utils.runIfNotEmpty(() => col.push('null'), column.nullable);
     Utils.runIfNotEmpty(() => col.push('not null'), !column.nullable && !column.generated);
     Utils.runIfNotEmpty(() => col.push('auto_increment'), column.autoincrement);
