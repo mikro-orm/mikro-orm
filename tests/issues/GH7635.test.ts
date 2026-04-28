@@ -1,12 +1,5 @@
 import 'reflect-metadata';
-import {
-  Entity,
-  Enum,
-  ManyToOne,
-  OneToMany,
-  PrimaryKey,
-  ReflectMetadataProvider,
-} from '@mikro-orm/decorators/legacy';
+import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { Collection, MikroORM } from '@mikro-orm/sqlite';
 
 enum Species {
