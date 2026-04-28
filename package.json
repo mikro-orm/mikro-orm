@@ -57,8 +57,8 @@
     "clean-tests": "rimraf temp tests/generated-entities",
     "tsc-check-tests": "NODE_OPTIONS='--max-old-space-size=6144' tsc --noEmit --project tests/tsconfig.json",
     "coverage": "yarn clean-tests && yarn test --coverage",
-    "lint": "oxlint packages tests --tsconfig=tsconfig.json --type-aware",
-    "lint:fix": "oxlint packages tests --tsconfig=tsconfig.json --fix --type-aware",
+    "lint": "oxlint packages tests --tsconfig=tsconfig.json --type-aware --type-check",
+    "lint:fix": "oxlint packages tests --tsconfig=tsconfig.json --fix --type-aware --type-check",
     "format": "oxfmt packages tests --write",
     "format:check": "oxfmt packages tests"
   },

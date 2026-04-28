@@ -1398,7 +1398,6 @@ export type EntityCtor<T = any> = abstract new (...args: any[]) => T;
 export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = EntityCtor<Entity>> {
   name?: string; // abstract classes do not have a name, but once discovery ends, we have only non-abstract classes stored
   className: string;
-  tableName: string;
   schema?: string;
   pivotTable?: boolean;
   virtual?: boolean;

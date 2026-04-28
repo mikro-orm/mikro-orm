@@ -412,7 +412,7 @@ export class QueryHelper {
         if (!Raw.isKnownFragmentSymbol(k) && (Utils.isOperator(k, true) || prop.referencedPKs?.includes(k))) {
           o[k] = QueryHelper.processCustomType<T>(prop, cond[k] as any, platform, k, fromQuery) as any;
         } else {
-          o[k as unknown as keyof FilterQuery<T>] = cond[k as unknown as keyof FilterQuery<T>];
+          (o as any)[k] = (cond as any)[k];
         }
 
         return o;

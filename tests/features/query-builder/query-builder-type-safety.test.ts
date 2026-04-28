@@ -245,14 +245,10 @@ describe('QueryBuilder type safety', () => {
       // Type-only check for invalid operators in nested conditions
       if (false as boolean) {
         // @ts-expect-error - '$invalidOp' is not a valid filter operator in $and
-        qb.where({
-          $and: [{ 'b.title': { $invalidOp: 'test' } }],
-        });
+        qb.where({ $and: [{ 'b.title': { $invalidOp: 'test' } }] });
 
         // @ts-expect-error - '$badOp' is not a valid filter operator in $or
-        qb.where({
-          $or: [{ 'a.name': { $badOp: 'test' } }],
-        });
+        qb.where({ $or: [{ 'a.name': { $badOp: 'test' } }] });
       }
     });
   });
