@@ -36,6 +36,13 @@ export class DatabaseTable {
   public nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {}; // for postgres
   public comment?: string;
   public partitioning?: TablePartitioning;
+  /**
+   * Effective collation the column defaults to when no explicit `COLLATE` is set on a column.
+   * For MySQL/MariaDB this is the table collation; for PostgreSQL and MSSQL this is the database default;
+   * SQLite has no configurable default. Used by `SchemaComparator.diffCollation` to avoid flapping
+   * when a property explicitly names the default collation.
+   */
+  public collation?: string;
 
   constructor(
     platform: AbstractSqlPlatform,
@@ -187,6 +194,7 @@ export class DatabaseTable {
         enumItems:
           prop.nativeEnumName || prop.items?.every(i => typeof i === 'string') ? (prop.items as string[]) : undefined,
         comment: prop.comment,
+        collation: prop.collation,
         extra: prop.extra,
         ignoreSchemaChanges: prop.ignoreSchemaChanges,
       };
@@ -900,6 +908,7 @@ export class DatabaseTable {
       columnOptions.scale = column.scale;
       columnOptions.extra = column.extra;
       columnOptions.comment = column.comment;
+      columnOptions.collation = column.collation;
       columnOptions.enum = !!column.enumItems?.length;
       columnOptions.items = column.enumItems;
     }
@@ -986,6 +995,7 @@ export class DatabaseTable {
       scale: column.scale,
       extra: column.extra,
       comment: column.comment,
+      collation: column.collation,
       index: index ? index.keyName : undefined,
       unique: unique ? unique.keyName : undefined,
       enum: !!column.enumItems?.length,
@@ -1343,6 +1353,7 @@ export class DatabaseTable {
         scale: fixedPrecision ? null : (c.scale ?? null),
         default: c.default ?? null,
         comment: c.comment ?? null,
+        collation: c.collation ?? null,
         enumItems: c.enumItems ?? [],
         mappedType: Utils.keys(t).find(k => t[k] === c.mappedType.constructor),
       };
