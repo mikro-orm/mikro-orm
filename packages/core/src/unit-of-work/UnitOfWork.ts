@@ -645,6 +645,9 @@ export class UnitOfWork {
 
   unsetIdentity(entity: AnyEntity): void {
     this.#identityMap.delete(entity);
+    this.#persistStack.delete(entity);
+    this.#removeStack.delete(entity);
+    this.#orphanRemoveStack.delete(entity);
     const wrapped = helper(entity);
     const serializedPK = wrapped.getSerializedPrimaryKey();
 
