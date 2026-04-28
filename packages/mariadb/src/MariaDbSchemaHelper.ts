@@ -66,6 +66,7 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
     for (const t of tables) {
       const key = this.getTableKey(t);
       const table = schema.addTable(t.table_name, t.schema_name, t.table_comment);
+      table.collation = (t as Table & { table_collation?: string }).table_collation ?? undefined;
       const pks = await this.getPrimaryKeys(connection, indexes[key], table.name, table.schema);
       table.init(columns[key], indexes[key], checks[key], pks, fks[key], enums[key]);
 
@@ -138,22 +139,25 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
     tables: Table[],
     ctx?: Transaction,
   ): Promise<Dictionary<Column[]>> {
-    const sql = `select table_name as table_name,
-      nullif(table_schema, schema()) as schema_name,
-      column_name as column_name,
-      column_default as column_default,
-      nullif(column_comment, '') as column_comment,
-      is_nullable as is_nullable,
-      data_type as data_type,
-      column_type as column_type,
-      column_key as column_key,
-      extra as extra,
-      generation_expression as generation_expression,
-      numeric_precision as numeric_precision,
-      numeric_scale as numeric_scale,
-      ifnull(datetime_precision, character_maximum_length) length
-      from information_schema.columns where table_schema = database() and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})
-      order by ordinal_position`;
+    const sql = `select c.table_name as table_name,
+      nullif(c.table_schema, schema()) as schema_name,
+      c.column_name as column_name,
+      c.column_default as column_default,
+      nullif(c.column_comment, '') as column_comment,
+      c.is_nullable as is_nullable,
+      c.data_type as data_type,
+      c.column_type as column_type,
+      c.column_key as column_key,
+      c.extra as extra,
+      c.generation_expression as generation_expression,
+      c.numeric_precision as numeric_precision,
+      c.numeric_scale as numeric_scale,
+      ifnull(c.datetime_precision, c.character_maximum_length) length,
+      nullif(c.collation_name, t.table_collation) as collation_name
+      from information_schema.columns c
+      join information_schema.tables t on t.table_schema = c.table_schema and t.table_name = c.table_name
+      where c.table_schema = database() and c.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})
+      order by c.ordinal_position`;
     const allColumns = await connection.execute<any[]>(sql, [], 'all', ctx);
     const str = (val?: string | number | null) => (val != null ? '' + val : val);
     const extra = (val: string) =>
@@ -190,6 +194,7 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
         precision: col.numeric_precision,
         scale: col.numeric_scale,
         comment: col.column_comment,
+        collation: col.collation_name ?? undefined,
         extra: extra(col.extra),
         generated,
       });
@@ -219,6 +224,11 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
         col.type = 'json';
         col.mappedType = this.platform.getMappedType('json');
         delete col.length;
+        // MariaDB JSON columns are stored as LONGTEXT with `utf8mb4_bin` regardless of the
+        // table default, so introspection picks up a non-default `collation_name`. After the
+        // rewrite to `type = 'json'`, the column has no user-facing collation — drop the
+        // introspected value so the comparator doesn't emit a phantom MODIFY on every diff.
+        col.collation = undefined;
         continue;
       }
 

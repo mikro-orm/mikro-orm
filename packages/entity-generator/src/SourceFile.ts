@@ -852,6 +852,10 @@ export class SourceFile {
       options.comment = this.quote(prop.comment);
     }
 
+    if (typeof prop.collation === 'string') {
+      options.collation = this.quote(prop.collation);
+    }
+
     // TODO: Composite FKs with default values require additions to default/defaultRaw that are not yet supported.
     if (prop.fieldNames?.length <= 1) {
       if (

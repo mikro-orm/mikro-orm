@@ -1,0 +1,16 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`collation diffing [mssql] > create schema emits column-level collate clause 1`] = `
+"create table [book] ([id] int identity(1,1) not null primary key, [code] nvarchar(26) collate Latin1_General_BIN not null, [name] nvarchar(255) not null);
+"
+`;
+
+exports[`collation diffing [mssql] > dropping the property collation alters the column back to the db default 1`] = `
+"alter table [book] alter column [code] nvarchar(26) not null;
+"
+`;
+
+exports[`collation diffing [mssql] > explicit-to-explicit collation change produces an alter 1`] = `
+"alter table [book] alter column [code] nvarchar(26) collate Latin1_General_CS_AS not null;
+"
+`;
