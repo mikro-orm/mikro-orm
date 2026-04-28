@@ -161,7 +161,9 @@ export interface PropertyChain<Value, Options> {
   groups(...groups: string[]): PropertyChain<Value, Options>;
   customOrder(...customOrder: string[] | number[] | boolean[]): PropertyChain<Value, Options>;
   extra(extra: string): PropertyChain<Value, Options>;
-  ignoreSchemaChanges(...ignoreSchemaChanges: ('type' | 'extra' | 'default')[]): PropertyChain<Value, Options>;
+  ignoreSchemaChanges(
+    ...ignoreSchemaChanges: ('type' | 'extra' | 'default' | 'collation')[]
+  ): PropertyChain<Value, Options>;
   /** Explicitly specify index on a property. When a string name is passed, it enables type-safe `using` in `FindOptions`. */
   index<N extends string>(name: N): PropertyChain<Value, Omit<Options, 'index'> & { index: N }>;
   index(index?: boolean): PropertyChain<Value, Options>;
@@ -169,6 +171,7 @@ export interface PropertyChain<Value, Options> {
   unique<N extends string>(name: N): PropertyChain<Value, Omit<Options, 'unique'> & { unique: N }>;
   unique(unique?: boolean): PropertyChain<Value, Options>;
   comment(comment: string): PropertyChain<Value, Options>;
+  collation(collation: string): PropertyChain<Value, Options>;
   accessor(accessor?: string | boolean): PropertyChain<Value, Options>;
 
   // Kind-restricted methods — return type resolves to `never` on wrong kind, preventing misuse.
@@ -798,6 +801,14 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
     return this.assignOptions({ comment });
   }
 
+  /**
+   * Specify column-level collation for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
+   * Emits a `COLLATE` clause on the column definition; the accepted collation names are dialect-specific.
+   */
+  collation(collation: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+    return this.assignOptions({ collation });
+  }
+
   /** mysql only */
   extra(extra: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ extra });
@@ -809,7 +820,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    * @see https://mikro-orm.io/docs/defining-entities#sql-generated-columns
    */
   ignoreSchemaChanges(
-    ...ignoreSchemaChanges: ('type' | 'extra' | 'default')[]
+    ...ignoreSchemaChanges: ('type' | 'extra' | 'default' | 'collation')[]
   ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ ignoreSchemaChanges });
   }

@@ -519,4 +519,8 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
   override getDefaultClientUrl(): string {
     return 'postgresql://postgres@127.0.0.1:5432';
   }
+
+  override caseInsensitiveCollationNames(): boolean {
+    return false;
+  }
 }

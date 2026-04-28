@@ -183,11 +183,27 @@ export abstract class AbstractSqlPlatform extends Platform {
     return this.quoteIdentifier(collation);
   }
 
-  /** @internal */
-  protected validateCollationName(collation: string): void {
-    if (!/^[\w]+$/.test(collation)) {
-      throw new Error(`Invalid collation name: '${collation}'. Collation names must contain only word characters.`);
+  /**
+   * PG ICU locale names include hyphens (`en-US-x-icu`) and libc locales include dots (`en_US.utf8`),
+   * so word-chars alone would reject valid real-world collations.
+   * @internal
+   */
+  validateCollationName(collation: string): void {
+    if (!/^[\w\-.]+$/.test(collation)) {
+      throw new Error(
+        `Invalid collation name: '${collation}'. Collation names must contain only word characters, hyphens, and dots.`,
+      );
     }
+  }
+
+  /**
+   * Whether collation names compare case-insensitively in this dialect. MySQL/MariaDB, MSSQL, and
+   * SQLite use case-insensitive collation identifiers; PostgreSQL stores them as case-sensitive
+   * names in `pg_collation` (e.g. `en-US-x-icu` is distinct from `EN-US-X-ICU`).
+   * @internal
+   */
+  caseInsensitiveCollationNames(): boolean {
+    return true;
   }
 
   /** @internal */
