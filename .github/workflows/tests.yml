@@ -166,7 +166,27 @@ jobs:
           wait
 
       - name: Init docker
-        run: docker compose up -d --wait
+        run: |
+          if docker compose up -d --wait; then
+            exit 0
+          fi
+          rc=$?
+          set +e
+          echo "::group::docker compose ps -a"
+          docker compose ps -a
+          echo "::endgroup::"
+          for s in mongo mysql9 mariadb postgre postgis cockroachdb mssql oracledb; do
+            cid=$(docker compose ps -aq "$s")
+            echo "::group::$s logs"
+            docker compose logs --tail=200 --no-color "$s"
+            echo "::endgroup::"
+            if [ -n "$cid" ]; then
+              echo "::group::$s state"
+              docker inspect "$cid" --format '{{json .State}}' | jq .
+              echo "::endgroup::"
+            fi
+          done
+          exit $rc
 
       - name: Set CC Required env vars
         run: export GIT_BRANCH=$GITHUB_HEAD_REF && export GIT_COMMIT_SHA=$(git rev-parse origin/$GITHUB_HEAD_REF)
