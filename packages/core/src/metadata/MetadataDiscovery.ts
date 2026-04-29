@@ -1174,6 +1174,19 @@ export class MetadataDiscovery {
     }
   }
 
+  private sameRelationTargetRoot(rootProp: EntityProperty | undefined, prop: EntityProperty): boolean {
+    if (rootProp?.kind !== prop.kind) {
+      return false;
+    }
+
+    if (prop.kind !== ReferenceKind.MANY_TO_ONE && prop.kind !== ReferenceKind.ONE_TO_ONE) {
+      return false;
+    }
+
+    const aRoot = this.metadata.find(prop.type)?.root;
+    return aRoot != null && aRoot === this.metadata.find(rootProp.type)?.root;
+  }
+
   private initSingleTableInheritance(meta: EntityMetadata, metadata: EntityMetadata[]): void {
     if (meta.root !== meta && !(meta as Dictionary).__processed) {
       meta.root = metadata.find(m => m.className === meta.root.className)!;
@@ -1212,7 +1225,14 @@ export class MetadataDiscovery {
       const newProp = { ...prop };
       const rootProp = meta.root.properties[prop.name];
 
-      if (rootProp && (rootProp.type !== prop.type || (rootProp.fieldNames && prop.fieldNames && !compareArrays(rootProp.fieldNames, prop.fieldNames)))) {
+      // A child that narrows a relation to a subclass of the root's declared
+      // target (same STI hierarchy) shares the FK column with the root; treat
+      // that as matching so the rename branch below doesn't run (which would
+      // crash — `targetMeta` is only populated later, in `initRelation`).
+      const narrowedRelationOverride =
+        rootProp != null && rootProp.type !== prop.type && this.sameRelationTargetRoot(rootProp, prop);
+
+      if (rootProp && !narrowedRelationOverride && (rootProp.type !== prop.type || (rootProp.fieldNames && prop.fieldNames && !compareArrays(rootProp.fieldNames, prop.fieldNames)))) {
         const name = newProp.name;
         this.initFieldName(newProp, newProp.object);
         newProp.renamedFrom = name;
@@ -1250,6 +1270,14 @@ export class MetadataDiscovery {
 
       newProp.nullable = true;
       newProp.inherited = !rootProp;
+
+      // For narrowed relation overrides, keep the root's declaration intact so
+      // the full target union (e.g. `Food`) is preserved for populates from the
+      // abstract root — otherwise the last child processed would win.
+      if (narrowedRelationOverride) {
+        return;
+      }
+
       meta.root.addProperty(newProp);
     });
 
