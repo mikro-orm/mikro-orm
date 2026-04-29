@@ -154,7 +154,9 @@ export abstract class AbstractSqlDriver<
       options.logging,
       undefined,
       options.em as any,
-    ).withSchema(schema);
+    )
+      .withSchema(schema)
+      .cache(false);
     const fields = this.buildFields(meta, populate, joinedProps, qb, qb.alias, options, schema);
     const orderBy = this.buildOrderBy(qb, meta, populate, options);
     const populateWhere = this.buildPopulateWhere(meta, joinedProps, options);
