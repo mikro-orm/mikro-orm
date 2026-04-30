@@ -650,9 +650,6 @@ export class Migration20191013214813 extends Migration {
 
 exports[`Migrator (postgres) > up/down params [all or nothing disabled] > all-or-nothing-disabled 1`] = `
 [
-  "select 1 from information_schema.tables where table_schema = 'custom' and table_name = 'mikro_orm_migrations'",
-  "select schema_name from information_schema.schemata where "schema_name" not like 'pg_%' and "schema_name" not like 'crdb_%' and "schema_name" not like '_timescaledb_%' and "schema_name" not in ('information_schema', 'tiger', 'topology') order by schema_name",
-  "create table "custom"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255) not null, "executed_at" timestamptz(6) not null default current_timestamp(6));",
   "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "[migrator] Processing 'Migration20191013214813'",
   "begin",
@@ -708,9 +705,6 @@ exports[`Migrator (postgres) > up/down params [all or nothing disabled] > all-or
 exports[`Migrator (postgres) > up/down params [all or nothing enabled] > all-or-nothing 1`] = `
 [
   "begin",
-  "select 1 from information_schema.tables where table_schema = 'custom' and table_name = 'mikro_orm_migrations'",
-  "select schema_name from information_schema.schemata where "schema_name" not like 'pg_%' and "schema_name" not like 'crdb_%' and "schema_name" not like '_timescaledb_%' and "schema_name" not in ('information_schema', 'tiger', 'topology') order by schema_name",
-  "create table "custom"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255) not null, "executed_at" timestamptz(6) not null default current_timestamp(6));",
   "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "[migrator] Processing 'Migration20191013214813'",
   "savepoint "trx1"",
@@ -779,9 +773,6 @@ exports[`Migrator (postgres) > up/down params [all or nothing enabled] > all-or-
 exports[`Migrator (postgres) > up/down with explicit transaction > explicit-tx 1`] = `
 [
   "begin",
-  "select 1 from information_schema.tables where table_schema = 'custom' and table_name = 'mikro_orm_migrations'",
-  "select schema_name from information_schema.schemata where "schema_name" not like 'pg_%' and "schema_name" not like 'crdb_%' and "schema_name" not like '_timescaledb_%' and "schema_name" not in ('information_schema', 'tiger', 'topology') order by schema_name",
-  "create table "custom"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255) not null, "executed_at" timestamptz(6) not null default current_timestamp(6));",
   "select "m0".* from "custom"."mikro_orm_migrations" as "m0" order by "m0"."id" asc",
   "[migrator] Processing 'Migration20200922100001'",
   "savepoint "trx1"",

@@ -1134,8 +1134,6 @@ export class Migration20191013214813_with-custom-name extends Migration {
 
 exports[`Migrator > up/down params [all or nothing disabled] > all-or-nothing-disabled 1`] = `
 [
-  "select 1 from information_schema.tables where table_schema = schema() and table_name = 'mikro_orm_migrations'",
-  "create table \`mikro_orm_migrations\` (\`id\` int not null auto_increment primary key, \`name\` varchar(255) not null, \`executed_at\` datetime not null default current_timestamp) default character set utf8mb4 engine = InnoDB;",
   "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc",
   "[migrator] Processing 'Migration20191013214813'",
   "begin",
@@ -1191,8 +1189,6 @@ exports[`Migrator > up/down params [all or nothing disabled] > all-or-nothing-di
 exports[`Migrator > up/down params [all or nothing enabled] > all-or-nothing 1`] = `
 [
   "begin",
-  "select 1 from information_schema.tables where table_schema = schema() and table_name = 'mikro_orm_migrations'",
-  "create table \`mikro_orm_migrations\` (\`id\` int not null auto_increment primary key, \`name\` varchar(255) not null, \`executed_at\` datetime not null default current_timestamp) default character set utf8mb4 engine = InnoDB;",
   "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc",
   "[migrator] Processing 'Migration20191013214813'",
   "savepointtrx\\d+\`",
@@ -1261,8 +1257,6 @@ exports[`Migrator > up/down params [all or nothing enabled] > all-or-nothing 1`]
 exports[`Migrator > up/down with explicit transaction > explicit-tx 1`] = `
 [
   "begin",
-  "select 1 from information_schema.tables where table_schema = schema() and table_name = 'mikro_orm_migrations'",
-  "create table \`mikro_orm_migrations\` (\`id\` int not null auto_increment primary key, \`name\` varchar(255) not null, \`executed_at\` datetime not null default current_timestamp) default character set utf8mb4 engine = InnoDB;",
   "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc",
   "[migrator] Processing 'Migration20200922100001'",
   "savepointtrx_xx\`",
@@ -1301,8 +1295,8 @@ exports[`Migrator > up/down with explicit transaction > explicit-tx 1`] = `
 
 exports[`Migrator - with explicit migrations > runner > migrator-migrations-list 1`] = `
 [
-  "begin (via write connection '127.0.0.1')",
   "select 1 from information_schema.tables where table_schema = schema() and table_name = 'mikro_orm_migrations' (via write connection '127.0.0.1')",
+  "begin (via write connection '127.0.0.1')",
   "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc (via write connection '127.0.0.1')",
   "[migrator] Processing 'test'",
   "savepointtrx_xx\` (via write connection '127.0.0.1')",
@@ -1327,8 +1321,8 @@ exports[`Migrator - with explicit migrations > runner > migrator-migrations-list
 
 exports[`Migrator - with explicit migrations class only (#6099) > runner > migrator-migrations-list 1`] = `
 [
-  "begin",
   "select 1 from information_schema.tables where table_schema = schema() and table_name = 'mikro_orm_migrations'",
+  "begin",
   "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc",
   "[migrator] Processing 'MigrationTest1'",
   "savepointtrx_xx\`",

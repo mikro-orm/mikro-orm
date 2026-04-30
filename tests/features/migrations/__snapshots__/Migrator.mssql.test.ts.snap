@@ -714,9 +714,6 @@ export class Migration20191013214813 extends Migration {
 
 exports[`Migrator (mssql) > up/down params [all or nothing disabled] > all-or-nothing-disabled 1`] = `
 [
-  "select 1 from information_schema.tables where table_schema = 'custom' and table_name = 'mikro_orm_migrations'",
-  "select name as schema_name from sys.schemas order by name",
-  "create table [custom].[mikro_orm_migrations] ([id] int identity(1,1) not null primary key, [name] varchar(255) not null, [executed_at] datetime2(7) not null constraint [mikro_orm_migrations_executed_at_default] default current_timestamp);",
   "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "[migrator] Processing 'Migration20191013214813'",
   "begin",
@@ -766,9 +763,6 @@ exports[`Migrator (mssql) > up/down params [all or nothing disabled] > all-or-no
 exports[`Migrator (mssql) > up/down params [all or nothing enabled] > all-or-nothing 1`] = `
 [
   "begin",
-  "select 1 from information_schema.tables where table_schema = 'custom' and table_name = 'mikro_orm_migrations'",
-  "select name as schema_name from sys.schemas order by name",
-  "create table [custom].[mikro_orm_migrations] ([id] int identity(1,1) not null primary key, [name] varchar(255) not null, [executed_at] datetime2(7) not null constraint [mikro_orm_migrations_executed_at_default] default current_timestamp);",
   "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "[migrator] Processing 'Migration20191013214813'",
   "save transaction [trx_xx]",
@@ -825,9 +819,6 @@ exports[`Migrator (mssql) > up/down params [all or nothing enabled] > all-or-not
 exports[`Migrator (mssql) > up/down with explicit transaction > explicit-tx 1`] = `
 [
   "begin",
-  "select 1 from information_schema.tables where table_schema = 'custom' and table_name = 'mikro_orm_migrations'",
-  "select name as schema_name from sys.schemas order by name",
-  "create table [custom].[mikro_orm_migrations] ([id] int identity(1,1) not null primary key, [name] varchar(255) not null, [executed_at] datetime2(7) not null constraint [mikro_orm_migrations_executed_at_default] default current_timestamp);",
   "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
   "[migrator] Processing 'Migration20200922100001'",
   "save transaction [trx_xx]",

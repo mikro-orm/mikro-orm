@@ -83,8 +83,14 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
       this.initServices();
     }
 
-    // tracking-table creation is lazy — deferred until after `setRunSchema` so it lands
-    // in the runtime target schema, not the default
+    // Defer tracking-table creation when wildcard-schema fan-out is enabled — pre-creating
+    // here would land in the default schema and leave a stray `mikro_orm_migrations` after
+    // `migrator.up({ schema })` against a virgin DB. For the standard flow, eager creation
+    // keeps the per-call query log clean (no `tableExists`/`getNamespaces`/`create` probe
+    // on first storage access).
+    if (!this.options.includeWildcardSchema) {
+      await (this.storage as MigrationStorage).ensureTable();
+    }
   }
 
   /**
