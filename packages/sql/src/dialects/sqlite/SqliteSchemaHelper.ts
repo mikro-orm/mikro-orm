@@ -43,6 +43,21 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return '';
   }
 
+  override async tableExists(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    _schemaName: string | undefined,
+    ctx?: Transaction,
+  ): Promise<boolean> {
+    const rows = await connection.execute<{ name: string }[]>(
+      `select name from sqlite_master where type = 'table' and name = ${this.platform.quoteValue(tableName)}`,
+      [],
+      'all',
+      ctx,
+    );
+    return rows.length > 0;
+  }
+
   override getListTablesSQL(): string {
     return (
       `select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' ` +
