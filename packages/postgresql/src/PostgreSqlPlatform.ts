@@ -320,7 +320,8 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   override quoteIdentifier(id: string | { toString: () => string }, quote = '"'): string {
-    return `${quote}${id.toString().replace('.', `${quote}.${quote}`)}${quote}`;
+    const escaped = id.toString().replaceAll(quote, quote + quote);
+    return `${quote}${escaped.replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
   override escape(value: any): string {

@@ -196,7 +196,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string {
     const [a, ...b] = path;
     /* istanbul ignore next */
-    const root = this.quoteIdentifier(aliased ? `${ALIAS_REPLACEMENT}.${a}` : a);
+    const root = aliased ? `[${ALIAS_REPLACEMENT}].${this.quoteIdentifier(a)}` : this.quoteIdentifier(a);
     const types = {
       boolean: 'bit',
     } as Dictionary;
@@ -229,7 +229,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override quoteIdentifier(id: string | { toString: () => string }): string {
-    return `[${id.toString().replace('.', `].[`)}]`;
+    return `[${id.toString().replaceAll(']', ']]').replace('.', `].[`)}]`;
   }
 
   override escape(value: any): string {
