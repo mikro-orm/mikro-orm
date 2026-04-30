@@ -46,7 +46,6 @@ export abstract class SchemaHelper {
   }
 
   /** Sets the current schema for the session (e.g. `SET search_path`). */
-  /* v8 ignore next 3 */
   getSetSchemaSQL(_schema: string): string {
     return '';
   }
@@ -57,7 +56,6 @@ export abstract class SchemaHelper {
   }
 
   /** Restores the session's schema to the connection's default after a migration. */
-  /* v8 ignore next 3 */
   getResetSchemaSQL(_defaultSchema: string): string {
     return '';
   }
@@ -165,7 +163,6 @@ export abstract class SchemaHelper {
     ctx?: Transaction,
   ): Promise<boolean> {
     const qv = (v: string | undefined) => this.platform.quoteValue(v ?? '');
-    /* v8 ignore next: callers always resolve a concrete schema before reaching the default impl */
     const resolved = schemaName ?? this.platform.getDefaultSchemaName();
     const rows = await connection.execute<Dictionary[]>(
       `select 1 from information_schema.tables where table_schema = ${qv(resolved)} and table_name = ${qv(tableName)}`,
