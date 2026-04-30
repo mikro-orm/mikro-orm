@@ -1706,6 +1706,11 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
 export interface CreateSchemaOptions {
   wrap?: boolean;
   schema?: string;
+  /**
+   * When true, entities with a wildcard schema (`schema: '*'`) are included in the generated DDL.
+   * Without this, wildcard tables are skipped.
+   */
+  includeWildcardSchema?: boolean;
 }
 
 /** Options for `ISchemaGenerator.clear()` to truncate/clear database tables. */
@@ -1739,6 +1744,13 @@ export interface UpdateSchemaOptions<DatabaseSchema = unknown> {
   dropTables?: boolean;
   schema?: string;
   fromSchema?: DatabaseSchema;
+  /**
+   * When true, entities with a wildcard schema (`schema: '*'`) are included in the diff so migrations
+   * can be generated for them. The emitted SQL is unqualified — and therefore safe to apply against
+   * any schema at runtime — only when neither `options.schema` nor `config.schema` is set; otherwise
+   * wildcard tables inherit that schema qualifier.
+   */
+  includeWildcardSchema?: boolean;
 }
 
 /** Options for `ISchemaGenerator.refresh()` which drops and recreates the schema. */
@@ -1820,6 +1832,12 @@ export type MigrateOptions = {
   to?: string | number;
   migrations?: string[];
   transaction?: Transaction;
+  /**
+   * Target schema to run migrations against. Issues a driver-specific "set current schema"
+   * statement (e.g. `SET search_path` on PostgreSQL) before each migration, and places the
+   * tracking table in this schema. Overrides `migrations.schema` from config. Not supported on MSSQL.
+   */
+  schema?: string;
 };
 /** Result of creating a new migration file, including the generated code and schema diff. */
 export type MigrationResult = { fileName: string; code: string; diff: MigrationDiff };
@@ -1834,6 +1852,8 @@ export interface IMigrationRunner {
   run(migration: Migration, method: 'up' | 'down', afterRun?: (tx?: Transaction) => Promise<void>): Promise<void>;
   setMasterMigration(trx: Transaction): void;
   unsetMasterMigration(): void;
+  setRunSchema?(schema?: string): void;
+  unsetRunSchema?(): void;
 }
 
 /**
@@ -1847,6 +1867,8 @@ export interface IMigratorStorage {
   ensureTable?(): Promise<void>;
   setMasterMigration(trx: Transaction): void;
   unsetMasterMigration(): void;
+  setRunSchema?(schema?: string): void;
+  unsetRunSchema?(): void;
   getMigrationName(name: string): string;
   getTableName?(): { schemaName?: string; tableName: string };
 }
@@ -1874,12 +1896,12 @@ export interface IMigrator {
   /**
    * Returns list of already executed migrations.
    */
-  getExecuted(): Promise<MigrationRow[]>;
+  getExecuted(options?: { schema?: string }): Promise<MigrationRow[]>;
 
   /**
    * Returns list of pending (not yet executed) migrations found in the migration directory.
    */
-  getPending(): Promise<MigrationInfo[]>;
+  getPending(options?: { schema?: string }): Promise<MigrationInfo[]>;
 
   /**
    * Executes specified migrations. Without parameter it will migrate up to the latest version.

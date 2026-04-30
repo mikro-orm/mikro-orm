@@ -122,7 +122,7 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
     this.notImplemented();
   }
 
-  protected getOrderedMetadata(schema?: string): EntityMetadata[] {
+  protected getOrderedMetadata(schema?: string, includeWildcardSchema = false): EntityMetadata[] {
     const metadata = [...this.metadata.getAll().values()].filter(meta => {
       const isRootEntity = meta.root.class === meta.class;
       const isTPTChild = meta.inheritanceType === 'tpt' && meta.tptParent;
@@ -156,6 +156,10 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
       .sort()
       .map(cls => this.metadata.getById(cls))
       .filter(meta => {
+        if (includeWildcardSchema && meta.schema === '*') {
+          return true;
+        }
+
         const targetSchema = meta.schema ?? this.config.get('schema', this.platform.getDefaultSchemaName());
         return schema ? [schema, '*'].includes(targetSchema) : meta.schema !== '*';
       });

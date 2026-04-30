@@ -44,6 +44,28 @@ describe('SchemaHelper', () => {
     expect(() => helper.refreshMaterializedView('table')).toThrow('Not supported by given driver');
     expect(() => helper.getListMaterializedViewsSQL()).toThrow('Not supported by given driver');
     await expect(helper.loadMaterializedViews({} as any, {} as any)).rejects.toThrow('Not supported by given driver');
+
+    expect(helper.getSetSchemaSQL('tenant_42')).toBe('');
+    expect(helper.getResetSchemaSQL('default')).toBe('');
+    expect(helper.supportsMigrationSchema()).toBe(false);
+  });
+
+  test('default tableExists builds an information_schema probe', async () => {
+    const helper = new SchemaHelperTest(new MySqlPlatform());
+
+    const explicit = { execute: vi.fn().mockResolvedValue([{ '?column?': 1 }]) } as any;
+    await expect(helper.tableExists(explicit, 'mikro_orm_migrations', 'tenant_42')).resolves.toBe(true);
+    expect(explicit.execute.mock.calls[0][0]).toBe(
+      `select 1 from information_schema.tables where table_schema = 'tenant_42' and table_name = 'mikro_orm_migrations'`,
+    );
+
+    // MySqlPlatform has no `getDefaultSchemaName()`; the `?? this.platform.getDefaultSchemaName()`
+    // fallback resolves to `undefined` and the `qv(undefined ?? '')` chain produces an empty literal.
+    const fallback = { execute: vi.fn().mockResolvedValue([]) } as any;
+    await expect(helper.tableExists(fallback, 'mikro_orm_migrations', undefined)).resolves.toBe(false);
+    expect(fallback.execute.mock.calls[0][0]).toBe(
+      `select 1 from information_schema.tables where table_schema = '' and table_name = 'mikro_orm_migrations'`,
+    );
   });
 
   test('base getCreateIndexSQL with advanced options', () => {

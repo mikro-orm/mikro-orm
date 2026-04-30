@@ -1,6 +1,7 @@
 import type { MigrationsOptions, Transaction } from '@mikro-orm/core';
 import type { MongoDriver, MongoConnection } from '@mikro-orm/mongodb';
 import type { Migration } from './Migration.js';
+import { rejectRuntimeSchema } from './typings.js';
 
 /** Executes individual MongoDB migration files within optional transaction contexts. */
 export class MigrationRunner {
@@ -46,5 +47,13 @@ export class MigrationRunner {
 
   unsetMasterMigration() {
     delete this.masterTransaction;
+  }
+
+  setRunSchema(schema?: string) {
+    rejectRuntimeSchema(schema);
+  }
+
+  unsetRunSchema() {
+    /* nothing to do */
   }
 }

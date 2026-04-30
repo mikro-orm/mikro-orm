@@ -27,6 +27,38 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `set names ${charset};\n\n`;
   }
 
+  override getSetSchemaSQL(schema: string): string {
+    return `use ${this.quote(schema)}`;
+  }
+
+  override getResetSchemaSQL(defaultSchema: string): string {
+    return `use ${this.quote(defaultSchema)}`;
+  }
+
+  override supportsMigrationSchema(): boolean {
+    return true;
+  }
+
+  override async tableExists(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName: string | undefined,
+    ctx?: Transaction,
+  ): Promise<boolean> {
+    // MySQL "schema" = database — when none is requested, probe the connection's current DB
+    // via `schema()` rather than the base impl's `getDefaultSchemaName()` (which is undefined here).
+    const schemaClause = schemaName
+      ? `table_schema = ${this.platform.quoteValue(schemaName)}`
+      : `table_schema = schema()`;
+    const rows = await connection.execute<Dictionary[]>(
+      `select 1 from information_schema.tables where ${schemaClause} and table_name = ${this.platform.quoteValue(tableName)}`,
+      [],
+      'all',
+      ctx,
+    );
+    return rows.length > 0;
+  }
+
   override disableForeignKeysSQL(): string {
     return 'set foreign_key_checks = 0;';
   }

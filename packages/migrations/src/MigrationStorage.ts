@@ -1,7 +1,6 @@
 import { defineEntity, p, type MigrationsOptions, type Transaction, type EntitySchema } from '@mikro-orm/core';
 import {
   type AbstractSqlDriver,
-  type Table,
   type AbstractSqlConnection,
   type AbstractSqlPlatform,
   type SchemaHelper,
@@ -14,7 +13,9 @@ export class MigrationStorage {
   readonly #connection: AbstractSqlConnection;
   readonly #helper: SchemaHelper;
   #masterTransaction?: Transaction;
+  #runSchema?: string;
   readonly #platform: AbstractSqlPlatform;
+  readonly #ensuredSchemas = new Set<string>();
 
   constructor(
     protected readonly driver: AbstractSqlDriver,
@@ -31,12 +32,14 @@ export class MigrationStorage {
   }
 
   async logMigration(params: { name: string }, tx?: Transaction): Promise<void> {
+    await this.ensureTable();
     const { entity } = this.getTableName();
     const name = this.getMigrationName(params.name);
     await this.driver.nativeInsert(entity, { name }, { ctx: tx ?? this.#masterTransaction });
   }
 
   async unlogMigration(params: { name: string }, tx?: Transaction): Promise<void> {
+    await this.ensureTable();
     const { entity } = this.getTableName();
     const withoutExt = this.getMigrationName(params.name);
     const names = [withoutExt, withoutExt + '.js', withoutExt + '.ts'];
@@ -48,6 +51,7 @@ export class MigrationStorage {
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
+    await this.ensureTable();
     const { entity, schemaName } = this.getTableName();
     const res = await this.driver
       .createQueryBuilder<MigrationRow>(entity, this.#masterTransaction)
@@ -65,23 +69,24 @@ export class MigrationStorage {
   }
 
   async ensureTable(): Promise<void> {
-    const tables = await this.#connection.execute<Table[]>(
-      this.#helper.getListTablesSQL(),
-      [],
-      'all',
-      this.#masterTransaction,
-    );
-    const { tableName, schemaName } = this.getTableName();
+    const { tableName, schemaName } = this.resolveTableName();
+    // `\x00` can't appear in SQL identifiers — unambiguous pair encoding
+    const cacheKey = `${schemaName ?? ''}\x00${tableName}`;
 
-    if (tables.find(t => t.table_name === tableName && (!t.schema_name || t.schema_name === schemaName))) {
+    if (this.#ensuredSchemas.has(cacheKey)) {
       return;
     }
 
-    const schemas = await this.#helper.getNamespaces(this.#connection);
+    if (await this.#helper.tableExists(this.#connection, tableName, schemaName, this.#masterTransaction)) {
+      this.#ensuredSchemas.add(cacheKey);
+      return;
+    }
+
+    const schemas = await this.#helper.getNamespaces(this.#connection, this.#masterTransaction);
 
     if (schemaName && !schemas.includes(schemaName)) {
       const sql = this.#helper.getCreateNamespaceSQL(schemaName);
-      await this.#connection.execute(sql);
+      await this.#connection.execute(sql, [], 'run', this.#masterTransaction);
     }
 
     const table = new DatabaseTable(this.#platform, tableName, schemaName);
@@ -107,6 +112,7 @@ export class MigrationStorage {
     });
     const sql = this.#helper.createTable(table);
     await this.#connection.execute(sql.join(';\n'), [], 'run', this.#masterTransaction);
+    this.#ensuredSchemas.add(cacheKey);
   }
 
   setMasterMigration(trx: Transaction) {
@@ -115,6 +121,14 @@ export class MigrationStorage {
 
   unsetMasterMigration() {
     this.#masterTransaction = undefined;
+  }
+
+  setRunSchema(schema?: string) {
+    this.#runSchema = this.#helper.resolveMigrationSchema(schema);
+  }
+
+  unsetRunSchema() {
+    this.#runSchema = undefined;
   }
 
   /**
@@ -128,10 +142,7 @@ export class MigrationStorage {
    * @internal
    */
   getTableName(): { tableName: string; schemaName: string; entity: EntitySchema } {
-    const parts = this.options.tableName!.split('.');
-    const tableName = parts.length > 1 ? parts[1] : parts[0];
-    const schemaName =
-      parts.length > 1 ? parts[0] : this.driver.config.get('schema', this.driver.getPlatform().getDefaultSchemaName());
+    const { tableName, schemaName } = this.resolveTableName();
 
     const entity = defineEntity({
       name: 'Migration',
@@ -146,5 +157,17 @@ export class MigrationStorage {
     entity.meta.sync();
 
     return { tableName, schemaName, entity };
+  }
+
+  private resolveTableName(): { tableName: string; schemaName: string } {
+    const parts = this.options.tableName!.split('.');
+    const tableName = parts.length > 1 ? parts[1] : parts[0];
+    const schemaName =
+      this.#runSchema ??
+      this.options.schema ??
+      (parts.length > 1
+        ? parts[0]
+        : this.driver.config.get('schema', this.driver.getPlatform().getDefaultSchemaName()));
+    return { tableName, schemaName };
   }
 }

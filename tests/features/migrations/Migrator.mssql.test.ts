@@ -458,7 +458,7 @@ test('ensureTable when the schema does not exist', async () => {
   const mock = mockLogger(orm);
   await storage.ensureTable!(); // ensures the schema first
   expect(mock.mock.calls[0][0]).toMatch(
-    `select t.name as table_name, schema_name(t2.schema_id) schema_name, ep.value as table_comment from sysobjects t inner join sys.tables t2 on t2.object_id = t.id left join sys.extended_properties ep on ep.major_id = t.id and ep.name = 'MS_Description' and ep.minor_id = 0`,
+    `select 1 from information_schema.tables where table_schema = 'custom2' and table_name = 'mikro_orm_migrations'`,
   );
   expect(mock.mock.calls[1][0]).toMatch(`select name as schema_name from sys.schemas order by name`);
   expect(mock.mock.calls[2][0]).toMatch(
