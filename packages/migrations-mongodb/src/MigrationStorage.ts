@@ -7,7 +7,7 @@ import {
   type Transaction,
 } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
-import type { MigrationRow } from './typings.js';
+import { rejectRuntimeSchema, type MigrationRow } from './typings.js';
 
 /** Tracks executed MongoDB migrations in a collection. */
 export class MigrationStorage {
@@ -54,6 +54,14 @@ export class MigrationStorage {
 
   unsetMasterMigration() {
     delete this.masterTransaction;
+  }
+
+  setRunSchema(schema?: string) {
+    rejectRuntimeSchema(schema);
+  }
+
+  unsetRunSchema() {
+    /* nothing to do */
   }
 
   /**

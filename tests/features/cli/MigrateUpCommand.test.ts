@@ -65,5 +65,9 @@ describe('MigrateUpCommand', () => {
     expect(up.mock.calls.length).toBe(6);
     expect(up.mock.calls[5][0]).toEqual({ migrations: ['a'] });
     expect(closeSpy).toHaveBeenCalledTimes(6);
+    await expect(cmd.handler({ schema: 'tenant_a' } as any)).resolves.toBeUndefined();
+    expect(up.mock.calls[6][0]).toEqual({ schema: 'tenant_a' });
+    await expect(cmd.handler({ only: 'a', schema: 'tenant_a' } as any)).resolves.toBeUndefined();
+    expect(up.mock.calls[7][0]).toEqual({ migrations: ['a'], schema: 'tenant_a' });
   });
 });

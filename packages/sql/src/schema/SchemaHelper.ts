@@ -45,6 +45,39 @@ export abstract class SchemaHelper {
     return '';
   }
 
+  /** Sets the current schema for the session (e.g. `SET search_path`). */
+  getSetSchemaSQL(_schema: string): string {
+    return '';
+  }
+
+  /** Whether the driver supports setting a runtime schema per migration run. */
+  supportsMigrationSchema(): boolean {
+    return false;
+  }
+
+  /** Restores the session's schema to the connection's default after a migration. */
+  getResetSchemaSQL(_defaultSchema: string): string {
+    return '';
+  }
+
+  /** Returns `undefined` for schemaless drivers, throws for drivers that have schemas but no session switch. */
+  resolveMigrationSchema(schema: string | undefined): string | undefined {
+    if (!schema) {
+      return undefined;
+    }
+
+    if (this.supportsMigrationSchema()) {
+      return schema;
+    }
+
+    if (!this.platform.supportsSchemas()) {
+      return undefined;
+    }
+
+    const driverName = this.platform.constructor.name.replace(/Platform$/, 'Driver');
+    throw new Error(`Runtime schema for migrations is not supported by the ${driverName}`);
+  }
+
   finalizeTable(table: DatabaseTable, charset: string, collate?: string): string {
     return '';
   }
@@ -120,6 +153,24 @@ export abstract class SchemaHelper {
   /** Retrieves all tables from the database. */
   async getAllTables(connection: AbstractSqlConnection, schemas?: string[], ctx?: Transaction): Promise<Table[]> {
     return connection.execute<Table[]>(this.getListTablesSQL(), [], 'all', ctx);
+  }
+
+  /** Checks whether a specific table exists in a given schema (not the connection's current schema). */
+  async tableExists(
+    connection: AbstractSqlConnection,
+    tableName: string,
+    schemaName: string | undefined,
+    ctx?: Transaction,
+  ): Promise<boolean> {
+    const qv = (v: string | undefined) => this.platform.quoteValue(v ?? '');
+    const resolved = schemaName ?? this.platform.getDefaultSchemaName();
+    const rows = await connection.execute<Dictionary[]>(
+      `select 1 from information_schema.tables where table_schema = ${qv(resolved)} and table_name = ${qv(tableName)}`,
+      [],
+      'all',
+      ctx,
+    );
+    return rows.length > 0;
   }
 
   getListViewsSQL(): string {

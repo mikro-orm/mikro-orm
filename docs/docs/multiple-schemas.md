@@ -99,7 +99,9 @@ On runtime, the wildcard schema will be replaced with either `FindOptions.schema
 
 ### Note about migrations
 
-Currently, this is not supported via migrations, they will always ignore wildcard schema entities, and `SchemaGenerator` needs to be used explicitly. Given the dynamic nature of such entities, it makes sense to only sync the schema dynamically, e.g. in an API endpoint. You could still use the ORM migrations, but you need to add the dynamic schema queries manually to migration files. It makes sense to use the `safe` mode for such queries.
+By default, `migration:create` ignores wildcard-schema entities — you would need to fall back to `SchemaGenerator` (e.g. in an API endpoint that creates new tenants) or write the dynamic schema queries by hand.
+
+For multi-tenant fan-out where every tenant shares the same schema shape, opt the wildcard entities into `migration:create` with `migrations.includeWildcardSchema: true`. The emitted DDL is unqualified, so the same migration file can be applied against any schema at runtime via `migrator.up({ schema })`. See [Runtime schema context](./migrations.md#runtime-schema-context) for the full flow.
 
 ## SQLite ATTACH DATABASE
 

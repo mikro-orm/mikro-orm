@@ -149,6 +149,8 @@ await MikroORM.init({
 | `generator: Constructor<IMigrationGenerator>`                | Migration generator class to use for creating migration file contents. Defaults to `TSMigrationGenerator` for TypeScript files. Can be customized to change formatting or structure. |
 | `fileName: (timestamp: string, name?: string) => string`     | Function to generate migration file names. Receives a timestamp and optional name parameter. Defaults to `Migration${timestamp}${name ? '_' + name : ''}`.                           |
 | `migrationsList: (MigrationObject \| Constructor<Migration>)[]` | Array of migration objects or classes to use instead of file-based discovery. Useful for bundled applications where file system access is limited.                                   |
+| `schema: string`                                             | Default target schema to run migrations against. The driver's "set current schema" statement is issued before each migration and the tracking table lives in this schema. See [Runtime schema context](#runtime-schema-context). Not supported on MSSQL.                                                       |
+| `includeWildcardSchema: boolean`                             | When `true`, entities with `schema: '*'` are included in `migration:create` output and emitted as unqualified DDL, so the resulting migrations can be applied against any schema via `migrator.up({ schema })`. Defaults to `false`.                                                                            |
 
 ### Example configuration
 
@@ -308,6 +310,7 @@ import { Migrator } from '@mikro-orm/migrations';
   await orm.migrator.down({ to: 0 }); // migrates down to the first version
   await orm.migrator.rollup(); // combines all executed migrations into one
   await orm.migrator.rollup(['Migration1', 'Migration2']); // combines specific migrations
+  await orm.migrator.up({ schema: 'tenant_42' }); // run against a specific schema, see "Runtime schema context"
 
   await orm.close(true);
 })();
@@ -328,6 +331,80 @@ await orm.em.transactional(async em => {
   await migrator.up({ transaction: em.getTransactionContext() });
 });
 ```
+
+## Runtime schema context
+
+By default, migrations run against the schema baked into the SQL itself (or the connection's default schema for unqualified DDL). The runtime schema context lets you redirect existing migrations to another schema without regenerating them — useful for per-deployment-one-schema setups (e.g. PR preview environments) and for fanning a single set of migrations out across multiple tenant schemas.
+
+When a runtime schema is resolved, the migrator prepends the driver's "set current schema" statement before each migration and resets it in a `finally` block so the pooled connection is not left pointing at the migration's target schema. The migration tracking table follows the same schema, so each target maintains an independent migration history.
+
+| Driver           | Set                                       | Reset                                            |
+|------------------|-------------------------------------------|--------------------------------------------------|
+| PostgreSQL       | ``SET search_path TO "x"``                | `RESET search_path`                              |
+| MySQL / MariaDB  | `` USE `x` ``                             | `` USE `<config.dbName>` ``                      |
+| Oracle           | ``ALTER SESSION SET CURRENT_SCHEMA = "x"``| ``ALTER SESSION SET CURRENT_SCHEMA = "<dbName>"``|
+| MSSQL            | unsupported — throws                      | —                                                |
+| SQLite / libSQL  | schemaless — silent no-op                 | —                                                |
+
+### Per-deployment-one-schema
+
+Set `migrations.schema` in your ORM config and existing unqualified migrations execute in that schema, with the tracking table alongside them:
+
+```ts
+await MikroORM.init({
+  migrations: {
+    schema: process.env.PR_PREVIEW_SCHEMA, // e.g. 'pr_1234'
+  },
+});
+```
+
+### Multi-schema fan-out
+
+Opt wildcard entities into `migration:create` via `migrations.includeWildcardSchema`, then apply the resulting unqualified migrations with `migrator.up({ schema })`:
+
+```ts
+await MikroORM.init({
+  migrations: {
+    includeWildcardSchema: true,
+  },
+});
+
+for (const tenant of tenants) {
+  await orm.migrator.up({ schema: tenant });
+}
+```
+
+You can also inspect per-tenant migration state without mutating global config:
+
+```ts
+await orm.migrator.getExecuted({ schema: 'tenant_42' });
+await orm.migrator.getPending({ schema: 'tenant_42' });
+```
+
+Tenant orchestration and failure recovery remain the caller's responsibility — the migrator exposes per-schema primitives, not a managed multi-tenant runner.
+
+:::caution
+
+For unqualified DDL to be emitted by `migration:create`, neither `options.schema` nor `config.schema` may be set when generating the migration. If `config.schema` is set, wildcard tables will be qualified with it (useful for local dev runs). Generate migrations from an environment where `config.schema` is unset, then apply them with `migrator.up({ schema })`.
+
+:::
+
+### CLI
+
+Both `migration:up` and `migration:down` accept a `--schema` (alias `-s`) flag:
+
+```sh
+npx mikro-orm migration:up --schema tenant_42
+npx mikro-orm migration:down --schema tenant_42
+```
+
+### Caveats
+
+- **`public` is not implicit.** The `search_path` (or equivalent) is set to the target schema only — queries referencing extensions or shared lookups in `public` must qualify them explicitly. Data-isolated deployments (PR previews, tenants) cannot accidentally read or write `public`.
+- **Requires transactional migrations.** Combining a runtime schema with `transactional: false` (or a migration that overrides `isTransactional()` to `false`) throws — without a pinned transaction, each statement may land on a different pooled connection and the set/reset would not cover the DDL.
+- **Sequential fan-out only.** `migrator.up({ schema })` stores the target schema as instance state on the shared `MigrationRunner` / `MigrationStorage`. Running `Promise.all([orm.migrator.up({ schema: 'a' }), orm.migrator.up({ schema: 'b' })])` on the same ORM instance would interleave set/reset calls and is unsupported. For true parallel deploys, run separate processes (each with its own `MikroORM.init`).
+- **`migrations.schema` does not fall back to `config.schema`.** It is opt-in for the migrator only.
+- **MongoDB.** The Mongo migrator throws a clear error when `{ schema }` is passed instead of silently ignoring it.
 
 ## Importing migrations statically
 
