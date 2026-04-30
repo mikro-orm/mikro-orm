@@ -220,7 +220,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   ): string | RawQueryFragment {
     const [a, ...b] = path;
     /* v8 ignore next */
-    const root = this.quoteIdentifier(aliased ? `${ALIAS_REPLACEMENT}.${a}` : a);
+    const root = aliased ? `[${ALIAS_REPLACEMENT}].${this.quoteIdentifier(a)}` : this.quoteIdentifier(a);
     const types = {
       boolean: 'bit',
     } as Dictionary;
@@ -273,7 +273,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       return super.quoteIdentifier(id);
     }
 
-    return `[${id.toString().replace('.', `].[`)}]`;
+    return `[${id.toString().replaceAll(']', ']]').replace('.', `].[`)}]`;
   }
 
   override escape(value: any): string {
