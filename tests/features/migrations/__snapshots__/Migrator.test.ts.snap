@@ -1295,7 +1295,7 @@ exports[`Migrator > up/down with explicit transaction > explicit-tx 1`] = `
 
 exports[`Migrator - with explicit migrations > runner > migrator-migrations-list 1`] = `
 [
-  "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment, table_collation as table_collation from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select 1 from information_schema.tables where table_schema = schema() and table_name = 'mikro_orm_migrations' (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc (via write connection '127.0.0.1')",
   "[migrator] Processing 'test'",
@@ -1321,7 +1321,7 @@ exports[`Migrator - with explicit migrations > runner > migrator-migrations-list
 
 exports[`Migrator - with explicit migrations class only (#6099) > runner > migrator-migrations-list 1`] = `
 [
-  "select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment, table_collation as table_collation from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()",
+  "select 1 from information_schema.tables where table_schema = schema() and table_name = 'mikro_orm_migrations'",
   "begin",
   "select \`m0\`.* from \`mikro_orm_migrations\` as \`m0\` order by \`m0\`.\`id\` asc",
   "[migrator] Processing 'MigrationTest1'",
