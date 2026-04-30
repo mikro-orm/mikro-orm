@@ -652,6 +652,24 @@ export type MigrationsOptions = {
   fileName?: (timestamp: string, name?: string) => string;
   /** List of migration classes or objects to use instead of file-based discovery. */
   migrationsList?: (MigrationObject | Constructor<Migration>)[];
+  /**
+   * Target schema used when running migrations. When set, the driver's "set current schema" statement
+   * (e.g. `SET search_path` on PostgreSQL) is issued before each migration, and the migration tracking
+   * table lives in this schema. Can be overridden per call via `migrator.up({ schema })`.
+   *
+   * Intended for per-deployment-one-schema setups (e.g. PR previews) and for applying a single
+   * unqualified migration to multiple schemas (see `includeWildcardSchema`). Not supported on MSSQL.
+   */
+  schema?: string;
+  /**
+   * When set, entities with a wildcard schema (`schema: '*'`) are included in generated migrations.
+   * The emitted SQL is unqualified — and therefore safe to apply against any schema at runtime via
+   * `migrator.up({ schema })` — only when neither `options.schema` nor the ORM's `config.schema`
+   * is set. If `config.schema` is set, wildcard tables are qualified with it (useful for local
+   * dev runs); in that case, generate migrations from an environment where `config.schema` is unset.
+   * @default false
+   */
+  includeWildcardSchema?: boolean;
 };
 
 /**

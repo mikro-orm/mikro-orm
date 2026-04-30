@@ -49,6 +49,20 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `set names '${charset}';\n\n`;
   }
 
+  override getSetSchemaSQL(schema: string): string {
+    // session-level `SET` (not `SET LOCAL`) so it also works outside a transaction; the runner
+    // emits `getResetSchemaSQL` afterwards to avoid leaking onto the pooled connection
+    return `set search_path to ${this.quote(schema)}`;
+  }
+
+  override getResetSchemaSQL(_defaultSchema: string): string {
+    return 'reset search_path';
+  }
+
+  override supportsMigrationSchema(): boolean {
+    return true;
+  }
+
   override getCreateDatabaseSQL(name: string): string {
     return `create database ${this.quote(name)}`;
   }
