@@ -156,7 +156,7 @@
     "knex": "3.2.9",
     "lerna": "9.0.7",
     "lint-staged": "16.4.0",
-    "mongodb-memory-server-core": "11.0.1",
+    "mongodb-memory-server-core": "11.1.0",
     "oxfmt": "0.47.0",
     "oxlint": "1.62.0",
     "oxlint-tsgolint": "^0.22.0",
