@@ -381,7 +381,7 @@ await orm.migrator.getExecuted({ schema: 'tenant_42' });
 await orm.migrator.getPending({ schema: 'tenant_42' });
 ```
 
-Tenant orchestration and failure recovery remain the caller's responsibility — this ships primitives, not a managed multi-tenant migrator.
+Tenant orchestration and failure recovery remain the caller's responsibility — the migrator exposes per-schema primitives, not a managed multi-tenant runner.
 
 :::caution
 
