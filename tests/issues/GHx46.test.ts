@@ -1,5 +1,5 @@
 import { defineEntity, p } from '@mikro-orm/core';
-import { MikroORM, SqliteDriver, NodeSqliteDialect, defineConfig, type SqlEntityManager } from '@mikro-orm/sql';
+import { MikroORM, SqliteDriver, NodeSqliteDialect, defineConfig } from '@mikro-orm/sql';
 
 // Importing `MikroORM` and `defineConfig` from `@mikro-orm/sql` must yield a
 // SQL-aware EM type — specifically, `orm.em.createQueryBuilder` and the rest
@@ -27,8 +27,7 @@ test('GHx46: defineConfig + MikroORM.init from @mikro-orm/sql preserves SqlEntit
   });
 
   const orm = await MikroORM.init(config);
-  const em: SqlEntityManager = orm.em;
-  const qb = em.createQueryBuilder(User);
+  const qb = orm.em.createQueryBuilder(User);
   expect(typeof qb.getQuery).toBe('function');
 
   await orm.close();
@@ -42,8 +41,7 @@ test('GHx46: MikroORM.init from @mikro-orm/sql infers SqlEntityManager directly'
     driverOptions: new NodeSqliteDialect(':memory:'),
   });
 
-  const em: SqlEntityManager = orm.em;
-  const qb = em.createQueryBuilder(User);
+  const qb = orm.em.createQueryBuilder(User);
   expect(typeof qb.getQuery).toBe('function');
 
   await orm.close();
