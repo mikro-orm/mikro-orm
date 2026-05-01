@@ -3,13 +3,13 @@ import {
   type EntityClass,
   type EntitySchema,
   defineConfig,
-  MikroORM,
+  type MikroORM,
   type Options,
   type IDatabaseDriver,
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import type { SqlEntityManager } from '@mikro-orm/mysql';
+import { SqlMikroORM, type SqlEntityManager } from '@mikro-orm/mysql';
 import { MariaDbDriver } from './MariaDbDriver.js';
 
 /** Configuration options for the MariaDB driver. */
@@ -44,7 +44,7 @@ export class MariaDbMikroORM<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
-> extends MikroORM<MariaDbDriver, EM, Entities> {
+> extends SqlMikroORM<MariaDbDriver, EM, Entities> {
   /**
    * @inheritDoc
    */

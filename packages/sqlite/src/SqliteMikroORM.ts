@@ -3,13 +3,13 @@ import {
   type EntityClass,
   type EntitySchema,
   defineConfig,
-  MikroORM,
+  type MikroORM,
   type Options,
   type IDatabaseDriver,
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import type { SqlEntityManager } from '@mikro-orm/sql';
+import { SqlMikroORM, type SqlEntityManager } from '@mikro-orm/sql';
 import { SqliteDriver } from './SqliteDriver.js';
 
 /** Configuration options for the SQLite driver. */
@@ -44,7 +44,7 @@ export class SqliteMikroORM<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
-> extends MikroORM<SqliteDriver, EM, Entities> {
+> extends SqlMikroORM<SqliteDriver, EM, Entities> {
   /**
    * @inheritDoc
    */

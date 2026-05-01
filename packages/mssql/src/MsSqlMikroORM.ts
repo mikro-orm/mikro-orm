@@ -3,13 +3,13 @@ import {
   type EntityClass,
   type EntitySchema,
   defineConfig,
-  MikroORM,
+  type MikroORM,
   type Options,
   type IDatabaseDriver,
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import type { SqlEntityManager } from '@mikro-orm/sql';
+import { SqlMikroORM, type SqlEntityManager } from '@mikro-orm/sql';
 import { MsSqlDriver } from './MsSqlDriver.js';
 
 /** Configuration options for the MSSQL driver. */
@@ -44,7 +44,7 @@ export class MsSqlMikroORM<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
-> extends MikroORM<MsSqlDriver, EM, Entities> {
+> extends SqlMikroORM<MsSqlDriver, EM, Entities> {
   /**
    * @inheritDoc
    */

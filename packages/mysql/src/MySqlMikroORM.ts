@@ -3,13 +3,13 @@ import {
   type EntityClass,
   type EntitySchema,
   defineConfig,
-  MikroORM,
+  type MikroORM,
   type Options,
   type IDatabaseDriver,
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import type { SqlEntityManager } from '@mikro-orm/sql';
+import { SqlMikroORM, type SqlEntityManager } from '@mikro-orm/sql';
 import { MySqlDriver } from './MySqlDriver.js';
 
 /** Configuration options for the MySQL driver. */
@@ -44,7 +44,7 @@ export class MySqlMikroORM<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
-> extends MikroORM<MySqlDriver, EM, Entities> {
+> extends SqlMikroORM<MySqlDriver, EM, Entities> {
   /**
    * @inheritDoc
    */

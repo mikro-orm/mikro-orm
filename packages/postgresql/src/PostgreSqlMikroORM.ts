@@ -3,12 +3,13 @@ import {
   type EntityClass,
   type EntitySchema,
   defineConfig,
-  MikroORM,
+  type MikroORM,
   type Options,
   type IDatabaseDriver,
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
+import { SqlMikroORM } from '@mikro-orm/sql';
 import { PostgreSqlDriver } from './PostgreSqlDriver.js';
 import type { PostgreSqlEntityManager } from './PostgreSqlEntityManager.js';
 
@@ -44,7 +45,7 @@ export class PostgreSqlMikroORM<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
-> extends MikroORM<PostgreSqlDriver, EM, Entities> {
+> extends SqlMikroORM<PostgreSqlDriver, EM, Entities> {
   /**
    * @inheritDoc
    */
