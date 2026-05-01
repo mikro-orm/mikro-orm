@@ -17,3 +17,5 @@ export type * from './typings.js';
 export * from './plugin/index.js';
 export { SqlEntityManager as EntityManager } from './SqlEntityManager.js';
 export { SqlEntityRepository as EntityRepository } from './SqlEntityRepository.js';
+export * from './SqlMikroORM.js';
+export { SqlMikroORM as MikroORM, type SqlOptions as Options, defineSqlConfig as defineConfig } from './SqlMikroORM.js';
