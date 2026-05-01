@@ -16,7 +16,7 @@ import type { SqlEntityManager } from './SqlEntityManager.js';
 export type SqlOptions<
   D extends AbstractSqlDriver = AbstractSqlDriver,
   EM extends SqlEntityManager<D> = SqlEntityManager<D>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -30,7 +30,7 @@ export type SqlOptions<
 export function defineSqlConfig<
   D extends AbstractSqlDriver = AbstractSqlDriver,
   EM extends SqlEntityManager<D> = SqlEntityManager<D>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -49,7 +49,7 @@ export function defineSqlConfig<
 export class SqlMikroORM<
   D extends AbstractSqlDriver = AbstractSqlDriver,
   EM extends SqlEntityManager<D> = SqlEntityManager<D>,
-  Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+  Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
     | string
     | EntityClass<AnyEntity>
     | EntitySchema
@@ -61,7 +61,7 @@ export class SqlMikroORM<
   static override async init<
     D extends IDatabaseDriver = AbstractSqlDriver,
     EM extends EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
-    Entities extends (string | EntityClass<AnyEntity> | EntitySchema)[] = (
+    Entities extends readonly (string | EntityClass<AnyEntity> | EntitySchema)[] = (
       | string
       | EntityClass<AnyEntity>
       | EntitySchema
