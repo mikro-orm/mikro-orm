@@ -1,6 +1,6 @@
 import {
   defineConfig,
-  MikroORM,
+  type MikroORM,
   type Options,
   type IDatabaseDriver,
   type EntityManager,
@@ -9,7 +9,7 @@ import {
   type AnyEntity,
   type EntitySchema,
 } from '@mikro-orm/core';
-import type { SqlEntityManager } from '@mikro-orm/sql';
+import { SqlMikroORM, type SqlEntityManager } from '@mikro-orm/sql';
 import { OracleDriver } from './OracleDriver.js';
 
 /** Configuration options for the Oracle driver. */
@@ -44,7 +44,7 @@ export class OracleMikroORM<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
-> extends MikroORM<OracleDriver, EM, Entities> {
+> extends SqlMikroORM<OracleDriver, EM, Entities> {
   /**
    * @inheritDoc
    */

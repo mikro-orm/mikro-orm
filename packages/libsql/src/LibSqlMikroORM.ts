@@ -3,13 +3,13 @@ import {
   type EntityClass,
   type EntitySchema,
   defineConfig,
-  MikroORM,
+  type MikroORM,
   type Options,
   type IDatabaseDriver,
   type EntityManager,
   type EntityManagerType,
 } from '@mikro-orm/core';
-import type { SqlEntityManager } from '@mikro-orm/sql';
+import { SqlMikroORM, type SqlEntityManager } from '@mikro-orm/sql';
 import { LibSqlDriver } from './LibSqlDriver.js';
 
 /** Configuration options for the libSQL driver. */
@@ -44,7 +44,7 @@ export class LibSqlMikroORM<
     | EntityClass<AnyEntity>
     | EntitySchema
   )[],
-> extends MikroORM<LibSqlDriver, EM, Entities> {
+> extends SqlMikroORM<LibSqlDriver, EM, Entities> {
   /**
    * @inheritDoc
    */
