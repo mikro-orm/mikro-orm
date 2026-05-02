@@ -390,7 +390,7 @@ await orm.entityGenerator.generate({
     // The actual underlying type and the things we can do with it should remain the same.
     // We don't want to register or import a new type due to the simplicity of the value.
     // We also don't need an IType wrapper, since we're not transforming the data from its raw form
-    // during creation or serialization. We're just concerned with updates and comparrisons.
+    // during creation or serialization. We're just concerned with updates and comparisons.
     // Opaque/branded types are the best means to address this.
     // Because we don't want to override the "type", we need to override "customTypes" instead.
     const versionPropOnBook = metadata.find(meta => meta.className === 'Book')!.properties.version;
