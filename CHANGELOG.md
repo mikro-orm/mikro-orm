@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.14](https://github.com/mikro-orm/mikro-orm/compare/v7.0.13...v7.0.14) (2026-05-04)
+
+
+### Bug Fixes
+
+* **core:** avoid crash on STI subclass with 1:M override ([#7636](https://github.com/mikro-orm/mikro-orm/issues/7636)) ([34427ff](https://github.com/mikro-orm/mikro-orm/commit/34427ff9141a6f59a1008f169541437fa6960df0)), closes [#7635](https://github.com/mikro-orm/mikro-orm/issues/7635)
+* **core:** drop entity from persist/remove stacks in `uow.unsetIdentity()` ([#7639](https://github.com/mikro-orm/mikro-orm/issues/7639)) ([0b90c31](https://github.com/mikro-orm/mikro-orm/commit/0b90c318ea0406ea6e5a821546e53a94c6fee6b0)), closes [#7638](https://github.com/mikro-orm/mikro-orm/issues/7638)
+* **core:** escape embedded quote characters in quoteIdentifier ([#7653](https://github.com/mikro-orm/mikro-orm/issues/7653)) ([3fadd28](https://github.com/mikro-orm/mikro-orm/commit/3fadd2873e5c0a8bd3a6fd750a48192e03e56405))
+* **core:** escape JSON path keys in getSearchJsonPropertyKey ([#7656](https://github.com/mikro-orm/mikro-orm/issues/7656)) ([556d339](https://github.com/mikro-orm/mikro-orm/commit/556d3396b977705cec05d051ceef8c570c6e7d71))
+* **core:** respect `hidden` flag with `populate: ['*']` in `serialize()` ([#7637](https://github.com/mikro-orm/mikro-orm/issues/7637)) ([88ed196](https://github.com/mikro-orm/mikro-orm/commit/88ed196a53b43914063cf343f803b955d5af5b81)), closes [#7634](https://github.com/mikro-orm/mikro-orm/issues/7634)
+* **sql:** avoid duplicate result cache write on `em.find()` ([#7645](https://github.com/mikro-orm/mikro-orm/issues/7645)) ([fa12c86](https://github.com/mikro-orm/mikro-orm/commit/fa12c8698d831a96c6580728f2441a2d9675ca4d)), closes [#6923](https://github.com/mikro-orm/mikro-orm/issues/6923) [#7644](https://github.com/mikro-orm/mikro-orm/issues/7644)
+
+
+### Features
+
+* **sql:** add `MikroORM` and `defineConfig` variants in `@mikro-orm/sql` ([#7647](https://github.com/mikro-orm/mikro-orm/issues/7647)) ([ce31ff4](https://github.com/mikro-orm/mikro-orm/commit/ce31ff449901fe84274ee8e1eaa32c71ad99c93d))
+
+
+
+
+
 ## [7.0.13](https://github.com/mikro-orm/mikro-orm/compare/v7.0.12...v7.0.13) (2026-04-27)
 
 

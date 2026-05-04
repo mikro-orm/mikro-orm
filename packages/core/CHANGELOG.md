@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.14](https://github.com/mikro-orm/mikro-orm/compare/v7.0.13...v7.0.14) (2026-05-04)
+
+
+### Bug Fixes
+
+* **core:** avoid crash on STI subclass with 1:M override ([#7636](https://github.com/mikro-orm/mikro-orm/issues/7636)) ([34427ff](https://github.com/mikro-orm/mikro-orm/commit/34427ff9141a6f59a1008f169541437fa6960df0)), closes [#7635](https://github.com/mikro-orm/mikro-orm/issues/7635)
+* **core:** drop entity from persist/remove stacks in `uow.unsetIdentity()` ([#7639](https://github.com/mikro-orm/mikro-orm/issues/7639)) ([0b90c31](https://github.com/mikro-orm/mikro-orm/commit/0b90c318ea0406ea6e5a821546e53a94c6fee6b0)), closes [#7638](https://github.com/mikro-orm/mikro-orm/issues/7638)
+* **core:** escape embedded quote characters in quoteIdentifier ([#7653](https://github.com/mikro-orm/mikro-orm/issues/7653)) ([3fadd28](https://github.com/mikro-orm/mikro-orm/commit/3fadd2873e5c0a8bd3a6fd750a48192e03e56405))
+* **core:** respect `hidden` flag with `populate: ['*']` in `serialize()` ([#7637](https://github.com/mikro-orm/mikro-orm/issues/7637)) ([88ed196](https://github.com/mikro-orm/mikro-orm/commit/88ed196a53b43914063cf343f803b955d5af5b81)), closes [#7634](https://github.com/mikro-orm/mikro-orm/issues/7634)
+
+
+
+
+
 ## [7.0.13](https://github.com/mikro-orm/mikro-orm/compare/v7.0.12...v7.0.13) (2026-04-27)
 
 ### Bug Fixes
