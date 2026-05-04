@@ -2138,8 +2138,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const meta = this.metadata.find(entityName)!;
 
-    // infer populate hint if only `fields` are available
-    if (!options.populate && options.fields) {
+    // infer populate hints from `fields` when present; merge with explicit `populate` if both are set
+    const fields = options.fields ? this.buildFields(options.fields) : undefined;
+    const populateArray = Array.isArray(options.populate) ? (options.populate as string[]) : undefined;
+    const hasNestedFields = fields?.some(f => f.includes('.')) ?? false;
+    const shouldInfer = fields !== undefined && options.populate === undefined;
+    const shouldMerge =
+      fields !== undefined && populateArray !== undefined && populateArray.length > 0 && hasNestedFields;
+
+    if (shouldInfer || shouldMerge) {
       // we need to prune the `populate` hint from to-one relations, as partially loading them does not require their population, we want just the FK
       const pruneToOneRelations = (meta: EntityMetadata, fields: string[]): string[] => {
         const ret: string[] = [];
@@ -2181,7 +2188,16 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         return Utils.unique(ret);
       };
 
-      options.populate = pruneToOneRelations(meta, this.buildFields(options.fields)) as any;
+      const fromFields = pruneToOneRelations(meta, fields!);
+
+      if (shouldInfer) {
+        options.populate = fromFields as any;
+      } else {
+        // with an explicit populate, only nested paths (e.g. `item.id`) need to be merged in — they
+        // require a JOIN to access sub-fields, whereas bare names are already handled by the driver
+        const extras = fromFields.filter(f => f.includes('.'));
+        options.populate = [...populateArray!, ...extras] as any;
+      }
     }
 
     if (!options.populate) {
