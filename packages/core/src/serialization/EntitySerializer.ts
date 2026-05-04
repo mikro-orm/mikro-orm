@@ -30,7 +30,7 @@ function isVisible<T extends object>(meta: EntityMetadata<T>, propName: EntityKe
     return prop.groups.some(g => options.groups!.includes(g));
   }
 
-  if (Array.isArray(options.populate) && options.populate?.find(item => item === propName || item.startsWith(propName + '.') || item === '*')) {
+  if (Array.isArray(options.populate) && options.populate?.find(item => item === propName || item.startsWith(propName + '.'))) {
     return true;
   }
 
