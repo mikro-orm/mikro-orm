@@ -707,7 +707,8 @@ export abstract class Platform {
       return this.formatQuery(raw.sql, raw.params);
     }
 
-    return `${quote}${id.toString().replace('.', `${quote}.${quote}`)}${quote}`;
+    const escaped = id.toString().replaceAll(quote, quote + quote);
+    return `${quote}${escaped.replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
   /** Quotes a literal value for safe embedding in SQL. */

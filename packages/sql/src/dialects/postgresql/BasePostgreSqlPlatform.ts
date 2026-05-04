@@ -388,7 +388,8 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
       return super.quoteIdentifier(id);
     }
 
-    return `${quote}${id.toString().replace('.', `${quote}.${quote}`)}${quote}`;
+    const escaped = id.toString().replaceAll(quote, quote + quote);
+    return `${quote}${escaped.replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
   private pad(number: number, digits: number): string {
