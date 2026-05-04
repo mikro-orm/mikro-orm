@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.14](https://github.com/mikro-orm/mikro-orm/compare/v6.6.13...v6.6.14) (2026-05-04)
+
+
+### Bug Fixes
+
+* **core:** escape embedded quote characters in quoteIdentifier ([#7654](https://github.com/mikro-orm/mikro-orm/issues/7654)) ([a1f005b](https://github.com/mikro-orm/mikro-orm/commit/a1f005b34fea004f133003b5d28e27d773c4a684))
+* **core:** escape JSON path keys in getSearchJsonPropertyKey ([#7657](https://github.com/mikro-orm/mikro-orm/issues/7657)) ([1d0710c](https://github.com/mikro-orm/mikro-orm/commit/1d0710c8bd0034fdf15cbb598a253ded69422a46))
+
+
+
+
+
 ## [6.6.13](https://github.com/mikro-orm/mikro-orm/compare/v6.6.12...v6.6.13) (2026-04-10)
 
 **Note:** Version bump only for package @mikro-orm/mssql

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.14](https://github.com/mikro-orm/mikro-orm/compare/v6.6.13...v6.6.14) (2026-05-04)
+
+**Note:** Version bump only for package @mikro-orm/libsql
+
+
+
+
+
 ## [6.6.13](https://github.com/mikro-orm/mikro-orm/compare/v6.6.12...v6.6.13) (2026-04-10)
 
 **Note:** Version bump only for package @mikro-orm/libsql

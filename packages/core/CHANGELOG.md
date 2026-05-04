@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.14](https://github.com/mikro-orm/mikro-orm/compare/v6.6.13...v6.6.14) (2026-05-04)
+
+
+### Bug Fixes
+
+* **core:** avoid crash on STI subclass @ManyToOne override targeting same hierarchy ([#7646](https://github.com/mikro-orm/mikro-orm/issues/7646)) ([1df1632](https://github.com/mikro-orm/mikro-orm/commit/1df16327ad9b8865fd45cf1161791e9c83bce356)), closes [#7599](https://github.com/mikro-orm/mikro-orm/issues/7599) [#7598](https://github.com/mikro-orm/mikro-orm/issues/7598)
+* **core:** drop entity from persist/remove stacks in uow.unsetIdentity() ([#7661](https://github.com/mikro-orm/mikro-orm/issues/7661)) ([8bc4c77](https://github.com/mikro-orm/mikro-orm/commit/8bc4c77d3a56146ce03801b298e8fc57e620cc99)), closes [#7639](https://github.com/mikro-orm/mikro-orm/issues/7639)
+* **core:** escape embedded quote characters in quoteIdentifier ([#7654](https://github.com/mikro-orm/mikro-orm/issues/7654)) ([a1f005b](https://github.com/mikro-orm/mikro-orm/commit/a1f005b34fea004f133003b5d28e27d773c4a684))
+* **core:** merge nested fields paths into explicit populate ([#7664](https://github.com/mikro-orm/mikro-orm/issues/7664)) ([f73568a](https://github.com/mikro-orm/mikro-orm/commit/f73568a9d3b0ebbe129f22c7eef38ac255567f13)), closes [#7605](https://github.com/mikro-orm/mikro-orm/issues/7605)
+* **core:** recognize TypeScript's __esDecorate helper in decorator path lookup ([#7665](https://github.com/mikro-orm/mikro-orm/issues/7665)) ([3b53296](https://github.com/mikro-orm/mikro-orm/commit/3b53296745afd0642775ba0092a85f0f27fd5eb0)), closes [#7584](https://github.com/mikro-orm/mikro-orm/issues/7584) [#7583](https://github.com/mikro-orm/mikro-orm/issues/7583)
+* **core:** respect hidden flag with populate: ['*'] in serialize() ([#7660](https://github.com/mikro-orm/mikro-orm/issues/7660)) ([752c108](https://github.com/mikro-orm/mikro-orm/commit/752c108376e5291dad1d4a686b1cc1dc7392fa7a)), closes [#7637](https://github.com/mikro-orm/mikro-orm/issues/7637)
+* **core:** skip getter-only properties in assignDefaultValues ([#7659](https://github.com/mikro-orm/mikro-orm/issues/7659)) ([ff65622](https://github.com/mikro-orm/mikro-orm/commit/ff6562229aca9411d8bd2722492242bb06639707)), closes [#7575](https://github.com/mikro-orm/mikro-orm/issues/7575)
+
+
+
+
+
 ## [6.6.13](https://github.com/mikro-orm/mikro-orm/compare/v6.6.12...v6.6.13) (2026-04-10)
 
 
