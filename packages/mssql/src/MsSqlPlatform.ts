@@ -225,13 +225,14 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       boolean: 'bit',
     } as Dictionary;
     const cast = (key: string) => raw(type in types ? `cast(${key} as ${types[type]})` : key);
+    const jsonPath = this.quoteValue(`$.${b.map(this.quoteJsonKey).join('.')}`);
 
     /* v8 ignore next */
     if (path.length === 0) {
-      return cast(`json_value(${root}, '$.${b.map(this.quoteJsonKey).join('.')}')`);
+      return cast(`json_value(${root}, ${jsonPath})`);
     }
 
-    return cast(`json_value(${root}, '$.${b.map(this.quoteJsonKey).join('.')}')`);
+    return cast(`json_value(${root}, ${jsonPath})`);
   }
 
   override getJsonArrayFromSQL(column: string, alias: string, properties: { name: string; type: string }[]): string {
