@@ -313,7 +313,7 @@ export class OraclePlatform extends AbstractSqlPlatform {
       return raw(`json_equal(${root}, json(?))`, [value]);
     }
 
-    return raw(`json_value(${root}, '$.${b.map(this.quoteJsonKey).join('.')}')`);
+    return raw(`json_value(${root}, ${this.quoteValue(`$.${b.map(this.quoteJsonKey).join('.')}`)})`);
   }
 
   override processJsonCondition<T extends object>(

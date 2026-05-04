@@ -359,10 +359,10 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
     }
 
     if (path.length === 0) {
-      return cast(`${root}${lastOperator}'${last}'`);
+      return cast(`${root}${lastOperator}${this.quoteValue(last)}`);
     }
 
-    return cast(`${root}->${path.map(a => this.quoteValue(a)).join('->')}${lastOperator}'${last}'`);
+    return cast(`${root}->${path.map(a => this.quoteValue(a)).join('->')}${lastOperator}${this.quoteValue(last)}`);
   }
 
   override getJsonIndexDefinition(index: IndexDef): string[] {

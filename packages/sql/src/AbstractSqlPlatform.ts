@@ -107,23 +107,27 @@ export abstract class AbstractSqlPlatform extends Platform {
     value?: unknown,
   ): string | RawQueryFragment {
     const [a, ...b] = path;
+    const jsonPath = this.quoteValue(`$.${b.map(this.quoteJsonKey).join('.')}`);
 
     if (aliased) {
-      return raw(
-        alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.map(this.quoteJsonKey).join('.')}')`,
-      );
+      return raw(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, ${jsonPath})`);
     }
 
-    return raw(`json_extract(${this.quoteIdentifier(a)}, '$.${b.map(this.quoteJsonKey).join('.')}')`);
+    return raw(`json_extract(${this.quoteIdentifier(a)}, ${jsonPath})`);
   }
 
   /**
    * Quotes a key for use inside a JSON path expression (e.g. `$.key`).
-   * Simple alphanumeric keys are left unquoted; others are wrapped in double quotes.
+   * Simple alphanumeric keys are left unquoted; others are wrapped in double quotes
+   * with embedded `\` and `"` escaped per the JSON path string syntax.
    * @internal
    */
   quoteJsonKey(key: string): string {
-    return /^[a-z]\w*$/i.exec(key) ? key : `"${key}"`;
+    if (/^[a-z]\w*$/i.test(key)) {
+      return key;
+    }
+
+    return `"${key.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"`;
   }
 
   override getJsonIndexDefinition(index: IndexDef): string[] {
