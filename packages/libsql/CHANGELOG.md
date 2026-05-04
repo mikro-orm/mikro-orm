@@ -5,14 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.14](https://github.com/mikro-orm/mikro-orm/compare/v7.0.13...v7.0.14) (2026-05-04)
 
-
 ### Features
 
-* **sql:** add `MikroORM` and `defineConfig` variants in `@mikro-orm/sql` ([#7647](https://github.com/mikro-orm/mikro-orm/issues/7647)) ([ce31ff4](https://github.com/mikro-orm/mikro-orm/commit/ce31ff449901fe84274ee8e1eaa32c71ad99c93d))
-
-
-
-
+- **sql:** add `MikroORM` and `defineConfig` variants in `@mikro-orm/sql` ([#7647](https://github.com/mikro-orm/mikro-orm/issues/7647)) ([ce31ff4](https://github.com/mikro-orm/mikro-orm/commit/ce31ff449901fe84274ee8e1eaa32c71ad99c93d))
 
 ## [7.0.13](https://github.com/mikro-orm/mikro-orm/compare/v7.0.12...v7.0.13) (2026-04-27)
 
