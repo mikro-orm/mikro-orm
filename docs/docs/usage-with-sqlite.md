@@ -121,6 +121,55 @@ D1 has significant limitations compared to regular SQLite:
 
 See the [D1 SQL documentation](https://developers.cloudflare.com/d1/sql-api/sql-statements/) for more details on supported SQL statements.
 
+## Using Cloudflare Durable Objects
+
+> **Experimental:** Durable Objects SQLite support is experimental. Use with caution.
+
+[Cloudflare Durable Objects](https://developers.cloudflare.com/durable-objects/) provide per-instance SQLite storage via `ctx.storage.sql`. Each DO owns one private database, implicitly scoped to that instance's identity (`idFromName(...)` / `newUniqueId()`). There is no connection string, no host, and no concept of multiple databases per DO — the database is whichever one is reachable through `ctx.storage.sql` for the current instance. This makes the entity manager naturally per-tenant when you partition tenants across DOs.
+
+Use the generic `SqliteDriver` with [`kysely-durable-objects`](https://github.com/jeffwilde/kysely-durable-objects):
+
+```bash npm2yarn
+npm install @mikro-orm/core @mikro-orm/sql kysely kysely-durable-objects
+```
+
+```ts
+import { DurableObject } from 'cloudflare:workers';
+import { MikroORM, SqliteDriver } from '@mikro-orm/sql';
+import { DurableObjectSqliteDialect } from 'kysely-durable-objects';
+import compiledFunctions from './compiled-functions.js';
+
+export class MyDurableObject extends DurableObject {
+  private orm?: MikroORM;
+
+  async getOrm() {
+    return (this.orm ??= await MikroORM.init({
+      driver: SqliteDriver,
+      entities: [...],
+      // `dbName` is required by MikroORM's API but ignored at runtime — there
+      // is nothing to point at, the database is implicitly the one tied to
+      // this DO instance via `ctx.storage.sql`. Any non-empty string works.
+      dbName: 'do',
+      driverOptions: new DurableObjectSqliteDialect(this.ctx.storage.sql),
+      // required: explicit transactions are not supported inside a Durable Object
+      implicitTransactions: false,
+      // required: `new Function()` is blocked in production workerd, so MikroORM
+      // must use pre-compiled query plans (run `npx mikro-orm compile`)
+      compiledFunctions,
+    }));
+  }
+}
+```
+
+### Durable Objects Limitations
+
+- **No explicit transactions:** `BEGIN`/`COMMIT`/`ROLLBACK` are blocked by the runtime, and `kysely-durable-objects` raises when MikroORM tries to issue them. Set `implicitTransactions: false` so `em.flush()` doesn't wrap in `BEGIN`. `em.transactional()` will throw — there is no safe way to bridge MikroORM's stepwise async transaction lifecycle to the DO runtime. For atomic blocks, drop down to `ctx.storage.transactionSync()` outside of MikroORM.
+- **No `new Function()` at request time:** the runtime forbids dynamic code generation. MikroORM must be configured with `compiledFunctions` (pre-build via `npx mikro-orm compile`).
+
+Unlike D1, Durable Object storage is in-process SQLite with a true cursor, so query streaming works as expected.
+
+See the [`kysely-durable-objects` README](https://github.com/jeffwilde/kysely-durable-objects#readme) for the complete behavior matrix.
+
 ## Using Bun SQLite
 
 Bun has a built-in [high-performance SQLite module](https://bun.sh/docs/api/sqlite) (`bun:sqlite`). Use the generic `SqliteDriver` with the `kysely-bun-sqlite` dialect:
