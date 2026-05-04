@@ -201,14 +201,17 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       boolean: 'bit',
     } as Dictionary;
     const cast = (key: string) => raw(type in types ? `cast(${key} as ${types[type]})` : key);
-    const quoteKey = (key: string) => key.match(/^[a-z]\w*$/i) ? key : `"${key}"`;
+    const quoteKey = (key: string) => key.match(/^[a-z]\w*$/i)
+      ? key
+      : `"${key.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"`;
+    const jsonPath = this.quoteValue(`$.${b.map(quoteKey).join('.')}`);
 
     /* istanbul ignore if */
     if (path.length === 0) {
-      return cast(`json_value(${root}, '$.${b.map(quoteKey).join('.')}')`);
+      return cast(`json_value(${root}, ${jsonPath})`);
     }
 
-    return cast(`json_value(${root}, '$.${b.map(quoteKey).join('.')}')`);
+    return cast(`json_value(${root}, ${jsonPath})`);
   }
 
   override normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | string): T {

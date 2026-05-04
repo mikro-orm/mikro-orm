@@ -88,13 +88,16 @@ export abstract class AbstractSqlPlatform extends Platform {
 
   override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string {
     const [a, ...b] = path;
-    const quoteKey = (key: string) => key.match(/^[a-z]\w*$/i) ? key : `"${key}"`;
+    const quoteKey = (key: string) => key.match(/^[a-z]\w*$/i)
+      ? key
+      : `"${key.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"`;
+    const jsonPath = this.quoteValue(`$.${b.map(quoteKey).join('.')}`);
 
     if (aliased) {
-      return raw(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.map(quoteKey).join('.')}')`);
+      return raw(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, ${jsonPath})`);
     }
 
-    return raw(`json_extract(${this.quoteIdentifier(a)}, '$.${b.map(quoteKey).join('.')}')`);
+    return raw(`json_extract(${this.quoteIdentifier(a)}, ${jsonPath})`);
   }
 
   override getJsonIndexDefinition(index: IndexDef): string[] {
