@@ -106,6 +106,63 @@ describe('EntityManagerMySql', () => {
     });
   });
 
+  test('pool.idleTimeoutMillis enables mysql2 idle cleanup via maxIdle', async () => {
+    const baseOpts = {
+      driver: MySqlDriver,
+      clientUrl: 'mysql://root@127.0.0.1:3308/db_name',
+      logger: vi.fn(),
+    } as any;
+
+    // without pool config, maxIdle is left untouched (mysql2 default keeps conns warm)
+    const driverDefault = new MySqlDriver(new Configuration({ ...baseOpts }, false));
+    expect(driverDefault.getConnection().mapOptions({})).not.toHaveProperty('maxIdle');
+
+    // setting only idleTimeoutMillis defaults maxIdle to 0 so cleanup actually runs
+    const driverIdle = new MySqlDriver(new Configuration({ ...baseOpts, pool: { idleTimeoutMillis: 30_000 } }, false));
+    expect(driverIdle.getConnection().mapOptions({})).toMatchObject({ idleTimeout: 30_000, maxIdle: 0 });
+
+    // pool.min is honored when set, mirroring tarn/knex semantics from v6
+    const driverMin = new MySqlDriver(
+      new Configuration({ ...baseOpts, pool: { min: 2, max: 10, idleTimeoutMillis: 30_000 } }, false),
+    );
+    expect(driverMin.getConnection().mapOptions({})).toMatchObject({
+      connectionLimit: 10,
+      idleTimeout: 30_000,
+      maxIdle: 2,
+    });
+
+    // explicit driverOptions.maxIdle wins over the default
+    const driverOverride = new MySqlDriver(
+      new Configuration({ ...baseOpts, pool: { idleTimeoutMillis: 30_000 } }, false),
+    );
+    expect(driverOverride.getConnection().mapOptions({ maxIdle: 5 })).toMatchObject({
+      idleTimeout: 30_000,
+      maxIdle: 5,
+    });
+
+    // misconfigured pool.min > pool.max is clamped below pool.max so cleanup still runs
+    // (otherwise maxIdle would equal connectionLimit and silently disable mysql2 cleanup)
+    const driverInvalid = new MySqlDriver(
+      new Configuration({ ...baseOpts, pool: { min: 20, max: 10, idleTimeoutMillis: 30_000 } }, false),
+    );
+    expect(driverInvalid.getConnection().mapOptions({})).toMatchObject({
+      connectionLimit: 10,
+      idleTimeout: 30_000,
+      maxIdle: 9,
+    });
+
+    // pool.min === pool.max is a legitimate fixed pool — leave maxIdle = min so mysql2
+    // keeps the configured size warm (cleanup intentionally not engaged)
+    const driverFixed = new MySqlDriver(
+      new Configuration({ ...baseOpts, pool: { min: 5, max: 5, idleTimeoutMillis: 30_000 } }, false),
+    );
+    expect(driverFixed.getConnection().mapOptions({})).toMatchObject({
+      connectionLimit: 5,
+      idleTimeout: 30_000,
+      maxIdle: 5,
+    });
+  });
+
   test('raw query with array param', async () => {
     const q1 = orm.em.getPlatform().formatQuery(`select * from author2 where id in (?) limit ?`, [[1, 2, 3], 3]);
     expect(q1).toBe('select * from author2 where id in (1, 2, 3) limit 3');
