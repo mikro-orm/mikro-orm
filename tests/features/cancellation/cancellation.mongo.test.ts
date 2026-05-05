@@ -63,3 +63,39 @@ test('signal aborts mongo nativeDelete', async () => {
     orm.em.fork().nativeDelete(CancellationUser, { name: 'a' }, { signal: ac.signal }),
   ).rejects.toBeDefined();
 });
+
+test('signal aborts mongo insertOne via em.insert', async () => {
+  const ac = new AbortController();
+  ac.abort(new Error('mongo-insertOne'));
+
+  await expect(orm.em.fork().insert(CancellationUser, { name: 'd' }, { signal: ac.signal })).rejects.toBeDefined();
+});
+
+test('signal aborts mongo bulkUpdateMany via upsertMany', async () => {
+  const ac = new AbortController();
+  ac.abort(new Error('mongo-upsert-many'));
+
+  await expect(
+    orm.em.fork().upsertMany(CancellationUser, [{ name: 'a' }, { name: 'b' }], { signal: ac.signal }),
+  ).rejects.toBeDefined();
+});
+
+test('fork-level signal applies to mongo aggregate', async () => {
+  const ac = new AbortController();
+  ac.abort(new Error('mongo-aggregate'));
+
+  await expect(orm.em.fork({ signal: ac.signal }).aggregate(CancellationUser, [{ $match: {} }])).rejects.toBeDefined();
+});
+
+test('fork-level signal applies to mongo streamAggregate', async () => {
+  const ac = new AbortController();
+  ac.abort(new Error('mongo-stream-aggregate'));
+
+  await expect(
+    (async () => {
+      for await (const _ of orm.em.fork({ signal: ac.signal }).streamAggregate(CancellationUser, [{ $match: {} }])) {
+        // drain
+      }
+    })(),
+  ).rejects.toBeDefined();
+});
