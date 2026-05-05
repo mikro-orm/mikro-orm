@@ -80,4 +80,4 @@ PGlite implements standard PostgreSQL features, so the [Schema Generator](./sche
 
 ## Limitations
 
-- **Streaming is not supported** — PGlite does not expose cursor-based streaming. Use `@mikro-orm/postgresql` against a real PostgreSQL server if you need `em.findStream()` or `qb.stream()`.
+- **Streaming is not supported** — PGlite does not expose cursor-based streaming. Use `@mikro-orm/postgresql` against a real PostgreSQL server if you need `em.stream()` or `qb.stream()`.
