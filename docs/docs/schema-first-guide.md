@@ -2913,13 +2913,13 @@ And let's regenerate the entities. Lastly, let's ensure we add it to the listing
 ...
 ```
 
-## Using the query builder during entity generation
+## Constructing the formula from metadata
 
-Notice that the full query had to be written as a string. So what happens if the columns are renamed in the future? No entity generation or build errors of any kind. You would only get an error at runtime, if you populate the property. That's not good. You can remedy that by constructing the query dynamically based on the metadata, and do the final replacement of the alias at the end. This will ensure you get errors during entity generation if you've renamed the involved table or columns.
+Notice that the full query had to be written as a string. So what happens if the columns are renamed in the future? No entity generation or build errors of any kind. You would only get an error at runtime, if you populate the property. That's not good. You can remedy that by constructing the query dynamically based on the metadata. This will ensure you get errors during entity generation if you've renamed the involved table or columns. Use `platform.quoteIdentifier()` to get database-specific quoting for the table and column names.
 
 ```diff title="src/modules/article/article.gen.ts"
-import type { GenerateOptions } from '@mikro-orm/core';
-+import { type SqlEntityManager, Utils } from '@mikro-orm/mysql';
+-import type { GenerateOptions } from '@mikro-orm/core';
++import { Utils, type GenerateOptions } from '@mikro-orm/core';
 ...
       textProp.lazy = true;
 
@@ -2927,15 +2927,12 @@ import type { GenerateOptions } from '@mikro-orm/core';
 +      if (!commentEntity) {
 +        return;
 +      }
-+      const em = (platform.getConfig().getDriver().createEntityManager() as SqlEntityManager);
-+      const qb = em.getKnex().queryBuilder().count().from(commentEntity.tableName).where(
-+        commentEntity.properties.article.fieldNames[0],
-+        '=',
-+        em.getKnex().raw('??.??', [em.getKnex().raw('??'), commentEntity.properties.id.fieldNames[0]])
-+      );
++      const tableName = platform.quoteIdentifier(commentEntity.tableName);
++      const articleCol = platform.quoteIdentifier(commentEntity.properties.article.fieldNames[0]);
++      const idCol = platform.quoteIdentifier(commentEntity.properties.id.fieldNames[0]);
 +      const formula = Utils.createFunction(
 +        new Map(),
-+        `return (alias) => ${JSON.stringify(`(${qb.toSQL().sql})`)}.replaceAll('??', alias)`
++        `return (alias) => \`(select count(*) from ${tableName} where ${articleCol} = \${alias}.${idCol})\``
 +      );
 +
       articleEntity.addProperty({
