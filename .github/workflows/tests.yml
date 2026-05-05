@@ -168,6 +168,19 @@ jobs:
       - name: Init docker
         run: |
           if docker compose up -d --wait; then
+            # mssql 2025-CU3 occasionally crashes shortly after first healthy
+            # probe (SQLPAL/lsass.exe segfault). `restart: always` recovers it,
+            # but `--wait` returns as soon as one probe succeeds. Re-verify it
+            # stays reachable for a short stability window so any crash-restart
+            # cycle settles before tests start.
+            for i in 1 2 3 4 5; do
+              sleep 5
+              docker compose exec -T mssql /opt/mssql-tools18/bin/sqlcmd -b -C -S tcp:localhost -U sa -P 'Root.Root' -Q 'select 1' >/dev/null 2>&1 && continue
+              echo "::warning::mssql probe $i failed; waiting 60s for restart"
+              sleep 60
+              docker compose exec -T mssql /opt/mssql-tools18/bin/sqlcmd -b -C -S tcp:localhost -U sa -P 'Root.Root' -Q 'select 1' || exit 1
+              break
+            done
             exit 0
           fi
           rc=$?
