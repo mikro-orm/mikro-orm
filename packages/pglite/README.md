@@ -71,7 +71,7 @@ await orm.em.flush();
 
 ## Documentation
 
-See the [official MikroORM documentation](https://mikro-orm.io/docs) and the [PostgreSQL usage guide](https://mikro-orm.io/docs/usage-with-postgresql).
+See the [official MikroORM documentation](https://mikro-orm.io/docs) and the [PGlite usage guide](https://mikro-orm.io/docs/usage-with-pglite).
 
 ## License
 
