@@ -59,6 +59,15 @@ export class MySqlConnection extends AbstractSqlConnection {
     ret.connectionLimit = pool?.max;
     ret.idleTimeout = pool?.idleTimeoutMillis;
 
+    // mysql2 only runs idle cleanup when `maxIdle < connectionLimit`; its default has
+    // them equal, so `idleTimeout` alone is a no-op. When the user opts into idle
+    // cleanup via `pool.idleTimeoutMillis`, default `maxIdle` to `pool.min ?? 0` so
+    // idle connections actually drain. Explicit `driverOptions.maxIdle` still wins
+    // because `overrides` is merged in last.
+    if (pool?.idleTimeoutMillis != null) {
+      ret.maxIdle = pool.min ?? 0;
+    }
+
     if (this.config.get('multipleStatements')) {
       ret.multipleStatements = this.config.get('multipleStatements');
     }
