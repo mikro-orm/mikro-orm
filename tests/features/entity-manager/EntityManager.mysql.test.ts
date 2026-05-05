@@ -139,6 +139,28 @@ describe('EntityManagerMySql', () => {
       idleTimeout: 30_000,
       maxIdle: 5,
     });
+
+    // misconfigured pool.min > pool.max is clamped below pool.max so cleanup still runs
+    // (otherwise maxIdle would equal connectionLimit and silently disable mysql2 cleanup)
+    const driverInvalid = new MySqlDriver(
+      new Configuration({ ...baseOpts, pool: { min: 20, max: 10, idleTimeoutMillis: 30_000 } }, false),
+    );
+    expect(driverInvalid.getConnection().mapOptions({})).toMatchObject({
+      connectionLimit: 10,
+      idleTimeout: 30_000,
+      maxIdle: 9,
+    });
+
+    // pool.min === pool.max is a legitimate fixed pool — leave maxIdle = min so mysql2
+    // keeps the configured size warm (cleanup intentionally not engaged)
+    const driverFixed = new MySqlDriver(
+      new Configuration({ ...baseOpts, pool: { min: 5, max: 5, idleTimeoutMillis: 30_000 } }, false),
+    );
+    expect(driverFixed.getConnection().mapOptions({})).toMatchObject({
+      connectionLimit: 5,
+      idleTimeout: 30_000,
+      maxIdle: 5,
+    });
   });
 
   test('raw query with array param', async () => {
