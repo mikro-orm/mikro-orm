@@ -62,7 +62,7 @@ Afterward, the `EntityManager` will be available to inject across entire project
 
 ```ts
 import { MikroORM } from '@mikro-orm/core';
-import { EntityManager } from '@mikro-orm/mysql'; // Import EntityManager from your driver package or `@mikro-orm/knex`
+import { EntityManager } from '@mikro-orm/mysql'; // Import EntityManager from your driver package or `@mikro-orm/sql`
 
 @Injectable()
 export class MyService {
@@ -76,7 +76,7 @@ export class MyService {
 
 > Notice that the `EntityManager` is imported from the `@mikro-orm/driver` package, where driver is `mysql`, `sqlite`, `postgres` or whatever driver you are using.
 >
-> In case you have `@mikro-orm/knex` installed as a dependency, you can also import the `EntityManager` from there.
+> In case you have `@mikro-orm/sql` installed as a dependency, you can also import the `EntityManager` from there.
 
 ## Repositories
 
@@ -144,7 +144,7 @@ export class Author {
 `**./author.repository.ts**`
 
 ```ts
-import { EntityRepository } from '@mikro-orm/mysql'; // Import EntityManager from your driver package or `@mikro-orm/knex`
+import { EntityRepository } from '@mikro-orm/mysql'; // Import EntityManager from your driver package or `@mikro-orm/sql`
 
 export class AuthorRepository extends EntityRepository<Author> {
 

@@ -494,7 +494,7 @@ Transaction events fire at transaction boundaries:
 
 ```ts
 interface TransactionEventArgs extends Omit<EventArgs<unknown>, 'entity' | 'changeSet'> {
-  transaction?: Transaction;  // Native transaction (e.g., Knex client for SQL)
+  transaction?: Transaction;  // Native transaction (e.g., Kysely instance for SQL)
   uow?: UnitOfWork;
 }
 ```
