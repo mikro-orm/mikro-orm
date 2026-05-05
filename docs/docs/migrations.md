@@ -45,7 +45,7 @@ Migrations are by default wrapped in a transaction. You can override this behavi
 
 `Configuration` object and driver instance are available in the `Migration` class context.
 
-You can execute queries in the migration via `Migration.execute()` method, which will run queries in the same transaction as the rest of the migration. The `Migration.addSql()` method also accepts instances of knex. Knex instance can be accessed via `Migration.getKnex()`;
+You can execute queries in the migration via `Migration.execute()` method, which will run queries in the same transaction as the rest of the migration. Both `Migration.execute()` and `Migration.addSql()` accept a raw SQL string, a `raw()` SQL fragment, or a native query builder instance built via `Migration.getEntityManager().getKysely()`.
 
 ### Working with `EntityManager`
 
