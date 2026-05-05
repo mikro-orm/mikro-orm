@@ -133,7 +133,7 @@ const databases = [
   { name: 'Oracle', logo: 'img/databases/oracle.svg', docsUrl: 'docs/usage-with-sql#oracle-limitations' },
   { name: 'Turso', logo: 'img/databases/turso.svg', docsUrl: 'docs/usage-with-sqlite#using-turso-embedded-database' },
   { name: 'Cloudflare D1', logo: 'img/databases/cloudflare-d1.svg', docsUrl: 'docs/usage-with-sqlite#using-cloudflare-d1' },
-  { name: 'PGlite', logo: 'img/databases/pglite.svg', docsUrl: 'docs/usage-with-pglite' },
+  { name: 'PGlite', logo: 'img/databases/pglite.svg', docsUrl: 'docs/next/usage-with-pglite' },
 ];
 
 function Feature({ title, icon, description, docsUrl }) {
