@@ -186,7 +186,7 @@ export async function bootstrap(port = 3001) {
 
 :::info Importing `EntityManager` and `EntityRepository` from driver package
 
-While [`EntityManager`](/api/core/class/EntityManager) and [`EntityRepository`](/api/core/class/EntityRepository) classes are provided by the `@mikro-orm/core` package, those are only the base - driver agnostic - implementations. One example of what that means is the `QueryBuilder` - as an SQL concept, it has no place in the `@mikro-orm/core` package, instead, an extension of the [`EntityManager`](/api/core/class/EntityManager) called `SqlEntityManager` is provided by the SQL driver packages (it is defined in `@mikro-orm/knex` package and reexported in every SQL driver packages that depend on it). This `SqlEntityManager` class provides the additional SQL related methods, like `em.createQueryBuilder()`.
+While [`EntityManager`](/api/core/class/EntityManager) and [`EntityRepository`](/api/core/class/EntityRepository) classes are provided by the `@mikro-orm/core` package, those are only the base - driver agnostic - implementations. One example of what that means is the `QueryBuilder` - as an SQL concept, it has no place in the `@mikro-orm/core` package, instead, an extension of the [`EntityManager`](/api/core/class/EntityManager) called `SqlEntityManager` is provided by the SQL driver packages (it is defined in `@mikro-orm/sql` package and reexported in every SQL driver packages that depend on it). This `SqlEntityManager` class provides the additional SQL related methods, like `em.createQueryBuilder()`.
 
 For convenience, the `SqlEntityManager` class is also reexported under [`EntityManager`](/api/core/class/EntityManager) alias. This means you can do `import { EntityManager } from '@mikro-orm/sqlite'` to access it.
 
@@ -533,7 +533,7 @@ MikroORM will generate the down migrations automatically (although not for the i
 
 :::
 
-> You can also execute queries inside the `up()`/`down()` method via `this.execute('...')`, which will run queries in the same transaction as the rest of the migration. The `this.addSql('...)` method also accepts instances of knex. Knex instance can be accessed via `this.getKnex()`;
+> You can also execute queries inside the `up()`/`down()` method via `this.execute('...')`, which will run queries in the same transaction as the rest of the migration. The `this.addSql('...)` method also accepts instances of the native query builder or `raw()` SQL fragments.
 
 Read more about migrations in the [documentation](../migrations).
 

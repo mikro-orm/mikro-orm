@@ -912,7 +912,7 @@ export class ArticleRepository extends EntityRepository<IArticle> {
     const totalComments = this.em.createQueryBuilder(CommentSchema)
       .count()
       .where({ article: sql.ref('a.id') })
-      // by calling `qb.as()` we convert the QB instance to Knex instance
+      // by calling `qb.as()` we alias the sub-query
       .as('totalComments');
 
     // sub-query for all used tags

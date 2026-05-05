@@ -58,15 +58,16 @@ export class Author { ... }
 
 ## `raw` queries with `QueryBuilder`
 
-You can use the `raw` helper for `QueryBuilder` or `Knex.QueryBuilder` instances too. Note that this is only available in the `raw` helper exported from SQL drivers, not with the one exported from the `@mikro-orm/core` package.
+You can use the `raw` helper for `QueryBuilder` or Kysely query builder instances too. Note that this is only available in the `raw` helper exported from SQL drivers, not with the one exported from the `@mikro-orm/core` package.
 
 ```ts
 import { raw } from '@mikro-orm/postgresql';
 
-const knexRaw = em.getKnex().raw('select 1');
+const kysely = em.getKysely();
+const subQuery = kysely.selectFrom('user').select('id').where('active', '=', true);
 
 const r = await em.find(User, {
-  id: raw(knexRaw),
+  id: raw(subQuery),
 });
 ```
 

@@ -197,7 +197,6 @@ for (const devDependency of Object.keys(devDependencies)) {
 // And anything MikroORM's packaging can be ignored if it's not on disk.
 // Later we check these dynamically and tell webpack to ignore the ones we don't have.
 const optionalModules = new Set([
-  ...Object.keys(require('knex/package.json').browser),
   ...Object.keys(require('@mikro-orm/core/package.json').peerDependencies),
   ...Object.keys(require('@mikro-orm/core/package.json').devDependencies || {})
 ]);
@@ -300,22 +299,6 @@ To run Webpack execute `webpack` (or `npx webpack` if not installed globally) in
 ## Deploy a bundle of entities and dependencies with `esbuild`
 
 [`esbuild`](https://esbuild.github.io/) can be used to bundle MikroORM entities and dependencies: you get a single file that contains every required module/file. Due to how the bundling works, there are few issues that needs to be properly addressed to make `esbuild` work with MikroORM.
-
-### Required shim for Knex with esbuild
-
-[Knex](https://knexjs.org/) has a known incompatibility with esbuild - Knex attempts to use dynamic imports to handle the various possible database dialects (mySQL, MongoDB, Oracle, etc.) but esbuild does not provide support for dynamic import functionality (see [this GitHub issue](https://github.com/evanw/esbuild/issues/473)).
-
-In order to work around this issue, you can define a shim module as shown below which intercepts Knex's client resolution at runtime and handles the operation itself (thus avoiding the dynamic import code). This enables `esbuild` bundling to work correctly.
-
-Define a file `knex.d.ts` as follows:
-
-```ts
-declare module 'knex/lib/dialects/postgres' {
-  import { Knex } from 'esbuild-support/knex';
-  const client: Knex.Client;
-  export = client;
-}
-```
 
 ### Excluding dependencies from esbuild
 
