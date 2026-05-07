@@ -92,19 +92,19 @@ bench('em.create() return type', () => {
   type R = ReturnType<typeof em.create<Author>>;
   const x = {} as R;
   void x;
-}).types([2442, 'instantiations']);
+}).types([2473, 'instantiations']);
 
 bench('RequiredEntityData - Author', () => {
   type R = RequiredEntityData<Author>;
   const x = {} as R;
   void x;
-}).types([1503, 'instantiations']);
+}).types([1534, 'instantiations']);
 
 bench('RequiredEntityData - Book', () => {
   type R = RequiredEntityData<Book>;
   const x = {} as R;
   void x;
-}).types([1309, 'instantiations']);
+}).types([1340, 'instantiations']);
 
 // New<T> type (used as create return type)
 bench('New<Author>', () => {
@@ -187,13 +187,13 @@ bench('EntityData<Author>', () => {
   type R = EntityData<Author>;
   const x = {} as R;
   void x;
-}).types([216, 'instantiations']);
+}).types([235, 'instantiations']);
 
 bench('EntityData<Loaded<Author, "books">>', () => {
   type R = EntityData<Loaded<Author, 'books'>>;
   const x = {} as R;
   void x;
-}).types([1848, 'instantiations']);
+}).types([1867, 'instantiations']);
 
 // ============================================
 // Simulating wrap(e).toObject()

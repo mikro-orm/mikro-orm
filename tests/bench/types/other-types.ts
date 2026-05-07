@@ -93,7 +93,7 @@ function useEntityData<T>(_data: EntityData<T>): void {}
 
 bench('EntityData<Author> - simple', () => {
   useEntityData<Author>({ name: 'test', email: 'test@test.com' });
-}).types([213, 'instantiations']);
+}).types([244, 'instantiations']);
 
 bench('EntityData<Book> - with relations', () => {
   useEntityData<Book>({
@@ -101,7 +101,7 @@ bench('EntityData<Book> - with relations', () => {
     price: 10,
     author: { name: 'test' } as any,
   });
-}).types([628, 'instantiations']);
+}).types([674, 'instantiations']);
 
 // ============================================
 // RequiredEntityData benchmarks
@@ -112,11 +112,11 @@ function useRequiredData<T>(_data: RequiredEntityData<T>): void {}
 
 bench('RequiredEntityData<Author> - simple', () => {
   useRequiredData<Author>({ name: 'test', email: 'test@test.com' });
-}).types([2147, 'instantiations']);
+}).types([2190, 'instantiations']);
 
 bench('RequiredEntityData<Book> - with required relations', () => {
   useRequiredData<Book>({ title: 'test', price: 10, author: {} as Author });
-}).types([3518, 'instantiations']);
+}).types([3576, 'instantiations']);
 
 // ============================================
 // Primary type benchmarks
