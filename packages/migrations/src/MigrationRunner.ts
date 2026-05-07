@@ -17,18 +17,24 @@ export class MigrationRunner {
     this.#helper = this.driver.getPlatform().getSchemaHelper()!;
   }
 
-  async run(migration: Migration, method: 'up' | 'down'): Promise<void> {
+  async run(
+    migration: Migration,
+    method: 'up' | 'down',
+    afterRun?: (tx?: Transaction) => Promise<void>,
+  ): Promise<void> {
     migration.reset();
 
     if (!this.options.transactional || !migration.isTransactional()) {
       const queries = await this.getQueries(migration, method);
       await Utils.runSerial(queries, sql => this.driver.execute(sql));
+      await afterRun?.();
     } else {
       await this.#connection.transactional(
         async tx => {
           migration.setTransactionContext(tx);
           const queries = await this.getQueries(migration, method);
           await Utils.runSerial(queries, sql => this.driver.execute(sql, undefined, 'all', tx));
+          await afterRun?.(tx);
         },
         { ctx: this.#masterTransaction },
       );

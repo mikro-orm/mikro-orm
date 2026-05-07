@@ -14,19 +14,26 @@ export class MigrationRunner {
     this.connection = this.driver.getConnection();
   }
 
-  async run(migration: Migration, method: 'up' | 'down'): Promise<void> {
+  async run(
+    migration: Migration,
+    method: 'up' | 'down',
+    afterRun?: (tx?: Transaction) => Promise<void>,
+  ): Promise<void> {
     migration.reset();
 
     if (!this.options.transactional || !migration.isTransactional()) {
       await migration[method]();
+      await afterRun?.();
     } else if (this.masterTransaction) {
       migration.setTransactionContext(this.masterTransaction);
       await migration[method]();
+      await afterRun?.(this.masterTransaction);
     } else {
       await this.connection.transactional(
         async tx => {
           migration.setTransactionContext(tx);
           await migration[method]();
+          await afterRun?.(tx);
         },
         { ctx: this.masterTransaction },
       );
