@@ -3,6 +3,7 @@ import {
   type EntityMetadata,
   type EntityProperty,
   type MetadataStorage,
+  type Type,
   ReferenceKind,
   isRaw,
 } from '@mikro-orm/core';
@@ -480,7 +481,10 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
 
     const columnProps = this.mapColumnsToProperties(node.columns, meta);
-    const needsSqlWrap = columnProps.some(p => p?.customType?.convertToDatabaseValueSQL);
+    const fieldNames = node.columns.map(c => this.normalizeColumnName(c.column));
+    // hasConvertToDatabaseValueSQL is set by MetadataDiscovery only when the SQL is non-trivial
+    // (i.e. it actually wraps `?`), so a no-op cast on sqlite won't force a row upgrade.
+    const needsSqlWrap = columnProps.some(p => p?.hasConvertToDatabaseValueSQL);
     let changed = false;
 
     const convertedRows = node.values.values.map(row => {
@@ -489,7 +493,7 @@ export class MikroTransformer extends OperationNodeTransformer {
           if (!ValueNode.is(valueNode)) {
             return valueNode;
           }
-          const newNode = this.processInputValueNode(columnProps[idx], valueNode);
+          const newNode = this.processInputValueNode(columnProps[idx], fieldNames[idx], valueNode);
           if (newNode !== valueNode) {
             changed = true;
           }
@@ -507,7 +511,7 @@ export class MikroTransformer extends OperationNodeTransformer {
             row.values.map((value, idx) => {
               const prop = columnProps[idx];
               const converted = this.prepareInputValue(prop, value, true);
-              return this.wrapWrite(prop, ValueNode.create(converted));
+              return this.wrapWrite(prop, fieldNames[idx], ValueNode.create(converted));
             }),
           );
         }
@@ -551,7 +555,7 @@ export class MikroTransformer extends OperationNodeTransformer {
         ? this.normalizeColumnName(updateNode.column.column)
         : undefined;
       const property = this.findProperty(meta, columnName);
-      const newValue = this.processInputValueNode(property, updateNode.value);
+      const newValue = this.processInputValueNode(property, columnName, updateNode.value);
 
       if (newValue === updateNode.value) {
         return updateNode;
@@ -571,7 +575,11 @@ export class MikroTransformer extends OperationNodeTransformer {
     };
   }
 
-  processInputValueNode(prop: EntityProperty | undefined, valueNode: ValueNode): OperationNode {
+  processInputValueNode(
+    prop: EntityProperty | undefined,
+    fieldName: string | undefined,
+    valueNode: ValueNode,
+  ): OperationNode {
     const converted = this.prepareInputValue(prop, valueNode.value, true);
     const newValueNode =
       converted === valueNode.value
@@ -579,7 +587,7 @@ export class MikroTransformer extends OperationNodeTransformer {
         : valueNode.immediate
           ? ValueNode.createImmediate(converted)
           : ValueNode.create(converted);
-    return this.wrapWrite(prop, newValueNode);
+    return this.wrapWrite(prop, fieldName, newValueNode);
   }
 
   expandSelections(selections: readonly SelectionNode[]): readonly SelectionNode[] {
@@ -621,11 +629,12 @@ export class MikroTransformer extends OperationNodeTransformer {
 
     const fieldName = inner.column.column.name;
     const prop = this.findProperty(meta, fieldName);
-    return prop?.customType?.convertToJSValueSQL ? [this.wrapRead(prop, fieldName, tableName)] : null;
+    const ct = prop && this.fieldType(prop, fieldName);
+    return ct?.convertToJSValueSQL ? [this.wrapRead(ct, fieldName, tableName)] : null;
   }
 
   expandStar(meta: EntityMetadata | undefined, table: TableNode | undefined): SelectionNode[] | null {
-    if (!meta || !meta.props.some(p => p.persist !== false && p.customType?.convertToJSValueSQL)) {
+    if (!meta || !meta.props.some(p => p.hasConvertToJSValueSQL)) {
       return null;
     }
 
@@ -637,9 +646,10 @@ export class MikroTransformer extends OperationNodeTransformer {
         continue;
       }
       for (const fieldName of prop.fieldNames) {
+        const ct = this.fieldType(prop, fieldName);
         out.push(
-          prop.customType?.convertToJSValueSQL
-            ? this.wrapRead(prop, fieldName, tableName)
+          ct?.convertToJSValueSQL
+            ? this.wrapRead(ct, fieldName, tableName)
             : SelectionNode.create(
                 table ? ReferenceNode.create(ColumnNode.create(fieldName), table) : ColumnNode.create(fieldName),
               ),
@@ -650,26 +660,32 @@ export class MikroTransformer extends OperationNodeTransformer {
     return out;
   }
 
-  wrapRead(prop: EntityProperty, fieldName: string, tableName: string | undefined): SelectionNode {
+  wrapRead(customType: Type<any>, fieldName: string, tableName: string | undefined): SelectionNode {
     const key = this.#platform.quoteIdentifier(tableName ? `${tableName}.${fieldName}` : fieldName);
-    const sql = prop.customType!.convertToJSValueSQL!(key, this.#platform);
+    const sql = customType.convertToJSValueSQL!(key, this.#platform);
     return SelectionNode.create(AliasNode.create(RawNode.createWithSql(sql), IdentifierNode.create(fieldName)));
   }
 
-  wrapWrite(prop: EntityProperty | undefined, valueNode: ValueNode): OperationNode {
-    const customType = prop?.customType;
-    if (!customType?.convertToDatabaseValueSQL || valueNode.value == null || isRaw(valueNode.value)) {
+  wrapWrite(prop: EntityProperty | undefined, fieldName: string | undefined, valueNode: ValueNode): OperationNode {
+    if (!prop?.hasConvertToDatabaseValueSQL || !fieldName || valueNode.value == null || isRaw(valueNode.value)) {
       return valueNode;
     }
-    const sql = customType.convertToDatabaseValueSQL('?', this.#platform);
-    if (sql === '?') {
+    const customType = this.fieldType(prop, fieldName);
+    if (!customType?.convertToDatabaseValueSQL) {
       return valueNode;
     }
-    const fragments = sql.split('?');
+    const fragments = customType.convertToDatabaseValueSQL('?', this.#platform).split('?');
     return RawNode.create(
       fragments,
       fragments.slice(0, -1).map(() => valueNode),
     );
+  }
+
+  /** Resolve the customType to use for a specific field name within a prop (handles composite-PK customTypes[]). */
+  fieldType(prop: EntityProperty, fieldName: string): Type<any> | undefined {
+    // customTypes[] only set for M2O/O2O FKs to composite-PK targets — indexOf returning -1
+    // here naturally yields `customTypes[-1]` → undefined for non-FK refs.
+    return prop.customType ?? prop.customTypes?.[prop.fieldNames.indexOf(fieldName)];
   }
 
   findOwnerMeta(name: string | undefined): EntityMetadata | undefined {

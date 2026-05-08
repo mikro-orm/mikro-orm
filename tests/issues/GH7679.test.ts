@@ -233,6 +233,70 @@ test('INSERT leaves null and raw values alone', () => {
   expect(sql).not.toContain('unhex(');
 });
 
+test('qualified column reference into a CTE alias is wrapped (subqueryAliasMap path)', async () => {
+  const kysely = orm.em.getKysely<{
+    Doc: { id: number; title: string; content: string; parent_id: number | null };
+    docs: { id: number; title: string; content: string };
+  }>({
+    tableNamingStrategy: 'entity',
+    convertValues: true,
+  });
+
+  await kysely.insertInto('Doc').values({ id: 500, title: 't', content: 'cte', parent_id: null }).execute();
+
+  // CTE 'docs' is not a registered entity — findOwnerMeta must consult subqueryAliasMap
+  // (populated by processWithNode via extractSourceTableFromSelectQuery) to resolve docs → Doc.
+  const sql = kysely
+    .with('docs', q => q.selectFrom('Doc').selectAll())
+    .selectFrom('docs')
+    .select('docs.content')
+    .compile().sql;
+  // outer select wraps docs.content via subqueryAliasMap → Doc.content's customType
+  expect(sql).toMatch(/hex\([`"]docs[`"]\.[`"]content[`"]\)/);
+});
+
+test('composite-PK FK columns honour per-index prop.customTypes[]', async () => {
+  // Composite-PK target with a custom-typed PK column produces prop.customTypes[]
+  // on the M2O side (see MetadataDiscovery). Verify both read and write wraps fire
+  // for each FK column individually rather than relying on prop.customType.
+  const Composite = defineEntity({
+    name: 'Composite',
+    properties: {
+      part1: p.type(HexEncodedType).primary(),
+      part2: p.string().primary(),
+    },
+  });
+  const Linked = defineEntity({
+    name: 'Linked',
+    properties: {
+      id: p.integer().primary().autoincrement(),
+      ref: () => p.manyToOne(Composite),
+    },
+  });
+
+  const o = new MikroORM({ entities: [Composite, Linked], dbName: ':memory:' });
+  await o.schema.refresh();
+  try {
+    const kysely = o.em.getKysely<{
+      Linked: { id: number; ref_part1: string; ref_part2: string };
+    }>({
+      tableNamingStrategy: 'entity',
+      convertValues: true,
+    });
+
+    // SELECT side: ref_part1 has a customType in customTypes[0], ref_part2 doesn't
+    const selectSql = kysely.selectFrom('Linked').selectAll().compile().sql;
+    expect(selectSql).toContain('hex(');
+    expect(selectSql).toMatch(/hex\([`"]ref_part1[`"]\)/);
+
+    // INSERT side: ref_part1 should be wrapped with unhex(?), ref_part2 untouched
+    const insertSql = kysely.insertInto('Linked').values({ id: 1, ref_part1: 'a', ref_part2: 'b' }).compile().sql;
+    expect(insertSql).toContain('unhex(');
+  } finally {
+    await o.close(true);
+  }
+});
+
 test('reference to unknown table is left alone', () => {
   const kysely = orm.em.getKysely<{ Doc: { id: number; title: string; content: string }; ad_hoc: { x: number } }>({
     tableNamingStrategy: 'entity',
