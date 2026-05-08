@@ -3,13 +3,13 @@ import {
   type EntityMetadata,
   type EntityProperty,
   type MetadataStorage,
+  type Type,
   ReferenceKind,
   isRaw,
 } from '@mikro-orm/core';
 import {
   type CommonTableExpressionNameNode,
   type DeleteQueryNode,
-  type IdentifierNode,
   type InsertQueryNode,
   type JoinNode,
   type MergeQueryNode,
@@ -20,10 +20,14 @@ import {
   AliasNode,
   ColumnNode,
   ColumnUpdateNode,
+  IdentifierNode,
   OperationNodeTransformer,
   PrimitiveValueListNode,
+  RawNode,
   ReferenceNode,
   SchemableIdentifierNode,
+  SelectAllNode,
+  SelectionNode,
   TableNode,
   ValueListNode,
   ValueNode,
@@ -111,7 +115,16 @@ export class MikroTransformer extends OperationNodeTransformer {
         }
       }
 
-      return super.transformSelectQuery(node, queryId);
+      const transformed = super.transformSelectQuery(node, queryId);
+
+      if (this.#options.convertValues && transformed.selections?.length) {
+        const selections = this.processSelectionsForJSValueSQL(transformed.selections);
+        if (selections !== transformed.selections) {
+          return { ...transformed, selections };
+        }
+      }
+
+      return transformed;
     } finally {
       // Pop the context when exiting this query scope
       this.#contextStack.pop();
@@ -558,6 +571,178 @@ export class MikroTransformer extends OperationNodeTransformer {
       ...node,
       updates,
     };
+  }
+
+  processSelectionsForJSValueSQL(selections: readonly SelectionNode[]): readonly SelectionNode[] {
+    const result: SelectionNode[] = [];
+    let changed = false;
+
+    for (const sel of selections) {
+      const expanded = this.tryWrapSelection(sel);
+      if (expanded === null) {
+        result.push(sel);
+        continue;
+      }
+
+      result.push(...expanded);
+      changed = true;
+    }
+
+    return changed ? result : selections;
+  }
+
+  tryWrapSelection(sel: SelectionNode): SelectionNode[] | null {
+    const inner = sel.selection;
+
+    if (ColumnNode.is(inner)) {
+      const wrapped = this.wrapColumnIfNeeded(inner, undefined);
+      return wrapped ? [wrapped] : null;
+    }
+
+    if (ReferenceNode.is(inner)) {
+      const tableName = inner.table ? this.getTableName(inner.table) : undefined;
+
+      if (SelectAllNode.is(inner.column)) {
+        return this.expandStarSelection(tableName, inner.table);
+      }
+
+      if (ColumnNode.is(inner.column)) {
+        const wrapped = this.wrapColumnIfNeeded(inner.column, tableName);
+        return wrapped ? [wrapped] : null;
+      }
+
+      return null;
+    }
+
+    if (SelectAllNode.is(inner)) {
+      return this.expandStarSelection(undefined, undefined);
+    }
+
+    return null;
+  }
+
+  wrapColumnIfNeeded(column: ColumnNode, tableNameOrAlias: string | undefined): SelectionNode | null {
+    const meta = this.resolveOwnerMeta(tableNameOrAlias);
+    if (!meta) {
+      return null;
+    }
+
+    const colName = column.column.name;
+    const prop = this.findProperty(meta, colName);
+    if (!prop) {
+      return null;
+    }
+
+    const idx = prop.fieldNames?.indexOf(colName) ?? -1;
+    const customType = this.getJSValueSQLType(prop, idx);
+    if (!customType) {
+      return null;
+    }
+
+    return this.buildJSValueSQLSelection(customType, colName, tableNameOrAlias);
+  }
+
+  expandStarSelection(tableNameOrAlias: string | undefined, table: TableNode | undefined): SelectionNode[] | null {
+    const meta = this.resolveOwnerMeta(tableNameOrAlias);
+    if (!meta || !this.hasJSValueSQLProp(meta)) {
+      return null;
+    }
+
+    const result: SelectionNode[] = [];
+    for (const prop of meta.props) {
+      if (!this.isExpandableProp(prop)) {
+        continue;
+      }
+
+      prop.fieldNames.forEach((fieldName, idx) => {
+        const customType = this.getJSValueSQLType(prop, idx);
+        if (customType) {
+          result.push(this.buildJSValueSQLSelection(customType, fieldName, tableNameOrAlias));
+        } else if (table) {
+          result.push(SelectionNode.create(ReferenceNode.create(ColumnNode.create(fieldName), table)));
+        } else {
+          result.push(SelectionNode.create(ColumnNode.create(fieldName)));
+        }
+      });
+    }
+
+    return result;
+  }
+
+  isExpandableProp(prop: EntityProperty): boolean {
+    return (
+      prop.persist !== false &&
+      !!prop.fieldNames?.length &&
+      (prop.kind === ReferenceKind.SCALAR ||
+        prop.kind === ReferenceKind.EMBEDDED ||
+        prop.kind === ReferenceKind.MANY_TO_ONE ||
+        prop.kind === ReferenceKind.ONE_TO_ONE)
+    );
+  }
+
+  hasJSValueSQLProp(meta: EntityMetadata): boolean {
+    return meta.props.some(
+      p =>
+        p.persist !== false && (p.customType?.convertToJSValueSQL || p.customTypes?.some(t => t?.convertToJSValueSQL)),
+    );
+  }
+
+  getJSValueSQLType(prop: EntityProperty, idx: number): Type<any> | undefined {
+    const fromArr = idx >= 0 ? prop.customTypes?.[idx] : undefined;
+    if (fromArr?.convertToJSValueSQL) {
+      return fromArr;
+    }
+    return prop.customType?.convertToJSValueSQL ? prop.customType : undefined;
+  }
+
+  buildJSValueSQLSelection(
+    customType: Type<any>,
+    fieldName: string,
+    tableNameOrAlias: string | undefined,
+  ): SelectionNode {
+    const prefixed = tableNameOrAlias
+      ? this.#platform.quoteIdentifier(`${tableNameOrAlias}.${fieldName}`)
+      : this.#platform.quoteIdentifier(fieldName);
+    const sql = customType.convertToJSValueSQL!(prefixed, this.#platform);
+    const aliased = AliasNode.create(RawNode.createWithSql(sql), IdentifierNode.create(fieldName));
+    return SelectionNode.create(aliased);
+  }
+
+  resolveOwnerMeta(tableNameOrAlias: string | undefined): EntityMetadata | undefined {
+    if (tableNameOrAlias) {
+      const direct = this.lookupInContextStack(tableNameOrAlias);
+      if (direct) {
+        return direct;
+      }
+
+      const fromSubquery = this.#subqueryAliasMap.get(tableNameOrAlias);
+      if (fromSubquery) {
+        return fromSubquery;
+      }
+
+      const found = this.findEntityMetadata(tableNameOrAlias);
+      if (found) {
+        return this.lookupInContextStack(found.tableName) ?? found;
+      }
+
+      return undefined;
+    }
+
+    if (this.#contextStack.length === 0) {
+      return undefined;
+    }
+
+    let single: EntityMetadata | undefined;
+    for (const meta of this.#contextStack[this.#contextStack.length - 1].values()) {
+      if (!meta) {
+        continue;
+      }
+      if (single && single !== meta) {
+        return undefined;
+      }
+      single = meta;
+    }
+    return single;
   }
 
   mapColumnsToProperties(columns: readonly ColumnNode[], meta: EntityMetadata): (EntityProperty | undefined)[] {
