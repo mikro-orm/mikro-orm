@@ -3,7 +3,6 @@ import {
   type EntityMetadata,
   type EntityProperty,
   type MetadataStorage,
-  type Type,
   ReferenceKind,
   isRaw,
 } from '@mikro-orm/core';
@@ -13,6 +12,7 @@ import {
   type InsertQueryNode,
   type JoinNode,
   type MergeQueryNode,
+  type OperationNode,
   type QueryId,
   type SelectQueryNode,
   type UpdateQueryNode,
@@ -125,7 +125,7 @@ export class MikroTransformer extends OperationNodeTransformer {
       const transformed = super.transformSelectQuery(node, queryId);
 
       if (this.#options.convertValues && transformed.selections?.length) {
-        const selections = this.processSelectionsForJSValueSQL(transformed.selections);
+        const selections = this.expandSelections(transformed.selections);
         if (selections !== transformed.selections) {
           return { ...transformed, selections };
         }
@@ -480,46 +480,45 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
 
     const columnProps = this.mapColumnsToProperties(node.columns, meta);
-    const shouldConvert = this.shouldConvertValues();
+    const needsSqlWrap = columnProps.some(p => p?.customType?.convertToDatabaseValueSQL);
     let changed = false;
 
     const convertedRows = node.values.values.map(row => {
-      if (ValueListNode.is(row)) {
-        if (row.values.length !== columnProps.length) {
-          return row;
-        }
-
+      if (ValueListNode.is(row) && row.values.length === columnProps.length) {
         const values = row.values.map((valueNode, idx) => {
           if (!ValueNode.is(valueNode)) {
             return valueNode;
           }
-
-          const converted = this.prepareInputValue(columnProps[idx], valueNode.value, shouldConvert);
-          if (converted === valueNode.value) {
-            return valueNode;
+          const newNode = this.processInputValueNode(columnProps[idx], valueNode);
+          if (newNode !== valueNode) {
+            changed = true;
           }
-
-          changed = true;
-          return valueNode.immediate ? ValueNode.createImmediate(converted) : ValueNode.create(converted);
+          return newNode;
         });
-
         return ValueListNode.create(values);
       }
 
-      if (PrimitiveValueListNode.is(row)) {
-        if (row.values.length !== columnProps.length) {
-          return row;
+      if (PrimitiveValueListNode.is(row) && row.values.length === columnProps.length) {
+        // upgrade to ValueListNode when any column needs SQL-side wrapping, since
+        // PrimitiveValueListNode can only hold primitives
+        if (needsSqlWrap) {
+          changed = true;
+          return ValueListNode.create(
+            row.values.map((value, idx) => {
+              const prop = columnProps[idx];
+              const converted = this.prepareInputValue(prop, value, true);
+              return this.wrapWrite(prop, ValueNode.create(converted));
+            }),
+          );
         }
 
         const values = row.values.map((value, idx) => {
-          const converted = this.prepareInputValue(columnProps[idx], value, shouldConvert);
+          const converted = this.prepareInputValue(columnProps[idx], value, true);
           if (converted !== value) {
             changed = true;
           }
-
           return converted;
         });
-
         return PrimitiveValueListNode.create(values);
       }
 
@@ -541,7 +540,6 @@ export class MikroTransformer extends OperationNodeTransformer {
       return node;
     }
 
-    const shouldConvert = this.shouldConvertValues();
     let changed = false;
 
     const updates = node.updates.map(updateNode => {
@@ -553,21 +551,14 @@ export class MikroTransformer extends OperationNodeTransformer {
         ? this.normalizeColumnName(updateNode.column.column)
         : undefined;
       const property = this.findProperty(meta, columnName);
-      const converted = this.prepareInputValue(property, updateNode.value.value, shouldConvert);
+      const newValue = this.processInputValueNode(property, updateNode.value);
 
-      if (converted === updateNode.value.value) {
+      if (newValue === updateNode.value) {
         return updateNode;
       }
 
       changed = true;
-      const newValueNode = updateNode.value.immediate
-        ? ValueNode.createImmediate(converted)
-        : ValueNode.create(converted);
-
-      return {
-        ...updateNode,
-        value: newValueNode,
-      };
+      return { ...updateNode, value: newValue };
     });
 
     if (!changed) {
@@ -580,108 +571,111 @@ export class MikroTransformer extends OperationNodeTransformer {
     };
   }
 
-  processSelectionsForJSValueSQL(selections: readonly SelectionNode[]): readonly SelectionNode[] {
-    const result: SelectionNode[] = [];
+  processInputValueNode(prop: EntityProperty | undefined, valueNode: ValueNode): OperationNode {
+    const converted = this.prepareInputValue(prop, valueNode.value, true);
+    const newValueNode =
+      converted === valueNode.value
+        ? valueNode
+        : valueNode.immediate
+          ? ValueNode.createImmediate(converted)
+          : ValueNode.create(converted);
+    return this.wrapWrite(prop, newValueNode);
+  }
+
+  expandSelections(selections: readonly SelectionNode[]): readonly SelectionNode[] {
+    const out: SelectionNode[] = [];
     let changed = false;
 
     for (const sel of selections) {
-      const expanded = this.tryWrapSelection(sel);
-      if (expanded === null) {
-        result.push(sel);
-        continue;
+      const replaced = this.expandSelection(sel);
+      if (replaced) {
+        out.push(...replaced);
+        changed = true;
+      } else {
+        out.push(sel);
       }
-
-      result.push(...expanded);
-      changed = true;
     }
 
-    return changed ? result : selections;
+    return changed ? out : selections;
   }
 
-  tryWrapSelection(sel: SelectionNode): SelectionNode[] | null {
+  expandSelection(sel: SelectionNode): SelectionNode[] | null {
     const inner = sel.selection;
-
     if (SelectAllNode.is(inner)) {
-      return this.expandStarSelection(undefined, undefined);
+      return this.expandStar(this.findOwnerMeta(undefined), undefined);
     }
-
     if (!ReferenceNode.is(inner)) {
       return null;
     }
 
-    const tableName = inner.table ? this.getTableName(inner.table) : undefined;
-
-    if (SelectAllNode.is(inner.column)) {
-      return this.expandStarSelection(tableName, inner.table);
-    }
-
-    const wrapped = this.wrapColumnIfNeeded(inner.column, tableName);
-    return wrapped ? [wrapped] : null;
-  }
-
-  wrapColumnIfNeeded(column: ColumnNode, tableNameOrAlias: string | undefined): SelectionNode | null {
-    const meta = this.resolveOwnerMeta(tableNameOrAlias);
-    const customType = meta && this.getJSValueSQLType(this.findProperty(meta, column.column.name));
-    return customType ? this.buildJSValueSQLSelection(customType, column.column.name, tableNameOrAlias) : null;
-  }
-
-  expandStarSelection(tableNameOrAlias: string | undefined, table: TableNode | undefined): SelectionNode[] | null {
-    const meta = this.resolveOwnerMeta(tableNameOrAlias);
-    if (!meta || !meta.props.some(p => this.getJSValueSQLType(p))) {
+    const table = inner.table;
+    const tableName = table ? this.getTableName(table) : undefined;
+    const meta = this.findOwnerMeta(tableName);
+    if (!meta) {
       return null;
     }
 
-    const result: SelectionNode[] = [];
+    if (SelectAllNode.is(inner.column)) {
+      return this.expandStar(meta, table);
+    }
+
+    const fieldName = inner.column.column.name;
+    const prop = this.findProperty(meta, fieldName);
+    return prop?.customType?.convertToJSValueSQL ? [this.wrapRead(prop, fieldName, tableName)] : null;
+  }
+
+  expandStar(meta: EntityMetadata | undefined, table: TableNode | undefined): SelectionNode[] | null {
+    if (!meta || !meta.props.some(p => p.persist !== false && p.customType?.convertToJSValueSQL)) {
+      return null;
+    }
+
+    const tableName = table ? this.getTableName(table) : undefined;
+    const out: SelectionNode[] = [];
+
     for (const prop of meta.props) {
-      if (!this.isExpandableProp(prop)) {
+      if (prop.persist === false || !prop.fieldNames?.length || !EXPANDABLE_KINDS.has(prop.kind)) {
         continue;
       }
-
       for (const fieldName of prop.fieldNames) {
-        const customType = this.getJSValueSQLType(prop);
-        if (customType) {
-          result.push(this.buildJSValueSQLSelection(customType, fieldName, tableNameOrAlias));
-        } else if (table) {
-          result.push(SelectionNode.create(ReferenceNode.create(ColumnNode.create(fieldName), table)));
-        } else {
-          result.push(SelectionNode.create(ColumnNode.create(fieldName)));
-        }
+        out.push(
+          prop.customType?.convertToJSValueSQL
+            ? this.wrapRead(prop, fieldName, tableName)
+            : SelectionNode.create(
+                table ? ReferenceNode.create(ColumnNode.create(fieldName), table) : ColumnNode.create(fieldName),
+              ),
+        );
       }
     }
 
-    return result;
+    return out;
   }
 
-  isExpandableProp(prop: EntityProperty): boolean {
-    return prop.persist !== false && !!prop.fieldNames?.length && EXPANDABLE_KINDS.has(prop.kind);
+  wrapRead(prop: EntityProperty, fieldName: string, tableName: string | undefined): SelectionNode {
+    const key = this.#platform.quoteIdentifier(tableName ? `${tableName}.${fieldName}` : fieldName);
+    const sql = prop.customType!.convertToJSValueSQL!(key, this.#platform);
+    return SelectionNode.create(AliasNode.create(RawNode.createWithSql(sql), IdentifierNode.create(fieldName)));
   }
 
-  getJSValueSQLType(prop: EntityProperty | undefined): Type<any> | undefined {
-    return prop?.customType?.convertToJSValueSQL && prop.persist !== false ? prop.customType : undefined;
-  }
-
-  buildJSValueSQLSelection(
-    customType: Type<any>,
-    fieldName: string,
-    tableNameOrAlias: string | undefined,
-  ): SelectionNode {
-    const prefixed = tableNameOrAlias
-      ? this.#platform.quoteIdentifier(`${tableNameOrAlias}.${fieldName}`)
-      : this.#platform.quoteIdentifier(fieldName);
-    const sql = customType.convertToJSValueSQL!(prefixed, this.#platform);
-    const aliased = AliasNode.create(RawNode.createWithSql(sql), IdentifierNode.create(fieldName));
-    return SelectionNode.create(aliased);
-  }
-
-  resolveOwnerMeta(tableNameOrAlias: string | undefined): EntityMetadata | undefined {
-    if (tableNameOrAlias) {
-      return (
-        this.lookupInContextStack(tableNameOrAlias) ??
-        this.#subqueryAliasMap.get(tableNameOrAlias) ??
-        this.findEntityMetadata(tableNameOrAlias)
-      );
+  wrapWrite(prop: EntityProperty | undefined, valueNode: ValueNode): OperationNode {
+    const customType = prop?.customType;
+    if (!customType?.convertToDatabaseValueSQL || valueNode.value == null || isRaw(valueNode.value)) {
+      return valueNode;
     }
+    const sql = customType.convertToDatabaseValueSQL('?', this.#platform);
+    if (sql === '?') {
+      return valueNode;
+    }
+    const fragments = sql.split('?');
+    return RawNode.create(
+      fragments,
+      fragments.slice(0, -1).map(() => valueNode),
+    );
+  }
 
+  findOwnerMeta(name: string | undefined): EntityMetadata | undefined {
+    if (name) {
+      return this.lookupInContextStack(name) ?? this.#subqueryAliasMap.get(name) ?? this.findEntityMetadata(name);
+    }
     let single: EntityMetadata | undefined;
     for (const meta of this.#contextStack[this.#contextStack.length - 1].values()) {
       if (!meta) {
@@ -722,10 +716,6 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
 
     return meta.props.find(prop => prop.fieldNames?.includes(columnName));
-  }
-
-  shouldConvertValues(): boolean {
-    return !!this.#options.convertValues;
   }
 
   prepareInputValue(prop: EntityProperty | undefined, value: unknown, enabled: boolean): unknown {

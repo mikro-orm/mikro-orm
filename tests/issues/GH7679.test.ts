@@ -12,6 +12,17 @@ class HexEncodedType extends Type<string | null, string | null> {
     }
     return Buffer.from(value, 'hex').toString('utf8');
   }
+
+  override convertToDatabaseValueSQL(key: string): string {
+    return `unhex(${key})`;
+  }
+
+  override convertToDatabaseValue(value: string | null): string | null {
+    if (value == null) {
+      return value;
+    }
+    return Buffer.from(value, 'utf8').toString('hex');
+  }
 }
 
 const Doc = defineEntity({
@@ -149,4 +160,90 @@ test('disabling convertValues bypasses SQL-side wrapping entirely', () => {
   });
 
   expect(kysely.selectFrom('Doc').selectAll().compile().sql).not.toContain('hex(');
+});
+
+test('INSERT wraps values with convertToDatabaseValueSQL and round-trips', async () => {
+  const kysely = orm.em.getKysely<{
+    Doc: { id: number; title: string; content: string; parent_id: number | null };
+  }>({
+    tableNamingStrategy: 'entity',
+    convertValues: true,
+  });
+
+  // single-row insert (kysely uses PrimitiveValueListNode internally)
+  const compiled = kysely
+    .insertInto('Doc')
+    .values({ id: 100, title: 't', content: 'hello', parent_id: null })
+    .compile();
+  expect(compiled.sql).toContain('unhex(');
+
+  await kysely.insertInto('Doc').values({ id: 100, title: 't', content: 'hello', parent_id: null }).execute();
+
+  const row = await kysely.selectFrom('Doc').selectAll().where('id', '=', 100).executeTakeFirstOrThrow();
+  expect(row.content).toBe('hello');
+});
+
+test('UPDATE wraps SET value with convertToDatabaseValueSQL', async () => {
+  const kysely = orm.em.getKysely<{
+    Doc: { id: number; title: string; content: string; parent_id: number | null };
+  }>({
+    tableNamingStrategy: 'entity',
+    convertValues: true,
+  });
+
+  await kysely.insertInto('Doc').values({ id: 200, title: 't', content: 'before', parent_id: null }).execute();
+
+  const compiled = kysely.updateTable('Doc').set({ content: 'after' }).where('id', '=', 200).compile();
+  expect(compiled.sql).toContain('unhex(');
+
+  await kysely.updateTable('Doc').set({ content: 'after' }).where('id', '=', 200).execute();
+
+  const row = await kysely.selectFrom('Doc').selectAll().where('id', '=', 200).executeTakeFirstOrThrow();
+  expect(row.content).toBe('after');
+});
+
+test('multi-row INSERT wraps values', () => {
+  const kysely = orm.em.getKysely<{
+    Doc: { id: number; title: string; content: string; parent_id: number | null };
+  }>({
+    tableNamingStrategy: 'entity',
+    convertValues: true,
+  });
+
+  const sql = kysely
+    .insertInto('Doc')
+    .values([
+      { id: 300, title: 'a', content: 'x', parent_id: null },
+      { id: 301, title: 'b', content: 'y', parent_id: null },
+    ])
+    .compile().sql;
+  expect((sql.match(/unhex\(/g) ?? []).length).toBe(2);
+});
+
+test('INSERT leaves null and raw values alone', () => {
+  const kysely = orm.em.getKysely<{
+    Doc: { id: number; title: string; content: string | null; parent_id: number | null };
+  }>({
+    tableNamingStrategy: 'entity',
+    convertValues: true,
+  });
+
+  // null content — wrapWrite must short-circuit on null so we don't unhex(NULL)
+  const sql = kysely.insertInto('Doc').values({ id: 400, title: 't', content: null, parent_id: null }).compile().sql;
+  expect(sql).not.toContain('unhex(');
+});
+
+test('reference to unknown table is left alone', () => {
+  const kysely = orm.em.getKysely<{ Doc: { id: number; title: string; content: string }; ad_hoc: { x: number } }>({
+    tableNamingStrategy: 'entity',
+    convertValues: true,
+  });
+
+  // 'ad_hoc' is not a registered entity — findOwnerMeta returns undefined and
+  // expandSelection bails so the selection passes through untouched.
+  const sql = kysely
+    .selectFrom('ad_hoc' as any)
+    .select('ad_hoc.x' as any)
+    .compile().sql;
+  expect(sql).not.toContain('hex(');
 });
