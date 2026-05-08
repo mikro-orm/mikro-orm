@@ -30,20 +30,20 @@ export class MigrationStorage {
     return migrations.map(({ name }) => this.getMigrationName(name));
   }
 
-  async logMigration(params: { name: string }): Promise<void> {
+  async logMigration(params: { name: string }, tx?: Transaction): Promise<void> {
     const { entity } = this.getTableName();
     const name = this.getMigrationName(params.name);
-    await this.driver.nativeInsert(entity, { name }, { ctx: this.#masterTransaction });
+    await this.driver.nativeInsert(entity, { name }, { ctx: tx ?? this.#masterTransaction });
   }
 
-  async unlogMigration(params: { name: string }): Promise<void> {
+  async unlogMigration(params: { name: string }, tx?: Transaction): Promise<void> {
     const { entity } = this.getTableName();
     const withoutExt = this.getMigrationName(params.name);
     const names = [withoutExt, withoutExt + '.js', withoutExt + '.ts'];
     await this.driver.nativeDelete(
       entity,
       { name: { $in: [params.name, ...names] } },
-      { ctx: this.#masterTransaction },
+      { ctx: tx ?? this.#masterTransaction },
     );
   }
 

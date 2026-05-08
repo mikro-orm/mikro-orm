@@ -18,8 +18,8 @@ import { Utils } from './Utils.js';
 interface RunnableMigration {
   name: string;
   path?: string;
-  up: () => MaybePromise<void>;
-  down: () => MaybePromise<void>;
+  up: (afterRun?: (tx?: Transaction) => Promise<void>) => MaybePromise<void>;
+  down: (afterRun?: (tx?: Transaction) => Promise<void>) => MaybePromise<void>;
 }
 
 type NormalizedMigrateOptions = {
@@ -168,7 +168,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
   }
 
   protected resolve(params: { name: string; path: string }): RunnableMigration {
-    const createMigrationHandler = async (method: 'up' | 'down') => {
+    const createMigrationHandler = async (method: 'up' | 'down', afterRun?: (tx?: Transaction) => Promise<void>) => {
       const { fs } = await import('@mikro-orm/core/fs-utils');
       const migration = await fs.dynamicImport(params.path);
       const MigrationClass = Object.values(migration).find(
@@ -176,14 +176,14 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
       ) as Constructor<Migration>;
       const instance = new MigrationClass(this.driver, this.config);
 
-      await this.runner.run(instance, method);
+      await this.runner.run(instance, method, afterRun);
     };
 
     return {
       name: this.storage.getMigrationName(params.name),
       path: params.path,
-      up: () => createMigrationHandler('up'),
-      down: () => createMigrationHandler('down'),
+      up: afterRun => createMigrationHandler('up', afterRun),
+      down: afterRun => createMigrationHandler('down', afterRun),
     };
   }
 
@@ -192,8 +192,8 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
 
     return {
       name: this.storage.getMigrationName(name),
-      up: () => this.runner.run(instance, 'up'),
-      down: () => this.runner.run(instance, 'down'),
+      up: afterRun => this.runner.run(instance, 'up', afterRun),
+      down: afterRun => this.runner.run(instance, 'down', afterRun),
     };
   }
 
@@ -290,13 +290,14 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     for (const migration of toRun) {
       const event: MigrationInfo = { name: migration.name, path: migration.path };
       await this.emit(eventBefore, event);
-      await migration[method]();
-
-      if (method === 'up') {
-        await this.storage.logMigration({ name: migration.name });
-      } else {
-        await this.storage.unlogMigration({ name: migration.name });
-      }
+      // log inside the runner's tx (if any) so a logMigration failure rolls the migration back
+      await migration[method](async tx => {
+        if (method === 'up') {
+          await this.storage.logMigration({ name: migration.name }, tx);
+        } else {
+          await this.storage.unlogMigration({ name: migration.name }, tx);
+        }
+      });
 
       await this.emit(eventAfter, event);
       result.push(event);

@@ -1640,7 +1640,7 @@ export type MigrationRow = { id: number; name: string; executed_at: Date };
  * @internal
  */
 export interface IMigrationRunner {
-  run(migration: Migration, method: 'up' | 'down'): Promise<void>;
+  run(migration: Migration, method: 'up' | 'down', afterRun?: (tx?: Transaction) => Promise<void>): Promise<void>;
   setMasterMigration(trx: Transaction): void;
   unsetMasterMigration(): void;
 }
@@ -1650,8 +1650,8 @@ export interface IMigrationRunner {
  */
 export interface IMigratorStorage {
   executed(): Promise<string[]>;
-  logMigration(params: Dictionary): Promise<void>;
-  unlogMigration(params: Dictionary): Promise<void>;
+  logMigration(params: Dictionary, tx?: Transaction): Promise<void>;
+  unlogMigration(params: Dictionary, tx?: Transaction): Promise<void>;
   getExecutedMigrations(): Promise<MigrationRow[]>;
   ensureTable?(): Promise<void>;
   setMasterMigration(trx: Transaction): void;

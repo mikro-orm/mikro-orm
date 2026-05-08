@@ -616,6 +616,55 @@ describe('Migrator (sqlite)', () => {
     expect(calls).toMatchSnapshot('all-or-nothing-disabled');
   });
 
+  test('logMigration failure rolls back the migration when transactional and allOrNothing=false', async () => {
+    await orm.schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.em.getConnection().execute('drop table if exists test_log_rollback');
+
+    class MigrationCreatesTable extends Migration {
+      async up(): Promise<void> {
+        this.addSql('create table test_log_rollback (id int)');
+      }
+      override async down(): Promise<void> {
+        this.addSql('drop table test_log_rollback');
+      }
+    }
+
+    const migrator = new Migrator(orm.em);
+    // `migrator.options` aliases `orm.config.get('migrations')`, so mutations here would leak
+    // across tests (the suite-level `beforeEach` reset assigns the same reference back).
+    // @ts-ignore
+    const originalAllOrNothing = migrator.options.allOrNothing;
+    // @ts-ignore
+    const originalTransactional = migrator.options.transactional;
+    // @ts-ignore
+    migrator.options.allOrNothing = false;
+    // @ts-ignore
+    migrator.options.transactional = true;
+    // @ts-ignore
+    migrator.options.migrationsList = [{ name: 'test_log_rollback', class: MigrationCreatesTable }];
+
+    const logSpy = vi.spyOn(MigrationStorage.prototype, 'logMigration');
+    logSpy.mockRejectedValueOnce(new Error('simulated logMigration failure'));
+
+    try {
+      await expect(migrator.up()).rejects.toThrow('simulated logMigration failure');
+
+      const tables = await orm.em
+        .getConnection()
+        .execute<unknown[]>(`select name from sqlite_master where type='table' and name='test_log_rollback'`);
+      expect(tables).toEqual([]);
+      await expect(migrator.getStorage().executed()).resolves.not.toContain('test_log_rollback');
+    } finally {
+      logSpy.mockRestore();
+      // @ts-ignore
+      migrator.options.allOrNothing = originalAllOrNothing;
+      // @ts-ignore
+      migrator.options.transactional = originalTransactional;
+      // @ts-ignore
+      delete migrator.options.migrationsList;
+    }
+  });
+
   test('snapshots with absolute path to database', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
