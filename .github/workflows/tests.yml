@@ -149,7 +149,7 @@ jobs:
 
       - name: Enable corepack
         run: |
-          npm install -g corepack@latest
+          npm install -g corepack@latest --force
           corepack enable
           corepack prepare yarn@stable --activate
 
@@ -331,7 +331,7 @@ jobs:
 
       - name: Enable corepack
         run: |
-          npm install -g corepack@latest
+          npm install -g corepack@latest --force
           corepack enable
           corepack prepare yarn@stable --activate
 
