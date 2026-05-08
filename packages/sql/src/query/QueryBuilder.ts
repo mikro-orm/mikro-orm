@@ -3041,19 +3041,8 @@ export class QueryBuilder<
         continue;
       }
 
-      const nestedType =
-        j.type === JoinType.innerJoin
-          ? JoinType.nestedInnerJoin
-          : j.type === JoinType.leftJoin
-            ? JoinType.nestedLeftJoin
-            : undefined;
-
-      if (!nestedType) {
-        continue;
-      }
-
       const nested = (condJoin.nested ??= new Set());
-      j.type = nestedType;
+      j.type = j.type === JoinType.innerJoin ? JoinType.nestedInnerJoin : JoinType.nestedLeftJoin;
       nested.add(j);
     }
 
