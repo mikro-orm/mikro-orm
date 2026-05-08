@@ -20,6 +20,17 @@ const Doc = defineEntity({
     id: p.integer().primary().autoincrement(),
     title: p.string(),
     content: p.type(HexEncodedType),
+    parent: () => p.manyToOne(Doc).nullable(),
+    tags: () => p.oneToMany(Tag).mappedBy('doc'),
+  },
+});
+
+const Tag = defineEntity({
+  name: 'Tag',
+  properties: {
+    id: p.integer().primary().autoincrement(),
+    label: p.string(),
+    doc: p.manyToOne(Doc),
   },
 });
 
@@ -27,7 +38,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = new MikroORM({
-    entities: [Doc],
+    entities: [Doc, Tag],
     dbName: ':memory:',
   });
   await orm.schema.refresh();
@@ -37,27 +48,105 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test('getKysely({ convertValues: true }) wraps SELECT columns with convertToJSValueSQL', async () => {
+beforeEach(async () => {
+  await orm.em.getKysely<{ tag: object; doc: object }>().deleteFrom('tag').execute();
+  await orm.em.getKysely<{ tag: object; doc: object }>().deleteFrom('doc').execute();
+});
+
+test('selectAll wraps column with convertToJSValueSQL and round-trips', async () => {
   const kysely = orm.em.getKysely<{
-    Doc: { id: number; title: string; content: string };
+    Doc: { id: number; title: string; content: string; parent_id: number | null };
   }>({
     tableNamingStrategy: 'entity',
     convertValues: true,
   });
 
-  await kysely.insertInto('Doc').values({ id: 2, title: 't', content: 'hello' }).execute();
+  await kysely.insertInto('Doc').values({ id: 1, title: 't', content: 'hello', parent_id: null }).execute();
 
-  expect(kysely.selectFrom('Doc').selectAll().compile().sql).toContain('hex(');
-  expect(kysely.selectFrom('Doc as d').select('d.content').compile().sql).toContain('hex(');
-  expect(kysely.selectFrom('Doc').select('content').compile().sql).toContain('hex(');
+  const sql = kysely.selectFrom('Doc').selectAll().compile().sql;
+  expect(sql).toContain('hex(');
 
-  const row = await kysely.selectFrom('Doc').selectAll().where('id', '=', 2).executeTakeFirstOrThrow();
+  const row = await kysely.selectFrom('Doc').selectAll().where('id', '=', 1).executeTakeFirstOrThrow();
   expect(row.content).toBe('hello');
+});
 
-  const aliased = await kysely
-    .selectFrom('Doc as d')
-    .select(['d.content'])
-    .where('d.id', '=', 2)
-    .executeTakeFirstOrThrow();
-  expect(aliased.content).toBe('hello');
+test('selectAll expands non-customType columns with table reference (t.*)', async () => {
+  const kysely = orm.em.getKysely<{
+    Doc: { id: number; title: string; content: string; parent_id: number | null };
+  }>({
+    tableNamingStrategy: 'entity',
+    convertValues: true,
+  });
+
+  await kysely.insertInto('Doc').values({ id: 2, title: 'aliased', content: 'world', parent_id: null }).execute();
+
+  // selectAll('d') → "d".*; the M2O parent_id and O2M tags exercise the non-customType
+  // and non-expandable prop branches in expandStarSelection.
+  const sql = kysely.selectFrom('Doc as d').selectAll('d').compile().sql;
+  expect(sql).toContain('hex(');
+  expect(sql).toMatch(/"d"\."title"|`d`\.`title`/);
+
+  const row = await kysely.selectFrom('Doc as d').selectAll('d').where('d.id', '=', 2).executeTakeFirstOrThrow();
+  expect(row.content).toBe('world');
+  expect(row.title).toBe('aliased');
+});
+
+test('explicit qualified column reference is wrapped (table-name fallback)', async () => {
+  const kysely = orm.em.getKysely<{ Doc: { id: number; title: string; content: string } }>({
+    tableNamingStrategy: 'entity',
+    convertValues: true,
+  });
+
+  await kysely.insertInto('Doc').values({ id: 3, title: 't', content: 'qualified' }).execute();
+
+  // tableNamingStrategy: 'entity' rewrites Doc → doc post-transform; resolveOwnerMeta
+  // must fall back to findEntityMetadata since context still keys on the entity name.
+  const sql = kysely.selectFrom('Doc').select('Doc.content').compile().sql;
+  expect(sql).toContain('hex(');
+
+  const row = await kysely.selectFrom('Doc').select('Doc.content').where('Doc.id', '=', 3).executeTakeFirstOrThrow();
+  expect(row.content).toBe('qualified');
+});
+
+test('column without convertToJSValueSQL is left untouched', async () => {
+  const kysely = orm.em.getKysely<{ Doc: { id: number; title: string; content: string } }>({
+    tableNamingStrategy: 'entity',
+    convertValues: true,
+  });
+
+  const sql = kysely.selectFrom('Doc').select('title').compile().sql;
+  expect(sql).not.toContain('hex(');
+});
+
+test('multi-entity FROM with bare * skips wrapping (ambiguous owner)', () => {
+  const kysely = orm.em.getKysely<{
+    Doc: { id: number; title: string; content: string; parent_id: number | null };
+    Tag: { id: number; label: string; doc_id: number };
+  }>({
+    tableNamingStrategy: 'entity',
+    convertValues: true,
+  });
+
+  // Two FROM tables, no qualifier — owner is ambiguous so the * stays raw.
+  const sql = kysely.selectFrom(['Doc', 'Tag']).selectAll().compile().sql;
+  expect(sql).not.toContain('hex(');
+});
+
+test('selectAll on entity without convertToJSValueSQL prop is left untouched', () => {
+  const kysely = orm.em.getKysely<{
+    Tag: { id: number; label: string; doc_id: number };
+  }>({
+    tableNamingStrategy: 'entity',
+    convertValues: true,
+  });
+
+  expect(kysely.selectFrom('Tag').selectAll().compile().sql).not.toContain('hex(');
+});
+
+test('disabling convertValues bypasses SQL-side wrapping entirely', () => {
+  const kysely = orm.em.getKysely<{ Doc: { id: number; title: string; content: string } }>({
+    tableNamingStrategy: 'entity',
+  });
+
+  expect(kysely.selectFrom('Doc').selectAll().compile().sql).not.toContain('hex(');
 });

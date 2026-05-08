@@ -37,6 +37,13 @@ import type { MikroKyselyPluginOptions } from './index.js';
 import type { SqlEntityManager } from '../SqlEntityManager.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 
+const EXPANDABLE_KINDS: ReadonlySet<ReferenceKind> = new Set([
+  ReferenceKind.SCALAR,
+  ReferenceKind.EMBEDDED,
+  ReferenceKind.MANY_TO_ONE,
+  ReferenceKind.ONE_TO_ONE,
+]);
+
 export class MikroTransformer extends OperationNodeTransformer {
   /**
    * Context stack to support nested queries (subqueries, CTEs)
@@ -594,57 +601,33 @@ export class MikroTransformer extends OperationNodeTransformer {
   tryWrapSelection(sel: SelectionNode): SelectionNode[] | null {
     const inner = sel.selection;
 
-    if (ColumnNode.is(inner)) {
-      const wrapped = this.wrapColumnIfNeeded(inner, undefined);
-      return wrapped ? [wrapped] : null;
-    }
-
-    if (ReferenceNode.is(inner)) {
-      const tableName = inner.table ? this.getTableName(inner.table) : undefined;
-
-      if (SelectAllNode.is(inner.column)) {
-        return this.expandStarSelection(tableName, inner.table);
-      }
-
-      if (ColumnNode.is(inner.column)) {
-        const wrapped = this.wrapColumnIfNeeded(inner.column, tableName);
-        return wrapped ? [wrapped] : null;
-      }
-
-      return null;
-    }
-
     if (SelectAllNode.is(inner)) {
       return this.expandStarSelection(undefined, undefined);
     }
 
-    return null;
+    if (!ReferenceNode.is(inner)) {
+      return null;
+    }
+
+    const tableName = inner.table ? this.getTableName(inner.table) : undefined;
+
+    if (SelectAllNode.is(inner.column)) {
+      return this.expandStarSelection(tableName, inner.table);
+    }
+
+    const wrapped = this.wrapColumnIfNeeded(inner.column, tableName);
+    return wrapped ? [wrapped] : null;
   }
 
   wrapColumnIfNeeded(column: ColumnNode, tableNameOrAlias: string | undefined): SelectionNode | null {
     const meta = this.resolveOwnerMeta(tableNameOrAlias);
-    if (!meta) {
-      return null;
-    }
-
-    const colName = column.column.name;
-    const prop = this.findProperty(meta, colName);
-    if (!prop) {
-      return null;
-    }
-
-    const idx = prop.fieldNames?.indexOf(colName) ?? -1;
-    const customType = this.getJSValueSQLType(prop, idx);
-    if (!customType) {
-      return null;
-    }
-
-    return this.buildJSValueSQLSelection(customType, colName, tableNameOrAlias);
+    const customType = meta && this.getJSValueSQLType(this.findProperty(meta, column.column.name));
+    return customType ? this.buildJSValueSQLSelection(customType, column.column.name, tableNameOrAlias) : null;
   }
 
   expandStarSelection(tableNameOrAlias: string | undefined, table: TableNode | undefined): SelectionNode[] | null {
     const meta = this.resolveOwnerMeta(tableNameOrAlias);
-    if (!meta || !this.hasJSValueSQLProp(meta)) {
+    if (!meta || !meta.props.some(p => this.getJSValueSQLType(p))) {
       return null;
     }
 
@@ -654,8 +637,8 @@ export class MikroTransformer extends OperationNodeTransformer {
         continue;
       }
 
-      prop.fieldNames.forEach((fieldName, idx) => {
-        const customType = this.getJSValueSQLType(prop, idx);
+      for (const fieldName of prop.fieldNames) {
+        const customType = this.getJSValueSQLType(prop);
         if (customType) {
           result.push(this.buildJSValueSQLSelection(customType, fieldName, tableNameOrAlias));
         } else if (table) {
@@ -663,36 +646,18 @@ export class MikroTransformer extends OperationNodeTransformer {
         } else {
           result.push(SelectionNode.create(ColumnNode.create(fieldName)));
         }
-      });
+      }
     }
 
     return result;
   }
 
   isExpandableProp(prop: EntityProperty): boolean {
-    return (
-      prop.persist !== false &&
-      !!prop.fieldNames?.length &&
-      (prop.kind === ReferenceKind.SCALAR ||
-        prop.kind === ReferenceKind.EMBEDDED ||
-        prop.kind === ReferenceKind.MANY_TO_ONE ||
-        prop.kind === ReferenceKind.ONE_TO_ONE)
-    );
+    return prop.persist !== false && !!prop.fieldNames?.length && EXPANDABLE_KINDS.has(prop.kind);
   }
 
-  hasJSValueSQLProp(meta: EntityMetadata): boolean {
-    return meta.props.some(
-      p =>
-        p.persist !== false && (p.customType?.convertToJSValueSQL || p.customTypes?.some(t => t?.convertToJSValueSQL)),
-    );
-  }
-
-  getJSValueSQLType(prop: EntityProperty, idx: number): Type<any> | undefined {
-    const fromArr = idx >= 0 ? prop.customTypes?.[idx] : undefined;
-    if (fromArr?.convertToJSValueSQL) {
-      return fromArr;
-    }
-    return prop.customType?.convertToJSValueSQL ? prop.customType : undefined;
+  getJSValueSQLType(prop: EntityProperty | undefined): Type<any> | undefined {
+    return prop?.customType?.convertToJSValueSQL && prop.persist !== false ? prop.customType : undefined;
   }
 
   buildJSValueSQLSelection(
@@ -710,26 +675,11 @@ export class MikroTransformer extends OperationNodeTransformer {
 
   resolveOwnerMeta(tableNameOrAlias: string | undefined): EntityMetadata | undefined {
     if (tableNameOrAlias) {
-      const direct = this.lookupInContextStack(tableNameOrAlias);
-      if (direct) {
-        return direct;
-      }
-
-      const fromSubquery = this.#subqueryAliasMap.get(tableNameOrAlias);
-      if (fromSubquery) {
-        return fromSubquery;
-      }
-
-      const found = this.findEntityMetadata(tableNameOrAlias);
-      if (found) {
-        return this.lookupInContextStack(found.tableName) ?? found;
-      }
-
-      return undefined;
-    }
-
-    if (this.#contextStack.length === 0) {
-      return undefined;
+      return (
+        this.lookupInContextStack(tableNameOrAlias) ??
+        this.#subqueryAliasMap.get(tableNameOrAlias) ??
+        this.findEntityMetadata(tableNameOrAlias)
+      );
     }
 
     let single: EntityMetadata | undefined;
