@@ -2996,6 +2996,7 @@ export class QueryBuilder<
       aliased: [QueryType.SELECT, QueryType.COUNT].includes(this.type),
     })!;
     const criteriaNode = CriteriaNodeFactory.createNode<Entity>(this.metadata, prop.targetMeta!.class, cond);
+    const joinCountBefore = Object.keys(this.#state.joins).length;
     cond = criteriaNode.process(this as IQueryBuilder<Entity>, { ignoreBranching: true, alias });
     let aliasedName = `${fromAlias}.${prop.name}#${alias}`;
     path ??= `${Object.values(this.#state.joins).find(j => j.alias === fromAlias)?.path ?? Utils.className(entityName)}.${prop.name}`;
@@ -3025,6 +3026,35 @@ export class QueryBuilder<
       // MANY_TO_ONE
       this.#state.joins[aliasedName] = this.helper.joinManyToOneReference(prop, ownerAlias, alias, type, cond, schema);
       this.#state.joins[aliasedName].path ??= path;
+    }
+
+    // auto-joins added by cond processing that depend on the new alias would otherwise produce a
+    // forward reference (the auto-join's ON refers to alias, while alias's ON refers back to it);
+    // fold them into the new join so both aliases share scope in the outer ON clause (issue #7681)
+    const condJoin = this.#state.joins[aliasedName];
+    const joinKeys = Object.keys(this.#state.joins);
+
+    for (let i = joinCountBefore; i < joinKeys.length; i++) {
+      const j = this.#state.joins[joinKeys[i]];
+
+      if (j === condJoin || j.ownerAlias !== alias) {
+        continue;
+      }
+
+      const nestedType =
+        j.type === JoinType.innerJoin
+          ? JoinType.nestedInnerJoin
+          : j.type === JoinType.leftJoin
+            ? JoinType.nestedLeftJoin
+            : undefined;
+
+      if (!nestedType) {
+        continue;
+      }
+
+      const nested = (condJoin.nested ??= new Set());
+      j.type = nestedType;
+      nested.add(j);
     }
 
     return { prop, key: aliasedName };
