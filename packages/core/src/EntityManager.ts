@@ -553,7 +553,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         prop.strategy || hint.strategy || options.strategy || this.config.get('loadStrategy'),
         prop.kind,
       );
-      const joined = strategy === LoadStrategy.JOINED && prop.kind !== ReferenceKind.SCALAR;
+      const joined =
+        (strategy === LoadStrategy.JOINED || (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner)) &&
+        prop.kind !== ReferenceKind.SCALAR;
 
       if (!joined && !hint.filter) {
         continue;
@@ -645,16 +647,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         let found = false;
 
         for (const hint of populated) {
-          if (!hint.all) {
-            hint.filter = true;
-          }
-
           const strategy = getLoadingStrategy(
             prop.strategy || hint.strategy || options.strategy || this.config.get('loadStrategy'),
             prop.kind,
           );
+          // inverse 1:1 always produces a JOIN (forced by `joinedProps()`), regardless of strategy
+          const willJoin = strategy === LoadStrategy.JOINED || (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner);
 
-          if (hint.field === `${prop.name}:ref` || (hint.filter && strategy === LoadStrategy.JOINED)) {
+          if (!hint.all || willJoin) {
+            hint.filter = true;
+          }
+
+          if (hint.field === `${prop.name}:ref` || (hint.filter && willJoin)) {
             found = true;
           }
         }
