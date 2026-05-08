@@ -1205,6 +1205,9 @@ export interface EntityMetadataWithProperties<
   TBase = never,
   TRepository = never,
   TForceObject extends boolean = false,
+  TDiscriminatorColumn extends string | undefined = undefined,
+  TDiscriminatorValue extends string | number | undefined = undefined,
+  TBaseDiscriminatorColumn extends string | undefined = undefined,
 > extends Omit<
   Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK, TBase, TRepository>>>,
   | 'properties'
@@ -1212,6 +1215,7 @@ export interface EntityMetadataWithProperties<
   | 'primaryKeys'
   | 'hooks'
   | 'discriminatorColumn'
+  | 'discriminatorValue'
   | 'versionProperty'
   | 'concurrencyCheckKeys'
   | 'serializedPrimaryKey'
@@ -1223,9 +1227,12 @@ export interface EntityMetadataWithProperties<
 > {
   name: TName;
   tableName?: TTableName;
-  // Uses ~entity marker for fast type inference (avoids expensive EntitySchema matching)
-  // Also accepts entity constructors for compatibility with class-based entities
-  extends?: { '~entity': TBase } | EntityCtor<TBase>;
+  // Uses ~entity marker for fast type inference (avoids expensive EntitySchema matching).
+  // Also accepts entity constructors for class-based entities. The optional `~discriminatorColumn`
+  // marker lets the child narrow the inherited discriminator property to its literal value (GH #7677).
+  extends?:
+    | { '~entity': TBase; '~discriminatorColumn'?: TBaseDiscriminatorColumn }
+    | (EntityCtor<TBase> & { '~discriminatorColumn'?: TBaseDiscriminatorColumn });
   properties: TProperties | ((properties: PropertyBuilders) => TProperties);
   primaryKeys?: TPK & InferPrimaryKeyConstraint<TProperties>[];
   hooks?: DefineEntityHooks;
@@ -1257,7 +1264,10 @@ export interface EntityMetadataWithProperties<
   orderBy?:
     | { [K in Extract<AllKeys<TProperties, TBase>, string>]?: QueryOrderKeysFlat }
     | { [K in Extract<AllKeys<TProperties, TBase>, string>]?: QueryOrderKeysFlat }[];
-  discriminatorColumn?: string;
+  // Captured as const literals (overriding `EntityMetadata`'s broad types) so children form a
+  // proper discriminated union narrowed to their `discriminatorValue` (GH #7677).
+  discriminatorColumn?: TDiscriminatorColumn;
+  discriminatorValue?: TDiscriminatorValue;
   versionProperty?: AllKeys<TProperties, TBase>;
   concurrencyCheckKeys?: Set<AllKeys<TProperties, TBase>>;
   serializedPrimaryKey?: AllKeys<TProperties, TBase>;
@@ -1296,14 +1306,48 @@ export function defineEntity<
   const TBase = never,
   const TRepository = never,
   const TForceObject extends boolean = false,
+  const TDiscriminatorColumn extends string | undefined = undefined,
+  const TDiscriminatorValue extends string | number | undefined = undefined,
+  const TBaseDiscriminatorColumn extends string | undefined = undefined,
 >(
-  meta: EntityMetadataWithProperties<TName, TTableName, TProperties, TPK, TBase, TRepository, TForceObject>,
+  meta: EntityMetadataWithProperties<
+    TName,
+    TTableName,
+    TProperties,
+    TPK,
+    TBase,
+    TRepository,
+    TForceObject,
+    TDiscriminatorColumn,
+    TDiscriminatorValue,
+    TBaseDiscriminatorColumn
+  >,
 ): EntitySchemaWithMeta<
   TName,
   TTableName,
-  InferEntityFromProperties<TProperties, TPK, TBase, TRepository, TForceObject>,
+  InferEntityFromProperties<
+    TProperties,
+    TPK,
+    TBase,
+    TRepository,
+    TForceObject,
+    TBaseDiscriminatorColumn,
+    TDiscriminatorValue
+  >,
   TBase,
-  TProperties
+  TProperties,
+  EntityCtor<
+    InferEntityFromProperties<
+      TProperties,
+      TPK,
+      TBase,
+      TRepository,
+      TForceObject,
+      TBaseDiscriminatorColumn,
+      TDiscriminatorValue
+    >
+  >,
+  TDiscriminatorColumn
 >;
 
 /** Defines an entity schema for an existing class, combining the class with property builders. */
@@ -1480,6 +1524,8 @@ export type InferEntityFromProperties<
   Base = never,
   Repository = never,
   ForceObject extends boolean = false,
+  BaseDiscriminatorColumn extends string | undefined = undefined,
+  DiscriminatorValue extends string | number | undefined = undefined,
 > = (IsNever<Base> extends true
   ? {}
   : Base extends { toObject(...args: any[]): any }
@@ -1492,7 +1538,7 @@ export type InferEntityFromProperties<
           } & (IsNever<Repository> extends true
               ? {}
               : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository }) &
-            Omit<Base, typeof PrimaryKeyProp>
+            NarrowDiscriminator<Omit<Base, typeof PrimaryKeyProp>, BaseDiscriminatorColumn, DiscriminatorValue>
         >,
         BaseEntityMethodKeys
       >
@@ -1503,8 +1549,21 @@ export type InferEntityFromProperties<
 } & (IsNever<Repository> extends true
     ? {}
     : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository }) &
-  (IsNever<Base> extends true ? {} : Omit<Base, typeof PrimaryKeyProp>) &
+  (IsNever<Base> extends true
+    ? {}
+    : NarrowDiscriminator<Omit<Base, typeof PrimaryKeyProp>, BaseDiscriminatorColumn, DiscriminatorValue>) &
   (ForceObject extends true ? { [Config]?: DefineConfig<{ forceObject: true }> } : {});
+
+// Narrows the inherited discriminator property on `Base` to the literal `DiscValue` so a union
+// of sibling subtypes forms a proper discriminated union (GH #7677). Falls through to `Base`
+// when either marker is absent (parent without `discriminatorColumn`, or self-defined entity).
+type NarrowDiscriminator<Base, DiscColumn extends string | undefined, DiscValue> = DiscColumn extends string
+  ? DiscColumn extends keyof Base
+    ? DiscValue extends string | number
+      ? Omit<Base, DiscColumn> & { [K in DiscColumn]: DiscValue }
+      : Base
+    : Base
+  : Base;
 
 // Combines primary keys from child properties and base entity
 type InferCombinedPrimaryKey<Properties extends Record<string, any>, PK, Base> = PK extends undefined
