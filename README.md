@@ -2,7 +2,7 @@
   <a href="https://mikro-orm.io"><img src="https://raw.githubusercontent.com/mikro-orm/mikro-orm/master/docs/static/img/logo-readme.svg?sanitize=true" alt="MikroORM" /></a>
 </h1>
 
-TypeScript ORM for Node.js based on Data Mapper, [Unit of Work](https://mikro-orm.io/docs/unit-of-work/) and [Identity Map](https://mikro-orm.io/docs/identity-map/) patterns. Supports MongoDB, MySQL, MariaDB, PostgreSQL, SQLite (including libSQL), MSSQL and Oracle databases.
+TypeScript ORM for Node.js based on Data Mapper, [Unit of Work](https://mikro-orm.io/docs/unit-of-work/) and [Identity Map](https://mikro-orm.io/docs/identity-map/) patterns. Supports MongoDB, MySQL, MariaDB, PostgreSQL (including CockroachDB and PGlite), SQLite (including libSQL), MSSQL and Oracle databases.
 
 > Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Hibernate](https://hibernate.org/).
 
@@ -19,6 +19,7 @@ Install a driver package for your database:
 
 ```sh
 npm install @mikro-orm/postgresql   # PostgreSQL
+npm install @mikro-orm/pglite       # PGlite (embedded PostgreSQL in WASM)
 npm install @mikro-orm/mysql        # MySQL
 npm install @mikro-orm/mariadb      # MariaDB
 npm install @mikro-orm/sqlite       # SQLite
