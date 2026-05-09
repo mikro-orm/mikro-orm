@@ -14,6 +14,7 @@ import { MySqlDriver } from '@mikro-orm/mysql';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { LibSqlDriver } from '@mikro-orm/libsql';
+import { PgliteDriver } from '@mikro-orm/pglite';
 import { MsSqlDriver } from '@mikro-orm/mssql';
 import { OracleDriver } from '@mikro-orm/oracledb';
 
@@ -49,6 +50,7 @@ export const PLATFORMS = {
   mssql: MsSqlDriver,
   mariadb: MariaDbDriver,
   postgresql: PostgreSqlDriver,
+  pglite: PgliteDriver,
   sqlite: SqliteDriver,
   libsql: LibSqlDriver,
   'node-sqlite': NodeSqliteDriver,
@@ -185,6 +187,48 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
     dbName,
     baseDir: BASE_DIR,
     driver: PostgreSqlDriver,
+    debug: ['query', 'query-params'],
+    forceUtcTimezone: true,
+    autoJoinOneToOneOwner: false,
+    logger: i => i,
+    metadataProvider: ReflectMetadataProvider,
+    migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
+    forceEntityConstructor: [FooBar2],
+    loadStrategy,
+    subscribers: [Test2Subscriber],
+    extensions: [Migrator, SeedManager, EntityGenerator],
+    onQuery: sql => `/* foo */ ${sql}`,
+  });
+
+  const buf = await readFile(import.meta.dirname + '/postgre-schema.sql');
+  await orm.em.getConnection().executeDump(buf.toString());
+  Author2Subscriber.log.length = 0;
+  Test2Subscriber.log.length = 0;
+  EverythingSubscriber.log.length = 0;
+  FlushSubscriber.log.length = 0;
+
+  return orm;
+}
+
+export async function initORMPglite(loadStrategy = LoadStrategy.SELECT_IN, entities: any[] = []) {
+  const orm = new MikroORM<PgliteDriver>({
+    entities: [
+      Author2,
+      Address2,
+      Book2,
+      BookTag2,
+      Publisher2,
+      Test2,
+      FooBar2,
+      FooBaz2,
+      FooParam2,
+      Label2,
+      Configuration2,
+      ...entities,
+    ],
+    dbName: 'memory://',
+    baseDir: BASE_DIR,
+    driver: PgliteDriver,
     debug: ['query', 'query-params'],
     forceUtcTimezone: true,
     autoJoinOneToOneOwner: false,

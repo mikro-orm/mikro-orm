@@ -2,7 +2,7 @@ import { Pool, type PoolConfig, TypeOverrides } from 'pg';
 import Cursor from 'pg-cursor';
 import { PostgresDialect } from 'kysely';
 import array from 'postgres-array';
-import { AbstractSqlConnection, Utils } from '@mikro-orm/sql';
+import { AbstractSqlConnection, createPostgreSqlTypeParsers, Utils } from '@mikro-orm/sql';
 
 /** PostgreSQL database connection using the `pg` driver. */
 export class PostgreSqlConnection extends AbstractSqlConnection {
@@ -26,20 +26,10 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     Utils.defaultValue(ret, 'max', pool?.max);
     Utils.defaultValue(ret, 'idleTimeoutMillis', pool?.idleTimeoutMillis);
 
-    // use `select typname, oid, typarray from pg_type order by oid` to get the list of OIDs
     const types = new TypeOverrides();
-    [
-      1082, // date
-      1114, // timestamp
-      1184, // timestamptz
-      1186, // interval
-    ].forEach(oid => types.setTypeParser(oid, str => str));
-    [
-      1182, // date[]
-      1115, // timestamp[]
-      1185, // timestamptz[]
-      1187, // interval[]
-    ].forEach(oid => types.setTypeParser(oid, str => array.parse(str)));
+    for (const [oid, parser] of Object.entries(createPostgreSqlTypeParsers(s => array.parse(s)))) {
+      types.setTypeParser(Number(oid), parser as (value: string) => any);
+    }
     ret.types = types;
 
     return Utils.mergeConfig(ret, overrides);
