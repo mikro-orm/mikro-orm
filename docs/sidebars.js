@@ -149,6 +149,7 @@ module.exports = {
       items: [
         'usage-with-sql',
         'usage-with-sqlite',
+        'usage-with-pglite',
         'usage-with-cockroachdb',
         'usage-with-mongo',
         'usage-with-nestjs',

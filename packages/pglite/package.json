@@ -1,5 +1,5 @@
 {
-  "name": "@mikro-orm/sqlite",
+  "name": "@mikro-orm/pglite",
   "version": "7.0.15",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "keywords": [
@@ -15,6 +15,7 @@
     "mongodb",
     "mysql",
     "orm",
+    "pglite",
     "postgresql",
     "sqlite",
     "sqlite3",
@@ -47,9 +48,12 @@
     "copy": "node ../../scripts/copy.mjs"
   },
   "dependencies": {
+    "@electric-sql/pglite": "0.4.4",
     "@mikro-orm/sql": "7.0.15",
-    "better-sqlite3": "12.9.0",
-    "kysely": "0.29.0"
+    "kysely": "0.29.0",
+    "postgres-array": "3.0.4",
+    "postgres-date": "2.1.0",
+    "postgres-interval": "4.0.2"
   },
   "devDependencies": {
     "@mikro-orm/core": "^7.0.15"

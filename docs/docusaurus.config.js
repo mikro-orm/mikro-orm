@@ -19,6 +19,7 @@ const packages = [
   'seeder',
   'reflection',
   'postgresql',
+  'pglite',
   'mysql',
   'mariadb',
   'sqlite',
