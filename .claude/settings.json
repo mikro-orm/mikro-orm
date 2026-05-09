@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_response.filePath // .tool_input.file_path' | { read -r f; case \"$f\" in *.ts|*.tsx|*.js) [ -f \"$f\" ] && ./node_modules/.bin/oxfmt --write --no-error-on-unmatched-pattern \"$f\" && ./node_modules/.bin/oxlint --fix \"$f\" ;; esac; } 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}
