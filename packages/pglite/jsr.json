@@ -1,0 +1,16 @@
+{
+  "name": "@mikro-orm/pglite",
+  "version": "7.0.17",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "publish": {
+    "exclude": ["dist/", "node_modules/", "tests/"]
+  },
+  "imports": {
+    "@electric-sql/pglite": "npm:@electric-sql/pglite@0.4.4",
+    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.0.17",
+    "kysely": "npm:kysely@0.29.2",
+    "@mikro-orm/core": "jsr:@mikro-orm/core@7.0.17"
+  }
+}
