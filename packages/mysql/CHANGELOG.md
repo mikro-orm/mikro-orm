@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.15](https://github.com/mikro-orm/mikro-orm/compare/v7.0.14...v7.0.15) (2026-05-09)
+
+
+### Bug Fixes
+
+* **mysql:** default maxIdle when pool.idleTimeoutMillis is set ([#7673](https://github.com/mikro-orm/mikro-orm/issues/7673)) ([b711997](https://github.com/mikro-orm/mikro-orm/commit/b71199743e3aaefa4be07cc83637104224e81948)), closes [#7672](https://github.com/mikro-orm/mikro-orm/issues/7672)
+
+
+
+
+
 ## [7.0.14](https://github.com/mikro-orm/mikro-orm/compare/v7.0.13...v7.0.14) (2026-05-04)
 
 ### Features
