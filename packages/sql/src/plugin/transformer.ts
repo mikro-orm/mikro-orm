@@ -3,16 +3,17 @@ import {
   type EntityMetadata,
   type EntityProperty,
   type MetadataStorage,
+  type Type,
   ReferenceKind,
   isRaw,
 } from '@mikro-orm/core';
 import {
   type CommonTableExpressionNameNode,
   type DeleteQueryNode,
-  type IdentifierNode,
   type InsertQueryNode,
   type JoinNode,
   type MergeQueryNode,
+  type OperationNode,
   type QueryId,
   type SelectQueryNode,
   type UpdateQueryNode,
@@ -20,10 +21,14 @@ import {
   AliasNode,
   ColumnNode,
   ColumnUpdateNode,
+  IdentifierNode,
   OperationNodeTransformer,
   PrimitiveValueListNode,
+  RawNode,
   ReferenceNode,
   SchemableIdentifierNode,
+  SelectAllNode,
+  SelectionNode,
   TableNode,
   ValueListNode,
   ValueNode,
@@ -32,6 +37,13 @@ import {
 import type { MikroKyselyPluginOptions } from './index.js';
 import type { SqlEntityManager } from '../SqlEntityManager.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
+
+const EXPANDABLE_KINDS: ReadonlySet<ReferenceKind> = new Set([
+  ReferenceKind.SCALAR,
+  ReferenceKind.EMBEDDED,
+  ReferenceKind.MANY_TO_ONE,
+  ReferenceKind.ONE_TO_ONE,
+]);
 
 export class MikroTransformer extends OperationNodeTransformer {
   /**
@@ -111,7 +123,16 @@ export class MikroTransformer extends OperationNodeTransformer {
         }
       }
 
-      return super.transformSelectQuery(node, queryId);
+      const transformed = super.transformSelectQuery(node, queryId);
+
+      if (this.#options.convertValues && transformed.selections?.length) {
+        const selections = this.expandSelections(transformed.selections);
+        if (selections !== transformed.selections) {
+          return { ...transformed, selections };
+        }
+      }
+
+      return transformed;
     } finally {
       // Pop the context when exiting this query scope
       this.#contextStack.pop();
@@ -460,46 +481,48 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
 
     const columnProps = this.mapColumnsToProperties(node.columns, meta);
-    const shouldConvert = this.shouldConvertValues();
+    const fieldNames = node.columns.map(c => this.normalizeColumnName(c.column));
+    // hasConvertToDatabaseValueSQL is set by MetadataDiscovery only when the SQL is non-trivial
+    // (i.e. it actually wraps `?`), so a no-op cast on sqlite won't force a row upgrade.
+    const needsSqlWrap = columnProps.some(p => p?.hasConvertToDatabaseValueSQL);
     let changed = false;
 
     const convertedRows = node.values.values.map(row => {
-      if (ValueListNode.is(row)) {
-        if (row.values.length !== columnProps.length) {
-          return row;
-        }
-
+      if (ValueListNode.is(row) && row.values.length === columnProps.length) {
         const values = row.values.map((valueNode, idx) => {
           if (!ValueNode.is(valueNode)) {
             return valueNode;
           }
-
-          const converted = this.prepareInputValue(columnProps[idx], valueNode.value, shouldConvert);
-          if (converted === valueNode.value) {
-            return valueNode;
+          const newNode = this.processInputValueNode(columnProps[idx], fieldNames[idx], valueNode);
+          if (newNode !== valueNode) {
+            changed = true;
           }
-
-          changed = true;
-          return valueNode.immediate ? ValueNode.createImmediate(converted) : ValueNode.create(converted);
+          return newNode;
         });
-
         return ValueListNode.create(values);
       }
 
-      if (PrimitiveValueListNode.is(row)) {
-        if (row.values.length !== columnProps.length) {
-          return row;
+      if (PrimitiveValueListNode.is(row) && row.values.length === columnProps.length) {
+        // upgrade to ValueListNode when any column needs SQL-side wrapping, since
+        // PrimitiveValueListNode can only hold primitives
+        if (needsSqlWrap) {
+          changed = true;
+          return ValueListNode.create(
+            row.values.map((value, idx) => {
+              const prop = columnProps[idx];
+              const converted = this.prepareInputValue(prop, value, true);
+              return this.wrapWrite(prop, fieldNames[idx], ValueNode.create(converted));
+            }),
+          );
         }
 
         const values = row.values.map((value, idx) => {
-          const converted = this.prepareInputValue(columnProps[idx], value, shouldConvert);
+          const converted = this.prepareInputValue(columnProps[idx], value, true);
           if (converted !== value) {
             changed = true;
           }
-
           return converted;
         });
-
         return PrimitiveValueListNode.create(values);
       }
 
@@ -521,7 +544,6 @@ export class MikroTransformer extends OperationNodeTransformer {
       return node;
     }
 
-    const shouldConvert = this.shouldConvertValues();
     let changed = false;
 
     const updates = node.updates.map(updateNode => {
@@ -533,21 +555,14 @@ export class MikroTransformer extends OperationNodeTransformer {
         ? this.normalizeColumnName(updateNode.column.column)
         : undefined;
       const property = this.findProperty(meta, columnName);
-      const converted = this.prepareInputValue(property, updateNode.value.value, shouldConvert);
+      const newValue = this.processInputValueNode(property, columnName, updateNode.value);
 
-      if (converted === updateNode.value.value) {
+      if (newValue === updateNode.value) {
         return updateNode;
       }
 
       changed = true;
-      const newValueNode = updateNode.value.immediate
-        ? ValueNode.createImmediate(converted)
-        : ValueNode.create(converted);
-
-      return {
-        ...updateNode,
-        value: newValueNode,
-      };
+      return { ...updateNode, value: newValue };
     });
 
     if (!changed) {
@@ -558,6 +573,136 @@ export class MikroTransformer extends OperationNodeTransformer {
       ...node,
       updates,
     };
+  }
+
+  processInputValueNode(
+    prop: EntityProperty | undefined,
+    fieldName: string | undefined,
+    valueNode: ValueNode,
+  ): OperationNode {
+    const converted = this.prepareInputValue(prop, valueNode.value, true);
+    const newValueNode =
+      converted === valueNode.value
+        ? valueNode
+        : valueNode.immediate
+          ? ValueNode.createImmediate(converted)
+          : ValueNode.create(converted);
+    return this.wrapWrite(prop, fieldName, newValueNode);
+  }
+
+  expandSelections(selections: readonly SelectionNode[]): readonly SelectionNode[] {
+    const out: SelectionNode[] = [];
+    let changed = false;
+
+    for (const sel of selections) {
+      const replaced = this.expandSelection(sel);
+      if (replaced) {
+        out.push(...replaced);
+        changed = true;
+      } else {
+        out.push(sel);
+      }
+    }
+
+    return changed ? out : selections;
+  }
+
+  expandSelection(sel: SelectionNode): SelectionNode[] | null {
+    const inner = sel.selection;
+    if (SelectAllNode.is(inner)) {
+      return this.expandStar(this.findOwnerMeta(undefined), undefined, undefined);
+    }
+    if (!ReferenceNode.is(inner)) {
+      return null;
+    }
+
+    const table = inner.table;
+    const tableName = table ? this.getTableName(table) : undefined;
+    const meta = this.findOwnerMeta(tableName);
+    if (!meta) {
+      return null;
+    }
+
+    if (SelectAllNode.is(inner.column)) {
+      return this.expandStar(meta, table, tableName);
+    }
+
+    const fieldName = inner.column.column.name;
+    const prop = this.findProperty(meta, fieldName);
+    const ct = prop && this.fieldType(prop, fieldName);
+    return ct?.convertToJSValueSQL ? [this.wrapRead(ct, fieldName, tableName)] : null;
+  }
+
+  expandStar(
+    meta: EntityMetadata | undefined,
+    table: TableNode | undefined,
+    tableName: string | undefined,
+  ): SelectionNode[] | null {
+    if (!meta || !meta.props.some(p => p.hasConvertToJSValueSQL)) {
+      return null;
+    }
+
+    const out: SelectionNode[] = [];
+    for (const prop of meta.props) {
+      if (prop.persist === false || !prop.fieldNames?.length || !EXPANDABLE_KINDS.has(prop.kind)) {
+        continue;
+      }
+      for (const fieldName of prop.fieldNames) {
+        const ct = this.fieldType(prop, fieldName);
+        out.push(
+          ct?.convertToJSValueSQL
+            ? this.wrapRead(ct, fieldName, tableName)
+            : SelectionNode.create(
+                table ? ReferenceNode.create(ColumnNode.create(fieldName), table) : ColumnNode.create(fieldName),
+              ),
+        );
+      }
+    }
+
+    return out;
+  }
+
+  wrapRead(customType: Type<any>, fieldName: string, tableName: string | undefined): SelectionNode {
+    const key = this.#platform.quoteIdentifier(tableName ? `${tableName}.${fieldName}` : fieldName);
+    const sql = customType.convertToJSValueSQL!(key, this.#platform);
+    return SelectionNode.create(AliasNode.create(RawNode.createWithSql(sql), IdentifierNode.create(fieldName)));
+  }
+
+  wrapWrite(prop: EntityProperty | undefined, fieldName: string | undefined, valueNode: ValueNode): OperationNode {
+    if (!prop?.hasConvertToDatabaseValueSQL || !fieldName || valueNode.value == null || isRaw(valueNode.value)) {
+      return valueNode;
+    }
+    const customType = this.fieldType(prop, fieldName);
+    if (!customType?.convertToDatabaseValueSQL) {
+      return valueNode;
+    }
+    const fragments = customType.convertToDatabaseValueSQL('?', this.#platform).split('?');
+    return RawNode.create(
+      fragments,
+      fragments.slice(0, -1).map(() => valueNode),
+    );
+  }
+
+  /** Resolve the customType for a specific field name (handles composite-PK FK fan-out via prop.customTypes[]). */
+  fieldType(prop: EntityProperty, fieldName: string): Type<any> | undefined {
+    return prop.customType ?? prop.customTypes?.[prop.fieldNames.indexOf(fieldName)];
+  }
+
+  findOwnerMeta(name: string | undefined): EntityMetadata | undefined {
+    if (name) {
+      return this.lookupInContextStack(name) ?? this.#subqueryAliasMap.get(name) ?? this.findEntityMetadata(name);
+    }
+    let single: EntityMetadata | undefined;
+    for (const meta of this.#contextStack[this.#contextStack.length - 1].values()) {
+      if (!meta) {
+        continue;
+      }
+      if (single && single !== meta) {
+        return undefined;
+      }
+      single = meta;
+    }
+    return single;
   }
 
   mapColumnsToProperties(columns: readonly ColumnNode[], meta: EntityMetadata): (EntityProperty | undefined)[] {
@@ -587,10 +732,6 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
 
     return meta.props.find(prop => prop.fieldNames?.includes(columnName));
-  }
-
-  shouldConvertValues(): boolean {
-    return !!this.#options.convertValues;
   }
 
   prepareInputValue(prop: EntityProperty | undefined, value: unknown, enabled: boolean): unknown {
