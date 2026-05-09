@@ -1,4 +1,5 @@
 import {
+  type Abortable,
   type BulkWriteResult,
   type ClientSession,
   type Collection,
@@ -211,7 +212,7 @@ export class MongoConnection extends Connection {
   ): Promise<{ cursor: FindCursor<T>; query: string }> {
     await this.ensureConnection();
     const collection = this.getCollectionName(entityName);
-    const options: FindOptions = opts.ctx ? { session: opts.ctx } : {};
+    const options: FindOptions & Abortable = opts.ctx ? { session: opts.ctx } : {};
 
     if (opts.fields) {
       options.projection = opts.fields.reduce((o, k) => Object.assign(o, { [k]: 1 }), {});
@@ -234,6 +235,10 @@ export class MongoConnection extends Connection {
     }
     if (opts.chunkSize != null) {
       options.batchSize = opts.chunkSize;
+    }
+
+    if (opts.signal) {
+      options.signal = opts.signal;
     }
 
     const resultSet = this.getCollection<T>(entityName).find(where as Filter<T>, options);
@@ -275,16 +280,18 @@ export class MongoConnection extends Connection {
     entityName: EntityName<T>,
     data: Partial<T>,
     ctx?: Transaction<ClientSession>,
+    signal?: AbortSignal,
   ): Promise<QueryResult<T>> {
-    return this.runQuery<T>('insertOne', entityName, data, undefined, ctx);
+    return this.runQuery<T>('insertOne', entityName, data, undefined, ctx, { signal });
   }
 
   async insertMany<T extends object>(
     entityName: EntityName<T>,
     data: Partial<T>[],
     ctx?: Transaction<ClientSession>,
+    signal?: AbortSignal,
   ): Promise<QueryResult<T>> {
-    return this.runQuery<T>('insertMany', entityName, data, undefined, ctx);
+    return this.runQuery<T>('insertMany', entityName, data, undefined, ctx, { signal });
   }
 
   async updateMany<T extends object>(
@@ -294,8 +301,9 @@ export class MongoConnection extends Connection {
     ctx?: Transaction<ClientSession>,
     upsert?: boolean,
     upsertOptions?: UpsertOptions<T>,
+    signal?: AbortSignal,
   ): Promise<QueryResult<T>> {
-    return this.runQuery<T>('updateMany', entityName, data, where, ctx, { upsert, upsertOptions });
+    return this.runQuery<T>('updateMany', entityName, data, where, ctx, { upsert, upsertOptions, signal });
   }
 
   async bulkUpdateMany<T extends object>(
@@ -305,16 +313,18 @@ export class MongoConnection extends Connection {
     ctx?: Transaction<ClientSession>,
     upsert?: boolean,
     upsertOptions?: UpsertManyOptions<T>,
+    signal?: AbortSignal,
   ): Promise<QueryResult<T>> {
-    return this.runQuery<T>('bulkUpdateMany', entityName, data, where, ctx, { upsert, upsertOptions });
+    return this.runQuery<T>('bulkUpdateMany', entityName, data, where, ctx, { upsert, upsertOptions, signal });
   }
 
   async deleteMany<T extends object>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
     ctx?: Transaction<ClientSession>,
+    signal?: AbortSignal,
   ): Promise<QueryResult<T>> {
-    return this.runQuery<T>('deleteMany', entityName, undefined, where, ctx);
+    return this.runQuery<T>('deleteMany', entityName, undefined, where, ctx, { signal });
   }
 
   async aggregate<T extends object = any>(
@@ -322,11 +332,15 @@ export class MongoConnection extends Connection {
     pipeline: any[],
     ctx?: Transaction<ClientSession>,
     loggerContext?: LoggingOptions,
+    signal?: AbortSignal,
   ): Promise<T[]> {
     await this.ensureConnection();
     const collection = this.getCollectionName(entityName);
     /* v8 ignore next */
     const options: Dictionary = ctx ? { session: ctx } : {};
+    if (signal) {
+      options.signal = signal;
+    }
     const query = `db.getCollection('${collection}').aggregate(${this.logObject(pipeline)}, ${this.logObject(options)}).toArray();`;
     const now = Date.now();
     const res = await this.getCollection(entityName).aggregate<T>(pipeline, options).toArray();
@@ -341,11 +355,15 @@ export class MongoConnection extends Connection {
     ctx?: Transaction<ClientSession>,
     loggerContext?: LoggingOptions,
     stream = false,
+    signal?: AbortSignal,
   ): AsyncIterableIterator<T> {
     await this.ensureConnection();
     const collection = this.getCollectionName(entityName);
     /* v8 ignore next */
     const options: Dictionary = ctx ? { session: ctx } : {};
+    if (signal) {
+      options.signal = signal;
+    }
     const query = `db.getCollection('${collection}').aggregate(${this.logObject(pipeline)}, ${this.logObject(options)})};`;
     const cursor = this.getCollection(entityName).aggregate<T>(pipeline, options);
 
@@ -363,6 +381,7 @@ export class MongoConnection extends Connection {
       collation: opts.collation,
       indexHint: opts.indexHint,
       maxTimeMS: opts.maxTimeMS,
+      signal: opts.signal,
     });
   }
 
@@ -440,16 +459,21 @@ export class MongoConnection extends Connection {
       collation?: CollationOptions;
       indexHint?: string | Dictionary;
       maxTimeMS?: number;
+      signal?: AbortSignal;
     },
   ): Promise<U> {
     await this.ensureConnection();
-    const { upsert, upsertOptions, loggerContext, collation, indexHint, maxTimeMS } = opts ?? {};
+    const { upsert, upsertOptions, loggerContext, collation, indexHint, maxTimeMS, signal } = opts ?? {};
     const collection = this.getCollectionName(entityName);
     const logger = this.config.getLogger();
     const options: Dictionary = ctx ? { session: ctx, upsert } : { upsert };
 
     if (options.upsert === undefined) {
       delete options.upsert;
+    }
+
+    if (signal) {
+      options.signal = signal;
     }
 
     const now = Date.now();
@@ -672,6 +696,11 @@ export interface MongoQueryOptions {
   indexHint?: string | Dictionary;
   maxTimeMS?: number;
   allowDiskUse?: boolean;
+  /**
+   * Forwarded to the MongoDB driver. When fired, the driver aborts the in-flight operation
+   * by closing the underlying socket; the rejection reason is `signal.reason`.
+   */
+  signal?: AbortSignal;
 }
 
 /** Options for MongoDB find operations. */

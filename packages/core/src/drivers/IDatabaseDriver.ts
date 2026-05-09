@@ -19,7 +19,7 @@ import type {
   Prefixes,
   IndexName,
 } from '../typings.js';
-import type { Connection, QueryResult, Transaction } from '../connections/Connection.js';
+import type { AbortQueryOptions, Connection, QueryResult, Transaction } from '../connections/Connection.js';
 import type {
   FlushMode,
   LockMode,
@@ -289,7 +289,8 @@ export interface FindOptions<
   Hint extends string = never,
   Fields extends string = never,
   Excludes extends string = never,
-> extends LoadHint<Entity, Hint, Fields, Excludes> {
+>
+  extends LoadHint<Entity, Hint, Fields, Excludes>, AbortQueryOptions {
   /**
    * Where condition for populated relations. This will have no effect on the root entity.
    * With `select-in` strategy, this is applied only to the populate queries.
@@ -448,7 +449,7 @@ export interface FindOneOrFailOptions<
 }
 
 /** Options for native insert and update operations. */
-export interface NativeInsertUpdateOptions<T> {
+export interface NativeInsertUpdateOptions<T> extends AbortQueryOptions {
   convertCustomTypes?: boolean;
   ctx?: Transaction;
   schema?: string;
@@ -489,7 +490,7 @@ export interface UpsertManyOptions<Entity, Fields extends string = never> extend
 }
 
 /** Options for `em.count()` queries. */
-export interface CountOptions<T extends object, P extends string = never> {
+export interface CountOptions<T extends object, P extends string = never> extends AbortQueryOptions {
   filters?: FilterOptions;
   schema?: string;
   groupBy?: string | readonly string[];
@@ -533,7 +534,7 @@ export interface CountByOptions<T extends object> {
 }
 
 /** Options for `em.qb().update()` operations. */
-export interface UpdateOptions<T> {
+export interface UpdateOptions<T> extends AbortQueryOptions {
   filters?: FilterOptions;
   schema?: string;
   ctx?: Transaction;
@@ -576,7 +577,7 @@ export interface LockOptions extends DriverMethodOptions {
 }
 
 /** Base options shared by all driver methods (transaction context, schema, logging). */
-export interface DriverMethodOptions {
+export interface DriverMethodOptions extends AbortQueryOptions {
   ctx?: Transaction;
   schema?: string;
   loggerContext?: LogContext;

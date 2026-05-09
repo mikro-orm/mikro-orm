@@ -26,7 +26,7 @@ import { Utils } from '../utils/Utils.js';
 import type { EntityManager } from '../EntityManager.js';
 import { Cascade, DeferMode, EventType, LockMode, ReferenceKind } from '../enums.js';
 import { OptimisticLockError, ValidationError } from '../errors.js';
-import type { Transaction } from '../connections/Connection.js';
+import type { AbortQueryOptions, Transaction } from '../connections/Connection.js';
 import { type EventManager } from '../events/EventManager.js';
 import { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster.js';
 import { IdentityMap } from './IdentityMap.js';
@@ -70,6 +70,14 @@ export class UnitOfWork {
   #working = false;
 
   readonly #em: EntityManager;
+
+  /**
+   * UoW lives in `@mikro-orm/core` alongside `EntityManager` and reaches `getAbortOptions`
+   * (TS-protected) via cast — TS has no `friend` keyword, so this is the documented escape hatch.
+   */
+  get #abortOptions(): AbortQueryOptions | undefined {
+    return (this.#em as unknown as { getAbortOptions(): AbortQueryOptions | undefined }).getAbortOptions();
+  }
 
   constructor(em: EntityManager) {
     this.#em = em;
@@ -1346,7 +1354,7 @@ export class UnitOfWork {
       await this.runHooks(EventType.beforeCreate, changeSet, true);
     }
 
-    await this.#changeSetPersister.executeInserts(changeSets, { ctx });
+    await this.#changeSetPersister.executeInserts(changeSets, { ctx, ...this.#abortOptions });
 
     for (const changeSet of changeSets) {
       // For TPT entities, use the full entity snapshot instead of the partial changeset payload,
@@ -1440,7 +1448,7 @@ export class UnitOfWork {
       await this.runHooks(EventType.beforeUpdate, changeSet, true);
     }
 
-    await this.#changeSetPersister.executeUpdates(changeSets, batched, { ctx });
+    await this.#changeSetPersister.executeUpdates(changeSets, batched, { ctx, ...this.#abortOptions });
 
     for (const changeSet of changeSets) {
       const wrapped = helper(changeSet.entity);
@@ -1477,7 +1485,7 @@ export class UnitOfWork {
       await this.runHooks(EventType.beforeDelete, changeSet, true);
     }
 
-    await this.#changeSetPersister.executeDeletes(changeSets, { ctx });
+    await this.#changeSetPersister.executeDeletes(changeSets, { ctx, ...this.#abortOptions });
 
     for (const changeSet of changeSets) {
       this.unsetIdentity(changeSet.entity);
@@ -1533,6 +1541,7 @@ export class UnitOfWork {
       ctx,
       schema: this.#em.schema,
       loggerContext,
+      ...this.#abortOptions,
     });
 
     for (const coll of this.#collectionUpdates) {
