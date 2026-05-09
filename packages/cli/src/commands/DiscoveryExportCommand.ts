@@ -16,6 +16,7 @@ interface DiscoveredExport {
 
 const driverPackageMap: Record<string, string> = {
   PostgreSqlDriver: '@mikro-orm/postgresql',
+  PgliteDriver: '@mikro-orm/pglite',
   MySqlDriver: '@mikro-orm/mysql',
   MariaDbDriver: '@mikro-orm/mariadb',
   SqliteDriver: '@mikro-orm/sqlite',

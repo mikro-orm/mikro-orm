@@ -26,6 +26,9 @@ npm install @mikro-orm/core @mikro-orm/mariadb
 # for postgresql (works with cockroachdb too)
 npm install @mikro-orm/core @mikro-orm/postgresql
 
+# for pglite (embedded PostgreSQL in WASM)
+npm install @mikro-orm/core @mikro-orm/pglite
+
 # for sqlite
 npm install @mikro-orm/core @mikro-orm/sqlite
 

@@ -2,9 +2,17 @@ import array from 'postgres-array';
 import parseDate from 'postgres-date';
 import PostgresInterval, { type IPostgresInterval } from 'postgres-interval';
 import { BasePostgreSqlPlatform, Utils } from '@mikro-orm/sql';
+import { PgliteSchemaHelper } from './PgliteSchemaHelper.js';
 
-/** Platform implementation for PostgreSQL. */
-export class PostgreSqlPlatform extends BasePostgreSqlPlatform {
+/** Platform implementation for PGlite (PostgreSQL in WASM, single-database). */
+export class PglitePlatform extends BasePostgreSqlPlatform {
+  protected override readonly schemaHelper: PgliteSchemaHelper = new PgliteSchemaHelper(this);
+
+  /** PGlite uses the extended query protocol — one statement per `query()` call. */
+  override supportsMultipleStatements(): boolean {
+    return false;
+  }
+
   override convertIntervalToJSValue(value: string): unknown {
     return PostgresInterval(value);
   }
