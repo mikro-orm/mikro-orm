@@ -1,4 +1,5 @@
 import {
+  type AbortQueryOptions,
   type Dictionary,
   type EntityData,
   type EntityKey,
@@ -66,6 +67,7 @@ export class PivotCollectionPersister<Entity extends object> {
   readonly #ctx?: Transaction;
   readonly #schema?: string;
   readonly #loggerContext?: Dictionary;
+  readonly #abort?: AbortQueryOptions;
 
   constructor(
     meta: EntityMetadata<Entity>,
@@ -73,12 +75,14 @@ export class PivotCollectionPersister<Entity extends object> {
     ctx?: Transaction,
     schema?: string,
     loggerContext?: Dictionary,
+    abort?: AbortQueryOptions,
   ) {
     this.#meta = meta;
     this.#driver = driver;
     this.#ctx = ctx;
     this.#schema = schema;
     this.#loggerContext = loggerContext;
+    this.#abort = abort;
     this.#batchSize = this.#driver.config.get('batchSize');
   }
 
@@ -212,6 +216,7 @@ export class PivotCollectionPersister<Entity extends object> {
           ctx: this.#ctx,
           schema: this.#schema,
           loggerContext: this.#loggerContext,
+          ...this.#abort,
         });
       }
     }
@@ -227,6 +232,7 @@ export class PivotCollectionPersister<Entity extends object> {
           convertCustomTypes: false,
           processCollections: false,
           loggerContext: this.#loggerContext,
+          ...this.#abort,
         });
       }
     }
@@ -244,6 +250,7 @@ export class PivotCollectionPersister<Entity extends object> {
           upsert: true,
           onConflictAction: 'ignore',
           loggerContext: this.#loggerContext,
+          ...this.#abort,
         });
       }
     }

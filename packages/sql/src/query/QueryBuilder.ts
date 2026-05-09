@@ -1,4 +1,5 @@
 import {
+  type AbortQueryOptions,
   type AnyEntity,
   type AutoPath,
   type Collection,
@@ -597,6 +598,7 @@ export class QueryBuilder<
   #state: QBState<Entity> = QueryBuilder.createDefaultState<Entity>();
   #helper?: QueryBuilderHelper;
   #query?: { sql?: string; params?: readonly unknown[]; qb: NativeQueryBuilder };
+  #abortOptions?: AbortQueryOptions;
 
   /** @internal */
   static createDefaultState<T extends object>(): QBState<T> {
@@ -2474,7 +2476,7 @@ export class QueryBuilder<
       return cached.data as unknown as U;
     }
 
-    const loggerContext = { id: this.em?.id, ...this.loggerContext };
+    const loggerContext = { id: this.em?.id, ...this.loggerContext, ...this.#abortOptions };
     const res = await this.getConnection().execute(query.sql, query.params, method, this.context, loggerContext);
     const meta = this.mainAlias.meta;
 
@@ -2540,7 +2542,7 @@ export class QueryBuilder<
     const chunkSize = options.chunkSize ?? 100;
 
     const query = this.toQuery();
-    const loggerContext = { id: this.em?.id, ...this.loggerContext };
+    const loggerContext = { id: this.em?.id, ...this.loggerContext, ...this.#abortOptions };
     const res = this.getConnection().stream(query.sql, query.params, this.context, loggerContext, chunkSize);
     const meta = this.mainAlias.meta;
 
@@ -2927,6 +2929,7 @@ export class QueryBuilder<
     qb.#state.finalized = false;
     qb.#query = undefined;
     qb.#helper = qb.createQueryBuilderHelper();
+    qb.#abortOptions = this.#abortOptions;
 
     return qb;
   }
@@ -2944,6 +2947,14 @@ export class QueryBuilder<
   getLoggerContext<T extends Dictionary & LoggingOptions = Dictionary>(): T {
     this.loggerContext ??= {};
     return this.loggerContext as T;
+  }
+
+  /**
+   * Configures cancellation behavior for this query builder. The signal is forwarded to the
+   * underlying database client; see {@apilink AbortQueryOptions} for the available strategies.
+   */
+  setAbortOptions(options: AbortQueryOptions | undefined): void {
+    this.#abortOptions = options;
   }
 
   private fromVirtual<T extends object>(meta: EntityMetadata<T>): string {

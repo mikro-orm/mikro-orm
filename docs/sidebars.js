@@ -114,6 +114,7 @@ module.exports = {
         'caching',
         'dataloaders',
         'streaming',
+        'query-cancellation',
         'read-connections',
         'propagation',
         'property-validation',
