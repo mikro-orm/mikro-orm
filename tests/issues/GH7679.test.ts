@@ -91,8 +91,8 @@ test('selectAll expands non-customType columns with table reference (t.*)', asyn
 
   await kysely.insertInto('Doc').values({ id: 2, title: 'aliased', content: 'world', parent_id: null }).execute();
 
-  // selectAll('d') → "d".*; the M2O parent_id and O2M tags exercise the non-customType
-  // and non-expandable prop branches in expandStarSelection.
+  // selectAll('d') → "d".*; the M2O parent_id and O2M tags also force the
+  // non-customType passthrough and non-expandable-skip paths.
   const sql = kysely.selectFrom('Doc as d').selectAll('d').compile().sql;
   expect(sql).toContain('hex(');
   expect(sql).toMatch(/"d"\."title"|`d`\.`title`/);
@@ -110,8 +110,9 @@ test('explicit qualified column reference is wrapped (table-name fallback)', asy
 
   await kysely.insertInto('Doc').values({ id: 3, title: 't', content: 'qualified' }).execute();
 
-  // tableNamingStrategy: 'entity' rewrites Doc → doc post-transform; resolveOwnerMeta
-  // must fall back to findEntityMetadata since context still keys on the entity name.
+  // tableNamingStrategy: 'entity' rewrites Doc → doc post-transform but the context
+  // still keys on the entity name, so the qualified ref must fall back to a global
+  // entity-by-table-name lookup.
   const sql = kysely.selectFrom('Doc').select('Doc.content').compile().sql;
   expect(sql).toContain('hex(');
 

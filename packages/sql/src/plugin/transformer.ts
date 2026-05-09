@@ -610,7 +610,7 @@ export class MikroTransformer extends OperationNodeTransformer {
   expandSelection(sel: SelectionNode): SelectionNode[] | null {
     const inner = sel.selection;
     if (SelectAllNode.is(inner)) {
-      return this.expandStar(this.findOwnerMeta(undefined), undefined);
+      return this.expandStar(this.findOwnerMeta(undefined), undefined, undefined);
     }
     if (!ReferenceNode.is(inner)) {
       return null;
@@ -624,7 +624,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     }
 
     if (SelectAllNode.is(inner.column)) {
-      return this.expandStar(meta, table);
+      return this.expandStar(meta, table, tableName);
     }
 
     const fieldName = inner.column.column.name;
@@ -633,14 +633,16 @@ export class MikroTransformer extends OperationNodeTransformer {
     return ct?.convertToJSValueSQL ? [this.wrapRead(ct, fieldName, tableName)] : null;
   }
 
-  expandStar(meta: EntityMetadata | undefined, table: TableNode | undefined): SelectionNode[] | null {
+  expandStar(
+    meta: EntityMetadata | undefined,
+    table: TableNode | undefined,
+    tableName: string | undefined,
+  ): SelectionNode[] | null {
     if (!meta || !meta.props.some(p => p.hasConvertToJSValueSQL)) {
       return null;
     }
 
-    const tableName = table ? this.getTableName(table) : undefined;
     const out: SelectionNode[] = [];
-
     for (const prop of meta.props) {
       if (prop.persist === false || !prop.fieldNames?.length || !EXPANDABLE_KINDS.has(prop.kind)) {
         continue;
@@ -681,10 +683,8 @@ export class MikroTransformer extends OperationNodeTransformer {
     );
   }
 
-  /** Resolve the customType to use for a specific field name within a prop (handles composite-PK customTypes[]). */
+  /** Resolve the customType for a specific field name (handles composite-PK FK fan-out via prop.customTypes[]). */
   fieldType(prop: EntityProperty, fieldName: string): Type<any> | undefined {
-    // customTypes[] only set for M2O/O2O FKs to composite-PK targets — indexOf returning -1
-    // here naturally yields `customTypes[-1]` → undefined for non-FK refs.
     return prop.customType ?? prop.customTypes?.[prop.fieldNames.indexOf(fieldName)];
   }
 
