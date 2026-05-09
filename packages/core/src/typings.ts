@@ -1640,7 +1640,7 @@ export type MigrationRow = { id: number; name: string; executed_at: Date };
  * @internal
  */
 export interface IMigrationRunner {
-  run(migration: Migration, method: 'up' | 'down'): Promise<void>;
+  run(migration: Migration, method: 'up' | 'down', afterRun?: (tx?: Transaction) => Promise<void>): Promise<void>;
   setMasterMigration(trx: Transaction): void;
   unsetMasterMigration(): void;
 }
@@ -1650,8 +1650,8 @@ export interface IMigrationRunner {
  */
 export interface IMigratorStorage {
   executed(): Promise<string[]>;
-  logMigration(params: Dictionary): Promise<void>;
-  unlogMigration(params: Dictionary): Promise<void>;
+  logMigration(params: Dictionary, tx?: Transaction): Promise<void>;
+  unlogMigration(params: Dictionary, tx?: Transaction): Promise<void>;
   getExecutedMigrations(): Promise<MigrationRow[]>;
   ensureTable?(): Promise<void>;
   setMasterMigration(trx: Transaction): void;
@@ -2143,14 +2143,17 @@ export interface EntitySchemaWithMeta<
   TBase = never,
   TProperties extends Record<string, any> = Record<string, any>,
   TClass extends EntityCtor = EntityCtor<TEntity>,
+  TDiscriminatorColumn extends string | undefined = undefined,
 > extends EntitySchema<TEntity, TBase, TClass> {
   readonly name: TName;
   readonly properties: TProperties;
   readonly tableName: TTableName;
   /** @internal Direct entity type access - avoids expensive pattern matching */
   readonly '~entity': TEntity;
+  /** @internal Type-level marker carrying the discriminator column name, used by `defineEntity()` to narrow inherited discriminator properties to the literal `discriminatorValue` of each child schema. */
+  readonly '~discriminatorColumn'?: TDiscriminatorColumn;
   /** @internal */
-  readonly class: TClass & { '~entityName'?: TName };
+  readonly class: TClass & { '~entityName'?: TName; '~discriminatorColumn'?: TDiscriminatorColumn };
 }
 
 /**
