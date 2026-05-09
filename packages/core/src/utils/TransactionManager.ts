@@ -181,6 +181,8 @@ export class TransactionManager {
       cloneEventManager: true,
       disableTransactions: options.ignoreNestedTransactions,
       loggerContext: options.loggerContext,
+      signal: options.signal,
+      inflightQueryAbortStrategy: options.inflightQueryAbortStrategy,
     });
   }
 

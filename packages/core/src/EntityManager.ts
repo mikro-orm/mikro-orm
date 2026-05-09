@@ -81,7 +81,7 @@ import {
   type TransactionOptions,
 } from './enums.js';
 import type { MetadataStorage } from './metadata/MetadataStorage.js';
-import type { Transaction } from './connections/Connection.js';
+import type { AbortQueryOptions, InflightQueryAbortStrategy, Transaction } from './connections/Connection.js';
 import { EventManager } from './events/EventManager.js';
 import { TransactionEventBroadcaster } from './events/TransactionEventBroadcaster.js';
 import type { EntityComparator } from './utils/EntityComparator.js';
@@ -122,6 +122,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   #disableTransactions: boolean;
   #flushMode?: FlushMode;
   #schema?: string;
+  /** @internal */
+  protected signal?: AbortSignal;
+  /** @internal */
+  protected inflightQueryAbortStrategy?: InflightQueryAbortStrategy;
   readonly #useContext: boolean;
 
   /**
@@ -1742,6 +1746,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options: LockOptions | number | Date = {},
   ): Promise<void> {
     options = Utils.isPlainObject(options) ? (options as LockOptions) : { lockVersion: options };
+    this.getContext(false).prepareOptions(options as FindOptions<any, any, any, any>);
     await this.getUnitOfWork().lock(entity, { lockMode, ...options });
   }
 
@@ -2509,6 +2514,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     fork.#filterParams = Utils.copy(em.#filterParams);
     fork.loggerContext = Utils.merge({}, em.loggerContext, options.loggerContext);
     fork.#schema = options.schema ?? em.#schema;
+    fork.signal = options.signal ?? em.signal;
+    fork.inflightQueryAbortStrategy = options.inflightQueryAbortStrategy ?? em.inflightQueryAbortStrategy;
 
     if (!options.clear) {
       for (const entity of em.#unitOfWork.getIdentityMap()) {
@@ -2601,6 +2608,23 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    */
   getTransactionContext<T extends Transaction = Transaction>(): T | undefined {
     return this.getContext(false).#transactionContext as T;
+  }
+
+  /**
+   * Returns the cancellation defaults configured on this EntityManager (via `em.fork({ signal })`
+   * or inherited from a transactional fork). Returns `undefined` when no signal is set.
+   *
+   * @internal — exposed for subclass drivers and `UnitOfWork`; not part of the public API.
+   */
+  protected getAbortOptions(): AbortQueryOptions | undefined {
+    const em = this.getContext(false);
+    if (em.signal == null && em.inflightQueryAbortStrategy == null) {
+      return undefined;
+    }
+    return {
+      signal: em.signal,
+      inflightQueryAbortStrategy: em.inflightQueryAbortStrategy,
+    };
   }
 
   /**
@@ -3013,17 +3037,21 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   protected prepareOptions(
-    options:
+    options: (
       | FindOptions<any, any, any, any>
       | FindOneOptions<any, any, any, any>
       | CountOptions<any, any>
-      | CountByOptions<any>,
+      | CountByOptions<any>
+    ) &
+      AbortQueryOptions,
   ): void {
     if (!Utils.isEmpty((options as FindOptions<any>).fields) && !Utils.isEmpty((options as FindOptions<any>).exclude)) {
       throw new ValidationError(`Cannot combine 'fields' and 'exclude' option.`);
     }
 
     options.schema ??= this.#schema;
+    options.signal ??= this.signal;
+    options.inflightQueryAbortStrategy ??= this.inflightQueryAbortStrategy;
     options.logging = options.loggerContext = Utils.merge(
       { id: this.id },
       this.loggerContext,
@@ -3044,7 +3072,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const { ...opts } = options;
 
     // ignore some irrelevant options, e.g. logger context can contain dynamic data for the same query
-    for (const k of ['ctx', 'strategy', 'flushMode', 'logging', 'loggerContext']) {
+    for (const k of [
+      'ctx',
+      'strategy',
+      'flushMode',
+      'logging',
+      'loggerContext',
+      'signal',
+      'inflightQueryAbortStrategy',
+    ]) {
       delete opts[k as keyof typeof opts];
     }
 
@@ -3230,4 +3266,11 @@ export interface ForkOptions {
   schema?: string;
   /** default logger context, can be overridden via {@apilink FindOptions} */
   loggerContext?: Dictionary;
+  /**
+   * Default `AbortSignal` applied to every operation on this fork (queries and UoW flushes).
+   * Per-call options.signal still takes precedence.
+   */
+  signal?: AbortSignal;
+  /** Default cancellation strategy paired with {@link signal}. */
+  inflightQueryAbortStrategy?: InflightQueryAbortStrategy;
 }
