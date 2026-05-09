@@ -42,7 +42,7 @@
     "copy": "node ../../scripts/copy.mjs"
   },
   "dependencies": {
-    "@mikro-orm/sql": "^7.0.15",
+    "@mikro-orm/sql": "7.0.15",
     "kysely": "0.28.17",
     "oracledb": "6.10.0"
   },
@@ -50,7 +50,7 @@
     "@mikro-orm/core": "^7.0.15"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "7.0.14"
+    "@mikro-orm/core": "7.0.15"
   },
   "engines": {
     "node": ">= 22.17.0"

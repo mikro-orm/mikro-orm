@@ -5,15 +5,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.15](https://github.com/mikro-orm/mikro-orm/compare/v7.0.14...v7.0.15) (2026-05-09)
 
-
 ### Bug Fixes
 
-* **sql:** apply customType SQL wrappers in getKysely ([#7682](https://github.com/mikro-orm/mikro-orm/issues/7682)) ([89f9222](https://github.com/mikro-orm/mikro-orm/commit/89f9222d00aa9b5690d78cccf735d354e70e63ed)), closes [#7679](https://github.com/mikro-orm/mikro-orm/issues/7679)
-* **sql:** nest auto-joins inside a join cond's target to avoid forward references ([#7683](https://github.com/mikro-orm/mikro-orm/issues/7683)) ([2ad53b3](https://github.com/mikro-orm/mikro-orm/commit/2ad53b3b59b5ba048cde7a72c929afc50f917519)), closes [#7681](https://github.com/mikro-orm/mikro-orm/issues/7681)
-
-
-
-
+- **sql:** apply customType SQL wrappers in getKysely ([#7682](https://github.com/mikro-orm/mikro-orm/issues/7682)) ([89f9222](https://github.com/mikro-orm/mikro-orm/commit/89f9222d00aa9b5690d78cccf735d354e70e63ed)), closes [#7679](https://github.com/mikro-orm/mikro-orm/issues/7679)
+- **sql:** nest auto-joins inside a join cond's target to avoid forward references ([#7683](https://github.com/mikro-orm/mikro-orm/issues/7683)) ([2ad53b3](https://github.com/mikro-orm/mikro-orm/commit/2ad53b3b59b5ba048cde7a72c929afc50f917519)), closes [#7681](https://github.com/mikro-orm/mikro-orm/issues/7681)
 
 ## [7.0.14](https://github.com/mikro-orm/mikro-orm/compare/v7.0.13...v7.0.14) (2026-05-04)
 

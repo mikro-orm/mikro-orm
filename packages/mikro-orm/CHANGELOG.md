@@ -7,10 +7,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package mikro-orm
 
-
-
-
-
 ## [7.0.14](https://github.com/mikro-orm/mikro-orm/compare/v7.0.13...v7.0.14) (2026-05-04)
 
 **Note:** Version bump only for package mikro-orm

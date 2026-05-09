@@ -5,17 +5,12 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.15](https://github.com/mikro-orm/mikro-orm/compare/v7.0.14...v7.0.15) (2026-05-09)
 
-
 ### Bug Fixes
 
-* **core:** apply array customType to scalar arrays defined via property chain ([#7689](https://github.com/mikro-orm/mikro-orm/issues/7689)) ([26f8107](https://github.com/mikro-orm/mikro-orm/commit/26f8107d4683edc843ce2c284a745bfab270aa9c)), closes [#7688](https://github.com/mikro-orm/mikro-orm/issues/7688)
-* **core:** apply filters to inverse 1:1 populate joins instead of duplicating them ([#7684](https://github.com/mikro-orm/mikro-orm/issues/7684)) ([895c93e](https://github.com/mikro-orm/mikro-orm/commit/895c93e38cf323d61fe14e8ef6e9794035cccc11)), closes [#7680](https://github.com/mikro-orm/mikro-orm/issues/7680)
-* **core:** narrow inherited discriminator to literal value in `defineEntity` ([#7678](https://github.com/mikro-orm/mikro-orm/issues/7678)) ([571a91e](https://github.com/mikro-orm/mikro-orm/commit/571a91ebf749c50dcf37bb134d4c98af70cc09f2)), closes [#7677](https://github.com/mikro-orm/mikro-orm/issues/7677)
-* **migrations:** log migration inside the runner's transaction ([#7676](https://github.com/mikro-orm/mikro-orm/issues/7676)) ([59a96f4](https://github.com/mikro-orm/mikro-orm/commit/59a96f470be05b0f915f7ad3d0d278a10c16123b))
-
-
-
-
+- **core:** apply array customType to scalar arrays defined via property chain ([#7689](https://github.com/mikro-orm/mikro-orm/issues/7689)) ([26f8107](https://github.com/mikro-orm/mikro-orm/commit/26f8107d4683edc843ce2c284a745bfab270aa9c)), closes [#7688](https://github.com/mikro-orm/mikro-orm/issues/7688)
+- **core:** apply filters to inverse 1:1 populate joins instead of duplicating them ([#7684](https://github.com/mikro-orm/mikro-orm/issues/7684)) ([895c93e](https://github.com/mikro-orm/mikro-orm/commit/895c93e38cf323d61fe14e8ef6e9794035cccc11)), closes [#7680](https://github.com/mikro-orm/mikro-orm/issues/7680)
+- **core:** narrow inherited discriminator to literal value in `defineEntity` ([#7678](https://github.com/mikro-orm/mikro-orm/issues/7678)) ([571a91e](https://github.com/mikro-orm/mikro-orm/commit/571a91ebf749c50dcf37bb134d4c98af70cc09f2)), closes [#7677](https://github.com/mikro-orm/mikro-orm/issues/7677)
+- **migrations:** log migration inside the runner's transaction ([#7676](https://github.com/mikro-orm/mikro-orm/issues/7676)) ([59a96f4](https://github.com/mikro-orm/mikro-orm/commit/59a96f470be05b0f915f7ad3d0d278a10c16123b))
 
 ## [7.0.14](https://github.com/mikro-orm/mikro-orm/compare/v7.0.13...v7.0.14) (2026-05-04)
 

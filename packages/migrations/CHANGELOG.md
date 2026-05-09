@@ -5,14 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.15](https://github.com/mikro-orm/mikro-orm/compare/v7.0.14...v7.0.15) (2026-05-09)
 
-
 ### Bug Fixes
 
-* **migrations:** log migration inside the runner's transaction ([#7676](https://github.com/mikro-orm/mikro-orm/issues/7676)) ([59a96f4](https://github.com/mikro-orm/mikro-orm/commit/59a96f470be05b0f915f7ad3d0d278a10c16123b))
-
-
-
-
+- **migrations:** log migration inside the runner's transaction ([#7676](https://github.com/mikro-orm/mikro-orm/issues/7676)) ([59a96f4](https://github.com/mikro-orm/mikro-orm/commit/59a96f470be05b0f915f7ad3d0d278a10c16123b))
 
 ## [7.0.14](https://github.com/mikro-orm/mikro-orm/compare/v7.0.13...v7.0.14) (2026-05-04)
 
