@@ -1,4 +1,5 @@
 import {
+  type AbortQueryOptions,
   ALIAS_REPLACEMENT_RE,
   type AnyEntity,
   type Collection,
@@ -68,6 +69,33 @@ import { JoinType, QueryType } from './query/enums.js';
 import { SqlEntityManager } from './SqlEntityManager.js';
 import type { InternalField } from './typings.js';
 import { PivotCollectionPersister } from './PivotCollectionPersister.js';
+
+/** Extracts cancellation controls from any options bag that extends `AbortQueryOptions`. */
+function pickAbortOptions(options?: AbortQueryOptions): AbortQueryOptions | undefined {
+  if (!options || (options.signal == null && options.inflightQueryAbortStrategy == null)) {
+    return undefined;
+  }
+  return {
+    signal: options.signal,
+    inflightQueryAbortStrategy: options.inflightQueryAbortStrategy,
+  };
+}
+
+/**
+ * Returns a `loggerContext` payload that carries the abort fields alongside any existing
+ * context. The connection layer strips them before logging — this avoids widening the public
+ * `Connection.execute()` signature.
+ */
+function withAbortContext(
+  loggerContext: LoggingOptions | undefined,
+  options?: AbortQueryOptions,
+): LoggingOptions | undefined {
+  const abort = pickAbortOptions(options);
+  if (!abort) {
+    return loggerContext;
+  }
+  return { ...(loggerContext as Dictionary), ...abort } as LoggingOptions;
+}
 
 /** Base class for SQL database drivers, implementing find/insert/update/delete using QueryBuilder. */
 export abstract class AbstractSqlDriver<
@@ -166,6 +194,7 @@ export abstract class AbstractSqlDriver<
     )
       .withSchema(schema)
       .cache(false);
+    qb.setAbortOptions(pickAbortOptions(options));
     const fields = this.buildFields(meta, populate, joinedProps, qb, qb.alias, options, schema);
     const orderBy = this.buildOrderBy(qb, meta, populate, options);
     const populateWhere = this.buildPopulateWhere(meta, joinedProps, options);
@@ -414,7 +443,13 @@ export abstract class AbstractSqlDriver<
     const asKeyword = this.platform.usesAsKeyword() ? ' as ' : ' ';
     native.from(raw(`(${expression})${asKeyword}${this.platform.quoteIdentifier(qb.alias)}`));
     const query = native.compile();
-    const res = await this.execute<T[]>(query.sql, query.params, 'all', options.ctx);
+    const res = await this.execute<T[]>(
+      query.sql,
+      query.params,
+      'all',
+      options.ctx,
+      withAbortContext(options.loggerContext, options),
+    );
 
     if (type === QueryType.COUNT) {
       return (res[0] as Dictionary).count;
@@ -446,7 +481,7 @@ export abstract class AbstractSqlDriver<
       query.sql,
       query.params,
       options.ctx,
-      options.loggerContext,
+      withAbortContext(options.loggerContext, options),
       options.chunkSize,
     );
 
@@ -855,6 +890,7 @@ export abstract class AbstractSqlDriver<
     const joinedProps = this.joinedProps(meta, populate, options as FindOptions<T>);
     const schema = this.getSchemaName(meta, options);
     const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false, options.logging);
+    qb.setAbortOptions(pickAbortOptions(options));
     const populateWhere = this.buildPopulateWhere(meta, joinedProps, options);
 
     if (meta && !Utils.isEmpty(populate)) {
@@ -900,6 +936,7 @@ export abstract class AbstractSqlDriver<
       options.convertCustomTypes,
       options.loggerContext,
     ).withSchema(this.getSchemaName(meta, options));
+    qb.setAbortOptions(pickAbortOptions(options));
     const res = await this.rethrow(qb.insert(data as unknown as RequiredEntityData<T>).execute('run', false));
     res.row = res.row || {};
     let pk: any;
@@ -949,6 +986,7 @@ export abstract class AbstractSqlDriver<
     const mappedOverrides = this.mapCloneOverrides(overrides, meta, options);
     const { selectFields, insertColumns } = this.buildCloneFields(props, mappedOverrides, meta);
 
+    const abort = pickAbortOptions(options);
     const selectQb = this.createQueryBuilder<T>(
       meta.class,
       options.ctx,
@@ -957,6 +995,7 @@ export abstract class AbstractSqlDriver<
       options.loggerContext,
     ).withSchema(this.getSchemaName(meta, options));
     selectQb.select(selectFields as any).where(where as any);
+    selectQb.setAbortOptions(abort);
 
     const insertQb = this.createQueryBuilder<T>(
       meta.class,
@@ -965,6 +1004,7 @@ export abstract class AbstractSqlDriver<
       options.convertCustomTypes,
       options.loggerContext,
     ).withSchema(this.getSchemaName(meta, options));
+    insertQb.setAbortOptions(abort);
 
     return this.rethrow(
       (insertQb as AnyQueryBuilder<T>)
@@ -1015,6 +1055,7 @@ export abstract class AbstractSqlDriver<
       const sourceWhere =
         tableMeta === rootMeta ? where : ((Utils.extractPK(where as any, tableMeta) as FilterQuery<T>) ?? where);
 
+      const abort = pickAbortOptions(options);
       const selectQb = this.createQueryBuilder<T>(
         tableMeta.class as any,
         options.ctx,
@@ -1023,6 +1064,7 @@ export abstract class AbstractSqlDriver<
         options.loggerContext,
       ).withSchema(this.getSchemaName(tableMeta as EntityMetadata<T>, options));
       selectQb.select(selectFields as any).where(sourceWhere as any);
+      selectQb.setAbortOptions(abort);
 
       const insertQb = this.createQueryBuilder<T>(
         tableMeta.class as any,
@@ -1031,6 +1073,7 @@ export abstract class AbstractSqlDriver<
         options.convertCustomTypes,
         options.loggerContext,
       ).withSchema(this.getSchemaName(tableMeta as EntityMetadata<T>, options));
+      insertQb.setAbortOptions(abort);
 
       const res = await this.rethrow(
         (insertQb as AnyQueryBuilder<T>)
@@ -1285,7 +1328,13 @@ export abstract class AbstractSqlDriver<
       sql = transform(sql);
     }
 
-    const res = await this.execute<QueryResult<T>>(sql, params, 'run', options.ctx, options.loggerContext);
+    const res = await this.execute<QueryResult<T>>(
+      sql,
+      params,
+      'run',
+      options.ctx,
+      withAbortContext(options.loggerContext, options),
+    );
     let pk: any[];
 
     /* v8 ignore next */
@@ -1335,6 +1384,7 @@ export abstract class AbstractSqlDriver<
         options.convertCustomTypes,
         options.loggerContext,
       ).withSchema(this.getSchemaName(meta, options));
+      qb.setAbortOptions(pickAbortOptions(options));
 
       if (options.upsert) {
         /* v8 ignore next */
@@ -1404,6 +1454,7 @@ export abstract class AbstractSqlDriver<
         options.convertCustomTypes,
         options.loggerContext,
       ).withSchema(this.getSchemaName(meta, options));
+      qb.setAbortOptions(pickAbortOptions(options));
       const returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options);
       qb.insert(data as T[])
         .onConflict(uniqueFields as any)
@@ -1580,7 +1631,7 @@ export abstract class AbstractSqlDriver<
     }
 
     const res = await this.rethrow(
-      this.execute<QueryResult<T>>(sql, params, 'run', options.ctx, options.loggerContext),
+      this.execute<QueryResult<T>>(sql, params, 'run', options.ctx, withAbortContext(options.loggerContext, options)),
     );
 
     for (let i = 0; i < collections.length; i++) {
@@ -1609,6 +1660,7 @@ export abstract class AbstractSqlDriver<
     const qb = this.createQueryBuilder(entityName, options.ctx, 'write', false, options.loggerContext)
       .delete(where)
       .withSchema(this.getSchemaName(meta, options));
+    qb.setAbortOptions(pickAbortOptions(options));
 
     return this.rethrow(qb.execute('run', false));
   }
@@ -1696,6 +1748,7 @@ export abstract class AbstractSqlDriver<
         const qb = this.createQueryBuilder(coll.property.targetMeta!.class, options?.ctx, 'write').withSchema(
           this.getSchemaName(meta, options),
         );
+        qb.setAbortOptions(pickAbortOptions(options));
 
         if (coll.getSnapshot() === undefined) {
           if (coll.property.orphanRemoval) {
@@ -1750,6 +1803,7 @@ export abstract class AbstractSqlDriver<
         options?.ctx,
         schema,
         options?.loggerContext,
+        pickAbortOptions(options),
       ));
       persister.enqueueUpdate(coll.property, insertDiff, deleteDiff, pks, coll.isInitialized());
     }
@@ -2979,6 +3033,7 @@ export abstract class AbstractSqlDriver<
           options?.ctx,
           options?.schema,
           options?.loggerContext,
+          pickAbortOptions(options),
         );
         persister.enqueueUpdate(prop, collections[prop.name] as Primary<T>[][], clear, pks);
         await this.rethrow(persister.execute());
@@ -2991,6 +3046,7 @@ export abstract class AbstractSqlDriver<
     const qb = this.createQueryBuilder(meta.class, options.ctx, undefined, undefined, options.logging).withSchema(
       options.schema ?? meta.schema,
     );
+    qb.setAbortOptions(pickAbortOptions(options));
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
     qb.select(raw('1'))
       .where(cond as any)

@@ -1,5 +1,6 @@
 import { CompiledQuery, type ControlledTransaction, type Dialect, Kysely } from 'kysely';
 import {
+  type AbortQueryOptions,
   type AnyEntity,
   Connection,
   type Dictionary,
@@ -18,6 +19,27 @@ import {
 } from '@mikro-orm/core';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform.js';
 import { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
+
+/**
+ * Pulls cancellation controls out of a `loggerContext` payload, returning the abort options
+ * and a sanitized context that no longer carries them. The QueryBuilder/EM stash
+ * `signal`/`inflightQueryAbortStrategy` on `loggerContext` to avoid widening the public
+ * connection API; stripping them prevents leakage into user `Logger.logQuery` payloads.
+ */
+function extractAbortOptions(loggerContext?: LoggingOptions): {
+  abort?: AbortQueryOptions;
+  loggerContext?: LoggingOptions;
+} {
+  const ctx = loggerContext as (LoggingOptions & Partial<AbortQueryOptions>) | undefined;
+  if (ctx?.signal == null && ctx?.inflightQueryAbortStrategy == null) {
+    return { loggerContext };
+  }
+  const { signal, inflightQueryAbortStrategy, ...rest } = ctx;
+  return {
+    abort: { signal, inflightQueryAbortStrategy },
+    loggerContext: rest as LoggingOptions,
+  };
+}
 
 /** Base class for SQL database connections, built on top of Kysely. */
 export abstract class AbstractSqlConnection extends Connection {
@@ -272,15 +294,16 @@ export abstract class AbstractSqlConnection extends Connection {
     await this.ensureConnection();
     const q = this.prepareQuery(query, params);
     const sql = this.getSql(q.query, q.formatted, loggerContext);
+    const { abort, loggerContext: cleanCtx } = extractAbortOptions(loggerContext);
 
     return this.executeQuery<T>(
       sql,
       async () => {
         const compiled = CompiledQuery.raw(q.formatted);
-        const res = await (ctx ?? this.#client).executeQuery(compiled);
+        const res = await (ctx ?? this.#client).executeQuery(compiled, abort);
         return this.transformRawResult<T>(res, method);
       },
-      { ...q, ...loggerContext },
+      { ...q, ...cleanCtx },
     );
   }
 
@@ -295,6 +318,7 @@ export abstract class AbstractSqlConnection extends Connection {
     await this.ensureConnection();
     const q = this.prepareQuery(query, params);
     const sql = this.getSql(q.query, q.formatted, loggerContext);
+    const { abort, loggerContext: cleanCtx } = extractAbortOptions(loggerContext);
 
     // construct the compiled query manually with `kind: 'SelectQueryNode'` to avoid sqlite validation for select queries when streaming
     const compiled = {
@@ -306,12 +330,14 @@ export abstract class AbstractSqlConnection extends Connection {
     } as unknown as CompiledQuery;
 
     try {
-      const res = (ctx ?? this.getClient()).getExecutor().stream(compiled, chunkSize ?? 100);
+      const res = (ctx ?? this.getClient())
+        .getExecutor()
+        .stream(compiled, chunkSize ?? 100, abort ? { signal: abort.signal } : undefined);
 
       this.logQuery(sql, {
         sql,
         params,
-        ...loggerContext,
+        ...cleanCtx,
         affected: Utils.isPlainObject<QueryResult>(res) ? res.affectedRows : undefined,
       });
 
@@ -321,7 +347,7 @@ export abstract class AbstractSqlConnection extends Connection {
         }
       }
     } catch (e) {
-      this.logQuery(sql, { sql, params, ...loggerContext, level: 'error' });
+      this.logQuery(sql, { sql, params, ...cleanCtx, level: 'error' });
       throw e;
     }
   }

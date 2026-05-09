@@ -28,6 +28,7 @@ import {
   ReferenceKind,
 } from '../enums.js';
 import { Reference, type ScalarReference } from './Reference.js';
+import type { InflightQueryAbortStrategy } from '../connections/Connection.js';
 import type { EntityField, FilterOptions, FindOptions, IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import type { Platform } from '../platforms/Platform.js';
@@ -72,6 +73,10 @@ export interface EntityLoaderOptions<Entity, Fields extends string = never, Excl
   logging?: LoggingOptions;
   /** Per-relation populate overrides (limit, offset, orderBy). */
   populateHints?: Record<string, PopulateHintOptions>;
+  /** AbortSignal forwarded to populated relation queries. */
+  signal?: AbortSignal;
+  /** Cancellation strategy paired with {@link signal}. */
+  inflightQueryAbortStrategy?: InflightQueryAbortStrategy;
 }
 
 /** Responsible for batch-loading entity relations using either select-in or joined loading strategies. */
@@ -646,6 +651,8 @@ export class EntityLoader {
       fields,
       schema,
       connectionType,
+      signal: options.signal,
+      inflightQueryAbortStrategy: options.inflightQueryAbortStrategy,
       // @ts-ignore not a public option, will be propagated to the populate call
       refresh: refresh && !children.every(item => options.visited.has(item)),
       // @ts-ignore not a public option, will be propagated to the populate call
