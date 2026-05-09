@@ -780,7 +780,7 @@ export class EntityComparator {
 
     ret += `) {\n`;
 
-    if (['number', 'string', 'boolean'].includes(prop.type.toLowerCase())) {
+    if (!prop.array && ['number', 'string', 'boolean'].includes(prop.type.toLowerCase())) {
       return ret + `    ret${dataKey} = entity${entityKey}${unwrap};\n  }\n`;
     }
 

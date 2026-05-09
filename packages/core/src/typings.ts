@@ -1228,7 +1228,9 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
         return false;
       }
 
-      return prop.kind === ReferenceKind.SCALAR && ['string', 'number', 'boolean', 'Date'].includes(prop.type);
+      return (
+        prop.kind === ReferenceKind.SCALAR && !prop.array && ['string', 'number', 'boolean', 'Date'].includes(prop.type)
+      );
     });
     this.hydrateProps = this.props.filter(prop => {
       // `prop.userDefined` is either `undefined` or `false`

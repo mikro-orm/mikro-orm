@@ -2204,7 +2204,7 @@ export class MetadataDiscovery {
       prop.customType = new t.enumArray(`${meta.className}.${prop.name}`, prop.items);
     }
 
-    const isArray = prop.type?.toLowerCase() === 'array' || prop.type?.toString().endsWith('[]');
+    const isArray = prop.array || prop.type?.toLowerCase() === 'array' || prop.type?.toString().endsWith('[]');
 
     if (objectEmbeddable && !prop.customType && isArray) {
       prop.customType = new t.json();
