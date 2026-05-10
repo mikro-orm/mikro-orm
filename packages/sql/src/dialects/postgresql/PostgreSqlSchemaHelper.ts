@@ -778,9 +778,19 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       from pg_proc p
       join pg_namespace n on n.oid = p.pronamespace
       join pg_language l on l.oid = p.prolang
-      left join pg_description d on d.objoid = p.oid
+      left join pg_description d on d.objoid = p.oid and d.classoid = 'pg_proc'::regclass
       where n.nspname in (${schemaList})
         and l.lanname not in ('c', 'internal')
+        -- exclude functions owned by extensions (PostGIS et al.)
+        and not exists (
+          select 1 from pg_depend dep
+          where dep.objid = p.oid
+            and dep.classid = 'pg_proc'::regclass
+            and dep.deptype = 'e'
+        )
+        -- exclude trigger-helper functions (e.g. created by createTrigger); these are
+        -- managed alongside their owning trigger, not as standalone routines.
+        and p.prorettype <> 'trigger'::regtype
     `;
     const rows = await connection.execute<
       {
