@@ -164,7 +164,7 @@ class BookService {
     await this.addAuthor(); // Nested call creates savepoint
   }
   
-  @Transactional()
+  @Transactional({ propagation: TransactionPropagation.NESTED })
   async addAuthor() {
     const author = new Author(...);
     author.name = 'Eric Evans';
@@ -249,7 +249,7 @@ class LibraryService {
     await this.addBook(author); // Will throw error
   }
   
-  @Transactional({ propagation: TransactionPropagation.REQUIRED })
+  @Transactional()
   async addBook(author: Author) {
     const book = new Book(...);
     book.title = 'Clean Code';
