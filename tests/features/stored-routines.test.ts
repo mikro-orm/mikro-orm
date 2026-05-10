@@ -138,4 +138,38 @@ describe('stored routines — metadata layer', () => {
     const validator = new MetadataValidator();
     expect(() => validator.validateRoutineDefinition(meta)).not.toThrow();
   });
+
+  it('validator rejects routines that are missing the type option', () => {
+    const meta = new RoutineMetadata({ className: 'NoType', routineName: 'no_type', body: 'select 1' });
+
+    const validator = new MetadataValidator();
+    expect(() => validator.validateRoutineDefinition(meta)).toThrow(/missing the required 'type' option/);
+  });
+
+  it('validator rejects routines with no body/expression/bodyJs', () => {
+    const meta = new RoutineMetadata({ className: 'Empty', routineName: 'empty', type: 'function' });
+
+    const validator = new MetadataValidator();
+    expect(() => validator.validateRoutineDefinition(meta)).toThrow(/must define a 'body', 'expression', or 'bodyJs'/);
+  });
+
+  it('validator rejects params with an invalid direction string', () => {
+    const meta = new RoutineMetadata({
+      className: 'BadDir',
+      routineName: 'bad_dir',
+      type: 'procedure',
+      body: 'BEGIN END',
+    });
+    meta.addParam({
+      name: 'x' as any,
+      type: 'int',
+      runtimeType: 'number',
+      columnTypes: ['int'],
+      direction: 'sideways' as any,
+      index: 0,
+    });
+
+    const validator = new MetadataValidator();
+    expect(() => validator.validateRoutineDefinition(meta)).toThrow(/has invalid direction 'sideways'/);
+  });
 });
