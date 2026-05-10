@@ -55,7 +55,7 @@ export class OracleQueryBuilder<
     for (let i = 0; i < tables.length; i++) {
       if (!tables[i].includes('.')) {
         const aliasInfo = this.state.aliases[tables[i]];
-        /* v8 ignore next 3: defensive — alias always has meta when called from ORM */
+        /* v8 ignore next 3: defensive - alias always has meta when called from ORM */
         if (aliasInfo?.meta) {
           tables[i] += '.' + aliasInfo.meta.getPrimaryProp().fieldNames[0];
         }

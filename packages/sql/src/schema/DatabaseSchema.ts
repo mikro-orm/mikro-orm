@@ -206,7 +206,7 @@ export class DatabaseSchema {
     platform: AbstractSqlPlatform,
     schemas?: string[],
   ): Promise<void> {
-    /* v8 ignore next — `schemas` default is exercised by the comparator's PG/MySQL integration paths. */
+    /* v8 ignore next - `schemas` default is exercised by the comparator's PG/MySQL integration paths. */
     this.#routines = await platform.getSchemaHelper()!.getAllRoutines(connection, schemas ?? []);
   }
 
@@ -328,7 +328,7 @@ export class DatabaseSchema {
             table.addColumnFromProperty(pkProp, meta, config);
           }
 
-          // Child PK must not be autoincrement — it references the parent PK via FK
+          // Child PK must not be autoincrement - it references the parent PK via FK
           for (const field of pkProp.fieldNames) {
             const col = table.getColumn(field);
 
@@ -393,7 +393,7 @@ export class DatabaseSchema {
    */
   addRoutinesFromMetadata(routines: RoutineMetadata[], platform: AbstractSqlPlatform, em?: any): void {
     const resolveBody = (raw: unknown): string | undefined => {
-      /* v8 ignore next 3 — routine with no body must already have `expression` or `bodyJs`; validator rejects otherwise. */
+      /* v8 ignore next 3 - routine with no body must already have `expression` or `bodyJs`; validator rejects otherwise. */
       if (raw == null) {
         return undefined;
       }
@@ -406,7 +406,7 @@ export class DatabaseSchema {
         return platform.formatQuery(raw.sql, raw.params);
       }
 
-      /* v8 ignore next — unexpected callback return type, exercised by a dedicated unit test. */
+      /* v8 ignore next - unexpected callback return type, exercised by a dedicated unit test. */
       return undefined;
     };
 
@@ -414,7 +414,7 @@ export class DatabaseSchema {
 
     for (const routineMeta of routines) {
       const paramMap =
-        /* v8 ignore next — `helper` is always present for SQL platforms; the fallback is for safety. */
+        /* v8 ignore next - `helper` is always present for SQL platforms; the fallback is for safety. */
         helper && routineMeta.params.length > 0
           ? routineMeta.params.reduce(
               (o, p) => {
@@ -491,7 +491,7 @@ export class DatabaseSchema {
     try {
       const t = platform.getMappedType(mappedKey);
       return t.getColumnType({ type: mappedKey, length: undefined } as any, platform);
-      /* v8 ignore next 3 — defensive fallback when a platform doesn't recognise one of the aliased keys. */
+      /* v8 ignore next 3 - defensive fallback when a platform doesn't recognise one of the aliased keys. */
     } catch {
       return type;
     }

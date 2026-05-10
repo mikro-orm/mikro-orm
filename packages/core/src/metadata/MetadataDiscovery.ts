@@ -325,7 +325,7 @@ export class MetadataDiscovery {
   private findGlobalRoutineForClass(target: { name?: string; [key: symbol]: unknown }): RoutineMetadata | undefined {
     const path = target?.[MetadataStorage.PATH_SYMBOL] as string | undefined;
 
-    /* v8 ignore next 3 — defensive guard for classes that bypass the decorator (no PATH_SYMBOL). */
+    /* v8 ignore next 3 - defensive guard for classes that bypass the decorator (no PATH_SYMBOL). */
     if (!target?.name || !path) {
       return undefined;
     }
@@ -725,7 +725,7 @@ export class MetadataDiscovery {
     }
 
     if (isUnionTargetMN) {
-      // Target side uses discriminator base name (e.g. attachable_id — shared across Image/Video)
+      // Target side uses discriminator base name (e.g. attachable_id - shared across Image/Video)
       const targetPkCols = Utils.flatten(meta2.primaryKeys.map(pk => meta2.properties[pk].fieldNames));
       prop.inverseJoinColumns ??= targetPkCols.map(fieldName =>
         this.#namingStrategy.joinKeyColumnName(prop.discriminator!, fieldName, targetPkCols.length > 1),
@@ -863,9 +863,9 @@ export class MetadataDiscovery {
 
           // Propagate pivotEntity to ALL inverse collections using mappedBy pointing at this
           // owner prop. Covers three cases:
-          //   - regular inverse (Tag.posts mappedBy Post.tags) — handled by inversedBy above
-          //   - union-target inverse (Image.posts mappedBy Post.attachments) — on each polymorph target
-          //   - merged inverse (Tag.owners mappedBy [Post,Video].tags) — union collection on the target
+          //   - regular inverse (Tag.posts mappedBy Post.tags) - handled by inversedBy above
+          //   - union-target inverse (Image.posts mappedBy Post.attachments) - on each polymorph target
+          //   - merged inverse (Tag.owners mappedBy [Post,Video].tags) - union collection on the target
           const inverseCandidates = QueryHelper.isUnionTargetPolymorphic(prop)
             ? prop.polymorphTargets!
             : [prop.targetMeta!];
@@ -1808,7 +1808,7 @@ export class MetadataDiscovery {
       // A child that narrows a relation to a subclass of the root's declared
       // target (same STI hierarchy) shares the FK column with the root; treat
       // that as matching so the rename branch below doesn't run (which would
-      // crash — `targetMeta` is only populated later, in `initRelation`).
+      // crash - `targetMeta` is only populated later, in `initRelation`).
       const narrowedRelationOverride =
         rootProp != null && rootProp.type !== prop.type && this.sameRelationTargetRoot(rootProp, prop);
 
@@ -1819,8 +1819,8 @@ export class MetadataDiscovery {
       const typesMatch = rootProp?.type === prop.type || rootProp?.stiMerged === true || narrowedRelationOverride;
 
       // Inverse-side relations (1:m, inverse m:n) have no FK column on this
-      // entity, so the rename branch — which exists to disambiguate physical
-      // columns shared across STI children — doesn't apply. Skipping it also
+      // entity, so the rename branch - which exists to disambiguate physical
+      // columns shared across STI children - doesn't apply. Skipping it also
       // avoids crashing on `[...rootProp.fieldNames]` since fieldNames is
       // never populated for inverse-side properties.
       const isInverseSideRelation =
@@ -1890,7 +1890,7 @@ export class MetadataDiscovery {
 
       // For narrowed relation overrides, keep the root's declaration intact so
       // the full target union (e.g. `Food`) is preserved for populates from the
-      // abstract root — otherwise the last child processed would win.
+      // abstract root - otherwise the last child processed would win.
       if (narrowedRelationOverride) {
         return;
       }
@@ -2163,7 +2163,7 @@ export class MetadataDiscovery {
     }
 
     if (this.#platform.usesEnumCheckConstraints() && !meta.embeddable) {
-      // Iterate `meta.properties` rather than `meta.props` — by this point in
+      // Iterate `meta.properties` rather than `meta.props` - by this point in
       // the discovery pipeline `initEmbeddables` has added flattened embedded
       // properties to `meta.properties`, but `meta.sync()` has not yet been
       // called, so `meta.props` is still the pre-flatten array and would miss
@@ -2317,7 +2317,7 @@ export class MetadataDiscovery {
       return;
     }
 
-    // TODO(v8): always convert the default via the custom type — the `compareAsType() !== 'any'`
+    // TODO(v8): always convert the default via the custom type - the `compareAsType() !== 'any'`
     // guard preserves the legacy convention where JSON defaults are passed pre-stringified.
     // Array defaults are converted unconditionally (e.g. `default: []` on a JSON-backed embedded array).
     if (prop.customType && (Array.isArray(prop.default) || prop.customType.compareAsType() !== 'any')) {
@@ -2385,7 +2385,7 @@ export class MetadataDiscovery {
 
       if (type) {
         if (prop.array) {
-          // built-in type + array: true — force-create instance for ArrayType wrapping
+          // built-in type + array: true - force-create instance for ArrayType wrapping
           prop.customType = new (prop.type as Constructor<Type>)();
           prop.type = prop.customType.constructor.name;
         } else {
@@ -2418,10 +2418,10 @@ export class MetadataDiscovery {
         const arrayDecl = this.#platform.getArrayDeclarationSQL();
 
         if (arrayDecl.endsWith('[]')) {
-          // native array support (e.g. postgres) — use inner type's column type with [] suffix
+          // native array support (e.g. postgres) - use inner type's column type with [] suffix
           prop.columnTypes = [innerType.getColumnType(prop, this.#platform) + '[]'];
         } else {
-          // non-native (e.g. mysql, sqlite) — store as text/clob
+          // non-native (e.g. mysql, sqlite) - store as text/clob
           prop.columnTypes = [arrayDecl];
         }
       }

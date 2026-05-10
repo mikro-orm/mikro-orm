@@ -247,7 +247,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       }
     }
 
-    // Drop routines before tables — most stored routines reference table columns.
+    // Drop routines before tables - most stored routines reference table columns.
     for (const routine of targetSchema.getRoutines()) {
       this.append(ret, this.helper.dropRoutine(routine), true);
     }
@@ -356,7 +356,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     // Load routines from DB whenever the dialect supports them (so removing the last
     // metadata routine still detects the orphan in DB). Dialects without routine support
     // return [] from getAllRoutines, which is the silent-skip path.
-    /* v8 ignore next 3 — the `fromSchema` override path is used only by migration-runner internals. */
+    /* v8 ignore next 3 - the `fromSchema` override path is used only by migration-runner internals. */
     if (options.fromSchema == null) {
       await fromSchema.loadRoutines(this.connection, this.platform, [...schemas]);
     }
@@ -721,7 +721,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         ret,
         this.helper.createMaterializedView(view.name, view.schema, view.definition, view.withData ?? true),
       );
-      // Skip indexes for WITH NO DATA views — they have no data to index yet.
+      // Skip indexes for WITH NO DATA views - they have no data to index yet.
       // Indexes will be created on the next schema:update after REFRESH populates data.
       if (view.withData !== false) {
         const viewName = this.helper.getTableName(view.name, view.schema);

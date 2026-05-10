@@ -168,13 +168,13 @@ export abstract class Connection {
 
   /**
    * Invokes a stored procedure or function declared via `@Routine`/`defineRoutine`/`RoutineSchema`.
-   * The base implementation throws — only drivers that override this method (every SQL driver
+   * The base implementation throws - only drivers that override this method (every SQL driver
    * does) support routine invocation.
    *
-   * @internal — public callers should go through `EntityManager.callRoutine` which performs validation,
+   * @internal - public callers should go through `EntityManager.callRoutine` which performs validation,
    *   ScalarReference unwrapping, and result hydration.
    */
-  /* v8 ignore next 3 — fallback for hypothetical non-SQL drivers; all in-tree drivers override. */
+  /* v8 ignore next 3 - fallback for hypothetical non-SQL drivers; all in-tree drivers override. */
   async callRoutine<T>(routine: RoutineMetadata, args: Record<string, unknown>, ctx?: Transaction): Promise<T> {
     throw new Error(`Stored routines are not supported by the current driver`);
   }
@@ -296,19 +296,19 @@ export type Transaction<T = any> = T & {};
 /**
  * Strategy applied when an `AbortSignal` fires while a query is in flight.
  *
- * - `'ignore query'` — stop awaiting; the query keeps running on the server until it settles
+ * - `'ignore query'` - stop awaiting; the query keeps running on the server until it settles
  *   (the connection returns to the pool only when the database replies).
- * - `'cancel query'` — ask the database to cancel the running query (e.g. `pg_cancel_backend`,
+ * - `'cancel query'` - ask the database to cancel the running query (e.g. `pg_cancel_backend`,
  *   `KILL QUERY`). Falls back to `'ignore query'` if the dialect cannot cancel.
  *   Most engines do not cancel writes; partial commits are possible.
- * - `'kill session'` — terminate the database session/process the query runs in
+ * - `'kill session'` - terminate the database session/process the query runs in
  *   (`pg_terminate_backend` etc.). Falls back to `'cancel query'` if not supported.
  *
  * Default: `'ignore query'`.
  *
  * **Streaming queries (`em.stream()` / `qb.stream()`):** the strategy is silently treated as
  * `'ignore query'` because the underlying driver only accepts a plain `AbortSignal` for
- * streamed reads — there is no server-side cancel for an open cursor. The MongoDB driver also
+ * streamed reads - there is no server-side cancel for an open cursor. The MongoDB driver also
  * has no notion of strategies; only the signal is honored there.
  */
 export type InflightQueryAbortStrategy = 'ignore query' | 'cancel query' | 'kill session';

@@ -83,7 +83,7 @@ export class MsSqlConnection extends AbstractSqlConnection {
     ctx?: Transaction,
   ): Promise<T> {
     const schema = routine.schema ?? this.platform.getDefaultSchemaName() ?? 'dbo';
-    // MSSQL scalar UDF calls must be schema-qualified — `select sql_hash(...)` fails to parse,
+    // MSSQL scalar UDF calls must be schema-qualified - `select sql_hash(...)` fails to parse,
     // while `select dbo.sql_hash(...)` works.
     const qualified = `${this.platform.quoteIdentifier(schema)}.${this.platform.quoteIdentifier(routine.routineName)}`;
 
@@ -139,7 +139,7 @@ export class MsSqlConnection extends AbstractSqlConnection {
 
     const result = await this.execute(batch.join('; '), allValues, 'all', ctx);
 
-    /* v8 ignore next 3 — IN-only procedures rarely exercised; the comparator's integration tests use INOUT variants. */
+    /* v8 ignore next 3 - IN-only procedures rarely exercised; the comparator's integration tests use INOUT variants. */
     if (outVars.length === 0) {
       return undefined as T;
     }

@@ -9,14 +9,14 @@ export class BaseSqliteConnection extends AbstractSqlConnection {
    * clear message unless the underlying driver overrides `callRoutine` to register the
    * routine's `bodyJs` as a UDF.
    */
-  /* v8 ignore next 8 — fallback for SQLite-family drivers that don't bridge routines (libsql, node:sqlite); the in-tree better-sqlite3 driver overrides this. */
+  /* v8 ignore next 8 - fallback for SQLite-family drivers that don't bridge routines (libsql, node:sqlite); the in-tree better-sqlite3 driver overrides this. */
   override async callRoutine<T>(
     routine: RoutineMetadata,
     _args: Record<string, unknown> = {},
     _ctx?: Transaction,
   ): Promise<T> {
     throw new Error(
-      `Stored routines are not supported by this SQLite driver. Routine ${routine.routineName} is defined in metadata but cannot be invoked here — use a driver that registers JS UDFs (better-sqlite3) or run against a server-side SQL database.`,
+      `Stored routines are not supported by this SQLite driver. Routine ${routine.routineName} is defined in metadata but cannot be invoked here - use a driver that registers JS UDFs (better-sqlite3) or run against a server-side SQL database.`,
     );
   }
   override createKyselyDialect(options: Dictionary): Dialect {
