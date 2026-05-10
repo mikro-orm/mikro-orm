@@ -2,7 +2,14 @@ import { type Configuration, type ConnectionOptions } from '../utils/Configurati
 import { Utils } from '../utils/Utils.js';
 import type { LogContext, Logger } from '../logging/Logger.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
-import type { ConnectionType, Dictionary, ISchemaGenerator, MaybePromise, Primary } from '../typings.js';
+import type {
+  ConnectionType,
+  Dictionary,
+  ISchemaGenerator,
+  MaybePromise,
+  Primary,
+  RoutineMetadata,
+} from '../typings.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster.js';
 import type { IsolationLevel } from '../enums.js';
@@ -158,6 +165,18 @@ export abstract class Connection {
     method?: 'all' | 'get' | 'run',
     ctx?: Transaction,
   ): Promise<QueryResult<T> | any | any[]>;
+
+  /**
+   * Invokes a stored procedure or function declared via `@Routine`/`defineRoutine`/`RoutineSchema`.
+   * Drivers without server-side routine support (mongo) throw. SQL drivers default to a generic
+   * implementation in `AbstractSqlConnection` and are overridden per dialect for OUT/INOUT plumbing.
+   *
+   * @internal — public callers should go through `EntityManager.callRoutine` which performs validation,
+   *   ScalarReference unwrapping, and result hydration.
+   */
+  async callRoutine<T>(routine: RoutineMetadata, args: Record<string, unknown>, ctx?: Transaction): Promise<T> {
+    throw new Error(`Stored routines are not supported by the current driver`);
+  }
 
   /** Parses and returns the resolved connection configuration (host, port, user, etc.). */
   getConnectionOptions(): ConnectionConfig {

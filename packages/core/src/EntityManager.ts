@@ -68,6 +68,7 @@ import type {
   IndexFilterQuery,
   WithUsingOptions,
 } from './typings.js';
+import { RoutineMetadata } from './typings.js';
 import {
   EventType,
   FlushMode,
@@ -95,6 +96,16 @@ import { TransactionManager } from './utils/TransactionManager.js';
  * such as UnitOfWork, Query Language, and Repository API.
  * @template {IDatabaseDriver} Driver current driver type
  */
+
+function isRoutineDeclaration(value: unknown): value is { meta: RoutineMetadata } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'meta' in value &&
+    (value as { meta: unknown }).meta instanceof RoutineMetadata
+  );
+}
+
 export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /** @internal */
   declare readonly '~entities'?: unknown;
@@ -1942,6 +1953,43 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     } as NativeInsertUpdateOptions<Entity>);
 
     return res.affectedRows;
+  }
+
+  /**
+   * Invokes a stored procedure or function declared via `@Routine`, `defineRoutine`, or
+   * `RoutineSchema`. The current implementation supports IN-only parameters: functions
+   * return their scalar value, procedures return raw rows from the underlying driver.
+   * OUT/INOUT plumbing and entity-class result-set hydration are tracked as follow-up work.
+   *
+   * Throws on drivers that do not support stored routines (mongo). On SQLite/libSQL,
+   * functions declared with a `bodyJs` fallback are bridged via the underlying driver's
+   * UDF API; procedures and functions without `bodyJs` throw at call time.
+   *
+   * @example
+   * ```ts
+   * // Function: scalar return
+   * const hash = await em.callRoutine<string>(HashUser, { name: 'jon', salt: 'pepper' });
+   *
+   * // Procedure: raw rows from the driver
+   * const rows = await em.callRoutine(AddRecord, { name: 'jon', age: 30 });
+   * ```
+   */
+  async callRoutine<T = unknown>(
+    routine: EntityName<any> | { meta: RoutineMetadata },
+    args: Record<string, unknown> = {},
+  ): Promise<T> {
+    const em = this.getContext(false);
+    const inlineMeta = isRoutineDeclaration(routine) ? routine.meta : undefined;
+    const lookup = inlineMeta?.className ?? inlineMeta?.routineName ?? routine;
+    const meta = em.metadata.findRoutine(lookup as EntityName<any>);
+
+    if (!meta) {
+      const name = typeof routine === 'string' ? routine : (inlineMeta?.className ?? '<unknown>');
+      throw new Error(`Routine metadata not found for ${name}`);
+    }
+
+    const conn = em.driver.getConnection('write');
+    return conn.callRoutine<T>(meta, args, em.#transactionContext);
   }
 
   /**

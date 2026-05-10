@@ -1,5 +1,14 @@
 import { type Dictionary, EnumType, StringType, TextType, type Transaction, type Type } from '@mikro-orm/core';
-import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference, SqlTriggerDef } from '../../typings.js';
+import type {
+  CheckDef,
+  Column,
+  ForeignKey,
+  IndexDef,
+  Table,
+  TableDifference,
+  SqlTriggerDef,
+  SqlRoutineDef,
+} from '../../typings.js';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
 import { SchemaHelper } from '../../schema/SchemaHelper.js';
 import type { DatabaseSchema } from '../../schema/DatabaseSchema.js';
@@ -442,6 +451,154 @@ export class MySqlSchemaHelper extends SchemaHelper {
     }
 
     return ret.join(';\n');
+  }
+
+  /** Generates SQL to create a MySQL/MariaDB stored procedure or function. */
+  override createRoutine(routine: SqlRoutineDef): string {
+    if (routine.expression) {
+      return routine.expression;
+    }
+
+    const name = this.platform.quoteIdentifier(routine.name);
+    const params = routine.params
+      .map(p => `${p.direction.toUpperCase()} ${this.platform.quoteIdentifier(p.name)} ${p.type}`)
+      .join(', ');
+    const determinism =
+      routine.deterministic === true ? ' deterministic' : routine.deterministic === false ? ' not deterministic' : '';
+    const dataAccess = this.formatDataAccess(routine.dataAccess);
+    const security =
+      routine.security === 'definer'
+        ? ' sql security definer'
+        : routine.security === 'invoker'
+          ? ' sql security invoker'
+          : '';
+    const comment = routine.comment ? ` comment ${this.platform.quoteValue(routine.comment)}` : '';
+    const body = this.wrapRoutineBody(routine.body ?? '');
+
+    if (routine.type === 'procedure') {
+      return `create procedure ${name}(${params})${determinism}${dataAccess}${security}${comment} ${body}`;
+    }
+
+    const returnType = routine.returns?.type ?? 'text';
+    return `create function ${name}(${params}) returns ${returnType}${determinism}${dataAccess}${security}${comment} ${body}`;
+  }
+
+  /** Generates SQL to drop a MySQL/MariaDB stored procedure or function. */
+  override dropRoutine(routine: SqlRoutineDef): string {
+    const kind = routine.type === 'procedure' ? 'procedure' : 'function';
+    return `drop ${kind} if exists ${this.platform.quoteIdentifier(routine.name)}`;
+  }
+
+  /** Lists all stored procedures and functions in the current database. */
+  override async getAllRoutines(connection: AbstractSqlConnection): Promise<SqlRoutineDef[]> {
+    const sql = `
+      select
+        r.routine_name as name,
+        r.routine_schema as schema_name,
+        lower(r.routine_type) as type,
+        r.routine_definition as body,
+        r.dtd_identifier as return_type,
+        r.is_deterministic as is_deterministic,
+        r.sql_data_access as sql_data_access,
+        r.security_type as security_type,
+        r.routine_comment as comment
+      from information_schema.routines r
+      where r.routine_schema = database()
+        and r.routine_type in ('PROCEDURE', 'FUNCTION')
+    `;
+
+    const [rows, params] = await Promise.all([
+      connection.execute<
+        {
+          name: string;
+          schema_name: string;
+          type: 'procedure' | 'function';
+          body: string;
+          return_type: string | null;
+          is_deterministic: 'YES' | 'NO';
+          sql_data_access: string;
+          security_type: 'INVOKER' | 'DEFINER';
+          comment: string;
+        }[]
+      >(sql),
+      this.getAllRoutineParams(connection),
+    ]);
+
+    return rows.map(row => ({
+      name: row.name,
+      type: row.type,
+      schema: row.schema_name,
+      body: this.stripRoutineBody(row.body ?? ''),
+      deterministic: row.is_deterministic === 'YES',
+      dataAccess: this.parseDataAccess(row.sql_data_access),
+      security: row.security_type === 'DEFINER' ? 'definer' : 'invoker',
+      comment: row.comment || undefined,
+      params: params.get(row.name) ?? [],
+      returns: row.type === 'function' && row.return_type ? { type: row.return_type } : undefined,
+    }));
+  }
+
+  private async getAllRoutineParams(connection: AbstractSqlConnection): Promise<Map<string, SqlRoutineDef['params']>> {
+    const sql = `
+      select
+        specific_name as routine_name,
+        parameter_name as name,
+        parameter_mode as direction,
+        dtd_identifier as type,
+        ordinal_position as position
+      from information_schema.parameters
+      where specific_schema = database()
+        and parameter_name is not null
+      order by specific_name, ordinal_position
+    `;
+    const rows = await connection.execute<
+      {
+        routine_name: string;
+        name: string;
+        direction: 'IN' | 'OUT' | 'INOUT';
+        type: string;
+        position: number;
+      }[]
+    >(sql);
+
+    const out = new Map<string, SqlRoutineDef['params']>();
+    for (const row of rows) {
+      if (!out.has(row.routine_name)) {
+        out.set(row.routine_name, []);
+      }
+      out.get(row.routine_name)!.push({
+        name: row.name,
+        type: row.type,
+        direction: row.direction.toLowerCase() as 'in' | 'out' | 'inout',
+      });
+    }
+
+    return out;
+  }
+
+  private formatDataAccess(access?: SqlRoutineDef['dataAccess']): string {
+    switch (access) {
+      case 'no-sql':
+        return ' no sql';
+      case 'reads-sql-data':
+        return ' reads sql data';
+      case 'modifies-sql-data':
+        return ' modifies sql data';
+      case 'contains-sql':
+        return ' contains sql';
+      default:
+        return '';
+    }
+  }
+
+  private parseDataAccess(access: string): SqlRoutineDef['dataAccess'] {
+    const normalised = access.toLowerCase().replace(/\s+/g, '-') as SqlRoutineDef['dataAccess'];
+
+    if (['no-sql', 'reads-sql-data', 'modifies-sql-data', 'contains-sql'].includes(normalised as string)) {
+      return normalised;
+    }
+
+    return undefined;
   }
 
   async getAllTriggers(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<SqlTriggerDef[]>> {

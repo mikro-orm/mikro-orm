@@ -7,6 +7,7 @@ import {
   EntityMetadata,
   type EntityName,
   type EntityProperty,
+  type RoutineMetadata,
   type SchemaTable,
 } from '../typings.js';
 import { compareArrays, Utils } from '../utils/Utils.js';
@@ -17,6 +18,7 @@ import { MetadataProvider } from './MetadataProvider.js';
 import type { NamingStrategy } from '../naming-strategy/NamingStrategy.js';
 import { MetadataStorage } from './MetadataStorage.js';
 import { EntitySchema } from './EntitySchema.js';
+import { RoutineSchema } from './RoutineSchema.js';
 import { Cascade, type EventType, ReferenceKind } from '../enums.js';
 import { MetadataError } from '../errors.js';
 import type { Platform } from '../platforms/Platform.js';
@@ -34,6 +36,7 @@ export class MetadataDiscovery {
   readonly #schemaHelper: unknown;
   readonly #validator = new MetadataValidator();
   readonly #discovered: EntityMetadata[] = [];
+  readonly #discoveredRoutines: RoutineMetadata[] = [];
 
   readonly #metadata: MetadataStorage;
   readonly #platform: Platform;
@@ -52,6 +55,7 @@ export class MetadataDiscovery {
   /** Discovers all entities asynchronously and returns the populated MetadataStorage. */
   async discover(preferTs = true): Promise<MetadataStorage> {
     this.#discovered.length = 0;
+    this.#discoveredRoutines.length = 0;
     const startTime = Date.now();
     const suffix =
       this.#metadataProvider.constructor === MetadataProvider
@@ -83,6 +87,7 @@ export class MetadataDiscovery {
   /** Discovers all entities synchronously and returns the populated MetadataStorage. */
   discoverSync(): MetadataStorage {
     this.#discovered.length = 0;
+    this.#discoveredRoutines.length = 0;
     const startTime = Date.now();
     const suffix =
       this.#metadataProvider.constructor === MetadataProvider
@@ -90,6 +95,7 @@ export class MetadataDiscovery {
         : `, using ${colors.cyan(this.#metadataProvider.constructor.name)}`;
     this.#logger.log('discovery', `ORM entity discovery started${suffix} in sync mode`);
     const refs = this.#config.get('entities');
+    this.collectRoutines(this.#config.get('routines'));
     this.discoverReferences(refs as EntitySchema[]);
 
     for (const meta of this.#discovered) {
@@ -129,6 +135,11 @@ export class MetadataDiscovery {
       if (meta.inheritanceType === 'tpt') {
         this.computeTPTOwnProps(meta);
       }
+    }
+
+    for (const routine of this.#discoveredRoutines) {
+      this.#validator.validateRoutineDefinition(routine);
+      discovered.setRoutine(routine.class, routine);
     }
 
     return discovered;
@@ -250,7 +261,7 @@ export class MetadataDiscovery {
   }
 
   private async findEntities(preferTs: boolean): Promise<EntityMetadata<any>[]> {
-    const { entities, entitiesTs, baseDir } = this.#config.getAll();
+    const { entities, entitiesTs, baseDir, routines } = this.#config.getAll();
     const targets = preferTs && entitiesTs.length > 0 ? entitiesTs : entities;
     const processed: (EntitySchema | EntityClass)[] = [];
     const paths: string[] = [];
@@ -268,7 +279,59 @@ export class MetadataDiscovery {
       processed.push(...(await discoverEntities(paths, { baseDir })));
     }
 
+    this.collectRoutines(routines);
+
     return this.discoverReferences(processed);
+  }
+
+  /**
+   * Resolves each entry in the `routines` config option into `RoutineMetadata` and stages it for
+   * registration. Accepts:
+   *  - `RoutineSchema` instances and `defineRoutine` return values (objects with `meta: RoutineMetadata`),
+   *  - classes decorated with `@Routine` (the decorator writes into a global metadata dictionary keyed
+   *    by class name + source path, which we look up via `PATH_SYMBOL`).
+   */
+  private collectRoutines(routines: Iterable<unknown> | undefined): void {
+    if (!routines) {
+      return;
+    }
+
+    for (const item of routines) {
+      if (RoutineSchema.is(item)) {
+        this.#discoveredRoutines.push(item.meta);
+        continue;
+      }
+
+      if (typeof item === 'function') {
+        const meta = this.findGlobalRoutineForClass(item as unknown as { name?: string; [key: symbol]: unknown });
+
+        if (meta) {
+          this.#discoveredRoutines.push(meta);
+          continue;
+        }
+      }
+
+      throw new MetadataError(
+        `'routines' entry is not a stored routine declaration. Use @Routine on a class, defineRoutine(), or RoutineSchema.`,
+      );
+    }
+  }
+
+  /**
+   * Looks up routine metadata for a class decorated with `@Routine`. The decorator writes into the
+   * global routine dictionary keyed by `className + hash(path)`; we resolve the path via the same
+   * `PATH_SYMBOL` set on the class.
+   */
+  private findGlobalRoutineForClass(target: { name?: string; [key: symbol]: unknown }): RoutineMetadata | undefined {
+    const path = target?.[MetadataStorage.PATH_SYMBOL] as string | undefined;
+
+    if (!target?.name || !path) {
+      return undefined;
+    }
+
+    const key = `${target.name}-${Utils.hash(path)}`;
+    const routine = MetadataStorage.getRoutineMetadata()[key];
+    return routine && routine.className === target.name ? routine : undefined;
   }
 
   private discoverMissingTargets(): void {

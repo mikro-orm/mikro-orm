@@ -1,4 +1,4 @@
-import type { EntityMetadata, EntityName, EntityProperty } from '../typings.js';
+import type { EntityMetadata, EntityName, EntityProperty, RoutineMetadata } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import { type MetadataDiscoveryOptions } from '../utils/Configuration.js';
 import { normalizePartitionNameForComparison, splitCommaSeparatedIdentifiers } from '../utils/partition-utils.js';
@@ -81,6 +81,54 @@ export class MetadataValidator {
         this.validateBidirectional(meta, prop);
       } else if (metadata.getByClassName(prop.type, false)) {
         throw MetadataError.propertyTargetsEntityType(meta, prop, metadata.getByClassName(prop.type));
+      }
+    }
+  }
+
+  validateRoutineDefinition<T>(meta: RoutineMetadata<T>): void {
+    if (!meta.type) {
+      throw new MetadataError(
+        `Routine ${meta.className} is missing the required 'type' option ('procedure' | 'function').`,
+      );
+    }
+
+    if (meta.body != null && meta.expression != null) {
+      throw new MetadataError(`Routine ${meta.className} defines both 'body' and 'expression'. Use one or the other.`);
+    }
+
+    if (meta.body == null && meta.expression == null && meta.bodyJs == null) {
+      throw new MetadataError(`Routine ${meta.className} must define a 'body', 'expression', or 'bodyJs'.`);
+    }
+
+    if (meta.type === 'function' && meta.returns == null) {
+      throw new MetadataError(`Function routine ${meta.className} must declare a 'returns' option.`);
+    }
+
+    if (meta.type === 'procedure' && meta.bodyJs != null) {
+      throw new MetadataError(
+        `Routine ${meta.className} declares 'bodyJs' on a procedure. JS fallbacks are only supported for functions — SQLite has no analog for stored procedures.`,
+      );
+    }
+
+    for (const param of meta.params) {
+      const dir = param.direction;
+
+      if (dir !== 'in' && dir !== 'out' && dir !== 'inout') {
+        throw new MetadataError(
+          `Routine ${meta.className}.${param.name} has invalid direction '${dir}'. Expected 'in', 'out', or 'inout'.`,
+        );
+      }
+
+      if ((dir === 'out' || dir === 'inout') && !param.ref) {
+        throw new MetadataError(
+          `Routine ${meta.className}.${param.name} is declared as '${dir}' but missing 'ref: true'. OUT/INOUT parameters must be passed as ScalarReference.`,
+        );
+      }
+
+      if (meta.type === 'function' && dir !== 'in') {
+        throw new MetadataError(
+          `Function routine ${meta.className}.${param.name} declares direction '${dir}'. Functions only support IN parameters — use a procedure for OUT/INOUT semantics.`,
+        );
       }
     }
   }

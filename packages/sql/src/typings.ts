@@ -16,6 +16,7 @@ import type {
   QueryFlag,
   QueryOrderMap,
   RawQueryFragment,
+  RoutineIgnoreField,
   Scalar,
   Type,
 } from '@mikro-orm/core';
@@ -150,6 +151,33 @@ export interface SqlTriggerDef {
   expression?: string;
 }
 
+/** Resolved routine definition for schema operations (callback bodies resolved to strings). */
+export interface SqlRoutineDef {
+  name: string;
+  schema?: string;
+  type: 'procedure' | 'function';
+  language?: string;
+  comment?: string;
+  security?: 'invoker' | 'definer';
+  definer?: string;
+  deterministic?: boolean;
+  dataAccess?: 'contains-sql' | 'no-sql' | 'reads-sql-data' | 'modifies-sql-data';
+  body?: string;
+  expression?: string;
+  returns?: { type: string; runtimeType?: string; nullable?: boolean };
+  params: SqlRoutineParamDef[];
+  ignoreSchemaChanges?: RoutineIgnoreField[];
+}
+
+/** Resolved parameter of a stored routine for schema operations. */
+export interface SqlRoutineParamDef {
+  name: string;
+  type: string;
+  direction: 'in' | 'out' | 'inout';
+  nullable?: boolean;
+  defaultRaw?: string;
+}
+
 export interface TablePartition {
   name: string;
   schema?: string;
@@ -214,6 +242,9 @@ export interface SchemaDifference {
   newViews: Dictionary<DatabaseView>;
   changedViews: Dictionary<{ from: DatabaseView; to: DatabaseView }>;
   removedViews: Dictionary<DatabaseView>;
+  newRoutines: Dictionary<SqlRoutineDef>;
+  changedRoutines: Dictionary<SqlRoutineDef>;
+  removedRoutines: Dictionary<SqlRoutineDef>;
   removedNamespaces: Set<string>;
   removedNativeEnums: { name: string; schema?: string }[];
   orphanedForeignKeys: ForeignKey[];

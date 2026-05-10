@@ -9,7 +9,16 @@ import {
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
-import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference, SqlTriggerDef } from '../typings.js';
+import type {
+  CheckDef,
+  Column,
+  ForeignKey,
+  IndexDef,
+  Table,
+  TableDifference,
+  SqlTriggerDef,
+  SqlRoutineDef,
+} from '../typings.js';
 import type { DatabaseSchema } from './DatabaseSchema.js';
 import type { DatabaseTable } from './DatabaseTable.js';
 
@@ -1086,6 +1095,61 @@ export abstract class SchemaHelper {
     }
 
     return `drop trigger if exists ${this.quote(trigger.name)}`;
+  }
+
+  /**
+   * Generates SQL to create a stored procedure or function. Default implementation throws —
+   * dialects that support routines must override (PostgreSQL, MySQL, MariaDB, MSSQL, Oracle).
+   * SQLite/libSQL leave the default in place to silent-skip routines from schema generation.
+   */
+  createRoutine(_routine: SqlRoutineDef): string {
+    return '';
+  }
+
+  /** Generates SQL to drop a stored procedure or function. Defaults to a no-op for drivers that don't manage routines. */
+  dropRoutine(_routine: SqlRoutineDef): string {
+    return '';
+  }
+
+  /** Reads stored routines from the database for diffing. Default: no routines tracked. */
+  async getAllRoutines(_connection: AbstractSqlConnection, _schemas: string[] = []): Promise<SqlRoutineDef[]> {
+    return [];
+  }
+
+  /** Wraps a routine body in `BEGIN ... END` if it isn't already so wrapped. */
+  protected wrapRoutineBody(body: string): string {
+    const trimmed = body.trim();
+    return /^\s*begin\b/i.test(trimmed) ? trimmed : `begin ${trimmed}; end`;
+  }
+
+  /** Strips an outer `BEGIN ... END` wrapper from an introspected routine body for round-trip comparison. */
+  protected stripRoutineBody(body: string): string {
+    const match = /^\s*begin\s+([\s\S]*?)\s*end\s*;?\s*$/i.exec(body.trim());
+
+    if (match) {
+      return match[1].trim().replace(/;\s*$/, '');
+    }
+
+    return body.trim();
+  }
+
+  /**
+   * Returns the dialect-specific reference syntax for a routine parameter as it appears
+   * inside a routine body. T-SQL requires `@name`; PG/MySQL/Oracle use the bare name.
+   */
+  routineParamReference(name: string): string {
+    return name;
+  }
+
+  /** Returns the schema-qualified, dialect-quoted name of a routine for DDL emission. */
+  protected qualifiedRoutineName(routine: SqlRoutineDef): string {
+    const defaultSchema = this.platform.getDefaultSchemaName();
+
+    if (routine.schema && routine.schema !== defaultSchema) {
+      return `${this.platform.quoteIdentifier(routine.schema)}.${this.platform.quoteIdentifier(routine.name)}`;
+    }
+
+    return this.platform.quoteIdentifier(routine.name);
   }
 
   /** @internal */

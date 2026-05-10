@@ -96,6 +96,7 @@ module.exports = {
         'virtual-entities',
         'view-entities',
         'materialized-views',
+        'stored-routines',
       ],
     },
     {
@@ -171,13 +172,7 @@ module.exports = {
         slug: '/recipes',
         keywords: ['recipes'],
       },
-      items: [
-        'entity-constructors',
-        'schema-first-guide',
-        'transactional-outbox',
-        'using-bigint-pks',
-        'custom-driver',
-      ],
+      items: ['entity-constructors', 'schema-first-guide', 'transactional-outbox', 'using-bigint-pks', 'custom-driver'],
     },
     {
       type: 'category',
@@ -206,19 +201,59 @@ module.exports = {
       },
       items: [
         { type: 'link', label: 'Fastify + SQLite + TypeScript', href: 'https://github.com/mikro-orm/guide' },
-        { type: 'link', label: 'RealWorld example app (Nest + MySQL)', href: 'https://github.com/mikro-orm/nestjs-realworld-example-app' },
-        { type: 'link', label: 'Express + MongoDB + TypeScript', href: 'https://github.com/mikro-orm/express-ts-example-app' },
+        {
+          type: 'link',
+          label: 'RealWorld example app (Nest + MySQL)',
+          href: 'https://github.com/mikro-orm/nestjs-realworld-example-app',
+        },
+        {
+          type: 'link',
+          label: 'Express + MongoDB + TypeScript',
+          href: 'https://github.com/mikro-orm/express-ts-example-app',
+        },
         { type: 'link', label: 'NestJS + MySQL + TypeScript', href: 'https://github.com/mikro-orm/nestjs-example-app' },
-        { type: 'link', label: 'Express + SQLite + JavaScript', href: 'https://github.com/mikro-orm/express-js-example-app' },
+        {
+          type: 'link',
+          label: 'Express + SQLite + JavaScript',
+          href: 'https://github.com/mikro-orm/express-js-example-app',
+        },
         { type: 'link', label: 'Koa + SQLite + TypeScript', href: 'https://github.com/mikro-orm/koa-ts-example-app' },
-        { type: 'link', label: 'Inversify + PostgreSQL', href: 'https://github.com/PodaruDragos/inversify-example-app' },
+        {
+          type: 'link',
+          label: 'Inversify + PostgreSQL',
+          href: 'https://github.com/PodaruDragos/inversify-example-app',
+        },
         { type: 'link', label: 'NextJS + SQLite', href: 'https://github.com/mikro-orm/nextjs-example-app' },
-        { type: 'link', label: 'GraphQL + PostgreSQL + TypeScript', href: 'https://github.com/driescroons/mikro-orm-graphql-example' },
-        { type: 'link', label: 'Accounts.js REST and GraphQL authentication + SQLite', href: 'https://github.com/darkbasic/mikro-orm-accounts-example' },
-        { type: 'link', label: 'Nest + Shopify + PostgreSQL + GraphQL', href: 'https://github.com/Cloudshelf/Shopify_CSConnector' },
-        { type: 'link', label: 'AdonisJS + SQLite + TypeScript', href: 'https://github.com/mikro-orm/adonis-example-app' },
-        { type: 'link', label: 'Elysia.js + libSQL + Bun', href: 'https://github.com/mikro-orm/elysia-bun-example-app' },
-        { type: 'link', label: 'Electron.js + PostgreSQL', href: 'https://github.com/adnanlah/electron-mikro-orm-example-app' },
+        {
+          type: 'link',
+          label: 'GraphQL + PostgreSQL + TypeScript',
+          href: 'https://github.com/driescroons/mikro-orm-graphql-example',
+        },
+        {
+          type: 'link',
+          label: 'Accounts.js REST and GraphQL authentication + SQLite',
+          href: 'https://github.com/darkbasic/mikro-orm-accounts-example',
+        },
+        {
+          type: 'link',
+          label: 'Nest + Shopify + PostgreSQL + GraphQL',
+          href: 'https://github.com/Cloudshelf/Shopify_CSConnector',
+        },
+        {
+          type: 'link',
+          label: 'AdonisJS + SQLite + TypeScript',
+          href: 'https://github.com/mikro-orm/adonis-example-app',
+        },
+        {
+          type: 'link',
+          label: 'Elysia.js + libSQL + Bun',
+          href: 'https://github.com/mikro-orm/elysia-bun-example-app',
+        },
+        {
+          type: 'link',
+          label: 'Electron.js + PostgreSQL',
+          href: 'https://github.com/adnanlah/electron-mikro-orm-example-app',
+        },
       ],
     },
     {
@@ -230,11 +265,7 @@ module.exports = {
         slug: '/upgrading',
         keywords: ['upgrading'],
       },
-      items: [
-        'upgrading-v6-to-v7',
-        'upgrading-v5-to-v6',
-        'upgrading-v4-to-v5',
-      ],
+      items: ['upgrading-v6-to-v7', 'upgrading-v5-to-v6', 'upgrading-v4-to-v5'],
     },
   ],
 };

@@ -82,7 +82,14 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   getTargetSchema(schema?: string, includeWildcardSchema = false): DatabaseSchema {
     const metadata = this.getOrderedMetadata(schema, includeWildcardSchema);
     const schemaName = schema ?? this.config.get('schema') ?? this.platform.getDefaultSchemaName();
-    return DatabaseSchema.fromMetadata(metadata, this.platform, this.config, schemaName, this.em);
+    const target = DatabaseSchema.fromMetadata(metadata, this.platform, this.config, schemaName, this.em);
+    const routines = [...this.metadata.getAllRoutines().values()];
+
+    if (routines.length > 0) {
+      target.addRoutinesFromMetadata(routines, this.platform, this.em);
+    }
+
+    return target;
   }
 
   protected override getOrderedMetadata(schema?: string, includeWildcardSchema = false): EntityMetadata[] {
@@ -143,6 +150,10 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const sortedViews = this.sortViewsByDependencies(toSchema.getViews());
     for (const view of sortedViews) {
       this.appendViewCreation(ret, view);
+    }
+
+    for (const routine of toSchema.getRoutines()) {
+      this.append(ret, this.helper.createRoutine(routine));
     }
 
     return this.wrapSchema(ret, options);
@@ -232,6 +243,11 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       } else {
         this.append(ret, this.helper.dropViewIfExists(view.name, view.schema));
       }
+    }
+
+    // Drop routines before tables — most stored routines reference table columns.
+    for (const routine of targetSchema.getRoutines()) {
+      this.append(ret, this.helper.dropRoutine(routine));
     }
 
     // remove FKs explicitly if we can't use a cascading statement and we don't disable FK checks (we need this for circular relations)
@@ -334,6 +350,13 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         this.options.skipTables,
         this.options.skipViews,
       ));
+
+    // Load routines from DB whenever the dialect supports them (so removing the last
+    // metadata routine still detects the orphan in DB). Dialects without routine support
+    // return [] from getAllRoutines, which is the silent-skip path.
+    if (options.fromSchema == null) {
+      await fromSchema.loadRoutines(this.connection, this.platform, [...schemas]);
+    }
     const wildcardSchemaTables = options.includeWildcardSchema
       ? []
       : [...this.metadata.getAll().values()].filter(meta => meta.schema === '*').map(meta => meta.tableName);
@@ -480,6 +503,21 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const sortedChangedViews = this.sortViewsByDependencies(changedViews);
     for (const view of sortedChangedViews) {
       this.appendViewCreation(ret, view);
+    }
+
+    if (options.dropTables && !options.safe) {
+      for (const routine of Object.values(schemaDiff.removedRoutines)) {
+        this.append(ret, this.helper.dropRoutine(routine));
+      }
+    }
+
+    for (const routine of Object.values(schemaDiff.changedRoutines)) {
+      this.append(ret, this.helper.dropRoutine(routine));
+      this.append(ret, this.helper.createRoutine(routine));
+    }
+
+    for (const routine of Object.values(schemaDiff.newRoutines)) {
+      this.append(ret, this.helper.createRoutine(routine));
     }
 
     return this.wrapSchema(ret, options);

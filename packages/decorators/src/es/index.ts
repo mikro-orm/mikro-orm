@@ -14,6 +14,7 @@ export * from './OneToMany.js';
 export * from './Property.js';
 export * from './Check.js';
 export * from './Trigger.js';
+export * from './Routine.js';
 export * from './Enum.js';
 export * from './Formula.js';
 export * from './Indexed.js';

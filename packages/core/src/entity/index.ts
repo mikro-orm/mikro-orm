@@ -12,4 +12,5 @@ export * from './WrappedEntity.js';
 export * from './validators.js';
 export * from './wrap.js';
 export * from './defineEntity.js';
+export * from './defineRoutine.js';
 export * from './utils.js';

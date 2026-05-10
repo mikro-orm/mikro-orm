@@ -1,5 +1,6 @@
 export type * from './types.js';
 export * from './EntitySchema.js';
+export * from './RoutineSchema.js';
 export * from './MetadataDiscovery.js';
 export * from './MetadataStorage.js';
 export * from './MetadataProvider.js';

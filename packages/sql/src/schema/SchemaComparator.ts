@@ -10,7 +10,15 @@ import {
   parseJsonSafe,
   Utils,
 } from '@mikro-orm/core';
-import type { Column, ForeignKey, IndexDef, SchemaDifference, TableDifference, SqlTriggerDef } from '../typings.js';
+import type {
+  Column,
+  ForeignKey,
+  IndexDef,
+  SchemaDifference,
+  TableDifference,
+  SqlTriggerDef,
+  SqlRoutineDef,
+} from '../typings.js';
 import type { DatabaseSchema } from './DatabaseSchema.js';
 import { DatabaseTable } from './DatabaseTable.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
@@ -46,6 +54,9 @@ export class SchemaComparator {
       newViews: {},
       changedViews: {},
       removedViews: {},
+      newRoutines: {},
+      changedRoutines: {},
+      removedRoutines: {},
       orphanedForeignKeys: [],
       newNativeEnums: [],
       removedNativeEnums: [],
@@ -220,7 +231,125 @@ export class SchemaComparator {
       }
     }
 
+    this.compareRoutines(fromSchema, toSchema, diff);
+
     return diff;
+  }
+
+  /** Compares stored routines between two schemas, populating new/changed/removed buckets. */
+  private compareRoutines(fromSchema: DatabaseSchema, toSchema: DatabaseSchema, diff: SchemaDifference): void {
+    const routineKey = (r: SqlRoutineDef): string => (r.schema ? `${r.schema}.` : '') + r.name;
+    const fromByKey = new Map(fromSchema.getRoutines().map(r => [routineKey(r), r]));
+    const toByKey = new Map(toSchema.getRoutines().map(r => [routineKey(r), r]));
+
+    for (const [key, toRoutine] of toByKey) {
+      const fromRoutine = fromByKey.get(key);
+
+      if (!fromRoutine) {
+        diff.newRoutines[key] = toRoutine;
+        this.log(`routine ${key} added`);
+        continue;
+      }
+
+      if (this.diffRoutine(fromRoutine, toRoutine)) {
+        diff.changedRoutines[key] = toRoutine;
+        this.log(`routine ${key} changed`, { fromRoutine, toRoutine });
+      }
+    }
+
+    for (const [key, fromRoutine] of fromByKey) {
+      if (!toByKey.has(key)) {
+        diff.removedRoutines[key] = fromRoutine;
+        this.log(`routine ${key} removed`);
+      }
+    }
+  }
+
+  /** Returns true if the two routine definitions differ in a way that requires a drop+create. */
+  private diffRoutine(from: SqlRoutineDef, to: SqlRoutineDef): boolean {
+    const ignore = new Set(to.ignoreSchemaChanges ?? []);
+
+    if (from.type !== to.type) {
+      return true;
+    }
+
+    if (!ignore.has('body') && from.expression == null && to.expression == null) {
+      if (this.normaliseBody(from.body) !== this.normaliseBody(to.body)) {
+        return true;
+      }
+    }
+
+    if (!ignore.has('comment') && to.comment != null && (from.comment ?? '') !== to.comment) {
+      return true;
+    }
+
+    if (!ignore.has('security') && to.security != null && from.security !== to.security) {
+      return true;
+    }
+
+    if (
+      !ignore.has('deterministic') &&
+      to.deterministic != null &&
+      (from.deterministic ?? false) !== to.deterministic
+    ) {
+      return true;
+    }
+
+    if (!ignore.has('definer') && to.definer != null && from.definer !== to.definer) {
+      return true;
+    }
+
+    if (this.diffRoutineParams(from.params, to.params)) {
+      return true;
+    }
+
+    if (this.diffRoutineReturns(from.returns, to.returns)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /** Normalises a routine body for comparison: trims, collapses whitespace, lowercases line endings. */
+  private normaliseBody(body?: string): string {
+    return (body ?? '')
+      .replace(/\r\n/g, '\n')
+      .replace(/[ \t]+/g, ' ')
+      .trim();
+  }
+
+  private diffRoutineParams(from: SqlRoutineDef['params'], to: SqlRoutineDef['params']): boolean {
+    if (from.length !== to.length) {
+      return true;
+    }
+
+    for (let i = 0; i < from.length; i++) {
+      const a = from[i];
+      const b = to[i];
+
+      if (
+        a.name !== b.name ||
+        this.#platform.normalizeColumnType(a.type, {}) !== this.#platform.normalizeColumnType(b.type, {}) ||
+        a.direction !== b.direction ||
+        (a.nullable ?? false) !== (b.nullable ?? false)
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private diffRoutineReturns(from: SqlRoutineDef['returns'], to: SqlRoutineDef['returns']): boolean {
+    if (from == null && to == null) {
+      return false;
+    }
+
+    if (from == null || to == null) {
+      return true;
+    }
+
+    return from.type !== to.type || (from.nullable ?? false) !== (to.nullable ?? false);
   }
 
   /**

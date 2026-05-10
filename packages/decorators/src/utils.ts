@@ -8,6 +8,7 @@ import {
   MetadataStorage,
   MikroORM,
   type ReferenceKind,
+  type RoutineMetadata,
   Utils,
 } from '@mikro-orm/core';
 
@@ -181,10 +182,7 @@ export function lookupPathFromDecorator(name: string, stack?: string[]): string 
   }
 }
 
-/** Retrieves or creates the metadata object for a decorated entity class. */
-export function getMetadataFromDecorator<T = any>(
-  target: T & Dictionary & { [MetadataStorage.PATH_SYMBOL]?: string },
-): EntityMetadata<T> {
+function ensureDecoratorPath<T>(target: T & Dictionary & { [MetadataStorage.PATH_SYMBOL]?: string }): string {
   if (!Object.hasOwn(target, MetadataStorage.PATH_SYMBOL)) {
     Object.defineProperty(target, MetadataStorage.PATH_SYMBOL, {
       value: lookupPathFromDecorator(target.name),
@@ -192,5 +190,19 @@ export function getMetadataFromDecorator<T = any>(
     });
   }
 
-  return MetadataStorage.getMetadata(target.name, target[MetadataStorage.PATH_SYMBOL]!);
+  return target[MetadataStorage.PATH_SYMBOL]!;
+}
+
+/** Retrieves or creates the metadata object for a decorated entity class. */
+export function getMetadataFromDecorator<T = any>(
+  target: T & Dictionary & { [MetadataStorage.PATH_SYMBOL]?: string },
+): EntityMetadata<T> {
+  return MetadataStorage.getMetadata(target.name, ensureDecoratorPath(target));
+}
+
+/** Retrieves or creates the routine metadata object for a decorated routine class. */
+export function getRoutineMetadataFromDecorator<T = any>(
+  target: T & Dictionary & { [MetadataStorage.PATH_SYMBOL]?: string },
+): RoutineMetadata<T> {
+  return MetadataStorage.getRoutineMetadata(target.name, ensureDecoratorPath(target));
 }

@@ -16,6 +16,7 @@ import {
   TextType,
   type Transaction,
   type Type,
+  type SqlRoutineDef,
   Utils,
 } from '@mikro-orm/sql';
 
@@ -894,5 +895,108 @@ export class OracleSchemaHelper extends SchemaHelper {
   protected wrap(val: string | undefined, type: Type<unknown>): string | undefined {
     const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType;
     return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;
+  }
+
+  /** Generates PL/SQL to create or replace an Oracle stored procedure or function. */
+  override createRoutine(routine: SqlRoutineDef): string {
+    if (routine.expression) {
+      return routine.expression;
+    }
+
+    const name = this.quote(routine.name.toUpperCase());
+    const params = routine.params
+      .map(p => {
+        const dir = p.direction === 'in' ? 'IN' : p.direction === 'out' ? 'OUT' : 'IN OUT';
+        return `${this.quote(p.name.toUpperCase())} ${dir} ${p.type}`;
+      })
+      .join(', ');
+    const argsClause = routine.params.length ? `(${params})` : '';
+    const body = this.wrapRoutineBody(routine.body ?? '');
+
+    if (routine.type === 'procedure') {
+      return `create or replace procedure ${name}${argsClause} as ${body};`;
+    }
+
+    const returnType = routine.returns?.type ?? 'VARCHAR2(4000)';
+    return `create or replace function ${name}${argsClause} return ${returnType} as ${body};`;
+  }
+
+  /** Generates PL/SQL to drop an Oracle stored procedure or function. */
+  override dropRoutine(routine: SqlRoutineDef): string {
+    const kind = routine.type === 'procedure' ? 'procedure' : 'function';
+    return `drop ${kind} ${this.quote(routine.name.toUpperCase())}`;
+  }
+
+  /** Lists all stored routines from `USER_PROCEDURES`/`USER_SOURCE`/`USER_ARGUMENTS`. */
+  override async getAllRoutines(connection: AbstractSqlConnection): Promise<SqlRoutineDef[]> {
+    const sql = `
+      select
+        p.OBJECT_NAME as name,
+        p.OBJECT_TYPE as kind,
+        (
+          select listagg(s.TEXT, '') within group (order by s.LINE)
+          from USER_SOURCE s
+          where s.NAME = p.OBJECT_NAME and s.TYPE = p.OBJECT_TYPE
+        ) as source
+      from USER_PROCEDURES p
+      where p.OBJECT_TYPE in ('PROCEDURE', 'FUNCTION')
+        and p.PROCEDURE_NAME is null
+    `;
+
+    const [rows, params] = await Promise.all([
+      connection.execute<{ name: string; kind: 'PROCEDURE' | 'FUNCTION'; source: string }[]>(sql),
+      this.getAllRoutineParams(connection),
+    ]);
+
+    return rows.map(row => ({
+      name: row.name,
+      type: row.kind.toLowerCase() as 'procedure' | 'function',
+      body: this.unwrapPlSqlBody(row.source ?? ''),
+      params: params.get(row.name) ?? [],
+      returns: row.kind === 'FUNCTION' ? { type: 'VARCHAR2', nullable: true } : undefined,
+    }));
+  }
+
+  private async getAllRoutineParams(connection: AbstractSqlConnection): Promise<Map<string, SqlRoutineDef['params']>> {
+    const sql = `
+      select
+        OBJECT_NAME as routine_name,
+        ARGUMENT_NAME as param_name,
+        DATA_TYPE as type,
+        IN_OUT as direction,
+        POSITION as position
+      from USER_ARGUMENTS
+      where ARGUMENT_NAME is not null
+      order by OBJECT_NAME, POSITION
+    `;
+    const rows = await connection.execute<
+      {
+        routine_name: string;
+        param_name: string;
+        type: string;
+        direction: 'IN' | 'OUT' | 'IN/OUT';
+        position: number;
+      }[]
+    >(sql);
+
+    const out = new Map<string, SqlRoutineDef['params']>();
+    for (const row of rows) {
+      if (!out.has(row.routine_name)) {
+        out.set(row.routine_name, []);
+      }
+      const direction = row.direction === 'IN/OUT' ? 'inout' : row.direction === 'OUT' ? 'out' : 'in';
+      out.get(row.routine_name)!.push({
+        name: row.param_name,
+        type: row.type,
+        direction,
+      });
+    }
+
+    return out;
+  }
+
+  private unwrapPlSqlBody(source: string): string {
+    const match = /\b(?:as|is)\s+(?:begin\s+)?([\s\S]*?)\s*end\s*;?\s*$/i.exec(source.trim());
+    return match ? match[1].trim() : source.trim();
   }
 }

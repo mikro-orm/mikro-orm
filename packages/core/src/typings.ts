@@ -1144,6 +1144,244 @@ export interface TriggerDef<T = any> {
   expression?: string;
 }
 
+export type RoutineParamDirection = 'in' | 'out' | 'inout';
+
+/** Mirrors MySQL/MariaDB's `SQL DATA ACCESS` clause; ignored by other dialects. */
+export type RoutineDataAccess = 'contains-sql' | 'no-sql' | 'reads-sql-data' | 'modifies-sql-data';
+
+export type RoutineSecurity = 'invoker' | 'definer';
+
+export type RoutineKind = 'procedure' | 'function';
+
+/** Fields the schema comparator can be told to ignore when diffing a routine's DB shape vs metadata. */
+export type RoutineIgnoreField = 'body' | 'comment' | 'security' | 'deterministic' | 'definer';
+
+/** Mapping from routine parameter names to their SQL placeholder/identifier inside a routine body callback. */
+export type RoutineParamMap<T> = Record<PropertyName<T>, string>;
+
+/** Callback for the SQL body of a stored routine. Receives parameter name mappings and the EntityManager building the routine. */
+export type RoutineBodyCallback<T> = (params: RoutineParamMap<T>, em: any) => string | Raw;
+
+/**
+ * Type of a routine's return shape. May be:
+ *  - omitted/`void` for procedures with no result set,
+ *  - a single thunk returning an entity class or schema (single result set hydrated as that entity),
+ *  - a tuple of such thunks for procedures returning multiple result sets,
+ *  - a `{ runtimeType, columnType }` descriptor for scalar function returns,
+ *  - a `{ hydrate }` callback for fully custom row mapping.
+ */
+export type RoutineReturns<T = unknown> =
+  | (() => EntityName<any>)
+  | (() => EntityName<any>)[]
+  | { runtimeType: EntityProperty['runtimeType']; columnType?: string; nullable?: boolean }
+  | { hydrate: (rows: Dictionary[][], args: T, em: any) => unknown };
+
+/**
+ * JS fallback body used by SQLite/libSQL drivers, registered via the underlying
+ * driver's user-defined-function API on connection open. Only valid for `type: 'function'`.
+ * Other drivers ignore this option entirely.
+ */
+export type RoutineJsBody<T> = (params: T) => unknown;
+
+/** Definition of a stored procedure or function declared via `@Routine`, `defineRoutine`, or `RoutineSchema`. */
+export interface RoutineDef<T = any> {
+  /** Whether this routine is a stored procedure or stored function. */
+  type: RoutineKind;
+  /** Routine name. Falls back to the class/declaration name when omitted. */
+  name?: string;
+  /** Optional schema/namespace (PostgreSQL, MSSQL, Oracle). */
+  schema?: string;
+  /** Optional comment stored alongside the routine in the database. */
+  comment?: string;
+  /** Security context used at execution time. Defaults to driver-specific behaviour. */
+  security?: RoutineSecurity;
+  /** User the routine runs as when `security: 'definer'`. Driver-specific. */
+  definer?: string;
+  /** Whether the routine is declared deterministic. Drives optimizer hints (MySQL) and replication semantics. */
+  deterministic?: boolean;
+  /** SQL data-access category (MySQL/MariaDB). */
+  dataAccess?: RoutineDataAccess;
+  /** Implementation language. Most useful in PostgreSQL (`sql`, `plpgsql`, `plperl`, …) and Oracle (`plsql`). */
+  language?: 'sql' | 'plpgsql' | 'tsql' | 'plsql' | AnyString;
+  /**
+   * SQL body of the routine. Can be a literal string, a `Raw` fragment, or a callback
+   * receiving the resolved parameter name map and an EntityManager instance.
+   * Mutually exclusive with `expression`.
+   */
+  body?: string | Raw | RoutineBodyCallback<T>;
+  /**
+   * Raw DDL escape hatch — the full `CREATE PROCEDURE`/`CREATE FUNCTION` statement.
+   * Schema diff cannot detect changes to expression-based routines; prefer `body`.
+   * Mutually exclusive with `body`.
+   */
+  expression?: string;
+  /**
+   * JS fallback used by SQLite/libSQL only. Registered via `db.function()` on connection open
+   * so that calling code can target the same routine name on a SQLite test database while
+   * production runs on a server-side SQL implementation. Functions only — procedures cannot be bridged.
+   */
+  bodyJs?: RoutineJsBody<T>;
+  /** Routine return shape — see {@link RoutineReturns}. Required for `type: 'function'`. */
+  returns?: RoutineReturns<T>;
+  /**
+   * Schema-diff fields to ignore when comparing this routine's database state with the metadata.
+   * Useful for routines whose body is normalised differently by the server vs. what the user wrote.
+   */
+  ignoreSchemaChanges?: RoutineIgnoreField[];
+}
+
+/** Describes a single parameter of a stored routine. */
+export interface RoutineProperty<Owner = any> {
+  /** Parameter name (also the JS-side property name). */
+  name: EntityKey<Owner>;
+  /** Resolved SQL column/parameter type (e.g. `'varchar(255)'`, `'int'`). */
+  type: keyof typeof types | AnyString;
+  /** Resolved JS runtime type. */
+  runtimeType: EntityProperty['runtimeType'];
+  /** Stored as a singleton array to align with EntityProperty's `columnTypes`/Type API surface. */
+  columnTypes: string[];
+  /** Mapped type instance for value conversion at the boundary. */
+  customType?: Type<unknown>;
+  /** Direction of the parameter — `in` (default), `out`, or `inout`. */
+  direction: RoutineParamDirection;
+  /** Whether the value is wrapped in `ScalarReference` on the JS side (required for OUT/INOUT). */
+  ref?: boolean;
+  length?: number;
+  precision?: number;
+  scale?: number;
+  /** Whether this parameter accepts `null`. */
+  nullable?: boolean;
+  /** Default expression (function-side) used when the caller omits the parameter, where supported. */
+  defaultRaw?: string;
+  /** Original declaration order, used to rebuild positional argument lists. */
+  index: number;
+}
+
+/**
+ * Runtime metadata for a stored routine. Mirrors the role of {@link EntityMetadata} for
+ * entities, but never participates in unit-of-work, identity map, or query building —
+ * routines are invoked imperatively via `em.callRoutine()`.
+ */
+export class RoutineMetadata<T = any, Class extends EntityCtor<T> = EntityCtor<T>> {
+  static #counter = 0;
+  readonly _id: number = RoutineMetadata.#counter++;
+  /** Parameters in declaration order. */
+  readonly params: RoutineProperty<T>[] = [];
+  /** Map of parameter name → property, populated alongside {@link params}. */
+  readonly paramMap: Record<EntityKey<T>, RoutineProperty<T>> = {} as any;
+  /** Class name (or schema name for `defineRoutine`/`RoutineSchema`). */
+  className!: string;
+  /** Resolved routine name in the database. */
+  routineName!: string;
+  /** Class constructor. Synthetic for `defineRoutine`/`RoutineSchema` declarations. */
+  class!: Class;
+  /** Source file path (used for HMR-style metadata caching). */
+  path?: string;
+  /** Whether this routine is a procedure or function. */
+  type!: RoutineKind;
+  schema?: string;
+  comment?: string;
+  security?: RoutineSecurity;
+  definer?: string;
+  deterministic?: boolean;
+  dataAccess?: RoutineDataAccess;
+  language?: string;
+  body?: string | Raw | RoutineBodyCallback<T>;
+  expression?: string;
+  bodyJs?: RoutineJsBody<T>;
+  returns?: RoutineReturns<T>;
+  ignoreSchemaChanges?: RoutineIgnoreField[];
+
+  constructor(meta: Partial<RoutineMetadata<T>> = {}) {
+    Object.assign(this, meta);
+
+    if (!this.class && this.className) {
+      this.class = { [this.className]: class {} }[this.className] as unknown as Class;
+    }
+  }
+
+  addParam(param: RoutineProperty<T>): void {
+    this.params.push(param);
+    (this.paramMap as Dictionary)[param.name] = param;
+  }
+
+  /** Returns a fresh `Record<paramName, fieldName>` mapping for body callbacks. */
+  createParamMappingObject(): RoutineParamMap<T> {
+    return this.params.reduce((o, p) => {
+      o[p.name as unknown as PropertyName<T>] = p.name as string;
+      return o;
+    }, {} as RoutineParamMap<T>);
+  }
+
+  get uniqueName(): string {
+    return (this.schema ? this.schema + '.' : '') + this.routineName + '_' + this._id;
+  }
+
+  /**
+   * Builds a {@link RoutineMetadata} from a config-style declaration. Used by both
+   * {@link defineRoutine} and {@link RoutineSchema} so they share construction.
+   */
+  static fromConfig<T>(config: RoutineConfig<T>): RoutineMetadata<T> {
+    const meta = new RoutineMetadata<T>({
+      className: config.name,
+      routineName: config.name,
+      type: config.type,
+      schema: config.schema,
+      comment: config.comment,
+      security: config.security,
+      definer: config.definer,
+      deterministic: config.deterministic,
+      dataAccess: config.dataAccess,
+      language: config.language,
+      body: config.body,
+      expression: config.expression,
+      bodyJs: config.bodyJs,
+      returns: config.returns,
+      ignoreSchemaChanges: config.ignoreSchemaChanges,
+    });
+
+    Object.entries(config.params ?? {}).forEach(([name, opts], index) => {
+      meta.addParam({
+        name: name as EntityKey<T>,
+        direction: opts.direction ?? 'in',
+        type: opts.type ?? 'string',
+        runtimeType: opts.runtimeType ?? 'any',
+        columnTypes: [opts.type ?? 'string'],
+        ref: opts.ref,
+        length: opts.length,
+        precision: opts.precision,
+        scale: opts.scale,
+        nullable: opts.nullable,
+        defaultRaw: opts.defaultRaw,
+        index,
+      });
+    });
+
+    return meta;
+  }
+}
+
+/** Single parameter configuration, shared by `defineRoutine` and `RoutineSchema`. */
+export interface RoutineParamConfig {
+  runtimeType?: EntityProperty['runtimeType'];
+  type?: keyof typeof types | AnyString;
+  direction?: RoutineParamDirection;
+  ref?: boolean;
+  length?: number;
+  precision?: number;
+  scale?: number;
+  nullable?: boolean;
+  defaultRaw?: string;
+}
+
+/** Routine declaration shape shared by `defineRoutine` and `RoutineSchema`. */
+export interface RoutineConfig<T = any> extends Omit<RoutineDef<T>, 'name'> {
+  /** Routine name. Required — used both as the schema-level identifier and the database name fallback. */
+  name: string;
+  /** Parameter map keyed by parameter name. Order is preserved from `Object.keys`. */
+  params?: Record<string, RoutineParamConfig>;
+}
+
 /** Branded string that accepts any string value while preserving autocompletion for known literals. */
 export type AnyString = string & {};
 

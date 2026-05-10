@@ -15,6 +15,7 @@ import {
   type TableDifference,
   TextType,
   type SqlTriggerDef,
+  type SqlRoutineDef,
   type Transaction,
   type Type,
   Utils,
@@ -471,6 +472,136 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   /** Generates SQL to drop an MSSQL trigger. */
   override dropTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
     return `drop trigger if exists ${this.getSchemaQualifiedName(table, trigger.name)}`;
+  }
+
+  /** T-SQL refers to routine parameters as `@name` inside the routine body. */
+  override routineParamReference(name: string): string {
+    return `@${name}`;
+  }
+
+  /** Generates T-SQL to create an MSSQL stored procedure or function. */
+  override createRoutine(routine: SqlRoutineDef): string {
+    if (routine.expression) {
+      return routine.expression;
+    }
+
+    const qualifiedName = this.qualifiedRoutineName(routine);
+    const params = routine.params
+      .map(p => {
+        const dir = p.direction === 'out' || p.direction === 'inout' ? ' OUTPUT' : '';
+        return `@${p.name} ${p.type}${dir}`;
+      })
+      .join(', ');
+    const body = this.wrapRoutineBody(routine.body ?? '');
+
+    if (routine.type === 'procedure') {
+      return `create or alter procedure ${qualifiedName} ${params} as ${body}`;
+    }
+
+    const returnType = routine.returns?.type ?? 'nvarchar(max)';
+    return `create or alter function ${qualifiedName}(${params}) returns ${returnType} as ${body}`;
+  }
+
+  /** Generates T-SQL to drop an MSSQL stored procedure or function. */
+  override dropRoutine(routine: SqlRoutineDef): string {
+    const kind = routine.type === 'procedure' ? 'procedure' : 'function';
+    return `drop ${kind} if exists ${this.qualifiedRoutineName(routine)}`;
+  }
+
+  /** Lists all stored procedures and scalar/table-valued functions via `sys.sql_modules`. */
+  override async getAllRoutines(connection: AbstractSqlConnection): Promise<SqlRoutineDef[]> {
+    const sql = `
+      select
+        s.name as schema_name,
+        o.name as name,
+        case
+          when o.type = 'P' then 'procedure'
+          when o.type in ('FN', 'IF', 'TF') then 'function'
+        end as kind,
+        m.definition as definition,
+        ep.value as comment
+      from sys.objects o
+      join sys.schemas s on s.schema_id = o.schema_id
+      join sys.sql_modules m on m.object_id = o.object_id
+      left join sys.extended_properties ep
+        on ep.major_id = o.object_id and ep.minor_id = 0 and ep.name = 'MS_Description'
+      where o.type in ('P', 'FN', 'IF', 'TF')
+        and o.is_ms_shipped = 0
+    `;
+
+    const [rows, params] = await Promise.all([
+      connection.execute<
+        {
+          schema_name: string;
+          name: string;
+          kind: 'procedure' | 'function';
+          definition: string;
+          comment: string | null;
+        }[]
+      >(sql),
+      this.getAllRoutineParams(connection),
+    ]);
+
+    return rows.map(row => ({
+      name: row.name,
+      schema: row.schema_name,
+      type: row.kind,
+      body: this.unwrapMsSqlBody(row.definition),
+      comment: row.comment ?? undefined,
+      params: params.get(`${row.schema_name}.${row.name}`) ?? [],
+      returns: row.kind === 'function' ? { type: 'nvarchar(max)', nullable: true } : undefined,
+    }));
+  }
+
+  private async getAllRoutineParams(connection: AbstractSqlConnection): Promise<Map<string, SqlRoutineDef['params']>> {
+    const sql = `
+      select
+        s.name as schema_name,
+        o.name as routine_name,
+        p.name as param_name,
+        type_name(p.user_type_id) as type,
+        p.is_output as is_output,
+        p.parameter_id as position
+      from sys.parameters p
+      join sys.objects o on o.object_id = p.object_id
+      join sys.schemas s on s.schema_id = o.schema_id
+      where o.type in ('P', 'FN', 'IF', 'TF')
+        and o.is_ms_shipped = 0
+        and p.parameter_id > 0
+      order by o.object_id, p.parameter_id
+    `;
+    const rows = await connection.execute<
+      {
+        schema_name: string;
+        routine_name: string;
+        param_name: string;
+        type: string;
+        is_output: boolean;
+        position: number;
+      }[]
+    >(sql);
+
+    const out = new Map<string, SqlRoutineDef['params']>();
+    for (const row of rows) {
+      const key = `${row.schema_name}.${row.routine_name}`;
+
+      if (!out.has(key)) {
+        out.set(key, []);
+      }
+
+      out.get(key)!.push({
+        name: row.param_name.replace(/^@/, ''),
+        type: row.type,
+        direction: row.is_output ? 'inout' : 'in',
+      });
+    }
+
+    return out;
+  }
+
+  private unwrapMsSqlBody(definition: string): string {
+    const asMatch = /\bas\s+([\s\S]*)$/i.exec(definition);
+    return this.stripRoutineBody(asMatch ? asMatch[1] : definition);
   }
 
   private getSchemaQualifiedName(table: DatabaseTable, name: string): string {
