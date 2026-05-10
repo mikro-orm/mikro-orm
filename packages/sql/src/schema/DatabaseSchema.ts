@@ -124,21 +124,6 @@ export class DatabaseSchema {
     this.#routines = routines;
   }
 
-  /** Looks up a stored routine by name (or schema-qualified name). */
-  getRoutine(name: string, schema?: string): SqlRoutineDef | undefined {
-    return this.#routines.find(r => {
-      if (schema != null && r.schema !== schema) {
-        return false;
-      }
-
-      return r.name === name || (r.schema && `${r.schema}.${r.name}` === name);
-    });
-  }
-
-  hasRoutine(name: string, schema?: string): boolean {
-    return !!this.getRoutine(name, schema);
-  }
-
   setNativeEnums(nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }>): void {
     this.#nativeEnums = nativeEnums;
 

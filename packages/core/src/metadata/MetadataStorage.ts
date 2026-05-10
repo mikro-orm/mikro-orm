@@ -79,11 +79,6 @@ export class MetadataStorage {
     return !!Object.values(this.#metadata).find(meta => meta.className === name);
   }
 
-  /** Checks whether a routine with the given class name exists in the global metadata. */
-  static isKnownRoutine(name: string): boolean {
-    return !!Object.values(this.#routineMetadata).find(meta => meta.className === name);
-  }
-
   /** Clears all entries from the global metadata registry. */
   static clear(): void {
     Object.keys(this.#metadata).forEach(k => delete this.#metadata[k]);
@@ -171,7 +166,12 @@ export class MetadataStorage {
     return this.#routinesMap;
   }
 
-  /** Finds metadata for the given routine, returning undefined if not registered. */
+  /**
+   * Finds metadata for the given routine, returning undefined if not registered. Accepts the
+   * routine's class, an `EntitySchema`-like instance, the class name, or the database routine
+   * name (since decorator-defined routines are keyed under the class name while the DB-side
+   * routine name may differ).
+   */
   findRoutine<T = any>(name: EntityName<T> | string): RoutineMetadata<T> | undefined {
     if (!name) {
       return;
@@ -183,23 +183,16 @@ export class MetadataStorage {
       return routine as RoutineMetadata<T>;
     }
 
-    return this.#routinesByClassName[Utils.className(name as EntityName<T>)] as RoutineMetadata<T> | undefined;
-  }
+    const key = Utils.className(name as EntityName<T>);
+    const byClassName = this.#routinesByClassName[key];
 
-  /** Returns metadata for the given routine, throwing if not registered. */
-  getRoutine<T = any>(name: EntityName<T> | string): RoutineMetadata<T> {
-    const routine = this.findRoutine(name);
-
-    if (!routine) {
-      throw MetadataError.missingMetadata(Utils.className(name as EntityName<T>));
+    if (byClassName) {
+      return byClassName as RoutineMetadata<T>;
     }
 
-    return routine as RoutineMetadata<T>;
-  }
-
-  /** Checks whether routine metadata exists for the given name/class. */
-  hasRoutine<T>(name: EntityName<T> | string): boolean {
-    return !!this.findRoutine(name);
+    // Fall back to a DB-name lookup so `findRoutine('hash_decor')` works for routines whose
+    // class name (`HashDecor`) differs from their declared routine name (`hash_decor`).
+    return Object.values(this.#routinesByClassName).find(r => r.routineName === key) as RoutineMetadata<T> | undefined;
   }
 
   /** Registers metadata for the given routine. */
@@ -207,16 +200,6 @@ export class MetadataStorage {
     this.#routinesMap.set(name, meta);
     this.#routinesByClassName[Utils.className(name)] = meta;
     return meta;
-  }
-
-  /** Removes routine metadata from all internal maps. */
-  resetRoutine<T>(name: EntityName<T> | string): void {
-    const meta = this.findRoutine(name);
-
-    if (meta) {
-      this.#routinesMap.delete(meta.class);
-      delete this.#routinesByClassName[meta.className];
-    }
   }
 
   *[Symbol.iterator](): IterableIterator<EntityMetadata> {

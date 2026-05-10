@@ -19,15 +19,12 @@ import { getRoutineMetadataFromDecorator } from '../utils.js';
  * class HashUser {}
  * ```
  */
-export function Routine<T>(
-  config: RoutineConfig<T>,
-): (target: T, propertyName?: T extends EntityClass<unknown> ? undefined : never) => any {
-  return function (target: T): any {
-    const meta = getRoutineMetadataFromDecorator<T>(target as T & Dictionary);
+export function Routine<T = any>(config: RoutineConfig<T>): <C extends EntityClass<unknown>>(target: C) => void {
+  return function <C extends EntityClass<unknown>>(target: C): void {
+    const meta = getRoutineMetadataFromDecorator<T>(target as unknown as T & Dictionary);
     const built = RoutineMetadata.fromConfig<T>(config);
     Object.assign(meta, built);
     meta.class = target as any;
-    meta.className = (target as any).name;
-    return target;
+    meta.className = (target as { name: string }).name;
   };
 }

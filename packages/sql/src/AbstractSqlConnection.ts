@@ -13,7 +13,6 @@ import {
   type MaybePromise,
   type QueryResult,
   type RawQueryFragment,
-  type RoutineMetadata,
   type Transaction,
   type TransactionEventBroadcaster,
   Utils,
@@ -282,46 +281,6 @@ export abstract class AbstractSqlConnection extends Connection {
     const formatted = this.platform.formatQuery(query, params);
 
     return { query, params, formatted };
-  }
-
-  /**
-   * Generic SQL implementation of `Connection.callRoutine`. Builds a positional argument list
-   * from the routine metadata and dispatches via `execute`. Drivers override for OUT/INOUT
-   * binding (variable-based on MySQL, OUTPUT bind on MSSQL, PL/SQL block on Oracle) and for
-   * dialects that need a different invocation form (PG `SELECT fn(...)` for functions).
-   */
-  override async callRoutine<T>(
-    routine: RoutineMetadata,
-    args: Record<string, unknown> = {},
-    ctx?: Transaction,
-  ): Promise<T> {
-    const hasOutOrInout = routine.params.some(p => p.direction !== 'in');
-
-    if (hasOutOrInout) {
-      throw new Error(
-        `Routine ${routine.routineName} declares OUT/INOUT parameters which are not supported by the generic SQL caller. The driver should override callRoutine.`,
-      );
-    }
-
-    const positional = routine.params.map(p => args[p.name as string]);
-    const placeholders = routine.params.map(() => '?').join(', ');
-
-    if (routine.type === 'function') {
-      const rows = await this.execute<EntityData<AnyEntity>[]>(
-        `select ${this.platform.quoteIdentifier(routine.routineName)}(${placeholders}) as value`,
-        positional,
-        'all',
-        ctx,
-      );
-      return (rows as Dictionary[])[0]?.value as T;
-    }
-
-    return this.execute(
-      `call ${this.platform.quoteIdentifier(routine.routineName)}(${placeholders})`,
-      positional,
-      'all',
-      ctx,
-    ) as Promise<T>;
   }
 
   /** Executes a SQL query and returns the result based on the method: `'all'` for rows, `'get'` for single row, `'run'` for affected count. */
