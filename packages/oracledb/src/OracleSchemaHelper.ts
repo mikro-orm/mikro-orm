@@ -20,6 +20,10 @@ import {
   Utils,
 } from '@mikro-orm/sql';
 
+function stripTypeLength(type: string): string {
+  return type.replace(/\(\s*[^)]*\)\s*$/, '').trim();
+}
+
 /** Schema introspection helper for Oracle Database. */
 export class OracleSchemaHelper extends SchemaHelper {
   static readonly DEFAULT_VALUES: Record<string, string[]> = {
@@ -907,7 +911,9 @@ export class OracleSchemaHelper extends SchemaHelper {
     const params = routine.params
       .map(p => {
         const dir = p.direction === 'in' ? 'IN' : p.direction === 'out' ? 'OUT' : 'IN OUT';
-        return `${this.quote(p.name.toUpperCase())} ${dir} ${p.type}`;
+        // PL/SQL formal parameters require unconstrained types (e.g. `VARCHAR2`, not
+        // `VARCHAR2(255)` — the length spec only applies to columns).
+        return `${this.quote(p.name.toUpperCase())} ${dir} ${stripTypeLength(p.type)}`;
       })
       .join(', ');
     const argsClause = routine.params.length ? `(${params})` : '';
@@ -917,7 +923,7 @@ export class OracleSchemaHelper extends SchemaHelper {
       return `create or replace procedure ${name}${argsClause} as ${body};`;
     }
 
-    const returnType = routine.returns?.type ?? 'VARCHAR2(4000)';
+    const returnType = stripTypeLength(routine.returns?.type ?? 'VARCHAR2');
     return `create or replace function ${name}${argsClause} return ${returnType} as ${body};`;
   }
 

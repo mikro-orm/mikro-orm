@@ -460,8 +460,13 @@ export class MySqlSchemaHelper extends SchemaHelper {
     }
 
     const name = this.platform.quoteIdentifier(routine.name);
+    // MySQL functions reject IN/OUT/INOUT direction prefixes (function params are always IN).
+    // Procedures use the direction prefix as normal.
     const params = routine.params
-      .map(p => `${p.direction.toUpperCase()} ${this.platform.quoteIdentifier(p.name)} ${p.type}`)
+      .map(p => {
+        const dir = routine.type === 'procedure' ? `${p.direction.toUpperCase()} ` : '';
+        return `${dir}${this.platform.quoteIdentifier(p.name)} ${p.type}`;
+      })
       .join(', ');
     const determinism =
       routine.deterministic === true ? ' deterministic' : routine.deterministic === false ? ' not deterministic' : '';
@@ -527,7 +532,9 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return rows.map(row => ({
       name: row.name,
       type: row.type,
-      schema: row.schema_name,
+      // MySQL routines live in the current database; the schema is implicit. Leave it undefined
+      // so it matches metadata-side declarations that don't carry a schema either.
+      schema: undefined,
       body: this.stripRoutineBody(row.body ?? ''),
       deterministic: row.is_deterministic === 'YES',
       dataAccess: this.parseDataAccess(row.sql_data_access),

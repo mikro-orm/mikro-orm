@@ -1,5 +1,6 @@
 import { type ControlledTransaction, type MysqlPool, type MysqlPoolConnection, MysqlDialect } from 'kysely';
 import { createPool, type Pool, type PoolOptions } from 'mysql2';
+import { ScalarReference, type RoutineMetadata, type Transaction } from '@mikro-orm/core';
 import {
   type ConnectionConfig,
   type Dictionary,
@@ -7,6 +8,11 @@ import {
   AbstractSqlConnection,
   type TransactionEventBroadcaster,
 } from '@mikro-orm/sql';
+
+function unwrapArg(value: unknown): unknown {
+  const resolved = value instanceof ScalarReference ? value.unwrap() : value;
+  return resolved === undefined ? null : resolved;
+}
 
 /** MySQL database connection using the `mysql2` driver. */
 export class MySqlConnection extends AbstractSqlConnection {
@@ -87,6 +93,85 @@ export class MySqlConnection extends AbstractSqlConnection {
     ret.dateStrings = true;
 
     return Utils.mergeConfig(ret, overrides);
+  }
+
+  /**
+   * MySQL-specific routine invocation. Functions are invoked via `SELECT fn(?, ?) AS value`.
+   * Procedures bind OUT/INOUT parameters to session variables (`SET @v0 := ?; CALL proc(?, @v0);
+   * SELECT @v0`) and copy the values back into the caller's `ScalarReference` instances.
+   */
+  override async callRoutine<T>(
+    routine: RoutineMetadata,
+    args: Record<string, unknown> = {},
+    ctx?: Transaction,
+  ): Promise<T> {
+    const name = this.platform.quoteIdentifier(routine.routineName);
+
+    if (routine.type === 'function') {
+      const placeholders = routine.params.map(() => '?').join(', ');
+      const positional = routine.params.map(p => unwrapArg(args[p.name as string]));
+      const rows = (await this.execute(
+        `select ${name}(${placeholders}) as value`,
+        positional,
+        'all',
+        ctx,
+      )) as Dictionary[];
+      return rows[0]?.value as T;
+    }
+
+    const callPlaceholders: string[] = [];
+    const callValues: unknown[] = [];
+    const outVarNames: string[] = [];
+    const outVarParams: { name: string; varName: string }[] = [];
+
+    routine.params.forEach((p, i) => {
+      const value = unwrapArg(args[p.name as string]);
+
+      if (p.direction === 'in') {
+        callPlaceholders.push('?');
+        callValues.push(value);
+        return;
+      }
+
+      const varName = `@_mikro_orm_routine_${i}`;
+      outVarNames.push(varName);
+      outVarParams.push({ name: p.name as string, varName });
+      callPlaceholders.push(varName);
+
+      if (p.direction === 'inout') {
+        // Seed the session variable with the inbound value, then bind it positionally to the CALL.
+        // (Session var bindings can't be parameterised, so we do a SET ... := ? in a separate stmt.)
+      }
+    });
+
+    // Seed inbound INOUT variables first.
+    for (let i = 0; i < routine.params.length; i++) {
+      const p = routine.params[i];
+      if (p.direction === 'inout') {
+        const varName = `@_mikro_orm_routine_${i}`;
+        await this.execute(`set ${varName} := ?`, [unwrapArg(args[p.name as string])], 'run', ctx);
+      }
+    }
+
+    await this.execute(`call ${name}(${callPlaceholders.join(', ')})`, callValues, 'run', ctx);
+
+    if (outVarParams.length === 0) {
+      return undefined as T;
+    }
+
+    const selectClause = outVarParams.map(o => `${o.varName} as \`${o.name}\``).join(', ');
+    const rows = (await this.execute(`select ${selectClause}`, [], 'all', ctx)) as Dictionary[];
+    const row = rows[0] ?? {};
+
+    for (const { name: paramName } of outVarParams) {
+      const ref = args[paramName];
+
+      if (ref instanceof ScalarReference) {
+        ref.set(row[paramName]);
+      }
+    }
+
+    return undefined as T;
   }
 
   override async commit(

@@ -101,18 +101,19 @@ const HashUser = new RoutineSchema({
 // Function: scalar return
 const hash = await em.callRoutine<string>(HashUser, { name: 'jon', salt: 'pepper' });
 
-// Procedure: raw rows from the driver
-const rows = await em.callRoutine(AddRecord, { name: 'jon', age: 30 });
+// Procedure with OUT/INOUT parameters via ScalarReference
+const hash = new ScalarReference<string>();
+await em.callRoutine(AddRecord, { p_name: 'jon', p_age: 30, p_hash: hash });
+console.log(hash.unwrap()); // populated by the procedure
 ```
 
-The current call surface supports **IN-only parameters** with two return shapes:
+OUT and INOUT parameters are passed as `ScalarReference` instances. The values are mutated in place after the call returns. Per-dialect plumbing handles the binding mechanics:
 
-| `returns` | Behaviour |
-|---|---|
-| omitted | raw driver rows are returned for procedures; `undefined` for functions with no value |
-| `{ runtimeType, columnType }` | scalar function value extracted from the first row |
-
-The proposal in the original design — OUT/INOUT parameters via `ScalarReference`, multi-result-set tuple returns, entity-class result-set hydration via `() => Entity`, and the `{ hydrate }` callback — is tracked as follow-up work. Today's implementation accepts those shapes in the metadata but the runtime call surface treats them as IN-only with raw row returns.
+- **PostgreSQL**: `CALL proc(...)` returns a result row containing OUT/INOUT values, which are copied back into the references.
+- **MySQL/MariaDB**: session variables (`SET @v := ?; CALL proc(?, @v); SELECT @v`) bridge the values.
+- **MSSQL**: T-SQL batch with `DECLARE @v ...; SET @v = ?; EXEC proc ?, @v OUTPUT; SELECT @v`.
+- **Oracle**: PL/SQL block with `oracledb` bind directions (`BIND_INOUT`, `BIND_OUT`).
+- **SQLite/libSQL**: not supported — SQLite has no stored procedures.
 
 ## Parameter directions
 

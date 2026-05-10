@@ -270,11 +270,15 @@ export class SchemaComparator {
     const ignore = new Set(to.ignoreSchemaChanges ?? []);
 
     if (from.type !== to.type) {
+      this.log(`routine ${from.name}: type ${from.type} -> ${to.type}`);
       return true;
     }
 
     if (!ignore.has('body') && from.expression == null && to.expression == null) {
-      if (this.normaliseBody(from.body) !== this.normaliseBody(to.body)) {
+      const a = this.normaliseBody(from.body);
+      const b = this.normaliseBody(to.body);
+      if (a !== b) {
+        this.log(`routine ${from.name}: body differs`, { from: a, to: b });
         return true;
       }
     }
@@ -300,22 +304,35 @@ export class SchemaComparator {
     }
 
     if (this.diffRoutineParams(from.params, to.params)) {
+      this.log(`routine ${from.name}: params differ`, { from: from.params, to: to.params });
       return true;
     }
 
     if (this.diffRoutineReturns(from.returns, to.returns)) {
+      this.log(`routine ${from.name}: returns differ`, { from: from.returns, to: to.returns });
       return true;
     }
 
     return false;
   }
 
-  /** Normalises a routine body for comparison: trims, collapses whitespace, lowercases line endings. */
+  /**
+   * Normalises a routine body for comparison: collapses whitespace, strips outer `BEGIN ... END`
+   * wrappers and trailing semicolons so the comparator doesn't churn on cosmetic differences
+   * between the metadata's source body and what the engine round-trips through introspection.
+   */
   private normaliseBody(body?: string): string {
-    return (body ?? '')
-      .replace(/\r\n/g, '\n')
-      .replace(/[ \t]+/g, ' ')
-      .trim();
+    let result = (body ?? '').replace(/\s+/g, ' ').trim();
+
+    // strip outer begin/end if present
+    const beginEnd = /^begin\s+([\s\S]*?)\s*end\s*;?\s*$/i.exec(result);
+
+    if (beginEnd) {
+      result = beginEnd[1].trim();
+    }
+
+    // strip trailing semicolons
+    return result.replace(/;+\s*$/, '').trim();
   }
 
   private diffRoutineParams(from: SqlRoutineDef['params'], to: SqlRoutineDef['params']): boolean {
@@ -329,7 +346,7 @@ export class SchemaComparator {
 
       if (
         a.name !== b.name ||
-        this.#platform.normalizeColumnType(a.type, {}) !== this.#platform.normalizeColumnType(b.type, {}) ||
+        this.normaliseParamType(a.type) !== this.normaliseParamType(b.type) ||
         a.direction !== b.direction ||
         (a.nullable ?? false) !== (b.nullable ?? false)
       ) {
@@ -340,6 +357,39 @@ export class SchemaComparator {
     return false;
   }
 
+  /**
+   * Normalises a routine parameter type for comparison. Engines drop length/precision modifiers
+   * from parameter signatures (PG turns `varchar(255)` into `character varying`, MySQL keeps
+   * `varchar` without the length, etc.), and use different aliases for the same logical type
+   * (`int` vs `integer`, `varchar` vs `character varying`), so we canonicalise both sides.
+   */
+  private normaliseParamType(type: string): string {
+    const lengthMatch = /^([^()]+)\(([^)]*)\)\s*$/.exec(type);
+    const base = (lengthMatch ? lengthMatch[1] : type).trim().toLowerCase();
+    const aliased = SchemaComparator.PARAM_TYPE_ALIASES[base] ?? base;
+    const lengthParts = lengthMatch ? lengthMatch[2].split(',').map(s => parseInt(s.trim(), 10)) : [];
+    const options =
+      lengthParts.length === 1
+        ? { length: lengthParts[0] }
+        : lengthParts.length === 2
+          ? { precision: lengthParts[0], scale: lengthParts[1] }
+          : {};
+    return this.#platform.normalizeColumnType(aliased, options).toLowerCase();
+  }
+
+  /** Aliases used by `normaliseParamType` so MySQL/PG/MSSQL/Oracle dialect synonyms compare equal. */
+  private static readonly PARAM_TYPE_ALIASES: Record<string, string> = {
+    int: 'integer',
+    int4: 'integer',
+    int8: 'bigint',
+    int2: 'smallint',
+    bool: 'boolean',
+    'character varying': 'varchar',
+    bpchar: 'char',
+    float8: 'double precision',
+    float4: 'real',
+  };
+
   private diffRoutineReturns(from: SqlRoutineDef['returns'], to: SqlRoutineDef['returns']): boolean {
     if (from == null && to == null) {
       return false;
@@ -349,7 +399,17 @@ export class SchemaComparator {
       return true;
     }
 
-    return from.type !== to.type || (from.nullable ?? false) !== (to.nullable ?? false);
+    if (this.normaliseParamType(from.type) !== this.normaliseParamType(to.type)) {
+      return true;
+    }
+
+    // Only diff nullable when the metadata side explicitly specified it — engines tend to
+    // report function returns as nullable, while user metadata typically leaves it undefined.
+    if (to.nullable != null && (from.nullable ?? false) !== to.nullable) {
+      return true;
+    }
+
+    return false;
   }
 
   /**

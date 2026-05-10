@@ -153,7 +153,9 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     for (const routine of toSchema.getRoutines()) {
-      this.append(ret, this.helper.createRoutine(routine));
+      // pad: true forces a blank-line break so each routine becomes its own batch.
+      // MSSQL requires CREATE PROCEDURE/FUNCTION to be the first statement in a batch.
+      this.append(ret, this.helper.createRoutine(routine), true);
     }
 
     return this.wrapSchema(ret, options);
@@ -247,7 +249,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
     // Drop routines before tables — most stored routines reference table columns.
     for (const routine of targetSchema.getRoutines()) {
-      this.append(ret, this.helper.dropRoutine(routine));
+      this.append(ret, this.helper.dropRoutine(routine), true);
     }
 
     // remove FKs explicitly if we can't use a cascading statement and we don't disable FK checks (we need this for circular relations)
@@ -507,17 +509,17 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
     if (options.dropTables && !options.safe) {
       for (const routine of Object.values(schemaDiff.removedRoutines)) {
-        this.append(ret, this.helper.dropRoutine(routine));
+        this.append(ret, this.helper.dropRoutine(routine), true);
       }
     }
 
     for (const routine of Object.values(schemaDiff.changedRoutines)) {
-      this.append(ret, this.helper.dropRoutine(routine));
-      this.append(ret, this.helper.createRoutine(routine));
+      this.append(ret, this.helper.dropRoutine(routine), true);
+      this.append(ret, this.helper.createRoutine(routine), true);
     }
 
     for (const routine of Object.values(schemaDiff.newRoutines)) {
-      this.append(ret, this.helper.createRoutine(routine));
+      this.append(ret, this.helper.createRoutine(routine), true);
     }
 
     return this.wrapSchema(ret, options);

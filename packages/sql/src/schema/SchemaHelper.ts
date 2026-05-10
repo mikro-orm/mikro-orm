@@ -1116,10 +1116,20 @@ export abstract class SchemaHelper {
     return [];
   }
 
-  /** Wraps a routine body in `BEGIN ... END` if it isn't already so wrapped. */
+  /**
+   * Wraps a routine body in `BEGIN ... END` if it isn't already so wrapped. Internal newlines
+   * are collapsed to spaces so the schema-generator's `;\n` statement splitter doesn't break
+   * the routine DDL apart inside its dollar-quoted/AS-block body.
+   */
   protected wrapRoutineBody(body: string): string {
-    const trimmed = body.trim();
-    return /^\s*begin\b/i.test(trimmed) ? trimmed : `begin ${trimmed}; end`;
+    const flattened = body.replace(/\s+/g, ' ').trim();
+
+    if (/^begin\b/i.test(flattened)) {
+      return flattened;
+    }
+
+    const withSemi = /;\s*$/.test(flattened) ? flattened : `${flattened};`;
+    return `begin ${withSemi} end`;
   }
 
   /** Strips an outer `BEGIN ... END` wrapper from an introspected routine body for round-trip comparison. */

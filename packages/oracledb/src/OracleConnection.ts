@@ -13,11 +13,19 @@ import {
   type Transaction,
   Utils,
 } from '@mikro-orm/sql';
+import { ScalarReference, type RoutineMetadata } from '@mikro-orm/core';
 import { CompiledQuery } from 'kysely';
 import oracledb, { type ExecuteOptions, type PoolAttributes } from 'oracledb';
 
+function unwrapArg(value: unknown): unknown {
+  const resolved = value instanceof ScalarReference ? value.unwrap() : value;
+  return resolved === undefined ? null : resolved;
+}
+
 /** Oracle database connection using the `oracledb` driver. */
 export class OracleConnection extends AbstractSqlConnection {
+  private oraclePool?: oracledb.Pool;
+
   override async createKyselyDialect(overrides: PoolAttributes): Promise<OracleDialect> {
     const options = this.mapOptions(overrides);
     const password = options.password as ConnectionConfig['password'];
@@ -38,6 +46,7 @@ export class OracleConnection extends AbstractSqlConnection {
     for (let attempt = 1; ; attempt++) {
       try {
         pool = await oracledb.createPool(poolOptions);
+        this.oraclePool = pool;
         break;
         /* v8 ignore start: transient Oracle pool-creation errors are not reproducible in tests */
       } catch (e: any) {
@@ -185,6 +194,74 @@ export class OracleConnection extends AbstractSqlConnection {
         this.logQuery(line, { took: Date.now() - now, level: 'error', query: line });
         throw e;
       }
+    }
+  }
+
+  /**
+   * Oracle-specific routine invocation. Builds an anonymous PL/SQL block that calls the routine
+   * with named bind parameters, using oracledb's `BIND_IN` / `BIND_INOUT` / `BIND_OUT` direction
+   * flags. INOUT/OUT values are copied back into the caller's `ScalarReference` instances.
+   */
+  override async callRoutine<T>(routine: RoutineMetadata, args: Record<string, unknown> = {}): Promise<T> {
+    /* v8 ignore next 3 */
+    if (!this.oraclePool) {
+      throw new Error('Oracle pool not initialised — call connect() before callRoutine().');
+    }
+
+    const routineName = routine.routineName.toUpperCase();
+    const oracleConn = await this.oraclePool.getConnection();
+
+    try {
+      if (routine.type === 'function') {
+        const argList = routine.params.map(p => `:${p.name}`).join(', ');
+        const block = `BEGIN :mo_ret := ${routineName}(${argList}); END;`;
+        const bindings: Dictionary = { mo_ret: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 4000 } };
+
+        for (const p of routine.params) {
+          bindings[p.name as string] = { dir: oracledb.BIND_IN, val: unwrapArg(args[p.name as string]) };
+        }
+
+        const result = await oracleConn.execute(block, bindings, { autoCommit: true });
+        return (result.outBinds as Dictionary)?.mo_ret as T;
+      }
+
+      const argList = routine.params.map(p => `:${p.name}`).join(', ');
+      const block = `BEGIN ${routineName}(${argList}); END;`;
+      const bindings: Dictionary = {};
+
+      for (const p of routine.params) {
+        const value = unwrapArg(args[p.name as string]);
+        bindings[p.name as string] =
+          p.direction === 'in'
+            ? { dir: oracledb.BIND_IN, val: value }
+            : {
+                dir: p.direction === 'out' ? oracledb.BIND_OUT : oracledb.BIND_INOUT,
+                val: value,
+                type: oracledb.STRING,
+                maxSize: 4000,
+              };
+      }
+
+      const result = await oracleConn.execute(block, bindings, { autoCommit: true });
+      const outBinds = result.outBinds as Dictionary | undefined;
+
+      if (outBinds) {
+        for (const p of routine.params) {
+          if (p.direction === 'in') {
+            continue;
+          }
+
+          const ref = args[p.name as string];
+
+          if (ref instanceof ScalarReference) {
+            ref.set(outBinds[p.name as string]);
+          }
+        }
+      }
+
+      return undefined as T;
+    } finally {
+      await oracleConn.close();
     }
   }
 

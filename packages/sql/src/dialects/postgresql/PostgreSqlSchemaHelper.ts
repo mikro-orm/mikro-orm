@@ -738,14 +738,15 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const determinism =
       routine.deterministic === true ? ' immutable' : routine.deterministic === false ? ' volatile' : '';
 
+    const flatten = (s: string): string => s.replace(/\s+/g, ' ').trim();
+
     if (routine.type === 'procedure') {
-      const body = language === 'sql' ? (routine.body ?? '').trim() : this.wrapRoutineBody(routine.body ?? '');
+      const body = language === 'sql' ? flatten(routine.body ?? '') : this.wrapRoutineBody(routine.body ?? '');
       return `create or replace procedure ${qualifiedName}(${params})${security} language ${language} as $$ ${body} $$`;
     }
 
     const returnType = routine.returns?.type ?? 'void';
-    const rawBody = (routine.body ?? '').trim();
-    const body = language === 'sql' ? rawBody : this.wrapRoutineBody(rawBody);
+    const body = language === 'sql' ? flatten(routine.body ?? '') : this.wrapRoutineBody(routine.body ?? '');
     return `create or replace function ${qualifiedName}(${params}) returns ${returnType}${security}${determinism} language ${language} as $$ ${body} $$`;
   }
 
@@ -832,7 +833,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     return signature.split(/,(?![^()]*\))/).map(part => {
       const trimmed = part.trim();
-      const match = /^(IN|OUT|INOUT|VARIADIC)?\s*("?[\w$]+"?)\s+(.+?)(?:\s+default\s+.+)?$/i.exec(trimmed);
+      // Order alternatives longest-first so `INOUT` isn't matched as `IN` + extra chars.
+      const match = /^(INOUT|VARIADIC|IN|OUT)?\s*("?[\w$]+"?)\s+(.+?)(?:\s+default\s+.+)?$/i.exec(trimmed);
 
       if (!match) {
         return { name: trimmed, type: 'unknown', direction: 'in' as const };
@@ -849,9 +851,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     });
   }
 
+  /**
+   * Extracts the routine body from `pg_get_functiondef` output. PG canonicalises dollar quotes
+   * to a tagged form like `$function$ ... $function$` or `$procedure$ ... $procedure$` (with
+   * collision-avoiding tags when needed), so we match the tag-aware form rather than bare `$$`.
+   */
   private extractRoutineBody(fullDef: string): string {
-    const match = /\$\$([\s\S]*?)\$\$/.exec(fullDef);
-    return this.stripRoutineBody(match ? match[1] : fullDef);
+    const tagged = /\bAS\s+\$(\w*)\$([\s\S]*?)\$\1\$/i.exec(fullDef);
+    return this.stripRoutineBody(tagged ? tagged[2] : fullDef);
   }
 
   private getSchemaQualifiedTriggerFnName(table: DatabaseTable, trigger: SqlTriggerDef): string {

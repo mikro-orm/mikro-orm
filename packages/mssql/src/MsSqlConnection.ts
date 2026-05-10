@@ -1,8 +1,14 @@
 import { AbstractSqlConnection, type ConnectionConfig, type TransactionEventBroadcaster, Utils } from '@mikro-orm/sql';
 import { type ControlledTransaction, MssqlDialect } from 'kysely';
+import { type Dictionary, ScalarReference, type RoutineMetadata, type Transaction } from '@mikro-orm/core';
 import type { ConnectionConfiguration } from 'tedious';
 import * as Tedious from 'tedious';
 import * as Tarn from 'tarn';
+
+function unwrapArg(value: unknown): unknown {
+  const resolved = value instanceof ScalarReference ? value.unwrap() : value;
+  return resolved === undefined ? null : resolved;
+}
 
 /** Microsoft SQL Server database connection using the `tedious` driver. */
 export class MsSqlConnection extends AbstractSqlConnection {
@@ -64,6 +70,91 @@ export class MsSqlConnection extends AbstractSqlConnection {
     }
 
     return Utils.mergeConfig(ret, overrides);
+  }
+
+  /**
+   * MSSQL-specific routine invocation. Functions are called via `SELECT dbo.fn(?, ?)`. Procedures
+   * use `DECLARE @v0 ... ; SET @v0 = ?; EXEC dbo.proc ?, @v0 OUTPUT; SELECT @v0` to bind the
+   * caller's `ScalarReference` values for INOUT params and pull the post-call values back out.
+   */
+  override async callRoutine<T>(
+    routine: RoutineMetadata,
+    args: Record<string, unknown> = {},
+    ctx?: Transaction,
+  ): Promise<T> {
+    const schema = routine.schema ?? this.platform.getDefaultSchemaName() ?? 'dbo';
+    // MSSQL scalar UDF calls must be schema-qualified — `select sql_hash(...)` fails to parse,
+    // while `select dbo.sql_hash(...)` works.
+    const qualified = `${this.platform.quoteIdentifier(schema)}.${this.platform.quoteIdentifier(routine.routineName)}`;
+
+    if (routine.type === 'function') {
+      const placeholders = routine.params.map(() => '?').join(', ');
+      const positional = routine.params.map(p => unwrapArg(args[p.name as string]));
+      const rows = (await this.execute(
+        `select ${qualified}(${placeholders}) as value`,
+        positional,
+        'all',
+        ctx,
+      )) as Dictionary[];
+      return rows[0]?.value as T;
+    }
+
+    // T-SQL session variables don't persist across separate execute() calls (each one may use a
+    // different pool connection). Build a single batch with DECLARE + SET + EXEC + SELECT so the
+    // variables stay scoped to one request.
+    const declareLines: string[] = [];
+    const setLines: string[] = [];
+    const setValues: unknown[] = [];
+    const callArgs: string[] = [];
+    const inValues: unknown[] = [];
+    const outVars: { name: string; varName: string }[] = [];
+
+    routine.params.forEach((p, i) => {
+      if (p.direction === 'in') {
+        callArgs.push('?');
+        inValues.push(unwrapArg(args[p.name as string]));
+        return;
+      }
+
+      const varName = `@_mikro_orm_routine_${i}`;
+      declareLines.push(`declare ${varName} ${p.type}`);
+      outVars.push({ name: p.name as string, varName });
+
+      if (p.direction === 'inout') {
+        setLines.push(`set ${varName} = ?`);
+        setValues.push(unwrapArg(args[p.name as string]));
+      }
+
+      callArgs.push(`${varName} output`);
+    });
+
+    // Order values to match the `?` order in the joined batch: SET values first, then EXEC IN values.
+    const allValues = [...setValues, ...inValues];
+    const batch = [...declareLines, ...setLines, `exec ${qualified} ${callArgs.join(', ')}`];
+
+    if (outVars.length > 0) {
+      const selectClause = outVars.map(o => `${o.varName} as [${o.name}]`).join(', ');
+      batch.push(`select ${selectClause}`);
+    }
+
+    const result = await this.execute(batch.join('; '), allValues, 'all', ctx);
+
+    if (outVars.length === 0) {
+      return undefined as T;
+    }
+
+    const rows = result as Dictionary[];
+    const row = rows[0] ?? {};
+
+    for (const { name: paramName } of outVars) {
+      const ref = args[paramName];
+
+      if (ref instanceof ScalarReference) {
+        ref.set(row[paramName]);
+      }
+    }
+
+    return undefined as T;
   }
 
   override async commit(
