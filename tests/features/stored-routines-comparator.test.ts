@@ -1,5 +1,6 @@
 import { MikroORM, SchemaComparator } from '@mikro-orm/sqlite';
 import { DatabaseSchema, type SqlRoutineDef } from '@mikro-orm/sql';
+import { defineRoutine, raw, RoutineMetadata } from '@mikro-orm/core';
 
 describe('stored routines — comparator unit tests', () => {
   let orm: MikroORM;
@@ -164,6 +165,101 @@ describe('stored routines — comparator unit tests', () => {
           makeRoutine({ returns: { type: 'integer', nullable: true } }),
         ),
       ).toBe(true);
+    });
+  });
+
+  describe('addRoutinesFromMetadata', () => {
+    it('resolves runtimeType aliases through the platform type system', () => {
+      const cases = [
+        { runtimeType: 'string' as const },
+        { runtimeType: 'number' as const },
+        { runtimeType: 'bigint' as const },
+        { runtimeType: 'boolean' as const },
+        { runtimeType: 'Date' as const },
+        { runtimeType: 'Buffer' as const },
+      ];
+
+      for (const c of cases) {
+        const meta = RoutineMetadata.fromConfig({
+          name: 'r',
+          type: 'function',
+          params: { v: { runtimeType: c.runtimeType, type: c.runtimeType.toLowerCase() } },
+          returns: { runtimeType: c.runtimeType },
+          body: 'select v',
+        });
+
+        const schema = new DatabaseSchema(orm.em.getPlatform(), '');
+        schema.addRoutinesFromMetadata([meta], orm.em.getPlatform());
+        const routine = schema.getRoutines()[0];
+        expect(routine.params[0].type).toBeTruthy();
+      }
+    });
+
+    it('passes through type strings that are not in the alias table', () => {
+      const meta = RoutineMetadata.fromConfig({
+        name: 'r',
+        type: 'function',
+        params: { v: { type: 'unknown_sql_type' } },
+        returns: { runtimeType: 'string' },
+        body: 'select v',
+      });
+
+      const schema = new DatabaseSchema(orm.em.getPlatform(), '');
+      schema.addRoutinesFromMetadata([meta], orm.em.getPlatform());
+      expect(schema.getRoutines()[0].params[0].type).toBe('unknown_sql_type');
+    });
+
+    it('handles a body callback that returns a Raw fragment', () => {
+      const def = defineRoutine({
+        name: 'r',
+        type: 'function',
+        params: { v: { type: 'int' } },
+        returns: { runtimeType: 'number' },
+        body: () => raw('select :v', { v: 1 }),
+      });
+      const schema = new DatabaseSchema(orm.em.getPlatform(), '');
+      schema.addRoutinesFromMetadata([def.meta], orm.em.getPlatform());
+      expect(schema.getRoutines()[0].body).toContain('select');
+    });
+
+    it('handles a body provided as a Raw fragment directly', () => {
+      const def = defineRoutine({
+        name: 'r',
+        type: 'function',
+        params: { v: { type: 'int' } },
+        returns: { runtimeType: 'number' },
+        body: raw('select :v', { v: 1 }),
+      });
+      const schema = new DatabaseSchema(orm.em.getPlatform(), '');
+      schema.addRoutinesFromMetadata([def.meta], orm.em.getPlatform());
+      expect(schema.getRoutines()[0].body).toContain('select');
+    });
+
+    it('leaves body undefined when callback returns an unexpected value', () => {
+      const def = defineRoutine({
+        name: 'r',
+        type: 'function',
+        params: { v: { type: 'int' } },
+        returns: { runtimeType: 'number' },
+        body: (() => 42 as any) as any,
+      });
+      const schema = new DatabaseSchema(orm.em.getPlatform(), '');
+      schema.addRoutinesFromMetadata([def.meta], orm.em.getPlatform());
+      expect(schema.getRoutines()[0].body).toBeUndefined();
+    });
+
+    it('omits returns when the routine declares a non-runtimeType return shape', () => {
+      // Multi-result-set / entity-class returns aren't supported today; they fall through to undefined.
+      const meta = RoutineMetadata.fromConfig({
+        name: 'r',
+        type: 'procedure',
+        params: {},
+        body: 'BEGIN END',
+        returns: () => class FakeEntity {} as any,
+      });
+      const schema = new DatabaseSchema(orm.em.getPlatform(), '');
+      schema.addRoutinesFromMetadata([meta], orm.em.getPlatform());
+      expect(schema.getRoutines()[0].returns).toBeUndefined();
     });
   });
 
