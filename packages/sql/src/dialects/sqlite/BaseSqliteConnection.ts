@@ -9,6 +9,7 @@ export class BaseSqliteConnection extends AbstractSqlConnection {
    * clear message unless the underlying driver overrides `callRoutine` to register the
    * routine's `bodyJs` as a UDF.
    */
+  /* v8 ignore next 8 — fallback for SQLite-family drivers that don't bridge routines (libsql, node:sqlite); the in-tree better-sqlite3 driver overrides this. */
   override async callRoutine<T>(
     routine: RoutineMetadata,
     _args: Record<string, unknown> = {},

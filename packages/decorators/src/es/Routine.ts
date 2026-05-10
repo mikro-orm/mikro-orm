@@ -1,10 +1,4 @@
-import {
-  type Constructor,
-  type EntityCtor,
-  type EntityClass,
-  RoutineMetadata,
-  type RoutineConfig,
-} from '@mikro-orm/core';
+import { type EntityClass, type EntityCtor, RoutineMetadata, type RoutineConfig } from '@mikro-orm/core';
 import { getRoutineMetadataFromDecorator } from '../utils.js';
 
 /**
@@ -25,14 +19,14 @@ import { getRoutineMetadataFromDecorator } from '../utils.js';
  * class HashUser {}
  * ```
  */
-export function Routine<Owner extends EntityClass<unknown> & EntityCtor>(
-  config: RoutineConfig<Owner>,
-): (target: Owner, context: ClassDecoratorContext<Owner>) => void {
-  return function (target: Owner, context: ClassDecoratorContext<Owner>): void {
-    const meta = getRoutineMetadataFromDecorator(target);
-    const built = RoutineMetadata.fromConfig<Owner>(config);
+export function Routine<T = any>(
+  config: RoutineConfig<T>,
+): <C extends EntityClass<unknown> & EntityCtor>(target: C, context: ClassDecoratorContext<C>) => void {
+  return function <C extends EntityClass<unknown> & EntityCtor>(target: C, context: ClassDecoratorContext<C>): void {
+    const meta = getRoutineMetadataFromDecorator<T>(target as any);
+    const built = RoutineMetadata.fromConfig<T>(config);
     Object.assign(meta, built);
-    meta.class = target as unknown as Constructor<Owner>;
+    meta.class = target as any;
     meta.className = context.name as string;
   };
 }

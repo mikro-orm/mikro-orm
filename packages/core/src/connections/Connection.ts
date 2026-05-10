@@ -168,12 +168,13 @@ export abstract class Connection {
 
   /**
    * Invokes a stored procedure or function declared via `@Routine`/`defineRoutine`/`RoutineSchema`.
-   * Drivers without server-side routine support (mongo) throw. SQL drivers default to a generic
-   * implementation in `AbstractSqlConnection` and are overridden per dialect for OUT/INOUT plumbing.
+   * The base implementation throws — only drivers that override this method (every SQL driver
+   * does) support routine invocation.
    *
    * @internal — public callers should go through `EntityManager.callRoutine` which performs validation,
    *   ScalarReference unwrapping, and result hydration.
    */
+  /* v8 ignore next 3 — fallback for hypothetical non-SQL drivers; all in-tree drivers override. */
   async callRoutine<T>(routine: RoutineMetadata, args: Record<string, unknown>, ctx?: Transaction): Promise<T> {
     throw new Error(`Stored routines are not supported by the current driver`);
   }
