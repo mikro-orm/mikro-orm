@@ -325,6 +325,7 @@ export class MetadataDiscovery {
   private findGlobalRoutineForClass(target: { name?: string; [key: symbol]: unknown }): RoutineMetadata | undefined {
     const path = target?.[MetadataStorage.PATH_SYMBOL] as string | undefined;
 
+    /* v8 ignore next 3 — defensive guard for classes that bypass the decorator (no PATH_SYMBOL). */
     if (!target?.name || !path) {
       return undefined;
     }

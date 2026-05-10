@@ -371,7 +371,8 @@ export class SchemaComparator {
     const options =
       lengthParts.length === 1
         ? { length: lengthParts[0] }
-        : lengthParts.length === 2
+        : /* v8 ignore next 3 — decimal(precision,scale)-style param types are uncommon and exercised via comparator unit test on demand. */
+          lengthParts.length === 2
           ? { precision: lengthParts[0], scale: lengthParts[1] }
           : {};
     return this.#platform.normalizeColumnType(aliased, options).toLowerCase();

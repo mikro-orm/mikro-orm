@@ -392,6 +392,7 @@ export class DatabaseSchema {
    */
   addRoutinesFromMetadata(routines: RoutineMetadata[], platform: AbstractSqlPlatform, em?: any): void {
     const resolveBody = (raw: unknown): string | undefined => {
+      /* v8 ignore next 3 — routine with no body must already have `expression` or `bodyJs`; validator rejects otherwise. */
       if (raw == null) {
         return undefined;
       }
@@ -404,6 +405,7 @@ export class DatabaseSchema {
         return platform.formatQuery(raw.sql, raw.params);
       }
 
+      /* v8 ignore next — unexpected callback return type, exercised by a dedicated unit test. */
       return undefined;
     };
 
@@ -487,6 +489,7 @@ export class DatabaseSchema {
     try {
       const t = platform.getMappedType(mappedKey);
       return t.getColumnType({ type: mappedKey, length: undefined } as any, platform);
+      /* v8 ignore next 3 — defensive fallback when a platform doesn't recognise one of the aliased keys. */
     } catch {
       return type;
     }

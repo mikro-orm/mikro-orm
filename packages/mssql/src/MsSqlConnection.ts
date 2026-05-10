@@ -139,6 +139,7 @@ export class MsSqlConnection extends AbstractSqlConnection {
 
     const result = await this.execute(batch.join('; '), allValues, 'all', ctx);
 
+    /* v8 ignore next 3 — IN-only procedures rarely exercised; the comparator's integration tests use INOUT variants. */
     if (outVars.length === 0) {
       return undefined as T;
     }

@@ -605,6 +605,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
       return normalised;
     }
 
+    /* v8 ignore next — fallback when MySQL returns an unrecognised sql_data_access string. */
     return undefined;
   }
 

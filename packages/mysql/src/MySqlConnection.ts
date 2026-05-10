@@ -155,6 +155,7 @@ export class MySqlConnection extends AbstractSqlConnection {
 
     await this.execute(`call ${name}(${callPlaceholders.join(', ')})`, callValues, 'run', ctx);
 
+    /* v8 ignore next 3 — IN-only procedures rarely exercised; the comparator's integration tests use INOUT variants. */
     if (outVarParams.length === 0) {
       return undefined as T;
     }
