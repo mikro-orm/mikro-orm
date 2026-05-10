@@ -174,7 +174,6 @@ export abstract class Connection {
    * @internal - public callers should go through `EntityManager.callRoutine` which performs validation,
    *   ScalarReference unwrapping, and result hydration.
    */
-  /* v8 ignore next 3 - fallback for hypothetical non-SQL drivers; all in-tree drivers override. */
   async callRoutine<T>(routine: RoutineMetadata, args: Record<string, unknown>, ctx?: Transaction): Promise<T> {
     throw new Error(`Stored routines are not supported by the current driver`);
   }

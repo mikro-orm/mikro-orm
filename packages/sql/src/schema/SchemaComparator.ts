@@ -367,14 +367,8 @@ export class SchemaComparator {
     const lengthMatch = /^([^()]+)\(([^)]*)\)\s*$/.exec(type);
     const base = (lengthMatch ? lengthMatch[1] : type).trim().toLowerCase();
     const aliased = SchemaComparator.PARAM_TYPE_ALIASES[base] ?? base;
-    const lengthParts = lengthMatch ? lengthMatch[2].split(',').map(s => parseInt(s.trim(), 10)) : [];
-    const options =
-      lengthParts.length === 1
-        ? { length: lengthParts[0] }
-        : /* v8 ignore next 3 - decimal(precision,scale)-style param types are uncommon and exercised via comparator unit test on demand. */
-          lengthParts.length === 2
-          ? { precision: lengthParts[0], scale: lengthParts[1] }
-          : {};
+    const length = lengthMatch ? Number.parseInt(lengthMatch[2].split(',')[0].trim(), 10) : NaN;
+    const options = Number.isFinite(length) ? { length } : {};
     return this.#platform.normalizeColumnType(aliased, options).toLowerCase();
   }
 

@@ -90,6 +90,47 @@ describe('stored routines — MySQL', () => {
     expect(found!.age).toBe(30);
   });
 
+  it('em.callRoutine invokes an IN-only procedure (no OUT/INOUT params)', async () => {
+    const InsertRecord = defineRoutine({
+      name: 'insert_record',
+      type: 'procedure',
+      params: {
+        p_hash: { type: 'char(40)' },
+        p_name: { type: 'varchar(255)' },
+        p_age: { type: 'integer' },
+      },
+      body: 'insert into record_entity (hash, name, age) values (p_hash, p_name, p_age);',
+    });
+
+    // Preserve the global routines so subsequent tests see the same DB state.
+    const orm2 = await MikroORM.init({
+      dbName,
+      port: 3308,
+      user: 'root',
+      entities: [RecordEntity],
+      routines: [SqlHash, AddRecord, InsertRecord],
+    });
+    await orm2.schema.update();
+
+    await orm2.em.callRoutine(InsertRecord, { p_hash: 'in-only-test', p_name: 'Sam', p_age: 25 });
+    const found = await orm2.em.findOne(RecordEntity, { hash: 'in-only-test' });
+    expect(found).toBeDefined();
+    expect(found!.name).toBe('Sam');
+
+    // Clean up the extra routine so the next test's diff matches expectations.
+    const orm3 = await MikroORM.init({
+      dbName,
+      port: 3308,
+      user: 'root',
+      entities: [RecordEntity],
+      routines: [SqlHash, AddRecord],
+    });
+    await orm3.schema.update();
+    await orm3.close(true);
+
+    await orm2.close(true);
+  });
+
   it('changing a routine body triggers a schema:update diff', async () => {
     const TweakedHash = defineRoutine({
       name: 'sql_hash',

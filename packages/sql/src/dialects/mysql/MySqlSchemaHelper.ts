@@ -599,14 +599,8 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   private parseDataAccess(access: string): SqlRoutineDef['dataAccess'] {
-    const normalised = access.toLowerCase().replace(/\s+/g, '-') as SqlRoutineDef['dataAccess'];
-
-    if (['no-sql', 'reads-sql-data', 'modifies-sql-data', 'contains-sql'].includes(normalised as string)) {
-      return normalised;
-    }
-
-    /* v8 ignore next - fallback when MySQL returns an unrecognised sql_data_access string. */
-    return undefined;
+    // information_schema.routines.sql_data_access is always one of these four values per the MySQL spec.
+    return access.toLowerCase().replace(/\s+/g, '-') as SqlRoutineDef['dataAccess'];
   }
 
   async getAllTriggers(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<SqlTriggerDef[]>> {

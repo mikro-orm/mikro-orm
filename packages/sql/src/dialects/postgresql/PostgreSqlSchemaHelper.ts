@@ -527,7 +527,6 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       }
     }
 
-    /* v8 ignore next - pg_get_indexdef always returns balanced parentheses */
     return '';
   }
 
@@ -842,15 +841,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }
 
     return signature.split(/,(?![^()]*\))/).map(part => {
-      const trimmed = part.trim();
       // Order alternatives longest-first so `INOUT` isn't matched as `IN` + extra chars.
-      const match = /^(INOUT|VARIADIC|IN|OUT)?\s*("?[\w$]+"?)\s+(.+?)(?:\s+default\s+.+)?$/i.exec(trimmed);
-
-      /* v8 ignore next 3 - fallback for unparseable arg signatures from pg_get_function_arguments. */
-      if (!match) {
-        return { name: trimmed, type: 'unknown', direction: 'in' as const };
-      }
-
+      const match = /^(INOUT|VARIADIC|IN|OUT)?\s*("?[\w$]+"?)\s+(.+?)(?:\s+default\s+.+)?$/i.exec(part.trim())!;
       const dirRaw = (match[1] ?? 'in').toLowerCase();
       const direction = dirRaw === 'inout' ? 'inout' : dirRaw === 'out' ? 'out' : 'in';
 

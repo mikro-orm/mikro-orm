@@ -1102,19 +1102,16 @@ export abstract class SchemaHelper {
    * dialects that support routines must override (PostgreSQL, MySQL, MariaDB, MSSQL, Oracle).
    * SQLite/libSQL leave the default in place to silent-skip routines from schema generation.
    */
-  /* v8 ignore next 3 - default no-op for SQLite-family drivers; server-side dialects override. */
   createRoutine(_routine: SqlRoutineDef): string {
     return '';
   }
 
   /** Generates SQL to drop a stored procedure or function. Defaults to a no-op for drivers that don't manage routines. */
-  /* v8 ignore next 3 - default no-op for SQLite-family drivers; server-side dialects override. */
   dropRoutine(_routine: SqlRoutineDef): string {
     return '';
   }
 
   /** Reads stored routines from the database for diffing. Default: no routines tracked. */
-  /* v8 ignore next 3 - default no-op for SQLite-family drivers; server-side dialects override. */
   async getAllRoutines(_connection: AbstractSqlConnection, _schemas: string[] = []): Promise<SqlRoutineDef[]> {
     return [];
   }
@@ -1150,7 +1147,6 @@ export abstract class SchemaHelper {
    * Returns the dialect-specific reference syntax for a routine parameter as it appears
    * inside a routine body. T-SQL requires `@name`; PG/MySQL/Oracle use the bare name.
    */
-  /* v8 ignore next 3 - base impl returns the name as-is; only MSSQL overrides. */
   routineParamReference(name: string): string {
     return name;
   }

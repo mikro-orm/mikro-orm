@@ -84,4 +84,32 @@ describe('stored routines — MSSQL', () => {
     expect(found).toBeDefined();
     expect(found!.name).toBe('Jon Snow');
   });
+
+  it('em.callRoutine invokes an IN-only procedure (no OUT/INOUT params)', async () => {
+    const InsertRecord = defineRoutine({
+      name: 'insert_record',
+      type: 'procedure',
+      params: {
+        p_hash: { type: 'nvarchar(40)' },
+        p_name: { type: 'nvarchar(255)' },
+        p_age: { type: 'int' },
+      },
+      body: 'insert into record_entity (hash, name, age) values (@p_hash, @p_name, @p_age);',
+    });
+
+    const orm2 = await MikroORM.init({
+      dbName,
+      password: 'Root.Root',
+      entities: [RecordEntity],
+      routines: [InsertRecord],
+    });
+    await orm2.schema.update();
+
+    await orm2.em.callRoutine(InsertRecord, { p_hash: 'mssql-in-only', p_name: 'Sam', p_age: 25 });
+    const found = await orm2.em.findOne(RecordEntity, { hash: 'mssql-in-only' });
+    expect(found).toBeDefined();
+    expect(found!.name).toBe('Sam');
+
+    await orm2.close(true);
+  });
 });
