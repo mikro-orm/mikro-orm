@@ -88,6 +88,30 @@ describe('stored routines — dialect helper unit tests', () => {
       expect(helper.dropRoutine(baseRoutine)).toMatch(/drop function if exists/i);
       expect(helper.dropRoutine({ ...baseRoutine, type: 'procedure' })).toMatch(/drop procedure if exists/i);
     });
+
+    it('createRoutine emits security definer/invoker clauses', () => {
+      expect(helper.createRoutine({ ...baseRoutine, security: 'definer' })).toContain('sql security definer');
+      expect(helper.createRoutine({ ...baseRoutine, security: 'invoker' })).toContain('sql security invoker');
+    });
+
+    it('createRoutine emits "deterministic" for deterministic=true', () => {
+      const sql = helper.createRoutine({ ...baseRoutine, deterministic: true });
+      expect(sql).toContain(' deterministic');
+      expect(sql).not.toContain('not deterministic');
+    });
+
+    it('createRoutine omits clauses when corresponding options are unset', () => {
+      const sql = helper.createRoutine({
+        ...baseRoutine,
+        deterministic: undefined,
+        security: undefined,
+        comment: undefined,
+        dataAccess: undefined,
+      });
+      expect(sql).not.toMatch(/deterministic/);
+      expect(sql).not.toMatch(/sql security/);
+      expect(sql).not.toMatch(/comment/);
+    });
   });
 
   describe('PostgreSQL', () => {
@@ -139,6 +163,34 @@ describe('stored routines — dialect helper unit tests', () => {
         ],
       });
       expect(sql).toMatch(/drop function if exists .+\(int, text\)/i);
+    });
+
+    it('createRoutine omits security/determinism when unset', () => {
+      const sql = helper.createRoutine({ ...baseRoutine, security: undefined, deterministic: undefined });
+      expect(sql).not.toContain('security');
+      expect(sql).not.toMatch(/immutable|volatile/);
+    });
+
+    it('createRoutine emits OUT/INOUT direction prefixes for procedures', () => {
+      const sql = helper.createRoutine({
+        ...baseRoutine,
+        type: 'procedure',
+        params: [
+          { name: 'i', type: 'int', direction: 'in' },
+          { name: 'o', type: 'int', direction: 'out' },
+          { name: 'io', type: 'int', direction: 'inout' },
+        ],
+      });
+      expect(sql).toContain('OUT "o"');
+      expect(sql).toContain('INOUT "io"');
+    });
+
+    it('createRoutine emits param `default` clause when defaultRaw is provided', () => {
+      const sql = helper.createRoutine({
+        ...baseRoutine,
+        params: [{ name: 'x', type: 'int', direction: 'in', defaultRaw: '42' }],
+      });
+      expect(sql).toContain('default 42');
     });
   });
 
