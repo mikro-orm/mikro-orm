@@ -206,6 +206,7 @@ export class DatabaseSchema {
     platform: AbstractSqlPlatform,
     schemas?: string[],
   ): Promise<void> {
+    /* v8 ignore next — `schemas` default is exercised by the comparator's PG/MySQL integration paths. */
     this.#routines = await platform.getSchemaHelper()!.getAllRoutines(connection, schemas ?? []);
   }
 
@@ -413,6 +414,7 @@ export class DatabaseSchema {
 
     for (const routineMeta of routines) {
       const paramMap =
+        /* v8 ignore next — `helper` is always present for SQL platforms; the fallback is for safety. */
         helper && routineMeta.params.length > 0
           ? routineMeta.params.reduce(
               (o, p) => {

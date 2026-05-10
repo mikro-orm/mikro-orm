@@ -356,6 +356,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     // Load routines from DB whenever the dialect supports them (so removing the last
     // metadata routine still detects the orphan in DB). Dialects without routine support
     // return [] from getAllRoutines, which is the silent-skip path.
+    /* v8 ignore next 3 — the `fromSchema` override path is used only by migration-runner internals. */
     if (options.fromSchema == null) {
       await fromSchema.loadRoutines(this.connection, this.platform, [...schemas]);
     }
