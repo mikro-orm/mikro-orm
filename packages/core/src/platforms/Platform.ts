@@ -813,12 +813,13 @@ export abstract class Platform {
   }
 
   /**
-   * Returns the default name of index for the given columns
+   * Returns the default name of index for the given columns. Per-platform overrides may apply
+   * truncation/hashing to respect {@link getMaxAllowedIdentifierLength}.
    */
   getIndexName(
     tableName: string,
     columns: string[],
-    type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence',
+    type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence' | 'check',
   ): string {
     return this.namingStrategy.indexName(tableName, columns, type);
   }

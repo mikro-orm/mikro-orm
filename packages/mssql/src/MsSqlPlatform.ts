@@ -15,6 +15,7 @@ import {
   raw,
   RawQueryFragment,
   Type,
+  Utils,
 } from '@mikro-orm/sql';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
@@ -80,6 +81,25 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
   override indexForeignKeys(): boolean {
     return false;
+  }
+
+  /**
+   * Returns the default name of index for the given columns
+   * cannot go past 128 character length for identifiers in SQL Server (sysname)
+   */
+  override getIndexName(
+    tableName: string,
+    columns: string[],
+    type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence' | 'check',
+  ): string {
+    const indexName = super.getIndexName(tableName, columns, type);
+
+    if (indexName.length > 128) {
+      const suffix = type === 'primary' ? 'pkey' : type;
+      return `${indexName.substring(0, 120 - type.length)}_${Utils.hash(indexName, 5)}_${suffix}`;
+    }
+
+    return indexName;
   }
 
   override supportsSchemas(): boolean {

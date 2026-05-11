@@ -1975,7 +1975,7 @@ export class MetadataDiscovery {
 
     for (const check of meta.checks) {
       const fieldNames = check.property ? meta.properties[check.property].fieldNames : [];
-      check.name ??= this.#namingStrategy.indexName(meta.tableName, fieldNames, 'check');
+      check.name ??= this.#platform.getIndexName(meta.tableName, fieldNames, 'check');
 
       if (check.expression instanceof Function) {
         check.expression = check.expression(columns, table);
@@ -2004,7 +2004,7 @@ export class MetadataDiscovery {
 
         if (expression) {
           meta.checks.push({
-            name: this.#namingStrategy.indexName(meta.tableName, prop.fieldNames, 'check'),
+            name: this.#platform.getIndexName(meta.tableName, prop.fieldNames, 'check'),
             property: prop.name,
             expression,
           });

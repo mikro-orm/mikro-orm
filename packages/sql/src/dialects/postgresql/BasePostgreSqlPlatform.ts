@@ -475,12 +475,12 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
 
   /**
    * Returns the default name of index for the given columns
-   * cannot go past 63 character length for identifiers in MySQL
+   * cannot go past 63 character length for identifiers in Postgres
    */
   override getIndexName(
     tableName: string,
     columns: string[],
-    type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence',
+    type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence' | 'check',
   ): string {
     const indexName = super.getIndexName(tableName, columns, type);
 

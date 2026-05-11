@@ -126,7 +126,7 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
   override getIndexName(
     tableName: string,
     columns: string[],
-    type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence',
+    type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence' | 'check',
   ): string {
     if (type === 'primary') {
       return this.getDefaultPrimaryName(tableName, columns);
