@@ -141,6 +141,27 @@ describe('RoutineSourceFile', () => {
     expect(out).toMatch(/end`,/);
   });
 
+  it('emits param-level nullable and defaultRaw when present', () => {
+    const sourceFile = new RoutineSourceFile(
+      {
+        name: 'with_defaults',
+        type: 'procedure',
+        params: [
+          { name: 'opt', type: 'text', direction: 'in', nullable: true },
+          { name: 'def', type: 'integer', direction: 'in', defaultRaw: '42' },
+        ],
+        body: 'begin null; end',
+      },
+      namingStrategy,
+      platform,
+      { entityDefinition: 'defineEntity', fileName: (n: string) => n },
+    );
+
+    const out = sourceFile.generate();
+    expect(out).toContain(`opt: { type: 'text', nullable: true }`);
+    expect(out).toContain(`def: { type: 'integer', defaultRaw: '42' }`);
+  });
+
   it('quotes param names that are not valid JS identifiers', () => {
     const sourceFile = new RoutineSourceFile(
       {
