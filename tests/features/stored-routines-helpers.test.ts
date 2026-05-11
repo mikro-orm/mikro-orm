@@ -171,6 +171,34 @@ describe('stored routines — dialect helper unit tests', () => {
       expect(sql).not.toMatch(/immutable|volatile/);
     });
 
+    it('createRoutine preserves a body that already starts with BEGIN/END', () => {
+      const sql = helper.createRoutine({
+        ...baseRoutine,
+        type: 'procedure',
+        language: 'plpgsql',
+        body: 'BEGIN insert into t values (1); END',
+      });
+      // Should not double-wrap — the body must appear once between $$ markers.
+      expect(sql.match(/begin/gi)?.length).toBe(1);
+      expect(sql.match(/end/gi)?.length).toBe(1);
+    });
+
+    it('createRoutine emits schema-qualified name when routine.schema differs from default', () => {
+      const sql = helper.createRoutine({
+        ...baseRoutine,
+        schema: 'analytics',
+      });
+      expect(sql).toContain('"analytics"."r"');
+    });
+
+    it('dropRoutine emits schema-qualified name when routine.schema differs from default', () => {
+      const sql = helper.dropRoutine({
+        ...baseRoutine,
+        schema: 'analytics',
+      });
+      expect(sql).toContain('"analytics"."r"');
+    });
+
     it('createRoutine emits OUT/INOUT direction prefixes for procedures', () => {
       const sql = helper.createRoutine({
         ...baseRoutine,

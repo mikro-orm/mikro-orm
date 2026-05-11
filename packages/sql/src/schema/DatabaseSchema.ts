@@ -119,11 +119,6 @@ export class DatabaseSchema {
     return this.#routines;
   }
 
-  /** @internal */
-  setRoutines(routines: SqlRoutineDef[]): void {
-    this.#routines = routines;
-  }
-
   setNativeEnums(nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }>): void {
     this.#nativeEnums = nativeEnums;
 

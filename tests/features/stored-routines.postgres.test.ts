@@ -39,6 +39,15 @@ const AddRecord = defineRoutine({
   `,
 });
 
+const NoArgPi = defineRoutine({
+  name: 'no_arg_pi',
+  type: 'function',
+  language: 'sql',
+  params: {},
+  returns: { runtimeType: 'number', columnType: 'double precision' },
+  body: 'select 3.14159',
+});
+
 describe('stored routines — PostgreSQL', () => {
   let orm: MikroORM;
   const dbName = `mikro_orm_test_routines_${Math.random().toString(36).slice(2, 8)}`;
@@ -47,7 +56,7 @@ describe('stored routines — PostgreSQL', () => {
     orm = await MikroORM.init({
       dbName,
       entities: [RecordEntity],
-      routines: [SqlHash, AddRecord],
+      routines: [SqlHash, AddRecord, NoArgPi],
       forceUtcTimezone: true,
     });
     await orm.schema.ensureDatabase();
@@ -73,6 +82,11 @@ describe('stored routines — PostgreSQL', () => {
   it('em.callRoutine invokes a function and returns scalar value', async () => {
     const hash = await orm.em.callRoutine<string>(SqlHash, { name: 'Jon Snow', age: 30 });
     expect(hash).toMatch(/^[a-f0-9]{32}$/);
+  });
+
+  it('em.callRoutine works with a parameterless function (covers empty arg-signature path)', async () => {
+    const pi = await orm.em.callRoutine<number>(NoArgPi, {});
+    expect(Number(pi)).toBeCloseTo(3.14159, 4);
   });
 
   it('em.callRoutine invokes a procedure with INOUT param via ScalarReference', async () => {

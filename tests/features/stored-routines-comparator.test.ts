@@ -152,6 +152,12 @@ describe('stored routines — comparator unit tests', () => {
       );
     });
 
+    it('detects a real return type change', () => {
+      expect(compare(makeRoutine({ returns: { type: 'integer' } }), makeRoutine({ returns: { type: 'text' } }))).toBe(
+        true,
+      );
+    });
+
     it('only diffs nullable when metadata side specifies it', () => {
       expect(
         compare(
@@ -242,6 +248,19 @@ describe('stored routines — comparator unit tests', () => {
         params: { v: { type: 'int' } },
         returns: { runtimeType: 'number' },
         body: (() => 42 as any) as any,
+      });
+      const schema = new DatabaseSchema(orm.em.getPlatform(), '');
+      schema.addRoutinesFromMetadata([def.meta], orm.em.getPlatform());
+      expect(schema.getRoutines()[0].body).toBeUndefined();
+    });
+
+    it('handles a routine without a body (e.g. bodyJs-only function for SQLite)', () => {
+      const def = defineRoutine({
+        name: 'r',
+        type: 'function',
+        params: { v: { type: 'int' } },
+        returns: { runtimeType: 'number' },
+        bodyJs: ({ v }: { v: number }) => v,
       });
       const schema = new DatabaseSchema(orm.em.getPlatform(), '');
       schema.addRoutinesFromMetadata([def.meta], orm.em.getPlatform());

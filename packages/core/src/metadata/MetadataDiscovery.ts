@@ -291,11 +291,7 @@ export class MetadataDiscovery {
    *  - classes decorated with `@Routine` (the decorator writes into a global metadata dictionary keyed
    *    by class name + source path, which we look up via `PATH_SYMBOL`).
    */
-  private collectRoutines(routines: Iterable<unknown> | undefined): void {
-    if (!routines) {
-      return;
-    }
-
+  private collectRoutines(routines: Iterable<unknown>): void {
     for (const item of routines) {
       if (RoutineSchema.is(item)) {
         this.#discoveredRoutines.push(item.meta);

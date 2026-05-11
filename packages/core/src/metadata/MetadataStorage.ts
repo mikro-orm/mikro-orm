@@ -173,10 +173,6 @@ export class MetadataStorage {
    * routine name may differ).
    */
   findRoutine<T = any>(name: EntityName<T> | string): RoutineMetadata<T> | undefined {
-    if (!name) {
-      return;
-    }
-
     const routine = typeof name === 'string' ? undefined : this.#routinesMap.get(name);
 
     if (routine) {
