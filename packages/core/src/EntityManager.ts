@@ -982,7 +982,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     where = await em.processWhere(entityName, where, options, 'read');
     validateEmptyWhere(where);
     em.checkLockRequirements(options.lockMode, meta);
-    const isOptimisticLocking = options.lockMode == null || options.lockMode === LockMode.OPTIMISTIC;
+    const isOptimisticLocking =
+      options.lockMode == null || options.lockMode === LockMode.NONE || options.lockMode === LockMode.OPTIMISTIC;
 
     if (entity && !em.shouldRefresh(meta, entity, options) && isOptimisticLocking) {
       return em.lockAndPopulate(meta, entity, where, options);
