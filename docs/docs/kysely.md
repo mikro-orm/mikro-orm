@@ -29,6 +29,35 @@ const kysely = orm.em.getKysely({
 
 These options are described in detail in the [Plugin Options](#plugin-options) section below.
 
+## Transaction Context
+
+`getKysely()` automatically uses the EntityManager's current transaction context. When called inside `em.transactional(...)` (or after `em.begin()`), the returned Kysely instance is bound to the active transaction, so any query executed via Kysely's own `.execute()` / `.executeTakeFirst*()` participates in that transaction and will be rolled back together with it.
+
+```ts
+await orm.em.transactional(async em => {
+  const kysely = em.getKysely({ tableNamingStrategy: 'entity', convertValues: true });
+
+  // runs inside the transaction
+  await kysely.insertInto('Doc').values({ title: 't', content: 'hello' }).execute();
+
+  throw new Error('boom'); // rolls back the insert above
+});
+```
+
+If you need a Kysely instance that is **not** bound to the current transaction — e.g. to read from the pool while you're inside a transactional block — fork the EntityManager first. A forked EM has no transaction context, so `getKysely()` falls back to the pool client:
+
+```ts
+await orm.em.transactional(async em => {
+  // bound to the current transaction
+  await em.getKysely().selectFrom('user').selectAll().execute();
+
+  // bound to the pool, runs outside the transaction
+  await em.fork().getKysely().selectFrom('audit_log').selectAll().execute();
+});
+```
+
+The `type` option (`'read'` / `'write'`) is only honored outside a transaction — inside a transaction the connection is already pinned.
+
 ## Using Entity and Property Names in Queries
 
 One of the most useful plugin features is the ability to write Kysely queries using your entity and property names instead of raw table and column names. This works regardless of how you define your entities — decorators, `EntitySchema`, or `defineEntity`.
