@@ -124,6 +124,35 @@ The `direction` option on a parameter declares whether it's IN (default), OUT, o
 @Property({ columnType: 'char(40)', ref: true, direction: 'inout' }) hash!: Ref<string>;
 ```
 
+## Custom types
+
+Routine params and scalar function returns accept a `customType` that marshals values through `Type.convertToDatabaseValue` (inbound) and `Type.convertToJSValue` (outbound). Pass either a `Type` instance or a constructor.
+
+```ts
+import { JsonType } from '@mikro-orm/core';
+
+const StoreSnapshot = defineRoutine({
+  name: 'store_snapshot',
+  type: 'procedure',
+  params: {
+    payload: { type: 'jsonb', customType: JsonType },
+    digest: { type: 'text', direction: 'inout', ref: true, customType: JsonType },
+  },
+  body: `digest := payload; insert into snapshots(payload) values (payload);`,
+});
+
+const ref = new ScalarReference<object>({ initial: true });
+await em.callRoutine(StoreSnapshot, { payload: { foo: 1 }, digest: ref });
+// `payload` was serialized via JsonType.convertToDatabaseValue before binding,
+// and `ref.unwrap()` has been deserialized via JsonType.convertToJSValue.
+```
+
+`customType` applies to:
+
+- IN params (on the way to the procedure/function)
+- OUT/INOUT params (back into the caller's `ScalarReference`)
+- The scalar return descriptor on functions (`returns.customType`)
+
 ## Schema generator integration
 
 Routines are picked up by `schema:create`, `schema:update`, `schema:diff`, and `migration:create` automatically. The schema comparator detects:
@@ -154,8 +183,70 @@ When you target SQLite (or libSQL) with routines defined via `@Routine`/`defineR
 
 This lets you run the same entities and routine declarations against PostgreSQL/MySQL/MSSQL/Oracle in production while using SQLite in tests, provided your tests only call functions that have a `bodyJs` fallback.
 
+## Multi-result-set procedures
+
+Procedures that emit several result sets can be declared via `resultSets: N`. The exact mechanism is dialect-specific:
+
+```ts
+// MySQL / MariaDB — body contains N SELECTs; mysql2 surfaces each set natively.
+const TwoSets = defineRoutine({
+  name: 'two_sets',
+  type: 'procedure',
+  params: {},
+  resultSets: 2,
+  body: `
+    select 1 as a;
+    select 'foo' as label, 10 as n union select 'bar', 20;
+  `,
+});
+
+// PostgreSQL — open N refcursor OUT params; the connection FETCHes each one.
+// The call must be wrapped in a transaction so the cursors stay alive for FETCH.
+const TwoCursors = defineRoutine({
+  name: 'two_cursors',
+  type: 'procedure',
+  language: 'plpgsql',
+  params: {
+    c1: { type: 'refcursor', direction: 'out', ref: true },
+    c2: { type: 'refcursor', direction: 'out', ref: true },
+  },
+  resultSets: 2,
+  body: `
+    open c1 for select * from "user";
+    open c2 for select * from book;
+  `,
+});
+
+const [users, books] = await em.transactional(em => em.callRoutine(TwoCursors, {}));
+
+// Oracle — sys_refcursor OUT params; oracledb binds them as DB_TYPE_CURSOR.
+const TwoCursorsOra = defineRoutine({
+  name: 'two_cursors',
+  type: 'procedure',
+  params: {
+    c1: { type: 'sys_refcursor', direction: 'out', ref: true },
+    c2: { type: 'sys_refcursor', direction: 'out', ref: true },
+  },
+  resultSets: 2,
+  body: p => `
+    open ${p.c1} for select 1 from dual;
+    open ${p.c2} for select 2 from dual;
+  `,
+});
+```
+
+When `resultSets` is set, `em.callRoutine` returns `Dictionary[][]` — one row array per declared result set. Driver support:
+
+- **MySQL / MariaDB**: full support — proc body contains N `SELECT`s.
+- **PostgreSQL**: full support via `refcursor` OUT params. Call inside a transaction.
+- **Oracle**: full support via `sys_refcursor` OUT params.
+- **MSSQL**: not yet — the high-level API throws with a clear message. Use `em.getConnection().execute()` if you need raw multi-recordset access, or split the procedure into separate EXECs.
+- **SQLite / Mongo**: no stored procedure concept; throws.
+
+`resultSets` is only valid on `type: 'procedure'`. Setting it on a function throws at metadata validation.
+
 ## Limitations
 
 - The default body diff strips trailing semicolons, normalises whitespace, and compares the result. If the database canonicalises your body more aggressively than that, set `ignoreSchemaChanges: ['body']` on the affected routines.
-- `em.callRoutine` returns a single scalar (for functions) or `void` plus mutated OUT/INOUT refs (for procedures). Procedures that emit multiple result sets are not yet surfaced through the high-level API — call them via `em.getConnection().execute()` if you need raw access.
-- Reverse-engineering existing routines into `@Routine` source via `mikro-orm generate-entities` is not yet implemented; routine introspection is used by the schema comparator but not by the entity generator.
+- Multi-result-set procedures on MSSQL still need to go through `em.getConnection().execute()` — the high-level `em.callRoutine` returns `Dictionary[][]` only for MySQL/MariaDB, PostgreSQL, and Oracle.
+- Entity-typed result-set hydration (e.g. `resultSets: [User, Book]` mapping rows onto entity classes) is not yet supported; the result rows come back as plain `Dictionary`s.

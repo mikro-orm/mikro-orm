@@ -39,6 +39,20 @@ const AddRecord = defineRoutine({
   `,
 });
 
+const TwoCursors = defineRoutine({
+  name: 'two_cursors',
+  type: 'procedure',
+  params: {
+    c1: { type: 'sys_refcursor', direction: 'out', ref: true },
+    c2: { type: 'sys_refcursor', direction: 'out', ref: true },
+  },
+  resultSets: 2,
+  body: p => `
+    open ${p.c1} for select 1 as a from dual union select 2 from dual order by a;
+    open ${p.c2} for select 'foo' as label, 10 as n from dual union select 'bar', 20 from dual order by n;
+  `,
+});
+
 describe('stored routines — Oracle', () => {
   let orm: MikroORM;
 
@@ -48,7 +62,7 @@ describe('stored routines — Oracle', () => {
       password: 'oracle123',
       schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
       entities: [RecordEntity],
-      routines: [SqlHash, AddRecord],
+      routines: [SqlHash, AddRecord, TwoCursors],
     });
     // Oracle test schema is shared across runs; clean up any leftover state first.
     await orm.schema.refresh();
@@ -86,5 +100,15 @@ describe('stored routines — Oracle', () => {
     const found = await orm.em.fork().findOne(RecordEntity, { hash: 'JON SNOW:30' });
     expect(found).toBeDefined();
     expect(found!.name).toBe('Jon Snow');
+  });
+
+  it('multi-result-set procedure returns each REF CURSOR as a row array', async () => {
+    const sets = await orm.em.callRoutine<unknown[][]>(TwoCursors, {});
+    expect(sets).toHaveLength(2);
+    expect(sets[0]).toEqual([{ a: 1 }, { a: 2 }]);
+    expect(sets[1]).toEqual([
+      { label: 'foo', n: 10 },
+      { label: 'bar', n: 20 },
+    ]);
   });
 });

@@ -842,7 +842,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     return signature.split(/,(?![^()]*\))/).map(part => {
       // Order alternatives longest-first so `INOUT` isn't matched as `IN` + extra chars.
-      const match = /^(INOUT|VARIADIC|IN|OUT)?\s*("?[\w$]+"?)\s+(.+?)(?:\s+default\s+.+)?$/i.exec(part.trim())!;
+      // Require trailing whitespace after the direction keyword so parameter names that happen to
+      // begin with `IN` / `OUT` (e.g. `input`) aren't mis-parsed as `IN` + `put`.
+      const match = /^(?:(INOUT|VARIADIC|IN|OUT)\s+)?("?[\w$]+"?)\s+(.+?)(?:\s+default\s+.+)?$/i.exec(part.trim())!;
       const dirRaw = (match[1] ?? 'in').toLowerCase();
       const direction = dirRaw === 'inout' ? 'inout' : dirRaw === 'out' ? 'out' : 'in';
 

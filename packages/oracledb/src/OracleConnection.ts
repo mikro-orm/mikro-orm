@@ -13,14 +13,9 @@ import {
   type Transaction,
   Utils,
 } from '@mikro-orm/sql';
-import { ScalarReference, type RoutineMetadata } from '@mikro-orm/core';
+import { convertRoutineInbound, convertRoutineOutbound, ScalarReference, type RoutineMetadata } from '@mikro-orm/core';
 import { CompiledQuery } from 'kysely';
 import oracledb, { type ExecuteOptions, type PoolAttributes } from 'oracledb';
-
-function unwrapArg(value: unknown): unknown {
-  const resolved = value instanceof ScalarReference ? value.unwrap() : value;
-  return resolved === undefined ? null : resolved;
-}
 
 /** Oracle database connection using the `oracledb` driver. */
 export class OracleConnection extends AbstractSqlConnection {
@@ -218,32 +213,76 @@ export class OracleConnection extends AbstractSqlConnection {
         const bindings: Dictionary = { mo_ret: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 4000 } };
 
         for (const p of routine.params) {
-          bindings[p.name as string] = { dir: oracledb.BIND_IN, val: unwrapArg(args[p.name as string]) };
+          bindings[p.name as string] = {
+            dir: oracledb.BIND_IN,
+            val: convertRoutineInbound(args[p.name as string], p, this.platform),
+          };
         }
 
         const result = await oracleConn.execute(block, bindings, { autoCommit: true });
-        return (result.outBinds as Dictionary)?.mo_ret as T;
+        return convertRoutineOutbound<T>(
+          (result.outBinds as Dictionary)?.mo_ret,
+          routine.returnCustomType,
+          this.platform,
+        );
       }
 
       const argList = routine.params.map(p => `:${p.name}`).join(', ');
       const block = `BEGIN ${routineName}(${argList}); END;`;
       const bindings: Dictionary = {};
+      const refCursorParams: string[] = [];
 
       for (const p of routine.params) {
-        const value = unwrapArg(args[p.name as string]);
-        bindings[p.name as string] =
-          p.direction === 'in'
-            ? { dir: oracledb.BIND_IN, val: value }
-            : {
-                dir: p.direction === 'out' ? oracledb.BIND_OUT : oracledb.BIND_INOUT,
-                val: value,
-                type: oracledb.STRING,
-                maxSize: 4000,
-              };
+        const value = convertRoutineInbound(args[p.name as string], p, this.platform);
+        const isRefCursor = /sys_refcursor|ref\s*cursor/i.test(p.type);
+
+        if (p.direction === 'in') {
+          bindings[p.name as string] = { dir: oracledb.BIND_IN, val: value };
+          continue;
+        }
+
+        if (isRefCursor && routine.resultSets != null) {
+          bindings[p.name as string] = { dir: oracledb.BIND_OUT, type: oracledb.DB_TYPE_CURSOR };
+          refCursorParams.push(p.name as string);
+          continue;
+        }
+
+        bindings[p.name as string] = {
+          dir: p.direction === 'out' ? oracledb.BIND_OUT : oracledb.BIND_INOUT,
+          val: value,
+          type: oracledb.STRING,
+          maxSize: 4000,
+        };
       }
 
-      const result = await oracleConn.execute(block, bindings, { autoCommit: true });
+      const result = await oracleConn.execute(block, bindings, {
+        autoCommit: true,
+        outFormat: oracledb.OUT_FORMAT_OBJECT,
+      });
       const outBinds = result.outBinds as Dictionary | undefined;
+
+      // When `resultSets` is set, walk the bound REF CURSORs in declaration order, draining each
+      // into rows. Otherwise treat OUT/INOUT binds as scalar refs (existing behaviour). Oracle's
+      // REF CURSOR ResultSet inherits the execute call's `outFormat`, so we set OBJECT mode above
+      // to get `{ column: value }` rows that match the other drivers' shape.
+      if (routine.resultSets != null && outBinds) {
+        const sets: Dictionary[][] = [];
+
+        for (const name of refCursorParams) {
+          const cursor = outBinds[name] as Dictionary & {
+            getRows: (n: number) => Promise<Dictionary[]>;
+            close: () => Promise<void>;
+          };
+          const rows = await cursor.getRows(0);
+          await cursor.close();
+          // Oracle lower-cases identifiers via the platform's fetchTypeHandler set in createKyselyDialect,
+          // but ResultSets returned through outBinds use the raw column metadata, so keys come back
+          // uppercase. Normalise to lowercase here for cross-driver consistency.
+          sets.push(rows.map(row => Object.fromEntries(Object.entries(row).map(([k, v]) => [k.toLowerCase(), v]))));
+        }
+
+        return sets as T;
+      }
 
       if (outBinds) {
         for (const p of routine.params) {
@@ -254,7 +293,7 @@ export class OracleConnection extends AbstractSqlConnection {
           const ref = args[p.name as string];
 
           if (ref instanceof ScalarReference) {
-            ref.set(outBinds[p.name as string]);
+            ref.set(convertRoutineOutbound(outBinds[p.name as string], p.customType, this.platform));
           }
         }
       }

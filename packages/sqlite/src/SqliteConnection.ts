@@ -1,7 +1,7 @@
 import { BaseSqliteConnection, type Dictionary } from '@mikro-orm/sql';
 import { type Dialect, SqliteDialect } from 'kysely';
 import Database from 'better-sqlite3';
-import type { RoutineMetadata, Transaction } from '@mikro-orm/core';
+import { convertRoutineInbound, convertRoutineOutbound, type RoutineMetadata, type Transaction } from '@mikro-orm/core';
 
 /** SQLite database connection using the `better-sqlite3` driver. */
 export class SqliteConnection extends BaseSqliteConnection {
@@ -66,7 +66,7 @@ export class SqliteConnection extends BaseSqliteConnection {
       this.#registeredRoutines.add(routine.routineName);
     }
 
-    const positional = routine.params.map(p => args[p.name as string]);
+    const positional = routine.params.map(p => convertRoutineInbound(args[p.name as string], p, this.platform));
     const placeholders = routine.params.map(() => '?').join(', ');
     const rows = await this.execute<Dictionary[]>(
       `select ${this.platform.quoteIdentifier(routine.routineName)}(${placeholders}) as value`,
@@ -75,6 +75,6 @@ export class SqliteConnection extends BaseSqliteConnection {
       ctx,
     );
 
-    return rows[0]?.value as T;
+    return convertRoutineOutbound<T>(rows[0]?.value, routine.returnCustomType, this.platform);
   }
 }

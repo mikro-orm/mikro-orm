@@ -1957,9 +1957,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
   /**
    * Invokes a stored procedure or function declared via `@Routine`, `defineRoutine`, or
-   * `RoutineSchema`. The current implementation supports IN-only parameters: functions
-   * return their scalar value, procedures return raw rows from the underlying driver.
-   * OUT/INOUT plumbing and entity-class result-set hydration are tracked as follow-up work.
+   * `RoutineSchema`.
+   *
+   * - Functions return their scalar value, optionally marshalled through `returns.customType`.
+   * - Procedures return `void`; OUT/INOUT params are written back into the caller's
+   *   {@link ScalarReference} instances, marshalled through each param's `customType` when set.
+   * - When the routine declares `resultSets: N`, the return value is `Dictionary[][]` — one row
+   *   array per result set. Supported on MySQL/MariaDB (native multi-recordset), PostgreSQL
+   *   (`refcursor` OUT params + transactional FETCH), and Oracle (`sys_refcursor` OUT params).
+   *   MSSQL throws with guidance to use `em.getConnection().execute()` for raw access.
    *
    * Throws on drivers that do not support stored routines (mongo). On SQLite/libSQL,
    * functions declared with a `bodyJs` fallback are bridged via the underlying driver's
@@ -1970,8 +1976,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * // Function: scalar return
    * const hash = await em.callRoutine<string>(HashUser, { name: 'jon', salt: 'pepper' });
    *
-   * // Procedure: raw rows from the driver
-   * const rows = await em.callRoutine(AddRecord, { name: 'jon', age: 30 });
+   * // Procedure with INOUT param
+   * const hash = new ScalarReference<string>();
+   * await em.callRoutine(AddRecord, { p_name: 'jon', p_age: 30, p_hash: hash });
+   *
+   * // Procedure with multiple result sets (PostgreSQL — must be inside a transaction)
+   * const [users, books] = await em.transactional(em =>
+   *   em.callRoutine<unknown[][]>(TwoCursors, {}),
+   * );
    * ```
    */
   async callRoutine<T = unknown>(

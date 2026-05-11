@@ -1173,7 +1173,13 @@ export type RoutineBodyCallback<T> = (params: RoutineParamMap<T>, em: any) => st
 export type RoutineReturns<T = unknown> =
   | (() => EntityName<any>)
   | (() => EntityName<any>)[]
-  | { runtimeType: EntityProperty['runtimeType']; columnType?: string; nullable?: boolean }
+  | {
+      runtimeType: EntityProperty['runtimeType'];
+      columnType?: string;
+      nullable?: boolean;
+      /** Custom `Type` instance (or constructor) used to marshal the scalar return value back into JS. */
+      customType?: Type<unknown> | Constructor<Type<unknown>>;
+    }
   | { hydrate: (rows: Dictionary[][], args: T, em: any) => unknown };
 
 /**
@@ -1224,6 +1230,21 @@ export interface RoutineDef<T = any> {
   /** Routine return shape — see {@link RoutineReturns}. Required for `type: 'function'`. */
   returns?: RoutineReturns<T>;
   /**
+   * Declares that this procedure emits `N` result sets. When set, `em.callRoutine` returns the
+   * result sets as `Dictionary[][]` instead of the default scalar/void. Driver support varies:
+   *
+   *  - **MySQL / MariaDB**: native — the proc body simply contains `N` `SELECT` statements.
+   *  - **PostgreSQL**: requires `N` `refcursor` OUT params; the connection auto-FETCHes each one
+   *    inside an implicit transaction.
+   *  - **Oracle**: requires `N` `sys_refcursor` OUT params with `direction: 'out'`, `ref: true`.
+   *  - **MSSQL**: not yet supported through the high-level API — call via
+   *    `em.getConnection().execute()` for now.
+   *  - **SQLite / Mongo**: not supported (no procedure concept).
+   *
+   * Valid only for `type: 'procedure'`; setting on a function throws at metadata validation.
+   */
+  resultSets?: number;
+  /**
    * Schema-diff fields to ignore when comparing this routine's database state with the metadata.
    * Useful for routines whose body is normalised differently by the server vs. what the user wrote.
    */
@@ -1255,6 +1276,21 @@ export interface RoutineProperty<Owner = any> {
   defaultRaw?: string;
   /** Original declaration order, used to rebuild positional argument lists. */
   index: number;
+}
+
+/** Resolves a {@link Type} declaration (instance or constructor) into a singleton instance. */
+function resolveCustomType(value: Type<unknown> | Constructor<Type<unknown>> | undefined): Type<unknown> | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  // Mapped-type instance — `__mappedType` lives on the prototype, so checking the value directly works.
+  if ((value as Dictionary).__mappedType) {
+    return value as Type<unknown>;
+  }
+
+  // Constructor — instantiate it (callers may pass a class without instantiating).
+  return new (value as Constructor<Type<unknown>>)();
 }
 
 /**
@@ -1290,6 +1326,10 @@ export class RoutineMetadata<T = any, Class extends EntityCtor<T> = EntityCtor<T
   expression?: string;
   bodyJs?: RoutineJsBody<T>;
   returns?: RoutineReturns<T>;
+  /** Resolved Type instance for scalar function returns, when `returns.customType` is declared. */
+  returnCustomType?: Type<unknown>;
+  /** Number of result sets the procedure emits — see {@link RoutineDef.resultSets}. */
+  resultSets?: number;
   ignoreSchemaChanges?: RoutineIgnoreField[];
 
   constructor(meta: Partial<RoutineMetadata<T>> = {}) {
@@ -1337,6 +1377,7 @@ export class RoutineMetadata<T = any, Class extends EntityCtor<T> = EntityCtor<T
       expression: config.expression,
       bodyJs: config.bodyJs,
       returns: config.returns,
+      resultSets: config.resultSets,
       ignoreSchemaChanges: config.ignoreSchemaChanges,
     });
 
@@ -1347,6 +1388,7 @@ export class RoutineMetadata<T = any, Class extends EntityCtor<T> = EntityCtor<T
         type: opts.type ?? 'string',
         runtimeType: opts.runtimeType ?? 'any',
         columnTypes: [opts.type ?? 'string'],
+        customType: resolveCustomType(opts.customType),
         ref: opts.ref,
         length: opts.length,
         precision: opts.precision,
@@ -1356,6 +1398,10 @@ export class RoutineMetadata<T = any, Class extends EntityCtor<T> = EntityCtor<T
         index,
       });
     });
+
+    if (config.returns && typeof config.returns === 'object' && 'customType' in config.returns) {
+      meta.returnCustomType = resolveCustomType(config.returns.customType);
+    }
 
     return meta;
   }
@@ -1372,6 +1418,13 @@ export interface RoutineParamConfig {
   scale?: number;
   nullable?: boolean;
   defaultRaw?: string;
+  /**
+   * Custom `Type` instance (or constructor) used to marshal this parameter at the call boundary.
+   * On the way in, the JS value passes through `convertToDatabaseValue`; on the way out (OUT/INOUT
+   * directions, or scalar function returns when set on `returns`), the raw value passes through
+   * `convertToJSValue` before being handed back to the caller.
+   */
+  customType?: Type<unknown> | Constructor<Type<unknown>>;
 }
 
 /** Routine declaration shape shared by `defineRoutine` and `RoutineSchema`. */

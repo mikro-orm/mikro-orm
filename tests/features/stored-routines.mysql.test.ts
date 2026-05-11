@@ -41,6 +41,17 @@ const AddRecord = defineRoutine({
   `,
 });
 
+const TwoSets = defineRoutine({
+  name: 'two_sets',
+  type: 'procedure',
+  params: {},
+  resultSets: 2,
+  body: `
+    select 1 as a;
+    select 'foo' as label, 10 as n union select 'bar', 20;
+  `,
+});
+
 describe('stored routines — MySQL', () => {
   let orm: MikroORM;
   const dbName = `mikro_orm_test_routines_${Math.random().toString(36).slice(2, 8)}`;
@@ -51,7 +62,7 @@ describe('stored routines — MySQL', () => {
       port: 3308,
       user: 'root',
       entities: [RecordEntity],
-      routines: [SqlHash, AddRecord],
+      routines: [SqlHash, AddRecord, TwoSets],
     });
     await orm.schema.ensureDatabase();
     await orm.schema.refresh();
@@ -88,6 +99,16 @@ describe('stored routines — MySQL', () => {
     expect(found).toBeDefined();
     expect(found!.name).toBe('Jon Snow');
     expect(found!.age).toBe(30);
+  });
+
+  it('multi-result-set procedure returns each SELECT as its own row array', async () => {
+    const sets = await orm.em.callRoutine<unknown[][]>(TwoSets, {});
+    expect(sets).toHaveLength(2);
+    expect(sets[0]).toEqual([{ a: 1 }]);
+    expect(sets[1]).toEqual([
+      { label: 'foo', n: 10 },
+      { label: 'bar', n: 20 },
+    ]);
   });
 
   it('em.callRoutine invokes an IN-only procedure (no OUT/INOUT params)', async () => {

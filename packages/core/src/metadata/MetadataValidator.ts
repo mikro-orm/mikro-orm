@@ -110,6 +110,20 @@ export class MetadataValidator {
       );
     }
 
+    if (meta.resultSets != null) {
+      if (meta.type !== 'procedure') {
+        throw new MetadataError(
+          `Routine ${meta.className} declares 'resultSets' on a function. Result-set declarations are only valid on procedures — functions always return a single scalar.`,
+        );
+      }
+
+      if (!Number.isInteger(meta.resultSets) || meta.resultSets < 1) {
+        throw new MetadataError(
+          `Routine ${meta.className} declares an invalid 'resultSets' value: ${meta.resultSets}. Must be a positive integer.`,
+        );
+      }
+    }
+
     for (const param of meta.params) {
       const dir = param.direction;
 

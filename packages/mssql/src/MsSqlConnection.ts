@@ -1,14 +1,16 @@
 import { AbstractSqlConnection, type ConnectionConfig, type TransactionEventBroadcaster, Utils } from '@mikro-orm/sql';
 import { type ControlledTransaction, MssqlDialect } from 'kysely';
-import { type Dictionary, ScalarReference, type RoutineMetadata, type Transaction } from '@mikro-orm/core';
+import {
+  convertRoutineInbound,
+  convertRoutineOutbound,
+  type Dictionary,
+  ScalarReference,
+  type RoutineMetadata,
+  type Transaction,
+} from '@mikro-orm/core';
 import type { ConnectionConfiguration } from 'tedious';
 import * as Tedious from 'tedious';
 import * as Tarn from 'tarn';
-
-function unwrapArg(value: unknown): unknown {
-  const resolved = value instanceof ScalarReference ? value.unwrap() : value;
-  return resolved === undefined ? null : resolved;
-}
 
 /** Microsoft SQL Server database connection using the `tedious` driver. */
 export class MsSqlConnection extends AbstractSqlConnection {
@@ -89,14 +91,24 @@ export class MsSqlConnection extends AbstractSqlConnection {
 
     if (routine.type === 'function') {
       const placeholders = routine.params.map(() => '?').join(', ');
-      const positional = routine.params.map(p => unwrapArg(args[p.name as string]));
+      const positional = routine.params.map(p => convertRoutineInbound(args[p.name as string], p, this.platform));
       const rows = (await this.execute(
         `select ${qualified}(${placeholders}) as value`,
         positional,
         'all',
         ctx,
       )) as Dictionary[];
-      return rows[0]?.value as T;
+      return convertRoutineOutbound<T>(rows[0]?.value, routine.returnCustomType, this.platform);
+    }
+
+    if (routine.resultSets != null) {
+      // tedious flattens multiple result sets into a single rows array without preserving the
+      // per-set boundaries through the kysely wrapper, so we cannot reliably split them here.
+      // The escape hatch is to call the proc via `em.getConnection().execute(...)` and rely on
+      // the raw tedious result, or to refactor each result set into its own EXEC call.
+      throw new Error(
+        `Multi-result-set procedures are not yet supported on MSSQL through em.callRoutine. Call '${routine.routineName}' via em.getConnection().execute() for raw access, or split the procedure into separate EXECs each returning a single result set.`,
+      );
     }
 
     // T-SQL session variables don't persist across separate execute() calls (each one may use a
@@ -107,22 +119,22 @@ export class MsSqlConnection extends AbstractSqlConnection {
     const setValues: unknown[] = [];
     const callArgs: string[] = [];
     const inValues: unknown[] = [];
-    const outVars: { name: string; varName: string }[] = [];
+    const outVars: { name: string; varName: string; param: (typeof routine.params)[number] }[] = [];
 
     routine.params.forEach((p, i) => {
       if (p.direction === 'in') {
         callArgs.push('?');
-        inValues.push(unwrapArg(args[p.name as string]));
+        inValues.push(convertRoutineInbound(args[p.name as string], p, this.platform));
         return;
       }
 
       const varName = `@_mikro_orm_routine_${i}`;
       declareLines.push(`declare ${varName} ${p.type}`);
-      outVars.push({ name: p.name as string, varName });
+      outVars.push({ name: p.name as string, varName, param: p });
 
       if (p.direction === 'inout') {
         setLines.push(`set ${varName} = ?`);
-        setValues.push(unwrapArg(args[p.name as string]));
+        setValues.push(convertRoutineInbound(args[p.name as string], p, this.platform));
       }
 
       callArgs.push(`${varName} output`);
@@ -146,11 +158,11 @@ export class MsSqlConnection extends AbstractSqlConnection {
     const rows = result as Dictionary[];
     const row = rows[0] ?? {};
 
-    for (const { name: paramName } of outVars) {
+    for (const { name: paramName, param } of outVars) {
       const ref = args[paramName];
 
       if (ref instanceof ScalarReference) {
-        ref.set(row[paramName]);
+        ref.set(convertRoutineOutbound(row[paramName], param.customType, this.platform));
       }
     }
 

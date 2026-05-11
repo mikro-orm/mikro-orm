@@ -1,6 +1,12 @@
 import { type ControlledTransaction, type MysqlPool, type MysqlPoolConnection, MysqlDialect } from 'kysely';
 import { createPool, type Pool, type PoolOptions } from 'mysql2';
-import { ScalarReference, type RoutineMetadata, type Transaction } from '@mikro-orm/core';
+import {
+  convertRoutineInbound,
+  convertRoutineOutbound,
+  ScalarReference,
+  type RoutineMetadata,
+  type Transaction,
+} from '@mikro-orm/core';
 import {
   type ConnectionConfig,
   type Dictionary,
@@ -8,11 +14,6 @@ import {
   AbstractSqlConnection,
   type TransactionEventBroadcaster,
 } from '@mikro-orm/sql';
-
-function unwrapArg(value: unknown): unknown {
-  const resolved = value instanceof ScalarReference ? value.unwrap() : value;
-  return resolved === undefined ? null : resolved;
-}
 
 /** MySQL database connection using the `mysql2` driver. */
 export class MySqlConnection extends AbstractSqlConnection {
@@ -109,39 +110,30 @@ export class MySqlConnection extends AbstractSqlConnection {
 
     if (routine.type === 'function') {
       const placeholders = routine.params.map(() => '?').join(', ');
-      const positional = routine.params.map(p => unwrapArg(args[p.name as string]));
+      const positional = routine.params.map(p => convertRoutineInbound(args[p.name as string], p, this.platform));
       const rows = (await this.execute(
         `select ${name}(${placeholders}) as value`,
         positional,
         'all',
         ctx,
       )) as Dictionary[];
-      return rows[0]?.value as T;
+      return convertRoutineOutbound<T>(rows[0]?.value, routine.returnCustomType, this.platform);
     }
 
     const callPlaceholders: string[] = [];
     const callValues: unknown[] = [];
-    const outVarNames: string[] = [];
-    const outVarParams: { name: string; varName: string }[] = [];
+    const outVarParams: { name: string; varName: string; param: (typeof routine.params)[number] }[] = [];
 
     routine.params.forEach((p, i) => {
-      const value = unwrapArg(args[p.name as string]);
-
       if (p.direction === 'in') {
         callPlaceholders.push('?');
-        callValues.push(value);
+        callValues.push(convertRoutineInbound(args[p.name as string], p, this.platform));
         return;
       }
 
       const varName = `@_mikro_orm_routine_${i}`;
-      outVarNames.push(varName);
-      outVarParams.push({ name: p.name as string, varName });
+      outVarParams.push({ name: p.name as string, varName, param: p });
       callPlaceholders.push(varName);
-
-      if (p.direction === 'inout') {
-        // Seed the session variable with the inbound value, then bind it positionally to the CALL.
-        // (Session var bindings can't be parameterised, so we do a SET ... := ? in a separate stmt.)
-      }
     });
 
     // Seed inbound INOUT variables first.
@@ -149,8 +141,26 @@ export class MySqlConnection extends AbstractSqlConnection {
       const p = routine.params[i];
       if (p.direction === 'inout') {
         const varName = `@_mikro_orm_routine_${i}`;
-        await this.execute(`set ${varName} := ?`, [unwrapArg(args[p.name as string])], 'run', ctx);
+        await this.execute(
+          `set ${varName} := ?`,
+          [convertRoutineInbound(args[p.name as string], p, this.platform)],
+          'run',
+          ctx,
+        );
       }
+    }
+
+    // When `resultSets` is declared, the proc body contains N SELECT statements and mysql2
+    // returns each set as its own array element (plus a trailing OK packet). We extract the
+    // first N elements; OUT/INOUT params are not supported alongside multi-rs procs.
+    if (routine.resultSets != null) {
+      const result = (await this.execute(
+        `call ${name}(${callPlaceholders.join(', ')})`,
+        callValues,
+        'all',
+        ctx,
+      )) as Dictionary[][];
+      return result.slice(0, routine.resultSets) as T;
     }
 
     await this.execute(`call ${name}(${callPlaceholders.join(', ')})`, callValues, 'run', ctx);
@@ -163,11 +173,11 @@ export class MySqlConnection extends AbstractSqlConnection {
     const rows = (await this.execute(`select ${selectClause}`, [], 'all', ctx)) as Dictionary[];
     const row = rows[0] ?? {};
 
-    for (const { name: paramName } of outVarParams) {
+    for (const { name: paramName, param } of outVarParams) {
       const ref = args[paramName];
 
       if (ref instanceof ScalarReference) {
-        ref.set(row[paramName]);
+        ref.set(convertRoutineOutbound(row[paramName], param.customType, this.platform));
       }
     }
 

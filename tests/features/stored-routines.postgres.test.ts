@@ -1,4 +1,14 @@
-import { defineEntity, defineRoutine, MikroORM, p, ScalarReference } from '@mikro-orm/postgresql';
+import { defineEntity, defineRoutine, MikroORM, p, ScalarReference, Type } from '@mikro-orm/postgresql';
+
+class TaggedStringType extends Type<string, string> {
+  override convertToDatabaseValue(value: string): string {
+    return `IN<${value}>`;
+  }
+
+  override convertToJSValue(value: string): string {
+    return `OUT<${value}>`;
+  }
+}
 
 const RecordSchema = defineEntity({
   name: 'RecordEntity',
@@ -48,6 +58,44 @@ const NoArgPi = defineRoutine({
   body: 'select 3.14159',
 });
 
+// `customType` on an IN param goes through `convertToDatabaseValue` before being bound;
+// on the scalar function return it goes through `convertToJSValue` before being returned.
+const TaggedEcho = defineRoutine({
+  name: 'tagged_echo',
+  type: 'function',
+  language: 'sql',
+  params: { input: { type: 'text', customType: TaggedStringType } },
+  returns: { runtimeType: 'string', columnType: 'text', customType: new TaggedStringType() },
+  body: 'select input',
+});
+
+// `customType` on an INOUT param applies in both directions: inbound seed via
+// `convertToDatabaseValue`, outbound return via `convertToJSValue`.
+const TaggedRoundtrip = defineRoutine({
+  name: 'tagged_roundtrip',
+  type: 'procedure',
+  language: 'plpgsql',
+  params: { val: { type: 'text', direction: 'inout', ref: true, customType: TaggedStringType } },
+  body: "val := val || '!';",
+});
+
+// Multi-result-set proc: opens two refcursors. Caller must run inside a transaction so the
+// cursors remain valid for FETCH.
+const TwoCursors = defineRoutine({
+  name: 'two_cursors',
+  type: 'procedure',
+  language: 'plpgsql',
+  params: {
+    c1: { type: 'refcursor', direction: 'out', ref: true },
+    c2: { type: 'refcursor', direction: 'out', ref: true },
+  },
+  resultSets: 2,
+  body: `
+    open c1 for select 1 as a union select 2 as a order by a;
+    open c2 for select 'foo'::text as label, 10 as n union select 'bar', 20 order by n;
+  `,
+});
+
 describe('stored routines — PostgreSQL', () => {
   let orm: MikroORM;
   const dbName = `mikro_orm_test_routines_${Math.random().toString(36).slice(2, 8)}`;
@@ -56,7 +104,7 @@ describe('stored routines — PostgreSQL', () => {
     orm = await MikroORM.init({
       dbName,
       entities: [RecordEntity],
-      routines: [SqlHash, AddRecord, NoArgPi],
+      routines: [SqlHash, AddRecord, NoArgPi, TaggedEcho, TaggedRoundtrip, TwoCursors],
       forceUtcTimezone: true,
     });
     await orm.schema.ensureDatabase();
@@ -126,5 +174,35 @@ describe('stored routines — PostgreSQL', () => {
     expect(diff).toMatch(/create or replace function "sql_hash"/i);
 
     await orm2.close(true);
+  });
+
+  it('customType marshals scalar function params/return through convertToDatabaseValue/JSValue', async () => {
+    // IN value 'hello' -> convertToDatabaseValue -> 'IN<hello>' (stored verbatim in DB)
+    //                  -> SQL echoes 'IN<hello>'
+    //                  -> convertToJSValue -> 'OUT<IN<hello>>'
+    const wrapped = await orm.em.callRoutine<string>(TaggedEcho, { input: 'hello' });
+    expect(wrapped).toBe('OUT<IN<hello>>');
+  });
+
+  it('customType applies to INOUT procedure params in both directions', async () => {
+    const ref = new ScalarReference<string>('seed');
+    await orm.em.callRoutine(TaggedRoundtrip, { val: ref });
+    // 'seed' -> convertToDatabaseValue -> 'IN<seed>' -> PG appends '!' -> 'IN<seed>!'
+    //        -> convertToJSValue -> 'OUT<IN<seed>!>'
+    expect(ref.unwrap()).toBe('OUT<IN<seed>!>');
+  });
+
+  it('multi-result-set procedure returns refcursor rows in declaration order', async () => {
+    const sets = await orm.em.transactional(em => em.callRoutine<unknown[][]>(TwoCursors, {}));
+    expect(sets).toHaveLength(2);
+    expect(sets[0]).toEqual([{ a: 1 }, { a: 2 }]);
+    expect(sets[1]).toEqual([
+      { label: 'foo', n: 10 },
+      { label: 'bar', n: 20 },
+    ]);
+  });
+
+  it('multi-result-set procedure throws with a helpful message when called outside a transaction', async () => {
+    await expect(orm.em.callRoutine(TwoCursors, {})).rejects.toThrow(/not called inside a transaction/i);
   });
 });

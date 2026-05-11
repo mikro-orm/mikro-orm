@@ -1,4 +1,22 @@
-import { defineRoutine, MikroORM, RoutineSchema, ScalarReference } from '@mikro-orm/sqlite';
+import {
+  convertRoutineInbound,
+  convertRoutineOutbound,
+  defineRoutine,
+  MikroORM,
+  RoutineSchema,
+  ScalarReference,
+  Type,
+} from '@mikro-orm/sqlite';
+
+class UpperCaseType extends Type<string, string> {
+  override convertToDatabaseValue(value: string): string {
+    return value.toUpperCase();
+  }
+
+  override convertToJSValue(value: string): string {
+    return `<<${value}>>`;
+  }
+}
 
 describe('stored routines — end-to-end via MikroORM.init', () => {
   const HashUser = defineRoutine({
@@ -76,5 +94,83 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
 
   it('ScalarReference is exported from the sqlite package barrel', () => {
     expect(typeof ScalarReference).toBe('function');
+  });
+
+  describe('customType on routine params/return', () => {
+    let orm2: MikroORM;
+
+    const Echo = defineRoutine({
+      name: 'echo_typed',
+      type: 'function',
+      params: { input: { type: 'text', customType: UpperCaseType } },
+      returns: { runtimeType: 'string', columnType: 'text', customType: new UpperCaseType() },
+      body: 'SELECT input',
+      // bodyJs sees the value after convertToDatabaseValue (uppercase).
+      bodyJs: ({ input }: { input: string }) => input,
+    });
+
+    beforeAll(async () => {
+      orm2 = await MikroORM.init({
+        dbName: ':memory:',
+        entities: [],
+        routines: [Echo],
+        discovery: { warnWhenNoEntities: false },
+      });
+    });
+
+    afterAll(() => orm2.close(true));
+
+    it('marshals IN value through convertToDatabaseValue and scalar return through convertToJSValue', async () => {
+      const result = await orm2.em.callRoutine<string>(Echo, { input: 'jon' });
+      // 'jon' -> convertToDatabaseValue('JON') -> bodyJs echoes 'JON' -> convertToJSValue('<<JON>>')
+      expect(result).toBe('<<JON>>');
+    });
+
+    it('accepts customType as either an instance or a constructor', () => {
+      const param = Echo.meta.params[0];
+      expect(param.customType).toBeInstanceOf(UpperCaseType);
+      expect(Echo.meta.returnCustomType).toBeInstanceOf(UpperCaseType);
+    });
+
+    it('skips conversion when no customType is declared (existing behaviour preserved)', async () => {
+      // HashUser declares no customType — call it on the first orm where it is registered.
+      const plain = await orm.em.callRoutine<string>(HashUser, { name: 'jon', salt: 'pepper' });
+      expect(plain).toBe('jon::pepper');
+    });
+
+    it('short-circuits when the inbound value is null/undefined', () => {
+      const platform = orm2.em.getPlatform();
+      expect(convertRoutineInbound(null, Echo.meta.params[0], platform)).toBeNull();
+      expect(convertRoutineInbound(undefined, Echo.meta.params[0], platform)).toBeNull();
+    });
+
+    it('short-circuits when there is no customType on the outbound side', () => {
+      const platform = orm2.em.getPlatform();
+      expect(convertRoutineOutbound('raw', undefined, platform)).toBe('raw');
+      expect(convertRoutineOutbound(null, new UpperCaseType(), platform)).toBeNull();
+    });
+  });
+
+  it('multi-result-set procedures throw a clear "not supported on SQLite" error', async () => {
+    const MultiOnSqlite = defineRoutine({
+      name: 'multi_on_sqlite',
+      type: 'procedure',
+      params: {},
+      resultSets: 2,
+      body: 'select 1; select 2;',
+    });
+
+    const orm3 = await MikroORM.init({
+      dbName: ':memory:',
+      entities: [],
+      routines: [MultiOnSqlite],
+      discovery: { warnWhenNoEntities: false },
+    });
+
+    await expect(orm3.em.callRoutine(MultiOnSqlite, {})).rejects.toThrow(
+      /Stored procedures are not supported on SQLite/,
+    );
+
+    await orm3.close(true);
   });
 });
