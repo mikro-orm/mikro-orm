@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/core';
+import { MikroORM, quote } from '@mikro-orm/core';
 import { Check, Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { MsSqlDriver } from '@mikro-orm/mssql';
@@ -7,12 +7,11 @@ import { OracleDriver } from '@mikro-orm/oracledb';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
-// Derived check name `publication_record_metadata_table_category_classification_descriptor_check`
-// is 74 chars — over PG (63) and MySQL/MariaDB (64). Column fits all platform limits.
+// Natural check name 74 chars — over PG (63) and MySQL/MariaDB (64).
 @Entity({ tableName: 'publication_record_metadata_table' })
 @Check({
   property: 'categoryClassificationDescriptor',
-  expression: cols => `${cols.categoryClassificationDescriptor} >= 0`,
+  expression: cols => quote`${cols.categoryClassificationDescriptor} >= 0`,
 })
 class ShortPublication {
   @PrimaryKey()
@@ -22,11 +21,11 @@ class ShortPublication {
   categoryClassificationDescriptor!: number;
 }
 
-// Derived check name is 136 chars, over Oracle/MSSQL's 128-char limit. Column fits Oracle/MSSQL.
+// Natural check name 136 chars — over Oracle/MSSQL (128).
 @Entity({ tableName: 'book_publication_metadata_extended_records_master_table' })
 @Check({
   property: 'categoryClassificationDescriptorExtensionFieldWithQualifierMetadata',
-  expression: cols => `${cols.categoryClassificationDescriptorExtensionFieldWithQualifierMetadata} >= 0`,
+  expression: cols => quote`${cols.categoryClassificationDescriptorExtensionFieldWithQualifierMetadata} >= 0`,
 })
 class LongPublication {
   @PrimaryKey()
@@ -46,8 +45,7 @@ describe('GHx47 — overlong derived check-constraint name should not produce a 
     });
 
     await orm.schema.refresh();
-    const updateSQL = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(updateSQL).toBe('');
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
 
     await orm.close(true);
   });
@@ -62,8 +60,7 @@ describe('GHx47 — overlong derived check-constraint name should not produce a 
     });
 
     await orm.schema.refresh();
-    const updateSQL = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(updateSQL).toBe('');
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
 
     await orm.close(true);
   });
@@ -78,13 +75,12 @@ describe('GHx47 — overlong derived check-constraint name should not produce a 
     });
 
     await orm.schema.refresh();
-    const updateSQL = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(updateSQL).toBe('');
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
 
     await orm.close(true);
   });
 
-  test('sqlite (no limit; long natural names round-trip)', async () => {
+  test('sqlite', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       driver: SqliteDriver,
@@ -97,8 +93,7 @@ describe('GHx47 — overlong derived check-constraint name should not produce a 
     expect(createSQL).toContain('category_classification_descriptor_extension_field_with_qualifier_metadata');
 
     await orm.schema.refresh();
-    const updateSQL = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(updateSQL).toBe('');
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
 
     await orm.close(true);
   });
@@ -114,8 +109,7 @@ describe('GHx47 — overlong derived check-constraint name should not produce a 
     });
 
     await orm.schema.refresh();
-    const updateSQL = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(updateSQL).toBe('');
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
 
     await orm.close(true);
   });
@@ -130,8 +124,7 @@ describe('GHx47 — overlong derived check-constraint name should not produce a 
     });
 
     await orm.schema.refresh();
-    const updateSQL = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(updateSQL).toBe('');
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
 
     await orm.close(true);
   });
