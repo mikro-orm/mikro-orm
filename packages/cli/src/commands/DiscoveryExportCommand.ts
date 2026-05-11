@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join, relative, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import type { ArgumentsCamelCase, Argv } from 'yargs';
 import { colors, type Configuration, EntitySchema, MetadataStorage } from '@mikro-orm/core';
 import { fs } from '@mikro-orm/core/fs-utils';
@@ -226,11 +226,8 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
 
     // Generate import lines
     for (const [filePath, items] of byFile) {
-      let rel = relative(outDir, filePath);
-
-      if (!rel.startsWith('.')) {
-        rel = './' + rel;
-      }
+      // `fs.relativePath` ensures POSIX separators (node:path.relative returns backslashes on Windows)
+      let rel = fs.relativePath(filePath, outDir);
 
       // Remove .ts extension and optionally add .js for ESM
       rel = rel.replace(/\.[cm]?[jt]s$/, '');
