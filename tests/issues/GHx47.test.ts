@@ -12,7 +12,7 @@ import { SqliteDriver } from '@mikro-orm/sqlite';
 @Entity({ tableName: 'publication_record_metadata_table' })
 @Check({
   property: 'categoryClassificationDescriptor',
-  expression: 'category_classification_descriptor >= 0',
+  expression: cols => `${cols.categoryClassificationDescriptor} >= 0`,
 })
 class ShortPublication {
   @PrimaryKey()
@@ -22,11 +22,11 @@ class ShortPublication {
   categoryClassificationDescriptor!: number;
 }
 
-// Derived check name is 132 chars, over Oracle/MSSQL's 128-char limit. Column fits Oracle/MSSQL.
+// Derived check name is 136 chars, over Oracle/MSSQL's 128-char limit. Column fits Oracle/MSSQL.
 @Entity({ tableName: 'book_publication_metadata_extended_records_master_table' })
 @Check({
   property: 'categoryClassificationDescriptorExtensionFieldWithQualifierMetadata',
-  expression: 'category_classification_descriptor_extension_field_with_qualifier_metadata >= 0',
+  expression: cols => `${cols.categoryClassificationDescriptorExtensionFieldWithQualifierMetadata} >= 0`,
 })
 class LongPublication {
   @PrimaryKey()
