@@ -1,4 +1,4 @@
-// GH #7702 - `LockMode.NONE` should behave like `lockMode: undefined` and serve `findOne` from the identity map
+// GH #7702 - `LockMode.NONE` should behave like `lockMode: undefined`
 import { defineEntity, LockMode, MikroORM, p } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
@@ -21,6 +21,9 @@ beforeAll(async () => {
   await orm.schema.refresh();
   orm.em.create(User, { id: 1, name: 'Alice' });
   await orm.em.flush();
+});
+
+beforeEach(() => {
   orm.em.clear();
 });
 
@@ -28,7 +31,7 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test('GH #7702 - LockMode.NONE serves findOne from identity map (matches undefined)', async () => {
+test('LockMode.NONE serves findOne from identity map (matches undefined)', async () => {
   await orm.em.findOneOrFail(User, 1);
 
   const mock = mockLogger(orm);
@@ -39,4 +42,12 @@ test('GH #7702 - LockMode.NONE serves findOne from identity map (matches undefin
 
   const selectCount = mock.mock.calls.filter(([msg]) => /select/i.test(String(msg))).length;
   expect(selectCount).toBe(0);
+});
+
+test('em.lock with LockMode.NONE is a no-op', async () => {
+  const user = await orm.em.findOneOrFail(User, 1);
+  const mock = mockLogger(orm);
+
+  await expect(orm.em.lock(user, LockMode.NONE)).resolves.toBeUndefined();
+  expect(mock.mock.calls.filter(([msg]) => /select|for update/i.test(String(msg))).length).toBe(0);
 });
