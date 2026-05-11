@@ -813,8 +813,7 @@ export abstract class Platform {
   }
 
   /**
-   * Returns the default name of index for the given columns. Per-platform overrides may apply
-   * truncation/hashing to respect {@link getMaxAllowedIdentifierLength}.
+   * Returns the default name of index for the given columns
    */
   getIndexName(
     tableName: string,
