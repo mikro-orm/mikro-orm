@@ -632,7 +632,7 @@ export class UnitOfWork {
 
     if (options.lockMode === LockMode.OPTIMISTIC) {
       await this.lockOptimistic(entity, meta, options.lockVersion!);
-    } else if (options.lockMode != null) {
+    } else if (options.lockMode != null && options.lockMode !== LockMode.NONE) {
       await this.lockPessimistic(entity, options);
     }
   }
