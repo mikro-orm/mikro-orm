@@ -157,5 +157,5 @@ This lets you run the same entities and routine declarations against PostgreSQL/
 ## Limitations
 
 - The default body diff strips trailing semicolons, normalises whitespace, and compares the result. If the database canonicalises your body more aggressively than that, set `ignoreSchemaChanges: ['body']` on the affected routines.
-- Multi-result-set procedures are currently only supported on MySQL.
+- `em.callRoutine` returns a single scalar (for functions) or `void` plus mutated OUT/INOUT refs (for procedures). Procedures that emit multiple result sets are not yet surfaced through the high-level API — call them via `em.getConnection().execute()` if you need raw access.
 - Reverse-engineering existing routines into `@Routine` source via `mikro-orm generate-entities` is not yet implemented; routine introspection is used by the schema comparator but not by the entity generator.
