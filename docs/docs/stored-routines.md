@@ -33,10 +33,11 @@ await MikroORM.init({
 
 ### Decorator
 
-Parameters are declared inline in the `@Routine` options (the same `params` shape used by `defineRoutine`). `@Property()` decorators on the class are not used by routines.
+Parameters are declared inline in the `@Routine` options (the same `params` shape used by `defineRoutine`). `@Property()` decorators on the class are not used by routines. The `Routine` decorator lives in `@mikro-orm/decorators/legacy` (use `/es` instead if your TypeScript build emits TC39 decorators).
 
 ```ts
-import { Routine } from '@mikro-orm/core';
+import { createHash } from 'node:crypto';
+import { Routine } from '@mikro-orm/decorators/legacy';
 
 @Routine({
   name: 'hash_user',
@@ -120,8 +121,20 @@ OUT and INOUT parameters are passed as `ScalarReference` instances. The values a
 The `direction` option on a parameter declares whether it's IN (default), OUT, or INOUT. OUT/INOUT params must also be marked with `ref: true` and passed as `ScalarReference` at call time. Functions only accept IN parameters; defining a non-IN parameter on a `type: 'function'` routine throws at metadata validation.
 
 ```ts
-@Property({ columnType: 'int', ref: true, direction: 'out' }) inserted_id!: Ref<number>;
-@Property({ columnType: 'char(40)', ref: true, direction: 'inout' }) hash!: Ref<string>;
+const RecordInsert = defineRoutine({
+  name: 'record_insert',
+  type: 'procedure',
+  params: {
+    p_name: { type: 'varchar(255)' },
+    p_hash: { type: 'char(40)', direction: 'inout', ref: true },
+    p_id: { type: 'int', direction: 'out', ref: true },
+  },
+  body: '...',
+});
+
+const hash = new ScalarReference<string>();
+const id = new ScalarReference<number>();
+await em.callRoutine(RecordInsert, { p_name: 'jon', p_hash: hash, p_id: id });
 ```
 
 ## Custom types
@@ -131,27 +144,29 @@ Routine params and scalar function returns accept a `customType` that marshals v
 ```ts
 import { JsonType } from '@mikro-orm/core';
 
-const StoreSnapshot = defineRoutine({
-  name: 'store_snapshot',
-  type: 'procedure',
+const CountItems = defineRoutine({
+  name: 'count_items',
+  type: 'function',
+  language: 'plpgsql',
   params: {
-    payload: { type: 'jsonb', customType: JsonType },
-    digest: { type: 'text', direction: 'inout', ref: true, customType: JsonType },
+    data: { type: 'jsonb', customType: JsonType },
   },
-  body: `digest := payload; insert into snapshots(payload) values (payload);`,
+  returns: { runtimeType: 'string', columnType: 'text' },
+  body: 'BEGIN RETURN jsonb_array_length(data)::text; END;',
 });
 
-const ref = new ScalarReference<object>({ initial: true });
-await em.callRoutine(StoreSnapshot, { payload: { foo: 1 }, digest: ref });
-// `payload` was serialized via JsonType.convertToDatabaseValue before binding,
-// and `ref.unwrap()` has been deserialized via JsonType.convertToJSValue.
+const length = await em.callRoutine<string>(CountItems, { data: [1, 2, 3, 4] });
+// `data` was serialized via JsonType.convertToDatabaseValue before binding;
+// the scalar return passes through as plain text since `returns.customType` is unset.
 ```
+
+The same applies to procedure OUT/INOUT params — the raw row value goes through `convertToJSValue` before being written into the caller's `ScalarReference`.
 
 `customType` applies to:
 
-- IN params (on the way to the procedure/function)
-- OUT/INOUT params (back into the caller's `ScalarReference`)
-- The scalar return descriptor on functions (`returns.customType`)
+- IN params (on the way to the procedure/function via `convertToDatabaseValue`)
+- OUT/INOUT params (back into the caller's `ScalarReference` via `convertToJSValue`)
+- The scalar return descriptor on functions: `returns: { runtimeType, columnType, customType: MyType }`
 
 ## Schema generator integration
 
@@ -161,14 +176,17 @@ Routines are picked up by `schema:create`, `schema:update`, `schema:diff`, and `
 - Removed routines (in DB but not in metadata) → `DROP`
 - Body changes, parameter changes, return-type changes, and metadata changes (comment, security, deterministic, definer) → `DROP` + `CREATE` (no dialect supports `ALTER PROCEDURE` for body)
 
-To skip specific fields when diffing, use `ignoreSchemaChanges`:
+To skip specific fields when diffing, set `ignoreSchemaChanges` to any subset of `'body' | 'comment' | 'security' | 'deterministic' | 'definer'`:
 
 ```ts
-@Routine({
+const HashUser = defineRoutine({
+  name: 'hash_user',
   type: 'function',
-  body: '...',
+  params: { name: { type: 'string' } },
+  returns: { runtimeType: 'string', columnType: 'char(40)' },
+  body: "select sha1(name)",
   ignoreSchemaChanges: ['body', 'comment'],
-})
+});
 ```
 
 This is useful when the database normalises whitespace differently from the literal you wrote, producing spurious diffs every run.
