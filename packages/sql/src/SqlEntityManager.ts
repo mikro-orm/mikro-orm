@@ -80,7 +80,28 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
   }
 
   /**
-   * Returns configured Kysely instance.
+   * Returns a configured Kysely instance bound to this EntityManager.
+   *
+   * When the EntityManager is inside a transaction (e.g. within `em.transactional(...)`, or after
+   * `em.begin()`), the returned Kysely instance automatically uses the transaction context, so any
+   * queries executed via Kysely's own `.execute()` / `.executeTakeFirst*()` participate in the
+   * current transaction.
+   *
+   * If you need a Kysely instance that is **not** bound to the current transaction (e.g. to perform
+   * a side query against the pool while inside a transactional block), fork the EntityManager first:
+   *
+   * ```ts
+   * await em.transactional(async em => {
+   *   // bound to the current transaction
+   *   await em.getKysely().selectFrom('user').selectAll().execute();
+   *
+   *   // bound to the pool, runs outside the transaction
+   *   await em.fork().getKysely().selectFrom('audit_log').selectAll().execute();
+   * });
+   * ```
+   *
+   * The `options.type` (`'read'` / `'write'`) is only honored outside a transaction — inside a
+   * transaction the connection is already pinned.
    */
   getKysely<TDB = undefined, TOptions extends GetKyselyOptions = GetKyselyOptions>(
     options: TOptions = {} as TOptions,
@@ -89,7 +110,9 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
       ? InferKyselyDB<EntitiesFromManager<this>, TOptions> & InferClassEntityDB<AllEntitiesFromManager<this>, TOptions>
       : TDB
   > {
-    let kysely = this.getConnection(options.type).getClient();
+    const context = this.getContext(false);
+    const ctx = context.getTransactionContext<Kysely<any>>();
+    let kysely: Kysely<any> = ctx ?? this.getConnection(options.type).getClient();
     if (
       options.columnNamingStrategy != null ||
       options.tableNamingStrategy != null ||
