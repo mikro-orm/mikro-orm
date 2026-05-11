@@ -2,6 +2,12 @@
 title: Stored Routines
 ---
 
+:::caution Experimental
+
+Stored-routine support landed in v7.1 and is considered **experimental** while we gather real-world feedback. The metadata shapes (`RoutineDef`, `RoutineParamConfig`, `RoutineReturns`, `resultSets`) and runtime behaviour may evolve in a patch release. Pin your MikroORM version if you rely on the exact API shape.
+
+:::
+
 MikroORM can declare, manage, and invoke stored procedures and functions. Routine definitions live alongside your entities and are managed by the schema generator and migration system — they're created, updated, and removed automatically.
 
 ## Driver support
@@ -262,6 +268,12 @@ When `resultSets` is set, `em.callRoutine` returns `Dictionary[][]` — one row 
 - **SQLite / Mongo**: no stored procedure concept; throws.
 
 `resultSets` is only valid on `type: 'procedure'`. Setting it on a function throws at metadata validation.
+
+:::note Likely to evolve
+
+`resultSets` currently returns plain `Dictionary[][]` (raw row arrays). Static tuple typing (`resultSets: [Author, Book]` → `[Author[], Book[]]`) and dynamic hydration via a `(fields, index) => EntityClass` callback — for procedures whose emitted set shape depends on a runtime branch — are the natural next steps. Plan for the metadata shape here to change in a patch release once those use cases land.
+
+:::
 
 ## Limitations
 
