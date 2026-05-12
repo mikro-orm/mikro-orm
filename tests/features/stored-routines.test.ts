@@ -1,8 +1,8 @@
-import { defineRoutine, MetadataValidator, RoutineMetadata, RoutineSchema } from '@mikro-orm/core';
+import { Routine, MetadataValidator, RoutineMetadata } from '@mikro-orm/core';
 
 describe('stored routines — metadata layer', () => {
-  it('defineRoutine produces a RoutineMetadata with declared params in order', () => {
-    const HashUser = defineRoutine({
+  it('Routine produces a RoutineMetadata with declared params in order', () => {
+    const HashUser = new Routine({
       name: 'hash_user',
       type: 'function',
       params: {
@@ -20,29 +20,6 @@ describe('stored routines — metadata layer', () => {
     expect(HashUser.meta.params[0].name).toBe('name');
     expect(HashUser.meta.params[1].name).toBe('salt');
     expect(HashUser.meta.params.every(p => p.direction === 'in')).toBe(true);
-  });
-
-  it('RoutineSchema and defineRoutine produce equivalent metadata for the same shape', () => {
-    const a = defineRoutine({
-      name: 'concat_two',
-      type: 'function',
-      params: { a: { type: 'string' }, b: { type: 'string' } },
-      returns: { runtimeType: 'string', columnType: 'text' },
-      body: 'SELECT a || b',
-    }).meta;
-
-    const b = new RoutineSchema({
-      name: 'concat_two',
-      type: 'function',
-      params: { a: { type: 'string' }, b: { type: 'string' } },
-      returns: { runtimeType: 'string', columnType: 'text' },
-      body: 'SELECT a || b',
-    }).meta;
-
-    expect(a.routineName).toBe(b.routineName);
-    expect(a.type).toBe(b.type);
-    expect(a.params.map(p => p.name)).toEqual(b.params.map(p => p.name));
-    expect(a.body).toBe(b.body);
   });
 
   it('validator rejects body + expression', () => {
@@ -127,7 +104,7 @@ describe('stored routines — metadata layer', () => {
   });
 
   it('validator accepts a well-formed function declaration', () => {
-    const meta = defineRoutine({
+    const meta = new Routine({
       name: 'ok_fn',
       type: 'function',
       params: { x: { type: 'int' } },

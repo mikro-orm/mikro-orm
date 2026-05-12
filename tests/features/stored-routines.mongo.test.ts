@@ -1,5 +1,5 @@
 import { defineEntity, MikroORM, ObjectId } from '@mikro-orm/mongodb';
-import { defineRoutine } from '@mikro-orm/core';
+import { Routine } from '@mikro-orm/core';
 
 const TestSchema = defineEntity({
   name: 'Test',
@@ -24,7 +24,7 @@ describe('stored routines — Mongo (not supported)', () => {
   afterAll(() => orm.close(true));
 
   it('em.callRoutine throws on Mongo with a clear message', async () => {
-    const Whatever = defineRoutine({
+    const Whatever = new Routine({
       name: 'whatever',
       type: 'function',
       params: { x: { type: 'string' } },

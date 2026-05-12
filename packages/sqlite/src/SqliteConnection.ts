@@ -44,7 +44,7 @@ export class SqliteConnection extends BaseSqliteConnection {
 
     if (!routine.bodyJs) {
       throw new Error(
-        `Function ${routine.routineName} cannot be invoked on SQLite without a 'bodyJs' fallback. Add a JS implementation to the @Routine/defineRoutine declaration to enable cross-DB testing.`,
+        `Function ${routine.routineName} cannot be invoked on SQLite without a 'bodyJs' fallback. Add a JS implementation to the @Routine / Routine declaration to enable cross-DB testing.`,
       );
     }
 

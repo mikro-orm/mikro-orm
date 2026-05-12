@@ -18,7 +18,7 @@ import { MetadataProvider } from './MetadataProvider.js';
 import type { NamingStrategy } from '../naming-strategy/NamingStrategy.js';
 import { MetadataStorage } from './MetadataStorage.js';
 import { EntitySchema } from './EntitySchema.js';
-import { RoutineSchema } from './RoutineSchema.js';
+import { Routine } from './Routine.js';
 import { Cascade, type EventType, ReferenceKind } from '../enums.js';
 import { MetadataError } from '../errors.js';
 import type { Platform } from '../platforms/Platform.js';
@@ -287,13 +287,13 @@ export class MetadataDiscovery {
   /**
    * Resolves each entry in the `routines` config option into `RoutineMetadata` and stages it for
    * registration. Accepts:
-   *  - `RoutineSchema` instances and `defineRoutine` return values (objects with `meta: RoutineMetadata`),
+   *  - {@link Routine} class instances,
    *  - classes decorated with `@Routine` (the decorator writes into a global metadata dictionary keyed
    *    by class name + source path, which we look up via `PATH_SYMBOL`).
    */
   private collectRoutines(routines: Iterable<unknown>): void {
     for (const item of routines) {
-      if (RoutineSchema.is(item)) {
+      if (Routine.is(item)) {
         this.#discoveredRoutines.push(item.meta);
         continue;
       }
@@ -308,7 +308,7 @@ export class MetadataDiscovery {
       }
 
       throw new MetadataError(
-        `'routines' entry is not a stored routine declaration. Use @Routine on a class, defineRoutine(), or RoutineSchema.`,
+        `'routines' entry is not a stored routine declaration. Use @Routine on a class or a Routine class instance.`,
       );
     }
   }

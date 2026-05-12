@@ -1,4 +1,4 @@
-import { defineEntity, defineRoutine, MikroORM, p, ScalarReference } from '@mikro-orm/mssql';
+import { defineEntity, Routine, MikroORM, p, ScalarReference } from '@mikro-orm/mssql';
 
 const RecordSchema = defineEntity({
   name: 'RecordEntity',
@@ -12,7 +12,7 @@ const RecordSchema = defineEntity({
 class RecordEntity extends RecordSchema.class {}
 RecordSchema.setClass(RecordEntity);
 
-const SqlHash = defineRoutine({
+const SqlHash = new Routine({
   name: 'sql_hash',
   type: 'function',
   params: {
@@ -24,7 +24,7 @@ const SqlHash = defineRoutine({
     `return convert(nvarchar(40), hashbytes('SHA1', concat(${p.name}, cast(${p.age} as nvarchar(10)), N'secret salt')), 2)`,
 });
 
-const AddRecord = defineRoutine({
+const AddRecord = new Routine({
   name: 'add_record',
   type: 'procedure',
   params: {
@@ -86,7 +86,7 @@ describe('stored routines — MSSQL', () => {
   });
 
   it('em.callRoutine invokes an IN-only procedure (no OUT/INOUT params)', async () => {
-    const InsertRecord = defineRoutine({
+    const InsertRecord = new Routine({
       name: 'insert_record',
       type: 'procedure',
       params: {

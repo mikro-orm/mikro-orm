@@ -1,4 +1,4 @@
-import { defineEntity, defineRoutine, MikroORM, p, ScalarReference } from '@mikro-orm/mysql';
+import { defineEntity, Routine, MikroORM, p, ScalarReference } from '@mikro-orm/mysql';
 
 const RecordSchema = defineEntity({
   name: 'RecordEntity',
@@ -12,7 +12,7 @@ const RecordSchema = defineEntity({
 class RecordEntity extends RecordSchema.class {}
 RecordSchema.setClass(RecordEntity);
 
-const SqlHash = defineRoutine({
+const SqlHash = new Routine({
   name: 'sql_hash',
   type: 'function',
   deterministic: true,
@@ -25,7 +25,7 @@ const SqlHash = defineRoutine({
   body: "return sha1(concat(name, age, 'secret salt'));",
 });
 
-const AddRecord = defineRoutine({
+const AddRecord = new Routine({
   name: 'add_record',
   type: 'procedure',
   deterministic: false,
@@ -41,7 +41,7 @@ const AddRecord = defineRoutine({
   `,
 });
 
-const TwoSets = defineRoutine({
+const TwoSets = new Routine({
   name: 'two_sets',
   type: 'procedure',
   params: {},
@@ -111,7 +111,7 @@ describe('stored routines — MySQL', () => {
   });
 
   it('em.callRoutine invokes an IN-only procedure (no OUT/INOUT params)', async () => {
-    const InsertRecord = defineRoutine({
+    const InsertRecord = new Routine({
       name: 'insert_record',
       type: 'procedure',
       params: {
@@ -152,7 +152,7 @@ describe('stored routines — MySQL', () => {
   });
 
   it('changing a routine body triggers a schema:update diff', async () => {
-    const TweakedHash = defineRoutine({
+    const TweakedHash = new Routine({
       name: 'sql_hash',
       type: 'function',
       deterministic: true,

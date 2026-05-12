@@ -1,7 +1,7 @@
-import { defineRoutine, MikroORM } from '@mikro-orm/libsql';
+import { Routine, MikroORM } from '@mikro-orm/libsql';
 
 describe('stored routines — libSQL', () => {
-  const HashUser = defineRoutine({
+  const HashUser = new Routine({
     name: 'libsql_hash_user',
     type: 'function',
     params: { name: { type: 'string' }, salt: { type: 'string' } },

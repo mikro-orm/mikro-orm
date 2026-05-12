@@ -4,8 +4,8 @@ import { getRoutineMetadataFromDecorator } from '../utils.js';
 /**
  * Declares a stored procedure or function on a class (legacy TypeScript decorator).
  *
- * Parameters are declared inline via the `params` option (the same shape used by
- * `defineRoutine`). `@Property()` decorators on the class are not used by routines.
+ * Parameters are declared inline via the `params` option (the same shape used by the
+ * class-less `Routine` API). `@Property()` decorators on the class are not used by routines.
  *
  * @example
  * ```ts

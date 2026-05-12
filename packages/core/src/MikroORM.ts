@@ -1,7 +1,5 @@
 import type { EntityManagerType, IDatabaseDriver } from './drivers/IDatabaseDriver.js';
 import { type EntitySchema } from './metadata/EntitySchema.js';
-import type { RoutineSchema } from './metadata/RoutineSchema.js';
-import type { RoutineDefinition } from './entity/defineRoutine.js';
 import { MetadataDiscovery } from './metadata/MetadataDiscovery.js';
 import { MetadataStorage } from './metadata/MetadataStorage.js';
 import { Configuration, type Options } from './utils/Configuration.js';

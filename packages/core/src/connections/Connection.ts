@@ -167,12 +167,12 @@ export abstract class Connection {
   ): Promise<QueryResult<T> | any | any[]>;
 
   /**
-   * Invokes a stored procedure or function declared via `@Routine`/`defineRoutine`/`RoutineSchema`.
-   * The base implementation throws - only drivers that override this method (every SQL driver
-   * does) support routine invocation.
+   * Invokes a stored procedure or function declared via the `@Routine` decorator or the
+   * {@link Routine} class. The base implementation throws — only drivers that override this
+   * method (every SQL driver does) support routine invocation.
    *
-   * @internal - public callers should go through `EntityManager.callRoutine` which performs validation,
-   *   ScalarReference unwrapping, and result hydration.
+   * @internal - public callers should go through `EntityManager.callRoutine`, which resolves the
+   *   metadata, dispatches to the driver, and surfaces OUT/INOUT writes via ScalarReference.
    */
   async callRoutine<T>(routine: RoutineMetadata, args: Record<string, unknown>, ctx?: Transaction): Promise<T> {
     throw new Error(`Stored routines are not supported by the current driver`);

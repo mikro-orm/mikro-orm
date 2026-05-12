@@ -1,4 +1,4 @@
-import { defineEntity, defineRoutine, MikroORM, p } from '@mikro-orm/postgresql';
+import { defineEntity, Routine, MikroORM, p } from '@mikro-orm/postgresql';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 const RecordSchema = defineEntity({
@@ -11,7 +11,7 @@ const RecordSchema = defineEntity({
 class RoutineEmissionRecord extends RecordSchema.class {}
 RecordSchema.setClass(RoutineEmissionRecord);
 
-const ComputeSum = defineRoutine({
+const ComputeSum = new Routine({
   name: 'compute_sum',
   type: 'function',
   language: 'sql',
@@ -23,7 +23,7 @@ const ComputeSum = defineRoutine({
   body: 'select a + b',
 });
 
-const RecordInsert = defineRoutine({
+const RecordInsert = new Routine({
   name: 'record_insert',
   type: 'procedure',
   language: 'plpgsql',
@@ -78,10 +78,10 @@ describe('EntityGenerator — routine emission (PostgreSQL)', () => {
     expect(recordInsert).toContain(`ref: true`);
   });
 
-  it('emits new RoutineSchema() when entityDefinition is entitySchema', async () => {
+  it('emits new Routine() when entityDefinition is entitySchema', async () => {
     const dump = await orm.entityGenerator.generate({ entityDefinition: 'entitySchema' });
-    const schemaSource = dump.find(content => content.includes('compute_sum') && content.includes('RoutineSchema'));
+    const schemaSource = dump.find(content => content.includes('compute_sum') && content.includes('Routine'));
     expect(schemaSource).toBeDefined();
-    expect(schemaSource).toContain(`new RoutineSchema(`);
+    expect(schemaSource).toContain(`new Routine(`);
   });
 });

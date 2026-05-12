@@ -27,7 +27,7 @@ MikroORM can declare, manage, and invoke stored procedures and functions. Routin
 
 ## Defining a routine
 
-You can declare routines using the `@Routine` decorator, the `defineRoutine` helper, or `RoutineSchema`. All three produce the same metadata.
+You can declare routines using the `@Routine` decorator or the `Routine` class. Both produce the same metadata.
 
 Routines are registered via a dedicated `routines` configuration option, separate from `entities`. They don't share discovery semantics with entities — there's no folder discovery for routines, and they never participate in unit-of-work or query building.
 
@@ -40,7 +40,7 @@ await MikroORM.init({
 
 ### Decorator
 
-Parameters are declared inline in the `@Routine` options (the same `params` shape used by `defineRoutine`). `@Property()` decorators on the class are not used by routines. The `Routine` decorator lives in `@mikro-orm/decorators/legacy` (use `/es` instead if your TypeScript build emits TC39 decorators).
+Parameters are declared inline in the `@Routine` options (the same `params` shape used by the `Routine` class). `@Property()` decorators on the class are not used by routines. The `@Routine` decorator lives in `@mikro-orm/decorators/legacy` (use `/es` instead if your TypeScript build emits TC39 decorators) — the same name is also used for the class-less `Routine` class in `@mikro-orm/core`, but the imports come from different packages.
 
 ```ts
 import { createHash } from 'node:crypto';
@@ -69,29 +69,12 @@ class HashUser {}
 class AddRecord {}
 ```
 
-### `defineRoutine`
+### Class-less `Routine`
 
 ```ts
-import { defineRoutine } from '@mikro-orm/core';
+import { Routine } from '@mikro-orm/core';
 
-const HashUser = defineRoutine({
-  name: 'hash_user',
-  type: 'function',
-  params: {
-    name: { type: 'string' },
-    salt: { type: 'string' },
-  },
-  returns: { runtimeType: 'string', columnType: 'char(40)' },
-  body: (p) => `SELECT SHA1(CONCAT(${p.name}, ${p.salt}))`,
-});
-```
-
-### `RoutineSchema`
-
-```ts
-import { RoutineSchema } from '@mikro-orm/core';
-
-const HashUser = new RoutineSchema({
+const HashUser = new Routine({
   name: 'hash_user',
   type: 'function',
   params: {
@@ -136,7 +119,7 @@ PostgreSQL multi-result-set procedures (refcursor OUT params) explicitly require
 The `direction` option on a parameter declares whether it's IN (default), OUT, or INOUT. OUT/INOUT params must also be marked with `ref: true` and passed as `ScalarReference` at call time. Functions only accept IN parameters; defining a non-IN parameter on a `type: 'function'` routine throws at metadata validation.
 
 ```ts
-const RecordInsert = defineRoutine({
+const RecordInsert = new Routine({
   name: 'record_insert',
   type: 'procedure',
   params: {
@@ -159,7 +142,7 @@ Routine params and scalar function returns accept a `customType` that marshals v
 ```ts
 import { JsonType } from '@mikro-orm/core';
 
-const CountItems = defineRoutine({
+const CountItems = new Routine({
   name: 'count_items',
   type: 'function',
   language: 'plpgsql',
@@ -194,7 +177,7 @@ Routines are picked up by `schema:create`, `schema:update`, `schema:diff`, and `
 To skip specific fields when diffing, set `ignoreSchemaChanges` to any subset of `'body' | 'comment' | 'security' | 'deterministic' | 'definer'`:
 
 ```ts
-const HashUser = defineRoutine({
+const HashUser = new Routine({
   name: 'hash_user',
   type: 'function',
   params: { name: { type: 'string' } },
@@ -208,7 +191,7 @@ This is useful when the database normalises whitespace differently from the lite
 
 ## SQLite cross-DB testing
 
-When you target SQLite (via better-sqlite3) with routines defined via `@Routine`/`defineRoutine`/`RoutineSchema`:
+When you target SQLite (via better-sqlite3) with routines defined via `@Routine` or the `Routine` class:
 
 - Schema generator silently skips them — no DDL is emitted, `schema:diff` produces no changes.
 - `em.callRoutine` for `type: 'function'` routines that declare `bodyJs` registers the JS function as a UDF via the underlying driver (better-sqlite3's `db.function()`) on first call, then dispatches `SELECT routine_name(?, ?, ...)`.
@@ -225,7 +208,7 @@ Procedures that emit several result sets work out of the box — the driver dete
 ```ts
 // MySQL / MariaDB — body contains N SELECTs; mysql2's end-of-stream marker tells us when
 // the result-set list ends, so the count is detected automatically.
-const TwoSets = defineRoutine({
+const TwoSets = new Routine({
   name: 'two_sets',
   type: 'procedure',
   params: {},
@@ -241,7 +224,7 @@ const sets = await em.callRoutine<unknown[][]>(TwoSets, {});
 
 // PostgreSQL — declare N refcursor OUT params; the connection FETCHes each one.
 // The call must be wrapped in a transaction so the cursors stay alive for FETCH.
-const TwoCursors = defineRoutine({
+const TwoCursors = new Routine({
   name: 'two_cursors',
   type: 'procedure',
   language: 'plpgsql',
@@ -259,7 +242,7 @@ const [pgUsers, pgBooks] = await em.transactional(em => em.callRoutine(TwoCursor
 
 // Oracle — declare sys_refcursor OUT params; oracledb binds them as DB_TYPE_CURSOR.
 // Do NOT wrap Oracle calls in em.transactional (see the caution above).
-const TwoCursorsOra = defineRoutine({
+const TwoCursorsOra = new Routine({
   name: 'two_cursors',
   type: 'procedure',
   params: {

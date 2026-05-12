@@ -1,6 +1,6 @@
 import { MikroORM, SchemaComparator } from '@mikro-orm/sqlite';
 import { DatabaseSchema, type SqlRoutineDef } from '@mikro-orm/sql';
-import { defineRoutine, raw, RoutineMetadata } from '@mikro-orm/core';
+import { Routine, raw, RoutineMetadata } from '@mikro-orm/core';
 
 describe('stored routines — comparator unit tests', () => {
   let orm: MikroORM;
@@ -216,7 +216,7 @@ describe('stored routines — comparator unit tests', () => {
     });
 
     it('handles a body callback that returns a Raw fragment', () => {
-      const def = defineRoutine({
+      const def = new Routine({
         name: 'r',
         type: 'function',
         params: { v: { type: 'int' } },
@@ -229,7 +229,7 @@ describe('stored routines — comparator unit tests', () => {
     });
 
     it('handles a body provided as a Raw fragment directly', () => {
-      const def = defineRoutine({
+      const def = new Routine({
         name: 'r',
         type: 'function',
         params: { v: { type: 'int' } },
@@ -242,7 +242,7 @@ describe('stored routines — comparator unit tests', () => {
     });
 
     it('leaves body undefined when callback returns an unexpected value', () => {
-      const def = defineRoutine({
+      const def = new Routine({
         name: 'r',
         type: 'function',
         params: { v: { type: 'int' } },
@@ -255,7 +255,7 @@ describe('stored routines — comparator unit tests', () => {
     });
 
     it('handles a routine without a body (e.g. bodyJs-only function for SQLite)', () => {
-      const def = defineRoutine({
+      const def = new Routine({
         name: 'r',
         type: 'function',
         params: { v: { type: 'int' } },

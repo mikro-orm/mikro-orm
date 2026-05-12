@@ -1,9 +1,8 @@
 import {
   convertRoutineInbound,
   convertRoutineOutbound,
-  defineRoutine,
+  Routine,
   MikroORM,
-  RoutineSchema,
   ScalarReference,
   Type,
 } from '@mikro-orm/sqlite';
@@ -19,7 +18,7 @@ class UpperCaseType extends Type<string, string> {
 }
 
 describe('stored routines — end-to-end via MikroORM.init', () => {
-  const HashUser = defineRoutine({
+  const HashUser = new Routine({
     name: 'hash_user',
     type: 'function',
     params: { name: { type: 'string' }, salt: { type: 'string' } },
@@ -28,7 +27,7 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
     bodyJs: ({ name, salt }: { name: string; salt: string }) => `${name}::${salt}`,
   });
 
-  const Concat = new RoutineSchema({
+  const Concat = new Routine({
     name: 'concat_two',
     type: 'function',
     params: { a: { type: 'string' }, b: { type: 'string' } },
@@ -69,18 +68,16 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
     expect(diff).toBe('');
   });
 
-  it('em.callRoutine resolves defineRoutine declarations and dispatches via bodyJs', async () => {
-    const result = await orm.em.callRoutine<string>(HashUser, { name: 'jon', salt: 'pepper' });
-    expect(result).toBe('jon::pepper');
-  });
+  it('em.callRoutine resolves Routine instances and dispatches via bodyJs', async () => {
+    const hashResult = await orm.em.callRoutine<string>(HashUser, { name: 'jon', salt: 'pepper' });
+    expect(hashResult).toBe('jon::pepper');
 
-  it('em.callRoutine resolves RoutineSchema declarations and dispatches via bodyJs', async () => {
-    const result = await orm.em.callRoutine<string>(Concat, { a: 'foo', b: 'bar' });
-    expect(result).toBe('foo-bar');
+    const concatResult = await orm.em.callRoutine<string>(Concat, { a: 'foo', b: 'bar' });
+    expect(concatResult).toBe('foo-bar');
   });
 
   it('em.callRoutine throws clearly when called against an unregistered routine', async () => {
-    const Unregistered = defineRoutine({
+    const Unregistered = new Routine({
       name: 'never_registered',
       type: 'function',
       params: { x: { type: 'string' } },
@@ -99,7 +96,7 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
   describe('customType on routine params/return', () => {
     let orm2: MikroORM;
 
-    const Echo = defineRoutine({
+    const Echo = new Routine({
       name: 'echo_typed',
       type: 'function',
       params: { input: { type: 'text', customType: UpperCaseType } },
@@ -152,7 +149,7 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
   });
 
   it('procedures throw a clear "not supported on SQLite" error', async () => {
-    const SomeProc = defineRoutine({
+    const SomeProc = new Routine({
       name: 'some_proc',
       type: 'procedure',
       params: {},

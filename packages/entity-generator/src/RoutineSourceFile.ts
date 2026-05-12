@@ -36,8 +36,8 @@ function toPascalCase(name: string): string {
  * `entityDefinition` option just like {@link SourceFile}, producing one of:
  *
  *  - `@Routine` decorated class (`decorators`)
- *  - `defineRoutine(...)` const (`defineEntity`)
- *  - `new RoutineSchema(...)` const (`entitySchema`)
+ *  - `new Routine(...)` const (`defineEntity` and `entitySchema` both emit the class-less form,
+ *    since there's no function-style helper for routines).
  */
 export class RoutineSourceFile {
   constructor(
@@ -56,11 +56,7 @@ export class RoutineSourceFile {
       return this.emitDecorator(className, config);
     }
 
-    if (mode === 'defineEntity') {
-      return this.emitDefine(className, config);
-    }
-
-    return this.emitSchema(className, config);
+    return this.emitClassLess(className, config);
   }
 
   getBaseName(extension = '.ts'): string {
@@ -165,11 +161,7 @@ export class RoutineSourceFile {
     return `import { Routine } from '@mikro-orm/decorators/${decoratorPkg}';\n\n@Routine(${config})\nexport class ${className} {}\n`;
   }
 
-  private emitDefine(className: string, config: string): string {
-    return `import { defineRoutine } from '@mikro-orm/core';\n\nexport const ${className} = defineRoutine(${config});\n`;
-  }
-
-  private emitSchema(className: string, config: string): string {
-    return `import { RoutineSchema } from '@mikro-orm/core';\n\nexport const ${className} = new RoutineSchema(${config});\n`;
+  private emitClassLess(className: string, config: string): string {
+    return `import { Routine } from '@mikro-orm/core';\n\nexport const ${className} = new Routine(${config});\n`;
   }
 }

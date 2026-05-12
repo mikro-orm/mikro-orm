@@ -56,7 +56,7 @@ describe('RoutineSourceFile', () => {
     expect(sourceFile.generate()).toContain(`from '@mikro-orm/decorators/es'`);
   });
 
-  it('emits defineRoutine() for the defineEntity mode', () => {
+  it('emits `new Routine(...)` for the defineEntity mode', () => {
     const sourceFile = new RoutineSourceFile(
       {
         name: 'pi',
@@ -72,12 +72,12 @@ describe('RoutineSourceFile', () => {
     );
 
     const out = sourceFile.generate();
-    expect(out).toContain(`import { defineRoutine } from '@mikro-orm/core';`);
-    expect(out).toMatch(/export const Pi = defineRoutine\(/);
+    expect(out).toContain(`import { Routine } from '@mikro-orm/core';`);
+    expect(out).toMatch(/export const Pi = new Routine\(/);
     expect(out).toContain(`params: {}`);
   });
 
-  it('emits new RoutineSchema() for the entitySchema mode', () => {
+  it('emits `new Routine(...)` for the entitySchema mode too (no defineRoutine helper exists)', () => {
     const sourceFile = new RoutineSourceFile(
       {
         name: 'echo',
@@ -92,8 +92,8 @@ describe('RoutineSourceFile', () => {
     );
 
     const out = sourceFile.generate();
-    expect(out).toContain(`import { RoutineSchema } from '@mikro-orm/core';`);
-    expect(out).toMatch(/export const Echo = new RoutineSchema\(/);
+    expect(out).toContain(`import { Routine } from '@mikro-orm/core';`);
+    expect(out).toMatch(/export const Echo = new Routine\(/);
   });
 
   it('emits OUT/INOUT direction and ref: true for procedure params', () => {

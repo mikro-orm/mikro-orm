@@ -604,6 +604,62 @@ async doStuffAfterDelete(args: EventArgs<this>) {
 }
 ```
 
+## Stored Routines
+
+### @Routine()
+
+`@Routine()` declares a stored procedure or function on a class. Routines are registered through the dedicated `routines: [...]` config slot (separate from `entities`) and are managed by the schema generator alongside tables.
+
+The decorator lives in `@mikro-orm/decorators/{legacy,es}`. The same name is also used by the class-less `Routine` class in `@mikro-orm/core`; the imports come from different packages so both can coexist (alias one if you need to import both in the same file). See [Stored Routines](./stored-routines.md) for the full feature reference.
+
+| Parameter             | Type                                      | Optional | Description                                                                                                              |
+|-----------------------|-------------------------------------------|----------|--------------------------------------------------------------------------------------------------------------------------|
+| `type`                | `'procedure' \| 'function'`               | no       | Whether this is a stored procedure or function.                                                                          |
+| `name`                | `string`                                  | yes      | Routine name in the database. Defaults to the class name.                                                                |
+| `params`              | `Record<string, RoutineParamConfig>`      | yes      | Parameter map: name → type/direction/ref/customType/nullable.                                                            |
+| `returns`             | `RoutineReturns`                          | depends  | Required for `type: 'function'` — declares scalar return type. Procedures omit this.                                     |
+| `body`                | `string \| Raw \| RoutineBodyCallback`    | yes      | SQL body. Mutually exclusive with `expression`.                                                                          |
+| `expression`          | `string`                                  | yes      | Full `CREATE …` statement escape hatch. Mutually exclusive with `body`.                                                  |
+| `bodyJs`              | `(params) => unknown`                     | yes      | JS fallback used by SQLite (better-sqlite3) for cross-DB testing.                                                        |
+| `language`            | `'sql' \| 'plpgsql' \| 'plsql' \| string` | yes      | PG/Oracle language clause.                                                                                               |
+| `security`            | `'definer' \| 'invoker'`                  | yes      | SQL security context.                                                                                                    |
+| `deterministic`       | `boolean`                                 | yes      | Drives optimizer hints (MySQL) and immutability (PG `immutable`/`volatile`).                                             |
+| `dataAccess`          | `'contains-sql' \| 'no-sql' \| 'reads-sql-data' \| 'modifies-sql-data'` | yes | MySQL/MariaDB data-access category. |
+| `comment`             | `string`                                  | yes      | DB-side comment.                                                                                                         |
+| `definer`             | `string`                                  | yes      | User the routine runs as when `security: 'definer'`.                                                                     |
+| `ignoreSchemaChanges` | `RoutineIgnoreField[]`                    | yes      | Subset of `'body' \| 'comment' \| 'security' \| 'deterministic' \| 'definer'` to skip when diffing.                      |
+
+```ts
+import { createHash } from 'node:crypto';
+import { Routine } from '@mikro-orm/decorators/legacy';
+
+@Routine({
+  name: 'hash_user',
+  type: 'function',
+  params: { name: { type: 'string' }, salt: { type: 'string' } },
+  returns: { runtimeType: 'string', columnType: 'char(40)' },
+  body: (p) => `SELECT SHA1(CONCAT(${p.name}, ${p.salt}))`,
+  bodyJs: ({ name, salt }) => createHash('sha1').update(name + salt).digest('hex'),
+})
+class HashUser {}
+
+@Routine({
+  name: 'add_record',
+  type: 'procedure',
+  params: {
+    p_name: { type: 'varchar(255)' },
+    p_hash: { type: 'char(40)', direction: 'inout', ref: true },
+  },
+  body: 'set p_hash = sha1(p_name); insert into record (hash, name) values (p_hash, p_name);',
+})
+class AddRecord {}
+
+await MikroORM.init({
+  entities: [User],
+  routines: [HashUser, AddRecord],
+});
+```
+
 ## Method Decorators
 
 ### @CreateRequestContext()

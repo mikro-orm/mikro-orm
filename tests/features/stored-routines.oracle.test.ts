@@ -1,4 +1,4 @@
-import { defineEntity, defineRoutine, MikroORM, p, ScalarReference } from '@mikro-orm/oracledb';
+import { defineEntity, Routine, MikroORM, p, ScalarReference } from '@mikro-orm/oracledb';
 
 const RecordSchema = defineEntity({
   name: 'RecordEntity',
@@ -12,7 +12,7 @@ const RecordSchema = defineEntity({
 class RecordEntity extends RecordSchema.class {}
 RecordSchema.setClass(RecordEntity);
 
-const SqlHash = defineRoutine({
+const SqlHash = new Routine({
   name: 'sql_hash',
   type: 'function',
   params: {
@@ -25,7 +25,7 @@ const SqlHash = defineRoutine({
   `,
 });
 
-const AddRecord = defineRoutine({
+const AddRecord = new Routine({
   name: 'add_record',
   type: 'procedure',
   params: {
@@ -39,7 +39,7 @@ const AddRecord = defineRoutine({
   `,
 });
 
-const TwoCursors = defineRoutine({
+const TwoCursors = new Routine({
   name: 'two_cursors',
   type: 'procedure',
   params: {

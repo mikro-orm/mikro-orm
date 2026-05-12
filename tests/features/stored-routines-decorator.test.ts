@@ -1,5 +1,5 @@
 import { MikroORM } from '@mikro-orm/sqlite';
-import { MetadataStorage, RoutineMetadata, RoutineSchema, defineRoutine } from '@mikro-orm/core';
+import { MetadataStorage, RoutineMetadata, Routine as RoutineClass } from '@mikro-orm/core';
 import { Routine } from '@mikro-orm/decorators/legacy';
 
 describe('stored routines — decorator + metadata edges', () => {
@@ -40,7 +40,7 @@ describe('stored routines — decorator + metadata edges', () => {
     await orm.close(true);
   });
 
-  it('routines config rejects items that are neither RoutineSchema/defineRoutine output nor @Routine classes', async () => {
+  it('routines config rejects items that are neither Routine/Routine output nor @Routine classes', async () => {
     class PlainClass {}
 
     await expect(
@@ -53,21 +53,21 @@ describe('stored routines — decorator + metadata edges', () => {
     ).rejects.toThrow(/not a stored routine declaration/);
   });
 
-  it('RoutineSchema.is recognises both RoutineSchema instances and defineRoutine outputs', () => {
-    const a = new RoutineSchema({
+  it('Routine.is recognises both Routine instances and Routine outputs', () => {
+    const a = new RoutineClass({
       name: 'a',
       type: 'function',
       returns: { runtimeType: 'string' },
       body: 'select 1',
     });
-    const b = defineRoutine({ name: 'b', type: 'function', returns: { runtimeType: 'string' }, body: 'select 1' });
+    const b = new RoutineClass({ name: 'b', type: 'function', returns: { runtimeType: 'string' }, body: 'select 1' });
 
-    expect(RoutineSchema.is(a)).toBe(true);
-    expect(RoutineSchema.is(b)).toBe(true);
-    expect(RoutineSchema.is({ meta: { className: 'x' } })).toBe(false);
-    expect(RoutineSchema.is({})).toBe(false);
-    expect(RoutineSchema.is(null)).toBe(false);
-    expect(RoutineSchema.is(undefined)).toBe(false);
+    expect(RoutineClass.is(a)).toBe(true);
+    expect(RoutineClass.is(b)).toBe(true);
+    expect(RoutineClass.is({ meta: { className: 'x' } })).toBe(false);
+    expect(RoutineClass.is({})).toBe(false);
+    expect(RoutineClass.is(null)).toBe(false);
+    expect(RoutineClass.is(undefined)).toBe(false);
   });
 
   it('RoutineMetadata.fromConfig defaults uniqueName via routineName/schema/_id', () => {

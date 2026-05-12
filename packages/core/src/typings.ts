@@ -1189,7 +1189,7 @@ export type RoutineReturns<T = unknown> =
  */
 export type RoutineJsBody<T> = (params: T) => unknown;
 
-/** Definition of a stored procedure or function declared via `@Routine`, `defineRoutine`, or `RoutineSchema`. */
+/** Definition of a stored procedure or function declared via `@Routine` or the {@link Routine} class. */
 export interface RoutineDef<T = any> {
   /** Whether this routine is a stored procedure or stored function. */
   type: RoutineKind;
@@ -1290,11 +1290,11 @@ export class RoutineMetadata<T = any, Class extends EntityCtor<T> = EntityCtor<T
   readonly params: RoutineProperty<T>[] = [];
   /** Map of parameter name → property, populated alongside {@link params}. */
   readonly paramMap: Record<EntityKey<T>, RoutineProperty<T>> = {} as any;
-  /** Class name (or schema name for `defineRoutine`/`RoutineSchema`). */
+  /** Class name (or schema name for class-less {@link Routine} declarations). */
   className!: string;
   /** Resolved routine name in the database. */
   routineName!: string;
-  /** Class constructor. Synthetic for `defineRoutine`/`RoutineSchema` declarations. */
+  /** Class constructor. Synthetic for class-less {@link Routine} declarations. */
   class!: Class;
   /** Source file path (used for HMR-style metadata caching). */
   path?: string;
@@ -1341,8 +1341,8 @@ export class RoutineMetadata<T = any, Class extends EntityCtor<T> = EntityCtor<T
   }
 
   /**
-   * Builds a {@link RoutineMetadata} from a config-style declaration. Used by both
-   * {@link defineRoutine} and {@link RoutineSchema} so they share construction.
+   * Builds a {@link RoutineMetadata} from a config-style declaration. Used by the {@link Routine}
+   * class to wrap a config into a metadata instance.
    */
   static fromConfig<T>(config: RoutineConfig<T>): RoutineMetadata<T> {
     const meta = new RoutineMetadata<T>({
@@ -1389,7 +1389,7 @@ export class RoutineMetadata<T = any, Class extends EntityCtor<T> = EntityCtor<T
   }
 }
 
-/** Single parameter configuration, shared by `defineRoutine` and `RoutineSchema`. */
+/** Single parameter configuration, accepted by the {@link Routine} class and the `@Routine` decorator. */
 export interface RoutineParamConfig {
   runtimeType?: EntityProperty['runtimeType'];
   type?: keyof typeof types | AnyString;
@@ -1409,7 +1409,7 @@ export interface RoutineParamConfig {
   customType?: Type<unknown> | Constructor<Type<unknown>>;
 }
 
-/** Routine declaration shape shared by `defineRoutine` and `RoutineSchema`. */
+/** Routine declaration shape accepted by the {@link Routine} class and the `@Routine` decorator. */
 export interface RoutineConfig<T = any> extends Omit<RoutineDef<T>, 'name'> {
   /** Routine name. Required — used both as the schema-level identifier and the database name fallback. */
   name: string;

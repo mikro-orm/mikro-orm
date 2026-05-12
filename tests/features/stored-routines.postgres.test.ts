@@ -1,4 +1,4 @@
-import { defineEntity, defineRoutine, MikroORM, p, ScalarReference, Type } from '@mikro-orm/postgresql';
+import { defineEntity, Routine, MikroORM, p, ScalarReference, Type } from '@mikro-orm/postgresql';
 
 class TaggedStringType extends Type<string, string> {
   override convertToDatabaseValue(value: string): string {
@@ -22,7 +22,7 @@ const RecordSchema = defineEntity({
 class RecordEntity extends RecordSchema.class {}
 RecordSchema.setClass(RecordEntity);
 
-const SqlHash = defineRoutine({
+const SqlHash = new Routine({
   name: 'sql_hash',
   type: 'function',
   language: 'sql',
@@ -34,7 +34,7 @@ const SqlHash = defineRoutine({
   body: "select md5(name || age::text || 'secret salt')",
 });
 
-const AddRecord = defineRoutine({
+const AddRecord = new Routine({
   name: 'add_record',
   type: 'procedure',
   language: 'plpgsql',
@@ -49,7 +49,7 @@ const AddRecord = defineRoutine({
   `,
 });
 
-const NoArgPi = defineRoutine({
+const NoArgPi = new Routine({
   name: 'no_arg_pi',
   type: 'function',
   language: 'sql',
@@ -60,7 +60,7 @@ const NoArgPi = defineRoutine({
 
 // `customType` on an IN param goes through `convertToDatabaseValue` before being bound;
 // on the scalar function return it goes through `convertToJSValue` before being returned.
-const TaggedEcho = defineRoutine({
+const TaggedEcho = new Routine({
   name: 'tagged_echo',
   type: 'function',
   language: 'sql',
@@ -71,7 +71,7 @@ const TaggedEcho = defineRoutine({
 
 // `customType` on an INOUT param applies in both directions: inbound seed via
 // `convertToDatabaseValue`, outbound return via `convertToJSValue`.
-const TaggedRoundtrip = defineRoutine({
+const TaggedRoundtrip = new Routine({
   name: 'tagged_roundtrip',
   type: 'procedure',
   language: 'plpgsql',
@@ -81,7 +81,7 @@ const TaggedRoundtrip = defineRoutine({
 
 // Multi-result-set proc: opens two refcursors. Caller must run inside a transaction so the
 // cursors remain valid for FETCH.
-const TwoCursors = defineRoutine({
+const TwoCursors = new Routine({
   name: 'two_cursors',
   type: 'procedure',
   language: 'plpgsql',
@@ -149,7 +149,7 @@ describe('stored routines — PostgreSQL', () => {
   });
 
   it('changing a routine body triggers a schema:update diff', async () => {
-    const TweakedHash = defineRoutine({
+    const TweakedHash = new Routine({
       name: 'sql_hash',
       type: 'function',
       language: 'sql',
