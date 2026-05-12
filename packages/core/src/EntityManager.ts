@@ -1962,10 +1962,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * - Functions return their scalar value, optionally marshalled through `returns.customType`.
    * - Procedures return `void`; OUT/INOUT params are written back into the caller's
    *   {@link ScalarReference} instances, marshalled through each param's `customType` when set.
-   * - When the routine declares `resultSets: N`, the return value is `Dictionary[][]` — one row
-   *   array per result set. Supported on MySQL/MariaDB (native multi-recordset), PostgreSQL
-   *   (`refcursor` OUT params + transactional FETCH), and Oracle (`sys_refcursor` OUT params).
-   *   MSSQL throws with guidance to use `em.getConnection().execute()` for raw access.
+   * - When the procedure emits result sets — N `SELECT`s on MySQL/MariaDB, N `refcursor`
+   *   OUT params on PostgreSQL, N `sys_refcursor` OUT params on Oracle — `em.callRoutine`
+   *   returns `Dictionary[][]` (one row array per set). The count is detected at runtime, no
+   *   metadata declaration is needed. MSSQL does not expose multi-result-set procs through this
+   *   path; use `em.getConnection().execute()` for raw access.
    *
    * Throws on drivers that do not support stored routines (mongo). On SQLite, functions
    * declared with a `bodyJs` fallback are bridged via better-sqlite3's UDF API; procedures and

@@ -151,25 +151,22 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
     });
   });
 
-  it('multi-result-set procedures throw a clear "not supported on SQLite" error', async () => {
-    const MultiOnSqlite = defineRoutine({
-      name: 'multi_on_sqlite',
+  it('procedures throw a clear "not supported on SQLite" error', async () => {
+    const SomeProc = defineRoutine({
+      name: 'some_proc',
       type: 'procedure',
       params: {},
-      resultSets: 2,
       body: 'select 1; select 2;',
     });
 
     const orm3 = await MikroORM.init({
       dbName: ':memory:',
       entities: [],
-      routines: [MultiOnSqlite],
+      routines: [SomeProc],
       discovery: { warnWhenNoEntities: false },
     });
 
-    await expect(orm3.em.callRoutine(MultiOnSqlite, {})).rejects.toThrow(
-      /Stored procedures are not supported on SQLite/,
-    );
+    await expect(orm3.em.callRoutine(SomeProc, {})).rejects.toThrow(/Stored procedures are not supported on SQLite/);
 
     await orm3.close(true);
   });

@@ -70,8 +70,13 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     const rows = (await this.execute(`call ${qualified}(${placeholders})`, positional, 'all', ctx)) as Dictionary[];
     const row = rows[0] ?? {};
 
+    // Detect refcursor OUT params declaratively — their value in the CALL response row is the
+    // server-generated cursor name we need to FETCH from. Non-refcursor OUT/INOUT params get
+    // copied back into the caller's ScalarReference as a scalar value.
+    const refcursorParams = routine.params.filter(p => p.direction !== 'in' && /^refcursor$/i.test(p.type));
+
     for (const param of routine.params) {
-      if (param.direction === 'in') {
+      if (param.direction === 'in' || refcursorParams.includes(param)) {
         continue;
       }
 
@@ -82,31 +87,31 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
       }
     }
 
-    // Multi-result-set procedures in Postgres open `refcursor` OUT params; we FETCH each cursor
-    // inside the same transaction the CALL ran in (cursors don't live outside a transaction).
-    // `resultSets` is only valid alongside refcursor OUT params — we collect them from `row`
-    // and fetch in declaration order.
-    if (routine.resultSets != null) {
-      return (await this.fetchRefcursors(row, routine, ctx)) as T;
+    if (refcursorParams.length > 0) {
+      return (await this.fetchRefcursors(row, routine, refcursorParams, ctx)) as T;
     }
 
     return rows as T;
   }
 
   /**
-   * Iterates the OUT params in declaration order, FETCHes `all` rows from each refcursor name,
-   * and returns the per-cursor row arrays. The CALL must have been wrapped in a transaction by
-   * the caller, since refcursors are scoped to their owning transaction.
+   * Iterates the refcursor OUT params in declaration order, FETCHes `all` rows from each cursor
+   * name, and returns the per-cursor row arrays. The CALL must have been wrapped in a transaction
+   * by the caller, since refcursors are scoped to their owning transaction.
    */
-  private async fetchRefcursors(row: Dictionary, routine: RoutineMetadata, ctx?: Transaction): Promise<Dictionary[][]> {
+  private async fetchRefcursors(
+    row: Dictionary,
+    routine: RoutineMetadata,
+    refcursorParams: typeof routine.params,
+    ctx?: Transaction,
+  ): Promise<Dictionary[][]> {
     if (!ctx) {
       throw new Error(
-        `Routine ${routine.routineName} declares 'resultSets' on PostgreSQL but was not called inside a transaction. Wrap the call in 'em.transactional(...)' so the refcursor OUT params remain valid for FETCH.`,
+        `Routine ${routine.routineName} declares refcursor OUT params on PostgreSQL but was not called inside a transaction. Wrap the call in 'em.transactional(...)' so the refcursor OUT params remain valid for FETCH.`,
       );
     }
 
-    const cursorNames = routine.params
-      .filter(p => p.direction !== 'in')
+    const cursorNames = refcursorParams
       .map(p => row[p.name as string])
       .filter((name): name is string => typeof name === 'string');
 

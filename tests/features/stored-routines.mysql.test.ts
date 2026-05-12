@@ -45,7 +45,6 @@ const TwoSets = defineRoutine({
   name: 'two_sets',
   type: 'procedure',
   params: {},
-  resultSets: 2,
   body: `
     select 1 as a;
     select 'foo' as label, 10 as n union select 'bar', 20;

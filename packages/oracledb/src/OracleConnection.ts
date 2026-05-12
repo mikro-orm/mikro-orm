@@ -285,7 +285,7 @@ export class OracleConnection extends AbstractSqlConnection {
           continue;
         }
 
-        if (isRefCursor && routine.resultSets != null) {
+        if (isRefCursor) {
           bindings[p.name as string] = { dir: oracledb.BIND_OUT, type: oracledb.DB_TYPE_CURSOR };
           refCursorParams.push(p.name as string);
           continue;
@@ -311,11 +311,11 @@ export class OracleConnection extends AbstractSqlConnection {
       });
       const outBinds = result.outBinds as Dictionary | undefined;
 
-      // When `resultSets` is set, walk the bound REF CURSORs in declaration order, draining each
-      // into rows. Otherwise treat OUT/INOUT binds as scalar refs (existing behaviour). Oracle's
-      // REF CURSOR ResultSet inherits the execute call's `outFormat`, so we set OBJECT mode above
-      // to get `{ column: value }` rows that match the other drivers' shape.
-      if (routine.resultSets != null && outBinds) {
+      // When the proc has REF CURSOR OUT params, walk them in declaration order and drain each
+      // into rows. Otherwise treat OUT/INOUT binds as scalar refs. Oracle's REF CURSOR ResultSet
+      // inherits the execute call's `outFormat`, so we set OBJECT mode above to get
+      // `{ column: value }` rows that match the other drivers' shape.
+      if (refCursorParams.length > 0 && outBinds) {
         const sets: Dictionary[][] = [];
 
         for (const name of refCursorParams) {

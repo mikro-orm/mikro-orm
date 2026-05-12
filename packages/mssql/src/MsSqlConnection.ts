@@ -101,16 +101,6 @@ export class MsSqlConnection extends AbstractSqlConnection {
       return convertRoutineOutbound<T>(rows[0]?.value, routine.returnCustomType, this.platform);
     }
 
-    if (routine.resultSets != null) {
-      // tedious flattens multiple result sets into a single rows array without preserving the
-      // per-set boundaries through the kysely wrapper, so we cannot reliably split them here.
-      // The escape hatch is to call the proc via `em.getConnection().execute(...)` and rely on
-      // the raw tedious result, or to refactor each result set into its own EXEC call.
-      throw new Error(
-        `Multi-result-set procedures are not yet supported on MSSQL through em.callRoutine. Call '${routine.routineName}' via em.getConnection().execute() for raw access, or split the procedure into separate EXECs each returning a single result set.`,
-      );
-    }
-
     // T-SQL session variables don't persist across separate execute() calls (each one may use a
     // different pool connection). Build a single batch with DECLARE + SET + EXEC + SELECT so the
     // variables stay scoped to one request.

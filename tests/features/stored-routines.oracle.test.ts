@@ -46,7 +46,6 @@ const TwoCursors = defineRoutine({
     c1: { type: 'sys_refcursor', direction: 'out', ref: true },
     c2: { type: 'sys_refcursor', direction: 'out', ref: true },
   },
-  resultSets: 2,
   body: p => `
     open ${p.c1} for select 1 as a from dual union select 2 from dual order by a;
     open ${p.c2} for select 'foo' as label, 10 as n from dual union select 'bar', 20 from dual order by n;

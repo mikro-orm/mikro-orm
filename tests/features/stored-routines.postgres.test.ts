@@ -89,7 +89,6 @@ const TwoCursors = defineRoutine({
     c1: { type: 'refcursor', direction: 'out', ref: true },
     c2: { type: 'refcursor', direction: 'out', ref: true },
   },
-  resultSets: 2,
   body: `
     open c1 for select 1 as a union select 2 as a order by a;
     open c2 for select 'foo'::text as label, 10 as n union select 'bar', 20 order by n;

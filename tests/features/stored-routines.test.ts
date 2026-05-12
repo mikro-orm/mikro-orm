@@ -172,33 +172,4 @@ describe('stored routines — metadata layer', () => {
     const validator = new MetadataValidator();
     expect(() => validator.validateRoutineDefinition(meta)).toThrow(/has invalid direction 'sideways'/);
   });
-
-  it('validator rejects resultSets on a function', () => {
-    const meta = new RoutineMetadata({
-      className: 'BadResultSets',
-      routineName: 'bad_result_sets',
-      type: 'function',
-      returns: { runtimeType: 'string' },
-      body: 'select 1',
-      resultSets: 2,
-    });
-
-    const validator = new MetadataValidator();
-    expect(() => validator.validateRoutineDefinition(meta)).toThrow(/declares 'resultSets' on a function/);
-  });
-
-  it('validator rejects invalid resultSets values (zero, negative, non-integer)', () => {
-    const validator = new MetadataValidator();
-
-    for (const bad of [0, -1, 1.5, Number.NaN] as number[]) {
-      const meta = new RoutineMetadata({
-        className: 'BadResultSets',
-        routineName: 'bad_result_sets',
-        type: 'procedure',
-        body: 'select 1',
-        resultSets: bad,
-      });
-      expect(() => validator.validateRoutineDefinition(meta)).toThrow(/invalid 'resultSets' value/);
-    }
-  });
 });

@@ -112,28 +112,4 @@ describe('stored routines — MSSQL', () => {
 
     await orm2.close(true);
   });
-
-  it('multi-result-set procedures throw a clear "not yet supported" error on MSSQL', async () => {
-    const TwoSets = defineRoutine({
-      name: 'mssql_two_sets',
-      type: 'procedure',
-      params: {},
-      resultSets: 2,
-      body: 'select 1 as a; select 2 as b;',
-    });
-
-    const orm2 = await MikroORM.init({
-      dbName,
-      password: 'Root.Root',
-      entities: [RecordEntity],
-      routines: [TwoSets, SqlHash, AddRecord],
-    });
-    await orm2.schema.update();
-
-    await expect(orm2.em.callRoutine(TwoSets, {})).rejects.toThrow(
-      /Multi-result-set procedures are not yet supported on MSSQL/,
-    );
-
-    await orm2.close(true);
-  });
 });

@@ -1230,21 +1230,6 @@ export interface RoutineDef<T = any> {
   /** Routine return shape — see {@link RoutineReturns}. Required for `type: 'function'`. */
   returns?: RoutineReturns<T>;
   /**
-   * Declares that this procedure emits `N` result sets. When set, `em.callRoutine` returns the
-   * result sets as `Dictionary[][]` instead of the default scalar/void. Driver support varies:
-   *
-   *  - **MySQL / MariaDB**: native — the proc body simply contains `N` `SELECT` statements.
-   *  - **PostgreSQL**: requires `N` `refcursor` OUT params; the connection auto-FETCHes each one
-   *    inside an implicit transaction.
-   *  - **Oracle**: requires `N` `sys_refcursor` OUT params with `direction: 'out'`, `ref: true`.
-   *  - **MSSQL**: not yet supported through the high-level API — call via
-   *    `em.getConnection().execute()` for now.
-   *  - **SQLite / Mongo**: not supported (no procedure concept).
-   *
-   * Valid only for `type: 'procedure'`; setting on a function throws at metadata validation.
-   */
-  resultSets?: number;
-  /**
    * Schema-diff fields to ignore when comparing this routine's database state with the metadata.
    * Useful for routines whose body is normalised differently by the server vs. what the user wrote.
    */
@@ -1328,8 +1313,6 @@ export class RoutineMetadata<T = any, Class extends EntityCtor<T> = EntityCtor<T
   returns?: RoutineReturns<T>;
   /** Resolved Type instance for scalar function returns, when `returns.customType` is declared. */
   returnCustomType?: Type<unknown>;
-  /** Number of result sets the procedure emits — see {@link RoutineDef.resultSets}. */
-  resultSets?: number;
   ignoreSchemaChanges?: RoutineIgnoreField[];
 
   constructor(meta: Partial<RoutineMetadata<T>> = {}) {
@@ -1377,7 +1360,6 @@ export class RoutineMetadata<T = any, Class extends EntityCtor<T> = EntityCtor<T
       expression: config.expression,
       bodyJs: config.bodyJs,
       returns: config.returns,
-      resultSets: config.resultSets,
       ignoreSchemaChanges: config.ignoreSchemaChanges,
     });
 

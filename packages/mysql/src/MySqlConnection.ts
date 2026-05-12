@@ -99,7 +99,10 @@ export class MySqlConnection extends AbstractSqlConnection {
   /**
    * MySQL-specific routine invocation. Functions are invoked via `SELECT fn(?, ?) AS value`.
    * Procedures bind OUT/INOUT parameters to session variables (`SET @v0 := ?; CALL proc(?, @v0);
-   * SELECT @v0`) and copy the values back into the caller's `ScalarReference` instances.
+   * SELECT @v0`) and copy the values back into the caller's `ScalarReference` instances. When
+   * the procedure body emits one or more SELECT statements, the result sets are returned as
+   * `Dictionary[][]`; mysql2's response marks end-of-stream with a non-array OkPacket, so the
+   * count of emitted sets is detected at runtime without needing user-side declaration.
    */
   override async callRoutine<T>(
     routine: RoutineMetadata,
@@ -150,38 +153,31 @@ export class MySqlConnection extends AbstractSqlConnection {
       }
     }
 
-    // When `resultSets` is declared, the proc body contains N SELECT statements and mysql2
-    // returns each set as its own array element (plus a trailing OK packet). We extract the
-    // first N elements; OUT/INOUT params are not supported alongside multi-rs procs.
-    if (routine.resultSets != null) {
-      const result = (await this.execute(
-        `call ${name}(${callPlaceholders.join(', ')})`,
-        callValues,
-        'all',
-        ctx,
-      )) as Dictionary[][];
-      return result.slice(0, routine.resultSets) as T;
-    }
+    // CALL response from mysql2 is an array of result sets followed by a trailing OK packet
+    // (non-array). Filter to just the row arrays — that's the natural result-set count.
+    const callResult = (await this.execute(
+      `call ${name}(${callPlaceholders.join(', ')})`,
+      callValues,
+      'all',
+      ctx,
+    )) as unknown[];
+    const resultSets = callResult.filter(Array.isArray) as Dictionary[][];
 
-    await this.execute(`call ${name}(${callPlaceholders.join(', ')})`, callValues, 'run', ctx);
+    if (outVarParams.length > 0) {
+      const selectClause = outVarParams.map(o => `${o.varName} as \`${o.name}\``).join(', ');
+      const rows = (await this.execute(`select ${selectClause}`, [], 'all', ctx)) as Dictionary[];
+      const row = rows[0] ?? {};
 
-    if (outVarParams.length === 0) {
-      return undefined as T;
-    }
+      for (const { name: paramName, param } of outVarParams) {
+        const ref = args[paramName];
 
-    const selectClause = outVarParams.map(o => `${o.varName} as \`${o.name}\``).join(', ');
-    const rows = (await this.execute(`select ${selectClause}`, [], 'all', ctx)) as Dictionary[];
-    const row = rows[0] ?? {};
-
-    for (const { name: paramName, param } of outVarParams) {
-      const ref = args[paramName];
-
-      if (ref instanceof ScalarReference) {
-        ref.set(convertRoutineOutbound(row[paramName], param.customType, this.platform));
+        if (ref instanceof ScalarReference) {
+          ref.set(convertRoutineOutbound(row[paramName], param.customType, this.platform));
+        }
       }
     }
 
-    return undefined as T;
+    return (resultSets.length > 0 ? resultSets : undefined) as T;
   }
 
   override async commit(

@@ -4,7 +4,7 @@ title: Stored Routines
 
 :::caution Experimental
 
-Stored-routine support landed in v7.1 and is considered **experimental** while we gather real-world feedback. The metadata shapes (`RoutineDef`, `RoutineParamConfig`, `RoutineReturns`, `resultSets`) and runtime behaviour may evolve in a patch release. Pin your MikroORM version if you rely on the exact API shape.
+Stored-routine support landed in v7.1 and is considered **experimental** while we gather real-world feedback. The metadata shapes (`RoutineDef`, `RoutineParamConfig`, `RoutineReturns`) and runtime behaviour may evolve in a patch release. Pin your MikroORM version if you rely on the exact API shape.
 
 :::
 
@@ -220,22 +220,26 @@ libSQL is **not** a drop-in replacement here: the `libsql` client does not curre
 
 ## Multi-result-set procedures
 
-Procedures that emit several result sets can be declared via `resultSets: N`. The exact mechanism is dialect-specific:
+Procedures that emit several result sets work out of the box — the driver detects them at runtime and `em.callRoutine` returns `Dictionary[][]` (one row array per set). No metadata declaration is needed; the mechanism is dialect-specific:
 
 ```ts
-// MySQL / MariaDB — body contains N SELECTs; mysql2 surfaces each set natively.
+// MySQL / MariaDB — body contains N SELECTs; mysql2's end-of-stream marker tells us when
+// the result-set list ends, so the count is detected automatically.
 const TwoSets = defineRoutine({
   name: 'two_sets',
   type: 'procedure',
   params: {},
-  resultSets: 2,
   body: `
     select 1 as a;
     select 'foo' as label, 10 as n union select 'bar', 20;
   `,
 });
 
-// PostgreSQL — open N refcursor OUT params; the connection FETCHes each one.
+const sets = await em.callRoutine<unknown[][]>(TwoSets, {});
+// sets[0] === [{ a: 1 }]
+// sets[1] === [{ label: 'foo', n: 10 }, { label: 'bar', n: 20 }]
+
+// PostgreSQL — declare N refcursor OUT params; the connection FETCHes each one.
 // The call must be wrapped in a transaction so the cursors stay alive for FETCH.
 const TwoCursors = defineRoutine({
   name: 'two_cursors',
@@ -245,7 +249,6 @@ const TwoCursors = defineRoutine({
     c1: { type: 'refcursor', direction: 'out', ref: true },
     c2: { type: 'refcursor', direction: 'out', ref: true },
   },
-  resultSets: 2,
   body: `
     open c1 for select * from "user";
     open c2 for select * from book;
@@ -254,7 +257,7 @@ const TwoCursors = defineRoutine({
 
 const [pgUsers, pgBooks] = await em.transactional(em => em.callRoutine(TwoCursors, {}));
 
-// Oracle — sys_refcursor OUT params; oracledb binds them as DB_TYPE_CURSOR.
+// Oracle — declare sys_refcursor OUT params; oracledb binds them as DB_TYPE_CURSOR.
 // Do NOT wrap Oracle calls in em.transactional (see the caution above).
 const TwoCursorsOra = defineRoutine({
   name: 'two_cursors',
@@ -263,7 +266,6 @@ const TwoCursorsOra = defineRoutine({
     c1: { type: 'sys_refcursor', direction: 'out', ref: true },
     c2: { type: 'sys_refcursor', direction: 'out', ref: true },
   },
-  resultSets: 2,
   body: p => `
     open ${p.c1} for select 1 from dual;
     open ${p.c2} for select 2 from dual;
@@ -273,19 +275,17 @@ const TwoCursorsOra = defineRoutine({
 const [oraSets1, oraSets2] = await em.callRoutine<unknown[][]>(TwoCursorsOra, {});
 ```
 
-When `resultSets` is set, `em.callRoutine` returns `Dictionary[][]` — one row array per declared result set. Driver support:
+Driver support:
 
-- **MySQL / MariaDB**: full support — proc body contains N `SELECT`s.
-- **PostgreSQL**: full support via `refcursor` OUT params. **Must** be called inside `em.transactional`.
+- **MySQL / MariaDB**: full support. Proc body contains N `SELECT`s; mysql2's response array carries each set, terminated by an OkPacket the connection filters out.
+- **PostgreSQL**: full support via `refcursor` OUT params. **Must** be called inside `em.transactional`. Refcursor params are detected by `type: 'refcursor'` — non-refcursor OUT params still behave as scalar `ScalarReference` outputs.
 - **Oracle**: full support via `sys_refcursor` OUT params. **Must not** be called inside `em.transactional` — Oracle's routine path uses its own pool connection.
-- **MSSQL**: not yet — the high-level API throws with a clear message. Use `em.getConnection().execute()` if you need raw multi-recordset access, or split the procedure into separate EXECs.
-- **SQLite / Mongo**: no stored procedure concept; throws.
-
-`resultSets` is only valid on `type: 'procedure'`. Setting it on a function throws at metadata validation.
+- **MSSQL**: result sets emitted by a procedure are not surfaced through `em.callRoutine` — tedious flattens them through the kysely wrapper without per-set boundaries. Use `em.getConnection().execute()` for raw multi-recordset access.
+- **SQLite / libSQL / Mongo**: no stored procedure concept; throws.
 
 :::note Likely to evolve
 
-`resultSets` currently returns plain `Dictionary[][]` (raw row arrays). Static tuple typing (`resultSets: [Author, Book]` → `[Author[], Book[]]`) and dynamic hydration via a `(fields, index) => EntityClass` callback — for procedures whose emitted set shape depends on a runtime branch — are the natural next steps. Plan for the metadata shape here to change in a patch release once those use cases land.
+`em.callRoutine` currently returns plain `Dictionary[][]` for result-set-emitting procedures. Static tuple typing (`returns: [Author, Book]` → `[Author[], Book[]]`) and dynamic hydration via a `(fields, index) => EntityClass` callback — for procedures whose emitted set shape depends on a runtime branch — are the natural next steps. Plan for typed result-set hydration to be added in a future minor release.
 
 :::
 
@@ -293,4 +293,4 @@ When `resultSets` is set, `em.callRoutine` returns `Dictionary[][]` — one row 
 
 - The default body diff strips trailing semicolons, normalises whitespace, and compares the result. If the database canonicalises your body more aggressively than that, set `ignoreSchemaChanges: ['body']` on the affected routines.
 - Multi-result-set procedures on MSSQL still need to go through `em.getConnection().execute()` — the high-level `em.callRoutine` returns `Dictionary[][]` only for MySQL/MariaDB, PostgreSQL, and Oracle.
-- Entity-typed result-set hydration (e.g. `resultSets: [User, Book]` mapping rows onto entity classes) is not yet supported; the result rows come back as plain `Dictionary`s.
+- Entity-typed result-set hydration (mapping rows onto entity classes) is not yet supported; result rows come back as plain `Dictionary`s. A `returns: [User, Book]` static tuple form and a `(fields, index) => EntityClass` dynamic callback are tracked as follow-ups.
