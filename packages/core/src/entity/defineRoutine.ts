@@ -8,8 +8,9 @@ export interface RoutineDefinition {
 
 /**
  * Schema-less helper for declaring a stored procedure or function without a class.
- * Sibling of {@link defineEntity}; produces a {@link RoutineMetadata} object that can be
- * passed alongside entities in `MikroORM.init({ entities: [...] })`.
+ * Sibling of {@link defineEntity}; produces a {@link RoutineMetadata} object that is
+ * registered via the dedicated `routines` config option (separate from `entities`,
+ * the same way `subscribers` is its own slot).
  *
  * @example
  * ```ts
@@ -19,6 +20,11 @@ export interface RoutineDefinition {
  *   params: { name: { type: 'string' }, salt: { type: 'string' } },
  *   returns: { runtimeType: 'string', columnType: 'char(40)' },
  *   body: (p) => `SELECT SHA1(CONCAT(${p.name}, ${p.salt}))`,
+ * });
+ *
+ * await MikroORM.init({
+ *   entities: [User],
+ *   routines: [HashUser],
  * });
  * ```
  */

@@ -8,7 +8,7 @@ Stored-routine support landed in v7.1 and is considered **experimental** while w
 
 :::
 
-MikroORM can declare, manage, and invoke stored procedures and functions. Routine definitions live alongside your entities and are managed by the schema generator and migration system — they're created, updated, and removed automatically.
+MikroORM can declare, manage, and invoke stored procedures and functions. Routines are registered via a dedicated `routines` config option (separate from `entities`, mirroring how `subscribers` works) and are managed by the schema generator and migration system — they're created, updated, and removed automatically.
 
 ## Driver support
 
