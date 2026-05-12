@@ -7,9 +7,14 @@ import { AbstractSqlConnection, Utils } from '@mikro-orm/sql';
 /** PostgreSQL database connection using the `pg` driver. */
 export class PostgreSqlConnection extends AbstractSqlConnection {
   override createKyselyDialect(overrides: PoolConfig): PostgresDialect {
-    const options = this.mapOptions(overrides);
+    const { onPoolCreated, ...poolOverrides } = (overrides ?? {}) as PoolConfig & {
+      onPoolCreated?: (pool: Pool) => unknown;
+    };
+    const options = this.mapOptions(poolOverrides);
+    const pool = new Pool(options);
+    void onPoolCreated?.(pool);
     return new PostgresDialect({
-      pool: new Pool(options),
+      pool,
       cursor: Cursor,
       onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
     });
