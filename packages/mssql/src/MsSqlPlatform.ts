@@ -82,6 +82,11 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return false;
   }
 
+  /** SQL Server identifier limit (sysname). */
+  override getMaxIdentifierLength(): number {
+    return 128;
+  }
+
   override supportsSchemas(): boolean {
     return true;
   }

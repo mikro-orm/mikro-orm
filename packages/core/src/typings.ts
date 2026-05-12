@@ -1260,9 +1260,11 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
     this.virtual = !!this.expression && !this.view;
 
     if (config) {
+      const platform = config.getPlatform();
+
       for (const prop of this.props) {
         if (prop.enum && !prop.nativeEnumName && prop.items?.every(item => typeof item === 'string')) {
-          const name = config.getNamingStrategy().indexName(this.tableName, prop.fieldNames, 'check');
+          const name = platform.getIndexName(this.tableName, prop.fieldNames, 'check');
           const exists = this.checks.findIndex(check => check.name === name);
 
           if (exists !== -1) {
@@ -1272,9 +1274,7 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
           this.checks.push({
             name,
             property: prop.name,
-            expression: config
-              .getPlatform()
-              .getEnumCheckConstraintExpression(prop.fieldNames[0], prop.items as string[]),
+            expression: platform.getEnumCheckConstraintExpression(prop.fieldNames[0], prop.items as string[]),
           });
         }
       }

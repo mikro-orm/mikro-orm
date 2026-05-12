@@ -79,6 +79,11 @@ export class OraclePlatform extends AbstractSqlPlatform {
     return false;
   }
 
+  /** Oracle 12.2+ identifier limit (pre-12.2 is 30 chars). */
+  override getMaxIdentifierLength(): number {
+    return 128;
+  }
+
   override compareUuids(): string {
     return 'any';
   }

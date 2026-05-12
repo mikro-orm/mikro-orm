@@ -1,5 +1,4 @@
 import {
-  Utils,
   type SimpleColumnMeta,
   type Type,
   type TransformContext,
@@ -119,26 +118,21 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
-  /**
-   * Returns the default name of index for the given columns
-   * cannot go past 64 character length for identifiers in MySQL
-   */
+  /** MySQL/MariaDB identifier limit. */
+  override getMaxIdentifierLength(): number {
+    return 64;
+  }
+
   override getIndexName(
     tableName: string,
     columns: string[],
-    type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence',
+    type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence' | 'check',
   ): string {
     if (type === 'primary') {
       return this.getDefaultPrimaryName(tableName, columns);
     }
 
-    const indexName = super.getIndexName(tableName, columns, type);
-
-    if (indexName.length > 64) {
-      return `${indexName.substring(0, 56 - type.length)}_${Utils.hash(indexName, 5)}_${type}`;
-    }
-
-    return indexName;
+    return super.getIndexName(tableName, columns, type);
   }
 
   override getDefaultPrimaryName(tableName: string, columns: string[]): string {
