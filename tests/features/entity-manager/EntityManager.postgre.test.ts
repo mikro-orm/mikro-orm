@@ -35,6 +35,7 @@ import {
   wrap,
 } from '@mikro-orm/postgresql';
 import knex from 'knex';
+import { Pool } from 'pg';
 import { raw as rawKnex } from '@mikro-orm/knex-compat';
 import {
   Address2,
@@ -125,6 +126,30 @@ describe('EntityManagerPostgre', () => {
       port: 1234,
       user: 'user',
     });
+  });
+
+  test('driverOptions.onPoolCreated receives the pg.Pool', async () => {
+    let receivedPool: Pool | undefined;
+    const config = new Configuration(
+      {
+        driver: PostgreSqlDriver,
+        clientUrl: 'postgre://root@127.0.0.1:1234/db_name',
+        logger: vi.fn(),
+      } as any,
+      false,
+    );
+    const driver = new PostgreSqlDriver(config);
+    driver.getConnection().createKyselyDialect({
+      onPoolCreated: (pool: Pool) => {
+        receivedPool = pool;
+        pool.on('error', () => void 0);
+      },
+    } as any);
+
+    expect(receivedPool).toBeInstanceOf(Pool);
+    expect(receivedPool!.listenerCount('error')).toBe(1);
+    // the hook key must not be forwarded into the pg PoolConfig
+    expect(Object.prototype.hasOwnProperty.call((receivedPool as any).options, 'onPoolCreated')).toBe(false);
   });
 
   test('raw query with array param', async () => {
