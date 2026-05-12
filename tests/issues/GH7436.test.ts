@@ -1,5 +1,5 @@
 import { MikroORM, PrimaryKeyProp, Ref, ref } from '@mikro-orm/sqlite';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 import {
   Entity,
   ManyToOne,
