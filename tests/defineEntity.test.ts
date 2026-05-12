@@ -27,7 +27,7 @@ import {
   p,
   ScalarRef,
 } from '@mikro-orm/core';
-import type { PropertyChain, UniversalPropertyOptionsBuilder } from '../packages/core/src/entity/defineEntity';
+import type { PropertyChain, UniversalPropertyOptionsBuilder } from '../packages/core/src/entity/defineEntity.js';
 import { IsExact, assert } from 'conditional-type-checks';
 import { ObjectId } from 'bson';
 
