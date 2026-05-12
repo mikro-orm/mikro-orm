@@ -473,23 +473,9 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
     return 'public';
   }
 
-  /**
-   * Returns the default name of index for the given columns
-   * cannot go past 63 character length for identifiers in Postgres
-   */
-  override getIndexName(
-    tableName: string,
-    columns: string[],
-    type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence' | 'check',
-  ): string {
-    const indexName = super.getIndexName(tableName, columns, type);
-
-    if (indexName.length > 63) {
-      const suffix = type === 'primary' ? 'pkey' : type;
-      return `${indexName.substring(0, 55 - type.length)}_${Utils.hash(indexName, 5)}_${suffix}`;
-    }
-
-    return indexName;
+  /** Postgres identifier limit (NAMEDATALEN - 1). */
+  override getMaxIdentifierLength(): number {
+    return 63;
   }
 
   override getDefaultPrimaryName(tableName: string, columns: string[]): string {

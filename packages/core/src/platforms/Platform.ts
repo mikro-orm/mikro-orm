@@ -813,14 +813,33 @@ export abstract class Platform {
   }
 
   /**
-   * Returns the default name of index for the given columns
+   * Maximum length of identifiers (table, column, index, constraint, …) the platform supports.
+   * Names produced by {@link getIndexName} above this limit are hash-truncated. Defaults to
+   * `Infinity` (no truncation); SQL platforms override with their engine's limit
+   * (PG 63, MySQL/MariaDB 64, MSSQL/Oracle 128).
+   */
+  getMaxIdentifierLength(): number {
+    return Infinity;
+  }
+
+  /**
+   * Returns the default name of index for the given columns, hash-truncated if it would
+   * exceed {@link getMaxIdentifierLength}.
    */
   getIndexName(
     tableName: string,
     columns: string[],
     type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence' | 'check',
   ): string {
-    return this.namingStrategy.indexName(tableName, columns, type);
+    const indexName = this.namingStrategy.indexName(tableName, columns, type);
+    const max = this.getMaxIdentifierLength();
+
+    if (indexName.length > max) {
+      const suffix = type === 'primary' ? 'pkey' : type;
+      return `${indexName.substring(0, max - 8 - type.length)}_${Utils.hash(indexName, 5)}_${suffix}`;
+    }
+
+    return indexName;
   }
 
   /** Returns the default primary key constraint name. */
