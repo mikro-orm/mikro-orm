@@ -1008,8 +1008,13 @@ export class EntityLoader {
       return ret;
     }, [] as EntityField<Entity>[]);
 
-    // we need to automatically select the FKs too, e.g. for 1:m relations to be able to wire them with the items
-    if (prop.kind === ReferenceKind.ONE_TO_MANY || prop.kind === ReferenceKind.MANY_TO_MANY) {
+    // we need to automatically select the FKs too, e.g. for 1:m and inverse 1:1 relations
+    // to be able to wire them with the items
+    if (
+      prop.kind === ReferenceKind.ONE_TO_MANY ||
+      prop.kind === ReferenceKind.MANY_TO_MANY ||
+      (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner)
+    ) {
       const owner = prop.targetMeta!.properties[prop.mappedBy] as EntityProperty<Entity>;
 
       // when the owning FK is lazy, we need to explicitly select it even without user-provided fields,
