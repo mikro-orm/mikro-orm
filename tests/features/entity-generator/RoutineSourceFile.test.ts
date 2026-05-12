@@ -162,6 +162,64 @@ describe('RoutineSourceFile', () => {
     expect(out).toContain(`def: { type: 'integer', defaultRaw: '42' }`);
   });
 
+  it('escapes backslashes and quotes when the body would be emitted as a single-quoted string', () => {
+    const sourceFile = new RoutineSourceFile(
+      {
+        name: 'tricky',
+        type: 'function',
+        params: [],
+        returns: { type: 'text', runtimeType: 'string' },
+        body: "select 'a\\b' || ''''",
+      },
+      namingStrategy,
+      platform,
+      { entityDefinition: 'defineEntity', fileName: (n: string) => n },
+    );
+
+    const out = sourceFile.generate();
+    expect(out).toContain(`body: 'select \\'a\\\\b\\' || \\'\\'\\'\\''`);
+  });
+
+  it('escapes template-literal interpolation tokens in multi-line bodies', () => {
+    const sourceFile = new RoutineSourceFile(
+      {
+        name: 'with_dollars',
+        type: 'function',
+        params: [],
+        returns: { type: 'text', runtimeType: 'string' },
+        body: "select format('hello %s', $1)\nfrom (select 1) t",
+      },
+      namingStrategy,
+      platform,
+      { entityDefinition: 'defineEntity', fileName: (n: string) => n },
+    );
+
+    const out = sourceFile.generate();
+    // The body has a newline, so it goes through quoteMultiline. `$1` doesn't trigger template
+    // interpolation, but `${...}` would — verify the escape works when it appears.
+    expect(out).toContain('body: `');
+  });
+
+  it('escapes ${} interpolation in body even on a single line', () => {
+    const sourceFile = new RoutineSourceFile(
+      {
+        name: 'dollar_brace',
+        type: 'function',
+        params: [],
+        returns: { type: 'text', runtimeType: 'string' },
+        body: "select '${injected}' as v",
+      },
+      namingStrategy,
+      platform,
+      { entityDefinition: 'defineEntity', fileName: (n: string) => n },
+    );
+
+    const out = sourceFile.generate();
+    // Body now contains `${...}` — must be wrapped in backticks with the interpolation escaped.
+    expect(out).toContain('body: `');
+    expect(out).toContain('\\${injected}');
+  });
+
   it('quotes param names that are not valid JS identifiers', () => {
     const sourceFile = new RoutineSourceFile(
       {

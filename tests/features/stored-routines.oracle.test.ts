@@ -111,4 +111,10 @@ describe('stored routines — Oracle', () => {
       { label: 'bar', n: 20 },
     ]);
   });
+
+  it('throws when invoked inside em.transactional (Oracle callRoutine cannot share the EM transaction)', async () => {
+    await expect(
+      orm.em.transactional(em => em.callRoutine<string>(SqlHash, { p_name: 'x', p_age: 1 })),
+    ).rejects.toThrow(/Oracle's callRoutine runs on its own pool connection/);
+  });
 });

@@ -949,21 +949,31 @@ export class OracleSchemaHelper extends SchemaHelper {
         and p.PROCEDURE_NAME is null
     `;
 
-    const [rows, params] = await Promise.all([
+    const [rows, paramsAndReturns] = await Promise.all([
       connection.execute<{ name: string; kind: 'PROCEDURE' | 'FUNCTION'; source: string }[]>(sql),
       this.getAllRoutineParams(connection),
     ]);
+    const { params, returns } = paramsAndReturns;
 
     return rows.map(row => ({
       name: row.name,
       type: row.kind.toLowerCase() as 'procedure' | 'function',
       body: this.unwrapPlSqlBody(row.source ?? ''),
       params: params.get(row.name) ?? [],
-      returns: row.kind === 'FUNCTION' ? { type: 'VARCHAR2', nullable: true } : undefined,
+      returns: row.kind === 'FUNCTION' ? (returns.get(row.name) ?? { type: 'VARCHAR2', nullable: true }) : undefined,
     }));
   }
 
-  private async getAllRoutineParams(connection: AbstractSqlConnection): Promise<Map<string, SqlRoutineDef['params']>> {
+  private async getAllRoutineParams(connection: AbstractSqlConnection): Promise<{
+    params: Map<string, SqlRoutineDef['params']>;
+    returns: Map<string, NonNullable<SqlRoutineDef['returns']>>;
+  }> {
+    // USER_ARGUMENTS represents a function's return type as a row with POSITION = 0 and
+    // ARGUMENT_NAME = NULL. Read both shapes in one query so schema-diff sees the real return
+    // type rather than a hard-coded VARCHAR2 fallback. The `PACKAGE_NAME is null` filter scopes
+    // results to standalone routines (matching the `PROCEDURE_NAME is null` filter on the parent
+    // USER_PROCEDURES query) so packaged routine rows don't leak into the standalone map when
+    // names collide.
     const sql = `
       select
         OBJECT_NAME as routine_name,
@@ -972,33 +982,39 @@ export class OracleSchemaHelper extends SchemaHelper {
         IN_OUT as direction,
         POSITION as position
       from USER_ARGUMENTS
-      where ARGUMENT_NAME is not null
+      where PACKAGE_NAME is null
       order by OBJECT_NAME, POSITION
     `;
     const rows = await connection.execute<
       {
         routine_name: string;
-        param_name: string;
+        param_name: string | null;
         type: string;
         direction: 'IN' | 'OUT' | 'IN/OUT';
         position: number;
       }[]
     >(sql);
 
-    const out = new Map<string, SqlRoutineDef['params']>();
+    const params = new Map<string, SqlRoutineDef['params']>();
+    const returns = new Map<string, NonNullable<SqlRoutineDef['returns']>>();
     for (const row of rows) {
-      if (!out.has(row.routine_name)) {
-        out.set(row.routine_name, []);
+      if (row.position === 0 && row.param_name == null) {
+        returns.set(row.routine_name, { type: row.type, nullable: true });
+        continue;
+      }
+
+      if (!params.has(row.routine_name)) {
+        params.set(row.routine_name, []);
       }
       const direction = row.direction === 'IN/OUT' ? 'inout' : row.direction === 'OUT' ? 'out' : 'in';
-      out.get(row.routine_name)!.push({
-        name: row.param_name,
+      params.get(row.routine_name)!.push({
+        name: row.param_name!,
         type: row.type,
         direction,
       });
     }
 
-    return out;
+    return { params, returns };
   }
 
   private unwrapPlSqlBody(source: string): string {

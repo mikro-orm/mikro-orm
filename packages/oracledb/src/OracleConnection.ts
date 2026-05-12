@@ -17,6 +17,34 @@ import { convertRoutineInbound, convertRoutineOutbound, ScalarReference, type Ro
 import { CompiledQuery } from 'kysely';
 import oracledb, { type ExecuteOptions, type PoolAttributes } from 'oracledb';
 
+/**
+ * Maps a routine's declared runtime type to an oracledb bind-descriptor fragment (type + optional
+ * `maxSize`). Falls back to STRING/4000 when the metadata doesn't pin down a primitive runtime
+ * type — the previous default — so existing string-returning routines keep working without
+ * changes. Shared between scalar function returns and procedure OUT/INOUT params.
+ */
+function oracleBindTypeFromRuntime(runtime: string | undefined): Dictionary {
+  if (runtime === 'number' || runtime === 'bigint') {
+    return { type: oracledb.NUMBER };
+  }
+
+  if (runtime === 'Date') {
+    return { type: oracledb.DATE };
+  }
+
+  if (runtime === 'Buffer') {
+    return { type: oracledb.BUFFER, maxSize: 4000 };
+  }
+
+  return { type: oracledb.STRING, maxSize: 4000 };
+}
+
+function oracleReturnBind(routine: RoutineMetadata): Dictionary {
+  const returns = routine.returns;
+  const runtime = returns && typeof returns === 'object' && 'runtimeType' in returns ? returns.runtimeType : undefined;
+  return { dir: oracledb.BIND_OUT, ...oracleBindTypeFromRuntime(runtime) };
+}
+
 /** Oracle database connection using the `oracledb` driver. */
 export class OracleConnection extends AbstractSqlConnection {
   private oraclePool?: oracledb.Pool;
@@ -196,11 +224,27 @@ export class OracleConnection extends AbstractSqlConnection {
    * Oracle-specific routine invocation. Builds an anonymous PL/SQL block that calls the routine
    * with named bind parameters, using oracledb's `BIND_IN` / `BIND_INOUT` / `BIND_OUT` direction
    * flags. INOUT/OUT values are copied back into the caller's `ScalarReference` instances.
+   *
+   * The Oracle path acquires its own pool connection with `autoCommit: true` so refcursor binds
+   * and DML inside the routine resolve in a single round-trip. That means it can't share the
+   * EntityManager's transaction — wrapping a call in `em.transactional(...)` would silently let
+   * routine writes auto-commit while the surrounding tx rolls back. We throw early when `ctx` is
+   * provided so the divergence is loud rather than silent.
    */
-  override async callRoutine<T>(routine: RoutineMetadata, args: Record<string, unknown> = {}): Promise<T> {
+  override async callRoutine<T>(
+    routine: RoutineMetadata,
+    args: Record<string, unknown> = {},
+    ctx?: Transaction,
+  ): Promise<T> {
     /* v8 ignore next 3 */
     if (!this.oraclePool) {
       throw new Error('Oracle pool not initialised — call connect() before callRoutine().');
+    }
+
+    if (ctx) {
+      throw new Error(
+        `Routine ${routine.routineName} was invoked inside an EntityManager transaction, but Oracle's callRoutine runs on its own pool connection with autoCommit. Call em.callRoutine() outside em.transactional(), or split the transactional work to before/after the routine call.`,
+      );
     }
 
     const routineName = routine.routineName.toUpperCase();
@@ -210,7 +254,7 @@ export class OracleConnection extends AbstractSqlConnection {
       if (routine.type === 'function') {
         const argList = routine.params.map(p => `:${p.name}`).join(', ');
         const block = `BEGIN :mo_ret := ${routineName}(${argList}); END;`;
-        const bindings: Dictionary = { mo_ret: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 4000 } };
+        const bindings: Dictionary = { mo_ret: oracleReturnBind(routine) };
 
         for (const p of routine.params) {
           bindings[p.name as string] = {
@@ -247,12 +291,18 @@ export class OracleConnection extends AbstractSqlConnection {
           continue;
         }
 
-        bindings[p.name as string] = {
+        // Derive the bind type from the param's declared runtimeType so NUMBER/DATE/BUFFER OUT/INOUT
+        // params bind correctly instead of being coerced to STRING.
+        const binding: Dictionary = {
           dir: p.direction === 'out' ? oracledb.BIND_OUT : oracledb.BIND_INOUT,
-          val: value,
-          type: oracledb.STRING,
-          maxSize: 4000,
+          ...oracleBindTypeFromRuntime(p.runtimeType),
         };
+
+        if (p.direction === 'inout') {
+          binding.val = value;
+        }
+
+        bindings[p.name as string] = binding;
       }
 
       const result = await oracleConn.execute(block, bindings, {

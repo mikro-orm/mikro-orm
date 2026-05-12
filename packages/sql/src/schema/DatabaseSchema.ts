@@ -447,7 +447,7 @@ export class DatabaseSchema {
         params: routineMeta.params.map(p => ({
           name: p.name as string,
           type: DatabaseSchema.resolveRoutineColumnType(p.type as string, platform),
-          direction: p.direction,
+          direction: helper.normaliseRoutineParamDirection(p.direction),
           nullable: p.nullable,
           defaultRaw: p.defaultRaw,
         })),

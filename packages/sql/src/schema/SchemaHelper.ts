@@ -22,6 +22,15 @@ import type {
 import type { DatabaseSchema } from './DatabaseSchema.js';
 import type { DatabaseTable } from './DatabaseTable.js';
 
+/**
+ * Flattens `;\n` boundaries in a routine body so the schema-generator's statement splitter
+ * doesn't break the routine DDL apart. Other whitespace (line comments, multi-line strings) is
+ * preserved. Exported for the PG `sql` function path which doesn't go through `wrapRoutineBody`.
+ */
+export function stripStatementNewlines(body: string): string {
+  return body.replace(/;[\t ]*\r?\n/g, '; ');
+}
+
 /** Base class for database-specific schema helpers. Provides SQL generation for DDL operations. */
 export abstract class SchemaHelper {
   constructor(protected readonly platform: AbstractSqlPlatform) {}
@@ -1117,18 +1126,20 @@ export abstract class SchemaHelper {
   }
 
   /**
-   * Wraps a routine body in `BEGIN ... END` if it isn't already so wrapped. Internal newlines
-   * are collapsed to spaces so the schema-generator's `;\n` statement splitter doesn't break
-   * the routine DDL apart inside its dollar-quoted/AS-block body.
+   * Wraps a routine body in `BEGIN ... END` if it isn't already so wrapped. Internal `;\n`
+   * sequences (and trailing semicolons followed by a newline) are flattened to `; ` so the
+   * schema-generator's `;\n` statement splitter doesn't break the routine DDL apart inside its
+   * dollar-quoted/AS-block body — other whitespace is preserved so line comments (`-- foo\n…`)
+   * and multi-line string literals inside the body keep working.
    */
   protected wrapRoutineBody(body: string): string {
-    const flattened = body.replace(/\s+/g, ' ').trim();
+    const trimmed = stripStatementNewlines(body).trim();
 
-    if (/^begin\b/i.test(flattened)) {
-      return flattened;
+    if (/^begin\b/i.test(trimmed)) {
+      return trimmed;
     }
 
-    const withSemi = /;\s*$/.test(flattened) ? flattened : `${flattened};`;
+    const withSemi = /;\s*$/.test(trimmed) ? trimmed : `${trimmed};`;
     return `begin ${withSemi} end`;
   }
 
@@ -1149,6 +1160,15 @@ export abstract class SchemaHelper {
    */
   routineParamReference(name: string): string {
     return name;
+  }
+
+  /**
+   * Normalises a routine param direction for schema comparison. Some dialects (notably T-SQL)
+   * don't distinguish `OUT` from `INOUT` at the DDL or catalog level, so metadata-side `'out'`
+   * declarations must be folded into `'inout'` for the diff to agree with introspection.
+   */
+  normaliseRoutineParamDirection(direction: 'in' | 'out' | 'inout'): 'in' | 'out' | 'inout' {
+    return direction;
   }
 
   /** Returns the schema-qualified, dialect-quoted name of a routine for DDL emission. */

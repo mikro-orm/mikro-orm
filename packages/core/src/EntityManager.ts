@@ -1967,9 +1967,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    *   (`refcursor` OUT params + transactional FETCH), and Oracle (`sys_refcursor` OUT params).
    *   MSSQL throws with guidance to use `em.getConnection().execute()` for raw access.
    *
-   * Throws on drivers that do not support stored routines (mongo). On SQLite/libSQL,
-   * functions declared with a `bodyJs` fallback are bridged via the underlying driver's
-   * UDF API; procedures and functions without `bodyJs` throw at call time.
+   * Throws on drivers that do not support stored routines (mongo). On SQLite, functions
+   * declared with a `bodyJs` fallback are bridged via better-sqlite3's UDF API; procedures and
+   * functions without `bodyJs` throw at call time. libSQL throws unconditionally (no runtime
+   * UDF registration in the libsql client).
+   *
+   * **Oracle exception**: the Oracle driver runs each routine call on a dedicated pool
+   * connection with `autoCommit: true`, so wrapping a call in `em.transactional(...)` throws.
+   * Call Oracle routines outside the EM transaction context. The PostgreSQL multi-result-set
+   * example below applies to PG only.
    *
    * @example
    * ```ts
@@ -1980,7 +1986,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * const hash = new ScalarReference<string>();
    * await em.callRoutine(AddRecord, { p_name: 'jon', p_age: 30, p_hash: hash });
    *
-   * // Procedure with multiple result sets (PostgreSQL — must be inside a transaction)
+   * // PostgreSQL multi-result-set procedure (must run inside an EM transaction so the
+   * // refcursors stay alive for FETCH). MySQL/MariaDB do not need em.transactional;
+   * // Oracle multi-result-set calls must NOT use em.transactional — call them directly.
    * const [users, books] = await em.transactional(em =>
    *   em.callRoutine<unknown[][]>(TwoCursors, {}),
    * );

@@ -19,10 +19,11 @@ MikroORM can declare, manage, and invoke stored procedures and functions. Routin
 | MySQL / MariaDB | yes | yes | yes | Reads `information_schema.routines`. |
 | MSSQL | yes | yes | yes | Reads `sys.sql_modules`. |
 | Oracle | yes | yes | yes | Reads `USER_PROCEDURES` + `USER_SOURCE` + `USER_ARGUMENTS`. |
-| SQLite / libSQL | — | yes (via `bodyJs`) | silent skip | No server-side routines. JS-fallback functions are registered as UDFs on connection open. |
+| SQLite | — | yes (via `bodyJs`) | silent skip | No server-side routines. JS-fallback functions are registered as UDFs on connection open. |
+| libSQL | — | — | silent skip | The libsql client does not implement runtime UDF registration; `em.callRoutine` throws. Schema-side still silent-skips. |
 | MongoDB | — | — | — | Calling `em.callRoutine` throws. |
 
-> Cross-driver tests: defining a routine that also has a `bodyJs` JS implementation lets you target SQLite in tests while production runs the SQL implementation against PostgreSQL/MySQL/etc. SQLite silent-skips routines from schema generation, so `schema:diff` produces no spurious changes.
+> Cross-driver tests: defining a routine that also has a `bodyJs` JS implementation lets you target SQLite (via better-sqlite3) in tests while production runs the SQL implementation against PostgreSQL/MySQL/etc. SQLite silent-skips routines from schema generation, so `schema:diff` produces no spurious changes. libSQL does not currently expose UDF registration, so it cannot bridge `bodyJs` — use the SQLite driver for cross-DB testing.
 
 ## Defining a routine
 
@@ -122,6 +123,14 @@ OUT and INOUT parameters are passed as `ScalarReference` instances. The values a
 - **Oracle**: PL/SQL block with `oracledb` bind directions (`BIND_INOUT`, `BIND_OUT`).
 - **SQLite/libSQL**: not supported — SQLite has no stored procedures.
 
+:::caution Oracle and `em.transactional`
+
+The Oracle driver runs each `em.callRoutine` invocation on a dedicated pool connection with `autoCommit: true` (oracledb's INOUT/OUT binds and REF CURSOR fetches need to resolve in a single execute, so the call can't share the EM's transaction). Wrapping an Oracle routine call in `em.transactional(...)` throws to make the divergence loud — call Oracle routines directly, outside the EM transaction context.
+
+PostgreSQL multi-result-set procedures (refcursor OUT params) explicitly require `em.transactional`. MySQL/MariaDB and MSSQL routine calls work both inside and outside `em.transactional`.
+
+:::
+
 ## Parameter directions
 
 The `direction` option on a parameter declares whether it's IN (default), OUT, or INOUT. OUT/INOUT params must also be marked with `ref: true` and passed as `ScalarReference` at call time. Functions only accept IN parameters; defining a non-IN parameter on a `type: 'function'` routine throws at metadata validation.
@@ -199,13 +208,15 @@ This is useful when the database normalises whitespace differently from the lite
 
 ## SQLite cross-DB testing
 
-When you target SQLite (or libSQL) with routines defined via `@Routine`/`defineRoutine`/`RoutineSchema`:
+When you target SQLite (via better-sqlite3) with routines defined via `@Routine`/`defineRoutine`/`RoutineSchema`:
 
 - Schema generator silently skips them — no DDL is emitted, `schema:diff` produces no changes.
 - `em.callRoutine` for `type: 'function'` routines that declare `bodyJs` registers the JS function as a UDF via the underlying driver (better-sqlite3's `db.function()`) on first call, then dispatches `SELECT routine_name(?, ?, ...)`.
 - `em.callRoutine` for procedures (or functions without `bodyJs`) throws clearly. SQLite has no analog for stored procedures, so they cannot be bridged.
 
 This lets you run the same entities and routine declarations against PostgreSQL/MySQL/MSSQL/Oracle in production while using SQLite in tests, provided your tests only call functions that have a `bodyJs` fallback.
+
+libSQL is **not** a drop-in replacement here: the `libsql` client does not currently implement runtime UDF registration, so `em.callRoutine` throws on libSQL regardless of `bodyJs`. Use the SQLite (better-sqlite3) driver for cross-DB testing of routines.
 
 ## Multi-result-set procedures
 
@@ -241,9 +252,10 @@ const TwoCursors = defineRoutine({
   `,
 });
 
-const [users, books] = await em.transactional(em => em.callRoutine(TwoCursors, {}));
+const [pgUsers, pgBooks] = await em.transactional(em => em.callRoutine(TwoCursors, {}));
 
 // Oracle — sys_refcursor OUT params; oracledb binds them as DB_TYPE_CURSOR.
+// Do NOT wrap Oracle calls in em.transactional (see the caution above).
 const TwoCursorsOra = defineRoutine({
   name: 'two_cursors',
   type: 'procedure',
@@ -257,13 +269,15 @@ const TwoCursorsOra = defineRoutine({
     open ${p.c2} for select 2 from dual;
   `,
 });
+
+const [oraSets1, oraSets2] = await em.callRoutine<unknown[][]>(TwoCursorsOra, {});
 ```
 
 When `resultSets` is set, `em.callRoutine` returns `Dictionary[][]` — one row array per declared result set. Driver support:
 
 - **MySQL / MariaDB**: full support — proc body contains N `SELECT`s.
-- **PostgreSQL**: full support via `refcursor` OUT params. Call inside a transaction.
-- **Oracle**: full support via `sys_refcursor` OUT params.
+- **PostgreSQL**: full support via `refcursor` OUT params. **Must** be called inside `em.transactional`.
+- **Oracle**: full support via `sys_refcursor` OUT params. **Must not** be called inside `em.transactional` — Oracle's routine path uses its own pool connection.
 - **MSSQL**: not yet — the high-level API throws with a clear message. Use `em.getConnection().execute()` if you need raw multi-recordset access, or split the procedure into separate EXECs.
 - **SQLite / Mongo**: no stored procedure concept; throws.
 

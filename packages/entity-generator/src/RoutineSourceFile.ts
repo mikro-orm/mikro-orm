@@ -4,7 +4,10 @@ import type { SqlRoutineDef, SqlRoutineParamDef } from '@mikro-orm/sql';
 const identifierRegex = /^(?:[$_\p{ID_Start}])(?:[$‌‍\p{ID_Continue}])*$/u;
 
 function quote(val: string): string {
-  return `'${val.replaceAll(`'`, `\\'`)}'`;
+  // Escape backslashes first (otherwise `replaceAll("'", "\\'")` would re-escape the backslash
+  // we just added). Routine bodies containing `\n`, `\t`, regex literals, or `chr(10)` workarounds
+  // would otherwise emit corrupt single-quoted strings.
+  return `'${val.replaceAll('\\', '\\\\').replaceAll(`'`, `\\'`)}'`;
 }
 
 function safeKey(name: string): string {
@@ -12,8 +15,9 @@ function safeKey(name: string): string {
 }
 
 function quoteMultiline(val: string): string {
-  if (val.includes('\n') || val.includes('`')) {
-    return `\`${val.replaceAll('`', '\\`')}\``;
+  if (val.includes('\n') || val.includes('`') || val.includes('${')) {
+    // Backslashes first, then backticks and `${` so we don't accidentally re-escape our own escapes.
+    return `\`${val.replaceAll('\\', '\\\\').replaceAll('`', '\\`').replaceAll('${', '\\${')}\``;
   }
 
   return quote(val);

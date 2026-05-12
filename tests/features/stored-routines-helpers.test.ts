@@ -2,7 +2,7 @@ import { MikroORM as MySqlMikroORM, MySqlSchemaHelper } from '@mikro-orm/mysql';
 import { MikroORM as PgMikroORM, PostgreSqlSchemaHelper } from '@mikro-orm/postgresql';
 import { MikroORM as MsSqlMikroORM, MsSqlSchemaHelper } from '@mikro-orm/mssql';
 import { MikroORM as OracleMikroORM, OracleSchemaHelper } from '@mikro-orm/oracledb';
-import type { SqlRoutineDef } from '@mikro-orm/sql';
+import { stripStatementNewlines, type SqlRoutineDef } from '@mikro-orm/sql';
 
 const baseRoutine: SqlRoutineDef = {
   name: 'r',
@@ -13,6 +13,23 @@ const baseRoutine: SqlRoutineDef = {
 };
 
 describe('stored routines — dialect helper unit tests', () => {
+  describe('stripStatementNewlines', () => {
+    it('replaces only `;\\n` boundaries, preserving line comments and string-literal newlines', () => {
+      const body = `-- header comment
+SET x = 1;
+SET y = 'hello
+world';
+SELECT y`;
+      const out = stripStatementNewlines(body);
+      // `;\n` boundaries collapsed to `; ` so the statement-splitter doesn't break the body.
+      expect(out).toContain('SET x = 1; SET y');
+      // line-comment newline preserved — otherwise the comment would swallow the next statement.
+      expect(out).toContain('-- header comment\nSET x = 1');
+      // string-literal newline preserved.
+      expect(out).toContain("'hello\nworld'");
+    });
+  });
+
   describe('MySQL', () => {
     let helper: MySqlSchemaHelper;
     let orm: MySqlMikroORM;
@@ -266,6 +283,12 @@ describe('stored routines — dialect helper unit tests', () => {
     it('dropRoutine emits drop procedure/function based on type', () => {
       expect(helper.dropRoutine(baseRoutine)).toMatch(/drop function if exists/i);
       expect(helper.dropRoutine({ ...baseRoutine, type: 'procedure' })).toMatch(/drop procedure if exists/i);
+    });
+
+    it('normaliseRoutineParamDirection folds OUT into INOUT (T-SQL has no distinct OUT-only direction)', () => {
+      expect(helper.normaliseRoutineParamDirection('in')).toBe('in');
+      expect(helper.normaliseRoutineParamDirection('out')).toBe('inout');
+      expect(helper.normaliseRoutineParamDirection('inout')).toBe('inout');
     });
   });
 

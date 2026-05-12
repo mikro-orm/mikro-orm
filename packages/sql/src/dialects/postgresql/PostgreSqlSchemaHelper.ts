@@ -8,7 +8,7 @@ import {
   Type,
   Utils,
 } from '@mikro-orm/core';
-import { SchemaHelper } from '../../schema/SchemaHelper.js';
+import { SchemaHelper, stripStatementNewlines } from '../../schema/SchemaHelper.js';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
 import type {
   CheckDef,
@@ -737,7 +737,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const determinism =
       routine.deterministic === true ? ' immutable' : routine.deterministic === false ? ' volatile' : '';
 
-    const flatten = (s: string): string => s.replace(/\s+/g, ' ').trim();
+    // Strip the `;\n` boundaries the schema generator's statement splitter would otherwise trip
+    // on, but keep other whitespace intact so line comments and multi-line string literals in
+    // SQL function bodies survive emission.
+    const flatten = (s: string): string => stripStatementNewlines(s).trim();
 
     if (routine.type === 'procedure') {
       const body = language === 'sql' ? flatten(routine.body ?? '') : this.wrapRoutineBody(routine.body ?? '');

@@ -479,6 +479,16 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return `@${name}`;
   }
 
+  /**
+   * T-SQL has no distinct OUT-only direction — `OUTPUT` covers both OUT and INOUT semantics, and
+   * `sys.parameters.is_output` is true for both. Fold metadata-side `'out'` to `'inout'` so the
+   * schema comparator's strict direction equality match doesn't flag pure-OUT declarations as
+   * permanently changed on every `schema:update` run.
+   */
+  override normaliseRoutineParamDirection(direction: 'in' | 'out' | 'inout'): 'in' | 'out' | 'inout' {
+    return direction === 'out' ? 'inout' : direction;
+  }
+
   /** Generates T-SQL to create an MSSQL stored procedure or function. */
   override createRoutine(routine: SqlRoutineDef): string {
     if (routine.expression) {
@@ -529,7 +539,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
         and o.is_ms_shipped = 0
     `;
 
-    const [rows, params] = await Promise.all([
+    const [rows, paramsAndReturns] = await Promise.all([
       connection.execute<
         {
           schema_name: string;
@@ -541,6 +551,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       >(sql),
       this.getAllRoutineParams(connection),
     ]);
+    const { params, returns } = paramsAndReturns;
 
     return rows.map(row => ({
       name: row.name,
@@ -549,11 +560,20 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       body: this.unwrapMsSqlBody(row.definition),
       comment: row.comment ?? undefined,
       params: params.get(`${row.schema_name}.${row.name}`) ?? [],
-      returns: row.kind === 'function' ? { type: 'nvarchar(max)', nullable: true } : undefined,
+      returns:
+        row.kind === 'function'
+          ? (returns.get(`${row.schema_name}.${row.name}`) ?? { type: 'nvarchar(max)', nullable: true })
+          : undefined,
     }));
   }
 
-  private async getAllRoutineParams(connection: AbstractSqlConnection): Promise<Map<string, SqlRoutineDef['params']>> {
+  private async getAllRoutineParams(connection: AbstractSqlConnection): Promise<{
+    params: Map<string, SqlRoutineDef['params']>;
+    returns: Map<string, NonNullable<SqlRoutineDef['returns']>>;
+  }> {
+    // `parameter_id = 0` is the function's return type; positive IDs are formal parameters. We
+    // read both in one round-trip so functions emit their real return type during schema diff and
+    // entity-generator emission (previously hard-coded to `nvarchar(max)`).
     const sql = `
       select
         s.name as schema_name,
@@ -567,7 +587,6 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       join sys.schemas s on s.schema_id = o.schema_id
       where o.type in ('P', 'FN', 'IF', 'TF')
         and o.is_ms_shipped = 0
-        and p.parameter_id > 0
       order by o.object_id, p.parameter_id
     `;
     const rows = await connection.execute<
@@ -581,22 +600,32 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       }[]
     >(sql);
 
-    const out = new Map<string, SqlRoutineDef['params']>();
+    const params = new Map<string, SqlRoutineDef['params']>();
+    const returns = new Map<string, NonNullable<SqlRoutineDef['returns']>>();
     for (const row of rows) {
       const key = `${row.schema_name}.${row.routine_name}`;
 
-      if (!out.has(key)) {
-        out.set(key, []);
+      if (row.position === 0) {
+        returns.set(key, { type: row.type, nullable: true });
+        continue;
       }
 
-      out.get(key)!.push({
+      if (!params.has(key)) {
+        params.set(key, []);
+      }
+
+      // sys.parameters.is_output is true for both pure OUT and INOUT params and the catalog has
+      // no flag to distinguish them. Metadata-side `'out'` declarations are folded to `'inout'`
+      // by `normaliseRoutineParamDirection` so the comparator sees matching directions on both
+      // sides regardless of which form the user declared.
+      params.get(key)!.push({
         name: row.param_name.replace(/^@/, ''),
         type: row.type,
         direction: row.is_output ? 'inout' : 'in',
       });
     }
 
-    return out;
+    return { params, returns };
   }
 
   private unwrapMsSqlBody(definition: string): string {
