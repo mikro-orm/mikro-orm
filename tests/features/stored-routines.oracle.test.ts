@@ -52,6 +52,32 @@ const TwoCursors = new Routine({
   `,
 });
 
+// Three functions/procedures with non-string return runtime types so the Oracle bind-type
+// derivation in `oracleBindTypeFromRuntime` is exercised for NUMBER / DATE / BUFFER (RAW).
+const NumberDoubler = new Routine({
+  name: 'number_doubler',
+  type: 'function',
+  params: { x: { type: 'number' } },
+  returns: { runtimeType: 'number', columnType: 'number' },
+  body: p => `return ${p.x} * 2;`,
+});
+
+const TodayPlus = new Routine({
+  name: 'today_plus',
+  type: 'function',
+  params: { offset_days: { type: 'number' } },
+  returns: { runtimeType: 'Date', columnType: 'date' },
+  body: p => `return trunc(sysdate) + ${p.offset_days};`,
+});
+
+const TagBytes = new Routine({
+  name: 'tag_bytes',
+  type: 'function',
+  params: { input: { type: 'raw(64)' } },
+  returns: { runtimeType: 'Buffer', columnType: 'raw(64)' },
+  body: p => `return utl_raw.concat(utl_raw.cast_to_raw('tag:'), ${p.input});`,
+});
+
 describe('stored routines — Oracle', () => {
   let orm: MikroORM;
 
@@ -61,7 +87,7 @@ describe('stored routines — Oracle', () => {
       password: 'oracle123',
       schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
       entities: [RecordEntity],
-      routines: [SqlHash, AddRecord, TwoCursors],
+      routines: [SqlHash, AddRecord, TwoCursors, NumberDoubler, TodayPlus, TagBytes],
     });
     // Oracle test schema is shared across runs; clean up any leftover state first.
     await orm.schema.refresh();
@@ -115,5 +141,24 @@ describe('stored routines — Oracle', () => {
     await expect(
       orm.em.transactional(em => em.callRoutine<string>(SqlHash, { p_name: 'x', p_age: 1 })),
     ).rejects.toThrow(/Oracle's callRoutine runs on its own pool connection/);
+  });
+
+  it('function with NUMBER return binds via oracledb.NUMBER (not coerced to STRING)', async () => {
+    const result = await orm.em.callRoutine<number>(NumberDoubler, { x: 21 });
+    expect(typeof result).toBe('number');
+    expect(result).toBe(42);
+  });
+
+  it('function with DATE return binds via oracledb.DATE', async () => {
+    const result = await orm.em.callRoutine<Date>(TodayPlus, { offset_days: 0 });
+    expect(result).toBeInstanceOf(Date);
+  });
+
+  it('function with RAW return binds via oracledb.BUFFER', async () => {
+    // Input: 0xCAFE — proc prepends 'tag:' as raw bytes, output should start with 'tag:' then CAFE.
+    const result = await orm.em.callRoutine<Buffer>(TagBytes, { input: Buffer.from([0xca, 0xfe]) });
+    expect(Buffer.isBuffer(result)).toBe(true);
+    expect(result.subarray(0, 4).toString('utf8')).toBe('tag:');
+    expect(result.subarray(4)).toEqual(Buffer.from([0xca, 0xfe]));
   });
 });
