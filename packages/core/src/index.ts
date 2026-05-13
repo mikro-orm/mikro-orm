@@ -65,6 +65,7 @@ export type {
   FormulaTable,
   SchemaTable,
   SchemaColumns,
+  SchemaColumnRef,
   EntityDataPropValue,
   SimpleColumnMeta,
   Rel,

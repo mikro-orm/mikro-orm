@@ -929,13 +929,26 @@ export type SchemaTable = { name: string; schema?: string; qualifiedName: string
 export type FormulaColumns<T> = Record<PropertyName<T>, string> & { toString(): string };
 
 /**
+ * Column reference for schema callbacks. Behaves like a string (coercible via `toString()`),
+ * with arbitrary nested property access for embedded sub-columns (e.g. `cols.address.city`).
+ */
+export type SchemaColumnRef = string & { readonly [key: string]: SchemaColumnRef };
+
+/**
  * Column mapping for schema callbacks (indexes, checks, generated columns).
  * Maps property names to field names. For TPT entities, only includes properties
  * that belong to the current table (not inherited properties from parent tables).
+ * Embedded properties expose their sub-columns via nested access (e.g. `cols.address.city`),
+ * while coercing to the embedded property's own column name via `toString()` (matches the
+ * pre-7712 behaviour, regardless of any custom `prefix`).
  */
-export type SchemaColumns<T> = Record<PropertyName<T>, string>;
+export type SchemaColumns<T> = Record<PropertyName<T>, SchemaColumnRef>;
 
-/** Callback for custom index expressions. Receives column mappings, table info, and the index name. */
+/**
+ * Callback for custom index expressions. Receives column mappings, table info, and the index name.
+ * The runtime `columns` object includes nested entries for embedded properties (see `SchemaColumnRef`);
+ * cast to `SchemaColumns<T>` if you need typed nested access.
+ */
 export type IndexCallback<T> = (
   columns: Record<PropertyName<T>, string>,
   table: SchemaTable,
@@ -945,9 +958,13 @@ export type IndexCallback<T> = (
 export type FormulaCallback<T> = (columns: FormulaColumns<T>, table: FormulaTable) => string | Raw;
 
 /** Callback for CHECK constraint expressions. Receives column mappings and table info. */
-export type CheckCallback<T> = (columns: Record<PropertyName<T>, string>, table: SchemaTable) => string | Raw;
+export type CheckCallback<T> = (columns: SchemaColumns<T>, table: SchemaTable) => string | Raw;
 
-/** Callback for generated (computed) column expressions. Receives column mappings and table info. */
+/**
+ * Callback for generated (computed) column expressions. Receives column mappings and table info.
+ * The runtime `columns` object includes nested entries for embedded properties (see `SchemaColumnRef`);
+ * cast to `SchemaColumns<T>` if you need typed nested access.
+ */
 export type GeneratedColumnCallback<T> = (columns: Record<PropertyName<T>, string>, table: SchemaTable) => string | Raw;
 
 /** Definition of a CHECK constraint on a table or property. */
@@ -1182,19 +1199,46 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
   /**
    * Creates a column mapping for schema callbacks (indexes, checks, generated columns).
    * For TPT entities, only includes properties that belong to the current table (ownProps).
+   * Embedded properties expose their sub-columns via nested access (e.g. `cols.address.city`),
+   * while still coercing to the embedded column prefix when used as a string (GH #7712).
    */
   createSchemaColumnMappingObject(): SchemaColumns<Entity> {
     // For TPT entities, only include properties that belong to this entity's table
     const props =
       this.inheritanceType === 'tpt' && this.ownProps ? this.ownProps : Object.values<EntityProperty>(this.properties);
+    const result: Dictionary = {};
 
-    return props.reduce((o, prop) => {
-      if (prop.fieldNames) {
-        o[prop.name as PropertyName<Entity>] = prop.fieldNames[0];
+    for (const prop of props) {
+      if (!prop.fieldNames) {
+        continue;
       }
 
-      return o;
-    }, {} as SchemaColumns<Entity>);
+      if (prop.kind === ReferenceKind.EMBEDDED && prop.embeddedProps) {
+        result[prop.name] = EntityMetadata.buildEmbeddedColumnMapping(prop);
+        continue;
+      }
+
+      result[prop.name] = prop.fieldNames[0];
+    }
+
+    return result as SchemaColumns<Entity>;
+  }
+
+  /** @internal Recursively builds a column mapping for an embedded property's sub-columns. */
+  private static buildEmbeddedColumnMapping(embeddedProp: EntityProperty): Dictionary {
+    const result: Dictionary = {};
+
+    for (const [name, sub] of Object.entries(embeddedProp.embeddedProps)) {
+      result[name] =
+        sub.kind === ReferenceKind.EMBEDDED && sub.embeddedProps
+          ? EntityMetadata.buildEmbeddedColumnMapping(sub)
+          : sub.fieldNames[0];
+    }
+
+    const prefix = embeddedProp.fieldNames[0];
+    Object.defineProperty(result, 'toString', { value: () => prefix, enumerable: false });
+
+    return result;
   }
 
   get tableName(): string {
