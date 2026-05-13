@@ -412,11 +412,11 @@ test('em.upsert(entity)', async () => {
     ['onInit', 'Author'],
     ['onInit', 'Author'],
     ['onInit', 'Author'],
-    ['beforeUpsert', 'Object'],
+    ['beforeUpsert', 'Author'],
     ['afterUpsert', 'Author'],
-    ['beforeUpsert', 'Object'],
+    ['beforeUpsert', 'Author'],
     ['afterUpsert', 'Author'],
-    ['beforeUpsert', 'Object'],
+    ['beforeUpsert', 'Author'],
     ['afterUpsert', 'Author'],
   ]);
 
@@ -522,11 +522,11 @@ test('em.upsert(Type, entity, options) with advanced options', async () => {
     ['onInit', 'Author'],
     ['onInit', 'Author'],
     ['onInit', 'Author'],
-    ['beforeUpsert', 'Object'],
+    ['beforeUpsert', 'Author'],
     ['afterUpsert', 'Author'],
-    ['beforeUpsert', 'Object'],
+    ['beforeUpsert', 'Author'],
     ['afterUpsert', 'Author'],
-    ['beforeUpsert', 'Object'],
+    ['beforeUpsert', 'Author'],
     ['afterUpsert', 'Author'],
   ]);
 

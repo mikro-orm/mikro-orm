@@ -1186,7 +1186,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     validateParams(data, 'insert data');
 
     if (em.eventManager.hasListeners(EventType.beforeUpsert, meta)) {
-      await em.eventManager.dispatchEvent(EventType.beforeUpsert, { entity: data as Entity, em, meta }, meta);
+      await em.eventManager.dispatchEvent(
+        EventType.beforeUpsert,
+        { entity: entity ?? (data as Entity), em, meta },
+        meta,
+      );
+
+      if (entity) {
+        data = em.#comparator.prepareEntity(entity);
+      }
     }
 
     const ret = await em.driver.nativeUpdate(entityName, where, data, {
@@ -1326,6 +1334,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const allWhere: FilterQuery<Entity>[] = [];
     const entities = new Map<Entity, EntityData<Entity>>();
     const entitiesByData = new Map<EntityData<Entity>, Entity>();
+    const entitiesByAllDataIdx = new Map<number, Entity>();
 
     for (let i = 0; i < data.length; i++) {
       let row = data[i];
@@ -1343,6 +1352,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
         where = helper(entity).getPrimaryKey() as FilterQuery<Entity>;
         em.#entityFactory.assignDefaultValues(entity, meta);
+        entitiesByAllDataIdx.set(allData.length, entity);
         row = em.#comparator.prepareEntity(entity);
       } else {
         row = data[i] = Utils.copy(QueryHelper.processParams(row));
@@ -1396,6 +1406,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       for (const dto of data) {
         const entity = entitiesByData.get(dto) ?? (dto as Entity);
         await em.eventManager.dispatchEvent(EventType.beforeUpsert, { entity, em, meta }, meta);
+      }
+
+      for (const [idx, entity] of entitiesByAllDataIdx) {
+        allData[idx] = em.#comparator.prepareEntity(entity);
       }
     }
 
