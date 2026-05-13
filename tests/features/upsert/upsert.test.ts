@@ -443,11 +443,11 @@ describe.each(Utils.keys(options))('em.upsert [%s]', type => {
       ['onInit', 'Author'],
       ['onInit', 'Author'],
       ['onInit', 'Author'],
-      ['beforeUpsert', 'Object'],
+      ['beforeUpsert', 'Author'],
       ['afterUpsert', 'Author'],
-      ['beforeUpsert', 'Object'],
+      ['beforeUpsert', 'Author'],
       ['afterUpsert', 'Author'],
-      ['beforeUpsert', 'Object'],
+      ['beforeUpsert', 'Author'],
       ['afterUpsert', 'Author'],
     ]);
 
@@ -570,11 +570,11 @@ describe.each(Utils.keys(options))('em.upsert [%s]', type => {
       ['onInit', 'Author'],
       ['onInit', 'Author'],
       ['onInit', 'Author'],
-      ['beforeUpsert', 'Object'],
+      ['beforeUpsert', 'Author'],
       ['afterUpsert', 'Author'],
-      ['beforeUpsert', 'Object'],
+      ['beforeUpsert', 'Author'],
       ['afterUpsert', 'Author'],
-      ['beforeUpsert', 'Object'],
+      ['beforeUpsert', 'Author'],
       ['afterUpsert', 'Author'],
     ]);
 
