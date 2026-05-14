@@ -1,5 +1,5 @@
 import { type Configuration } from './utils/Configuration.js';
-import { getOnConflictReturningFields, getWhereCondition } from './utils/upsert-utils.js';
+import { getOnConflictReturningFields, getWhereCondition, resetUntouchedCollections } from './utils/upsert-utils.js';
 import { Utils } from './utils/Utils.js';
 import { Cursor } from './utils/Cursor.js';
 import { QueryHelper } from './utils/QueryHelper.js';
@@ -1261,6 +1261,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     // recompute the data as there might be some values missing (e.g. those with db column defaults)
+    resetUntouchedCollections(meta, entity);
     const snapshot = this.#comparator.prepareEntity(entity);
     em.#unitOfWork.register(entity, snapshot, { refresh: true });
 
@@ -1545,6 +1546,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     for (const [entity] of entities) {
       // recompute the data as there might be some values missing (e.g. those with db column defaults)
+      resetUntouchedCollections(meta, entity);
       const snapshot = this.#comparator.prepareEntity(entity);
       em.#unitOfWork.register(entity, snapshot, { refresh: true });
     }

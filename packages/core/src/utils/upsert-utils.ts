@@ -2,6 +2,9 @@ import type { Dictionary, EntityData, EntityKey, EntityMetadata, EntityProperty,
 import type { UpsertOptions } from '../drivers/IDatabaseDriver.js';
 import { isRaw, type Raw } from '../utils/RawQueryFragment.js';
 import { Utils } from './Utils.js';
+import { ReferenceKind } from '../enums.js';
+import { Collection } from '../entity/Collection.js';
+import { helper } from '../entity/wrap.js';
 
 function expandEmbeddedProperties<T>(prop: EntityProperty<T>, key?: string): (keyof T)[] {
   if (prop.object) {
@@ -73,7 +76,9 @@ export function getOnConflictFields<T>(
   }
 
   const keys = Object.keys(data).flatMap(f => {
-    if (!(Array.isArray(uniqueFields) && !uniqueFields.includes(f as keyof T))) {
+    // skip explicitly listed unique fields; for raw onConflictFields we can't introspect the
+    // fragment, so merge all data keys (the user is responsible for not corrupting them).
+    if (Array.isArray(uniqueFields) && uniqueFields.includes(f as keyof T)) {
       return [];
     }
 
@@ -196,4 +201,28 @@ export function getWhereCondition<T extends object>(
   }
 
   return { where, propIndex };
+}
+
+/** @internal */
+export function resetUntouchedCollections<Entity extends object>(meta: EntityMetadata<Entity>, entity: Entity): void {
+  // for entities passed in via `em.create()` and then upserted, collection-kind relations
+  // were initialized as empty-but-initialized by the hydrator (newEntity=true). once the
+  // upsert resolves the entity to a possibly existing row, that state is stale and would
+  // cause `em.populate()` to skip those collections. replace them with a fresh
+  // uninitialized collection so populate can load them.
+  if (helper(entity).__originalEntityData) {
+    return;
+  }
+
+  for (const prop of meta.relations) {
+    if (prop.kind !== ReferenceKind.MANY_TO_MANY && prop.kind !== ReferenceKind.ONE_TO_MANY) {
+      continue;
+    }
+
+    const collection = entity[prop.name];
+
+    if (Utils.isCollection(collection) && collection.isInitialized() && !collection.isDirty()) {
+      Collection.create(entity, prop.name, undefined, false);
+    }
+  }
 }
