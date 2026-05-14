@@ -561,6 +561,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         continue;
       }
 
+      // Polymorphic to-one relations are already filtered via per-target LEFT JOINs created
+      // for the `:ref filter` hint; emitting a populate-filter entry here would auto-join only
+      // the first target meta and either drop rows pointing to other targets or reference
+      // parent-table-only columns on the child sub-table alias for TPT children.
+      if (prop.polymorphic && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
+        continue;
+      }
+
       const filters = QueryHelper.mergePropertyFilters(prop.filters, options.filters);
       const where = await this.applyFilters<Entity>(prop.targetMeta!.class, {}, filters, 'read', {
         ...options,
