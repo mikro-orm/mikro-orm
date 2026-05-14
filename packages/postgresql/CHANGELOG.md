@@ -5,14 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.16](https://github.com/mikro-orm/mikro-orm/compare/v7.0.15...v7.0.16) (2026-05-14)
 
-
 ### Features
 
-* **postgres:** support `driverOptions.onPoolCreated` hook for `pg.Pool` ([#7711](https://github.com/mikro-orm/mikro-orm/issues/7711)) ([72bac1b](https://github.com/mikro-orm/mikro-orm/commit/72bac1bc7b749482aedef3519628b54b5032611e))
-
-
-
-
+- **postgres:** support `driverOptions.onPoolCreated` hook for `pg.Pool` ([#7711](https://github.com/mikro-orm/mikro-orm/issues/7711)) ([72bac1b](https://github.com/mikro-orm/mikro-orm/commit/72bac1bc7b749482aedef3519628b54b5032611e))
 
 ## [7.0.15](https://github.com/mikro-orm/mikro-orm/compare/v7.0.14...v7.0.15) (2026-05-09)
 

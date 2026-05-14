@@ -5,25 +5,19 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.16](https://github.com/mikro-orm/mikro-orm/compare/v7.0.15...v7.0.16) (2026-05-14)
 
-
 ### Bug Fixes
 
-* **core:** do not propagate parent indexes to child TPT tables ([#7715](https://github.com/mikro-orm/mikro-orm/issues/7715)) ([de68566](https://github.com/mikro-orm/mikro-orm/commit/de6856648afd91862acc443a47924c87363dbac8)), closes [#7714](https://github.com/mikro-orm/mikro-orm/issues/7714)
-* **core:** pass entity instance to `beforeUpsert` hook and propagate mutations to SQL ([#7716](https://github.com/mikro-orm/mikro-orm/issues/7716)) ([b84d48e](https://github.com/mikro-orm/mikro-orm/commit/b84d48e418126ff77919427c711fc4a1c0e73c3d))
-* **core:** reset stale collections on upserted entities ([#7718](https://github.com/mikro-orm/mikro-orm/issues/7718)) ([bbc82c5](https://github.com/mikro-orm/mikro-orm/commit/bbc82c58532bacbafe7e268c2ffd38d05fd27a7f))
-* **core:** resolve polymorphic TPT-child filter columns to parent table ([#7719](https://github.com/mikro-orm/mikro-orm/issues/7719)) ([2e5a91a](https://github.com/mikro-orm/mikro-orm/commit/2e5a91a5f2f3cb695779e26f31c91b68599d0c96)), closes [#7717](https://github.com/mikro-orm/mikro-orm/issues/7717)
-* **core:** respect partial `fields` option when populating inverse 1:1 relations ([#7708](https://github.com/mikro-orm/mikro-orm/issues/7708)) ([721d6ff](https://github.com/mikro-orm/mikro-orm/commit/721d6ff2f511b1182055cb5d86cff20b904d71f5))
-* **core:** treat `LockMode.NONE` like `undefined` in `em.findOne()` ([#7704](https://github.com/mikro-orm/mikro-orm/issues/7704)) ([08d7ecf](https://github.com/mikro-orm/mikro-orm/commit/08d7ecf43f61871d05419f25d4ee47aa90eb7e37)), closes [#7702](https://github.com/mikro-orm/mikro-orm/issues/7702)
-* **schema:** centralize identifier-length truncation across platforms ([#7706](https://github.com/mikro-orm/mikro-orm/issues/7706)) ([1987833](https://github.com/mikro-orm/mikro-orm/commit/1987833d79285c9d9b5623e0c0a388b790bd39ff))
-
+- **core:** do not propagate parent indexes to child TPT tables ([#7715](https://github.com/mikro-orm/mikro-orm/issues/7715)) ([de68566](https://github.com/mikro-orm/mikro-orm/commit/de6856648afd91862acc443a47924c87363dbac8)), closes [#7714](https://github.com/mikro-orm/mikro-orm/issues/7714)
+- **core:** pass entity instance to `beforeUpsert` hook and propagate mutations to SQL ([#7716](https://github.com/mikro-orm/mikro-orm/issues/7716)) ([b84d48e](https://github.com/mikro-orm/mikro-orm/commit/b84d48e418126ff77919427c711fc4a1c0e73c3d))
+- **core:** reset stale collections on upserted entities ([#7718](https://github.com/mikro-orm/mikro-orm/issues/7718)) ([bbc82c5](https://github.com/mikro-orm/mikro-orm/commit/bbc82c58532bacbafe7e268c2ffd38d05fd27a7f))
+- **core:** resolve polymorphic TPT-child filter columns to parent table ([#7719](https://github.com/mikro-orm/mikro-orm/issues/7719)) ([2e5a91a](https://github.com/mikro-orm/mikro-orm/commit/2e5a91a5f2f3cb695779e26f31c91b68599d0c96)), closes [#7717](https://github.com/mikro-orm/mikro-orm/issues/7717)
+- **core:** respect partial `fields` option when populating inverse 1:1 relations ([#7708](https://github.com/mikro-orm/mikro-orm/issues/7708)) ([721d6ff](https://github.com/mikro-orm/mikro-orm/commit/721d6ff2f511b1182055cb5d86cff20b904d71f5))
+- **core:** treat `LockMode.NONE` like `undefined` in `em.findOne()` ([#7704](https://github.com/mikro-orm/mikro-orm/issues/7704)) ([08d7ecf](https://github.com/mikro-orm/mikro-orm/commit/08d7ecf43f61871d05419f25d4ee47aa90eb7e37)), closes [#7702](https://github.com/mikro-orm/mikro-orm/issues/7702)
+- **schema:** centralize identifier-length truncation across platforms ([#7706](https://github.com/mikro-orm/mikro-orm/issues/7706)) ([1987833](https://github.com/mikro-orm/mikro-orm/commit/1987833d79285c9d9b5623e0c0a388b790bd39ff))
 
 ### Features
 
-* **core:** expose embedded sub-columns to check constraint callbacks ([#7713](https://github.com/mikro-orm/mikro-orm/issues/7713)) ([b15f957](https://github.com/mikro-orm/mikro-orm/commit/b15f9578f8186cebcc420afe6b05a87aff41cd72)), closes [#7712](https://github.com/mikro-orm/mikro-orm/issues/7712)
-
-
-
-
+- **core:** expose embedded sub-columns to check constraint callbacks ([#7713](https://github.com/mikro-orm/mikro-orm/issues/7713)) ([b15f957](https://github.com/mikro-orm/mikro-orm/commit/b15f9578f8186cebcc420afe6b05a87aff41cd72)), closes [#7712](https://github.com/mikro-orm/mikro-orm/issues/7712)
 
 ## [7.0.15](https://github.com/mikro-orm/mikro-orm/compare/v7.0.14...v7.0.15) (2026-05-09)
 

@@ -5,14 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.16](https://github.com/mikro-orm/mikro-orm/compare/v7.0.15...v7.0.16) (2026-05-14)
 
-
 ### Bug Fixes
 
-* **schema:** centralize identifier-length truncation across platforms ([#7706](https://github.com/mikro-orm/mikro-orm/issues/7706)) ([1987833](https://github.com/mikro-orm/mikro-orm/commit/1987833d79285c9d9b5623e0c0a388b790bd39ff))
-
-
-
-
+- **schema:** centralize identifier-length truncation across platforms ([#7706](https://github.com/mikro-orm/mikro-orm/issues/7706)) ([1987833](https://github.com/mikro-orm/mikro-orm/commit/1987833d79285c9d9b5623e0c0a388b790bd39ff))
 
 ## [7.0.15](https://github.com/mikro-orm/mikro-orm/compare/v7.0.14...v7.0.15) (2026-05-09)
 
