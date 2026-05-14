@@ -20,6 +20,16 @@ const ProductPackage = defineEntity({
   },
 });
 
+const ProductReview = defineEntity({
+  name: 'ProductReview',
+  tableName: 'product_reviews',
+  properties: {
+    id: p.integer().primary(),
+    body: p.string(),
+    product: () => p.manyToOne(Product).deleteRule('cascade'),
+  },
+});
+
 const Product = defineEntity({
   name: 'Product',
   tableName: 'products',
@@ -41,6 +51,7 @@ const Product = defineEntity({
         .pivotTable('_join_products_attributes')
         .joinColumn('product_id')
         .inverseJoinColumn('attribute_id'),
+    reviews: () => p.oneToMany(ProductReview).mappedBy(r => r.product),
   },
   indexes: [
     {
@@ -55,7 +66,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [Product, ProductPackage, ProductAttribute],
+    entities: [Product, ProductPackage, ProductAttribute, ProductReview],
     dbName: ':memory:',
   });
   await orm.schema.refresh();
@@ -203,20 +214,32 @@ test('populate after upsertMany does not insert duplicate pivot rows when settin
   expect(reloaded.attributes[0].id).toBe(attr.id);
 });
 
-test('Collection.reset clears stale M:N collection state', () => {
+test('populate after upsertMany loads existing 1:M references', async () => {
   const product = orm.em.create(Product, {
-    title: 'Product With Stale State',
+    title: 'Product With Reviews',
     externalId: 'EXT000000005',
     category: 'Category',
   });
-  const attr = orm.em.create(ProductAttribute, { value: 'White' });
+  orm.em.create(ProductReview, { body: 'great', product });
+  orm.em.create(ProductReview, { body: 'good', product });
+  await flushAndClear();
 
-  product.attributes.add(attr);
-  product.attributes.reset();
+  const [upserted] = await upsertProducts(
+    orm.em.create(Product, {
+      title: 'Product With Reviews Updated',
+      externalId: 'EXT000000005',
+      category: 'Updated Category',
+    }),
+  );
 
-  expect(product.attributes.isInitialized()).toBe(false);
-  expect(product.attributes.isDirty()).toBe(false);
-  expect(product.attributes.getItems(false)).toEqual([]);
-  expect(product.attributes.getSnapshot()).toEqual([]);
-  expect(product.attributes[0]).toBeUndefined();
+  await orm.em.populate(upserted, ['reviews']);
+
+  expect(upserted.reviews).toBeInstanceOf(Collection);
+  expect(upserted.reviews).toHaveLength(2);
+  expect(
+    upserted.reviews
+      .getItems()
+      .map(r => r.body)
+      .sort(),
+  ).toEqual(['good', 'great']);
 });
