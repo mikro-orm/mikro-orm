@@ -1371,6 +1371,9 @@ export class RoutineMetadata<T = any, Class extends EntityCtor<T> = EntityCtor<T
     this.ignoreSchemaChanges = config.ignoreSchemaChanges;
 
     this.params.length = 0;
+    for (const key of Object.keys(this.paramMap)) {
+      delete (this.paramMap as Dictionary)[key];
+    }
     Object.entries(config.params ?? {}).forEach(([name, opts], index) => {
       this.addParam({
         name: name as EntityKey<T>,

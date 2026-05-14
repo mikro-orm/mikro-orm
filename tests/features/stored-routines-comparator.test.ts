@@ -307,5 +307,27 @@ describe('stored routines — comparator unit tests', () => {
       expect(Object.keys(diff.newRoutines)).toEqual(['analytics.foo']);
       expect(Object.keys(diff.removedRoutines)).toEqual(['public.foo']);
     });
+
+    it('changedRoutines carries both from and to so DROP can use the old signature', () => {
+      // Param-signature change: DROP must reference the OLD params (PG drop is signature-based).
+      const from = makeRoutine({
+        name: 'foo',
+        params: [{ name: 'a', type: 'integer', direction: 'in' }],
+      });
+      const to = makeRoutine({
+        name: 'foo',
+        params: [{ name: 'a', type: 'text', direction: 'in' }],
+      });
+
+      const fromSchema = new DatabaseSchema(orm.em.getPlatform(), '');
+      const toSchema = new DatabaseSchema(orm.em.getPlatform(), '');
+      fromSchema.addRoutine(from);
+      toSchema.addRoutine(to);
+
+      const diff = comparator.compare(fromSchema, toSchema);
+      expect(diff.changedRoutines.foo).toBeDefined();
+      expect(diff.changedRoutines.foo.from.params[0].type).toBe('integer');
+      expect(diff.changedRoutines.foo.to.params[0].type).toBe('text');
+    });
   });
 });

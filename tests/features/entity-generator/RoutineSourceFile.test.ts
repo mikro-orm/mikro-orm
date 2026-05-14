@@ -265,6 +265,26 @@ describe('RoutineSourceFile', () => {
     expect(out).not.toContain(`body:`);
   });
 
+  it('escapes control chars in single-quoted strings (comment with embedded newline)', () => {
+    const sourceFile = new RoutineSourceFile(
+      {
+        name: 'with_comment',
+        type: 'function',
+        params: [],
+        returns: { type: 'integer', runtimeType: 'number' },
+        body: 'select 1',
+        comment: 'line one\nline two\twith tab',
+      },
+      namingStrategy,
+      platform,
+      { entityDefinition: 'defineEntity', fileName: (n: string) => n },
+    );
+
+    const out = sourceFile.generate();
+    expect(out).toContain(`comment: 'line one\\nline two\\twith tab'`);
+    expect(out).not.toContain("comment: 'line one\nline two");
+  });
+
   it('snake_case routine names become PascalCase class names', () => {
     const sourceFile = new RoutineSourceFile(
       {

@@ -22,6 +22,29 @@ describe('stored routines — metadata layer', () => {
     expect(HashUser.meta.params.every(p => p.direction === 'in')).toBe(true);
   });
 
+  it('applyConfig clears both params array and paramMap when re-applied (HMR safety)', () => {
+    const meta = new RoutineMetadata().applyConfig({
+      name: 'r',
+      type: 'function',
+      params: { old_param: { type: 'string' } },
+      returns: { runtimeType: 'string', columnType: 'text' },
+      body: 'SELECT 1',
+    });
+    expect(meta.params).toHaveLength(1);
+    expect(meta.paramMap.old_param).toBeDefined();
+
+    meta.applyConfig({
+      name: 'r',
+      type: 'function',
+      params: { new_param: { type: 'integer' } },
+      returns: { runtimeType: 'string', columnType: 'text' },
+      body: 'SELECT 1',
+    });
+    expect(meta.params).toHaveLength(1);
+    expect(meta.paramMap.new_param).toBeDefined();
+    expect((meta.paramMap as Record<string, unknown>).old_param).toBeUndefined();
+  });
+
   it('validator rejects body + expression', () => {
     const meta = new RoutineMetadata({
       className: 'Bad',

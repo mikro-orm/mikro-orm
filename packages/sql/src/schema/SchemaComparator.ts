@@ -252,7 +252,7 @@ export class SchemaComparator {
       }
 
       if (this.diffRoutine(fromRoutine, toRoutine)) {
-        diff.changedRoutines[key] = toRoutine;
+        diff.changedRoutines[key] = { from: fromRoutine, to: toRoutine };
         this.log(`routine ${key} changed`, { fromRoutine, toRoutine });
       }
     }

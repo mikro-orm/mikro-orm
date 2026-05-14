@@ -7,7 +7,13 @@ function quote(val: string): string {
   // Escape backslashes first (otherwise `replaceAll("'", "\\'")` would re-escape the backslash
   // we just added). Routine bodies containing `\n`, `\t`, regex literals, or `chr(10)` workarounds
   // would otherwise emit corrupt single-quoted strings.
-  return `'${val.replaceAll('\\', '\\\\').replaceAll(`'`, `\\'`)}'`;
+  const escaped = val
+    .replaceAll('\\', '\\\\')
+    .replaceAll('\r', '\\r')
+    .replaceAll('\n', '\\n')
+    .replaceAll('\t', '\\t')
+    .replaceAll(`'`, `\\'`);
+  return `'${escaped}'`;
 }
 
 function safeKey(name: string): string {

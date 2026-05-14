@@ -243,7 +243,7 @@ export interface SchemaDifference {
   changedViews: Dictionary<{ from: DatabaseView; to: DatabaseView }>;
   removedViews: Dictionary<DatabaseView>;
   newRoutines: Dictionary<SqlRoutineDef>;
-  changedRoutines: Dictionary<SqlRoutineDef>;
+  changedRoutines: Dictionary<{ from: SqlRoutineDef; to: SqlRoutineDef }>;
   removedRoutines: Dictionary<SqlRoutineDef>;
   removedNamespaces: Set<string>;
   removedNativeEnums: { name: string; schema?: string }[];

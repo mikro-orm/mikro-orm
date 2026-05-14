@@ -513,9 +513,9 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       }
     }
 
-    for (const routine of Object.values(schemaDiff.changedRoutines)) {
-      this.append(ret, this.helper.dropRoutine(routine), true);
-      this.append(ret, this.helper.createRoutine(routine), true);
+    for (const change of Object.values(schemaDiff.changedRoutines)) {
+      this.append(ret, this.helper.dropRoutine(change.from), true);
+      this.append(ret, this.helper.createRoutine(change.to), true);
     }
 
     for (const routine of Object.values(schemaDiff.newRoutines)) {
