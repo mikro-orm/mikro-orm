@@ -631,6 +631,22 @@ export class Collection<T extends object, O extends object = object> {
   /**
    * @internal
    */
+  reset(): void {
+    for (let i = 0; i < this.#items.size; i++) {
+      delete this[i];
+    }
+
+    this.#initialized = false;
+    this.#dirty = false;
+    this.#partial = false;
+    this.#snapshot = [];
+    this.#items.clear();
+    this.#count = undefined;
+  }
+
+  /**
+   * @internal
+   */
   hydrate(items: T[], forcePropagate?: boolean, partial?: boolean): void {
     for (let i = 0; i < this.#items.size; i++) {
       delete this[i];

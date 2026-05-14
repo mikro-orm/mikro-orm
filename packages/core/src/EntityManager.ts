@@ -1253,6 +1253,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     // recompute the data as there might be some values missing (e.g. those with db column defaults)
+    em.resetUntouchedPivotCollections(meta, entity, data as EntityData<Entity>);
     const snapshot = this.#comparator.prepareEntity(entity);
     em.#unitOfWork.register(entity, snapshot, { refresh: true });
 
@@ -1537,6 +1538,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     for (const [entity] of entities) {
       // recompute the data as there might be some values missing (e.g. those with db column defaults)
+      em.resetUntouchedPivotCollections(meta, entity, entities.get(entity)!);
       const snapshot = this.#comparator.prepareEntity(entity);
       em.#unitOfWork.register(entity, snapshot, { refresh: true });
     }
@@ -1548,6 +1550,32 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     return [...entities.keys()];
+  }
+
+  private resetUntouchedPivotCollections<Entity extends object>(
+    meta: EntityMetadata<Entity>,
+    entity: Entity,
+    data: EntityData<Entity>,
+  ): void {
+    if (!this.getPlatform().usesPivotTable()) {
+      return;
+    }
+
+    if (helper(entity).__originalEntityData) {
+      return;
+    }
+
+    for (const prop of meta.relations) {
+      if (prop.kind !== ReferenceKind.MANY_TO_MANY || prop.name in data) {
+        continue;
+      }
+
+      const collection = entity[prop.name];
+
+      if (Utils.isCollection(collection) && collection.isInitialized() && !collection.isDirty()) {
+        collection.reset();
+      }
+    }
   }
 
   /**
