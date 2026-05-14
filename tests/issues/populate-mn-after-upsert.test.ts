@@ -90,6 +90,13 @@ function upsertProducts(...products: any[]) {
   return orm.em.upsertMany(Product, products, {
     onConflictFields: sql`(external_id) where external_id is not null`,
     onConflictAction: 'merge',
+  });
+}
+
+function upsertProductsWithMergeFields(...products: any[]) {
+  return orm.em.upsertMany(Product, products, {
+    onConflictFields: sql`(external_id) where external_id is not null`,
+    onConflictAction: 'merge',
     onConflictMergeFields: ['title', 'category'],
   });
 }
@@ -119,7 +126,47 @@ test('populate after upsertMany loads existing M:N references via attributes:ref
 
   await orm.em.populate(upserted, ['package', 'attributes:ref']);
 
+  expect(upserted.title).toBe('Test Product Updated');
+  expect(upserted.category).toBe('Updated Category');
   expect(upserted.package?.title).toBe('Box');
+  expect(upserted.attributes).toBeInstanceOf(Collection);
+  expect(upserted.attributes).toHaveLength(2);
+  expect(
+    upserted.attributes
+      .getItems()
+      .map(attr => attr.id)
+      .sort(),
+  ).toEqual([attr1.id, attr2.id].sort());
+});
+
+test('populate after upsertMany loads existing M:N references via attributes:ref with explicit merge fields', async () => {
+  const attr1 = orm.em.create(ProductAttribute, { value: 'Orange' });
+  const attr2 = orm.em.create(ProductAttribute, { value: 'Yellow' });
+  await flushAndClear();
+
+  const attrs = await orm.em.find(ProductAttribute, {});
+  orm.em.create(Product, {
+    title: 'Explicit Merge Product',
+    externalId: 'EXT000000006',
+    category: 'Explicit Category',
+    package: { title: 'Crate' },
+    attributes: attrs.map(attr => attr.id),
+  });
+  await flushAndClear();
+
+  const [upserted] = await upsertProductsWithMergeFields(
+    orm.em.create(Product, {
+      title: 'Explicit Merge Product Updated',
+      externalId: 'EXT000000006',
+      category: 'Explicit Category Updated',
+    }),
+  );
+
+  await orm.em.populate(upserted, ['package', 'attributes:ref']);
+
+  expect(upserted.title).toBe('Explicit Merge Product Updated');
+  expect(upserted.category).toBe('Explicit Category Updated');
+  expect(upserted.package?.title).toBe('Crate');
   expect(upserted.attributes).toBeInstanceOf(Collection);
   expect(upserted.attributes).toHaveLength(2);
   expect(
