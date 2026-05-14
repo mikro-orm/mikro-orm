@@ -6,7 +6,9 @@ import { convertRoutineInbound, convertRoutineOutbound, type RoutineMetadata, ty
 /** SQLite database connection using the `better-sqlite3` driver. */
 export class SqliteConnection extends BaseSqliteConnection {
   private database!: Database.Database;
-  readonly #registeredRoutines = new Set<string>();
+  // Keyed by routine name → the `bodyJs` function reference we registered. Comparing references
+  // lets us detect HMR-style swaps and re-register, avoiding stale closures running indefinitely.
+  readonly #registeredRoutines = new Map<string, (params: Record<string, unknown>) => unknown>();
 
   override createKyselyDialect(options: Dictionary): Dialect {
     const dbName = options.dbName ?? this.config.get('dbName');
@@ -50,8 +52,12 @@ export class SqliteConnection extends BaseSqliteConnection {
 
     await this.ensureConnection();
 
-    if (!this.#registeredRoutines.has(routine.routineName)) {
-      const fn = routine.bodyJs as (params: Record<string, unknown>) => unknown;
+    const fn = routine.bodyJs as (params: Record<string, unknown>) => unknown;
+
+    // Re-register when the registered function reference doesn't match (HMR swap, or a fresh
+    // routine instance with the same name binding a different closure). better-sqlite3 silently
+    // replaces an existing UDF, so this is safe.
+    if (this.#registeredRoutines.get(routine.routineName) !== fn) {
       this.database.function(
         routine.routineName,
         { deterministic: routine.deterministic ?? false, varargs: true },
@@ -63,7 +69,7 @@ export class SqliteConnection extends BaseSqliteConnection {
           return fn(named) as never;
         },
       );
-      this.#registeredRoutines.add(routine.routineName);
+      this.#registeredRoutines.set(routine.routineName, fn);
     }
 
     const positional = routine.params.map(p => convertRoutineInbound(args[p.name as string], p, this.platform));

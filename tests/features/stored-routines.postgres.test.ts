@@ -138,7 +138,11 @@ describe('stored routines — PostgreSQL', () => {
 
   it('em.callRoutine invokes a procedure with INOUT param via ScalarReference', async () => {
     const hash = new ScalarReference<string>();
-    await orm.em.callRoutine(AddRecord, { p_name: 'Jon Snow', p_age: 30, p_hash: hash });
+    const ret = await orm.em.callRoutine(AddRecord, { p_name: 'Jon Snow', p_age: 30, p_hash: hash });
+
+    // Procedures without refcursor OUT params should return undefined — OUT/INOUT values come
+    // back via the ScalarReference. Other drivers do this; PG used to leak the raw CALL row.
+    expect(ret).toBeUndefined();
 
     expect(hash.unwrap()).toMatch(/^[a-f0-9]{32}$/);
 

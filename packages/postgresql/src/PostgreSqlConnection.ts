@@ -91,7 +91,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
       return (await this.fetchRefcursors(row, routine, refcursorParams, ctx)) as T;
     }
 
-    return rows as T;
+    return undefined as T;
   }
 
   /**

@@ -45,6 +45,20 @@ function oracleReturnBind(routine: RoutineMetadata): Dictionary {
   return { dir: oracledb.BIND_OUT, ...oracleBindTypeFromRuntime(runtime) };
 }
 
+/**
+ * Side-effect-free routines (read-only functions) can safely run on a separate Oracle pool
+ * connection inside an EM transaction — there's no write to silently auto-commit. Procedures or
+ * functions that declare write-ish `dataAccess` are blocked so their writes don't escape the
+ * surrounding tx.
+ */
+function isReadOnlyRoutine(routine: RoutineMetadata): boolean {
+  if (routine.type !== 'function') {
+    return false;
+  }
+
+  return routine.dataAccess === 'no-sql' || routine.dataAccess === 'reads-sql-data';
+}
+
 /** Oracle database connection using the `oracledb` driver. */
 export class OracleConnection extends AbstractSqlConnection {
   private oraclePool?: oracledb.Pool;
@@ -228,8 +242,10 @@ export class OracleConnection extends AbstractSqlConnection {
    * The Oracle path acquires its own pool connection with `autoCommit: true` so refcursor binds
    * and DML inside the routine resolve in a single round-trip. That means it can't share the
    * EntityManager's transaction — wrapping a call in `em.transactional(...)` would silently let
-   * routine writes auto-commit while the surrounding tx rolls back. We throw early when `ctx` is
-   * provided so the divergence is loud rather than silent.
+   * a procedure's writes auto-commit while the surrounding tx rolls back. We throw early when
+   * `ctx` is set AND the routine could mutate state (procedures, or functions whose `dataAccess`
+   * says they write); read-only functions are allowed through so callers don't have to wrap
+   * every adjacent `em.callRoutine` in a fork.
    */
   override async callRoutine<T>(
     routine: RoutineMetadata,
@@ -241,9 +257,9 @@ export class OracleConnection extends AbstractSqlConnection {
       throw new Error('Oracle pool not initialised — call connect() before callRoutine().');
     }
 
-    if (ctx) {
+    if (ctx && !isReadOnlyRoutine(routine)) {
       throw new Error(
-        `Routine ${routine.routineName} was invoked inside an EntityManager transaction, but Oracle's callRoutine runs on its own pool connection with autoCommit. Call em.callRoutine() outside em.transactional(), or split the transactional work to before/after the routine call.`,
+        `Routine ${routine.routineName} was invoked inside an EntityManager transaction, but Oracle's callRoutine runs on its own pool connection with autoCommit. Read-only functions are allowed through; for procedures or routines that may write, call em.callRoutine() outside em.transactional(), or mark the routine as 'dataAccess: \\'reads-sql-data\\'' / 'no-sql' if it really is read-only.`,
       );
     }
 

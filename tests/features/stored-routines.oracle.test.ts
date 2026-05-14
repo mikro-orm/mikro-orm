@@ -137,10 +137,39 @@ describe('stored routines — Oracle', () => {
     ]);
   });
 
-  it('throws when invoked inside em.transactional (Oracle callRoutine cannot share the EM transaction)', async () => {
+  it('throws when invoked inside em.transactional for routines that could write', async () => {
+    // SqlHash has no dataAccess flag — treated as potentially write-ish to be safe.
     await expect(
       orm.em.transactional(em => em.callRoutine<string>(SqlHash, { p_name: 'x', p_age: 1 })),
     ).rejects.toThrow(/Oracle's callRoutine runs on its own pool connection/);
+  });
+
+  it("read-only functions (dataAccess: 'reads-sql-data' / 'no-sql') are allowed inside em.transactional", async () => {
+    const PureHash = new Routine({
+      name: 'pure_hash',
+      type: 'function',
+      dataAccess: 'no-sql',
+      params: { p_name: { type: 'varchar2(255)' } },
+      returns: { runtimeType: 'string', columnType: 'varchar2(40)' },
+      body: p => `return upper(${p.p_name});`,
+    });
+
+    const orm2 = await MikroORM.init({
+      dbName: 'mikro_orm_test_sg',
+      password: 'oracle123',
+      schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
+      entities: [RecordEntity],
+      routines: [PureHash],
+    });
+    await orm2.schema.execute(
+      'create or replace function "PURE_HASH"("P_NAME" varchar2) return varchar2 as begin return upper("P_NAME"); end;',
+    );
+
+    const result = await orm2.em.transactional(em => em.callRoutine<string>(PureHash, { p_name: 'sam' }));
+    expect(result).toBe('SAM');
+
+    await orm2.schema.execute('drop function "PURE_HASH"');
+    await orm2.close(true);
   });
 
   it('function with NUMBER return binds via oracledb.NUMBER (not coerced to STRING)', async () => {

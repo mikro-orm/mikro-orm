@@ -283,10 +283,17 @@ export class SchemaComparator {
       }
     }
 
-    if (!ignore.has('comment') && to.comment != null && (from.comment ?? '') !== to.comment) {
+    // Comment compares both sides directly so removing `comment: 'foo'` from metadata triggers
+    // a diff and the DB-side comment gets dropped. All drivers introspect missing comments as
+    // `undefined`, so unset-vs-unset agrees.
+    if (!ignore.has('comment') && (from.comment ?? '') !== (to.comment ?? '')) {
       return true;
     }
 
+    // security / deterministic / definer differ: every routine in the DB always has a value
+    // (server defaults if not explicitly declared), so leaving them undefined in metadata
+    // means "don't care", not "remove". Compare only when the metadata side declares a value;
+    // users who want to revert to the server default should drop and recreate the routine.
     if (!ignore.has('security') && to.security != null && from.security !== to.security) {
       return true;
     }

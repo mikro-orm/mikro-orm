@@ -1,4 +1,4 @@
-import { type EntityClass, type EntityCtor, RoutineMetadata, type RoutineConfig } from '@mikro-orm/core';
+import { type EntityClass, type EntityCtor, type RoutineConfig } from '@mikro-orm/core';
 import { getRoutineMetadataFromDecorator } from '../utils.js';
 
 /**
@@ -24,8 +24,7 @@ export function Routine<T = any>(
 ): <C extends EntityClass<unknown> & EntityCtor>(target: C, context: ClassDecoratorContext<C>) => void {
   return function <C extends EntityClass<unknown> & EntityCtor>(target: C, context: ClassDecoratorContext<C>): void {
     const meta = getRoutineMetadataFromDecorator<T>(target as any);
-    const built = RoutineMetadata.fromConfig<T>(config);
-    Object.assign(meta, built);
+    meta.applyConfig(config);
     meta.class = target as any;
     meta.className = context.name as string;
   };

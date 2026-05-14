@@ -1341,30 +1341,38 @@ export class RoutineMetadata<T = any, Class extends EntityCtor<T> = EntityCtor<T
   }
 
   /**
-   * Builds a {@link RoutineMetadata} from a config-style declaration. Used by the {@link Routine}
-   * class to wrap a config into a metadata instance.
+   * Populates this metadata instance from a config-style declaration. Used both by `fromConfig`
+   * (which creates a fresh instance) and by the `@Routine` decorator path (which gets a stub
+   * instance back from the metadata storage and applies the config in place — avoiding a
+   * throw-away allocation).
    */
-  static fromConfig<T>(config: RoutineConfig<T>): RoutineMetadata<T> {
-    const meta = new RoutineMetadata<T>({
-      className: config.name,
-      routineName: config.name,
-      type: config.type,
-      schema: config.schema,
-      comment: config.comment,
-      security: config.security,
-      definer: config.definer,
-      deterministic: config.deterministic,
-      dataAccess: config.dataAccess,
-      language: config.language,
-      body: config.body,
-      expression: config.expression,
-      bodyJs: config.bodyJs,
-      returns: config.returns,
-      ignoreSchemaChanges: config.ignoreSchemaChanges,
-    });
+  applyConfig(config: RoutineConfig<T>): this {
+    this.className ||= config.name;
+    this.routineName = config.name;
 
+    // Synthetic class so downstream code that reads `routine.class.name` (e.g. Utils.className,
+    // MetadataStorage.setRoutine) finds something — matches the constructor's behaviour for the
+    // class-less path.
+    if (!this.class && this.className) {
+      this.class = { [this.className]: class {} }[this.className] as unknown as Class;
+    }
+    this.type = config.type;
+    this.schema = config.schema;
+    this.comment = config.comment;
+    this.security = config.security;
+    this.definer = config.definer;
+    this.deterministic = config.deterministic;
+    this.dataAccess = config.dataAccess;
+    this.language = config.language;
+    this.body = config.body;
+    this.expression = config.expression;
+    this.bodyJs = config.bodyJs;
+    this.returns = config.returns;
+    this.ignoreSchemaChanges = config.ignoreSchemaChanges;
+
+    this.params.length = 0;
     Object.entries(config.params ?? {}).forEach(([name, opts], index) => {
-      meta.addParam({
+      this.addParam({
         name: name as EntityKey<T>,
         direction: opts.direction ?? 'in',
         type: opts.type ?? 'string',
@@ -1382,10 +1390,18 @@ export class RoutineMetadata<T = any, Class extends EntityCtor<T> = EntityCtor<T
     });
 
     if (config.returns && typeof config.returns === 'object' && 'customType' in config.returns) {
-      meta.returnCustomType = resolveCustomType(config.returns.customType);
+      this.returnCustomType = resolveCustomType(config.returns.customType);
     }
 
-    return meta;
+    return this;
+  }
+
+  /**
+   * Builds a fresh {@link RoutineMetadata} from a config-style declaration. Used by the
+   * {@link Routine} class to wrap a config into a metadata instance.
+   */
+  static fromConfig<T>(config: RoutineConfig<T>): RoutineMetadata<T> {
+    return new RoutineMetadata<T>().applyConfig(config);
   }
 }
 

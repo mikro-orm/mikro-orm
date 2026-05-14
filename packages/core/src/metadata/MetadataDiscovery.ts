@@ -137,8 +137,23 @@ export class MetadataDiscovery {
       }
     }
 
+    const seenRoutineKeys = new Set<string>();
+
     for (const routine of this.#discoveredRoutines) {
       this.#validator.validateRoutineDefinition(routine);
+
+      // Routines collide on `(schema?, routineName)` — the same pair would generate the same
+      // CREATE DDL and overwrite each other in the storage map. Surface this loudly at discovery
+      // rather than silently keeping last-wins behaviour.
+      const key = (routine.schema ? `${routine.schema}.` : '') + routine.routineName;
+
+      if (seenRoutineKeys.has(key)) {
+        throw new Error(
+          `Duplicate routine '${key}' declared more than once in the 'routines' config. Routine names must be unique within a schema.`,
+        );
+      }
+
+      seenRoutineKeys.add(key);
       discovered.setRoutine(routine.class, routine);
     }
 

@@ -53,6 +53,34 @@ describe('stored routines — decorator + metadata edges', () => {
     ).rejects.toThrow(/not a stored routine declaration/);
   });
 
+  it('rejects duplicate routine names at discovery (instead of silently overwriting)', async () => {
+    const a = new RoutineClass({
+      name: 'dup_routine',
+      type: 'function',
+      params: { x: { type: 'string' } },
+      returns: { runtimeType: 'string', columnType: 'text' },
+      body: 'select x',
+      bodyJs: ({ x }: { x: string }) => x,
+    });
+    const b = new RoutineClass({
+      name: 'dup_routine',
+      type: 'function',
+      params: { y: { type: 'string' } },
+      returns: { runtimeType: 'string', columnType: 'text' },
+      body: 'select y',
+      bodyJs: ({ y }: { y: string }) => y,
+    });
+
+    await expect(
+      MikroORM.init({
+        dbName: ':memory:',
+        entities: [],
+        routines: [a, b],
+        discovery: { warnWhenNoEntities: false },
+      }),
+    ).rejects.toThrow(/Duplicate routine 'dup_routine'/);
+  });
+
   it('Routine.is recognises both Routine instances and Routine outputs', () => {
     const a = new RoutineClass({
       name: 'a',

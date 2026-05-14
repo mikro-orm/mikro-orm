@@ -844,16 +844,27 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }
 
     return signature.split(/,(?![^()]*\))/).map(part => {
+      const trimmed = part.trim();
       // Order alternatives longest-first so `INOUT` isn't matched as `IN` + extra chars.
       // Require trailing whitespace after the direction keyword so parameter names that happen to
       // begin with `IN` / `OUT` (e.g. `input`) aren't mis-parsed as `IN` + `put`.
-      const match = /^(?:(INOUT|VARIADIC|IN|OUT)\s+)?("?[\w$]+"?)\s+(.+?)(?:\s+default\s+.+)?$/i.exec(part.trim())!;
+      // Quoted identifier path accepts any character except embedded double quotes (PG escapes
+      // those as `""`); the bare path keeps the `\w$` set.
+      const match = /^(?:(INOUT|VARIADIC|IN|OUT)\s+)?(?:"((?:[^"]|"")+)"|([\w$]+))\s+(.+?)(?:\s+default\s+.+)?$/i.exec(
+        trimmed,
+      );
+
+      if (!match) {
+        throw new Error(`Could not parse PostgreSQL routine parameter signature: ${JSON.stringify(trimmed)}`);
+      }
+
       const dirRaw = (match[1] ?? 'in').toLowerCase();
       const direction = dirRaw === 'inout' ? 'inout' : dirRaw === 'out' ? 'out' : 'in';
+      const name = match[2] != null ? match[2].replaceAll('""', '"') : match[3];
 
       return {
-        name: match[2].replace(/^"|"$/g, ''),
-        type: match[3].trim(),
+        name,
+        type: match[4].trim(),
         direction,
       };
     });
