@@ -243,3 +243,61 @@ test('populate after upsertMany loads existing 1:M references', async () => {
       .sort(),
   ).toEqual(['good', 'great']);
 });
+
+test('upsertMany on a managed entity preserves already-loaded collections', async () => {
+  const attr = orm.em.create(ProductAttribute, { value: 'Pink' });
+  const product = orm.em.create(Product, {
+    title: 'Loaded Product',
+    externalId: 'EXT000000007',
+    category: 'cat',
+    attributes: [attr],
+  });
+  await flushAndClear();
+
+  // re-load with the M:N relation populated — __originalEntityData is now set and the
+  // collection holds real items. with `upsertManaged: true`, the entity is routed
+  // through the full upsert flow, so `resetUntouchedCollections` must early-return
+  // and leave the loaded collection alone.
+  orm.config.set('upsertManaged', true);
+
+  try {
+    const loaded = await orm.em.findOneOrFail(Product, { externalId: 'EXT000000007' }, { populate: ['attributes'] });
+
+    Object.assign(loaded, { title: 'Loaded Product Updated' });
+    const [upserted] = await upsertProducts(loaded);
+
+    expect(upserted).toBe(loaded);
+    expect(upserted.attributes.isInitialized()).toBe(true);
+    expect(upserted.attributes).toHaveLength(1);
+    expect(upserted.attributes[0].value).toBe('Pink');
+  } finally {
+    orm.config.set('upsertManaged', false);
+  }
+});
+
+test('upsertMany with plain data does not touch already-managed collections', async () => {
+  const attr = orm.em.create(ProductAttribute, { value: 'Yellow' });
+  await flushAndClear();
+
+  // pass plain data — the entity is constructed by the factory with refresh:true,
+  // so __originalEntityData is already set and resetUntouchedCollections should bail out early.
+  const [upserted] = await orm.em.upsertMany(
+    Product,
+    [{ title: 'Plain Data Product', externalId: 'EXT000000006', category: 'cat' }],
+    {
+      onConflictFields: sql`(external_id) where external_id is not null`,
+      onConflictAction: 'merge',
+      onConflictMergeFields: ['title', 'category'],
+    },
+  );
+
+  await orm.em.populate(upserted, ['attributes:ref']);
+  expect(upserted.attributes).toHaveLength(0);
+
+  upserted.attributes.add(orm.em.getReference(ProductAttribute, attr.id));
+  await orm.em.flush();
+  orm.em.clear();
+
+  const reloaded = await orm.em.findOneOrFail(Product, { externalId: 'EXT000000006' }, { populate: ['attributes'] });
+  expect(reloaded.attributes).toHaveLength(1);
+});

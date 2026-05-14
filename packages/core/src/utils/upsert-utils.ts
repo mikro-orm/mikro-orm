@@ -202,11 +202,7 @@ export function getWhereCondition<T extends object>(
 }
 
 /** @internal */
-export function resetUntouchedCollections<Entity extends object>(
-  meta: EntityMetadata<Entity>,
-  entity: Entity,
-  data: EntityData<Entity>,
-): void {
+export function resetUntouchedCollections<Entity extends object>(meta: EntityMetadata<Entity>, entity: Entity): void {
   // for entities passed in via `em.create()` and then upserted, collection-kind relations
   // were initialized as empty-but-initialized by the hydrator (newEntity=true). once the
   // upsert resolves the entity to a possibly existing row, that state is stale and would
@@ -218,10 +214,6 @@ export function resetUntouchedCollections<Entity extends object>(
 
   for (const prop of meta.relations) {
     if (prop.kind !== ReferenceKind.MANY_TO_MANY && prop.kind !== ReferenceKind.ONE_TO_MANY) {
-      continue;
-    }
-
-    if (prop.name in data) {
       continue;
     }
 

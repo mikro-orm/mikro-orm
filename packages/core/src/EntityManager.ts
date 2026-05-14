@@ -1253,7 +1253,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     // recompute the data as there might be some values missing (e.g. those with db column defaults)
-    resetUntouchedCollections(meta, entity, data as EntityData<Entity>);
+    resetUntouchedCollections(meta, entity);
     const snapshot = this.#comparator.prepareEntity(entity);
     em.#unitOfWork.register(entity, snapshot, { refresh: true });
 
@@ -1538,7 +1538,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     for (const [entity] of entities) {
       // recompute the data as there might be some values missing (e.g. those with db column defaults)
-      resetUntouchedCollections(meta, entity, entities.get(entity)!);
+      resetUntouchedCollections(meta, entity);
       const snapshot = this.#comparator.prepareEntity(entity);
       em.#unitOfWork.register(entity, snapshot, { refresh: true });
     }
