@@ -535,7 +535,7 @@ export class EntityLoader {
     options: Required<EntityLoaderOptions<Entity>>,
     ref: boolean,
   ): Promise<{ items: AnyEntity[]; partial: boolean }> {
-    const children = Utils.unique(this.getChildReferences<Entity>(entities, prop, options, ref));
+    const children = Utils.unique(this.getChildReferences<Entity>(entities, prop, options, ref, populate));
     const meta = prop.targetMeta!;
     // When targetKey is set, use it for FK lookup instead of the PK
     let fk: string | string[] = prop.targetKey ?? Utils.getPrimaryKeyHash(meta.primaryKeys);
@@ -1036,6 +1036,7 @@ export class EntityLoader {
     prop: EntityProperty<Entity>,
     options: Required<EntityLoaderOptions<Entity>>,
     ref: boolean,
+    populate?: PopulateOptions<Entity>,
   ): AnyEntity[] {
     const filtered = this.filterCollections(entities, prop.name, options, ref);
 
@@ -1056,7 +1057,7 @@ export class EntityLoader {
     }
 
     // MANY_TO_ONE or ONE_TO_ONE
-    return this.filterReferences(entities, prop.name, options, ref) as AnyEntity[];
+    return this.filterReferences(entities, prop.name, options, ref, populate) as AnyEntity[];
   }
 
   private filterCollections<Entity extends object>(
@@ -1104,6 +1105,7 @@ export class EntityLoader {
     field: keyof Entity & string,
     options: Required<EntityLoaderOptions<Entity>>,
     ref: boolean,
+    populate?: PopulateOptions<Entity>,
   ): Entity[keyof Entity][] {
     if (ref) {
       return [];
@@ -1116,13 +1118,21 @@ export class EntityLoader {
     }
 
     if (options.fields) {
+      // `:ref` populate children are satisfied by FK/PK and will be loaded lazily — they don't force a parent reload
+      const refChildren = new Set(
+        (populate?.children ?? [])
+          .map(c => c.field.split(':'))
+          .filter(parts => parts[1] === 'ref')
+          .map(parts => parts[0]),
+      );
       return children
         .map(e => Reference.unwrapReference(e[field] as AnyEntity) as Entity)
         .filter(target => {
           const wrapped = helper(target);
           const childFields = (options.fields as unknown as string[])
             .filter(f => f.startsWith(`${field}.`))
-            .map(f => f.substring(field.length + 1));
+            .map(f => f.substring(field.length + 1))
+            .filter(cf => !refChildren.has(cf.split('.')[0]));
 
           return !wrapped.__initialized || !childFields.every(cf => this.isPropertyLoaded(target, cf));
         }) as Entity[keyof Entity][];

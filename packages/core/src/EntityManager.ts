@@ -2544,9 +2544,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const meta = this.metadata.find(entityName)!;
 
-    // infer populate hints from `fields` when present; merge with explicit `populate` if both are set
+    // infer populate hints from `fields` when present; merge with explicit `populate` if both are set.
+    // `populateArray` is only kept when the entries are user-provided strings — when this method runs a
+    // second time (e.g. from `lockAndPopulate`) the populate is already normalized and merging would be a no-op.
     const fields = options.fields ? this.buildFields(options.fields) : undefined;
-    const populateArray = Array.isArray(options.populate) ? (options.populate as string[]) : undefined;
+    const populateArray =
+      Array.isArray(options.populate) && options.populate.every(p => typeof p === 'string')
+        ? (options.populate as string[])
+        : undefined;
     const hasNestedFields = fields?.some(f => f.includes('.')) ?? false;
     const shouldInfer = fields !== undefined && options.populate === undefined;
     const shouldMerge =
@@ -2607,8 +2612,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         options.populate = fromFields as any;
       } else {
         // with an explicit populate, only nested paths (e.g. `item.id`) need to be merged in — they
-        // require a JOIN to access sub-fields, whereas bare names are already handled by the driver
-        const extras = fromFields.filter(f => f.includes('.'));
+        // require a JOIN to access sub-fields, whereas bare names are already handled by the driver.
+        // skip paths already in user's `populate` (regardless of `:ref` modifier) to avoid producing
+        // both a `:ref` and a non-`:ref` entry for the same relation
+        const existing = new Set(populateArray!.map(p => p.split(':')[0]));
+        const extras = fromFields.filter(f => f.includes('.') && !existing.has(f));
         options.populate = [...populateArray!, ...extras] as any;
       }
     }
