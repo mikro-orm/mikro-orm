@@ -76,7 +76,9 @@ export function getOnConflictFields<T>(
   }
 
   const keys = Object.keys(data).flatMap(f => {
-    if (!(Array.isArray(uniqueFields) && !uniqueFields.includes(f as keyof T))) {
+    // skip explicitly listed unique fields; for raw onConflictFields we can't introspect the
+    // fragment, so merge all data keys (the user is responsible for not corrupting them).
+    if (Array.isArray(uniqueFields) && uniqueFields.includes(f as keyof T)) {
       return [];
     }
 
