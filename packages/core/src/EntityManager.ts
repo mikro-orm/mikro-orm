@@ -1,5 +1,5 @@
 import { type Configuration } from './utils/Configuration.js';
-import { getOnConflictReturningFields, getWhereCondition } from './utils/upsert-utils.js';
+import { getOnConflictReturningFields, getWhereCondition, resetUntouchedCollections } from './utils/upsert-utils.js';
 import { Utils } from './utils/Utils.js';
 import { Cursor } from './utils/Cursor.js';
 import { QueryHelper } from './utils/QueryHelper.js';
@@ -11,7 +11,6 @@ import { validateEmptyWhere, validateParams, validatePrimaryKey, validatePropert
 import { type EntityRepository } from './entity/EntityRepository.js';
 import { EntityLoader, type EntityLoaderOptions } from './entity/EntityLoader.js';
 import { Reference } from './entity/Reference.js';
-import { Collection } from './entity/Collection.js';
 import { helper } from './entity/wrap.js';
 import { ChangeSet, ChangeSetType } from './unit-of-work/ChangeSet.js';
 import { UnitOfWork } from './unit-of-work/UnitOfWork.js';
@@ -1254,7 +1253,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     // recompute the data as there might be some values missing (e.g. those with db column defaults)
-    em.resetUntouchedCollections(meta, entity, data as EntityData<Entity>);
+    resetUntouchedCollections(meta, entity, data as EntityData<Entity>);
     const snapshot = this.#comparator.prepareEntity(entity);
     em.#unitOfWork.register(entity, snapshot, { refresh: true });
 
@@ -1539,7 +1538,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     for (const [entity] of entities) {
       // recompute the data as there might be some values missing (e.g. those with db column defaults)
-      em.resetUntouchedCollections(meta, entity, entities.get(entity)!);
+      resetUntouchedCollections(meta, entity, entities.get(entity)!);
       const snapshot = this.#comparator.prepareEntity(entity);
       em.#unitOfWork.register(entity, snapshot, { refresh: true });
     }
@@ -1551,37 +1550,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     return [...entities.keys()];
-  }
-
-  private resetUntouchedCollections<Entity extends object>(
-    meta: EntityMetadata<Entity>,
-    entity: Entity,
-    data: EntityData<Entity>,
-  ): void {
-    // for entities passed in via `em.create()` and then upserted, collection-kind relations
-    // were initialized as empty-but-initialized by the hydrator (newEntity=true). once the
-    // upsert resolves the entity to a possibly existing row, that state is stale and would
-    // cause `em.populate()` to skip those collections. replace them with a fresh
-    // uninitialized collection so populate can load them.
-    if (helper(entity).__originalEntityData) {
-      return;
-    }
-
-    for (const prop of meta.relations) {
-      if (prop.kind !== ReferenceKind.MANY_TO_MANY && prop.kind !== ReferenceKind.ONE_TO_MANY) {
-        continue;
-      }
-
-      if (prop.name in data) {
-        continue;
-      }
-
-      const collection = entity[prop.name];
-
-      if (Utils.isCollection(collection) && collection.isInitialized() && !collection.isDirty()) {
-        Collection.create(entity, prop.name, undefined, false);
-      }
-    }
   }
 
   /**
