@@ -202,3 +202,21 @@ test('populate after upsertMany does not insert duplicate pivot rows when settin
   expect(reloaded.attributes).toHaveLength(1);
   expect(reloaded.attributes[0].id).toBe(attr.id);
 });
+
+test('Collection.reset clears stale M:N collection state', () => {
+  const product = orm.em.create(Product, {
+    title: 'Product With Stale State',
+    externalId: 'EXT000000005',
+    category: 'Category',
+  });
+  const attr = orm.em.create(ProductAttribute, { value: 'White' });
+
+  product.attributes.add(attr);
+  product.attributes.reset();
+
+  expect(product.attributes.isInitialized()).toBe(false);
+  expect(product.attributes.isDirty()).toBe(false);
+  expect(product.attributes.getItems(false)).toEqual([]);
+  expect(product.attributes.getSnapshot()).toEqual([]);
+  expect(product.attributes[0]).toBeUndefined();
+});
