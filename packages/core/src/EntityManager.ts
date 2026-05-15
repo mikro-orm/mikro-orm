@@ -683,11 +683,31 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
       if (prop && !ref) {
         hint.children ??= [];
-        await this.autoJoinRefsForFilters(
-          prop.targetMeta!,
-          { ...options, populate: hint.children },
-          { class: meta.root.class, propName: prop.name },
-        );
+        const targets = prop.polymorphic && prop.polymorphTargets?.length ? prop.polymorphTargets : [prop.targetMeta!];
+
+        for (const targetMeta of targets) {
+          const before = hint.children.length;
+          await this.autoJoinRefsForFilters(
+            targetMeta,
+            { ...options, populate: hint.children },
+            { class: meta.root.class, propName: prop.name },
+          );
+
+          // For polymorphic relations, `hint.children` is applied to every polymorph target during
+          // population, so drop any auto-added hint whose field does not exist on every target —
+          // otherwise the shared `:ref` would crash when applied to a target lacking it (GH #7722).
+          if (targets.length > 1 && hint.children.length > before) {
+            const added = hint.children.splice(before);
+
+            for (const h of added) {
+              const f = h.field.split(':')[0];
+
+              if (targets.every(t => f in t.properties)) {
+                hint.children.push(h);
+              }
+            }
+          }
+        }
       }
     }
   }
