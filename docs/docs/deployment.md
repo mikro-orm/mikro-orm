@@ -312,6 +312,8 @@ external: [
   '@mikro-orm/mongodb',
   '@mikro-orm/mysql',
   '@mikro-orm/mssql',
+  '@mikro-orm/oracledb',
+  '@mikro-orm/pglite',
   '@mikro-orm/seeder',
   '@mikro-orm/sqlite',
   '@mikro-orm/libsql',

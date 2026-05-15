@@ -284,7 +284,7 @@ See [Serializing](./serializing.md) for all options including serialization grou
 
 MikroORM uses a driver abstraction to support multiple databases. The `@mikro-orm/core` package contains database-agnostic logic (EntityManager, UnitOfWork, IdentityMap), while driver packages provide database-specific implementations.
 
-**SQL drivers**: `@mikro-orm/postgresql`, `@mikro-orm/mysql`, `@mikro-orm/mariadb`, `@mikro-orm/sqlite`, `@mikro-orm/libsql`, `@mikro-orm/mssql` - all with full QueryBuilder support.
+**SQL drivers**: `@mikro-orm/postgresql`, `@mikro-orm/pglite`, `@mikro-orm/mysql`, `@mikro-orm/mariadb`, `@mikro-orm/sqlite`, `@mikro-orm/libsql`, `@mikro-orm/mssql`, `@mikro-orm/oracledb` - all with full QueryBuilder support.
 
 **MongoDB driver**: `@mikro-orm/mongodb` - uses the native MongoDB driver. No QueryBuilder (use `em.find()` with filter objects instead).
 

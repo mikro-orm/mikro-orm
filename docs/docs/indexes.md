@@ -677,24 +677,24 @@ export class User {
 
 ## Database Support Summary
 
-| Feature | MySQL | MariaDB | PostgreSQL | MSSQL | SQLite | MongoDB |
-|---------|-------|---------|------------|-------|--------|---------|
-| Basic indexes | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Unique constraints | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Composite indexes | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Index expressions | ✅ | ✅ | ✅ | ✅ | ✅ | - |
-| Partial indexes (`where`) | ✅ (CASE WHEN) | - | ✅ | ✅ | ✅ | ✅ (object form → `partialFilterExpression`) |
-| Fulltext indexes | ✅ | ✅ | ✅ | ✅ | - | ✅ |
-| Sort order (ASC/DESC) | ✅ | ✅ | ✅ | ✅ | ✅ | - |
-| NULLS FIRST/LAST | - | - | ✅ | - | - | - |
-| Column prefix length | ✅ | ✅ | - | - | - | - |
-| Collation | ✅ | ✅ | ✅ | - | ✅ | - |
-| INCLUDE columns | - | - | ✅ | ✅ | - | - |
-| Fill factor | - | - | ✅ | ✅ | - | - |
-| Invisible indexes | ✅ | ✅ | - | - | - | ✅ |
-| Disabled indexes | - | - | - | ✅ | - | - |
-| Clustered indexes | - | ✅ | - | ✅ | - | - |
-| Deferrable constraints | - | - | ✅ | - | - | - |
+| Feature | MySQL | MariaDB | PostgreSQL | PGlite | CockroachDB | MSSQL | Oracle | SQLite | libSQL | MongoDB |
+|---------|-------|---------|------------|--------|-------------|-------|--------|--------|--------|---------|
+| Basic indexes | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Unique constraints | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Composite indexes | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Index expressions | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | - |
+| Partial indexes (`where`) | ✅ (CASE WHEN) | - | ✅ | ✅ | ✅ | ✅ | ✅ (CASE WHEN) | ✅ | ✅ | ✅ (object form → `partialFilterExpression`) |
+| Fulltext indexes | ✅ | ✅ | ✅ | ✅ | - | ✅ | - | - | - | ✅ |
+| Sort order (ASC/DESC) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | - |
+| NULLS FIRST/LAST | - | - | ✅ | ✅ | ✅ | - | ✅ | - | - | - |
+| Column prefix length | ✅ | ✅ | - | - | - | - | - | - | - | - |
+| Collation | ✅ | ✅ | ✅ | ✅ | ✅ | - | ✅ | ✅ | ✅ | - |
+| INCLUDE columns | - | - | ✅ | ✅ | ✅ | ✅ | - | - | - | - |
+| Fill factor | - | - | ✅ | ✅ | - | ✅ | - | - | - | - |
+| Invisible indexes | ✅ | ✅ | - | - | - | - | - | - | - | ✅ |
+| Disabled indexes | - | - | - | - | - | ✅ | - | - | - | - |
+| Clustered indexes | - | ✅ | - | - | - | ✅ | - | - | - | - |
+| Deferrable constraints | - | - | ✅ | ✅ | - | - | ✅ | - | - | - |
 
 ## See Also
 
