@@ -198,6 +198,7 @@ function FeatureScroll() {
 
 const driverPackages = [
   '@mikro-orm/postgresql',
+  '@mikro-orm/pglite',
   '@mikro-orm/mysql',
   '@mikro-orm/mariadb',
   '@mikro-orm/sqlite',
