@@ -35,11 +35,20 @@ describe('GH issue 7724', () => {
     await orm.close(true);
   });
 
-  test('self-referencing M:N on STI child can be joined via the STI root', async () => {
+  test('qb leftJoinAndSelect of child inverse M:N via the STI root', async () => {
+    // original repro from the issue — joins the inverse M:N through the
+    // STI root, which used to crash because the root's inlined copy of the
+    // inverse property had a stale undefined `pivotEntity`.
     await orm.em
       .qb(Animal as typeof Cat, 'e')
       .leftJoinAndSelect('e.friends', 'a')
       .leftJoinAndSelect('e.friendOf', 'b')
       .getResultList();
+  });
+
+  test('em.find with filter on child inverse M:N via the STI root', async () => {
+    // realistic usage hitting the same underlying bug: filtering by the
+    // inverse M:N auto-joins it through the STI root.
+    await orm.em.find(Animal as typeof Cat, { friendOf: { id: 1 } });
   });
 });
