@@ -8,6 +8,8 @@ MikroORM supports several SQL databases out of the box. Install the driver packa
 # for postgresql (works with cockroachdb too)
 npm install @mikro-orm/postgresql
 
+# for pglite (embedded PostgreSQL in WASM)
+npm install @mikro-orm/pglite
 
 # for mysql (works with mariadb too)
 npm install @mikro-orm/mysql
