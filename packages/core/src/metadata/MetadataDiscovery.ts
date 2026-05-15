@@ -770,6 +770,11 @@ export class MetadataDiscovery {
 
           if (prop.inversedBy) {
             prop.targetMeta!.properties[prop.inversedBy].pivotEntity = pivotMeta.class;
+            const targetRoot = prop.targetMeta!.root;
+
+            if (targetRoot !== prop.targetMeta && targetRoot.properties[prop.inversedBy]) {
+              targetRoot.properties[prop.inversedBy].pivotEntity = pivotMeta.class;
+            }
           }
 
           return pivotMeta;
