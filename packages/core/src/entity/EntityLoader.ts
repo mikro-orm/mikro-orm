@@ -555,10 +555,10 @@ export class EntityLoader {
       }
     }
 
-    if (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && !ref) {
+    if (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && (!ref || (!prop.mapToPk && !populate.filter))) {
       children.length = 0;
       fk = meta.properties[prop.mappedBy].name;
-      children.push(...(this.filterByReferences(entities, prop.name, options.refresh) as AnyEntity[]));
+      children.push(...(this.filterByReferences(entities, prop, options, ref) as AnyEntity[]));
     }
 
     if (children.length === 0) {
@@ -1145,15 +1145,51 @@ export class EntityLoader {
 
   private filterByReferences<Entity extends object>(
     entities: Entity[],
-    field: keyof Entity,
-    refresh: boolean,
+    prop: EntityProperty<Entity>,
+    options: Required<EntityLoaderOptions<Entity>>,
+    ref: boolean,
   ): Entity[] {
     /* v8 ignore next */
-    if (refresh) {
+    if (options.refresh) {
       return entities;
     }
 
-    return entities.filter(e => e[field] !== null && !(e[field] as AnyEntity)?.__helper?.__initialized);
+    const field = prop.name as keyof Entity;
+    return entities.filter(e => {
+      const value = e[field] as AnyEntity | null | undefined;
+
+      if (value === null) {
+        return false;
+      }
+
+      if (value === undefined || !Utils.isEntity(value, true)) {
+        return true;
+      }
+
+      const target = Reference.unwrapReference(value);
+      const wrapped = helper(target);
+
+      if (!wrapped.__initialized) {
+        return true;
+      }
+
+      if (ref) {
+        return false;
+      }
+
+      if (options.fields) {
+        const childFields = (options.fields as unknown as string[])
+          .filter(f => f.startsWith(`${prop.name}.`))
+          .map(f => f.substring(prop.name.length + 1));
+
+        return childFields.length > 0 && !childFields.every(f => this.isPropertyLoaded(target, f));
+      }
+
+      return prop.targetMeta!.comparableProps.some(targetProp => {
+        const inlineEmbedded = targetProp.kind === ReferenceKind.EMBEDDED && !targetProp.object;
+        return !inlineEmbedded && !targetProp.lazy && !wrapped.__loadedProperties.has(targetProp.name);
+      });
+    });
   }
 
   private lookupAllRelationships<Entity>(entityName: EntityName<Entity>): PopulateOptions<Entity>[] {
