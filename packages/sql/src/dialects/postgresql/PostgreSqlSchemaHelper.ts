@@ -968,32 +968,29 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
    * Build the column list for a PostgreSQL index.
    */
   protected override getIndexColumns(index: IndexDef): string {
-    if (index.columns?.length) {
-      return index.columns
-        .map(col => {
-          let colDef = this.quote(col.name);
+    return index.columnNames
+      .map(name => {
+        const col = index.columns?.find(c => c.name === name);
+        let colDef = this.quote(name);
 
-          // PostgreSQL supports collation with double quotes
-          if (col.collation) {
-            colDef += ` collate ${this.quote(col.collation)}`;
-          }
+        // PostgreSQL supports collation with double quotes
+        if (col?.collation) {
+          colDef += ` collate ${this.quote(col.collation)}`;
+        }
 
-          // PostgreSQL supports sort order
-          if (col.sort) {
-            colDef += ` ${col.sort}`;
-          }
+        // PostgreSQL supports sort order
+        if (col?.sort) {
+          colDef += ` ${col.sort}`;
+        }
 
-          // PostgreSQL supports NULLS FIRST/LAST
-          if (col.nulls) {
-            colDef += ` nulls ${col.nulls}`;
-          }
+        // PostgreSQL supports NULLS FIRST/LAST
+        if (col?.nulls) {
+          colDef += ` nulls ${col.nulls}`;
+        }
 
-          return colDef;
-        })
-        .join(', ');
-    }
-
-    return index.columnNames.map(c => this.quote(c)).join(', ');
+        return colDef;
+      })
+      .join(', ');
   }
 
   /**
