@@ -500,14 +500,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const types = Object.values(meta.root.discriminatorMap!).map(cls => this.metadata.get(cls));
     const children: EntityMetadata[] = [];
-    const lookUpChildren = (ret: EntityMetadata[], type: EntityName) => {
-      const children = types.filter(meta2 => meta2.extends === type);
-      children.forEach(m => lookUpChildren(ret, m.class));
+    const lookUpChildren = (ret: EntityMetadata[], parent: EntityMetadata) => {
+      const children = types.filter(meta2 => meta2.extends && this.metadata.find(meta2.extends) === parent);
+      children.forEach(m => lookUpChildren(ret, m));
       ret.push(...children.filter(c => c.discriminatorValue));
 
       return children;
     };
-    lookUpChildren(children, meta.class);
+    lookUpChildren(children, meta);
     /* v8 ignore next */
     (where as Dictionary)[meta.root.discriminatorColumn!] =
       children.length > 0
