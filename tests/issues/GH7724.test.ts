@@ -37,9 +37,9 @@ describe('GH issue 7724', () => {
 
   test('self-referencing M:N on STI child can be joined via the STI root', async () => {
     await orm.em
-      .qb(Animal, 'e')
-      .leftJoinAndSelect('e.friends' as never, 'a')
-      .leftJoinAndSelect('e.friendOf' as never, 'b')
+      .qb(Animal as typeof Cat, 'e')
+      .leftJoinAndSelect('e.friends', 'a')
+      .leftJoinAndSelect('e.friendOf', 'b')
       .getResultList();
   });
 });
