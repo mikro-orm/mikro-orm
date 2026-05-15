@@ -198,32 +198,29 @@ export abstract class SchemaHelper {
    * Note: Prefix length is only supported by MySQL/MariaDB which override this method.
    */
   protected getIndexColumns(index: IndexDef): string {
-    if (index.columns?.length) {
-      return index.columns
-        .map(col => {
-          let colDef = this.quote(col.name);
+    return index.columnNames
+      .map(name => {
+        const col = index.columns?.find(c => c.name === name);
+        let colDef = this.quote(name);
 
-          // Collation comes after column name (SQLite syntax: column COLLATE name)
-          if (col.collation) {
-            colDef += ` collate ${col.collation}`;
-          }
+        // Collation comes after column name (SQLite syntax: column COLLATE name)
+        if (col?.collation) {
+          colDef += ` collate ${col.collation}`;
+        }
 
-          // Sort order
-          if (col.sort) {
-            colDef += ` ${col.sort}`;
-          }
+        // Sort order
+        if (col?.sort) {
+          colDef += ` ${col.sort}`;
+        }
 
-          // NULLS ordering (PostgreSQL)
-          if (col.nulls) {
-            colDef += ` nulls ${col.nulls}`;
-          }
+        // NULLS ordering (PostgreSQL)
+        if (col?.nulls) {
+          colDef += ` nulls ${col.nulls}`;
+        }
 
-          return colDef;
-        })
-        .join(', ');
-    }
-
-    return index.columnNames.map(c => this.quote(c)).join(', ');
+        return colDef;
+      })
+      .join(', ');
   }
 
   /** Returns SQL to drop an index. */

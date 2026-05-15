@@ -687,22 +687,19 @@ export class MsSqlSchemaHelper extends SchemaHelper {
    * Build the column list for a MSSQL index.
    */
   protected override getIndexColumns(index: IndexDef): string {
-    if (index.columns?.length) {
-      return index.columns
-        .map(col => {
-          let colDef = this.quote(col.name);
+    return index.columnNames
+      .map(name => {
+        const col = index.columns?.find(c => c.name === name);
+        let colDef = this.quote(name);
 
-          // MSSQL supports sort order
-          if (col.sort) {
-            colDef += ` ${col.sort}`;
-          }
+        // MSSQL supports sort order
+        if (col?.sort) {
+          colDef += ` ${col.sort}`;
+        }
 
-          return colDef;
-        })
-        .join(', ');
-    }
-
-    return index.columnNames.map(c => this.quote(c)).join(', ');
+        return colDef;
+      })
+      .join(', ');
   }
 
   /**

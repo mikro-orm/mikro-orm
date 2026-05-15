@@ -211,42 +211,39 @@ export class MySqlSchemaHelper extends SchemaHelper {
    * MySQL requires collation to be specified as an expression: (column_name COLLATE collation_name)
    */
   protected override getIndexColumns(index: IndexDef): string {
-    if (index.columns?.length) {
-      return index.columns
-        .map(col => {
-          const quotedName = this.quote(col.name);
+    return index.columnNames
+      .map(name => {
+        const col = index.columns?.find(c => c.name === name);
+        const quotedName = this.quote(name);
 
-          // MySQL supports collation via expression: (column_name COLLATE collation_name)
-          // When collation is specified, wrap in parentheses as an expression
-          if (col.collation) {
-            let expr = col.length ? `${quotedName}(${col.length})` : quotedName;
-            expr = `(${expr} collate ${col.collation})`;
-            // Sort order comes after the expression
-            if (col.sort) {
-              expr += ` ${col.sort}`;
-            }
-            return expr;
-          }
-
-          // Standard column definition without collation
-          let colDef = quotedName;
-
-          // MySQL supports prefix length
-          if (col.length) {
-            colDef += `(${col.length})`;
-          }
-
-          // MySQL supports sort order
+        // MySQL supports collation via expression: (column_name COLLATE collation_name)
+        // When collation is specified, wrap in parentheses as an expression
+        if (col?.collation) {
+          let expr = col.length ? `${quotedName}(${col.length})` : quotedName;
+          expr = `(${expr} collate ${col.collation})`;
+          // Sort order comes after the expression
           if (col.sort) {
-            colDef += ` ${col.sort}`;
+            expr += ` ${col.sort}`;
           }
+          return expr;
+        }
 
-          return colDef;
-        })
-        .join(', ');
-    }
+        // Standard column definition without collation
+        let colDef = quotedName;
 
-    return index.columnNames.map(c => this.quote(c)).join(', ');
+        // MySQL supports prefix length
+        if (col?.length) {
+          colDef += `(${col.length})`;
+        }
+
+        // MySQL supports sort order
+        if (col?.sort) {
+          colDef += ` ${col.sort}`;
+        }
+
+        return colDef;
+      })
+      .join(', ');
   }
 
   /**
