@@ -2473,6 +2473,7 @@ export abstract class AbstractSqlDriver<
     }
 
     const aliased = this.platform.quoteIdentifier(`${tableAlias}__${prop.fieldNames[0]}`);
+    const sourceAlias = qb.helper.getTPTAliasForProperty(prop.name, tableAlias);
 
     if (prop.customTypes?.some(type => !!type?.convertToJSValueSQL)) {
       return prop.fieldNames.map((col, idx) => {
@@ -2480,7 +2481,7 @@ export abstract class AbstractSqlDriver<
           return col;
         }
 
-        const prefixed = this.platform.quoteIdentifier(`${tableAlias}.${col}`);
+        const prefixed = this.platform.quoteIdentifier(`${sourceAlias}.${col}`);
         const aliased = this.platform.quoteIdentifier(`${tableAlias}__${col}`);
 
         return raw(`${prop.customTypes[idx].convertToJSValueSQL(prefixed, this.platform)} as ${aliased}`);
@@ -2488,7 +2489,7 @@ export abstract class AbstractSqlDriver<
     }
 
     if (prop.customType?.convertToJSValueSQL) {
-      const prefixed = this.platform.quoteIdentifier(`${tableAlias}.${prop.fieldNames[0]}`);
+      const prefixed = this.platform.quoteIdentifier(`${sourceAlias}.${prop.fieldNames[0]}`);
       return [raw(`${prop.customType.convertToJSValueSQL(prefixed, this.platform)} as ${aliased}`)];
     }
 
@@ -2499,7 +2500,6 @@ export abstract class AbstractSqlDriver<
       return [raw(`${this.evaluateFormula(prop.formula, columns, table)} as ${aliased}`)];
     }
 
-    const sourceAlias = qb.helper.getTPTAliasForProperty(prop.name, tableAlias);
     return prop.fieldNames.map(fieldName => {
       return raw('?? as ??', [`${sourceAlias}.${fieldName}`, `${tableAlias}__${fieldName}`]);
     });
