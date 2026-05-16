@@ -346,9 +346,9 @@ SELECT y`;
       expect(sql).toBe('CREATE OR REPLACE FUNCTION raw RETURN NUMBER AS BEGIN RETURN 1; END;');
     });
 
-    it('dropRoutine emits uppercase routine name', () => {
+    it('dropRoutine emits uppercase routine name with if-exists guard', () => {
       const sql = helper.dropRoutine(baseRoutine);
-      expect(sql).toMatch(/drop function "R"/i);
+      expect(sql).toMatch(/drop function if exists "R"/i);
     });
   });
 });

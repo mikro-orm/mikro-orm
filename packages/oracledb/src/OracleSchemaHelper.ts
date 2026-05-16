@@ -927,10 +927,10 @@ export class OracleSchemaHelper extends SchemaHelper {
     return `create or replace function ${name}${argsClause} return ${returnType} as ${body};`;
   }
 
-  /** Generates PL/SQL to drop an Oracle stored procedure or function. */
+  /** Generates PL/SQL to drop an Oracle stored procedure or function. Uses `if exists` to be idempotent (Oracle 23c+); older versions can extend this helper if needed. */
   override dropRoutine(routine: SqlRoutineDef): string {
     const kind = routine.type === 'procedure' ? 'procedure' : 'function';
-    return `drop ${kind} ${this.quote(routine.name.toUpperCase())}`;
+    return `drop ${kind} if exists ${this.quote(routine.name.toUpperCase())}`;
   }
 
   /** Lists all stored routines from `USER_PROCEDURES`/`USER_SOURCE`/`USER_ARGUMENTS`. */
