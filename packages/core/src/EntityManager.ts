@@ -1959,7 +1959,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Invokes a stored procedure or function declared via the {@link Routine} class.
+   * Invokes a stored procedure or function declared via the {@link Routine} class. Argument and
+   * return types are inferred from the routine's literal config — no explicit generic needed.
+   * Params declared with `runtimeType` are typed strictly, `ref: true` wraps the arg in
+   * `ScalarReference<T>`, and `nullable: true` adds `| null`. Use {@link Routine.withTypes} on
+   * the declaration to refine the inferred type when it's too loose (e.g. `runtimeType: 'object'`
+   * returns default to `Dictionary`).
    *
    * - Functions return their scalar value, optionally marshalled through `returns.customType`.
    * - Procedures return `void`; OUT/INOUT params are written back into the caller's
@@ -1999,7 +2004,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * ```
    */
   callRoutine<R extends Routine>(routine: R, args: RoutineArgs<R>): Promise<RoutineReturn<R>>;
+
+  /**
+   * Invokes a routine looked up by class or string name. Escape hatch for cases where the caller
+   * does not hold the {@link Routine} instance (e.g. dynamic dispatch from a registry). Args and
+   * return type are not inferred — pass `<T>` for the return type and a plain object for args.
+   */
   callRoutine<T = unknown>(routine: EntityName<any>, args?: Record<string, unknown>): Promise<T>;
+
   async callRoutine(
     routine: EntityName<any> | { meta: RoutineMetadata },
     args: Record<string, unknown> = {},
