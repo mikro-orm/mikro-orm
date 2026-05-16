@@ -1,4 +1,4 @@
-import type { GenerateOptions, NamingStrategy, Platform } from '@mikro-orm/core';
+import type { GenerateOptions, NamingStrategy, Platform, RoutineRuntimeType } from '@mikro-orm/core';
 import type { SqlRoutineDef, SqlRoutineParamDef } from '@mikro-orm/sql';
 
 const identifierRegex = /^(?:[$_\p{ID_Start}])(?:[$‌‍\p{ID_Continue}])*$/u;
@@ -37,12 +37,22 @@ function toPascalCase(name: string): string {
     .join('');
 }
 
-// Keys of `RoutineRuntimeTypeMap`. Kept inline so a stale import doesn't silently widen the
-// narrowing function below if the union ever grows.
-const ROUTINE_RUNTIME_TYPES = new Set(['string', 'number', 'boolean', 'bigint', 'Buffer', 'Date', 'object', 'any']);
+// `satisfies` ties this list to `RoutineRuntimeType` — adding a key to the type without
+// updating this tuple is a compile error, so the runtime set never silently lags the union.
+const ROUTINE_RUNTIME_TYPES = [
+  'string',
+  'number',
+  'boolean',
+  'bigint',
+  'Buffer',
+  'Date',
+  'object',
+  'any',
+] as const satisfies readonly RoutineRuntimeType[];
+const ROUTINE_RUNTIME_TYPE_SET = new Set<string>(ROUTINE_RUNTIME_TYPES);
 
 function narrowRuntimeType(runtimeType: string | undefined): string {
-  return runtimeType && ROUTINE_RUNTIME_TYPES.has(runtimeType) ? runtimeType : 'any';
+  return runtimeType && ROUTINE_RUNTIME_TYPE_SET.has(runtimeType) ? runtimeType : 'any';
 }
 
 /**

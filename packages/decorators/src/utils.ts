@@ -181,7 +181,10 @@ export function lookupPathFromDecorator(name: string, stack?: string[]): string 
   }
 }
 
-function ensureDecoratorPath<T>(target: T & Dictionary & { [MetadataStorage.PATH_SYMBOL]?: string }): string {
+/** Retrieves or creates the metadata object for a decorated entity class. */
+export function getMetadataFromDecorator<T = any>(
+  target: T & Dictionary & { [MetadataStorage.PATH_SYMBOL]?: string },
+): EntityMetadata<T> {
   if (!Object.hasOwn(target, MetadataStorage.PATH_SYMBOL)) {
     Object.defineProperty(target, MetadataStorage.PATH_SYMBOL, {
       value: lookupPathFromDecorator(target.name),
@@ -189,12 +192,5 @@ function ensureDecoratorPath<T>(target: T & Dictionary & { [MetadataStorage.PATH
     });
   }
 
-  return target[MetadataStorage.PATH_SYMBOL]!;
-}
-
-/** Retrieves or creates the metadata object for a decorated entity class. */
-export function getMetadataFromDecorator<T = any>(
-  target: T & Dictionary & { [MetadataStorage.PATH_SYMBOL]?: string },
-): EntityMetadata<T> {
-  return MetadataStorage.getMetadata(target.name, ensureDecoratorPath(target));
+  return MetadataStorage.getMetadata(target.name, target[MetadataStorage.PATH_SYMBOL]!);
 }
