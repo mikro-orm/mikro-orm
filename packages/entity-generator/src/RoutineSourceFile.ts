@@ -37,6 +37,14 @@ function toPascalCase(name: string): string {
     .join('');
 }
 
+// Keys of `RoutineRuntimeTypeMap`. Kept inline so a stale import doesn't silently widen the
+// narrowing function below if the union ever grows.
+const ROUTINE_RUNTIME_TYPES = new Set(['string', 'number', 'boolean', 'bigint', 'Buffer', 'Date', 'object', 'any']);
+
+function narrowRuntimeType(runtimeType: string | undefined): string {
+  return runtimeType && ROUTINE_RUNTIME_TYPES.has(runtimeType) ? runtimeType : 'any';
+}
+
 /**
  * Emits source code for a stored routine introspected from the database. Always emits the
  * `new Routine(...)` class-less form regardless of the `entityDefinition` option — there is
@@ -136,11 +144,11 @@ export class RoutineSourceFile {
   private formatReturns(returns: NonNullable<SqlRoutineDef['returns']>): string {
     const parts: string[] = [];
 
-    if (returns.runtimeType) {
-      parts.push(`runtimeType: ${quote(returns.runtimeType)}`);
-    } else {
-      parts.push(`runtimeType: ${quote(this.platform.getMappedType(returns.type)?.runtimeType ?? 'string')}`);
-    }
+    // Constrain emitted `runtimeType` to the narrow `RoutineRuntimeType` union so the generated
+    // file stays type-clean; unrecognised dialect-specific types (e.g. `'unknown'` from
+    // `getMappedType`) collapse to `'any'` and the user can refine via `.withTypes(...)`.
+    const inferred = returns.runtimeType ?? this.platform.getMappedType(returns.type)?.runtimeType;
+    parts.push(`runtimeType: ${quote(narrowRuntimeType(inferred))}`);
 
     parts.push(`columnType: ${quote(returns.type)}`);
 

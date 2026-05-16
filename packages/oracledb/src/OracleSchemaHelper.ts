@@ -955,8 +955,16 @@ export class OracleSchemaHelper extends SchemaHelper {
     ]);
     const { params, returns } = paramsAndReturns;
 
+    // Oracle has no per-schema routine catalog (USER_PROCEDURES is implicitly scoped to the
+    // connected user), but the metadata side of `addRoutinesFromMetadata` sets `schema` to the
+    // platform default (the dbName/user) for any platform whose `getDefaultSchemaName()` is
+    // defined. Surface the same value here so `SchemaComparator.routineKey` matches both sides;
+    // without it every routine introspects with `schema: undefined` and churns as new + removed.
+    const schemaName = this.platform.getDefaultSchemaName();
+
     return rows.map(row => ({
       name: row.name,
+      schema: schemaName,
       type: row.kind.toLowerCase() as 'procedure' | 'function',
       body: this.unwrapPlSqlBody(row.source ?? ''),
       params: params.get(row.name) ?? [],

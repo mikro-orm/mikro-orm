@@ -354,9 +354,16 @@ export class SchemaComparator {
       if (
         a.name !== b.name ||
         this.normaliseParamType(a.type) !== this.normaliseParamType(b.type) ||
-        a.direction !== b.direction ||
-        (a.nullable ?? false) !== (b.nullable ?? false)
+        a.direction !== b.direction
       ) {
+        return true;
+      }
+
+      // No driver currently introspects routine parameter nullability, so the introspected
+      // side is always undefined. Only compare nullable when the introspected side actually
+      // reports it (mirrors the asymmetric `to.nullable != null` guard in `diffRoutineReturns`)
+      // — otherwise a metadata-declared `nullable: true` would churn every `schema:update`.
+      if (a.nullable != null && !!a.nullable !== !!b.nullable) {
         return true;
       }
     }

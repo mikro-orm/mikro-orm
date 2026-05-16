@@ -55,7 +55,8 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
   ): Promise<T> {
     const placeholders = routine.params.map(() => '?').join(', ');
     const positional = routine.params.map(p => convertRoutineInbound(args[p.name as string], p, this.platform));
-    const qualified = (routine.schema ? `"${routine.schema}".` : '') + `"${routine.routineName}"`;
+    const quoted = (id: string) => this.platform.quoteIdentifier(id);
+    const qualified = (routine.schema ? `${quoted(routine.schema)}.` : '') + quoted(routine.routineName);
 
     if (routine.type === 'function') {
       const rows = (await this.execute(

@@ -268,6 +268,28 @@ describe('RoutineSourceFile', () => {
     expect(out).not.toContain("comment: 'line one\nline two");
   });
 
+  it("narrows runtimeType fallback to 'any' when getMappedType reports a value outside the routine runtime-type union", () => {
+    const oddPlatform = { getMappedType: () => ({ runtimeType: 'unknown' }) } as unknown as Platform;
+    const sourceFile = new RoutineSourceFile(
+      {
+        name: 'oddly_typed',
+        type: 'function',
+        params: [],
+        returns: { type: 'tsvector' },
+        body: "select 'x'::tsvector",
+      },
+      namingStrategy,
+      oddPlatform,
+      { entityDefinition: 'decorators', fileName: (n: string) => n },
+    );
+
+    const out = sourceFile.generate();
+    // Falls back to 'any' (a valid `RoutineRuntimeType`) rather than emitting 'unknown' which is
+    // not part of the union and would produce TS-invalid generated code.
+    expect(out).toContain(`runtimeType: 'any'`);
+    expect(out).not.toContain(`runtimeType: 'unknown'`);
+  });
+
   it('snake_case routine names become PascalCase class names', () => {
     const sourceFile = new RoutineSourceFile(
       {

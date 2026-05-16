@@ -264,12 +264,18 @@ export class OracleConnection extends AbstractSqlConnection {
     }
 
     const routineName = routine.routineName.toUpperCase();
+    // Oracle resolves routine names against the connected user's schema by default; cross-schema
+    // invocation needs an `OWNER.NAME` prefix. Mirror the schema-helper's quoting (uppercased,
+    // double-quoted) so identifiers with case-sensitive characters survive verbatim.
+    const qualifiedName = routine.schema
+      ? `${this.platform.quoteIdentifier(routine.schema.toUpperCase())}.${this.platform.quoteIdentifier(routineName)}`
+      : routineName;
     const oracleConn = await this.oraclePool.getConnection();
 
     try {
       if (routine.type === 'function') {
         const argList = routine.params.map(p => `:${p.name}`).join(', ');
-        const block = `BEGIN :mo_ret := ${routineName}(${argList}); END;`;
+        const block = `BEGIN :mo_ret := ${qualifiedName}(${argList}); END;`;
         const bindings: Dictionary = { mo_ret: oracleReturnBind(routine) };
 
         for (const p of routine.params) {
@@ -288,7 +294,7 @@ export class OracleConnection extends AbstractSqlConnection {
       }
 
       const argList = routine.params.map(p => `:${p.name}`).join(', ');
-      const block = `BEGIN ${routineName}(${argList}); END;`;
+      const block = `BEGIN ${qualifiedName}(${argList}); END;`;
       const bindings: Dictionary = {};
       const refCursorParams: string[] = [];
 
