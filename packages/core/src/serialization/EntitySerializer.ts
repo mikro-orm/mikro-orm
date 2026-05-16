@@ -302,7 +302,7 @@ export class EntitySerializer {
 
     const pk = this.processCustomType(wrapped.getPrimaryKey()!, prop, wrapped.__platform, options.convertCustomTypes);
 
-    if (options.forceObject || wrapped.__config.get('serialization').forceObject) {
+    if (options.forceObject ?? wrapped.__config.get('serialization').forceObject) {
       return Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<T>;
     }
 
@@ -340,7 +340,7 @@ export class EntitySerializer {
 
       const pk = this.processCustomType(wrapped.getPrimaryKey()!, prop, wrapped.__platform, options.convertCustomTypes);
 
-      if (options.forceObject || wrapped.__config.get('serialization').forceObject) {
+      if (options.forceObject ?? wrapped.__config.get('serialization').forceObject) {
         return Utils.primaryKeyToObject(wrapped.__meta, pk) as EntityValue<T>;
       }
 
