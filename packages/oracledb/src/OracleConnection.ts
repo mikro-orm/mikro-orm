@@ -262,11 +262,7 @@ export class OracleConnection extends AbstractSqlConnection {
     const name = routine.name.toUpperCase();
     // Oracle resolves routine names against the connected user's schema by default; cross-schema
     // invocation needs an `OWNER.NAME` prefix. Mirror the schema-helper's quoting (uppercased,
-    // double-quoted) so identifiers with case-sensitive characters survive verbatim. The
-    // schema-qualified branch is exercised only by users targeting a non-default schema, which
-    // isn't reachable from the test DB (single-user); ignored from coverage to avoid false-negative
-    // patch coverage on an otherwise straightforward defensive branch.
-    /* v8 ignore next */
+    // double-quoted) so identifiers with case-sensitive characters survive verbatim.
     const qualifiedName = routine.schema
       ? `${this.platform.quoteIdentifier(routine.schema.toUpperCase())}.${this.platform.quoteIdentifier(name)}`
       : name;

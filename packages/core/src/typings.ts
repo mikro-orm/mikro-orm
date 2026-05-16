@@ -1264,16 +1264,15 @@ export interface RoutineProperty<Owner = any> {
   index: number;
 }
 
-/** A `Type` declaration accepted by the {@link Routine} config — either an instance or a constructor. */
-export type RoutineCustomType = Type<unknown> | Constructor<Type<unknown>>;
-
 /**
- * Resolves a {@link RoutineCustomType} declaration into a singleton `Type` instance. Used by the
- * {@link Routine} constructor to materialise `customType` on params and returns.
+ * Resolves a {@link Type} declaration (instance or constructor) into a singleton instance.
+ * Used by the {@link Routine} constructor to materialise `customType` on params and returns.
  *
  * @internal
  */
-export function resolveRoutineCustomType(value: RoutineCustomType | undefined): Type<unknown> | undefined {
+export function resolveRoutineCustomType(
+  value: Type<unknown> | Constructor<Type<unknown>> | undefined,
+): Type<unknown> | undefined {
   if (!value) {
     return undefined;
   }

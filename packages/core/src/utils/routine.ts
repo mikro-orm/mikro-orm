@@ -25,7 +25,11 @@ export function convertRoutineInbound(value: unknown, param: RoutineProperty | u
  * is declared. Used by drivers to marshal scalar function returns and OUT/INOUT parameter values
  * back to the caller before they hit a `ScalarReference` or the return value of `em.callRoutine`.
  */
-export function convertRoutineOutbound<T>(value: unknown, customType: Type<any> | undefined, platform: Platform): T {
+export function convertRoutineOutbound<T>(
+  value: unknown,
+  customType: Type<unknown> | undefined,
+  platform: Platform,
+): T {
   if (value === null || value === undefined || !customType) {
     return value as T;
   }
