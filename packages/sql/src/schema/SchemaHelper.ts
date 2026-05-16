@@ -293,11 +293,11 @@ export abstract class SchemaHelper {
    * Strips `<col> IS NOT NULL` clauses (with the dialect's identifier quoting) from an
    * introspected partial-index predicate when the column matches one of the index's own
    * columns. MikroORM auto-emits this guard for unique indexes on nullable columns
-   * (MSSQL, Oracle) - it's an internal artifact, not user intent.
+   * (MSSQL, Oracle) — it's an internal artifact, not user intent.
    *
    * Strips at most one guard per column (the tail-most occurrence), matching how MikroORM
    * appends a single guard per index column. This preserves user intent when they redundantly
-   * include the same `<col> IS NOT NULL` in their predicate - the guard we added is removed,
+   * include the same `<col> IS NOT NULL` in their predicate — the guard we added is removed,
    * their copy survives.
    */
   protected stripAutoNotNullFilter(filterDef: string, columnNames: string[], identifierPattern: RegExp): string {
@@ -342,7 +342,7 @@ export abstract class SchemaHelper {
 
   /**
    * Splits on top-level ` AND ` (case-insensitive), ignoring matches that sit inside string
-   * literals, quoted identifiers, or parenthesized groups - so a predicate like
+   * literals, quoted identifiers, or parenthesized groups — so a predicate like
    * `'foo AND bar' = col` or `(a AND b) OR c` is not mis-split.
    */
   protected splitTopLevelAnd(s: string): string[] {

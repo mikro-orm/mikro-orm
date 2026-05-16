@@ -24,7 +24,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
   };
 
   // Greedy `(.+)` so nested CASE expressions inside the predicate don't trip the match on
-  // an inner `then <col> end` - the trailing `$` anchor forces the regex engine to extend
+  // an inner `then <col> end` — the trailing `$` anchor forces the regex engine to extend
   // the capture to the outermost case-end boundary.
   private static readonly PARTIAL_INDEX_RE = /^\s*\(\s*case\s+when\s+(.+)\s+then\s+`([^`]+)`\s+end\s*\)\s*$/is;
 
@@ -54,7 +54,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
     schemaName: string | undefined,
     ctx?: Transaction,
   ): Promise<boolean> {
-    // MySQL "schema" = database - when none is requested, probe the connection's current DB
+    // MySQL "schema" = database — when none is requested, probe the connection's current DB
     // via `schema()` rather than the base impl's `getDefaultSchemaName()` (which is undefined here).
     const schemaClause = schemaName
       ? `table_schema = ${this.platform.quoteValue(schemaName)}`
@@ -267,7 +267,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
   /**
    * Build the column list for a MySQL index. MySQL requires collation via an expression:
    * `(column COLLATE collation_name)`. Partial indexes (`where`) are emulated via functional
-   * indexes - requires MySQL 8.0.13+. MariaDB does not support inline functional indexes
+   * indexes — requires MySQL 8.0.13+. MariaDB does not support inline functional indexes
    * and overrides to throw at a higher level.
    */
   protected override getIndexColumns(index: IndexDef): string {

@@ -175,7 +175,7 @@ export class SchemaComparator {
       }
     }
 
-    // Compare views - prefer schema-qualified lookup to avoid matching
+    // Compare views — prefer schema-qualified lookup to avoid matching
     // views with the same name in different schemas
     for (const toView of toSchema.getViews()) {
       const viewName = toView.schema ? `${toView.schema}.${toView.name}` : toView.name;
@@ -959,7 +959,7 @@ export class SchemaComparator {
   /**
    * `from` is the introspected DB state, `to` is the target metadata. A column-level `COLLATE`
    * clause naming the table/database default is just verbose syntax for inheriting that default,
-   * so both sides are normalized - anything matching `tableDefault` collapses to `undefined` and
+   * so both sides are normalized — anything matching `tableDefault` collapses to `undefined` and
    * compares equal to "no explicit collation". Comparison is case-insensitive on dialects that
    * treat collation identifiers as case-insensitive (MySQL/MSSQL/SQLite); PostgreSQL's
    * `pg_collation.collname` is case-sensitive and is compared verbatim.
@@ -977,7 +977,7 @@ export class SchemaComparator {
    */
   diffIndex(index1: IndexDef, index2: IndexDef): boolean {
     // Opaque raw expressions (`expression` escape hatch) and full-text indexes can't be
-    // compared structurally - fall back to name-only matching.
+    // compared structurally — fall back to name-only matching.
     if (index1.expression || index2.expression || index1.type === 'fulltext' || index2.type === 'fulltext') {
       return index1.keyName !== index2.keyName;
     }
@@ -1173,7 +1173,7 @@ export class SchemaComparator {
    * When SELECT * is present, we strip the first SELECT...FROM column list from both
    * sides and compare only the structural parts (FROM clause onwards).
    * Note: this means changes *within* subqueries in the SELECT list of a SELECT * view
-   * may not be detected - an acceptable tradeoff since SELECT * views are inherently
+   * may not be detected — an acceptable tradeoff since SELECT * views are inherently
    * column-list-agnostic.
    * @see https://github.com/mikro-orm/mikro-orm/issues/7308
    */
@@ -1195,12 +1195,12 @@ export class SchemaComparator {
     // Raw DDL expression cannot be meaningfully compared to introspected
     // trigger metadata, so skip diffing when the metadata side uses it.
     if (to.expression) {
-      // Both sides have expression - compare the raw DDL directly
+      // Both sides have expression — compare the raw DDL directly
       if (from.expression) {
         return this.diffExpression(from.expression, to.expression);
       }
 
-      // Only metadata side has expression - the raw DDL cannot be compared to
+      // Only metadata side has expression — the raw DDL cannot be compared to
       // introspected metadata. Changes to the expression value won't be detected;
       // drop and recreate the trigger manually to apply expression changes.
       return false;

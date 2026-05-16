@@ -93,7 +93,7 @@ export class OracleNativeQueryBuilder extends NativeQueryBuilder {
     const keys = Object.keys(copy[0]);
     const last = this.params[this.params.length - 1];
 
-    /* v8 ignore next 3: defensive check - output bindings are always set by compile() */
+    /* v8 ignore next 3: defensive check — output bindings are always set by compile() */
     if (!Array.isArray(last) || !('__outBindings' in last) || !last.__outBindings) {
       throw new Error('Output bindings are required for multi insert with returning');
     }

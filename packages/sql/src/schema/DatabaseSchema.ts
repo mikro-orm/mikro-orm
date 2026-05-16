@@ -322,7 +322,7 @@ export class DatabaseSchema {
             table.addColumnFromProperty(pkProp, meta, config);
           }
 
-          // Child PK must not be autoincrement - it references the parent PK via FK
+          // Child PK must not be autoincrement — it references the parent PK via FK
           for (const field of pkProp.fieldNames) {
             const col = table.getColumn(field);
 

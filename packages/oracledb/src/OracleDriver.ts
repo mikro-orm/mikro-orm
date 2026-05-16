@@ -127,7 +127,7 @@ export class OracleDriver extends AbstractSqlDriver<OracleConnection, OraclePlat
     const outBindings = this.platform.createOutBindings(outBindingsMap);
 
     return super.nativeUpdateMany(entityName, where, data, options, (sql, params) => {
-      /* v8 ignore next 2: defensive guard - PKs are always added to `returning` above */
+      /* v8 ignore next 2: defensive guard — PKs are always added to `returning` above */
       if (into.length === 0) {
         return sql;
       }

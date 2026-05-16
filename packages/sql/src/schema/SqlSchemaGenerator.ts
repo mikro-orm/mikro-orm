@@ -720,7 +720,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         ret,
         this.helper.createMaterializedView(view.name, view.schema, view.definition, view.withData ?? true),
       );
-      // Skip indexes for WITH NO DATA views - they have no data to index yet.
+      // Skip indexes for WITH NO DATA views — they have no data to index yet.
       // Indexes will be created on the next schema:update after REFRESH populates data.
       if (view.withData !== false) {
         const viewName = this.helper.getTableName(view.name, view.schema);

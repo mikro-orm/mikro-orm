@@ -412,7 +412,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         : PostgreSqlSchemaHelper.PARTIAL_WHERE_RE.exec(index.expression ?? '');
 
       if (hasFunctionalColumns) {
-        // Functional-column expression can't be diffed structurally - keep the whole CREATE
+        // Functional-column expression can't be diffed structurally — keep the whole CREATE
         // statement (WHERE included) on `expression`; don't try to split the predicate.
         indexDef.expression = index.expression;
       } else if (whereMatch) {
@@ -932,7 +932,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       const dedupeKey = `${key}:${row.trigger_name}`;
 
       if (triggerMap.has(dedupeKey)) {
-        // Same trigger with multiple events - merge events
+        // Same trigger with multiple events — merge events
         const existing = triggerMap.get(dedupeKey)!;
         const event = row.event.toLowerCase() as SqlTriggerDef['events'][number];
         if (!existing.events.includes(event)) {
