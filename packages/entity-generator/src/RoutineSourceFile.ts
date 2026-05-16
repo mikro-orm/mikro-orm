@@ -1,7 +1,7 @@
 import type { GenerateOptions, NamingStrategy, Platform, RoutineRuntimeType } from '@mikro-orm/core';
 import type { SqlRoutineDef, SqlRoutineParamDef } from '@mikro-orm/sql';
 
-const identifierRegex = /^(?:[$_\p{ID_Start}])(?:[$‌‍\p{ID_Continue}])*$/u;
+const identifierRegex = /^(?:[$_\p{ID_Start}])(?:[$\p{ID_Continue}])*$/u;
 
 function quote(val: string): string {
   // Escape backslashes first (otherwise `replaceAll("'", "\\'")` would re-escape the backslash

@@ -405,16 +405,13 @@ export class DatabaseSchema {
     const helper = platform.getSchemaHelper()!;
 
     for (const routine of routines) {
-      const paramMap =
-        routine.params.length > 0
-          ? routine.params.reduce(
-              (o, p) => {
-                o[p.name as string] = helper.routineParamReference(p.name as string);
-                return o;
-              },
-              {} as Record<string, string>,
-            )
-          : routine.createParamMappingObject();
+      const paramMap = routine.params.reduce(
+        (o, p) => {
+          o[p.name as string] = helper.routineParamReference(p.name as string);
+          return o;
+        },
+        {} as Record<string, string>,
+      );
       const evaluated = typeof routine.body === 'function' ? routine.body(paramMap as any, em) : routine.body;
       const body = resolveBody(evaluated);
 

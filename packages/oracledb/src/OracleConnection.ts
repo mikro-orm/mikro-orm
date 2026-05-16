@@ -62,6 +62,9 @@ function isReadOnlyRoutine(routine: Routine): boolean {
 /** Oracle database connection using the `oracledb` driver. */
 export class OracleConnection extends AbstractSqlConnection {
   private oraclePool?: oracledb.Pool;
+  // Connection acquirer that mirrors the wrapped pool handed to kysely — when `password` is a
+  // callback, this resolves it per-acquire so `callRoutine` doesn't bypass password rotation.
+  private acquireOracleConnection?: () => Promise<oracledb.Connection>;
 
   override async createKyselyDialect(overrides: PoolAttributes): Promise<OracleDialect> {
     const options = this.mapOptions(overrides);
@@ -120,12 +123,15 @@ export class OracleConnection extends AbstractSqlConnection {
 
     // When password is a callback, wrap the pool to resolve it per-connection.
     // oracledb supports per-connection password override via getConnection({ password }).
+    this.acquireOracleConnection =
+      typeof password === 'function'
+        ? async () => pool.getConnection({ password: await password() })
+        : () => pool.getConnection();
+
     const wrappedPool =
       typeof password === 'function'
         ? {
-            async getConnection() {
-              return pool.getConnection({ password: await password() });
-            },
+            getConnection: this.acquireOracleConnection,
             close: (drainTime?: number) => pool.close(drainTime),
           }
         : pool;
@@ -249,7 +255,7 @@ export class OracleConnection extends AbstractSqlConnection {
    */
   override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
     /* v8 ignore next 3 */
-    if (!this.oraclePool) {
+    if (!this.oraclePool || !this.acquireOracleConnection) {
       throw new Error('Oracle pool not initialised — call connect() before callRoutine().');
     }
 
@@ -262,11 +268,15 @@ export class OracleConnection extends AbstractSqlConnection {
     const name = routine.name.toUpperCase();
     // Oracle resolves routine names against the connected user's schema by default; cross-schema
     // invocation needs an `OWNER.NAME` prefix. Mirror the schema-helper's quoting (uppercased,
-    // double-quoted) so identifiers with case-sensitive characters survive verbatim.
+    // double-quoted) on both branches so identifiers with case-sensitive characters survive
+    // verbatim regardless of whether a schema prefix is present.
+    const quotedName = this.platform.quoteIdentifier(name);
     const qualifiedName = routine.schema
-      ? `${this.platform.quoteIdentifier(routine.schema.toUpperCase())}.${this.platform.quoteIdentifier(name)}`
-      : name;
-    const oracleConn = await this.oraclePool.getConnection();
+      ? `${this.platform.quoteIdentifier(routine.schema.toUpperCase())}.${quotedName}`
+      : quotedName;
+    // Use the same per-acquire password resolution as the kysely path so callers using a
+    // `password` callback don't hit ORA-01017 on routine invocations.
+    const oracleConn = await this.acquireOracleConnection();
 
     try {
       if (routine.type === 'function') {
