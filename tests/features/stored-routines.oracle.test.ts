@@ -144,6 +144,13 @@ describe('stored routines — Oracle', () => {
     ).rejects.toThrow(/Oracle's callRoutine runs on its own pool connection/);
   });
 
+  it('procedures are always blocked inside em.transactional (isReadOnlyRoutine returns false for non-function kinds)', async () => {
+    const hash = new ScalarReference<string>();
+    await expect(
+      orm.em.transactional(em => em.callRoutine(AddRecord, { p_name: 'x', p_age: 1, p_hash: hash })),
+    ).rejects.toThrow(/Oracle's callRoutine runs on its own pool connection/);
+  });
+
   it("read-only functions (dataAccess: 'reads-sql-data' / 'no-sql') are allowed inside em.transactional", async () => {
     const PureHash = new Routine({
       name: 'pure_hash',

@@ -854,6 +854,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         trimmed,
       );
 
+      /* v8 ignore next 3: defensive guard for unexpected `pg_get_function_arguments` output shapes */
       if (!match) {
         throw new Error(`Could not parse PostgreSQL routine parameter signature: ${JSON.stringify(trimmed)}`);
       }

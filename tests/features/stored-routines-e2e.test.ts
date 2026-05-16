@@ -141,10 +141,22 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
       expect(convertRoutineInbound(undefined, Echo.meta.params[0], platform)).toBeNull();
     });
 
+    it('unwraps a ScalarReference and applies customType conversion on the unwrapped value', () => {
+      const platform = orm2.em.getPlatform();
+      const ref = new ScalarReference<string>('jon');
+      expect(convertRoutineInbound(ref, Echo.meta.params[0], platform)).toBe('JON');
+    });
+
+    it('skips customType conversion when the param has none (or is undefined)', () => {
+      const platform = orm2.em.getPlatform();
+      expect(convertRoutineInbound('jon', undefined, platform)).toBe('jon');
+    });
+
     it('short-circuits when there is no customType on the outbound side', () => {
       const platform = orm2.em.getPlatform();
       expect(convertRoutineOutbound('raw', undefined, platform)).toBe('raw');
       expect(convertRoutineOutbound(null, new UpperCaseType(), platform)).toBeNull();
+      expect(convertRoutineOutbound(undefined, new UpperCaseType(), platform)).toBeUndefined();
     });
   });
 
@@ -164,6 +176,29 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
     });
 
     await expect(orm3.em.callRoutine(SomeProc, {})).rejects.toThrow(/Stored procedures are not supported on SQLite/);
+
+    await orm3.close(true);
+  });
+
+  it('functions without bodyJs throw a clear "no JS fallback" error on SQLite', async () => {
+    const NoFallback = new Routine({
+      name: 'no_fallback',
+      type: 'function',
+      params: { x: { type: 'string' } },
+      returns: { runtimeType: 'string', columnType: 'text' },
+      body: 'select x',
+    });
+
+    const orm3 = await MikroORM.init({
+      dbName: ':memory:',
+      entities: [],
+      routines: [NoFallback],
+      discovery: { warnWhenNoEntities: false },
+    });
+
+    await expect(orm3.em.callRoutine(NoFallback, { x: 'a' })).rejects.toThrow(
+      /cannot be invoked on SQLite without a 'bodyJs' fallback/,
+    );
 
     await orm3.close(true);
   });
