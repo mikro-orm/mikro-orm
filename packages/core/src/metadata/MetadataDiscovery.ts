@@ -7,7 +7,6 @@ import {
   EntityMetadata,
   type EntityName,
   type EntityProperty,
-  type RoutineMetadata,
   type SchemaTable,
 } from '../typings.js';
 import { compareArrays, Utils } from '../utils/Utils.js';
@@ -18,7 +17,6 @@ import { MetadataProvider } from './MetadataProvider.js';
 import type { NamingStrategy } from '../naming-strategy/NamingStrategy.js';
 import { MetadataStorage } from './MetadataStorage.js';
 import { EntitySchema } from './EntitySchema.js';
-import { Routine } from './Routine.js';
 import { Cascade, type EventType, ReferenceKind } from '../enums.js';
 import { MetadataError } from '../errors.js';
 import type { Platform } from '../platforms/Platform.js';
@@ -36,7 +34,6 @@ export class MetadataDiscovery {
   readonly #schemaHelper: unknown;
   readonly #validator = new MetadataValidator();
   readonly #discovered: EntityMetadata[] = [];
-  readonly #discoveredRoutines: RoutineMetadata[] = [];
 
   readonly #metadata: MetadataStorage;
   readonly #platform: Platform;
@@ -55,7 +52,6 @@ export class MetadataDiscovery {
   /** Discovers all entities asynchronously and returns the populated MetadataStorage. */
   async discover(preferTs = true): Promise<MetadataStorage> {
     this.#discovered.length = 0;
-    this.#discoveredRoutines.length = 0;
     const startTime = Date.now();
     const suffix =
       this.#metadataProvider.constructor === MetadataProvider
@@ -87,7 +83,6 @@ export class MetadataDiscovery {
   /** Discovers all entities synchronously and returns the populated MetadataStorage. */
   discoverSync(): MetadataStorage {
     this.#discovered.length = 0;
-    this.#discoveredRoutines.length = 0;
     const startTime = Date.now();
     const suffix =
       this.#metadataProvider.constructor === MetadataProvider
@@ -95,7 +90,6 @@ export class MetadataDiscovery {
         : `, using ${colors.cyan(this.#metadataProvider.constructor.name)}`;
     this.#logger.log('discovery', `ORM entity discovery started${suffix} in sync mode`);
     const refs = this.#config.get('entities');
-    this.collectRoutines(this.#config.get('routines'));
     this.discoverReferences(refs as EntitySchema[]);
 
     for (const meta of this.#discovered) {
@@ -135,26 +129,6 @@ export class MetadataDiscovery {
       if (meta.inheritanceType === 'tpt') {
         this.computeTPTOwnProps(meta);
       }
-    }
-
-    const seenRoutineKeys = new Set<string>();
-
-    for (const routine of this.#discoveredRoutines) {
-      this.#validator.validateRoutineDefinition(routine);
-
-      // Routines collide on `(schema?, routineName)` — the same pair would generate the same
-      // CREATE DDL and overwrite each other in the storage map. Surface this loudly at discovery
-      // rather than silently keeping last-wins behaviour.
-      const key = (routine.schema ? `${routine.schema}.` : '') + routine.routineName;
-
-      if (seenRoutineKeys.has(key)) {
-        throw new Error(
-          `Duplicate routine '${key}' declared more than once in the 'routines' config. Routine names must be unique within a schema.`,
-        );
-      }
-
-      seenRoutineKeys.add(key);
-      discovered.setRoutine(routine.class, routine);
     }
 
     return discovered;
@@ -276,7 +250,7 @@ export class MetadataDiscovery {
   }
 
   private async findEntities(preferTs: boolean): Promise<EntityMetadata<any>[]> {
-    const { entities, entitiesTs, baseDir, routines } = this.#config.getAll();
+    const { entities, entitiesTs, baseDir } = this.#config.getAll();
     const targets = preferTs && entitiesTs.length > 0 ? entitiesTs : entities;
     const processed: (EntitySchema | EntityClass)[] = [];
     const paths: string[] = [];
@@ -294,24 +268,7 @@ export class MetadataDiscovery {
       processed.push(...(await discoverEntities(paths, { baseDir })));
     }
 
-    this.collectRoutines(routines);
-
     return this.discoverReferences(processed);
-  }
-
-  /**
-   * Resolves each entry in the `routines` config option into `RoutineMetadata` and stages it for
-   * registration. Accepts {@link Routine} class instances.
-   */
-  private collectRoutines(routines: Iterable<unknown>): void {
-    for (const item of routines) {
-      if (Routine.is(item)) {
-        this.#discoveredRoutines.push(item.meta);
-        continue;
-      }
-
-      throw new MetadataError(`'routines' entry is not a stored routine declaration. Use a Routine class instance.`);
-    }
   }
 
   private discoverMissingTargets(): void {

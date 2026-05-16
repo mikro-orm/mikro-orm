@@ -41,7 +41,7 @@ const AddRecord = new Routine({
   `,
 });
 
-const TwoSets = new Routine({
+const TwoSets = Routine.create<Record<string, never>, unknown[][]>({
   name: 'two_sets',
   type: 'procedure',
   params: {},
@@ -49,7 +49,7 @@ const TwoSets = new Routine({
     select 1 as a;
     select 'foo' as label, 10 as n union select 'bar', 20;
   `,
-}).withTypes<Record<string, unknown>, unknown[][]>();
+});
 
 describe('stored routines — MySQL', () => {
   let orm: MikroORM;

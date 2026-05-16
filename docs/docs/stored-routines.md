@@ -78,7 +78,7 @@ console.log(hash.unwrap()); // populated by the procedure
 
 ### Refining the inferred types
 
-When the runtime-type→TS map is too loose — typically for `runtimeType: 'object'`, which defaults to `Dictionary` — refine the type at the declaration with `.withTypes<Args, Return>()`. It's pure compile-time: the returned `Routine` instance is the same, only the static types differ.
+When the runtime-type→TS map is too loose — typically for `runtimeType: 'object'`, which defaults to `Dictionary` — declare the routine with `Routine.create<TArgs, TReturn>(config)` instead of `new Routine(config)`. The override is pure compile-time; the returned `Routine` instance is identical at runtime, only the static types differ.
 
 ```ts
 interface UserStats {
@@ -86,28 +86,29 @@ interface UserStats {
   lastOrderAt: Date;
 }
 
-const GetStats = new Routine({
+const GetStats = Routine.create<{ user_id: number }, UserStats>({
   name: 'get_user_stats',
   type: 'function',
   params: { user_id: { type: 'int', runtimeType: 'number' } },
   returns: { runtimeType: 'object', columnType: 'json' },
   body: '...',
-}).withTypes<{ user_id: number }, UserStats>();
+});
 
 const stats = await em.callRoutine(GetStats, { user_id: 1 });
 stats.totalOrders; // typed as `number`
 ```
 
-You can also override only the return type and let the args inference stand:
+Omit a generic to fall back to inference — pass `never` in the args slot to refine only the return type:
 
 ```ts
-const ListUsers = new Routine({
+const ListUsers = Routine.create<never, Array<{ id: number; email: string }>>({
   name: 'list_users',
   type: 'function',
   params: { since: { type: 'timestamp', runtimeType: 'Date' } },
   returns: { runtimeType: 'object', columnType: 'jsonb[]' },
   body: '...',
-}).withTypes<{ since: Date }, Array<{ id: number; email: string }>>();
+});
+// args still inferred as `{ since: Date }` from the config.
 ```
 
 OUT and INOUT parameters are passed as `ScalarReference` instances. The values are mutated in place after the call returns. Per-dialect plumbing handles the binding mechanics:
@@ -220,7 +221,7 @@ Procedures that emit several result sets work out of the box — the driver dete
 ```ts
 // MySQL / MariaDB — body contains N SELECTs; mysql2's end-of-stream marker tells us when
 // the result-set list ends, so the count is detected automatically.
-const TwoSets = new Routine({
+const TwoSets = Routine.create<Record<string, never>, unknown[][]>({
   name: 'two_sets',
   type: 'procedure',
   params: {},
@@ -228,7 +229,7 @@ const TwoSets = new Routine({
     select 1 as a;
     select 'foo' as label, 10 as n union select 'bar', 20;
   `,
-}).withTypes<Record<string, never>, unknown[][]>();
+});
 
 const sets = await em.callRoutine(TwoSets, {});
 // sets[0] === [{ a: 1 }]
@@ -236,7 +237,7 @@ const sets = await em.callRoutine(TwoSets, {});
 
 // PostgreSQL — declare N refcursor OUT params; the connection FETCHes each one.
 // The call must be wrapped in a transaction so the cursors stay alive for FETCH.
-const TwoCursors = new Routine({
+const TwoCursors = Routine.create<Record<string, never>, unknown[][]>({
   name: 'two_cursors',
   type: 'procedure',
   language: 'plpgsql',
@@ -248,13 +249,13 @@ const TwoCursors = new Routine({
     open c1 for select * from "user";
     open c2 for select * from book;
   `,
-}).withTypes<Record<string, never>, unknown[][]>();
+});
 
 const [pgUsers, pgBooks] = await em.transactional(em => em.callRoutine(TwoCursors, {}));
 
 // Oracle — declare sys_refcursor OUT params; oracledb binds them as DB_TYPE_CURSOR.
 // Do NOT wrap Oracle calls in em.transactional (see the caution above).
-const TwoCursorsOra = new Routine({
+const TwoCursorsOra = Routine.create<Record<string, never>, unknown[][]>({
   name: 'two_cursors',
   type: 'procedure',
   params: {
@@ -265,7 +266,7 @@ const TwoCursorsOra = new Routine({
     open ${p.c1} for select 1 from dual;
     open ${p.c2} for select 2 from dual;
   `,
-}).withTypes<Record<string, never>, unknown[][]>();
+});
 
 const [oraSets1, oraSets2] = await em.callRoutine(TwoCursorsOra, {});
 ```

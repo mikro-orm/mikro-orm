@@ -81,7 +81,7 @@ const TaggedRoundtrip = new Routine({
 
 // Multi-result-set proc: opens two refcursors. Caller must run inside a transaction so the
 // cursors remain valid for FETCH.
-const TwoCursors = new Routine({
+const TwoCursors = Routine.create<Record<string, never>, unknown[][]>({
   name: 'two_cursors',
   type: 'procedure',
   language: 'plpgsql',
@@ -93,7 +93,7 @@ const TwoCursors = new Routine({
     open c1 for select 1 as a union select 2 as a order by a;
     open c2 for select 'foo'::text as label, 10 as n union select 'bar', 20 order by n;
   `,
-}).withTypes<Record<string, never>, unknown[][]>();
+});
 
 describe('stored routines — PostgreSQL', () => {
   let orm: MikroORM;

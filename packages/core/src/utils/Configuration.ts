@@ -33,6 +33,7 @@ import type { EntityManager } from '../EntityManager.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntitySchema } from '../metadata/EntitySchema.js';
 import type { Routine } from '../metadata/Routine.js';
+import { RoutineRegistry } from '../metadata/RoutineRegistry.js';
 import { MetadataProvider } from '../metadata/MetadataProvider.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import type { EventSubscriber } from '../events/EventSubscriber.js';
@@ -180,6 +181,7 @@ export class Configuration<
   readonly #platform!: ReturnType<D['getPlatform']>;
   readonly #cache = new Map<string, any>();
   readonly #extensions = new Map<string, () => unknown>();
+  #routines?: RoutineRegistry;
 
   constructor(options: Partial<Options<any, any, any>>, validate = true) {
     if (options.dynamicImportProvider) {
@@ -237,6 +239,14 @@ export class Configuration<
   /** Returns all configuration options. */
   getAll(): Options<D, EM> {
     return this.#options;
+  }
+
+  /**
+   * Returns the validated, indexed view of the `routines` config option. Built lazily on first
+   * access and memoised — duplicate names and invalid declarations throw during construction.
+   */
+  getRoutines(): RoutineRegistry {
+    return (this.#routines ??= new RoutineRegistry(this.#options.routines ?? []));
   }
 
   /**
@@ -419,6 +429,12 @@ export class Configuration<
     metadataCache.enabled ??= useCache;
     this.#options.clientUrl ??= this.#platform.getDefaultClientUrl();
     this.#options.implicitTransactions ??= this.#platform.usesImplicitTransactions();
+
+    // Build the routine registry eagerly when validating so invalid declarations and
+    // duplicate names surface at MikroORM.init time rather than on first call.
+    if (validate) {
+      this.getRoutines();
+    }
 
     if (validate && metadataCache.enabled && !metadataCache.adapter) {
       throw new Error(

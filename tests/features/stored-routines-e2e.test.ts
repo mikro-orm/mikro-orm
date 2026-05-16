@@ -55,11 +55,11 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
 
   afterAll(() => orm.close(true));
 
-  it('routines pass through MikroORM.init and reach MetadataStorage', () => {
-    const meta = orm.getMetadata();
-    expect(meta.getAllRoutines().size).toBe(2);
-    expect(meta.findRoutine('hash_user')).toBeDefined();
-    expect(meta.findRoutine('concat_two')).toBeDefined();
+  it('routines pass through MikroORM.init and reach the Configuration registry', () => {
+    const registry = orm.config.getRoutines();
+    expect(registry.size).toBe(2);
+    expect(registry.find('hash_user')).toBeDefined();
+    expect(registry.find('concat_two')).toBeDefined();
   });
 
   it('schema generator silent-skips routines on sqlite (no DDL emitted)', async () => {

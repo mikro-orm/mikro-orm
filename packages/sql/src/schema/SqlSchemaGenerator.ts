@@ -83,7 +83,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     const metadata = this.getOrderedMetadata(schema, includeWildcardSchema);
     const schemaName = schema ?? this.config.get('schema') ?? this.platform.getDefaultSchemaName();
     const target = DatabaseSchema.fromMetadata(metadata, this.platform, this.config, schemaName, this.em);
-    const routines = [...this.metadata.getAllRoutines().values()];
+    const routines = [...this.config.getRoutines().all()];
 
     if (routines.length > 0) {
       target.addRoutinesFromMetadata(routines, this.platform, this.em);

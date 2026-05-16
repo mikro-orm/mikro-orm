@@ -1469,13 +1469,13 @@ describe('check typings', () => {
       lastOrderAt: Date;
     }
 
-    const GetStats = new Routine({
+    const GetStats = Routine.create<{ user_id: number }, UserStats>({
       name: 'get_user_stats',
       type: 'function',
       params: { user_id: { type: 'int', runtimeType: 'number' } },
       returns: { runtimeType: 'object', columnType: 'json' },
       body: '...',
-    }).withTypes<{ user_id: number }, UserStats>();
+    });
 
     const em = {} as EntityManager;
     if (false as boolean) {
@@ -1503,7 +1503,7 @@ describe('check typings', () => {
       // @ts-expect-error - p_hash must be a `ScalarReference<string>`, not a bare string.
       await em.callRoutine(AddRecord, { p_name: 'jon', p_age: 30, p_hash: 'literal' });
 
-      // withTypes override refines the object return into a concrete shape.
+      // Routine.create override refines the object return into a concrete shape.
       const stats = await em.callRoutine(GetStats, { user_id: 1 });
       assert<IsExact<typeof stats, UserStats>>(true);
     }

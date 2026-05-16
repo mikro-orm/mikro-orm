@@ -156,7 +156,7 @@ export class RoutineSourceFile {
 
     // Constrain emitted `runtimeType` to the narrow `RoutineRuntimeType` union so the generated
     // file stays type-clean; unrecognised dialect-specific types (e.g. `'unknown'` from
-    // `getMappedType`) collapse to `'any'` and the user can refine via `.withTypes(...)`.
+    // `getMappedType`) collapse to `'any'` and the user can refine via `Routine.create(...)`.
     const inferred = returns.runtimeType ?? this.platform.getMappedType(returns.type)?.runtimeType;
     parts.push(`runtimeType: ${quote(narrowRuntimeType(inferred))}`);
 

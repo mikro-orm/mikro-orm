@@ -1452,7 +1452,7 @@ export type RoutineRuntimeTypeMap = {
  * {@link RoutineReturns} instead of `EntityProperty['runtimeType']` so that the literal type is
  * preserved through `const` inference on {@link Routine}, enabling args/return type inference.
  * Routines that need a dialect-specific runtime hint can still pass any string at the call site
- * via {@link Routine.withTypes} or fall back to `'any'`.
+ * via {@link Routine.create} or fall back to `'any'`.
  */
 export type RoutineRuntimeType = keyof RoutineRuntimeTypeMap;
 
@@ -1476,7 +1476,7 @@ export type RoutineParamValue<P> = P extends { runtimeType: infer R }
 /**
  * Computes the call-site args object type from a {@link RoutineConfig}. Used as the default
  * `TArgs` parameter of {@link Routine}; consumers should reach for {@link RoutineArgs} instead,
- * which honours any explicit `.withTypes<…>()` override.
+ * which honours any explicit {@link Routine.create} override.
  */
 export type RoutineArgsOf<Config> = Config extends { params: infer P }
   ? P extends Record<string, RoutineParamConfig>

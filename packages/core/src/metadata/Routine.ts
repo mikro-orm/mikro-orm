@@ -4,10 +4,10 @@ import { RoutineMetadata, type RoutineArgsOf, type RoutineConfig, type RoutineRe
  * Stored routine declaration. Pass instances of this class via the `routines` config option
  * to register stored procedures or functions.
  *
- * The `TArgs` and `TReturn` type parameters carry the call-site argument and return types and
- * are inferred from the literal config — callers don't have to thread generics through
- * `em.callRoutine(...)`. Use {@link withTypes} when the inferred type is too loose (e.g. an
- * `object` return that should be a concrete shape rather than `Dictionary`).
+ * `TArgs` and `TReturn` are inferred from the literal config, so call sites get full type
+ * safety without threading generics through `em.callRoutine(...)`. Use {@link Routine.create}
+ * when the inferred type is too loose (e.g. an `object` return that should be a concrete
+ * shape rather than `Dictionary`) — it accepts explicit override generics.
  *
  * @example Inferred types
  * ```ts
@@ -28,21 +28,7 @@ import { RoutineMetadata, type RoutineArgsOf, type RoutineConfig, type RoutineRe
  * const hash = await em.callRoutine(HashUser, { name: 'jon', salt: 'pepper' });
  * ```
  *
- * @example Refining the inferred type
- * ```ts
- * interface UserStats { totalOrders: number; lastOrderAt: Date }
- *
- * const GetStats = new Routine({
- *   name: 'get_user_stats',
- *   type: 'function',
- *   params: { user_id: { type: 'int', runtimeType: 'number' } },
- *   returns: { runtimeType: 'object', columnType: 'json' },
- *   body: '...',
- * }).withTypes<{ user_id: number }, UserStats>();
- *
- * const stats = await em.callRoutine(GetStats, { user_id: 1 });
- * stats.totalOrders; // typed as `number`
- * ```
+ * @example Refining the inferred type — see {@link Routine.create}
  */
 export class Routine<
   const TConfig extends RoutineConfig = RoutineConfig,
@@ -56,13 +42,52 @@ export class Routine<
   }
 
   /**
-   * Refines the inferred args/return types without changing the runtime declaration. Pure
-   * compile-time — the returned value is the same `Routine` instance, only the static types
-   * differ. Use when {@link RoutineArgsOf} / {@link RoutineReturnOf} infer too loose a type
-   * (e.g. `object` should be a concrete shape, or `runtimeType` is left unset).
+   * Constructs a routine and lets the caller override the inferred argument and/or return
+   * types. Pure compile-time override — runtime behaviour is identical to `new Routine(config)`.
+   * Use when {@link RoutineArgsOf} / {@link RoutineReturnOf} infer too loose a type (e.g. an
+   * `object` return that should be a concrete shape, or `runtimeType` is left unset on params).
+   *
+   * Omit a generic to fall back to inference; pass `never` in the args slot to refine only the
+   * return type. The order is `<TArgs, TReturn>`, matching the order on the class itself.
+   *
+   * @example Refine the return type only
+   * ```ts
+   * interface UserStats { totalOrders: number; lastOrderAt: Date }
+   *
+   * const GetStats = Routine.create<never, UserStats>({
+   *   name: 'get_user_stats',
+   *   type: 'function',
+   *   params: { user_id: { type: 'int', runtimeType: 'number' } },
+   *   returns: { runtimeType: 'object', columnType: 'json' },
+   *   body: '...',
+   * });
+   *
+   * const stats = await em.callRoutine(GetStats, { user_id: 1 });
+   * stats.totalOrders; // typed as `number`
+   * ```
+   *
+   * @example Refine both arg and return types
+   * ```ts
+   * const TwoSets = Routine.create<Record<string, never>, unknown[][]>({
+   *   name: 'two_sets',
+   *   type: 'procedure',
+   *   params: {},
+   *   body: 'select 1; select 2;',
+   * });
+   * ```
    */
-  withTypes<TNewArgs = TArgs, TNewReturn = TReturn>(): Routine<TConfig, TNewArgs, TNewReturn> {
-    return this as unknown as Routine<TConfig, TNewArgs, TNewReturn>;
+  static create<TArgs = never, TReturn = never, const TConfig extends RoutineConfig = RoutineConfig>(
+    config: TConfig,
+  ): Routine<
+    TConfig,
+    [TArgs] extends [never] ? RoutineArgsOf<TConfig> : TArgs,
+    [TReturn] extends [never] ? RoutineReturnOf<TConfig> : TReturn
+  > {
+    return new Routine(config) as unknown as Routine<
+      TConfig,
+      [TArgs] extends [never] ? RoutineArgsOf<TConfig> : TArgs,
+      [TReturn] extends [never] ? RoutineReturnOf<TConfig> : TReturn
+    >;
   }
 
   /** Type guard that recognises {@link Routine} instances. */

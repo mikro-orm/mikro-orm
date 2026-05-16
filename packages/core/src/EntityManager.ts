@@ -1962,9 +1962,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * Invokes a stored procedure or function declared via the {@link Routine} class. Argument and
    * return types are inferred from the routine's literal config — no explicit generic needed.
    * Params declared with `runtimeType` are typed strictly, `ref: true` wraps the arg in
-   * `ScalarReference<T>`, and `nullable: true` adds `| null`. Use {@link Routine.withTypes} on
-   * the declaration to refine the inferred type when it's too loose (e.g. `runtimeType: 'object'`
-   * returns default to `Dictionary`).
+   * `ScalarReference<T>`, and `nullable: true` adds `| null`. Use {@link Routine.create} when
+   * the inferred type is too loose (e.g. `runtimeType: 'object'` returns default to
+   * `Dictionary`); it accepts explicit `<TArgs, TReturn>` override generics.
    *
    * - Functions return their scalar value, optionally marshalled through `returns.customType`.
    * - Procedures return `void`; OUT/INOUT params are written back into the caller's
@@ -1997,9 +1997,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * // PostgreSQL multi-result-set procedure (must run inside an EM transaction so the
    * // refcursors stay alive for FETCH). MySQL/MariaDB do not need em.transactional;
    * // Oracle multi-result-set calls must NOT use em.transactional — call them directly.
-   * // Declare the result-set shape once on the routine with `.withTypes()`.
-   * const TwoCursors = new Routine({ ... })
-   *   .withTypes<Record<string, never>, unknown[][]>();
+   * // Declare the result-set shape on the routine via `Routine.create` overrides.
+   * const TwoCursors = Routine.create<Record<string, never>, unknown[][]>({ ... });
    * const [users, books] = await em.transactional(em => em.callRoutine(TwoCursors, {}));
    * ```
    */
@@ -2019,7 +2018,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const em = this.getContext(false);
     const inlineMeta = isRoutineDeclaration(routine) ? routine.meta : undefined;
     const lookup = inlineMeta?.className ?? inlineMeta?.routineName ?? routine;
-    const meta = em.metadata.findRoutine(lookup as EntityName<any>);
+    const meta = em.config.getRoutines().find(lookup as EntityName<any>);
 
     if (!meta) {
       const name = typeof routine === 'string' ? routine : (inlineMeta?.className ?? '<unknown>');

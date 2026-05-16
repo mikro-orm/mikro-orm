@@ -1,4 +1,4 @@
-import { type Dictionary, type EntityCtor, EntityMetadata, type EntityName, type RoutineMetadata } from '../typings.js';
+import { type Dictionary, type EntityCtor, EntityMetadata, type EntityName } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import { MetadataError } from '../errors.js';
 import type { EntityManager } from '../EntityManager.js';
@@ -21,8 +21,6 @@ export class MetadataStorage {
   readonly #idMap: Record<number, EntityMetadata>;
   readonly #classNameMap: Record<string, EntityMetadata>;
   readonly #uniqueNameMap: Record<string, EntityMetadata>;
-  readonly #routinesMap = new Map<EntityName, RoutineMetadata>();
-  readonly #routinesByClassName: Record<string, RoutineMetadata> = {};
 
   constructor(metadata: Dictionary<EntityMetadata> = {}) {
     this.#idMap = {};
@@ -137,43 +135,6 @@ export class MetadataStorage {
   /** Decorates all entity prototypes with helper methods (e.g. init, toJSON). */
   decorate(em: EntityManager): void {
     [...this.#metadataMap.values()].filter(meta => meta.prototype).forEach(meta => EntityHelper.decorate(meta, em));
-  }
-
-  /** Returns the map of all registered routine metadata. */
-  getAllRoutines(): Map<EntityName, RoutineMetadata> {
-    return this.#routinesMap;
-  }
-
-  /**
-   * Finds metadata for the given routine, returning undefined if not registered. Accepts the
-   * routine's class, an `EntitySchema`-like instance, the class name, or the database routine
-   * name (since decorator-defined routines are keyed under the class name while the DB-side
-   * routine name may differ).
-   */
-  findRoutine<T = any>(name: EntityName<T> | string): RoutineMetadata<T> | undefined {
-    const routine = typeof name === 'string' ? undefined : this.#routinesMap.get(name);
-
-    if (routine) {
-      return routine as RoutineMetadata<T>;
-    }
-
-    const key = Utils.className(name as EntityName<T>);
-    const byClassName = this.#routinesByClassName[key];
-
-    if (byClassName) {
-      return byClassName as RoutineMetadata<T>;
-    }
-
-    // Fall back to a DB-name lookup so `findRoutine('hash_decor')` works for routines whose
-    // class name (`HashDecor`) differs from their declared routine name (`hash_decor`).
-    return Object.values(this.#routinesByClassName).find(r => r.routineName === key) as RoutineMetadata<T> | undefined;
-  }
-
-  /** Registers metadata for the given routine. */
-  setRoutine<T>(name: EntityName<T>, meta: RoutineMetadata): RoutineMetadata {
-    this.#routinesMap.set(name, meta);
-    this.#routinesByClassName[Utils.className(name)] = meta;
-    return meta;
   }
 
   *[Symbol.iterator](): IterableIterator<EntityMetadata> {

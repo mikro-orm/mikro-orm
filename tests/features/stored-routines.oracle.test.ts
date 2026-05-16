@@ -39,7 +39,7 @@ const AddRecord = new Routine({
   `,
 });
 
-const TwoCursors = new Routine({
+const TwoCursors = Routine.create<Record<string, never>, unknown[][]>({
   name: 'two_cursors',
   type: 'procedure',
   params: {
@@ -50,7 +50,7 @@ const TwoCursors = new Routine({
     open ${p.c1} for select 1 as a from dual union select 2 from dual order by a;
     open ${p.c2} for select 'foo' as label, 10 as n from dual union select 'bar', 20 from dual order by n;
   `,
-}).withTypes<Record<string, never>, unknown[][]>();
+});
 
 // Three functions/procedures with non-string return runtime types so the Oracle bind-type
 // derivation in `oracleBindTypeFromRuntime` is exercised for NUMBER / DATE / BUFFER (RAW).
