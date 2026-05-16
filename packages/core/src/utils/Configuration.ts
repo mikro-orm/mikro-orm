@@ -32,8 +32,8 @@ import { Utils } from '../utils/Utils.js';
 import type { EntityManager } from '../EntityManager.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntitySchema } from '../metadata/EntitySchema.js';
-import type { Routine } from '../metadata/Routine.js';
-import { RoutineRegistry } from '../metadata/RoutineRegistry.js';
+import { Routine } from '../metadata/Routine.js';
+import { MetadataValidator } from '../metadata/MetadataValidator.js';
 import { MetadataProvider } from '../metadata/MetadataProvider.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import type { EventSubscriber } from '../events/EventSubscriber.js';
@@ -181,7 +181,8 @@ export class Configuration<
   readonly #platform!: ReturnType<D['getPlatform']>;
   readonly #cache = new Map<string, any>();
   readonly #extensions = new Map<string, () => unknown>();
-  #routines?: RoutineRegistry;
+  readonly #routinesByName = new Map<string, Routine>();
+  #routinesNormalised = false;
 
   constructor(options: Partial<Options<any, any, any>>, validate = true) {
     if (options.dynamicImportProvider) {
@@ -242,11 +243,51 @@ export class Configuration<
   }
 
   /**
-   * Returns the validated, indexed view of the `routines` config option. Built lazily on first
-   * access and memoised — duplicate names and invalid declarations throw during construction.
+   * Returns the validated list of stored routines registered via the `routines` config option.
+   * Mirrors how `subscribers` is exposed — routines are user-supplied input, normalised in place
+   * on first access. Duplicate `(schema, routineName)` pairs and non-Routine entries throw here.
    */
-  getRoutines(): RoutineRegistry {
-    return (this.#routines ??= new RoutineRegistry(this.#options.routines ?? []));
+  getRoutines(): Routine[] {
+    this.normaliseRoutines();
+    return [...this.#routinesByName.values()];
+  }
+
+  /** Resolves a routine by name (the value used as `name:` in the config). */
+  findRoutine(name: string): Routine | undefined {
+    this.normaliseRoutines();
+    return this.#routinesByName.get(name);
+  }
+
+  private normaliseRoutines(): void {
+    if (this.#routinesNormalised) {
+      return;
+    }
+
+    const validator = new MetadataValidator();
+    const seenKeys = new Set<string>();
+
+    for (const item of this.#options.routines ?? []) {
+      if (!Routine.is(item)) {
+        throw new Error(`'routines' entry is not a stored routine declaration. Use a Routine class instance.`);
+      }
+
+      validator.validateRoutineDefinition(item);
+
+      // Collide on `(schema?, routineName)` — same pair would emit the same CREATE DDL and
+      // overwrite each other. Surface duplicates loudly instead of silently last-wins.
+      const key = (item.schema ? `${item.schema}.` : '') + item.routineName;
+
+      if (seenKeys.has(key)) {
+        throw new Error(
+          `Duplicate routine '${key}' declared more than once in the 'routines' config. Routine names must be unique within a schema.`,
+        );
+      }
+
+      seenKeys.add(key);
+      this.#routinesByName.set(item.routineName, item);
+    }
+
+    this.#routinesNormalised = true;
   }
 
   /**

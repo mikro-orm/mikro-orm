@@ -13,7 +13,7 @@ import {
   type Transaction,
   Utils,
 } from '@mikro-orm/sql';
-import { convertRoutineInbound, convertRoutineOutbound, ScalarReference, type RoutineMetadata } from '@mikro-orm/core';
+import { convertRoutineInbound, convertRoutineOutbound, ScalarReference, type Routine } from '@mikro-orm/core';
 import { CompiledQuery } from 'kysely';
 import oracledb, { type ExecuteOptions, type PoolAttributes } from 'oracledb';
 
@@ -39,7 +39,7 @@ function oracleBindTypeFromRuntime(runtime: string | undefined): Dictionary {
   return { type: oracledb.STRING, maxSize: 4000 };
 }
 
-function oracleReturnBind(routine: RoutineMetadata): Dictionary {
+function oracleReturnBind(routine: Routine): Dictionary {
   const returns = routine.returns;
   const runtime = returns && typeof returns === 'object' && 'runtimeType' in returns ? returns.runtimeType : undefined;
   return { dir: oracledb.BIND_OUT, ...oracleBindTypeFromRuntime(runtime) };
@@ -51,7 +51,7 @@ function oracleReturnBind(routine: RoutineMetadata): Dictionary {
  * functions that declare write-ish `dataAccess` are blocked so their writes don't escape the
  * surrounding tx.
  */
-function isReadOnlyRoutine(routine: RoutineMetadata): boolean {
+function isReadOnlyRoutine(routine: Routine): boolean {
   if (routine.type !== 'function') {
     return false;
   }
@@ -247,11 +247,7 @@ export class OracleConnection extends AbstractSqlConnection {
    * says they write); read-only functions are allowed through so callers don't have to wrap
    * every adjacent `em.callRoutine` in a fork.
    */
-  override async callRoutine<T>(
-    routine: RoutineMetadata,
-    args: Record<string, unknown> = {},
-    ctx?: Transaction,
-  ): Promise<T> {
+  override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
     /* v8 ignore next 3 */
     if (!this.oraclePool) {
       throw new Error('Oracle pool not initialised — call connect() before callRoutine().');

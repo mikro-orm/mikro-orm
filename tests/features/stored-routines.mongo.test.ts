@@ -35,6 +35,6 @@ describe('stored routines — Mongo (not supported)', () => {
     // Mongo doesn't expose a routines config option; we exercise the base Connection.callRoutine
     // throw by routing through the connection layer directly.
     const conn = orm.em.getDriver().getConnection('write') as any;
-    await expect(conn.callRoutine(Whatever.meta, {})).rejects.toThrow(/not supported by the current driver/);
+    await expect(conn.callRoutine(Whatever, {})).rejects.toThrow(/not supported by the current driver/);
   });
 });

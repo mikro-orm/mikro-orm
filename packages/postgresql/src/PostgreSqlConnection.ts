@@ -7,7 +7,7 @@ import {
   convertRoutineOutbound,
   type Dictionary,
   ScalarReference,
-  type RoutineMetadata,
+  type Routine,
   type Transaction,
 } from '@mikro-orm/core';
 import { AbstractSqlConnection, createPostgreSqlTypeParsers, Utils } from '@mikro-orm/sql';
@@ -48,11 +48,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
    * result row from `CALL routine(...)`. Functions use `SELECT routine(...)`. INOUT values are
    * pulled out of the returned row and written back into the user's `ScalarReference` instances.
    */
-  override async callRoutine<T>(
-    routine: RoutineMetadata,
-    args: Record<string, unknown> = {},
-    ctx?: Transaction,
-  ): Promise<T> {
+  override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
     const placeholders = routine.params.map(() => '?').join(', ');
     const positional = routine.params.map(p => convertRoutineInbound(args[p.name as string], p, this.platform));
     const quoted = (id: string) => this.platform.quoteIdentifier(id);
@@ -102,7 +98,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
    */
   private async fetchRefcursors(
     row: Dictionary,
-    routine: RoutineMetadata,
+    routine: Routine,
     refcursorParams: typeof routine.params,
     ctx?: Transaction,
   ): Promise<Dictionary[][]> {

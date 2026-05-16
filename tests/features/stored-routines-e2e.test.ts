@@ -55,11 +55,10 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
 
   afterAll(() => orm.close(true));
 
-  it('routines pass through MikroORM.init and reach the Configuration registry', () => {
-    const registry = orm.config.getRoutines();
-    expect(registry.size).toBe(2);
-    expect(registry.find('hash_user')).toBeDefined();
-    expect(registry.find('concat_two')).toBeDefined();
+  it('routines pass through MikroORM.init and reach the Configuration', () => {
+    expect(orm.config.getRoutines()).toHaveLength(2);
+    expect(orm.config.findRoutine('hash_user')).toBeDefined();
+    expect(orm.config.findRoutine('concat_two')).toBeDefined();
   });
 
   it('schema generator silent-skips routines on sqlite (no DDL emitted)', async () => {
@@ -130,9 +129,9 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
     });
 
     it('accepts customType as either an instance or a constructor', () => {
-      const param = Echo.meta.params[0];
+      const param = Echo.params[0];
       expect(param.customType).toBeInstanceOf(UpperCaseType);
-      expect(Echo.meta.returnCustomType).toBeInstanceOf(UpperCaseType);
+      expect(Echo.returnCustomType).toBeInstanceOf(UpperCaseType);
     });
 
     it('skips conversion when no customType is declared (existing behaviour preserved)', async () => {
@@ -143,14 +142,14 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
 
     it('short-circuits when the inbound value is null/undefined', () => {
       const platform = orm2.em.getPlatform();
-      expect(convertRoutineInbound(null, Echo.meta.params[0], platform)).toBeNull();
-      expect(convertRoutineInbound(undefined, Echo.meta.params[0], platform)).toBeNull();
+      expect(convertRoutineInbound(null, Echo.params[0], platform)).toBeNull();
+      expect(convertRoutineInbound(undefined, Echo.params[0], platform)).toBeNull();
     });
 
     it('unwraps a ScalarReference and applies customType conversion on the unwrapped value', () => {
       const platform = orm2.em.getPlatform();
       const ref = new ScalarReference<string>('jon');
-      expect(convertRoutineInbound(ref, Echo.meta.params[0], platform)).toBe('JON');
+      expect(convertRoutineInbound(ref, Echo.params[0], platform)).toBe('JON');
     });
 
     it('skips customType conversion when the param has none (or is undefined)', () => {

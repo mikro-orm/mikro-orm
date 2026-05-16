@@ -4,7 +4,7 @@ import {
   type Dictionary,
   type EntityMetadata,
   type EntityProperty,
-  type RoutineMetadata,
+  type Routine,
   type Transaction,
   isRaw,
 } from '@mikro-orm/core';
@@ -385,7 +385,7 @@ export class DatabaseSchema {
    * from {@link fromMetadata} so the comparator only walks routines when the user actually
    * defined them.
    */
-  addRoutinesFromMetadata(routines: RoutineMetadata[], platform: AbstractSqlPlatform, em?: any): void {
+  addRoutinesFromMetadata(routines: Routine[], platform: AbstractSqlPlatform, em?: any): void {
     const resolveBody = (raw: unknown): string | undefined => {
       if (raw == null) {
         return undefined;
@@ -404,47 +404,46 @@ export class DatabaseSchema {
 
     const helper = platform.getSchemaHelper()!;
 
-    for (const routineMeta of routines) {
+    for (const routine of routines) {
       const paramMap =
-        routineMeta.params.length > 0
-          ? routineMeta.params.reduce(
+        routine.params.length > 0
+          ? routine.params.reduce(
               (o, p) => {
                 o[p.name as string] = helper.routineParamReference(p.name as string);
                 return o;
               },
               {} as Record<string, string>,
             )
-          : routineMeta.createParamMappingObject();
-      const evaluated =
-        typeof routineMeta.body === 'function' ? routineMeta.body(paramMap as any, em) : routineMeta.body;
+          : routine.createParamMappingObject();
+      const evaluated = typeof routine.body === 'function' ? routine.body(paramMap as any, em) : routine.body;
       const body = resolveBody(evaluated);
 
       const returns =
-        routineMeta.returns && 'runtimeType' in routineMeta.returns
+        routine.returns && 'runtimeType' in routine.returns
           ? {
-              type: (routineMeta.returns.columnType ?? routineMeta.returns.runtimeType) as string,
-              runtimeType: routineMeta.returns.runtimeType,
-              nullable: routineMeta.returns.nullable,
+              type: (routine.returns.columnType ?? routine.returns.runtimeType) as string,
+              runtimeType: routine.returns.runtimeType,
+              nullable: routine.returns.nullable,
             }
           : undefined;
 
       this.addRoutine({
-        name: routineMeta.routineName,
+        name: routine.routineName,
         // Only attach schema when explicitly declared or when the platform actually scopes
         // routines per schema. MySQL has no schema namespace for routines, so leave undefined
         // to align with the introspection side.
-        schema: routineMeta.schema ?? (platform.getDefaultSchemaName() != null ? this.name : undefined),
-        type: routineMeta.type,
-        language: routineMeta.language,
-        comment: routineMeta.comment,
-        security: routineMeta.security,
-        definer: routineMeta.definer,
-        deterministic: routineMeta.deterministic,
-        dataAccess: routineMeta.dataAccess,
+        schema: routine.schema ?? (platform.getDefaultSchemaName() != null ? this.name : undefined),
+        type: routine.type,
+        language: routine.language,
+        comment: routine.comment,
+        security: routine.security,
+        definer: routine.definer,
+        deterministic: routine.deterministic,
+        dataAccess: routine.dataAccess,
         body,
-        expression: routineMeta.expression,
-        ignoreSchemaChanges: routineMeta.ignoreSchemaChanges,
-        params: routineMeta.params.map(p => ({
+        expression: routine.expression,
+        ignoreSchemaChanges: routine.ignoreSchemaChanges,
+        params: routine.params.map(p => ({
           name: p.name as string,
           type: DatabaseSchema.resolveRoutineColumnType(p.type as string, platform),
           direction: helper.normaliseRoutineParamDirection(p.direction),

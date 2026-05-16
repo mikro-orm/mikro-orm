@@ -1,13 +1,29 @@
-import { RoutineMetadata, type RoutineArgsOf, type RoutineConfig, type RoutineReturnOf } from '../typings.js';
+import type {
+  RoutineArgsOf,
+  RoutineConfig,
+  RoutineDataAccess,
+  RoutineIgnoreField,
+  RoutineKind,
+  RoutineParamMap,
+  RoutineProperty,
+  RoutineReturnOf,
+  RoutineReturns,
+  RoutineSecurity,
+} from '../typings.js';
+import { resolveRoutineCustomType } from '../typings.js';
+import type { Type } from '../types/Type.js';
+import type { Raw } from '../utils/RawQueryFragment.js';
 
 /**
  * Stored routine declaration. Pass instances of this class via the `routines` config option
  * to register stored procedures or functions.
  *
- * `TArgs` and `TReturn` are inferred from the literal config, so call sites get full type
+ * `Routine` carries the declaration directly — there is no separate metadata indirection. The
+ * instance itself is the identity used at lookup time and the object drivers receive at call
+ * time. `TArgs` and `TReturn` are inferred from the literal config, so call sites get full type
  * safety without threading generics through `em.callRoutine(...)`. Use {@link Routine.create}
- * when the inferred type is too loose (e.g. an `object` return that should be a concrete
- * shape rather than `Dictionary`) — it accepts explicit override generics.
+ * when the inferred type is too loose (e.g. an `object` return that should be a concrete shape
+ * rather than `Dictionary`) — it accepts explicit override generics.
  *
  * @example Inferred types
  * ```ts
@@ -35,10 +51,75 @@ export class Routine<
   TArgs = RoutineArgsOf<TConfig>,
   TReturn = RoutineReturnOf<TConfig>,
 > {
-  readonly meta: RoutineMetadata;
+  /** Routine name in the database. */
+  readonly routineName: string;
+  /** Whether this is a stored procedure or function. */
+  readonly type: RoutineKind;
+  /** Optional schema/namespace (PostgreSQL, MSSQL, Oracle). */
+  readonly schema?: string;
+  readonly comment?: string;
+  readonly security?: RoutineSecurity;
+  readonly definer?: string;
+  readonly deterministic?: boolean;
+  readonly dataAccess?: RoutineDataAccess;
+  readonly language?: string;
+  readonly body?: string | Raw | ((params: RoutineParamMap<any>, em: any) => string | Raw);
+  readonly expression?: string;
+  readonly bodyJs?: (params: any) => unknown;
+  readonly returns?: RoutineReturns;
+  /** Resolved Type instance for scalar function returns, when `returns.customType` is declared. */
+  readonly returnCustomType?: Type<unknown>;
+  readonly ignoreSchemaChanges?: RoutineIgnoreField[];
+  /** Parameters in declaration order. */
+  readonly params: RoutineProperty[];
 
   constructor(config: TConfig) {
-    this.meta = RoutineMetadata.fromConfig(config);
+    this.routineName = config.name;
+    this.type = config.type;
+    this.schema = config.schema;
+    this.comment = config.comment;
+    this.security = config.security;
+    this.definer = config.definer;
+    this.deterministic = config.deterministic;
+    this.dataAccess = config.dataAccess;
+    this.language = config.language;
+    this.body = config.body;
+    this.expression = config.expression;
+    this.bodyJs = config.bodyJs;
+    this.returns = config.returns;
+    this.ignoreSchemaChanges = config.ignoreSchemaChanges;
+
+    this.params = Object.entries(config.params ?? {}).map(([name, opts], index) => ({
+      name,
+      direction: opts.direction ?? 'in',
+      type: opts.type ?? 'string',
+      runtimeType: opts.runtimeType ?? 'any',
+      columnTypes: [opts.type ?? 'string'],
+      customType: resolveRoutineCustomType(opts.customType),
+      ref: opts.ref,
+      length: opts.length,
+      precision: opts.precision,
+      scale: opts.scale,
+      nullable: opts.nullable,
+      defaultRaw: opts.defaultRaw,
+      index,
+    }));
+
+    if (config.returns && typeof config.returns === 'object' && 'customType' in config.returns) {
+      this.returnCustomType = resolveRoutineCustomType(config.returns.customType);
+    }
+  }
+
+  /**
+   * Returns a fresh `{ paramName: paramName }` mapping for body callbacks — body callbacks
+   * receive this as their first argument so they can interpolate parameter names symbolically
+   * without hard-coding them.
+   */
+  createParamMappingObject(): Record<string, string> {
+    return this.params.reduce<Record<string, string>>((o, p) => {
+      o[p.name as string] = p.name as string;
+      return o;
+    }, {});
   }
 
   /**

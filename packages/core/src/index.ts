@@ -4,7 +4,6 @@
  */
 export {
   EntityMetadata,
-  RoutineMetadata,
   PrimaryKeyProp,
   EntityRepositoryType,
   OptionalProps,

@@ -1264,8 +1264,15 @@ export interface RoutineProperty<Owner = any> {
   index: number;
 }
 
-/** Resolves a {@link Type} declaration (instance or constructor) into a singleton instance. */
-function resolveCustomType(value: Type<unknown> | Constructor<Type<unknown>> | undefined): Type<unknown> | undefined {
+/**
+ * Resolves a {@link Type} declaration (instance or constructor) into a singleton instance.
+ * Used by the {@link Routine} constructor to materialise `customType` on params and returns.
+ *
+ * @internal
+ */
+export function resolveRoutineCustomType(
+  value: Type<unknown> | Constructor<Type<unknown>> | undefined,
+): Type<unknown> | undefined {
   if (!value) {
     return undefined;
   }
@@ -1277,131 +1284,6 @@ function resolveCustomType(value: Type<unknown> | Constructor<Type<unknown>> | u
 
   // Constructor — instantiate it (callers may pass a class without instantiating).
   return new (value as Constructor<Type<unknown>>)();
-}
-
-/**
- * Runtime metadata for a stored routine. Mirrors the role of {@link EntityMetadata} for
- * entities, but never participates in unit-of-work, identity map, or query building —
- * routines are invoked imperatively via `em.callRoutine()`.
- */
-export class RoutineMetadata<T = any, Class extends EntityCtor<T> = EntityCtor<T>> {
-  static #counter = 0;
-  readonly _id: number = RoutineMetadata.#counter++;
-  /** Parameters in declaration order. */
-  readonly params: RoutineProperty<T>[] = [];
-  /** Map of parameter name → property, populated alongside {@link params}. */
-  readonly paramMap: Record<EntityKey<T>, RoutineProperty<T>> = {} as any;
-  /** Class name (or schema name for class-less {@link Routine} declarations). */
-  className!: string;
-  /** Resolved routine name in the database. */
-  routineName!: string;
-  /** Class constructor. Synthetic for class-less {@link Routine} declarations. */
-  class!: Class;
-  /** Source file path (used for HMR-style metadata caching). */
-  path?: string;
-  /** Whether this routine is a procedure or function. */
-  type!: RoutineKind;
-  schema?: string;
-  comment?: string;
-  security?: RoutineSecurity;
-  definer?: string;
-  deterministic?: boolean;
-  dataAccess?: RoutineDataAccess;
-  language?: string;
-  body?: string | Raw | RoutineBodyCallback<T>;
-  expression?: string;
-  bodyJs?: RoutineJsBody<T>;
-  returns?: RoutineReturns<T>;
-  /** Resolved Type instance for scalar function returns, when `returns.customType` is declared. */
-  returnCustomType?: Type<unknown>;
-  ignoreSchemaChanges?: RoutineIgnoreField[];
-
-  constructor(meta: Partial<RoutineMetadata<T>> = {}) {
-    Object.assign(this, meta);
-
-    if (!this.class && this.className) {
-      this.class = { [this.className]: class {} }[this.className] as unknown as Class;
-    }
-  }
-
-  addParam(param: RoutineProperty<T>): void {
-    this.params.push(param);
-    (this.paramMap as Dictionary)[param.name] = param;
-  }
-
-  /** Returns a fresh `Record<paramName, fieldName>` mapping for body callbacks. */
-  createParamMappingObject(): RoutineParamMap<T> {
-    return this.params.reduce((o, p) => {
-      o[p.name as unknown as PropertyName<T>] = p.name as string;
-      return o;
-    }, {} as RoutineParamMap<T>);
-  }
-
-  get uniqueName(): string {
-    return (this.schema ? this.schema + '.' : '') + this.routineName + '_' + this._id;
-  }
-
-  /** Populates this metadata instance from a config-style declaration. */
-  applyConfig(config: RoutineConfig<T>): this {
-    this.className ||= config.name;
-    this.routineName = config.name;
-
-    // Synthetic class so downstream code that reads `routine.class.name` (e.g. Utils.className,
-    // MetadataStorage.setRoutine) finds something — matches the constructor's behaviour for the
-    // class-less path.
-    if (!this.class && this.className) {
-      this.class = { [this.className]: class {} }[this.className] as unknown as Class;
-    }
-    this.type = config.type;
-    this.schema = config.schema;
-    this.comment = config.comment;
-    this.security = config.security;
-    this.definer = config.definer;
-    this.deterministic = config.deterministic;
-    this.dataAccess = config.dataAccess;
-    this.language = config.language;
-    this.body = config.body;
-    this.expression = config.expression;
-    this.bodyJs = config.bodyJs;
-    this.returns = config.returns;
-    this.ignoreSchemaChanges = config.ignoreSchemaChanges;
-
-    this.params.length = 0;
-    for (const key of Object.keys(this.paramMap)) {
-      delete (this.paramMap as Dictionary)[key];
-    }
-    Object.entries(config.params ?? {}).forEach(([name, opts], index) => {
-      this.addParam({
-        name: name as EntityKey<T>,
-        direction: opts.direction ?? 'in',
-        type: opts.type ?? 'string',
-        runtimeType: opts.runtimeType ?? 'any',
-        columnTypes: [opts.type ?? 'string'],
-        customType: resolveCustomType(opts.customType),
-        ref: opts.ref,
-        length: opts.length,
-        precision: opts.precision,
-        scale: opts.scale,
-        nullable: opts.nullable,
-        defaultRaw: opts.defaultRaw,
-        index,
-      });
-    });
-
-    if (config.returns && typeof config.returns === 'object' && 'customType' in config.returns) {
-      this.returnCustomType = resolveCustomType(config.returns.customType);
-    }
-
-    return this;
-  }
-
-  /**
-   * Builds a fresh {@link RoutineMetadata} from a config-style declaration. Used by the
-   * {@link Routine} class to wrap a config into a metadata instance.
-   */
-  static fromConfig<T>(config: RoutineConfig<T>): RoutineMetadata<T> {
-    return new RoutineMetadata<T>().applyConfig(config);
-  }
 }
 
 /** Single parameter configuration, accepted by the {@link Routine} class. */

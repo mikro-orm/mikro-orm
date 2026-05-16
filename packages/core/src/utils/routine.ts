@@ -1,6 +1,7 @@
 import { ScalarReference } from '../entity/Reference.js';
 import type { Platform } from '../platforms/Platform.js';
-import type { RoutineMetadata, RoutineProperty } from '../typings.js';
+import type { Type } from '../types/Type.js';
+import type { RoutineProperty } from '../typings.js';
 
 /**
  * Unwraps a routine argument (resolving any `ScalarReference` wrapper) and, when the parameter
@@ -26,7 +27,7 @@ export function convertRoutineInbound(value: unknown, param: RoutineProperty | u
  */
 export function convertRoutineOutbound<T>(
   value: unknown,
-  customType: RoutineMetadata['returnCustomType'],
+  customType: Type<unknown> | undefined,
   platform: Platform,
 ): T {
   if (value === null || value === undefined || !customType) {

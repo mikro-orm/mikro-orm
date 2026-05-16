@@ -1,7 +1,7 @@
 import { BaseSqliteConnection, type Dictionary } from '@mikro-orm/sql';
 import { type Dialect, SqliteDialect } from 'kysely';
 import Database from 'better-sqlite3';
-import { convertRoutineInbound, convertRoutineOutbound, type RoutineMetadata, type Transaction } from '@mikro-orm/core';
+import { convertRoutineInbound, convertRoutineOutbound, type Routine, type Transaction } from '@mikro-orm/core';
 
 /** SQLite database connection using the `better-sqlite3` driver. */
 export class SqliteConnection extends BaseSqliteConnection {
@@ -33,11 +33,7 @@ export class SqliteConnection extends BaseSqliteConnection {
    * `db.function()` UDF API when the routine declares a `bodyJs` callback. Procedures and
    * functions without `bodyJs` throw — the routine metadata is silently skipped at schema time.
    */
-  override async callRoutine<T>(
-    routine: RoutineMetadata,
-    args: Record<string, unknown> = {},
-    ctx?: Transaction,
-  ): Promise<T> {
+  override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
     if (routine.type === 'procedure') {
       throw new Error(
         `Stored procedures are not supported on SQLite. Routine ${routine.routineName} cannot be invoked here — define a separate code path for SQLite or call it only against a server-side database.`,

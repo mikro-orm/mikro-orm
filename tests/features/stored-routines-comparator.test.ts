@@ -1,6 +1,6 @@
 import { MikroORM, SchemaComparator } from '@mikro-orm/sqlite';
 import { DatabaseSchema, type SqlRoutineDef } from '@mikro-orm/sql';
-import { Routine, raw, RoutineMetadata } from '@mikro-orm/core';
+import { Routine, raw } from '@mikro-orm/core';
 
 describe('stored routines — comparator unit tests', () => {
   let orm: MikroORM;
@@ -189,7 +189,7 @@ describe('stored routines — comparator unit tests', () => {
       ];
 
       for (const c of cases) {
-        const meta = RoutineMetadata.fromConfig({
+        const meta = new Routine({
           name: 'r',
           type: 'function',
           params: { v: { runtimeType: c.runtimeType, type: c.runtimeType.toLowerCase() } },
@@ -205,7 +205,7 @@ describe('stored routines — comparator unit tests', () => {
     });
 
     it('passes through type strings that are not in the alias table', () => {
-      const meta = RoutineMetadata.fromConfig({
+      const meta = new Routine({
         name: 'r',
         type: 'function',
         params: { v: { type: 'unknown_sql_type' } },
@@ -227,7 +227,7 @@ describe('stored routines — comparator unit tests', () => {
         body: () => raw('select :v', { v: 1 }),
       });
       const schema = new DatabaseSchema(orm.em.getPlatform(), '');
-      schema.addRoutinesFromMetadata([def.meta], orm.em.getPlatform());
+      schema.addRoutinesFromMetadata([def], orm.em.getPlatform());
       expect(schema.getRoutines()[0].body).toContain('select');
     });
 
@@ -240,7 +240,7 @@ describe('stored routines — comparator unit tests', () => {
         body: raw('select :v', { v: 1 }),
       });
       const schema = new DatabaseSchema(orm.em.getPlatform(), '');
-      schema.addRoutinesFromMetadata([def.meta], orm.em.getPlatform());
+      schema.addRoutinesFromMetadata([def], orm.em.getPlatform());
       expect(schema.getRoutines()[0].body).toContain('select');
     });
 
@@ -253,7 +253,7 @@ describe('stored routines — comparator unit tests', () => {
         body: (() => 42 as any) as any,
       });
       const schema = new DatabaseSchema(orm.em.getPlatform(), '');
-      schema.addRoutinesFromMetadata([def.meta], orm.em.getPlatform());
+      schema.addRoutinesFromMetadata([def], orm.em.getPlatform());
       expect(schema.getRoutines()[0].body).toBeUndefined();
     });
 
@@ -266,13 +266,13 @@ describe('stored routines — comparator unit tests', () => {
         bodyJs: ({ v }: { v: number }) => v,
       });
       const schema = new DatabaseSchema(orm.em.getPlatform(), '');
-      schema.addRoutinesFromMetadata([def.meta], orm.em.getPlatform());
+      schema.addRoutinesFromMetadata([def], orm.em.getPlatform());
       expect(schema.getRoutines()[0].body).toBeUndefined();
     });
 
     it('omits returns when the routine declares a non-runtimeType return shape', () => {
       // Multi-result-set / entity-class returns aren't supported today; they fall through to undefined.
-      const meta = RoutineMetadata.fromConfig({
+      const meta = new Routine({
         name: 'r',
         type: 'procedure',
         params: {},

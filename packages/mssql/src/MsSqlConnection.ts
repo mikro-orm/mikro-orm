@@ -5,7 +5,7 @@ import {
   convertRoutineOutbound,
   type Dictionary,
   ScalarReference,
-  type RoutineMetadata,
+  type Routine,
   type Transaction,
 } from '@mikro-orm/core';
 import type { ConnectionConfiguration } from 'tedious';
@@ -79,11 +79,7 @@ export class MsSqlConnection extends AbstractSqlConnection {
    * use `DECLARE @v0 ... ; SET @v0 = ?; EXEC dbo.proc ?, @v0 OUTPUT; SELECT @v0` to bind the
    * caller's `ScalarReference` values for INOUT params and pull the post-call values back out.
    */
-  override async callRoutine<T>(
-    routine: RoutineMetadata,
-    args: Record<string, unknown> = {},
-    ctx?: Transaction,
-  ): Promise<T> {
+  override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
     const schema = routine.schema ?? this.platform.getDefaultSchemaName() ?? 'dbo';
     // MSSQL scalar UDF calls must be schema-qualified - `select sql_hash(...)` fails to parse,
     // while `select dbo.sql_hash(...)` works.

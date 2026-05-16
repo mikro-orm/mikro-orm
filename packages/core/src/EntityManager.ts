@@ -70,8 +70,7 @@ import type {
   IndexFilterQuery,
   WithUsingOptions,
 } from './typings.js';
-import { RoutineMetadata } from './typings.js';
-import type { Routine } from './metadata/Routine.js';
+import { Routine } from './metadata/Routine.js';
 import {
   EventType,
   FlushMode,
@@ -99,15 +98,6 @@ import { TransactionManager } from './utils/TransactionManager.js';
  * such as UnitOfWork, Query Language, and Repository API.
  * @template {IDatabaseDriver} Driver current driver type
  */
-
-function isRoutineDeclaration(value: unknown): value is { meta: RoutineMetadata } {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'meta' in value &&
-    (value as { meta: unknown }).meta instanceof RoutineMetadata
-  );
-}
 
 export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /** @internal */
@@ -2011,22 +2001,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    */
   callRoutine<T = unknown>(routine: EntityName<any>, args?: Record<string, unknown>): Promise<T>;
 
-  async callRoutine(
-    routine: EntityName<any> | { meta: RoutineMetadata },
-    args: Record<string, unknown> = {},
-  ): Promise<unknown> {
+  async callRoutine(routine: EntityName<any> | Routine, args: Record<string, unknown> = {}): Promise<unknown> {
     const em = this.getContext(false);
-    const inlineMeta = isRoutineDeclaration(routine) ? routine.meta : undefined;
-    const lookup = inlineMeta?.className ?? inlineMeta?.routineName ?? routine;
-    const meta = em.config.getRoutines().find(lookup as EntityName<any>);
+    const lookup = Routine.is(routine) ? routine.routineName : routine;
+    const key = typeof lookup === 'string' ? lookup : (lookup as any)?.name;
+    const found = key ? em.config.findRoutine(key) : undefined;
 
-    if (!meta) {
-      const name = typeof routine === 'string' ? routine : (inlineMeta?.className ?? '<unknown>');
-      throw new Error(`Routine metadata not found for ${name}`);
+    if (!found) {
+      throw new Error(`Routine metadata not found for ${key ?? '<unknown>'}`);
     }
 
     const conn = em.driver.getConnection('write');
-    return conn.callRoutine(meta, args, em.#transactionContext);
+    return conn.callRoutine(found, args, em.#transactionContext);
   }
 
   /**

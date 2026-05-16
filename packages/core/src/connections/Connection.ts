@@ -2,14 +2,8 @@ import { type Configuration, type ConnectionOptions } from '../utils/Configurati
 import { Utils } from '../utils/Utils.js';
 import type { LogContext, Logger } from '../logging/Logger.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
-import type {
-  ConnectionType,
-  Dictionary,
-  ISchemaGenerator,
-  MaybePromise,
-  Primary,
-  RoutineMetadata,
-} from '../typings.js';
+import type { ConnectionType, Dictionary, ISchemaGenerator, MaybePromise, Primary } from '../typings.js';
+import type { Routine } from '../metadata/Routine.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster.js';
 import type { IsolationLevel } from '../enums.js';
@@ -174,7 +168,7 @@ export abstract class Connection {
    * @internal - public callers should go through `EntityManager.callRoutine`, which resolves the
    *   metadata, dispatches to the driver, and surfaces OUT/INOUT writes via ScalarReference.
    */
-  async callRoutine<T>(routine: RoutineMetadata, args: Record<string, unknown>, ctx?: Transaction): Promise<T> {
+  async callRoutine<T>(routine: Routine, args: Record<string, unknown>, ctx?: Transaction): Promise<T> {
     throw new Error(`Stored routines are not supported by the current driver`);
   }
 

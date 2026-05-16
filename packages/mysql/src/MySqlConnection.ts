@@ -4,7 +4,7 @@ import {
   convertRoutineInbound,
   convertRoutineOutbound,
   ScalarReference,
-  type RoutineMetadata,
+  type Routine,
   type Transaction,
 } from '@mikro-orm/core';
 import {
@@ -104,11 +104,7 @@ export class MySqlConnection extends AbstractSqlConnection {
    * `Dictionary[][]`; mysql2's response marks end-of-stream with a non-array OkPacket, so the
    * count of emitted sets is detected at runtime without needing user-side declaration.
    */
-  override async callRoutine<T>(
-    routine: RoutineMetadata,
-    args: Record<string, unknown> = {},
-    ctx?: Transaction,
-  ): Promise<T> {
+  override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
     const name = this.platform.quoteIdentifier(routine.routineName);
 
     if (routine.type === 'function') {

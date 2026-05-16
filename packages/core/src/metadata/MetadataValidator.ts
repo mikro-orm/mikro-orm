@@ -1,4 +1,5 @@
-import type { EntityMetadata, EntityName, EntityProperty, RoutineMetadata } from '../typings.js';
+import type { EntityMetadata, EntityName, EntityProperty } from '../typings.js';
+import type { Routine } from './Routine.js';
 import { Utils } from '../utils/Utils.js';
 import { type MetadataDiscoveryOptions } from '../utils/Configuration.js';
 import { normalizePartitionNameForComparison, splitCommaSeparatedIdentifiers } from '../utils/partition-utils.js';
@@ -85,49 +86,51 @@ export class MetadataValidator {
     }
   }
 
-  validateRoutineDefinition<T>(meta: RoutineMetadata<T>): void {
-    if (!meta.type) {
+  validateRoutineDefinition(routine: Routine): void {
+    if (!routine.type) {
       throw new MetadataError(
-        `Routine ${meta.className} is missing the required 'type' option ('procedure' | 'function').`,
+        `Routine ${routine.routineName} is missing the required 'type' option ('procedure' | 'function').`,
       );
     }
 
-    if (meta.body != null && meta.expression != null) {
-      throw new MetadataError(`Routine ${meta.className} defines both 'body' and 'expression'. Use one or the other.`);
-    }
-
-    if (meta.body == null && meta.expression == null && meta.bodyJs == null) {
-      throw new MetadataError(`Routine ${meta.className} must define a 'body', 'expression', or 'bodyJs'.`);
-    }
-
-    if (meta.type === 'function' && meta.returns == null) {
-      throw new MetadataError(`Function routine ${meta.className} must declare a 'returns' option.`);
-    }
-
-    if (meta.type === 'procedure' && meta.bodyJs != null) {
+    if (routine.body != null && routine.expression != null) {
       throw new MetadataError(
-        `Routine ${meta.className} declares 'bodyJs' on a procedure. JS fallbacks are only supported for functions — SQLite has no analog for stored procedures.`,
+        `Routine ${routine.routineName} defines both 'body' and 'expression'. Use one or the other.`,
       );
     }
 
-    for (const param of meta.params) {
+    if (routine.body == null && routine.expression == null && routine.bodyJs == null) {
+      throw new MetadataError(`Routine ${routine.routineName} must define a 'body', 'expression', or 'bodyJs'.`);
+    }
+
+    if (routine.type === 'function' && routine.returns == null) {
+      throw new MetadataError(`Function routine ${routine.routineName} must declare a 'returns' option.`);
+    }
+
+    if (routine.type === 'procedure' && routine.bodyJs != null) {
+      throw new MetadataError(
+        `Routine ${routine.routineName} declares 'bodyJs' on a procedure. JS fallbacks are only supported for functions — SQLite has no analog for stored procedures.`,
+      );
+    }
+
+    for (const param of routine.params) {
       const dir = param.direction;
 
       if (dir !== 'in' && dir !== 'out' && dir !== 'inout') {
         throw new MetadataError(
-          `Routine ${meta.className}.${param.name} has invalid direction '${dir}'. Expected 'in', 'out', or 'inout'.`,
+          `Routine ${routine.routineName}.${param.name} has invalid direction '${dir}'. Expected 'in', 'out', or 'inout'.`,
         );
       }
 
       if ((dir === 'out' || dir === 'inout') && !param.ref) {
         throw new MetadataError(
-          `Routine ${meta.className}.${param.name} is declared as '${dir}' but missing 'ref: true'. OUT/INOUT parameters must be passed as ScalarReference.`,
+          `Routine ${routine.routineName}.${param.name} is declared as '${dir}' but missing 'ref: true'. OUT/INOUT parameters must be passed as ScalarReference.`,
         );
       }
 
-      if (meta.type === 'function' && dir !== 'in') {
+      if (routine.type === 'function' && dir !== 'in') {
         throw new MetadataError(
-          `Function routine ${meta.className}.${param.name} declares direction '${dir}'. Functions only support IN parameters — use a procedure for OUT/INOUT semantics.`,
+          `Function routine ${routine.routineName}.${param.name} declares direction '${dir}'. Functions only support IN parameters — use a procedure for OUT/INOUT semantics.`,
         );
       }
     }

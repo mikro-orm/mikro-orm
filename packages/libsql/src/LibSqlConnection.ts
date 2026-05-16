@@ -1,6 +1,6 @@
 import { BaseSqliteConnection, type Dictionary } from '@mikro-orm/sql';
 import Database, { type Options } from 'libsql';
-import type { RoutineMetadata, Transaction } from '@mikro-orm/core';
+import type { Routine, Transaction } from '@mikro-orm/core';
 import { LibSqlDialect } from './LibSqlDialect.js';
 
 /** libSQL database connection supporting both local and remote databases. */
@@ -30,11 +30,7 @@ export class LibSqlConnection extends BaseSqliteConnection {
    * a clear message. SQLite (better-sqlite3) gets the `bodyJs` UDF bridge in
    * {@link SqliteConnection.callRoutine}.
    */
-  override async callRoutine<T>(
-    routine: RoutineMetadata,
-    _args: Record<string, unknown> = {},
-    _ctx?: Transaction,
-  ): Promise<T> {
+  override async callRoutine<T>(routine: Routine, _args: Record<string, unknown> = {}, _ctx?: Transaction): Promise<T> {
     throw new Error(
       `Stored routines are not supported on libSQL. The libsql client does not implement user-defined-function registration; calling routine ${routine.routineName} would fail at runtime. Use the better-sqlite3 driver for cross-DB testing, or call against a server-side database.`,
     );
