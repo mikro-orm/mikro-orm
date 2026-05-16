@@ -181,7 +181,7 @@ export class Configuration<
   readonly #platform!: ReturnType<D['getPlatform']>;
   readonly #cache = new Map<string, any>();
   readonly #extensions = new Map<string, () => unknown>();
-  readonly #routinesByName = new Map<string, Routine>();
+  readonly #routines = new Set<Routine>();
   #routinesNormalised = false;
 
   constructor(options: Partial<Options<any, any, any>>, validate = true) {
@@ -245,17 +245,17 @@ export class Configuration<
   /**
    * Returns the validated list of stored routines registered via the `routines` config option.
    * Mirrors how `subscribers` is exposed — routines are user-supplied input, normalised in place
-   * on first access. Duplicate `(schema, routineName)` pairs and non-Routine entries throw here.
+   * on first access. Duplicate `(schema, name)` pairs and non-Routine entries throw here.
    */
   getRoutines(): Routine[] {
     this.normaliseRoutines();
-    return [...this.#routinesByName.values()];
+    return [...this.#routines];
   }
 
-  /** Resolves a routine by name (the value used as `name:` in the config). */
-  findRoutine(name: string): Routine | undefined {
+  /** Returns true when the given `Routine` instance was registered via the `routines` config. */
+  hasRoutine(routine: Routine): boolean {
     this.normaliseRoutines();
-    return this.#routinesByName.get(name);
+    return this.#routines.has(routine);
   }
 
   private normaliseRoutines(): void {
@@ -273,9 +273,9 @@ export class Configuration<
 
       validator.validateRoutineDefinition(item);
 
-      // Collide on `(schema?, routineName)` — same pair would emit the same CREATE DDL and
+      // Collide on `(schema?, name)` — same pair would emit the same CREATE DDL and
       // overwrite each other. Surface duplicates loudly instead of silently last-wins.
-      const key = (item.schema ? `${item.schema}.` : '') + item.routineName;
+      const key = (item.schema ? `${item.schema}.` : '') + item.name;
 
       if (seenKeys.has(key)) {
         throw new Error(
@@ -284,7 +284,7 @@ export class Configuration<
       }
 
       seenKeys.add(key);
-      this.#routinesByName.set(item.routineName, item);
+      this.#routines.add(item);
     }
 
     this.#routinesNormalised = true;

@@ -52,7 +52,7 @@ export class Routine<
   TReturn = RoutineReturnOf<TConfig>,
 > {
   /** Routine name in the database. */
-  readonly routineName: string;
+  readonly name: string;
   /** Whether this is a stored procedure or function. */
   readonly type: RoutineKind;
   /** Optional schema/namespace (PostgreSQL, MSSQL, Oracle). */
@@ -74,7 +74,7 @@ export class Routine<
   readonly params: RoutineProperty[];
 
   constructor(config: TConfig) {
-    this.routineName = config.name;
+    this.name = config.name;
     this.type = config.type;
     this.schema = config.schema;
     this.comment = config.comment;

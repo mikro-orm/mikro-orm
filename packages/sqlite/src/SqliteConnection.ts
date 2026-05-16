@@ -36,13 +36,13 @@ export class SqliteConnection extends BaseSqliteConnection {
   override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
     if (routine.type === 'procedure') {
       throw new Error(
-        `Stored procedures are not supported on SQLite. Routine ${routine.routineName} cannot be invoked here — define a separate code path for SQLite or call it only against a server-side database.`,
+        `Stored procedures are not supported on SQLite. Routine ${routine.name} cannot be invoked here — define a separate code path for SQLite or call it only against a server-side database.`,
       );
     }
 
     if (!routine.bodyJs) {
       throw new Error(
-        `Function ${routine.routineName} cannot be invoked on SQLite without a 'bodyJs' fallback. Add a JS implementation to the Routine declaration to enable cross-DB testing.`,
+        `Function ${routine.name} cannot be invoked on SQLite without a 'bodyJs' fallback. Add a JS implementation to the Routine declaration to enable cross-DB testing.`,
       );
     }
 
@@ -53,9 +53,9 @@ export class SqliteConnection extends BaseSqliteConnection {
     // Re-register when the registered function reference doesn't match (HMR swap, or a fresh
     // routine instance with the same name binding a different closure). better-sqlite3 silently
     // replaces an existing UDF, so this is safe.
-    if (this.#registeredRoutines.get(routine.routineName) !== fn) {
+    if (this.#registeredRoutines.get(routine.name) !== fn) {
       this.database.function(
-        routine.routineName,
+        routine.name,
         { deterministic: routine.deterministic ?? false, varargs: true },
         (...positional: unknown[]) => {
           const named: Record<string, unknown> = {};
@@ -65,13 +65,13 @@ export class SqliteConnection extends BaseSqliteConnection {
           return fn(named) as never;
         },
       );
-      this.#registeredRoutines.set(routine.routineName, fn);
+      this.#registeredRoutines.set(routine.name, fn);
     }
 
     const positional = routine.params.map(p => convertRoutineInbound(args[p.name as string], p, this.platform));
     const placeholders = routine.params.map(() => '?').join(', ');
     const rows = await this.execute<Dictionary[]>(
-      `select ${this.platform.quoteIdentifier(routine.routineName)}(${placeholders}) as value`,
+      `select ${this.platform.quoteIdentifier(routine.name)}(${placeholders}) as value`,
       positional,
       'all',
       ctx,

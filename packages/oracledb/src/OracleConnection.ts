@@ -255,17 +255,17 @@ export class OracleConnection extends AbstractSqlConnection {
 
     if (ctx && !isReadOnlyRoutine(routine)) {
       throw new Error(
-        `Routine ${routine.routineName} was invoked inside an EntityManager transaction, but Oracle's callRoutine runs on its own pool connection with autoCommit. Read-only functions are allowed through; for procedures or routines that may write, call em.callRoutine() outside em.transactional(), or mark the routine as 'dataAccess: \\'reads-sql-data\\'' / 'no-sql' if it really is read-only.`,
+        `Routine ${routine.name} was invoked inside an EntityManager transaction, but Oracle's callRoutine runs on its own pool connection with autoCommit. Read-only functions are allowed through; for procedures or routines that may write, call em.callRoutine() outside em.transactional(), or mark the routine as 'dataAccess: \\'reads-sql-data\\'' / 'no-sql' if it really is read-only.`,
       );
     }
 
-    const routineName = routine.routineName.toUpperCase();
+    const name = routine.name.toUpperCase();
     // Oracle resolves routine names against the connected user's schema by default; cross-schema
     // invocation needs an `OWNER.NAME` prefix. Mirror the schema-helper's quoting (uppercased,
     // double-quoted) so identifiers with case-sensitive characters survive verbatim.
     const qualifiedName = routine.schema
-      ? `${this.platform.quoteIdentifier(routine.schema.toUpperCase())}.${this.platform.quoteIdentifier(routineName)}`
-      : routineName;
+      ? `${this.platform.quoteIdentifier(routine.schema.toUpperCase())}.${this.platform.quoteIdentifier(name)}`
+      : name;
     const oracleConn = await this.oraclePool.getConnection();
 
     try {

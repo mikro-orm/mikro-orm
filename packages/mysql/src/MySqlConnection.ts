@@ -105,7 +105,7 @@ export class MySqlConnection extends AbstractSqlConnection {
    * count of emitted sets is detected at runtime without needing user-side declaration.
    */
   override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
-    const name = this.platform.quoteIdentifier(routine.routineName);
+    const name = this.platform.quoteIdentifier(routine.name);
 
     if (routine.type === 'function') {
       const placeholders = routine.params.map(() => '?').join(', ');

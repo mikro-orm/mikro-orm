@@ -70,7 +70,7 @@ import type {
   IndexFilterQuery,
   WithUsingOptions,
 } from './typings.js';
-import { Routine } from './metadata/Routine.js';
+import type { Routine } from './metadata/Routine.js';
 import {
   EventType,
   FlushMode,
@@ -1992,27 +1992,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * const [users, books] = await em.transactional(em => em.callRoutine(TwoCursors, {}));
    * ```
    */
-  callRoutine<R extends Routine>(routine: R, args: RoutineArgs<R>): Promise<RoutineReturn<R>>;
-
-  /**
-   * Invokes a routine looked up by class or string name. Escape hatch for cases where the caller
-   * does not hold the {@link Routine} instance (e.g. dynamic dispatch from a registry). Args and
-   * return type are not inferred — pass `<T>` for the return type and a plain object for args.
-   */
-  callRoutine<T = unknown>(routine: EntityName<any>, args?: Record<string, unknown>): Promise<T>;
-
-  async callRoutine(routine: EntityName<any> | Routine, args: Record<string, unknown> = {}): Promise<unknown> {
+  async callRoutine<R extends Routine>(routine: R, args: RoutineArgs<R>): Promise<RoutineReturn<R>> {
     const em = this.getContext(false);
-    const lookup = Routine.is(routine) ? routine.routineName : routine;
-    const key = typeof lookup === 'string' ? lookup : (lookup as any)?.name;
-    const found = key ? em.config.findRoutine(key) : undefined;
 
-    if (!found) {
-      throw new Error(`Routine metadata not found for ${key ?? '<unknown>'}`);
+    // Reference-based check — the routine must be the same instance that was registered via the
+    // `routines` config option. Keeps the user-held import wired through the bundler so unused
+    // routines tree-shake correctly, and avoids the name string ever becoming the identity key.
+    if (!em.config.hasRoutine(routine)) {
+      throw new Error(`Routine '${routine.name}' is not registered in the 'routines' config option.`);
     }
 
     const conn = em.driver.getConnection('write');
-    return conn.callRoutine(found, args, em.#transactionContext);
+    return conn.callRoutine(routine, args, em.#transactionContext);
   }
 
   /**

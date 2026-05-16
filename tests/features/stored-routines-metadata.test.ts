@@ -54,7 +54,7 @@ describe('stored routines — metadata edges', () => {
 
     expect(Routine.is(a)).toBe(true);
     expect(Routine.is(b)).toBe(true);
-    expect(Routine.is({ routineName: 'x' })).toBe(false);
+    expect(Routine.is({ name: 'x' })).toBe(false);
     expect(Routine.is({})).toBe(false);
     expect(Routine.is(null)).toBe(false);
     expect(Routine.is(undefined)).toBe(false);
@@ -71,9 +71,15 @@ describe('stored routines — metadata edges', () => {
     expect(routine.params.map(p => p.name)).toEqual(['z', 'a', 'm']);
   });
 
-  it('Configuration exposes registered routines by name', async () => {
+  it('Configuration registers routines by reference for membership checks', async () => {
     const HashUser = new Routine({
       name: 'hash_lookup',
+      type: 'function',
+      body: 'select 1',
+      returns: { runtimeType: 'string' },
+    });
+    const NotRegistered = new Routine({
+      name: 'not_registered',
       type: 'function',
       body: 'select 1',
       returns: { runtimeType: 'string' },
@@ -86,9 +92,9 @@ describe('stored routines — metadata edges', () => {
       discovery: { warnWhenNoEntities: false },
     });
 
-    expect(orm.config.getRoutines()).toHaveLength(1);
-    expect(orm.config.findRoutine('hash_lookup')).toBe(HashUser);
-    expect(orm.config.findRoutine('does_not_exist')).toBeUndefined();
+    expect(orm.config.getRoutines()).toEqual([HashUser]);
+    expect(orm.config.hasRoutine(HashUser)).toBe(true);
+    expect(orm.config.hasRoutine(NotRegistered)).toBe(false);
 
     await orm.close(true);
   });

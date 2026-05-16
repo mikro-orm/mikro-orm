@@ -52,7 +52,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     const placeholders = routine.params.map(() => '?').join(', ');
     const positional = routine.params.map(p => convertRoutineInbound(args[p.name as string], p, this.platform));
     const quoted = (id: string) => this.platform.quoteIdentifier(id);
-    const qualified = (routine.schema ? `${quoted(routine.schema)}.` : '') + quoted(routine.routineName);
+    const qualified = (routine.schema ? `${quoted(routine.schema)}.` : '') + quoted(routine.name);
 
     if (routine.type === 'function') {
       const rows = (await this.execute(
@@ -104,7 +104,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
   ): Promise<Dictionary[][]> {
     if (!ctx) {
       throw new Error(
-        `Routine ${routine.routineName} declares refcursor OUT params on PostgreSQL but was not called inside a transaction. Wrap the call in 'em.transactional(...)' so the refcursor OUT params remain valid for FETCH.`,
+        `Routine ${routine.name} declares refcursor OUT params on PostgreSQL but was not called inside a transaction. Wrap the call in 'em.transactional(...)' so the refcursor OUT params remain valid for FETCH.`,
       );
     }
 

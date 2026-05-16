@@ -428,7 +428,7 @@ export class DatabaseSchema {
           : undefined;
 
       this.addRoutine({
-        name: routine.routineName,
+        name: routine.name,
         // Only attach schema when explicitly declared or when the platform actually scopes
         // routines per schema. MySQL has no schema namespace for routines, so leave undefined
         // to align with the introspection side.

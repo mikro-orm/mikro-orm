@@ -13,7 +13,7 @@ describe('stored routines — Routine + validator', () => {
       body: 'SELECT 1',
     });
 
-    expect(HashUser.routineName).toBe('hash_user');
+    expect(HashUser.name).toBe('hash_user');
     expect(HashUser.type).toBe('function');
     expect(HashUser.params).toHaveLength(2);
     expect(HashUser.params[0].name).toBe('name');

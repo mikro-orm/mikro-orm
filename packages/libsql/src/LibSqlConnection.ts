@@ -32,7 +32,7 @@ export class LibSqlConnection extends BaseSqliteConnection {
    */
   override async callRoutine<T>(routine: Routine, _args: Record<string, unknown> = {}, _ctx?: Transaction): Promise<T> {
     throw new Error(
-      `Stored routines are not supported on libSQL. The libsql client does not implement user-defined-function registration; calling routine ${routine.routineName} would fail at runtime. Use the better-sqlite3 driver for cross-DB testing, or call against a server-side database.`,
+      `Stored routines are not supported on libSQL. The libsql client does not implement user-defined-function registration; calling routine ${routine.name} would fail at runtime. Use the better-sqlite3 driver for cross-DB testing, or call against a server-side database.`,
     );
   }
 

@@ -83,7 +83,7 @@ export class MsSqlConnection extends AbstractSqlConnection {
     const schema = routine.schema ?? this.platform.getDefaultSchemaName() ?? 'dbo';
     // MSSQL scalar UDF calls must be schema-qualified - `select sql_hash(...)` fails to parse,
     // while `select dbo.sql_hash(...)` works.
-    const qualified = `${this.platform.quoteIdentifier(schema)}.${this.platform.quoteIdentifier(routine.routineName)}`;
+    const qualified = `${this.platform.quoteIdentifier(schema)}.${this.platform.quoteIdentifier(routine.name)}`;
 
     if (routine.type === 'function') {
       const placeholders = routine.params.map(() => '?').join(', ');

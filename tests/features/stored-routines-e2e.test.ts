@@ -56,9 +56,9 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
   afterAll(() => orm.close(true));
 
   it('routines pass through MikroORM.init and reach the Configuration', () => {
-    expect(orm.config.getRoutines()).toHaveLength(2);
-    expect(orm.config.findRoutine('hash_user')).toBeDefined();
-    expect(orm.config.findRoutine('concat_two')).toBeDefined();
+    expect(orm.config.getRoutines()).toEqual([HashUser, Concat]);
+    expect(orm.config.hasRoutine(HashUser)).toBe(true);
+    expect(orm.config.hasRoutine(Concat)).toBe(true);
   });
 
   it('schema generator silent-skips routines on sqlite (no DDL emitted)', async () => {
@@ -91,7 +91,9 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
       bodyJs: ({ x }: { x: string }) => x,
     });
 
-    await expect(orm.em.callRoutine(Unregistered, { x: 'a' })).rejects.toThrow(/Routine metadata not found/);
+    await expect(orm.em.callRoutine(Unregistered, { x: 'a' })).rejects.toThrow(
+      /'never_registered' is not registered in the 'routines' config option/,
+    );
   });
 
   it('ScalarReference is exported from the sqlite package barrel', () => {
