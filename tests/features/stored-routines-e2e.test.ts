@@ -21,7 +21,10 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
   const HashUser = new Routine({
     name: 'hash_user',
     type: 'function',
-    params: { name: { type: 'string' }, salt: { type: 'string' } },
+    params: {
+      name: { type: 'string', runtimeType: 'string' },
+      salt: { type: 'string', runtimeType: 'string' },
+    },
     returns: { runtimeType: 'string', columnType: 'text' },
     body: 'SELECT name || salt',
     bodyJs: ({ name, salt }: { name: string; salt: string }) => `${name}::${salt}`,
@@ -30,7 +33,10 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
   const Concat = new Routine({
     name: 'concat_two',
     type: 'function',
-    params: { a: { type: 'string' }, b: { type: 'string' } },
+    params: {
+      a: { type: 'string', runtimeType: 'string' },
+      b: { type: 'string', runtimeType: 'string' },
+    },
     returns: { runtimeType: 'string', columnType: 'text' },
     body: 'SELECT a || b',
     bodyJs: ({ a, b }: { a: string; b: string }) => `${a}-${b}`,
@@ -69,10 +75,10 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
   });
 
   it('em.callRoutine resolves Routine instances and dispatches via bodyJs', async () => {
-    const hashResult = await orm.em.callRoutine<string>(HashUser, { name: 'jon', salt: 'pepper' });
+    const hashResult = await orm.em.callRoutine(HashUser, { name: 'jon', salt: 'pepper' });
     expect(hashResult).toBe('jon::pepper');
 
-    const concatResult = await orm.em.callRoutine<string>(Concat, { a: 'foo', b: 'bar' });
+    const concatResult = await orm.em.callRoutine(Concat, { a: 'foo', b: 'bar' });
     expect(concatResult).toBe('foo-bar');
   });
 
@@ -118,7 +124,7 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
     afterAll(() => orm2.close(true));
 
     it('marshals IN value through convertToDatabaseValue and scalar return through convertToJSValue', async () => {
-      const result = await orm2.em.callRoutine<string>(Echo, { input: 'jon' });
+      const result = await orm2.em.callRoutine(Echo, { input: 'jon' });
       // 'jon' -> convertToDatabaseValue('JON') -> bodyJs echoes 'JON' -> convertToJSValue('<<JON>>')
       expect(result).toBe('<<JON>>');
     });
@@ -131,7 +137,7 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
 
     it('skips conversion when no customType is declared (existing behaviour preserved)', async () => {
       // HashUser declares no customType — call it on the first orm where it is registered.
-      const plain = await orm.em.callRoutine<string>(HashUser, { name: 'jon', salt: 'pepper' });
+      const plain = await orm.em.callRoutine(HashUser, { name: 'jon', salt: 'pepper' });
       expect(plain).toBe('jon::pepper');
     });
 

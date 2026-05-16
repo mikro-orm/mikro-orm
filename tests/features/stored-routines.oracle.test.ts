@@ -50,7 +50,7 @@ const TwoCursors = new Routine({
     open ${p.c1} for select 1 as a from dual union select 2 from dual order by a;
     open ${p.c2} for select 'foo' as label, 10 as n from dual union select 'bar', 20 from dual order by n;
   `,
-});
+}).withTypes<Record<string, never>, unknown[][]>();
 
 // Three functions/procedures with non-string return runtime types so the Oracle bind-type
 // derivation in `oracleBindTypeFromRuntime` is exercised for NUMBER / DATE / BUFFER (RAW).
@@ -112,7 +112,7 @@ describe('stored routines — Oracle', () => {
   });
 
   it('em.callRoutine invokes a function and returns scalar value', async () => {
-    const value = await orm.em.callRoutine<string>(SqlHash, { p_name: 'Jon Snow', p_age: 30 });
+    const value = await orm.em.callRoutine(SqlHash, { p_name: 'Jon Snow', p_age: 30 });
     expect(value).toBe('JON SNOW:30');
   });
 
@@ -128,7 +128,7 @@ describe('stored routines — Oracle', () => {
   });
 
   it('multi-result-set procedure returns each REF CURSOR as a row array', async () => {
-    const sets = await orm.em.callRoutine<unknown[][]>(TwoCursors, {});
+    const sets = await orm.em.callRoutine(TwoCursors, {});
     expect(sets).toHaveLength(2);
     expect(sets[0]).toEqual([{ a: 1 }, { a: 2 }]);
     expect(sets[1]).toEqual([
@@ -139,9 +139,9 @@ describe('stored routines — Oracle', () => {
 
   it('throws when invoked inside em.transactional for routines that could write', async () => {
     // SqlHash has no dataAccess flag — treated as potentially write-ish to be safe.
-    await expect(
-      orm.em.transactional(em => em.callRoutine<string>(SqlHash, { p_name: 'x', p_age: 1 })),
-    ).rejects.toThrow(/Oracle's callRoutine runs on its own pool connection/);
+    await expect(orm.em.transactional(em => em.callRoutine(SqlHash, { p_name: 'x', p_age: 1 }))).rejects.toThrow(
+      /Oracle's callRoutine runs on its own pool connection/,
+    );
   });
 
   it('procedures are always blocked inside em.transactional (isReadOnlyRoutine returns false for non-function kinds)', async () => {
@@ -172,7 +172,7 @@ describe('stored routines — Oracle', () => {
       'create or replace function "PURE_HASH"("P_NAME" varchar2) return varchar2 as begin return upper("P_NAME"); end;',
     );
 
-    const result = await orm2.em.transactional(em => em.callRoutine<string>(PureHash, { p_name: 'sam' }));
+    const result = await orm2.em.transactional(em => em.callRoutine(PureHash, { p_name: 'sam' }));
     expect(result).toBe('SAM');
 
     await orm2.schema.execute('drop function "PURE_HASH"');
@@ -180,19 +180,19 @@ describe('stored routines — Oracle', () => {
   });
 
   it('function with NUMBER return binds via oracledb.NUMBER (not coerced to STRING)', async () => {
-    const result = await orm.em.callRoutine<number>(NumberDoubler, { x: 21 });
+    const result = await orm.em.callRoutine(NumberDoubler, { x: 21 });
     expect(typeof result).toBe('number');
     expect(result).toBe(42);
   });
 
   it('function with DATE return binds via oracledb.DATE', async () => {
-    const result = await orm.em.callRoutine<Date>(TodayPlus, { offset_days: 0 });
+    const result = await orm.em.callRoutine(TodayPlus, { offset_days: 0 });
     expect(result).toBeInstanceOf(Date);
   });
 
   it('function with RAW return binds via oracledb.BUFFER', async () => {
     // Input: 0xCAFE — proc prepends 'tag:' as raw bytes, output should start with 'tag:' then CAFE.
-    const result = await orm.em.callRoutine<Buffer>(TagBytes, { input: Buffer.from([0xca, 0xfe]) });
+    const result = await orm.em.callRoutine(TagBytes, { input: Buffer.from([0xca, 0xfe]) });
     expect(Buffer.isBuffer(result)).toBe(true);
     expect(result.subarray(0, 4).toString('utf8')).toBe('tag:');
     expect(result.subarray(4)).toEqual(Buffer.from([0xca, 0xfe]));

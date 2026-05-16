@@ -64,11 +64,14 @@ import type {
   Primary,
   Ref,
   RequiredEntityData,
+  RoutineArgs,
+  RoutineReturn,
   UnboxArray,
   IndexFilterQuery,
   WithUsingOptions,
 } from './typings.js';
 import { RoutineMetadata } from './typings.js';
+import type { Routine } from './metadata/Routine.js';
 import {
   EventType,
   FlushMode,
@@ -1979,25 +1982,28 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    *
    * @example
    * ```ts
-   * // Function: scalar return
-   * const hash = await em.callRoutine<string>(HashUser, { name: 'jon', salt: 'pepper' });
+   * // Function: scalar return — `string` is inferred from `returns.runtimeType`.
+   * const hash = await em.callRoutine(HashUser, { name: 'jon', salt: 'pepper' });
    *
-   * // Procedure with INOUT param
+   * // Procedure with INOUT param — `ScalarReference<string>` inferred from the `ref: true` param.
    * const hash = new ScalarReference<string>();
    * await em.callRoutine(AddRecord, { p_name: 'jon', p_age: 30, p_hash: hash });
    *
    * // PostgreSQL multi-result-set procedure (must run inside an EM transaction so the
    * // refcursors stay alive for FETCH). MySQL/MariaDB do not need em.transactional;
    * // Oracle multi-result-set calls must NOT use em.transactional — call them directly.
-   * const [users, books] = await em.transactional(em =>
-   *   em.callRoutine<unknown[][]>(TwoCursors, {}),
-   * );
+   * // Declare the result-set shape once on the routine with `.withTypes()`.
+   * const TwoCursors = new Routine({ ... })
+   *   .withTypes<Record<string, never>, unknown[][]>();
+   * const [users, books] = await em.transactional(em => em.callRoutine(TwoCursors, {}));
    * ```
    */
-  async callRoutine<T = unknown>(
+  callRoutine<R extends Routine>(routine: R, args: RoutineArgs<R>): Promise<RoutineReturn<R>>;
+  callRoutine<T = unknown>(routine: EntityName<any>, args?: Record<string, unknown>): Promise<T>;
+  async callRoutine(
     routine: EntityName<any> | { meta: RoutineMetadata },
     args: Record<string, unknown> = {},
-  ): Promise<T> {
+  ): Promise<unknown> {
     const em = this.getContext(false);
     const inlineMeta = isRoutineDeclaration(routine) ? routine.meta : undefined;
     const lookup = inlineMeta?.className ?? inlineMeta?.routineName ?? routine;
@@ -2009,7 +2015,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const conn = em.driver.getConnection('write');
-    return conn.callRoutine<T>(meta, args, em.#transactionContext);
+    return conn.callRoutine(meta, args, em.#transactionContext);
   }
 
   /**

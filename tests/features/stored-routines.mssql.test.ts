@@ -70,7 +70,7 @@ describe('stored routines — MSSQL', () => {
   });
 
   it('em.callRoutine invokes a function and returns scalar value', async () => {
-    const hash = await orm.em.callRoutine<string>(SqlHash, { name: 'Jon Snow', age: 30 });
+    const hash = await orm.em.callRoutine(SqlHash, { name: 'Jon Snow', age: 30 });
     expect(hash).toMatch(/^[A-F0-9]{40}$/i);
   });
 

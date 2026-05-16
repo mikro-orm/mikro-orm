@@ -74,7 +74,7 @@ describe('stored routines — MariaDB', () => {
   });
 
   it('em.callRoutine invokes a function and returns scalar value', async () => {
-    const hash = await orm.em.callRoutine<string>(SqlHash, { name: 'Jon Snow', age: 30 });
+    const hash = await orm.em.callRoutine(SqlHash, { name: 'Jon Snow', age: 30 });
     expect(hash).toMatch(/^[a-f0-9]{40}$/);
   });
 

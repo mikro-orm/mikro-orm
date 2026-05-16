@@ -49,7 +49,7 @@ const TwoSets = new Routine({
     select 1 as a;
     select 'foo' as label, 10 as n union select 'bar', 20;
   `,
-});
+}).withTypes<Record<string, unknown>, unknown[][]>();
 
 describe('stored routines — MySQL', () => {
   let orm: MikroORM;
@@ -84,7 +84,7 @@ describe('stored routines — MySQL', () => {
   });
 
   it('em.callRoutine invokes a function and returns scalar value', async () => {
-    const hash = await orm.em.callRoutine<string>(SqlHash, { name: 'Jon Snow', age: 30 });
+    const hash = await orm.em.callRoutine(SqlHash, { name: 'Jon Snow', age: 30 });
     expect(hash).toMatch(/^[a-f0-9]{40}$/);
   });
 
@@ -101,7 +101,7 @@ describe('stored routines — MySQL', () => {
   });
 
   it('multi-result-set procedure returns each SELECT as its own row array', async () => {
-    const sets = await orm.em.callRoutine<unknown[][]>(TwoSets, {});
+    const sets = await orm.em.callRoutine(TwoSets, {});
     expect(sets).toHaveLength(2);
     expect(sets[0]).toEqual([{ a: 1 }]);
     expect(sets[1]).toEqual([

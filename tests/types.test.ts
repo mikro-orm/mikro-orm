@@ -1438,4 +1438,74 @@ describe('check typings', () => {
       await em.findOne(ReproductionSchema, {}, { populate: ['owner'] });
     }
   });
+
+  test('Routine call types are inferred from the declaration', async () => {
+    const { Routine, ScalarReference } = await import('@mikro-orm/core');
+
+    const HashUser = new Routine({
+      name: 'hash_user',
+      type: 'function',
+      params: {
+        name: { type: 'varchar(255)', runtimeType: 'string' },
+        salt: { type: 'varchar(255)', runtimeType: 'string' },
+      },
+      returns: { runtimeType: 'string', columnType: 'char(40)' },
+      body: '...',
+    });
+
+    const AddRecord = new Routine({
+      name: 'add_record',
+      type: 'procedure',
+      params: {
+        p_name: { type: 'varchar(255)', runtimeType: 'string' },
+        p_age: { type: 'int', runtimeType: 'number', nullable: true },
+        p_hash: { type: 'char(40)', runtimeType: 'string', direction: 'inout', ref: true },
+      },
+      body: '...',
+    });
+
+    interface UserStats {
+      totalOrders: number;
+      lastOrderAt: Date;
+    }
+
+    const GetStats = new Routine({
+      name: 'get_user_stats',
+      type: 'function',
+      params: { user_id: { type: 'int', runtimeType: 'number' } },
+      returns: { runtimeType: 'object', columnType: 'json' },
+      body: '...',
+    }).withTypes<{ user_id: number }, UserStats>();
+
+    const em = {} as EntityManager;
+    if (false as boolean) {
+      // Function return inferred from `returns.runtimeType`.
+      const hash = await em.callRoutine(HashUser, { name: 'jon', salt: 'pepper' });
+      assert<IsExact<typeof hash, string>>(true);
+
+      // @ts-expect-error - `salt` is required (typed as string).
+      await em.callRoutine(HashUser, { name: 'jon' });
+      // @ts-expect-error - `name` must be a string.
+      await em.callRoutine(HashUser, { name: 1, salt: 'pepper' });
+
+      // Procedure: void return, ref-typed INOUT param.
+      const hashRef = new ScalarReference<string>();
+      const procReturn = await em.callRoutine(AddRecord, {
+        p_name: 'jon',
+        p_age: 30,
+        p_hash: hashRef,
+      });
+      assert<IsExact<typeof procReturn, void>>(true);
+
+      // Nullable params accept `null` in addition to the runtime type.
+      await em.callRoutine(AddRecord, { p_name: 'jon', p_age: null, p_hash: hashRef });
+
+      // @ts-expect-error - p_hash must be a `ScalarReference<string>`, not a bare string.
+      await em.callRoutine(AddRecord, { p_name: 'jon', p_age: 30, p_hash: 'literal' });
+
+      // withTypes override refines the object return into a concrete shape.
+      const stats = await em.callRoutine(GetStats, { user_id: 1 });
+      assert<IsExact<typeof stats, UserStats>>(true);
+    }
+  });
 });

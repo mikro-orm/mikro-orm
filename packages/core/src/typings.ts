@@ -21,6 +21,7 @@ import { helper } from './entity/wrap.js';
 import type { SerializationContext } from './serialization/SerializationContext.js';
 import type { SerializeOptions } from './serialization/EntitySerializer.js';
 import type { MetadataStorage } from './metadata/MetadataStorage.js';
+import type { Routine } from './metadata/Routine.js';
 import type { EntitySchema } from './metadata/EntitySchema.js';
 import type { EntityPartitionBy, IndexColumnOptions } from './metadata/types.js';
 import type { Type, types } from './types/index.js';
@@ -1174,7 +1175,7 @@ export type RoutineReturns<T = unknown> =
   | (() => EntityName<any>)
   | (() => EntityName<any>)[]
   | {
-      runtimeType: EntityProperty['runtimeType'];
+      runtimeType: RoutineRuntimeType;
       columnType?: string;
       nullable?: boolean;
       /** Custom `Type` instance (or constructor) used to marshal the scalar return value back into JS. */
@@ -1405,7 +1406,7 @@ export class RoutineMetadata<T = any, Class extends EntityCtor<T> = EntityCtor<T
 
 /** Single parameter configuration, accepted by the {@link Routine} class. */
 export interface RoutineParamConfig {
-  runtimeType?: EntityProperty['runtimeType'];
+  runtimeType?: RoutineRuntimeType;
   type?: keyof typeof types | AnyString;
   direction?: RoutineParamDirection;
   ref?: boolean;
@@ -1430,6 +1431,88 @@ export interface RoutineConfig<T = any> extends Omit<RoutineDef<T>, 'name'> {
   /** Parameter map keyed by parameter name. Order is preserved from `Object.keys`. */
   params?: Record<string, RoutineParamConfig>;
 }
+
+/**
+ * Maps a `runtimeType` literal back to its TypeScript representation. Drives the per-param and
+ * per-return type inference for {@link Routine}.
+ */
+export type RoutineRuntimeTypeMap = {
+  string: string;
+  number: number;
+  boolean: boolean;
+  bigint: bigint;
+  Buffer: Buffer;
+  Date: Date;
+  object: Dictionary;
+  any: any;
+};
+
+/**
+ * Narrow union of routine-supported runtime types. Used in {@link RoutineParamConfig} and
+ * {@link RoutineReturns} instead of `EntityProperty['runtimeType']` so that the literal type is
+ * preserved through `const` inference on {@link Routine}, enabling args/return type inference.
+ * Routines that need a dialect-specific runtime hint can still pass any string at the call site
+ * via {@link Routine.withTypes} or fall back to `'any'`.
+ */
+export type RoutineRuntimeType = keyof RoutineRuntimeTypeMap;
+
+type RoutineRuntimeOf<R> = R extends keyof RoutineRuntimeTypeMap ? RoutineRuntimeTypeMap[R] : unknown;
+
+type Nullify<P, V> = P extends { nullable: true } ? V | null : V;
+
+/**
+ * TS value type for a single routine parameter. Honours `ref: true` (wraps in `ScalarReference`)
+ * and `nullable: true` (adds `| null`). Params with no `runtimeType` default to `any` so callers
+ * still get autocomplete on parameter names without forcing every config to declare its TS shape.
+ */
+export type RoutineParamValue<P> = P extends { runtimeType: infer R }
+  ? P extends { ref: true }
+    ? ScalarReference<Nullify<P, RoutineRuntimeOf<R>>>
+    : Nullify<P, RoutineRuntimeOf<R>>
+  : P extends { ref: true }
+    ? ScalarReference<any>
+    : any;
+
+/**
+ * Computes the call-site args object type from a {@link RoutineConfig}. Used as the default
+ * `TArgs` parameter of {@link Routine}; consumers should reach for {@link RoutineArgs} instead,
+ * which honours any explicit `.withTypes<…>()` override.
+ */
+export type RoutineArgsOf<Config> = Config extends { params: infer P }
+  ? P extends Record<string, RoutineParamConfig>
+    ? { [K in keyof P]: RoutineParamValue<P[K]> }
+    : Record<string, unknown>
+  : Record<string, unknown>;
+
+/**
+ * Computes the return type from a {@link RoutineConfig}'s `returns` shape. Used as the default
+ * `TReturn` of {@link Routine}; consumers should reach for {@link RoutineReturn}, which honours
+ * any explicit `.withTypes<…>()` override.
+ *
+ * Resolution order:
+ *  - `{ runtimeType }` → corresponding TS scalar (with `| null` when nullable)
+ *  - tuple of `() => Entity` thunks → tuple of row arrays (one per result set)
+ *  - single `() => Entity` thunk → array of that entity
+ *  - `{ hydrate }` callback → inferred from the callback's return type
+ *  - omitted `returns` → `void`
+ */
+export type RoutineReturnOf<Config> = Config extends { returns: infer R }
+  ? R extends { runtimeType: infer RT }
+    ? Nullify<R, RoutineRuntimeOf<RT>>
+    : R extends readonly (() => EntityName<any>)[]
+      ? { [K in keyof R]: R[K] extends () => EntityName<infer E> ? E[] : never }
+      : R extends () => EntityName<infer E>
+        ? E[]
+        : R extends { hydrate: (...args: any[]) => infer H }
+          ? Awaited<H>
+          : void
+  : void;
+
+/** Args object expected by `em.callRoutine(routine, args)`. Reads the carrier on {@link Routine}. */
+export type RoutineArgs<R> = R extends Routine<any, infer A, any> ? A : Record<string, unknown>;
+
+/** Return type of `em.callRoutine(routine, args)`. Reads the carrier on {@link Routine}. */
+export type RoutineReturn<R> = R extends Routine<any, any, infer Re> ? Re : unknown;
 
 /** Branded string that accepts any string value while preserving autocompletion for known literals. */
 export type AnyString = string & {};

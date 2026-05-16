@@ -37,8 +37,8 @@ const HashUser = new Routine({
   name: 'hash_user',
   type: 'function',
   params: {
-    name: { type: 'string' },
-    salt: { type: 'string' },
+    name: { type: 'varchar(255)', runtimeType: 'string' },
+    salt: { type: 'varchar(255)', runtimeType: 'string' },
   },
   returns: { runtimeType: 'string', columnType: 'char(40)' },
   body: 'SELECT SHA1(CONCAT(name, salt))',
@@ -64,14 +64,50 @@ await MikroORM.init({
 
 ## Calling a routine
 
+The argument and return types of `em.callRoutine` are inferred from the `Routine` declaration — no explicit generic needed. Params that declare a `runtimeType` are typed strictly; params that don't fall back to `any`, so you still get autocomplete on parameter names without forcing every config to declare its TS shape.
+
 ```ts
-// Function: scalar return
-const hash = await em.callRoutine<string>(HashUser, { name: 'jon', salt: 'pepper' });
+// Function: scalar return — `string` inferred from `returns.runtimeType`.
+const hash = await em.callRoutine(HashUser, { name: 'jon', salt: 'pepper' });
 
 // Procedure with OUT/INOUT parameters via ScalarReference
 const hash = new ScalarReference<string>();
 await em.callRoutine(AddRecord, { p_name: 'jon', p_age: 30, p_hash: hash });
 console.log(hash.unwrap()); // populated by the procedure
+```
+
+### Refining the inferred types
+
+When the runtime-type→TS map is too loose — typically for `runtimeType: 'object'`, which defaults to `Dictionary` — refine the type at the declaration with `.withTypes<Args, Return>()`. It's pure compile-time: the returned `Routine` instance is the same, only the static types differ.
+
+```ts
+interface UserStats {
+  totalOrders: number;
+  lastOrderAt: Date;
+}
+
+const GetStats = new Routine({
+  name: 'get_user_stats',
+  type: 'function',
+  params: { user_id: { type: 'int', runtimeType: 'number' } },
+  returns: { runtimeType: 'object', columnType: 'json' },
+  body: '...',
+}).withTypes<{ user_id: number }, UserStats>();
+
+const stats = await em.callRoutine(GetStats, { user_id: 1 });
+stats.totalOrders; // typed as `number`
+```
+
+You can also override only the return type and let the args inference stand:
+
+```ts
+const ListUsers = new Routine({
+  name: 'list_users',
+  type: 'function',
+  params: { since: { type: 'timestamp', runtimeType: 'Date' } },
+  returns: { runtimeType: 'object', columnType: 'jsonb[]' },
+  body: '...',
+}).withTypes<{ since: Date }, Array<{ id: number; email: string }>>();
 ```
 
 OUT and INOUT parameters are passed as `ScalarReference` instances. The values are mutated in place after the call returns. Per-dialect plumbing handles the binding mechanics:
@@ -123,13 +159,13 @@ const CountItems = new Routine({
   type: 'function',
   language: 'plpgsql',
   params: {
-    data: { type: 'jsonb', customType: JsonType },
+    data: { type: 'jsonb', runtimeType: 'object', customType: JsonType },
   },
   returns: { runtimeType: 'string', columnType: 'text' },
   body: 'BEGIN RETURN jsonb_array_length(data)::text; END;',
 });
 
-const length = await em.callRoutine<string>(CountItems, { data: [1, 2, 3, 4] });
+const length = await em.callRoutine(CountItems, { data: [1, 2, 3, 4] });
 // `data` was serialized via JsonType.convertToDatabaseValue before binding;
 // the scalar return passes through as plain text since `returns.customType` is unset.
 ```
@@ -192,9 +228,9 @@ const TwoSets = new Routine({
     select 1 as a;
     select 'foo' as label, 10 as n union select 'bar', 20;
   `,
-});
+}).withTypes<Record<string, never>, unknown[][]>();
 
-const sets = await em.callRoutine<unknown[][]>(TwoSets, {});
+const sets = await em.callRoutine(TwoSets, {});
 // sets[0] === [{ a: 1 }]
 // sets[1] === [{ label: 'foo', n: 10 }, { label: 'bar', n: 20 }]
 
@@ -212,7 +248,7 @@ const TwoCursors = new Routine({
     open c1 for select * from "user";
     open c2 for select * from book;
   `,
-});
+}).withTypes<Record<string, never>, unknown[][]>();
 
 const [pgUsers, pgBooks] = await em.transactional(em => em.callRoutine(TwoCursors, {}));
 
@@ -229,9 +265,9 @@ const TwoCursorsOra = new Routine({
     open ${p.c1} for select 1 from dual;
     open ${p.c2} for select 2 from dual;
   `,
-});
+}).withTypes<Record<string, never>, unknown[][]>();
 
-const [oraSets1, oraSets2] = await em.callRoutine<unknown[][]>(TwoCursorsOra, {});
+const [oraSets1, oraSets2] = await em.callRoutine(TwoCursorsOra, {});
 ```
 
 Driver support:

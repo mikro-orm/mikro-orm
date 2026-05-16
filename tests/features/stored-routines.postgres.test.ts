@@ -93,7 +93,7 @@ const TwoCursors = new Routine({
     open c1 for select 1 as a union select 2 as a order by a;
     open c2 for select 'foo'::text as label, 10 as n union select 'bar', 20 order by n;
   `,
-});
+}).withTypes<Record<string, never>, unknown[][]>();
 
 describe('stored routines — PostgreSQL', () => {
   let orm: MikroORM;
@@ -127,12 +127,12 @@ describe('stored routines — PostgreSQL', () => {
   });
 
   it('em.callRoutine invokes a function and returns scalar value', async () => {
-    const hash = await orm.em.callRoutine<string>(SqlHash, { name: 'Jon Snow', age: 30 });
+    const hash = await orm.em.callRoutine(SqlHash, { name: 'Jon Snow', age: 30 });
     expect(hash).toMatch(/^[a-f0-9]{32}$/);
   });
 
   it('em.callRoutine works with a parameterless function (covers empty arg-signature path)', async () => {
-    const pi = await orm.em.callRoutine<number>(NoArgPi, {});
+    const pi = await orm.em.callRoutine(NoArgPi, {});
     expect(Number(pi)).toBeCloseTo(3.14159, 4);
   });
 
@@ -183,7 +183,7 @@ describe('stored routines — PostgreSQL', () => {
     // IN value 'hello' -> convertToDatabaseValue -> 'IN<hello>' (stored verbatim in DB)
     //                  -> SQL echoes 'IN<hello>'
     //                  -> convertToJSValue -> 'OUT<IN<hello>>'
-    const wrapped = await orm.em.callRoutine<string>(TaggedEcho, { input: 'hello' });
+    const wrapped = await orm.em.callRoutine(TaggedEcho, { input: 'hello' });
     expect(wrapped).toBe('OUT<IN<hello>>');
   });
 
@@ -196,7 +196,7 @@ describe('stored routines — PostgreSQL', () => {
   });
 
   it('multi-result-set procedure returns refcursor rows in declaration order', async () => {
-    const sets = await orm.em.transactional(em => em.callRoutine<unknown[][]>(TwoCursors, {}));
+    const sets = await orm.em.transactional(em => em.callRoutine(TwoCursors, {}));
     expect(sets).toHaveLength(2);
     expect(sets[0]).toEqual([{ a: 1 }, { a: 2 }]);
     expect(sets[1]).toEqual([
