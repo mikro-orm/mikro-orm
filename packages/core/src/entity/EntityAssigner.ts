@@ -172,6 +172,17 @@ export class EntityAssigner {
     }
 
     if (prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.has(prop.runtimeType) && (prop.setter || !prop.getter)) {
+      // mirror the hydrator (used by `em.create`) and coerce string/number inputs to `Date` instances,
+      // since `EntityData` already permits `string | Date` for `Date`-typed properties at the type level
+      if (
+        prop.runtimeType === 'Date' &&
+        value != null &&
+        !(value instanceof Date) &&
+        (typeof value === 'string' || typeof value === 'number')
+      ) {
+        value = new Date(value);
+      }
+
       validateProperty(prop, value, entity);
       return (entity[prop.name] = value);
     }
