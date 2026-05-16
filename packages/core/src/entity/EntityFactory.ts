@@ -254,15 +254,17 @@ export class EntityFactory {
       })
       .forEach(key => delete diff2[key]);
 
-    // but always add collection properties, formulas, generated columns, and version properties if they
-    // are part of the `data`, as these are excluded from `comparableProps` and won't appear in the diff
+    // but always add collection properties, formulas, generated columns, version properties, and the
+    // user-declared STI discriminator if they are part of the `data`, as these are excluded from
+    // `comparableProps` and won't appear in the diff
     Utils.keys(data)
       .filter(
         key =>
           meta.properties[key]?.formula ||
           meta.properties[key]?.version ||
           (meta.properties[key]?.generated && !meta.properties[key]?.primary) ||
-          [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(meta.properties[key]?.kind),
+          [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(meta.properties[key]?.kind) ||
+          (key === meta.root.discriminatorColumn && meta.properties[key]?.userDefined !== false),
       )
       .forEach(key => (diff2[key] = data[key]));
 
