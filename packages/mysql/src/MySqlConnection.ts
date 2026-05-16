@@ -139,45 +139,61 @@ export class MySqlConnection extends AbstractSqlConnection {
       callPlaceholders.push(varName);
     });
 
-    // Seed inbound INOUT variables first.
-    for (let i = 0; i < routine.params.length; i++) {
-      const p = routine.params[i];
-      if (p.direction === 'inout') {
-        const varName = `@_mikro_orm_routine_${i}`;
-        await this.execute(
-          `set ${varName} := ?`,
-          [convertRoutineInbound(args[p.name as string], p, this.platform)],
-          'run',
-          ctx,
-        );
-      }
-    }
-
-    // CALL response from mysql2 is an array of result sets followed by a trailing OK packet
-    // (non-array). Filter to just the row arrays — that's the natural result-set count.
-    const callResult = (await this.execute(
-      `call ${name}(${callPlaceholders.join(', ')})`,
-      callValues,
-      'all',
-      ctx,
-    )) as unknown[];
-    const resultSets = callResult.filter(Array.isArray) as Dictionary[][];
-
-    if (outVarParams.length > 0) {
-      const selectClause = outVarParams.map(o => `${o.varName} as \`${o.name}\``).join(', ');
-      const rows = (await this.execute(`select ${selectClause}`, [], 'all', ctx)) as Dictionary[];
-      const row = rows[0] ?? {};
-
-      for (const { name: paramName, param } of outVarParams) {
-        const ref = args[paramName];
-
-        if (ref instanceof ScalarReference) {
-          ref.set(convertRoutineOutbound(row[paramName], param.customType, this.platform));
+    // MySQL session variables (`@var`) are scoped to a single physical connection. Without a
+    // shared `ctx`, each `execute()` call acquires a fresh connection from the pool, so the
+    // INOUT seed `SET @var := ?` and the subsequent `CALL` / `SELECT @var` could run on
+    // different connections — silently corrupting INOUT inputs and reading NULL back out.
+    // When the procedure has any OUT/INOUT params and the caller is not already inside a
+    // transaction, wrap the multi-step sequence in an implicit transaction so all queries
+    // share the same physical connection.
+    const needsConnectionAffinity = outVarParams.length > 0 && !ctx;
+    const runSteps = async (sharedCtx: Transaction | undefined): Promise<T> => {
+      // Seed inbound INOUT variables first.
+      for (let i = 0; i < routine.params.length; i++) {
+        const p = routine.params[i];
+        if (p.direction === 'inout') {
+          const varName = `@_mikro_orm_routine_${i}`;
+          await this.execute(
+            `set ${varName} := ?`,
+            [convertRoutineInbound(args[p.name as string], p, this.platform)],
+            'run',
+            sharedCtx,
+          );
         }
       }
+
+      // CALL response from mysql2 is an array of result sets followed by a trailing OK packet
+      // (non-array). Filter to just the row arrays — that's the natural result-set count.
+      const callResult = (await this.execute(
+        `call ${name}(${callPlaceholders.join(', ')})`,
+        callValues,
+        'all',
+        sharedCtx,
+      )) as unknown[];
+      const resultSets = callResult.filter(Array.isArray) as Dictionary[][];
+
+      if (outVarParams.length > 0) {
+        const selectClause = outVarParams.map(o => `${o.varName} as \`${o.name}\``).join(', ');
+        const rows = (await this.execute(`select ${selectClause}`, [], 'all', sharedCtx)) as Dictionary[];
+        const row = rows[0] ?? {};
+
+        for (const { name: paramName, param } of outVarParams) {
+          const ref = args[paramName];
+
+          if (ref instanceof ScalarReference) {
+            ref.set(convertRoutineOutbound(row[paramName], param.customType, this.platform));
+          }
+        }
+      }
+
+      return (resultSets.length > 0 ? resultSets : undefined) as T;
+    };
+
+    if (needsConnectionAffinity) {
+      return this.transactional(trx => runSteps(trx));
     }
 
-    return (resultSets.length > 0 ? resultSets : undefined) as T;
+    return runSteps(ctx);
   }
 
   override async commit(
