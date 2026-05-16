@@ -301,10 +301,7 @@ export class MetadataDiscovery {
 
   /**
    * Resolves each entry in the `routines` config option into `RoutineMetadata` and stages it for
-   * registration. Accepts:
-   *  - {@link Routine} class instances,
-   *  - classes decorated with `@Routine` (the decorator writes into a global metadata dictionary keyed
-   *    by class name + source path, which we look up via `PATH_SYMBOL`).
+   * registration. Accepts {@link Routine} class instances.
    */
   private collectRoutines(routines: Iterable<unknown>): void {
     for (const item of routines) {
@@ -313,36 +310,8 @@ export class MetadataDiscovery {
         continue;
       }
 
-      if (typeof item === 'function') {
-        const meta = this.findGlobalRoutineForClass(item as unknown as { name?: string; [key: symbol]: unknown });
-
-        if (meta) {
-          this.#discoveredRoutines.push(meta);
-          continue;
-        }
-      }
-
-      throw new MetadataError(
-        `'routines' entry is not a stored routine declaration. Use @Routine on a class or a Routine class instance.`,
-      );
+      throw new MetadataError(`'routines' entry is not a stored routine declaration. Use a Routine class instance.`);
     }
-  }
-
-  /**
-   * Looks up routine metadata for a class decorated with `@Routine`. The decorator writes into the
-   * global routine dictionary keyed by `className + hash(path)`; we resolve the path via the same
-   * `PATH_SYMBOL` set on the class.
-   */
-  private findGlobalRoutineForClass(target: { name?: string; [key: symbol]: unknown }): RoutineMetadata | undefined {
-    const path = target?.[MetadataStorage.PATH_SYMBOL] as string | undefined;
-
-    if (!target?.name || !path) {
-      return undefined;
-    }
-
-    const key = `${target.name}-${Utils.hash(path)}`;
-    const routine = MetadataStorage.getRoutineMetadata()[key];
-    return routine && routine.className === target.name ? routine : undefined;
   }
 
   private discoverMissingTargets(): void {

@@ -1,11 +1,8 @@
 import { RoutineMetadata, type RoutineConfig } from '../typings.js';
 
 /**
- * Class-less routine declaration. Pass instances of this class via the `routines` config
- * option to register stored procedures or functions without decorators.
- *
- * The `@Routine` decorator from `@mikro-orm/decorators/{legacy,es}` shares the name — both
- * declare a routine, but the decorator targets a class while this is the class-less form.
+ * Stored routine declaration. Pass instances of this class via the `routines` config option
+ * to register stored procedures or functions.
  *
  * @example
  * ```ts

@@ -7,7 +7,7 @@ describe('RoutineSourceFile', () => {
   // introspection; all tests below supply it explicitly, so a stub is enough.
   const platform = { getMappedType: () => ({ runtimeType: 'string' }) } as unknown as Platform;
 
-  it('emits a @Routine-decorated class for the decorator entity definition', () => {
+  it('emits `new Routine(...)` const for a function definition', () => {
     const sourceFile = new RoutineSourceFile(
       {
         name: 'sql_hash',
@@ -22,13 +22,12 @@ describe('RoutineSourceFile', () => {
       },
       namingStrategy,
       platform,
-      { entityDefinition: 'decorators', decorators: 'legacy', fileName: (n: string) => n },
+      { entityDefinition: 'decorators', fileName: (n: string) => n },
     );
 
     const out = sourceFile.generate();
-    expect(out).toContain(`import { Routine } from '@mikro-orm/decorators/legacy';`);
-    expect(out).toMatch(/@Routine\(/);
-    expect(out).toMatch(/export class SqlHash \{\}/);
+    expect(out).toContain(`import { Routine } from '@mikro-orm/core';`);
+    expect(out).toMatch(/export const SqlHash = new Routine\(/);
     expect(out).toContain(`name: 'sql_hash'`);
     expect(out).toContain(`type: 'function'`);
     expect(out).toContain(`language: 'sql'`);
@@ -40,23 +39,7 @@ describe('RoutineSourceFile', () => {
     expect(sourceFile.getBaseName()).toBe('SqlHash.ts');
   });
 
-  it('emits ES decorator import when decorators=es', () => {
-    const sourceFile = new RoutineSourceFile(
-      {
-        name: 'noop',
-        type: 'procedure',
-        params: [],
-        body: '',
-      },
-      namingStrategy,
-      platform,
-      { entityDefinition: 'decorators', decorators: 'es', fileName: (n: string) => n },
-    );
-
-    expect(sourceFile.generate()).toContain(`from '@mikro-orm/decorators/es'`);
-  });
-
-  it('emits `new Routine(...)` for the defineEntity mode', () => {
+  it('always emits `new Routine(...)` regardless of entityDefinition mode', () => {
     const sourceFile = new RoutineSourceFile(
       {
         name: 'pi',
@@ -77,7 +60,7 @@ describe('RoutineSourceFile', () => {
     expect(out).toContain(`params: {}`);
   });
 
-  it('emits `new Routine(...)` for the entitySchema mode too (no defineRoutine helper exists)', () => {
+  it('emits `new Routine(...)` for the entitySchema mode too', () => {
     const sourceFile = new RoutineSourceFile(
       {
         name: 'echo',
@@ -296,10 +279,10 @@ describe('RoutineSourceFile', () => {
       },
       namingStrategy,
       platform,
-      { entityDefinition: 'decorators', decorators: 'legacy', fileName: (n: string) => n },
+      { entityDefinition: 'decorators', fileName: (n: string) => n },
     );
 
     expect(sourceFile.getClassName()).toBe('ComputeUserScore');
-    expect(sourceFile.generate()).toContain('export class ComputeUserScore');
+    expect(sourceFile.generate()).toContain('export const ComputeUserScore = new Routine(');
   });
 });

@@ -8,7 +8,6 @@ import {
   MetadataStorage,
   MikroORM,
   type ReferenceKind,
-  type RoutineMetadata,
   Utils,
 } from '@mikro-orm/core';
 
@@ -198,11 +197,4 @@ export function getMetadataFromDecorator<T = any>(
   target: T & Dictionary & { [MetadataStorage.PATH_SYMBOL]?: string },
 ): EntityMetadata<T> {
   return MetadataStorage.getMetadata(target.name, ensureDecoratorPath(target));
-}
-
-/** Retrieves or creates the routine metadata object for a decorated routine class. */
-export function getRoutineMetadataFromDecorator<T = any>(
-  target: T & Dictionary & { [MetadataStorage.PATH_SYMBOL]?: string },
-): RoutineMetadata<T> {
-  return MetadataStorage.getRoutineMetadata(target.name, ensureDecoratorPath(target));
 }

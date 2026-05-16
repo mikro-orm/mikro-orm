@@ -1956,8 +1956,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Invokes a stored procedure or function declared via the `@Routine` decorator or the
-   * {@link Routine} class.
+   * Invokes a stored procedure or function declared via the {@link Routine} class.
    *
    * - Functions return their scalar value, optionally marshalled through `returns.customType`.
    * - Procedures return `void`; OUT/INOUT params are written back into the caller's

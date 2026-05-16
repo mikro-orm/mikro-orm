@@ -1189,7 +1189,7 @@ export type RoutineReturns<T = unknown> =
  */
 export type RoutineJsBody<T> = (params: T) => unknown;
 
-/** Definition of a stored procedure or function declared via `@Routine` or the {@link Routine} class. */
+/** Definition of a stored procedure or function declared via the {@link Routine} class. */
 export interface RoutineDef<T = any> {
   /** Whether this routine is a stored procedure or stored function. */
   type: RoutineKind;
@@ -1340,12 +1340,7 @@ export class RoutineMetadata<T = any, Class extends EntityCtor<T> = EntityCtor<T
     return (this.schema ? this.schema + '.' : '') + this.routineName + '_' + this._id;
   }
 
-  /**
-   * Populates this metadata instance from a config-style declaration. Used both by `fromConfig`
-   * (which creates a fresh instance) and by the `@Routine` decorator path (which gets a stub
-   * instance back from the metadata storage and applies the config in place — avoiding a
-   * throw-away allocation).
-   */
+  /** Populates this metadata instance from a config-style declaration. */
   applyConfig(config: RoutineConfig<T>): this {
     this.className ||= config.name;
     this.routineName = config.name;
@@ -1408,7 +1403,7 @@ export class RoutineMetadata<T = any, Class extends EntityCtor<T> = EntityCtor<T
   }
 }
 
-/** Single parameter configuration, accepted by the {@link Routine} class and the `@Routine` decorator. */
+/** Single parameter configuration, accepted by the {@link Routine} class. */
 export interface RoutineParamConfig {
   runtimeType?: EntityProperty['runtimeType'];
   type?: keyof typeof types | AnyString;
@@ -1428,7 +1423,7 @@ export interface RoutineParamConfig {
   customType?: Type<unknown> | Constructor<Type<unknown>>;
 }
 
-/** Routine declaration shape accepted by the {@link Routine} class and the `@Routine` decorator. */
+/** Routine declaration shape accepted by the {@link Routine} class. */
 export interface RoutineConfig<T = any> extends Omit<RoutineDef<T>, 'name'> {
   /** Routine name. Required — used both as the schema-level identifier and the database name fallback. */
   name: string;

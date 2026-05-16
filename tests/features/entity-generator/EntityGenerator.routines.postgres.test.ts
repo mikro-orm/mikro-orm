@@ -56,12 +56,12 @@ describe('EntityGenerator — routine emission (PostgreSQL)', () => {
     await orm.close(true);
   });
 
-  it('emits decorator-style @Routine source for introspected functions', async () => {
-    const dump = await orm.entityGenerator.generate({ entityDefinition: 'decorators', decorators: 'legacy' });
-    const computeSumFile = dump.find(content => content.includes('class ComputeSum'));
+  it('emits `new Routine(...)` const source for introspected functions', async () => {
+    const dump = await orm.entityGenerator.generate({ entityDefinition: 'decorators' });
+    const computeSumFile = dump.find(content => content.includes('ComputeSum'));
     expect(computeSumFile).toBeDefined();
-    expect(computeSumFile).toContain(`from '@mikro-orm/decorators/legacy'`);
-    expect(computeSumFile).toContain(`@Routine(`);
+    expect(computeSumFile).toContain(`from '@mikro-orm/core'`);
+    expect(computeSumFile).toContain(`export const ComputeSum = new Routine(`);
     expect(computeSumFile).toContain(`name: 'compute_sum'`);
     expect(computeSumFile).toContain(`type: 'function'`);
     expect(computeSumFile).toContain(`a: { type: 'integer' }`);
@@ -78,7 +78,7 @@ describe('EntityGenerator — routine emission (PostgreSQL)', () => {
     expect(recordInsert).toContain(`ref: true`);
   });
 
-  it('emits new Routine() when entityDefinition is entitySchema', async () => {
+  it('emits new Routine() regardless of entityDefinition mode', async () => {
     const dump = await orm.entityGenerator.generate({ entityDefinition: 'entitySchema' });
     const schemaSource = dump.find(content => content.includes('compute_sum') && content.includes('Routine'));
     expect(schemaSource).toBeDefined();

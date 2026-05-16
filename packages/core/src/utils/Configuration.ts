@@ -836,16 +836,15 @@ export interface Options<
    */
   subscribers: Iterable<EventSubscriber | Constructor<EventSubscriber>>;
   /**
-   * Stored routines (procedures and functions) to register.
-   * Accepts class references decorated with `@Routine` or instances of the {@link Routine}
-   * class. Routines are kept separate from `entities` because they don't share discovery
+   * Stored routines (procedures and functions) to register. Accepts {@link Routine} class
+   * instances. Routines are kept separate from `entities` because they don't share discovery
    * semantics — they're never folder-discovered and never participate in unit-of-work or
    * query building.
    *
    * @example
    * routines: [HashUser, AddRecord]
    */
-  routines: Iterable<Routine | (new (...args: any[]) => any)>;
+  routines: Iterable<Routine>;
   /**
    * Global entity filters to apply.
    * Filters are applied by default unless explicitly disabled.

@@ -27,51 +27,10 @@ MikroORM can declare, manage, and invoke stored procedures and functions. Routin
 
 ## Defining a routine
 
-You can declare routines using the `@Routine` decorator or the `Routine` class. Both produce the same metadata.
-
-Routines are registered via a dedicated `routines` configuration option, separate from `entities`. They don't share discovery semantics with entities — there's no folder discovery for routines, and they never participate in unit-of-work or query building.
-
-```ts
-await MikroORM.init({
-  entities: [User, Book],
-  routines: [HashUser, AddRecord],
-});
-```
-
-### Decorator
-
-Parameters are declared inline in the `@Routine` options (the same `params` shape used by the `Routine` class). `@Property()` decorators on the class are not used by routines. The `@Routine` decorator lives in `@mikro-orm/decorators/legacy` (use `/es` instead if your TypeScript build emits TC39 decorators) — the same name is also used for the class-less `Routine` class in `@mikro-orm/core`, but the imports come from different packages.
+Routines are declared with the `Routine` class from `@mikro-orm/core` and registered via a dedicated `routines` configuration option, separate from `entities`. They don't share discovery semantics with entities — there's no folder discovery for routines, and they never participate in unit-of-work or query building.
 
 ```ts
 import { createHash } from 'node:crypto';
-import { Routine } from '@mikro-orm/decorators/legacy';
-
-@Routine({
-  name: 'hash_user',
-  type: 'function',
-  params: { name: { type: 'string' }, salt: { type: 'string' } },
-  returns: { runtimeType: 'string', columnType: 'char(40)' },
-  body: (p) => `SELECT SHA1(CONCAT(${p.name}, ${p.salt}))`,
-  bodyJs: ({ name, salt }) => createHash('sha1').update(name + salt).digest('hex'),
-})
-class HashUser {}
-
-@Routine({
-  name: 'add_record',
-  type: 'procedure',
-  params: {
-    name: { type: 'varchar(255)' },
-    age: { type: 'tinyint' },
-  },
-  body: (p) => `INSERT INTO record_entity (name, age, hash)
-    VALUES (${p.name}, ${p.age}, SHA1(CONCAT(${p.name}, ${p.age})))`,
-})
-class AddRecord {}
-```
-
-### Class-less `Routine`
-
-```ts
 import { Routine } from '@mikro-orm/core';
 
 const HashUser = new Routine({
@@ -83,6 +42,23 @@ const HashUser = new Routine({
   },
   returns: { runtimeType: 'string', columnType: 'char(40)' },
   body: 'SELECT SHA1(CONCAT(name, salt))',
+  bodyJs: ({ name, salt }) => createHash('sha1').update(name + salt).digest('hex'),
+});
+
+const AddRecord = new Routine({
+  name: 'add_record',
+  type: 'procedure',
+  params: {
+    name: { type: 'varchar(255)' },
+    age: { type: 'tinyint' },
+  },
+  body: `INSERT INTO record_entity (name, age, hash)
+    VALUES (name, age, SHA1(CONCAT(name, age)))`,
+});
+
+await MikroORM.init({
+  entities: [User, Book],
+  routines: [HashUser, AddRecord],
 });
 ```
 
@@ -191,7 +167,7 @@ This is useful when the database normalises whitespace differently from the lite
 
 ## SQLite cross-DB testing
 
-When you target SQLite (via better-sqlite3) with routines defined via `@Routine` or the `Routine` class:
+When you target SQLite (via better-sqlite3) with routines defined via the `Routine` class:
 
 - Schema generator silently skips them — no DDL is emitted, `schema:diff` produces no changes.
 - `em.callRoutine` for `type: 'function'` routines that declare `bodyJs` registers the JS function as a UDF via the underlying driver (better-sqlite3's `db.function()`) on first call, then dispatches `SELECT routine_name(?, ?, ...)`.

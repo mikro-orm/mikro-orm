@@ -1,4 +1,4 @@
-import { type Dictionary, type EntityCtor, EntityMetadata, type EntityName, RoutineMetadata } from '../typings.js';
+import { type Dictionary, type EntityCtor, EntityMetadata, type EntityName, type RoutineMetadata } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import { MetadataError } from '../errors.js';
 import type { EntityManager } from '../EntityManager.js';
@@ -17,7 +17,6 @@ export class MetadataStorage {
   static readonly PATH_SYMBOL = Symbol.for('@mikro-orm/core/MetadataStorage.PATH_SYMBOL');
 
   static readonly #metadata: Dictionary<EntityMetadata> = getGlobalStorage('metadata');
-  static readonly #routineMetadata: Dictionary<RoutineMetadata> = getGlobalStorage('routine-metadata');
   readonly #metadataMap = new Map<EntityName, EntityMetadata>();
   readonly #idMap: Record<number, EntityMetadata>;
   readonly #classNameMap: Record<string, EntityMetadata>;
@@ -54,26 +53,6 @@ export class MetadataStorage {
     return MetadataStorage.#metadata;
   }
 
-  /** Returns the global routine metadata dictionary, or a specific entry by routine class name and path. */
-  static getRoutineMetadata(): Dictionary<RoutineMetadata>;
-  static getRoutineMetadata<T = any>(routine: string, path: string): RoutineMetadata<T>;
-  static getRoutineMetadata<T = any>(
-    routine?: string,
-    path?: string,
-  ): Dictionary<RoutineMetadata> | RoutineMetadata<T> {
-    const key = routine && path ? routine + '-' + Utils.hash(path) : null;
-
-    if (key && !MetadataStorage.#routineMetadata[key]) {
-      MetadataStorage.#routineMetadata[key] = new RoutineMetadata({ className: routine, path });
-    }
-
-    if (key) {
-      return MetadataStorage.#routineMetadata[key];
-    }
-
-    return MetadataStorage.#routineMetadata;
-  }
-
   /** Checks whether an entity with the given class name exists in the global metadata. */
   static isKnownEntity(name: string): boolean {
     return !!Object.values(this.#metadata).find(meta => meta.className === name);
@@ -82,7 +61,6 @@ export class MetadataStorage {
   /** Clears all entries from the global metadata registry. */
   static clear(): void {
     Object.keys(this.#metadata).forEach(k => delete this.#metadata[k]);
-    Object.keys(this.#routineMetadata).forEach(k => delete this.#routineMetadata[k]);
   }
 
   /** Returns the map of all registered entity metadata. */
