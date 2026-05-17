@@ -1518,6 +1518,9 @@ describe('check typings', () => {
         p_name: { type: 'varchar(255)' },
         p_age: { type: 'int' },
         p_flag: { type: 'boolean' },
+        p_bool: { type: 'bool' },
+        p_mysql_bool: { type: 'tinyint(1)' },
+        p_byte: { type: 'tinyint(4)' },
         p_when: { type: 'timestamp' },
         p_blob: { type: 'bytea' },
         p_payload: { type: 'jsonb' },
@@ -1536,6 +1539,9 @@ describe('check typings', () => {
     assert<IsExact<Args['p_name'], string>>(true);
     assert<IsExact<Args['p_age'], number>>(true);
     assert<IsExact<Args['p_flag'], boolean>>(true);
+    assert<IsExact<Args['p_bool'], boolean>>(true);
+    assert<IsExact<Args['p_mysql_bool'], boolean>>(true);
+    assert<IsExact<Args['p_byte'], number>>(true);
     assert<IsExact<Args['p_when'], Date>>(true);
     assert<IsExact<Args['p_blob'], Buffer>>(true);
     assert<IsExact<Args['p_payload'], Dictionary>>(true);

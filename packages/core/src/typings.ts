@@ -1348,84 +1348,89 @@ type StripSqlTypeArgs<S extends string> = S extends `${infer Base}(${string}` ? 
  * Maps a SQL-flavoured `type` string (e.g. `'varchar(255)'`, `'int'`, `'timestamp'`) to a TS
  * runtime type, used as a fallback when {@link RoutineParamConfig} does not declare an explicit
  * `runtimeType`. Length/precision arguments are stripped, the lowercase token is matched
- * against the known type families below. `decimal`/`numeric`/`money` default to `string` since
- * drivers typically return them as strings to preserve precision; opt in to `number` via
- * `runtimeType` when the value range is safe. Unrecognised or genuinely ambiguous types
- * (`bigint`, `refcursor`, `sys_refcursor`, …) fall through to `any`.
+ * against the known type families below. `decimal`/`numeric`/`money`/`bigint` default to
+ * `string` since drivers typically return them as strings to preserve precision; opt in to
+ * `number` or `bigint` via `runtimeType` when the value range is safe. Unrecognised or
+ * genuinely ambiguous types (`refcursor`, `sys_refcursor`, …) fall through to `any`.
  */
 export type SqlTypeToTs<S> = S extends string
-  ? Lowercase<StripSqlTypeArgs<S>> extends 'character varying'
-    ? string
-    : Lowercase<StripSqlTypeArgs<S>> extends 'double precision'
-      ? number
-      : Lowercase<StripSqlTypeArgs<S>> extends 'time with time zone' | 'timestamp with time zone'
-        ? Date
-        : Lowercase<StripSqlTypeArgs<S>> extends 'long raw'
-          ? Buffer
-          : Lowercase<StripSqlTypeArgs<S>> extends
-                | 'varchar'
-                | 'char'
-                | 'character'
-                | 'nvarchar'
-                | 'nchar'
-                | 'text'
-                | 'mediumtext'
-                | 'longtext'
-                | 'tinytext'
-                | 'ntext'
-                | 'clob'
-                | 'nclob'
-                | 'citext'
-                | 'xml'
-                | 'uuid'
-                | 'string'
-                | 'decimal'
-                | 'numeric'
-                | 'money'
-            ? string
+  ? Lowercase<S> extends `tinyint(1)${string}`
+    ? boolean
+    : Lowercase<StripSqlTypeArgs<S>> extends 'character varying'
+      ? string
+      : Lowercase<StripSqlTypeArgs<S>> extends 'double precision'
+        ? number
+        : Lowercase<StripSqlTypeArgs<S>> extends 'time with time zone' | 'timestamp with time zone'
+          ? Date
+          : Lowercase<StripSqlTypeArgs<S>> extends 'long raw'
+            ? Buffer
             : Lowercase<StripSqlTypeArgs<S>> extends
-                  | 'int'
-                  | 'integer'
-                  | 'smallint'
-                  | 'tinyint'
-                  | 'mediumint'
-                  | 'int2'
-                  | 'int4'
-                  | 'serial'
-                  | 'smallserial'
-                  | 'real'
-                  | 'float'
-                  | 'float4'
-                  | 'float8'
-                  | 'double'
-              ? number
-              : Lowercase<StripSqlTypeArgs<S>> extends 'boolean' | 'bool' | 'bit'
-                ? boolean
-                : Lowercase<StripSqlTypeArgs<S>> extends
-                      | 'date'
-                      | 'datetime'
-                      | 'datetime2'
-                      | 'smalldatetime'
-                      | 'timestamp'
-                      | 'timestamptz'
-                      | 'time'
-                      | 'timetz'
-                  ? Date
-                  : Lowercase<StripSqlTypeArgs<S>> extends 'json' | 'jsonb'
-                    ? Dictionary
-                    : Lowercase<StripSqlTypeArgs<S>> extends
-                          | 'blob'
-                          | 'tinyblob'
-                          | 'mediumblob'
-                          | 'longblob'
-                          | 'binary'
-                          | 'varbinary'
-                          | 'bytea'
-                          | 'bytes'
-                          | 'image'
-                          | 'raw'
-                      ? Buffer
-                      : any
+                  | 'varchar'
+                  | 'char'
+                  | 'character'
+                  | 'nvarchar'
+                  | 'nchar'
+                  | 'text'
+                  | 'mediumtext'
+                  | 'longtext'
+                  | 'tinytext'
+                  | 'ntext'
+                  | 'clob'
+                  | 'nclob'
+                  | 'citext'
+                  | 'xml'
+                  | 'uuid'
+                  | 'string'
+                  | 'decimal'
+                  | 'numeric'
+                  | 'money'
+                  | 'bigint'
+                  | 'int8'
+                  | 'bigserial'
+              ? string
+              : Lowercase<StripSqlTypeArgs<S>> extends
+                    | 'int'
+                    | 'integer'
+                    | 'smallint'
+                    | 'tinyint'
+                    | 'mediumint'
+                    | 'int2'
+                    | 'int4'
+                    | 'serial'
+                    | 'smallserial'
+                    | 'real'
+                    | 'float'
+                    | 'float4'
+                    | 'float8'
+                    | 'double'
+                ? number
+                : Lowercase<StripSqlTypeArgs<S>> extends 'boolean' | 'bool' | 'bit'
+                  ? boolean
+                  : Lowercase<StripSqlTypeArgs<S>> extends
+                        | 'date'
+                        | 'datetime'
+                        | 'datetime2'
+                        | 'smalldatetime'
+                        | 'timestamp'
+                        | 'timestamptz'
+                        | 'time'
+                        | 'timetz'
+                    ? Date
+                    : Lowercase<StripSqlTypeArgs<S>> extends 'json' | 'jsonb'
+                      ? Dictionary
+                      : Lowercase<StripSqlTypeArgs<S>> extends
+                            | 'blob'
+                            | 'tinyblob'
+                            | 'mediumblob'
+                            | 'longblob'
+                            | 'binary'
+                            | 'varbinary'
+                            | 'bytea'
+                            | 'bytes'
+                            | 'image'
+                            | 'raw'
+                        ? Buffer
+                        : any
   : any;
 
 /**
