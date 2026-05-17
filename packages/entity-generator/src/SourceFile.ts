@@ -642,7 +642,16 @@ export class SourceFile {
       options.virtual = this.meta.virtual;
     }
 
-    return this.getCollectionDecl(options);
+    // when the discriminator references an explicitly defined property, emit the property-oriented
+    // `discriminator` name; fall back to `discriminatorColumn` when the discriminator property is
+    // auto-managed by the ORM and not part of the entity definition.
+    const key = this.isDiscriminatorPropertyUserDefined() ? 'discriminator' : 'discriminatorColumn';
+    return this.getCollectionDecl(options, key);
+  }
+
+  private isDiscriminatorPropertyUserDefined(): boolean {
+    const name = this.meta.discriminatorColumn;
+    return !!name && this.meta.properties[name as never]?.userDefined !== false;
   }
 
   protected getPartitionByDecl(partitionBy: EntityPartitionBy): Dictionary {
@@ -686,17 +695,13 @@ export class SourceFile {
 
   protected getEmbeddableDeclOptions() {
     const options: EmbeddableOptions<unknown> = {};
-    const result = this.getCollectionDecl(options);
-
-    if (result.discriminatorColumn) {
-      result.discriminator = result.discriminatorColumn;
-      delete result.discriminatorColumn;
-    }
-
-    return result;
+    return this.getCollectionDecl(options, 'discriminator');
   }
 
-  private getCollectionDecl<T extends EntityOptions<unknown> | EmbeddableOptions<unknown>>(options: T) {
+  private getCollectionDecl<T extends EntityOptions<unknown> | EmbeddableOptions<unknown>>(
+    options: T,
+    discriminatorKey: 'discriminator' | 'discriminatorColumn',
+  ) {
     if (this.meta.abstract) {
       options.abstract = true;
     }
@@ -709,7 +714,7 @@ export class SourceFile {
     }
 
     if (this.meta.discriminatorColumn) {
-      options.discriminatorColumn = this.quote(this.meta.discriminatorColumn);
+      (options as Dictionary)[discriminatorKey] = this.quote(this.meta.discriminatorColumn);
     }
 
     if (this.meta.discriminatorMap) {

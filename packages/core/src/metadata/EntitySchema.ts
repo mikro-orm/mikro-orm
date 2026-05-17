@@ -414,6 +414,23 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
 
     this.setClass(this._meta.class);
 
+    // `discriminator` is the property name on the entity / embeddable; `discriminatorColumn` is an
+    // optional column-name override on that property. For backward compat, when only
+    // `discriminatorColumn` is given (legacy), it is treated as the property name. Once normalized,
+    // `meta.discriminatorColumn` always holds the property name (so existing readers keep working),
+    // and `meta.discriminatorFieldName` carries the explicit column override (if any).
+    if (
+      this._meta.discriminator &&
+      this._meta.discriminatorColumn &&
+      this._meta.discriminator !== this._meta.discriminatorColumn
+    ) {
+      this._meta.discriminatorFieldName = this._meta.discriminatorColumn;
+      this._meta.discriminatorColumn = this._meta.discriminator;
+    } else {
+      this._meta.discriminatorColumn ??= this._meta.discriminator;
+      this._meta.discriminator ??= this._meta.discriminatorColumn;
+    }
+
     // Abstract TPT entities keep their name because they have their own table
     const isTPT = (this._meta as any).inheritance === 'tpt' || this.isPartOfTPTHierarchy();
 

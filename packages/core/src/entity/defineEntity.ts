@@ -1285,6 +1285,7 @@ export interface EntityMetadataWithProperties<
   | 'extends'
   | 'primaryKeys'
   | 'hooks'
+  | 'discriminator'
   | 'discriminatorColumn'
   | 'discriminatorValue'
   | 'versionProperty'
@@ -1338,6 +1339,8 @@ export interface EntityMetadataWithProperties<
     | { [K in Extract<AllKeys<TProperties, TBase>, string>]?: QueryOrderKeysFlat }[];
   // Captured as const literals (overriding `EntityMetadata`'s broad types) so children form a
   // proper discriminated union narrowed to their `discriminatorValue` (GH #7677).
+  discriminator?: TDiscriminatorColumn;
+  /** Alias for `discriminator`. */
   discriminatorColumn?: TDiscriminatorColumn;
   discriminatorValue?: TDiscriminatorValue;
   versionProperty?: AllKeys<TProperties, TBase>;

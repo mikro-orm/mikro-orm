@@ -614,17 +614,12 @@ export class EntityLoader {
     const fields = this.buildFields(options.fields, prop, ref) as any;
 
     /* eslint-disable prefer-const */
-    let {
-      refresh,
-      filters,
-      convertCustomTypes,
-      lockMode,
-      strategy,
-      populateWhere = 'infer',
-      connectionType,
-      logging,
-    } = options;
+    let { refresh, filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType, logging } = options;
     /* eslint-enable prefer-const */
+
+    // `populateWhere` is typed as required via `Required<EntityLoaderOptions>`, but `em.populate(...)`
+    // forwards user-supplied options without filling it in — keep the runtime default.
+    populateWhere ??= 'infer';
 
     if (typeof populateWhere === 'object') {
       populateWhere = await this.extractChildCondition({ where: populateWhere } as any, prop);

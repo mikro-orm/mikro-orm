@@ -37,7 +37,8 @@ For detailed information about decorator types, metadata providers, and configur
 | `comment`             | `string`                   | yes      | Specify comment to table. **(SQL only)**                                           |
 | `repository`          | `() => EntityRepository`   | yes      | Set [custom repository class](./repositories.md#custom-repository).                |
 | `inheritance`         | `'tpt'`                    | yes      | For [Table-Per-Type Inheritance](./inheritance-mapping.md#table-per-type-inheritance-tpt). |
-| `discriminatorColumn` | `string`                   | yes      | For [Single Table Inheritance](./inheritance-mapping.md#single-table-inheritance). |
+| `discriminator`       | `string`                   | yes      | For [Single Table Inheritance](./inheritance-mapping.md#single-table-inheritance). Property name on the entity that stores the discriminator value. |
+| `discriminatorColumn` | `string`                   | yes      | Optional override for the discriminator column name. When `discriminator` is omitted, this is also used as the property name (legacy behavior). |
 | `discriminatorMap`    | `Dictionary<string>`       | yes      | For [Single Table Inheritance](./inheritance-mapping.md#single-table-inheritance). |
 | `discriminatorValue`  | `number` &#124; `string`   | yes      | For [Single Table Inheritance](./inheritance-mapping.md#single-table-inheritance). |
 | `forceConstructor`    | `boolean`                  | yes      | Enforce use of constructor when creating managed entity instances                  |
@@ -58,7 +59,8 @@ See [Embeddables](./embeddables.md) for more details.
 
 | Parameter             | Type                     | Optional | Description                                                                        |
 |-----------------------|--------------------------|----------|------------------------------------------------------------------------------------|
-| `discriminatorColumn` | `string`                 | yes      | For polymorphic embeddables.                                                       |
+| `discriminator`       | `string`                 | yes      | For polymorphic embeddables. Property name on the embeddable that stores the discriminator value. |
+| `discriminatorColumn` | `string`                 | yes      | Optional override for the discriminator column name. When `discriminator` is omitted, this is also used as the property name (legacy behavior). |
 | `discriminatorMap`    | `Dictionary<string>`     | yes      | For polymorphic embeddables.                                                       |
 | `discriminatorValue`  | `number` &#124; `string` | yes      | For polymorphic embeddables.                                                       |
 | `abstract`            | `boolean`                | yes      | Marks embeddable as abstract.                                                      |

@@ -2057,13 +2057,20 @@ export class MetadataDiscovery {
   }
 
   private createDiscriminatorProperty(meta: EntityMetadata): void {
-    meta.addProperty({
-      name: meta.discriminatorColumn!,
+    const prop: Dictionary = {
+      name: meta.discriminatorColumn,
       type: 'string',
       enum: true,
       kind: ReferenceKind.SCALAR,
       userDefined: false,
-    } as EntityProperty);
+    };
+
+    // honor the column-name override set via `discriminatorColumn` when `discriminator` is also given
+    if (meta.discriminatorFieldName) {
+      prop.fieldName = meta.discriminatorFieldName;
+    }
+
+    meta.addProperty(prop as EntityProperty);
   }
 
   private initAutoincrement(meta: EntityMetadata): void {
