@@ -5,16 +5,11 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.0.17](https://github.com/mikro-orm/mikro-orm/compare/v7.0.16...v7.0.17) (2026-05-17)
 
-
 ### Bug Fixes
 
-* **core:** merge index `columns` overrides with the full property list ([#7733](https://github.com/mikro-orm/mikro-orm/issues/7733)) ([7aad84b](https://github.com/mikro-orm/mikro-orm/commit/7aad84b99c6c018424eadb9ba0923b5f49e6f4bc))
-* **core:** resolve TPT parent alias for custom-typed inherited columns ([#7731](https://github.com/mikro-orm/mikro-orm/issues/7731)) ([202ab1c](https://github.com/mikro-orm/mikro-orm/commit/202ab1cbf0c1f4f1cea0b75425e931c4a3c532dc))
-* **core:** scope STI subclass discriminator when extends is a schema ([#7727](https://github.com/mikro-orm/mikro-orm/issues/7727)) ([df74b4b](https://github.com/mikro-orm/mikro-orm/commit/df74b4bd6116d9e31812a264fd3903e47f6d8ec4)), closes [#7726](https://github.com/mikro-orm/mikro-orm/issues/7726)
-
-
-
-
+- **core:** merge index `columns` overrides with the full property list ([#7733](https://github.com/mikro-orm/mikro-orm/issues/7733)) ([7aad84b](https://github.com/mikro-orm/mikro-orm/commit/7aad84b99c6c018424eadb9ba0923b5f49e6f4bc))
+- **core:** resolve TPT parent alias for custom-typed inherited columns ([#7731](https://github.com/mikro-orm/mikro-orm/issues/7731)) ([202ab1c](https://github.com/mikro-orm/mikro-orm/commit/202ab1cbf0c1f4f1cea0b75425e931c4a3c532dc))
+- **core:** scope STI subclass discriminator when extends is a schema ([#7727](https://github.com/mikro-orm/mikro-orm/issues/7727)) ([df74b4b](https://github.com/mikro-orm/mikro-orm/commit/df74b4bd6116d9e31812a264fd3903e47f6d8ec4)), closes [#7726](https://github.com/mikro-orm/mikro-orm/issues/7726)
 
 ## [7.0.16](https://github.com/mikro-orm/mikro-orm/compare/v7.0.15...v7.0.16) (2026-05-14)
 

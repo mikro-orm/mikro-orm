@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/sql",
-  "version": "7.0.16",
+  "version": "7.0.17",
   "exports": {
     ".": "./src/index.ts"
   },
@@ -8,7 +8,7 @@
     "exclude": ["dist/", "node_modules/", "tests/"]
   },
   "imports": {
-    "kysely": "npm:kysely@0.29.0",
-    "@mikro-orm/core": "jsr:@mikro-orm/core@7.0.16"
+    "kysely": "npm:kysely@0.29.2",
+    "@mikro-orm/core": "jsr:@mikro-orm/core@7.0.17"
   }
 }
