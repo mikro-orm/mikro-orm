@@ -1,5 +1,5 @@
-import { MikroORM } from '@mikro-orm/sqlite';
-import { Routine } from '@mikro-orm/core';
+import { MikroORM, SqliteDriver } from '@mikro-orm/sqlite';
+import { Configuration, Routine } from '@mikro-orm/core';
 
 describe('stored routines — metadata edges', () => {
   it('routines config rejects items that are not Routine instances', async () => {
@@ -97,6 +97,33 @@ describe('stored routines — metadata edges', () => {
     expect(orm.config.hasRoutine(NotRegistered)).toBe(false);
 
     await orm.close(true);
+  });
+
+  it('a failed validation does not partially populate the routine list (no duplicates on retry)', () => {
+    const good = new Routine({
+      name: 'good_routine',
+      type: 'function',
+      body: 'select 1',
+      returns: { runtimeType: 'number' },
+    });
+    const bad = new Routine({ name: 'bad_routine', type: 'function' } as any);
+
+    const config = new Configuration(
+      {
+        driver: SqliteDriver,
+        dbName: ':memory:',
+        entities: [],
+        routines: [good, bad],
+        discovery: { warnWhenNoEntities: false },
+      },
+      false,
+    );
+
+    // Without the staged collection, the second call would surface a "Duplicate routine 'good_routine'"
+    // error because `good` had been pushed before `bad` failed validation. With the fix, the same
+    // validation error keeps surfacing on every retry until the user fixes the offending entry.
+    expect(() => config.getRoutines()).toThrow(/must define a 'body', 'expression', or 'bodyJs'/);
+    expect(() => config.getRoutines()).toThrow(/must define a 'body', 'expression', or 'bodyJs'/);
   });
 
   it('createParamMappingObject returns identity map keyed by param name', () => {

@@ -260,6 +260,9 @@ export class Configuration<
 
     const validator = new MetadataValidator();
     const seenKeys = new Set<string>();
+    // Stage in a local array so a mid-loop throw doesn't leave `#routines` partially populated;
+    // a retry after the user fixes the offending entry would otherwise duplicate earlier ones.
+    const collected: Routine[] = [];
 
     for (const item of this.#options.routines ?? []) {
       if (!Routine.is(item)) {
@@ -277,9 +280,10 @@ export class Configuration<
       }
 
       seenKeys.add(key);
-      this.#routines.push(item);
+      collected.push(item);
     }
 
+    this.#routines.push(...collected);
     this.#routinesNormalised = true;
   }
 

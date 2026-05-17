@@ -87,6 +87,10 @@ export class MetadataValidator {
   }
 
   validateRoutineDefinition(routine: Routine): void {
+    if (typeof routine.name !== 'string' || routine.name.trim() === '') {
+      throw new MetadataError(`Routine is missing the required 'name' option.`);
+    }
+
     if (!routine.type) {
       throw new MetadataError(
         `Routine ${routine.name} is missing the required 'type' option ('procedure' | 'function').`,

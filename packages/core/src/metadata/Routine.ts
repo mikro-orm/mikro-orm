@@ -101,7 +101,7 @@ export class Routine<
     }
   }
 
-  /** Mirrors what body callbacks receive — `{ paramName: paramName }` — for callers building a body literal outside the callback context. */
+  /** Bare `{ paramName: paramName }` map. Body callbacks invoked through the schema pipeline receive a dialect-prefixed map (e.g. MSSQL's `@name`); this helper does not prefix. */
   createParamMappingObject(): Record<string, string> {
     return this.params.reduce<Record<string, string>>((o, p) => {
       o[p.name as string] = p.name as string;

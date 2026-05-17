@@ -35,8 +35,8 @@ const HashUser = new Routine({
   name: 'hash_user',
   type: 'function',
   params: {
-    name: { type: 'varchar(255)', runtimeType: 'string' },
-    salt: { type: 'varchar(255)', runtimeType: 'string' },
+    name: { type: 'varchar(255)' },
+    salt: { type: 'varchar(255)' },
   },
   returns: { runtimeType: 'string', columnType: 'char(40)' },
   body: 'SELECT SHA1(CONCAT(name, salt))',
