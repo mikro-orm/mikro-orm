@@ -21,7 +21,10 @@ import type {
   EntityManager,
   EntityName,
   RequiredEntityData,
+  RoutineArgs,
+  Dictionary,
 } from '@mikro-orm/core';
+import { Routine, ScalarReference } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
 import type { ObjectId } from 'bson';
@@ -1440,8 +1443,6 @@ describe('check typings', () => {
   });
 
   test('Routine call types are inferred from the declaration', async () => {
-    const { Routine, ScalarReference } = await import('@mikro-orm/core');
-
     const HashUser = new Routine({
       name: 'hash_user',
       type: 'function',
@@ -1507,5 +1508,40 @@ describe('check typings', () => {
       const stats = await em.callRoutine(GetStats, { user_id: 1 });
       assert<IsExact<typeof stats, UserStats>>(true);
     }
+  });
+
+  test('Routine param types are inferred from the SQL `type` string when runtimeType is omitted', async () => {
+    const SqlInferred = new Routine({
+      name: 'sql_inferred',
+      type: 'procedure',
+      params: {
+        p_name: { type: 'varchar(255)' },
+        p_age: { type: 'int' },
+        p_flag: { type: 'boolean' },
+        p_when: { type: 'timestamp' },
+        p_blob: { type: 'bytea' },
+        p_payload: { type: 'jsonb' },
+        p_nullable_id: { type: 'int', nullable: true },
+        p_ref: { type: 'char(40)', direction: 'inout', ref: true },
+        // `decimal` is intentionally ambiguous (drivers may return string for precision);
+        // stays `any` so users opt in via runtimeType.
+        p_decimal: { type: 'decimal(10,2)' },
+        // Explicit runtimeType overrides the SQL-inferred type.
+        p_override: { type: 'int', runtimeType: 'string' },
+      },
+      body: '...',
+    });
+
+    type Args = RoutineArgs<typeof SqlInferred>;
+    assert<IsExact<Args['p_name'], string>>(true);
+    assert<IsExact<Args['p_age'], number>>(true);
+    assert<IsExact<Args['p_flag'], boolean>>(true);
+    assert<IsExact<Args['p_when'], Date>>(true);
+    assert<IsExact<Args['p_blob'], Buffer>>(true);
+    assert<IsExact<Args['p_payload'], Dictionary>>(true);
+    assert<IsExact<Args['p_nullable_id'], number | null>>(true);
+    assert<IsExact<Args['p_ref'], ScalarReference<string>>>(true);
+    assert<IsExact<Args['p_decimal'], any>>(true);
+    assert<IsExact<Args['p_override'], string>>(true);
   });
 });

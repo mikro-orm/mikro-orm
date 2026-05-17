@@ -1342,18 +1342,110 @@ type RoutineRuntimeOf<R> = R extends keyof RoutineRuntimeTypeMap ? RoutineRuntim
 
 type Nullify<P, V> = P extends { nullable: true } ? V | null : V;
 
+type StripSqlTypeArgs<S extends string> = S extends `${infer Base}(${string}` ? Base : S;
+
 /**
- * TS value type for a single routine parameter. Honours `ref: true` (wraps in `ScalarReference`)
- * and `nullable: true` (adds `| null`). Params with no `runtimeType` default to `any` so callers
- * still get autocomplete on parameter names without forcing every config to declare its TS shape.
+ * Maps a SQL-flavoured `type` string (e.g. `'varchar(255)'`, `'int'`, `'timestamp'`) to a TS
+ * runtime type, used as a fallback when {@link RoutineParamConfig} does not declare an explicit
+ * `runtimeType`. Length/precision arguments are stripped, the lowercase token is matched
+ * against the known type families below, and unrecognised types fall through to `any` so
+ * dialect-specific or genuinely ambiguous types (`bigint`, `numeric`, `decimal`, `refcursor`,
+ * `sys_refcursor`, …) must opt in via `runtimeType`.
+ */
+export type SqlTypeToTs<S> = S extends string
+  ? Lowercase<StripSqlTypeArgs<S>> extends 'character varying'
+    ? string
+    : Lowercase<StripSqlTypeArgs<S>> extends 'double precision'
+      ? number
+      : Lowercase<StripSqlTypeArgs<S>> extends 'time with time zone' | 'timestamp with time zone'
+        ? Date
+        : Lowercase<StripSqlTypeArgs<S>> extends 'long raw'
+          ? Buffer
+          : Lowercase<StripSqlTypeArgs<S>> extends
+                | 'varchar'
+                | 'char'
+                | 'character'
+                | 'nvarchar'
+                | 'nchar'
+                | 'text'
+                | 'mediumtext'
+                | 'longtext'
+                | 'tinytext'
+                | 'ntext'
+                | 'clob'
+                | 'nclob'
+                | 'citext'
+                | 'xml'
+                | 'uuid'
+                | 'string'
+            ? string
+            : Lowercase<StripSqlTypeArgs<S>> extends
+                  | 'int'
+                  | 'integer'
+                  | 'smallint'
+                  | 'tinyint'
+                  | 'mediumint'
+                  | 'int2'
+                  | 'int4'
+                  | 'serial'
+                  | 'smallserial'
+                  | 'real'
+                  | 'float'
+                  | 'float4'
+                  | 'float8'
+                  | 'double'
+              ? number
+              : Lowercase<StripSqlTypeArgs<S>> extends 'boolean' | 'bool' | 'bit'
+                ? boolean
+                : Lowercase<StripSqlTypeArgs<S>> extends
+                      | 'date'
+                      | 'datetime'
+                      | 'datetime2'
+                      | 'smalldatetime'
+                      | 'timestamp'
+                      | 'timestamptz'
+                      | 'time'
+                      | 'timetz'
+                  ? Date
+                  : Lowercase<StripSqlTypeArgs<S>> extends 'json' | 'jsonb'
+                    ? Dictionary
+                    : Lowercase<StripSqlTypeArgs<S>> extends
+                          | 'blob'
+                          | 'tinyblob'
+                          | 'mediumblob'
+                          | 'longblob'
+                          | 'binary'
+                          | 'varbinary'
+                          | 'bytea'
+                          | 'bytes'
+                          | 'image'
+                          | 'raw'
+                      ? Buffer
+                      : any
+  : any;
+
+/**
+ * TS value type for a single routine parameter. `runtimeType` wins when present (explicit user
+ * intent); otherwise the SQL `type` string is mapped via {@link SqlTypeToTs}. `ref: true` wraps
+ * the result in `ScalarReference`; `nullable: true` adds `| null`. Params with neither
+ * `runtimeType` nor a recognised `type` string fall through to `any` so callers still get
+ * autocomplete on parameter names without being forced to annotate.
  */
 export type RoutineParamValue<P> = P extends { runtimeType: infer R }
   ? P extends { ref: true }
     ? ScalarReference<Nullify<P, RoutineRuntimeOf<R>>>
     : Nullify<P, RoutineRuntimeOf<R>>
-  : P extends { ref: true }
-    ? ScalarReference<any>
-    : any;
+  : P extends { type: infer T }
+    ? T extends string
+      ? P extends { ref: true }
+        ? ScalarReference<Nullify<P, SqlTypeToTs<T>>>
+        : Nullify<P, SqlTypeToTs<T>>
+      : P extends { ref: true }
+        ? ScalarReference<any>
+        : any
+    : P extends { ref: true }
+      ? ScalarReference<any>
+      : any;
 
 /**
  * Computes the call-site args object type from a {@link RoutineConfig}. Used as the default
