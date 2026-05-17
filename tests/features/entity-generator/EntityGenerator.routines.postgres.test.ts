@@ -59,29 +59,71 @@ describe('EntityGenerator — routine emission (PostgreSQL)', () => {
   it('emits `new Routine(...)` const source for introspected functions', async () => {
     const dump = await orm.entityGenerator.generate({ entityDefinition: 'decorators' });
     const computeSumFile = dump.find(content => content.includes('ComputeSum'));
-    expect(computeSumFile).toBeDefined();
-    expect(computeSumFile).toContain(`from '@mikro-orm/core'`);
-    expect(computeSumFile).toContain(`export const ComputeSum = new Routine(`);
-    expect(computeSumFile).toContain(`name: 'compute_sum'`);
-    expect(computeSumFile).toContain(`type: 'function'`);
-    expect(computeSumFile).toContain(`a: { type: 'integer' }`);
-    expect(computeSumFile).toContain(`b: { type: 'integer' }`);
+    expect(computeSumFile).toMatchInlineSnapshot(`
+      "import { Routine } from '@mikro-orm/core';
+
+      export const ComputeSum = new Routine({
+        name: 'compute_sum',
+        type: 'function',
+        schema: 'public',
+        language: 'sql',
+        security: 'invoker',
+        deterministic: false,
+        params: {
+          a: { type: 'integer' },
+          b: { type: 'integer' },
+        },
+        returns: { runtimeType: 'number', columnType: 'integer', nullable: true },
+        body: 'select a + b',
+      });
+      "
+    `);
   });
 
   it('emits a procedure with an OUT param and ref: true', async () => {
     const dump = await orm.entityGenerator.generate({ entityDefinition: 'defineEntity' });
     const recordInsert = dump.find(content => content.includes('record_insert'));
-    expect(recordInsert).toBeDefined();
-    expect(recordInsert).toContain(`type: 'procedure'`);
-    expect(recordInsert).toContain(`p_name: { type: 'character varying' }`);
-    expect(recordInsert).toContain(`direction: 'out'`);
-    expect(recordInsert).toContain(`ref: true`);
+    expect(recordInsert).toMatchInlineSnapshot(`
+      "import { Routine } from '@mikro-orm/core';
+
+      export const RecordInsert = new Routine({
+        name: 'record_insert',
+        type: 'procedure',
+        schema: 'public',
+        language: 'plpgsql',
+        security: 'invoker',
+        deterministic: false,
+        params: {
+          p_name: { type: 'character varying' },
+          p_id: { type: 'integer', direction: 'out', ref: true },
+        },
+        body: 'insert into routine_emission_record (name) values (p_name) returning id into p_id',
+      });
+      "
+    `);
   });
 
   it('emits new Routine() regardless of entityDefinition mode', async () => {
     const dump = await orm.entityGenerator.generate({ entityDefinition: 'entitySchema' });
     const schemaSource = dump.find(content => content.includes('compute_sum') && content.includes('Routine'));
-    expect(schemaSource).toBeDefined();
-    expect(schemaSource).toContain(`new Routine(`);
+    expect(schemaSource).toMatchInlineSnapshot(`
+      "import { Routine } from '@mikro-orm/core';
+
+      export const ComputeSum = new Routine({
+        name: 'compute_sum',
+        type: 'function',
+        schema: 'public',
+        language: 'sql',
+        security: 'invoker',
+        deterministic: false,
+        params: {
+          a: { type: 'integer' },
+          b: { type: 'integer' },
+        },
+        returns: { runtimeType: 'number', columnType: 'integer', nullable: true },
+        body: 'select a + b',
+      });
+      "
+    `);
   });
 });

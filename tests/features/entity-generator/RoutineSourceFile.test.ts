@@ -3,8 +3,7 @@ import { RoutineSourceFile } from '@mikro-orm/entity-generator';
 
 describe('RoutineSourceFile', () => {
   const namingStrategy: NamingStrategy = new UnderscoreNamingStrategy();
-  // Platform is only consulted to derive `runtimeType` when one isn't provided by
-  // introspection; all tests below supply it explicitly, so a stub is enough.
+  // Platform is only consulted to derive `runtimeType` when introspection didn't supply one.
   const platform = { getMappedType: () => ({ runtimeType: 'string' }) } as unknown as Platform;
 
   it('emits `new Routine(...)` const for a function definition', () => {
@@ -25,17 +24,22 @@ describe('RoutineSourceFile', () => {
       { entityDefinition: 'decorators', fileName: (n: string) => n },
     );
 
-    const out = sourceFile.generate();
-    expect(out).toContain(`import { Routine } from '@mikro-orm/core';`);
-    expect(out).toMatch(/export const SqlHash = new Routine\(/);
-    expect(out).toContain(`name: 'sql_hash'`);
-    expect(out).toContain(`type: 'function'`);
-    expect(out).toContain(`language: 'sql'`);
-    expect(out).toContain(`name: { type: 'varchar(255)' }`);
-    expect(out).toContain(`age: { type: 'integer' }`);
-    expect(out).toContain(`columnType: 'text'`);
-    expect(out).toContain(`runtimeType: 'string'`);
-    expect(out).toContain(`nullable: true`);
+    expect(sourceFile.generate()).toMatchInlineSnapshot(`
+      "import { Routine } from '@mikro-orm/core';
+
+      export const SqlHash = new Routine({
+        name: 'sql_hash',
+        type: 'function',
+        language: 'sql',
+        params: {
+          name: { type: 'varchar(255)' },
+          age: { type: 'integer' },
+        },
+        returns: { runtimeType: 'string', columnType: 'text', nullable: true },
+        body: 'select md5(name || age::text || \\'secret salt\\')',
+      });
+      "
+    `);
     expect(sourceFile.getBaseName()).toBe('SqlHash.ts');
   });
 
@@ -54,10 +58,19 @@ describe('RoutineSourceFile', () => {
       { entityDefinition: 'defineEntity', fileName: (n: string) => n },
     );
 
-    const out = sourceFile.generate();
-    expect(out).toContain(`import { Routine } from '@mikro-orm/core';`);
-    expect(out).toMatch(/export const Pi = new Routine\(/);
-    expect(out).toContain(`params: {}`);
+    expect(sourceFile.generate()).toMatchInlineSnapshot(`
+      "import { Routine } from '@mikro-orm/core';
+
+      export const Pi = new Routine({
+        name: 'pi',
+        type: 'function',
+        language: 'sql',
+        params: {},
+        returns: { runtimeType: 'number', columnType: 'double precision' },
+        body: 'select 3.14159',
+      });
+      "
+    `);
   });
 
   it('emits `new Routine(...)` for the entitySchema mode too', () => {
@@ -74,9 +87,20 @@ describe('RoutineSourceFile', () => {
       { entityDefinition: 'entitySchema', fileName: (n: string) => n },
     );
 
-    const out = sourceFile.generate();
-    expect(out).toContain(`import { Routine } from '@mikro-orm/core';`);
-    expect(out).toMatch(/export const Echo = new Routine\(/);
+    expect(sourceFile.generate()).toMatchInlineSnapshot(`
+      "import { Routine } from '@mikro-orm/core';
+
+      export const Echo = new Routine({
+        name: 'echo',
+        type: 'function',
+        params: {
+          v: { type: 'text' },
+        },
+        returns: { runtimeType: 'string', columnType: 'text' },
+        body: 'select v',
+      });
+      "
+    `);
   });
 
   it('emits OUT/INOUT direction and ref: true for procedure params', () => {
@@ -98,10 +122,23 @@ describe('RoutineSourceFile', () => {
       { entityDefinition: 'defineEntity', fileName: (n: string) => n },
     );
 
-    const out = sourceFile.generate();
-    expect(out).toContain(`p_name: { type: 'varchar(255)' }`);
-    expect(out).toContain(`p_hash: { type: 'text', direction: 'inout', ref: true }`);
-    expect(out).toContain(`p_id: { type: 'integer', direction: 'out', ref: true }`);
+    expect(sourceFile.generate()).toMatchInlineSnapshot(`
+      "import { Routine } from '@mikro-orm/core';
+
+      export const AddRecord = new Routine({
+        name: 'add_record',
+        type: 'procedure',
+        language: 'plpgsql',
+        params: {
+          p_name: { type: 'varchar(255)' },
+          p_age: { type: 'integer' },
+          p_hash: { type: 'text', direction: 'inout', ref: true },
+          p_id: { type: 'integer', direction: 'out', ref: true },
+        },
+        body: 'p_hash := md5(p_name);',
+      });
+      "
+    `);
   });
 
   it('uses a backtick template literal for multi-line bodies', () => {
@@ -118,10 +155,21 @@ describe('RoutineSourceFile', () => {
       { entityDefinition: 'defineEntity', fileName: (n: string) => n },
     );
 
-    const out = sourceFile.generate();
-    expect(out).toContain('body: `begin');
-    expect(out).toContain('insert into t values (2);');
-    expect(out).toMatch(/end`,/);
+    expect(sourceFile.generate()).toMatchInlineSnapshot(`
+      "import { Routine } from '@mikro-orm/core';
+
+      export const Multi = new Routine({
+        name: 'multi',
+        type: 'procedure',
+        language: 'plpgsql',
+        params: {},
+        body: \`begin
+        insert into t values (1);
+        insert into t values (2);
+      end\`,
+      });
+      "
+    `);
   });
 
   it('emits param-level nullable and defaultRaw when present', () => {
@@ -140,12 +188,23 @@ describe('RoutineSourceFile', () => {
       { entityDefinition: 'defineEntity', fileName: (n: string) => n },
     );
 
-    const out = sourceFile.generate();
-    expect(out).toContain(`opt: { type: 'text', nullable: true }`);
-    expect(out).toContain(`def: { type: 'integer', defaultRaw: '42' }`);
+    expect(sourceFile.generate()).toMatchInlineSnapshot(`
+      "import { Routine } from '@mikro-orm/core';
+
+      export const WithDefaults = new Routine({
+        name: 'with_defaults',
+        type: 'procedure',
+        params: {
+          opt: { type: 'text', nullable: true },
+          def: { type: 'integer', defaultRaw: '42' },
+        },
+        body: 'begin null; end',
+      });
+      "
+    `);
   });
 
-  it('escapes backslashes and quotes when the body would be emitted as a single-quoted string', () => {
+  it('escapes backslashes and quotes when the body is emitted as a single-quoted string', () => {
     const sourceFile = new RoutineSourceFile(
       {
         name: 'tricky',
@@ -159,11 +218,21 @@ describe('RoutineSourceFile', () => {
       { entityDefinition: 'defineEntity', fileName: (n: string) => n },
     );
 
-    const out = sourceFile.generate();
-    expect(out).toContain(`body: 'select \\'a\\\\b\\' || \\'\\'\\'\\''`);
+    expect(sourceFile.generate()).toMatchInlineSnapshot(`
+      "import { Routine } from '@mikro-orm/core';
+
+      export const Tricky = new Routine({
+        name: 'tricky',
+        type: 'function',
+        params: {},
+        returns: { runtimeType: 'string', columnType: 'text' },
+        body: 'select \\'a\\\\b\\' || \\'\\'\\'\\'',
+      });
+      "
+    `);
   });
 
-  it('escapes template-literal interpolation tokens in multi-line bodies', () => {
+  it('uses backticks for bodies that contain newlines (template-literal-safe escaping)', () => {
     const sourceFile = new RoutineSourceFile(
       {
         name: 'with_dollars',
@@ -177,10 +246,19 @@ describe('RoutineSourceFile', () => {
       { entityDefinition: 'defineEntity', fileName: (n: string) => n },
     );
 
-    const out = sourceFile.generate();
-    // The body has a newline, so it goes through quoteMultiline. `$1` doesn't trigger template
-    // interpolation, but `${...}` would — verify the escape works when it appears.
-    expect(out).toContain('body: `');
+    expect(sourceFile.generate()).toMatchInlineSnapshot(`
+      "import { Routine } from '@mikro-orm/core';
+
+      export const WithDollars = new Routine({
+        name: 'with_dollars',
+        type: 'function',
+        params: {},
+        returns: { runtimeType: 'string', columnType: 'text' },
+        body: \`select format('hello %s', $1)
+      from (select 1) t\`,
+      });
+      "
+    `);
   });
 
   it('escapes ${} interpolation in body even on a single line', () => {
@@ -197,10 +275,18 @@ describe('RoutineSourceFile', () => {
       { entityDefinition: 'defineEntity', fileName: (n: string) => n },
     );
 
-    const out = sourceFile.generate();
-    // Body now contains `${...}` — must be wrapped in backticks with the interpolation escaped.
-    expect(out).toContain('body: `');
-    expect(out).toContain('\\${injected}');
+    expect(sourceFile.generate()).toMatchInlineSnapshot(`
+      "import { Routine } from '@mikro-orm/core';
+
+      export const DollarBrace = new Routine({
+        name: 'dollar_brace',
+        type: 'function',
+        params: {},
+        returns: { runtimeType: 'string', columnType: 'text' },
+        body: \`select '\\\${injected}' as v\`,
+      });
+      "
+    `);
   });
 
   it('quotes param names that are not valid JS identifiers', () => {
@@ -217,7 +303,20 @@ describe('RoutineSourceFile', () => {
       { entityDefinition: 'defineEntity', fileName: (n: string) => n },
     );
 
-    expect(sourceFile.generate()).toContain(`'1bad-name': { type: 'text' }`);
+    expect(sourceFile.generate()).toMatchInlineSnapshot(`
+      "import { Routine } from '@mikro-orm/core';
+
+      export const Weird = new Routine({
+        name: 'weird',
+        type: 'function',
+        params: {
+          '1bad-name': { type: 'text' },
+        },
+        returns: { runtimeType: 'string', columnType: 'text' },
+        body: 'select null',
+      });
+      "
+    `);
   });
 
   it('emits schema, security, deterministic, comment, and expression metadata when present', () => {
@@ -239,13 +338,23 @@ describe('RoutineSourceFile', () => {
       { entityDefinition: 'defineEntity', fileName: (n: string) => n },
     );
 
-    const out = sourceFile.generate();
-    expect(out).toContain(`schema: 'analytics'`);
-    expect(out).toContain(`security: 'definer'`);
-    expect(out).toContain(`deterministic: true`);
-    expect(out).toContain(`comment: 'aggregated rollup'`);
-    expect(out).toContain(`expression:`);
-    expect(out).not.toContain(`body:`);
+    expect(sourceFile.generate()).toMatchInlineSnapshot(`
+      "import { Routine } from '@mikro-orm/core';
+
+      export const Meta = new Routine({
+        name: 'meta',
+        type: 'function',
+        schema: 'analytics',
+        language: 'sql',
+        security: 'definer',
+        deterministic: true,
+        comment: 'aggregated rollup',
+        params: {},
+        returns: { runtimeType: 'string', columnType: 'text' },
+        expression: 'CREATE FUNCTION analytics.meta() RETURNS text LANGUAGE sql AS $$ select null $$',
+      });
+      "
+    `);
   });
 
   it('escapes control chars in single-quoted strings (comment with embedded newline)', () => {
@@ -263,12 +372,22 @@ describe('RoutineSourceFile', () => {
       { entityDefinition: 'defineEntity', fileName: (n: string) => n },
     );
 
-    const out = sourceFile.generate();
-    expect(out).toContain(`comment: 'line one\\nline two\\twith tab'`);
-    expect(out).not.toContain("comment: 'line one\nline two");
+    expect(sourceFile.generate()).toMatchInlineSnapshot(`
+      "import { Routine } from '@mikro-orm/core';
+
+      export const WithComment = new Routine({
+        name: 'with_comment',
+        type: 'function',
+        comment: 'line one\\nline two\\twith tab',
+        params: {},
+        returns: { runtimeType: 'number', columnType: 'integer' },
+        body: 'select 1',
+      });
+      "
+    `);
   });
 
-  it("narrows runtimeType fallback to 'any' when getMappedType reports a value outside the routine runtime-type union", () => {
+  it("narrows runtimeType to 'any' when getMappedType reports a value outside the routine runtime-type union", () => {
     const oddPlatform = { getMappedType: () => ({ runtimeType: 'unknown' }) } as unknown as Platform;
     const sourceFile = new RoutineSourceFile(
       {
@@ -283,11 +402,18 @@ describe('RoutineSourceFile', () => {
       { entityDefinition: 'decorators', fileName: (n: string) => n },
     );
 
-    const out = sourceFile.generate();
-    // Falls back to 'any' (a valid `RoutineRuntimeType`) rather than emitting 'unknown' which is
-    // not part of the union and would produce TS-invalid generated code.
-    expect(out).toContain(`runtimeType: 'any'`);
-    expect(out).not.toContain(`runtimeType: 'unknown'`);
+    expect(sourceFile.generate()).toMatchInlineSnapshot(`
+      "import { Routine } from '@mikro-orm/core';
+
+      export const OddlyTyped = new Routine({
+        name: 'oddly_typed',
+        type: 'function',
+        params: {},
+        returns: { runtimeType: 'any', columnType: 'tsvector' },
+        body: 'select \\'x\\'::tsvector',
+      });
+      "
+    `);
   });
 
   it('snake_case routine names become PascalCase class names', () => {
@@ -305,6 +431,17 @@ describe('RoutineSourceFile', () => {
     );
 
     expect(sourceFile.getClassName()).toBe('ComputeUserScore');
-    expect(sourceFile.generate()).toContain('export const ComputeUserScore = new Routine(');
+    expect(sourceFile.generate()).toMatchInlineSnapshot(`
+      "import { Routine } from '@mikro-orm/core';
+
+      export const ComputeUserScore = new Routine({
+        name: 'compute_user_score',
+        type: 'function',
+        params: {},
+        returns: { runtimeType: 'number', columnType: 'integer' },
+        body: 'select 0',
+      });
+      "
+    `);
   });
 });
