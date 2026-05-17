@@ -148,7 +148,9 @@ export class MySqlConnection extends AbstractSqlConnection {
       const resultSets = callResult.filter(Array.isArray) as Dictionary[][];
 
       if (outVarParams.length > 0) {
-        const selectClause = outVarParams.map(o => `${o.varName} as \`${o.name}\``).join(', ');
+        const selectClause = outVarParams
+          .map(o => `${o.varName} as ${this.platform.quoteIdentifier(o.name)}`)
+          .join(', ');
         const rows = (await this.execute(`select ${selectClause}`, [], 'all', sharedCtx)) as Dictionary[];
         const row = rows[0] ?? {};
 

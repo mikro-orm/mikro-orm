@@ -125,7 +125,7 @@ export class MsSqlConnection extends AbstractSqlConnection {
     const batch = [...declareLines, ...setLines, `exec ${qualified} ${callArgs.join(', ')}`];
 
     if (outVars.length > 0) {
-      const selectClause = outVars.map(o => `${o.varName} as [${o.name}]`).join(', ');
+      const selectClause = outVars.map(o => `${o.varName} as ${this.platform.quoteIdentifier(o.name)}`).join(', ');
       batch.push(`select ${selectClause}`);
     }
 
