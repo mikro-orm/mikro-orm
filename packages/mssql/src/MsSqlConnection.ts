@@ -1,4 +1,10 @@
-import { AbstractSqlConnection, type ConnectionConfig, type TransactionEventBroadcaster, Utils } from '@mikro-orm/sql';
+import {
+  AbstractSqlConnection,
+  type ConnectionConfig,
+  DatabaseSchema,
+  type TransactionEventBroadcaster,
+  Utils,
+} from '@mikro-orm/sql';
 import { type ControlledTransaction, MssqlDialect } from 'kysely';
 import {
   convertRoutineInbound,
@@ -108,7 +114,10 @@ export class MsSqlConnection extends AbstractSqlConnection {
       }
 
       const varName = `@_mikro_orm_routine_${i}`;
-      declareLines.push(`declare ${varName} ${p.type}`);
+      // Logical aliases like `'string'`/`'number'` aren't valid T-SQL types — translate them
+      // through the platform's type system, matching the DDL side in `DatabaseSchema`.
+      const declType = DatabaseSchema.resolveRoutineColumnType(p.type, this.platform);
+      declareLines.push(`declare ${varName} ${declType}`);
       outVars.push({ name: p.name as string, varName, param: p });
 
       if (p.direction === 'inout') {

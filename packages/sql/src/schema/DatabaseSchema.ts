@@ -439,8 +439,12 @@ export class DatabaseSchema {
     }
   }
 
-  /** Maps `'string'`/`'number'`/… aliases through the platform's type system; literal SQL types pass through. */
-  private static resolveRoutineColumnType(type: string, platform: AbstractSqlPlatform): string {
+  /**
+   * Maps `'string'`/`'number'`/… aliases through the platform's type system; literal SQL types pass through.
+   *
+   * @internal
+   */
+  static resolveRoutineColumnType(type: string, platform: AbstractSqlPlatform): string {
     const lower = type.toLowerCase();
     const aliases: Record<string, string> = {
       string: 'string',

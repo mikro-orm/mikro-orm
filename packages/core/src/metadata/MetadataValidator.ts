@@ -130,6 +130,12 @@ export class MetadataValidator {
         );
       }
 
+      if (dir === 'in' && param.ref) {
+        throw new MetadataError(
+          `Routine ${routine.name}.${param.name} declares 'ref: true' on an IN parameter. ScalarReference wrapping is only meaningful for OUT/INOUT parameters.`,
+        );
+      }
+
       if (routine.type === 'function' && dir !== 'in') {
         throw new MetadataError(
           `Function routine ${routine.name}.${param.name} declares direction '${dir}'. Functions only support IN parameters — use a procedure for OUT/INOUT semantics.`,

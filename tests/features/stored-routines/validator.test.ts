@@ -111,6 +111,18 @@ describe('stored routines — Routine + validator', () => {
     );
   });
 
+  it('validator rejects ref: true on IN params', () => {
+    const routine = new Routine({
+      name: 'in_with_ref',
+      type: 'procedure',
+      params: { x: { type: 'int', runtimeType: 'number', ref: true } },
+      body: 'BEGIN END',
+    });
+
+    const validator = new MetadataValidator();
+    expect(() => validator.validateRoutineDefinition(routine)).toThrow(/declares 'ref: true' on an IN parameter/);
+  });
+
   it('validator rejects params with an invalid direction string', () => {
     const routine = new Routine({
       name: 'bad_dir',
