@@ -444,4 +444,21 @@ describe('RoutineSourceFile', () => {
       "
     `);
   });
+
+  it('digit-leading routine names get an underscore prefix so the emitted identifier is valid', () => {
+    const sourceFile = new RoutineSourceFile(
+      {
+        name: '2fa_check',
+        type: 'function',
+        params: [],
+        returns: { type: 'boolean', runtimeType: 'boolean' },
+        body: 'select true',
+      },
+      namingStrategy,
+      platform,
+      { entityDefinition: 'decorators', fileName: (n: string) => n },
+    );
+
+    expect(sourceFile.getClassName()).toBe('_2faCheck');
+  });
 });

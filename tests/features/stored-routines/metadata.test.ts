@@ -43,6 +43,34 @@ describe('stored routines — metadata edges', () => {
     ).rejects.toThrow(/Duplicate routine 'dup_routine'/);
   });
 
+  it('rejects routine names that collide case-insensitively (matches schema comparator folding)', async () => {
+    const a = new Routine({
+      name: 'Sql_Hash',
+      type: 'function',
+      params: { x: { type: 'string' } },
+      returns: { runtimeType: 'string', columnType: 'text' },
+      body: 'select x',
+      bodyJs: ({ x }: { x: string }) => x,
+    });
+    const b = new Routine({
+      name: 'sql_hash',
+      type: 'function',
+      params: { y: { type: 'string' } },
+      returns: { runtimeType: 'string', columnType: 'text' },
+      body: 'select y',
+      bodyJs: ({ y }: { y: string }) => y,
+    });
+
+    await expect(
+      MikroORM.init({
+        dbName: ':memory:',
+        entities: [],
+        routines: [a, b],
+        discovery: { warnWhenNoEntities: false },
+      }),
+    ).rejects.toThrow(/Duplicate routine 'sql_hash'/);
+  });
+
   it('Routine.is recognises Routine instances', () => {
     const a = new Routine({
       name: 'a',

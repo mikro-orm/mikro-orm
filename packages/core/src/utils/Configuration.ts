@@ -271,7 +271,10 @@ export class Configuration<
 
       validator.validateRoutineDefinition(item);
 
-      const key = (item.schema ? `${item.schema}.` : '') + item.name;
+      // Case-fold to match `SchemaComparator.compareRoutines`, which lower-cases the key so
+      // dialect-specific folding (Oracle uppercases, PG lowercases) round-trips; otherwise a
+      // user could register `'Foo'` and `'foo'` here and have the comparator silently collapse them.
+      const key = ((item.schema ? `${item.schema}.` : '') + item.name).toLowerCase();
 
       if (seenKeys.has(key)) {
         throw new Error(

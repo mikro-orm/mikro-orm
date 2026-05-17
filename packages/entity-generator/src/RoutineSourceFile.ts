@@ -27,11 +27,14 @@ function quoteMultiline(val: string): string {
 }
 
 function toPascalCase(name: string): string {
-  return name
+  const pascal = name
     .split(/[_\s-]+/)
     .filter(Boolean)
     .map(part => part.charAt(0).toUpperCase() + part.slice(1))
     .join('');
+  // A routine name starting with a digit (e.g. `2fa_check`) would yield an invalid identifier;
+  // prefix `_` so the emitted `export const ...` parses.
+  return /^[A-Za-z_$]/.test(pascal) ? pascal : `_${pascal}`;
 }
 
 // `satisfies` ties this list to `RoutineRuntimeType` so the runtime set can't drift from the union.

@@ -1183,7 +1183,6 @@ export type RoutineJsBody<T> = (params: T) => unknown;
 
 export interface RoutineDef<T = any> {
   type: RoutineKind;
-  /** Falls back to the class/declaration name when omitted. */
   name?: string;
   schema?: string;
   comment?: string;
