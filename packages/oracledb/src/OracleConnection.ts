@@ -13,7 +13,8 @@ import {
   type Transaction,
   Utils,
 } from '@mikro-orm/sql';
-import { Routine, ScalarReference } from '@mikro-orm/core';
+import type { Routine } from '@mikro-orm/core';
+import { ScalarReference } from '@mikro-orm/core';
 import { CompiledQuery } from 'kysely';
 import oracledb, { type ExecuteOptions, type PoolAttributes } from 'oracledb';
 
@@ -261,16 +262,12 @@ export class OracleConnection extends AbstractSqlConnection {
         for (const p of routine.params) {
           bindings[p.name as string] = {
             dir: oracledb.BIND_IN,
-            val: Routine.convertInbound(args[p.name as string], p, this.platform),
+            val: this.convertRoutineInbound(args[p.name as string], p),
           };
         }
 
         const result = await oracleConn.execute(block, bindings, { autoCommit: true });
-        return Routine.convertOutbound<T>(
-          (result.outBinds as Dictionary)?.mo_ret,
-          routine.returnCustomType,
-          this.platform,
-        );
+        return this.convertRoutineOutbound<T>((result.outBinds as Dictionary)?.mo_ret, routine.returnCustomType);
       }
 
       const argList = routine.params.map(p => `:${p.name}`).join(', ');
@@ -279,7 +276,7 @@ export class OracleConnection extends AbstractSqlConnection {
       const refCursorParams: string[] = [];
 
       for (const p of routine.params) {
-        const value = Routine.convertInbound(args[p.name as string], p, this.platform);
+        const value = this.convertRoutineInbound(args[p.name as string], p);
         const isRefCursor = typeof p.type === 'string' && /sys_refcursor|ref\s*cursor/i.test(p.type);
 
         if (p.direction === 'in') {
@@ -337,7 +334,7 @@ export class OracleConnection extends AbstractSqlConnection {
           const ref = args[p.name as string];
 
           if (ref instanceof ScalarReference) {
-            ref.set(Routine.convertOutbound(outBinds[p.name as string], p.customType, this.platform));
+            ref.set(this.convertRoutineOutbound(outBinds[p.name as string], p.customType));
           }
         }
       }

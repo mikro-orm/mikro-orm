@@ -134,30 +134,6 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
       const plain = await orm.em.callRoutine(HashUser, { name: 'jon', salt: 'pepper' });
       expect(plain).toBe('jon::pepper');
     });
-
-    it('short-circuits when the inbound value is null/undefined', () => {
-      const platform = orm2.em.getPlatform();
-      expect(Routine.convertInbound(null, Echo.params[0], platform)).toBeNull();
-      expect(Routine.convertInbound(undefined, Echo.params[0], platform)).toBeNull();
-    });
-
-    it('unwraps a ScalarReference and applies customType conversion on the unwrapped value', () => {
-      const platform = orm2.em.getPlatform();
-      const ref = new ScalarReference<string>('jon');
-      expect(Routine.convertInbound(ref, Echo.params[0], platform)).toBe('JON');
-    });
-
-    it('skips customType conversion when the param has none (or is undefined)', () => {
-      const platform = orm2.em.getPlatform();
-      expect(Routine.convertInbound('jon', undefined, platform)).toBe('jon');
-    });
-
-    it('short-circuits when there is no customType on the outbound side', () => {
-      const platform = orm2.em.getPlatform();
-      expect(Routine.convertOutbound('raw', undefined, platform)).toBe('raw');
-      expect(Routine.convertOutbound(null, new UpperCaseType(), platform)).toBeNull();
-      expect(Routine.convertOutbound(undefined, new UpperCaseType(), platform)).toBeUndefined();
-    });
   });
 
   it('procedures throw a clear "not supported on SQLite" error', async () => {

@@ -6,7 +6,7 @@ import {
   Utils,
 } from '@mikro-orm/sql';
 import { type ControlledTransaction, MssqlDialect } from 'kysely';
-import { type Dictionary, Routine, ScalarReference, type Transaction } from '@mikro-orm/core';
+import { type Dictionary, type Routine, ScalarReference, type Transaction } from '@mikro-orm/core';
 import type { ConnectionConfiguration } from 'tedious';
 import * as Tedious from 'tedious';
 import * as Tarn from 'tarn';
@@ -80,14 +80,14 @@ export class MsSqlConnection extends AbstractSqlConnection {
 
     if (routine.type === 'function') {
       const placeholders = routine.params.map(() => '?').join(', ');
-      const positional = routine.params.map(p => Routine.convertInbound(args[p.name as string], p, this.platform));
+      const positional = routine.params.map(p => this.convertRoutineInbound(args[p.name as string], p));
       const rows = (await this.execute(
         `select ${qualified}(${placeholders}) as value`,
         positional,
         'all',
         ctx,
       )) as Dictionary[];
-      return Routine.convertOutbound<T>(rows[0]?.value, routine.returnCustomType, this.platform);
+      return this.convertRoutineOutbound<T>(rows[0]?.value, routine.returnCustomType);
     }
 
     // T-SQL session variables don't persist across execute() calls (different pool connections),
@@ -102,7 +102,7 @@ export class MsSqlConnection extends AbstractSqlConnection {
     routine.params.forEach((p, i) => {
       if (p.direction === 'in') {
         callArgs.push('?');
-        inValues.push(Routine.convertInbound(args[p.name as string], p, this.platform));
+        inValues.push(this.convertRoutineInbound(args[p.name as string], p));
         return;
       }
 
@@ -115,7 +115,7 @@ export class MsSqlConnection extends AbstractSqlConnection {
 
       if (p.direction === 'inout') {
         setLines.push(`set ${varName} = ?`);
-        setValues.push(Routine.convertInbound(args[p.name as string], p, this.platform));
+        setValues.push(this.convertRoutineInbound(args[p.name as string], p));
       }
 
       callArgs.push(`${varName} output`);
@@ -142,7 +142,7 @@ export class MsSqlConnection extends AbstractSqlConnection {
       const ref = args[paramName];
 
       if (ref instanceof ScalarReference) {
-        ref.set(Routine.convertOutbound(row[paramName], param.customType, this.platform));
+        ref.set(this.convertRoutineOutbound(row[paramName], param.customType));
       }
     }
 

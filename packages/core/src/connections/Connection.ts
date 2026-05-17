@@ -2,9 +2,18 @@ import { type Configuration, type ConnectionOptions } from '../utils/Configurati
 import { Utils } from '../utils/Utils.js';
 import type { LogContext, Logger } from '../logging/Logger.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
-import type { ConnectionType, Dictionary, ISchemaGenerator, MaybePromise, Primary } from '../typings.js';
+import type {
+  ConnectionType,
+  Dictionary,
+  ISchemaGenerator,
+  MaybePromise,
+  Primary,
+  RoutineProperty,
+} from '../typings.js';
 import type { Routine } from '../metadata/Routine.js';
 import type { Platform } from '../platforms/Platform.js';
+import type { Type } from '../types/Type.js';
+import { ScalarReference } from '../entity/Reference.js';
 import type { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster.js';
 import type { IsolationLevel } from '../enums.js';
 
@@ -163,6 +172,39 @@ export abstract class Connection {
   /** @internal — public callers go through {@link EntityManager.callRoutine}. */
   async callRoutine<T>(routine: Routine, args: Record<string, unknown>, ctx?: Transaction): Promise<T> {
     throw new Error(`Stored routines are not supported by the current driver`);
+  }
+
+  /**
+   * Unwraps a routine argument (resolving any `ScalarReference` wrapper) and, when the param
+   * declares a `customType`, marshals it through `convertToDatabaseValue`. `undefined` is
+   * normalised to `null` so every driver sees the same shape.
+   *
+   * @internal
+   */
+  protected convertRoutineInbound(value: unknown, param: RoutineProperty | undefined): unknown {
+    const resolved = value instanceof ScalarReference ? value.unwrap() : value;
+    const coerced = resolved === undefined ? null : resolved;
+
+    if (coerced === null || !param?.customType) {
+      return coerced;
+    }
+
+    return param.customType.convertToDatabaseValue(coerced, this.platform);
+  }
+
+  /**
+   * Converts a raw database value to its JS representation via the supplied `customType`, when
+   * one is declared. Used to marshal scalar function returns and OUT/INOUT values back to the
+   * caller before they land in a `ScalarReference` or `em.callRoutine`'s return value.
+   *
+   * @internal
+   */
+  protected convertRoutineOutbound<T>(value: unknown, customType: Type<unknown> | undefined): T {
+    if (value === null || value === undefined || !customType) {
+      return value as T;
+    }
+
+    return customType.convertToJSValue(value, this.platform) as T;
   }
 
   /** Parses and returns the resolved connection configuration (host, port, user, etc.). */
