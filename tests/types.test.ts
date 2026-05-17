@@ -24,7 +24,7 @@ import type {
   RoutineArgs,
   Dictionary,
 } from '@mikro-orm/core';
-import { Routine, ScalarReference } from '@mikro-orm/core';
+import { JsonType, Routine, ScalarReference, StringType, UuidType } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
 import type { ObjectId } from 'bson';
@@ -1549,5 +1549,33 @@ describe('check typings', () => {
     assert<IsExact<Args['p_ref'], ScalarReference<string>>>(true);
     assert<IsExact<Args['p_decimal'], string>>(true);
     assert<IsExact<Args['p_override'], string>>(true);
+  });
+
+  test('Routine param types are inferred from a Type class or instance passed as `type`', async () => {
+    const TypeInferred = new Routine({
+      name: 'type_inferred',
+      type: 'procedure',
+      params: {
+        p_name: { type: StringType },
+        p_uuid: { type: UuidType },
+        p_payload: { type: JsonType },
+        p_payload_instance: { type: new JsonType() },
+        p_nullable_name: { type: StringType, nullable: true },
+        p_out_uuid: { type: UuidType, direction: 'out', ref: true },
+        // Explicit `runtimeType` still wins over the Type-inferred TS type.
+        p_override: { type: StringType, runtimeType: 'number' },
+      },
+      body: '...',
+    });
+
+    type Args = RoutineArgs<typeof TypeInferred>;
+    assert<IsExact<Args['p_name'], string>>(true);
+    assert<IsExact<Args['p_uuid'], string>>(true);
+    // JsonType extends Type<unknown>; we surface the JSType verbatim so users can refine via Routine.create.
+    assert<IsExact<Args['p_payload'], unknown>>(true);
+    assert<IsExact<Args['p_payload_instance'], unknown>>(true);
+    assert<IsExact<Args['p_nullable_name'], string | null>>(true);
+    assert<IsExact<Args['p_out_uuid'], ScalarReference<string>>>(true);
+    assert<IsExact<Args['p_override'], number>>(true);
   });
 });

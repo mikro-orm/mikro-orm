@@ -1206,7 +1206,8 @@ export interface RoutineDef<T = any> {
 
 export interface RoutineProperty<Owner = any> {
   name: EntityKey<Owner>;
-  type: keyof typeof types | AnyString;
+  /** SQL string, or a `Type` instance (resolved to the dialect column type at schema-gen time via `getColumnType`). */
+  type: keyof typeof types | AnyString | Type<unknown>;
   runtimeType: EntityProperty['runtimeType'];
   /** Singleton array to align with EntityProperty's `columnTypes`/Type API surface. */
   columnTypes: string[];
@@ -1242,7 +1243,7 @@ export function resolveRoutineCustomType(
 
 export interface RoutineParamConfig {
   runtimeType?: RoutineRuntimeType;
-  type?: keyof typeof types | AnyString;
+  type?: keyof typeof types | AnyString | Type<any> | Constructor<Type<any>>;
   direction?: RoutineParamDirection;
   ref?: boolean;
   length?: number;
@@ -1370,25 +1371,40 @@ export type SqlTypeToTs<S> = S extends string
                         : any
   : any;
 
+/** Strips `null | undefined` from a `Type<JSType, _>` JSType, so e.g. `StringType extends Type<string | null | undefined>` resolves to `string`. */
+type TypeJsType<T> =
+  T extends Type<infer J, any>
+    ? Exclude<J, null | undefined>
+    : T extends new (...args: any[]) => Type<infer J, any>
+      ? Exclude<J, null | undefined>
+      : never;
+
 /**
- * TS value type for a single routine parameter. `runtimeType` wins when present (explicit user
- * intent); otherwise the SQL `type` string is mapped via {@link SqlTypeToTs}. `ref: true` wraps
- * the result in `ScalarReference`; `nullable: true` adds `| null`. Params with neither
- * `runtimeType` nor a recognised `type` string fall through to `any` so callers still get
- * autocomplete on parameter names without being forced to annotate.
+ * TS value type for a single routine parameter. Resolution order:
+ *
+ * 1. explicit `runtimeType`
+ * 2. `type` set to a {@link Type} class or instance — JSType is extracted from the Type generic
+ * 3. `type` set to a SQL string — mapped via {@link SqlTypeToTs}
+ * 4. fallback `any`
+ *
+ * `ref: true` wraps the result in `ScalarReference`; `nullable: true` adds `| null`.
  */
 export type RoutineParamValue<P> = P extends { runtimeType: infer R }
   ? P extends { ref: true }
     ? ScalarReference<Nullify<P, RoutineRuntimeOf<R>>>
     : Nullify<P, RoutineRuntimeOf<R>>
   : P extends { type: infer T }
-    ? T extends string
-      ? P extends { ref: true }
-        ? ScalarReference<Nullify<P, SqlTypeToTs<T>>>
-        : Nullify<P, SqlTypeToTs<T>>
+    ? [TypeJsType<T>] extends [never]
+      ? T extends string
+        ? P extends { ref: true }
+          ? ScalarReference<Nullify<P, SqlTypeToTs<T>>>
+          : Nullify<P, SqlTypeToTs<T>>
+        : P extends { ref: true }
+          ? ScalarReference<any>
+          : any
       : P extends { ref: true }
-        ? ScalarReference<any>
-        : any
+        ? ScalarReference<Nullify<P, TypeJsType<T>>>
+        : Nullify<P, TypeJsType<T>>
     : P extends { ref: true }
       ? ScalarReference<any>
       : any;

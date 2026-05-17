@@ -6,6 +6,7 @@ import {
   type EntityProperty,
   type Routine,
   type Transaction,
+  type Type,
   isRaw,
 } from '@mikro-orm/core';
 import { DatabaseTable } from './DatabaseTable.js';
@@ -429,7 +430,7 @@ export class DatabaseSchema {
         ignoreSchemaChanges: routine.ignoreSchemaChanges,
         params: routine.params.map(p => ({
           name: p.name as string,
-          type: DatabaseSchema.resolveRoutineColumnType(p.type as string, platform),
+          type: DatabaseSchema.resolveRoutineColumnType(p.type, platform),
           direction: helper.normaliseRoutineParamDirection(p.direction),
           nullable: p.nullable,
           defaultRaw: p.defaultRaw,
@@ -440,11 +441,18 @@ export class DatabaseSchema {
   }
 
   /**
-   * Maps `'string'`/`'number'`/… aliases through the platform's type system; literal SQL types pass through.
+   * Maps a routine param's declared `type` to a dialect-specific SQL column type. A `Type`
+   * instance (when the user passed a `Type` class/instance at `type`) routes through
+   * `Type.getColumnType` so its dialect-aware mapping wins. String aliases (`'string'`,
+   * `'number'`, …) go through the platform's type registry; literal SQL types pass through.
    *
    * @internal
    */
-  static resolveRoutineColumnType(type: string, platform: AbstractSqlPlatform): string {
+  static resolveRoutineColumnType(type: string | Type<unknown>, platform: AbstractSqlPlatform): string {
+    if (typeof type !== 'string') {
+      return type.getColumnType({ columnTypes: [], runtimeType: 'any' } as any, platform);
+    }
+
     const lower = type.toLowerCase();
     const aliases: Record<string, string> = {
       string: 'string',

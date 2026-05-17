@@ -1,4 +1,4 @@
-import { MetadataValidator, Routine } from '@mikro-orm/core';
+import { JsonType, MetadataValidator, Routine, StringType, type Type } from '@mikro-orm/core';
 
 describe('stored routines — Routine + validator', () => {
   it('Routine populates declared params in declaration order', () => {
@@ -143,5 +143,46 @@ describe('stored routines — Routine + validator', () => {
 
     const validator = new MetadataValidator();
     expect(() => validator.validateRoutineDefinition(routine)).toThrow(/has invalid direction 'sideways'/);
+  });
+
+  it('Routine accepts a Type class as `type` and wires it as the customType', () => {
+    const r = new Routine({
+      name: 'with_type_class',
+      type: 'function',
+      params: { p_payload: { type: JsonType } },
+      returns: { runtimeType: 'string', columnType: 'text' },
+      body: 'select 1',
+    });
+
+    expect(r.params[0].customType).toBeInstanceOf(JsonType);
+    expect(r.params[0].type).toBeInstanceOf(JsonType);
+  });
+
+  it('Routine accepts a Type instance as `type` and reuses it for customType', () => {
+    const stringType = new StringType();
+    const r = new Routine({
+      name: 'with_type_instance',
+      type: 'function',
+      params: { p_name: { type: stringType } },
+      returns: { runtimeType: 'string', columnType: 'text' },
+      body: 'select p_name',
+    });
+
+    expect(r.params[0].customType).toBe(stringType);
+    expect(r.params[0].type).toBe(stringType);
+  });
+
+  it('an explicit customType wins over the Type at `type` for marshalling', () => {
+    class OtherType extends StringType {}
+    const r = new Routine({
+      name: 'explicit_custom_wins',
+      type: 'function',
+      params: { p_payload: { type: JsonType, customType: OtherType as unknown as new () => Type<unknown> } },
+      returns: { runtimeType: 'string', columnType: 'text' },
+      body: 'select 1',
+    });
+
+    expect(r.params[0].customType).toBeInstanceOf(OtherType);
+    expect(r.params[0].type).toBeInstanceOf(JsonType);
   });
 });

@@ -53,7 +53,9 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     }
 
     // Refcursor OUT params come back as server-generated cursor names to FETCH from later.
-    const refcursorParams = routine.params.filter(p => p.direction !== 'in' && /^refcursor$/i.test(p.type));
+    const refcursorParams = routine.params.filter(
+      p => p.direction !== 'in' && typeof p.type === 'string' && /^refcursor$/i.test(p.type),
+    );
 
     // Refcursors are transaction-scoped — fail fast instead of opening cursors we can't read.
     if (refcursorParams.length > 0 && !ctx) {

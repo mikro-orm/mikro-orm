@@ -280,7 +280,7 @@ export class OracleConnection extends AbstractSqlConnection {
 
       for (const p of routine.params) {
         const value = Routine.convertInbound(args[p.name as string], p, this.platform);
-        const isRefCursor = /sys_refcursor|ref\s*cursor/i.test(p.type);
+        const isRefCursor = typeof p.type === 'string' && /sys_refcursor|ref\s*cursor/i.test(p.type);
 
         if (p.direction === 'in') {
           bindings[p.name as string] = { dir: oracledb.BIND_IN, val: value };
