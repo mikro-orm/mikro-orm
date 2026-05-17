@@ -171,4 +171,17 @@ describe('stored routines — Routine + validator', () => {
     expect(r.params[0].customType).toBe(stringType);
     expect(r.params[0].type).toBe(stringType);
   });
+
+  it('returns: { runtimeType, columnType, customType } wires returnCustomType (legacy split form)', () => {
+    const stringType = new StringType();
+    const r = new Routine({
+      name: 'with_custom_return',
+      type: 'function',
+      params: { p_name: { type: 'varchar(255)' } },
+      returns: { runtimeType: 'string', columnType: 'text', customType: stringType },
+      body: 'select p_name',
+    });
+
+    expect(r.returnCustomType).toBe(stringType);
+  });
 });

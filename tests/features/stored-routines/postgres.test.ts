@@ -61,12 +61,13 @@ const NoArgPi = new Routine({
 // A Type class at `type` drives marshalling, runtime type, and column type — IN params go
 // through `convertToDatabaseValue` before binding; the scalar function return goes through
 // `convertToJSValue` before being returned to the caller.
+// Constructor at param.type, Type instance at returns.type — covers both resolution branches.
 const TaggedEcho = new Routine({
   name: 'tagged_echo',
   type: 'function',
   language: 'sql',
   params: { input: { type: TaggedStringType } },
-  returns: { type: TaggedStringType },
+  returns: { type: new TaggedStringType() },
   body: 'select input',
 });
 

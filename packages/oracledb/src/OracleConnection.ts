@@ -16,28 +16,22 @@ import {
 import type { Routine } from '@mikro-orm/core';
 import { CompiledQuery } from 'kysely';
 import oracledb, { type ExecuteOptions, type PoolAttributes } from 'oracledb';
+import type { OraclePlatform } from './OraclePlatform.js';
 
-/** Maps a routine's declared runtime type to an oracledb bind descriptor; falls back to STRING/4000 when the runtime type is unset. */
-function oracleBindTypeFromRuntime(runtime: string | undefined): Dictionary {
-  if (runtime === 'number' || runtime === 'bigint') {
-    return { type: oracledb.NUMBER };
-  }
-
-  if (runtime === 'Date') {
-    return { type: oracledb.DATE };
-  }
-
-  if (runtime === 'Buffer') {
-    return { type: oracledb.BUFFER, maxSize: 4000 };
-  }
-
-  return { type: oracledb.STRING, maxSize: 4000 };
+/**
+ * Maps a routine's declared runtime type to an oracledb bind descriptor. Delegates the
+ * runtime → DB_TYPE mapping to `OraclePlatform.mapToOracleType`; only the VARCHAR/RAW out-binds
+ * need an extra `maxSize` hint.
+ */
+function oracleBindTypeFromRuntime(platform: OraclePlatform, runtime: string | undefined): Dictionary {
+  const type = platform.mapToOracleType(runtime ?? 'string');
+  return type === oracledb.DB_TYPE_VARCHAR || type === oracledb.DB_TYPE_RAW ? { type, maxSize: 4000 } : { type };
 }
 
-function oracleReturnBind(routine: Routine): Dictionary {
+function oracleReturnBind(platform: OraclePlatform, routine: Routine): Dictionary {
   const returns = routine.returns;
   const runtime = returns && typeof returns === 'object' && 'runtimeType' in returns ? returns.runtimeType : undefined;
-  return { dir: oracledb.BIND_OUT, ...oracleBindTypeFromRuntime(runtime) };
+  return { dir: oracledb.BIND_OUT, ...oracleBindTypeFromRuntime(platform, runtime) };
 }
 
 /** Read-only functions can run on a separate Oracle connection inside an EM transaction — write-ish routines would silently auto-commit. */
@@ -247,6 +241,8 @@ export class OracleConnection extends AbstractSqlConnection {
     const name = routine.name.toUpperCase();
     // Cross-schema needs an `OWNER.NAME` prefix; mirror the schema helper's quoting on both branches.
     const quotedName = this.platform.quoteIdentifier(name);
+    /* v8 ignore next 3 — cross-schema invocation isn't reachable from the single-user test DB;
+       the qualified DDL path (createRoutine/dropRoutine) is covered by helpers.test.ts. */
     const qualifiedName = routine.schema
       ? `${this.platform.quoteIdentifier(routine.schema.toUpperCase())}.${quotedName}`
       : quotedName;
@@ -256,7 +252,7 @@ export class OracleConnection extends AbstractSqlConnection {
       if (routine.type === 'function') {
         const argList = routine.params.map(p => `:${p.name}`).join(', ');
         const block = `BEGIN :mo_ret := ${qualifiedName}(${argList}); END;`;
-        const bindings: Dictionary = { mo_ret: oracleReturnBind(routine) };
+        const bindings: Dictionary = { mo_ret: oracleReturnBind(this.platform as OraclePlatform, routine) };
 
         for (const p of routine.params) {
           bindings[p.name as string] = {
@@ -291,7 +287,7 @@ export class OracleConnection extends AbstractSqlConnection {
 
         const binding: Dictionary = {
           dir: p.direction === 'out' ? oracledb.BIND_OUT : oracledb.BIND_INOUT,
-          ...oracleBindTypeFromRuntime(p.runtimeType),
+          ...oracleBindTypeFromRuntime(this.platform as OraclePlatform, p.runtimeType),
         };
 
         if (p.direction === 'inout') {

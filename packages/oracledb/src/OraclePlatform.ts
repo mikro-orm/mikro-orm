@@ -26,6 +26,7 @@ import { OracleSchemaGenerator } from './OracleSchemaGenerator.js';
 const ORACLE_TYPE_MAP: Record<string, unknown> = {
   string: oracledb.DB_TYPE_VARCHAR,
   number: oracledb.DB_TYPE_NUMBER,
+  bigint: oracledb.DB_TYPE_NUMBER,
   Date: oracledb.DB_TYPE_DATE,
   boolean: oracledb.DB_TYPE_BOOLEAN,
   buffer: oracledb.DB_TYPE_RAW,
