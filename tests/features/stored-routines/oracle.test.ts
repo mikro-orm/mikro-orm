@@ -168,7 +168,7 @@ describe('stored routines — Oracle', () => {
       });
 
       const orm2 = await MikroORM.init({
-        dbName: 'mikro_orm_test_sg',
+        dbName: 'mikro_orm_test_routines',
         password: 'oracle123',
         schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
         entities: [RecordEntity],
