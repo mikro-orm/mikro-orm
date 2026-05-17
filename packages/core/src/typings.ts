@@ -1369,7 +1369,7 @@ export type RoutineArgsOf<Config> = Config extends { params: infer P }
 /**
  * Computes the return type from a {@link RoutineConfig}'s `returns` shape. Used as the default
  * `TReturn` of {@link Routine}; consumers should reach for {@link RoutineReturn}, which honours
- * any explicit `.withTypes<…>()` override.
+ * any explicit override passed to {@link Routine.create}.
  *
  * Resolution order:
  *  - `{ runtimeType }` → corresponding TS scalar (with `| null` when nullable)

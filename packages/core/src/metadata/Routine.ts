@@ -15,17 +15,15 @@ import type { Type } from '../types/Type.js';
 import type { Raw } from '../utils/RawQueryFragment.js';
 
 /**
- * Stored routine declaration. Pass instances of this class via the `routines` config option
- * to register stored procedures or functions.
+ * Stored procedure or function declaration. Register instances via the `routines` config option
+ * passed to `MikroORM.init`, then call them through `em.callRoutine(routine, args)`.
  *
- * `Routine` carries the declaration directly — there is no separate metadata indirection. The
- * instance itself is the identity used at lookup time and the object drivers receive at call
- * time. `TArgs` and `TReturn` are inferred from the literal config, so call sites get full type
- * safety without threading generics through `em.callRoutine(...)`. Use {@link Routine.create}
- * when the inferred type is too loose (e.g. an `object` return that should be a concrete shape
- * rather than `Dictionary`) — it accepts explicit override generics.
+ * `TArgs` and `TReturn` are inferred from the literal config, so `em.callRoutine` is fully typed
+ * without threading generics through the call site. Reach for {@link Routine.create} when the
+ * inferred type is too loose — typically an `object` return that should be a concrete shape
+ * rather than `Dictionary`.
  *
- * @example Inferred types
+ * @example
  * ```ts
  * const HashUser = new Routine({
  *   name: 'hash_user',
@@ -40,11 +38,9 @@ import type { Raw } from '../utils/RawQueryFragment.js';
  *
  * await MikroORM.init({ entities: [User], routines: [HashUser] });
  *
- * // args typed as `{ name: string; salt: string }`, result inferred as `string`:
+ * // args typed as `{ name: string; salt: string }`, result typed as `string`:
  * const hash = await em.callRoutine(HashUser, { name: 'jon', salt: 'pepper' });
  * ```
- *
- * @example Refining the inferred type — see {@link Routine.create}
  */
 export class Routine<
   const TConfig extends RoutineConfig = RoutineConfig,
@@ -111,9 +107,9 @@ export class Routine<
   }
 
   /**
-   * Returns a fresh `{ paramName: paramName }` mapping for body callbacks — body callbacks
-   * receive this as their first argument so they can interpolate parameter names symbolically
-   * without hard-coding them.
+   * Returns a `{ paramName: paramName }` map. Body callbacks receive a similar map as their first
+   * argument so they can reference parameters symbolically (`p.name`) instead of hard-coding the
+   * names; this method is useful when constructing a body literal outside the callback context.
    */
   createParamMappingObject(): Record<string, string> {
     return this.params.reduce<Record<string, string>>((o, p) => {
@@ -123,10 +119,9 @@ export class Routine<
   }
 
   /**
-   * Constructs a routine and lets the caller override the inferred argument and/or return
-   * types. Pure compile-time override — runtime behaviour is identical to `new Routine(config)`.
-   * Use when {@link RoutineArgsOf} / {@link RoutineReturnOf} infer too loose a type (e.g. an
-   * `object` return that should be a concrete shape, or `runtimeType` is left unset on params).
+   * Declares a routine with an explicit argument and/or return type override. Use this when the
+   * inferred types are too loose — typically `runtimeType: 'object'` returns that should be a
+   * concrete shape rather than `Dictionary`, or `params` whose `runtimeType` is left unset.
    *
    * Omit a generic to fall back to inference; pass `never` in the args slot to refine only the
    * return type. The order is `<TArgs, TReturn>`, matching the order on the class itself.
