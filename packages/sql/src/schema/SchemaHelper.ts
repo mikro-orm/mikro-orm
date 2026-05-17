@@ -9,9 +9,23 @@ import {
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
-import type { CheckDef, Column, ForeignKey, IndexDef, Table, TableDifference, SqlTriggerDef } from '../typings.js';
+import type {
+  CheckDef,
+  Column,
+  ForeignKey,
+  IndexDef,
+  Table,
+  TableDifference,
+  SqlTriggerDef,
+  SqlRoutineDef,
+} from '../typings.js';
 import type { DatabaseSchema } from './DatabaseSchema.js';
 import type { DatabaseTable } from './DatabaseTable.js';
+
+/** Flattens `;\n` boundaries so the schema-generator's statement splitter doesn't break the routine DDL apart. Other whitespace is preserved. */
+export function stripStatementNewlines(body: string): string {
+  return body.replace(/;[\t ]*\r?\n/g, '; ');
+}
 
 /** Base class for database-specific schema helpers. Provides SQL generation for DDL operations. */
 export abstract class SchemaHelper {
@@ -1086,6 +1100,61 @@ export abstract class SchemaHelper {
     }
 
     return `drop trigger if exists ${this.quote(trigger.name)}`;
+  }
+
+  /** Default no-op so SQLite/libSQL silent-skip routine DDL; routine-capable dialects override. */
+  createRoutine(_routine: SqlRoutineDef): string {
+    return '';
+  }
+
+  dropRoutine(_routine: SqlRoutineDef): string {
+    return '';
+  }
+
+  async getAllRoutines(_connection: AbstractSqlConnection, _schemas: string[] = []): Promise<SqlRoutineDef[]> {
+    return [];
+  }
+
+  /** Wraps the body in `BEGIN ... END` if not already, and flattens internal `;\n` so the schema-generator's statement splitter doesn't tear the DDL. */
+  protected wrapRoutineBody(body: string): string {
+    const trimmed = stripStatementNewlines(body).trim();
+
+    if (/^begin\b/i.test(trimmed)) {
+      return trimmed;
+    }
+
+    const withSemi = /;\s*$/.test(trimmed) ? trimmed : `${trimmed};`;
+    return `begin ${withSemi} end`;
+  }
+
+  protected stripRoutineBody(body: string): string {
+    const match = /^\s*begin\s+([\s\S]*?)\s*end\s*;?\s*$/i.exec(body.trim());
+
+    if (match) {
+      return match[1].trim().replace(/;\s*$/, '');
+    }
+
+    return body.trim();
+  }
+
+  /** T-SQL requires `@name` inside the body; PG/MySQL/Oracle use the bare name. */
+  routineParamReference(name: string): string {
+    return name;
+  }
+
+  /** T-SQL doesn't distinguish `OUT` from `INOUT` in the catalog — overrides fold `'out'` into `'inout'`. */
+  normaliseRoutineParamDirection(direction: 'in' | 'out' | 'inout'): 'in' | 'out' | 'inout' {
+    return direction;
+  }
+
+  protected qualifiedRoutineName(routine: SqlRoutineDef): string {
+    const defaultSchema = this.platform.getDefaultSchemaName();
+
+    if (routine.schema && routine.schema !== defaultSchema) {
+      return `${this.platform.quoteIdentifier(routine.schema)}.${this.platform.quoteIdentifier(routine.name)}`;
+    }
+
+    return this.platform.quoteIdentifier(routine.name);
   }
 
   /** @internal */

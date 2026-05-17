@@ -64,10 +64,13 @@ import type {
   Primary,
   Ref,
   RequiredEntityData,
+  RoutineArgs,
+  RoutineReturn,
   UnboxArray,
   IndexFilterQuery,
   WithUsingOptions,
 } from './typings.js';
+import type { Routine } from './metadata/Routine.js';
 import {
   EventType,
   FlushMode,
@@ -1942,6 +1945,40 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     } as NativeInsertUpdateOptions<Entity>);
 
     return res.affectedRows;
+  }
+
+  /**
+   * Invokes a stored procedure or function declared via the {@link Routine} class. Arg and return
+   * types are inferred from the literal config; use {@link Routine.create} to refine when needed.
+   *
+   * Procedures emitting result sets (MySQL `SELECT`s, PG/Oracle refcursor OUT params) return
+   * `Dictionary[][]`; MSSQL multi-result procs aren't exposed here, use `em.getConnection().execute()`.
+   *
+   * Mongo throws. SQLite bridges `bodyJs` functions via better-sqlite3 UDFs (procedures and
+   * function-without-bodyJs throw); libSQL throws unconditionally. Oracle calls run on their own
+   * pool connection with `autoCommit: true`, so wrapping in `em.transactional(...)` throws.
+   *
+   * @example
+   * ```ts
+   * const hash = await em.callRoutine(HashUser, { name: 'jon', salt: 'pepper' });
+   *
+   * const hashRef = new ScalarReference<string>();
+   * await em.callRoutine(AddRecord, { p_name: 'jon', p_age: 30, p_hash: hashRef });
+   *
+   * const TwoCursors = Routine.create<Record<string, never>, unknown[][]>({ ... });
+   * const [users, books] = await em.transactional(em => em.callRoutine(TwoCursors, {}));
+   * ```
+   */
+  async callRoutine<R extends Routine>(routine: R, args: RoutineArgs<R>): Promise<RoutineReturn<R>> {
+    const em = this.getContext(false);
+
+    // Identity by reference so the user-held import survives bundling and tree-shakes unused routines.
+    if (!em.config.hasRoutine(routine)) {
+      throw new Error(`Routine '${routine.name}' is not registered in the 'routines' config option.`);
+    }
+
+    const conn = em.driver.getConnection('write');
+    return conn.callRoutine(routine, args, em.#transactionContext);
   }
 
   /**

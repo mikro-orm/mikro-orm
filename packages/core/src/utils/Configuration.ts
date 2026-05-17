@@ -32,6 +32,8 @@ import { Utils } from '../utils/Utils.js';
 import type { EntityManager } from '../EntityManager.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntitySchema } from '../metadata/EntitySchema.js';
+import { Routine } from '../metadata/Routine.js';
+import { MetadataValidator } from '../metadata/MetadataValidator.js';
 import { MetadataProvider } from '../metadata/MetadataProvider.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import type { EventSubscriber } from '../events/EventSubscriber.js';
@@ -52,6 +54,7 @@ const DEFAULTS = {
   entitiesTs: [],
   extensions: [],
   subscribers: [],
+  routines: [],
   filters: {},
   discovery: {
     warnWhenNoEntities: true,
@@ -178,6 +181,8 @@ export class Configuration<
   readonly #platform!: ReturnType<D['getPlatform']>;
   readonly #cache = new Map<string, any>();
   readonly #extensions = new Map<string, () => unknown>();
+  readonly #routines: Routine[] = [];
+  #routinesNormalised = false;
 
   constructor(options: Partial<Options<any, any, any>>, validate = true) {
     if (options.dynamicImportProvider) {
@@ -235,6 +240,54 @@ export class Configuration<
   /** Returns all configuration options. */
   getAll(): Options<D, EM> {
     return this.#options;
+  }
+
+  /** Validates the `routines` config option on first access and throws on duplicate `(schema, name)` pairs or non-Routine entries. */
+  getRoutines(): readonly Routine[] {
+    this.normaliseRoutines();
+    return this.#routines;
+  }
+
+  hasRoutine(routine: Routine): boolean {
+    this.normaliseRoutines();
+    return this.#routines.includes(routine);
+  }
+
+  private normaliseRoutines(): void {
+    if (this.#routinesNormalised) {
+      return;
+    }
+
+    const validator = new MetadataValidator();
+    const seenKeys = new Set<string>();
+    // Stage in a local array so a mid-loop throw doesn't leave `#routines` partially populated;
+    // a retry after the user fixes the offending entry would otherwise duplicate earlier ones.
+    const collected: Routine[] = [];
+
+    for (const item of this.#options.routines ?? []) {
+      if (!Routine.is(item)) {
+        throw new Error(`'routines' entry is not a stored routine declaration. Use a Routine class instance.`);
+      }
+
+      validator.validateRoutineDefinition(item);
+
+      // Case-fold to match `SchemaComparator.compareRoutines`, which lower-cases the key so
+      // dialect-specific folding (Oracle uppercases, PG lowercases) round-trips; otherwise a
+      // user could register `'Foo'` and `'foo'` here and have the comparator silently collapse them.
+      const key = ((item.schema ? `${item.schema}.` : '') + item.name).toLowerCase();
+
+      if (seenKeys.has(key)) {
+        throw new Error(
+          `Duplicate routine '${key}' declared more than once in the 'routines' config. Routine names must be unique within a schema.`,
+        );
+      }
+
+      seenKeys.add(key);
+      collected.push(item);
+    }
+
+    this.#routines.push(...collected);
+    this.#routinesNormalised = true;
   }
 
   /**
@@ -417,6 +470,11 @@ export class Configuration<
     metadataCache.enabled ??= useCache;
     this.#options.clientUrl ??= this.#platform.getDefaultClientUrl();
     this.#options.implicitTransactions ??= this.#platform.usesImplicitTransactions();
+
+    // Eagerly trigger routine validation so errors surface at init time, not on first call.
+    if (validate) {
+      this.getRoutines();
+    }
 
     if (validate && metadataCache.enabled && !metadataCache.adapter) {
       throw new Error(
@@ -833,6 +891,13 @@ export interface Options<
    * Can be class references or instances.
    */
   subscribers: Iterable<EventSubscriber | Constructor<EventSubscriber>>;
+  /**
+   * Stored procedures and functions, declared as {@link Routine} instances.
+   *
+   * @example
+   * routines: [HashUser, AddRecord]
+   */
+  routines: Iterable<Routine>;
   /**
    * Global entity filters to apply.
    * Filters are applied by default unless explicitly disabled.

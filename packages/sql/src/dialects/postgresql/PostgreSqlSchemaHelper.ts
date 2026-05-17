@@ -8,7 +8,7 @@ import {
   Type,
   Utils,
 } from '@mikro-orm/core';
-import { SchemaHelper } from '../../schema/SchemaHelper.js';
+import { SchemaHelper, stripStatementNewlines } from '../../schema/SchemaHelper.js';
 import type { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
 import type {
   CheckDef,
@@ -19,6 +19,7 @@ import type {
   TableDifference,
   TablePartitioning,
   SqlTriggerDef,
+  SqlRoutineDef,
 } from '../../typings.js';
 import type { DatabaseSchema } from '../../schema/DatabaseSchema.js';
 import type { DatabaseTable } from '../../schema/DatabaseTable.js';
@@ -526,7 +527,6 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       }
     }
 
-    /* v8 ignore next - pg_get_indexdef always returns balanced parentheses */
     return '';
   }
 
@@ -719,6 +719,151 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const triggerName = this.platform.quoteIdentifier(trigger.name);
     const fnName = this.getSchemaQualifiedTriggerFnName(table, trigger);
     return `drop trigger if exists ${triggerName} on ${table.getQuotedName()};\ndrop function if exists ${fnName}()`;
+  }
+
+  override createRoutine(routine: SqlRoutineDef): string {
+    if (routine.expression) {
+      return routine.expression;
+    }
+
+    const qualifiedName = this.qualifiedRoutineName(routine);
+    const params = this.formatRoutineParams(routine);
+    // Default `sql` for functions, `plpgsql` for procedures (block syntax required).
+    const language = (routine.language ?? (routine.type === 'procedure' ? 'plpgsql' : 'sql')).toLowerCase();
+    const security =
+      routine.security === 'definer' ? ' security definer' : routine.security === 'invoker' ? ' security invoker' : '';
+    const determinism =
+      routine.deterministic === true ? ' immutable' : routine.deterministic === false ? ' volatile' : '';
+
+    const flatten = (s: string): string => stripStatementNewlines(s).trim();
+
+    if (routine.type === 'procedure') {
+      const body = language === 'sql' ? flatten(routine.body ?? '') : this.wrapRoutineBody(routine.body ?? '');
+      return `create or replace procedure ${qualifiedName}(${params})${security} language ${language} as $$ ${body} $$`;
+    }
+
+    const returnType = routine.returns?.type ?? 'void';
+    const body = language === 'sql' ? flatten(routine.body ?? '') : this.wrapRoutineBody(routine.body ?? '');
+    return `create or replace function ${qualifiedName}(${params}) returns ${returnType}${security}${determinism} language ${language} as $$ ${body} $$`;
+  }
+
+  override dropRoutine(routine: SqlRoutineDef): string {
+    const qualifiedName = this.qualifiedRoutineName(routine);
+    const argTypes = routine.params.map(p => p.type).join(', ');
+    const kind = routine.type === 'procedure' ? 'procedure' : 'function';
+    return `drop ${kind} if exists ${qualifiedName}(${argTypes})`;
+  }
+
+  override async getAllRoutines(connection: AbstractSqlConnection, schemas: string[] = []): Promise<SqlRoutineDef[]> {
+    const target = (schemas.length > 0 ? schemas : [this.platform.getDefaultSchemaName()]).filter(Boolean) as string[];
+    const schemaList = target.map(s => this.platform.quoteValue(s)).join(', ');
+    const sql = `
+      select
+        n.nspname as schema_name,
+        p.proname as name,
+        case when p.prokind = 'p' then 'procedure' else 'function' end as kind,
+        l.lanname as language,
+        case when p.proisstrict then false else null end as is_strict,
+        case when p.provolatile = 'i' then true when p.provolatile = 'v' then false else null end as deterministic,
+        case when p.prosecdef then 'definer' else 'invoker' end as security,
+        pg_get_functiondef(p.oid) as full_def,
+        pg_get_function_arguments(p.oid) as arg_signature,
+        pg_get_function_result(p.oid) as result_type,
+        d.description as comment
+      from pg_proc p
+      join pg_namespace n on n.oid = p.pronamespace
+      join pg_language l on l.oid = p.prolang
+      left join pg_description d on d.objoid = p.oid and d.classoid = 'pg_proc'::regclass
+      where n.nspname in (${schemaList})
+        and l.lanname not in ('c', 'internal')
+        -- exclude functions owned by extensions (PostGIS et al.)
+        and not exists (
+          select 1 from pg_depend dep
+          where dep.objid = p.oid
+            and dep.classid = 'pg_proc'::regclass
+            and dep.deptype = 'e'
+        )
+        -- exclude trigger-helper functions; they're managed alongside their owning trigger.
+        and p.prorettype <> 'trigger'::regtype
+    `;
+    const rows = await connection.execute<
+      {
+        schema_name: string;
+        name: string;
+        kind: 'procedure' | 'function';
+        language: string;
+        deterministic: boolean | null;
+        security: 'definer' | 'invoker';
+        full_def: string;
+        arg_signature: string;
+        result_type: string;
+        comment: string | null;
+      }[]
+    >(sql);
+
+    return rows.map(row => {
+      const params = this.parseRoutineParams(row.arg_signature);
+      const body = this.extractRoutineBody(row.full_def);
+
+      return {
+        name: row.name,
+        schema: row.schema_name,
+        type: row.kind,
+        language: row.language,
+        comment: row.comment ?? undefined,
+        security: row.security,
+        deterministic: row.deterministic ?? undefined,
+        body,
+        params,
+        returns: row.kind === 'function' && row.result_type ? { type: row.result_type, nullable: true } : undefined,
+      } satisfies SqlRoutineDef;
+    });
+  }
+
+  private formatRoutineParams(routine: SqlRoutineDef): string {
+    return routine.params
+      .map(p => {
+        const dir = p.direction === 'in' ? '' : `${p.direction.toUpperCase()} `;
+        const def = p.defaultRaw ? ` default ${p.defaultRaw}` : '';
+        return `${dir}${this.platform.quoteIdentifier(p.name)} ${p.type}${def}`;
+      })
+      .join(', ');
+  }
+
+  private parseRoutineParams(signature: string): SqlRoutineDef['params'] {
+    if (!signature.trim()) {
+      return [];
+    }
+
+    return signature.split(/,(?![^()]*\))/).map(part => {
+      const trimmed = part.trim();
+      // INOUT before IN/OUT, with required trailing space so identifiers like `input` aren't
+      // mis-parsed as a direction keyword.
+      const match = /^(?:(INOUT|VARIADIC|IN|OUT)\s+)?(?:"((?:[^"]|"")+)"|([\w$]+))\s+(.+?)(?:\s+default\s+.+)?$/i.exec(
+        trimmed,
+      );
+
+      /* v8 ignore next 3: defensive guard for unexpected `pg_get_function_arguments` output shapes */
+      if (!match) {
+        throw new Error(`Could not parse PostgreSQL routine parameter signature: ${JSON.stringify(trimmed)}`);
+      }
+
+      const dirRaw = (match[1] ?? 'in').toLowerCase();
+      const direction = dirRaw === 'inout' ? 'inout' : dirRaw === 'out' ? 'out' : 'in';
+      const name = match[2] != null ? match[2].replaceAll('""', '"') : match[3];
+
+      return {
+        name,
+        type: match[4].trim(),
+        direction,
+      };
+    });
+  }
+
+  /** PG canonicalises `$$` quoting to a tagged form like `$function$ ... $function$`; match the tag-aware form. */
+  private extractRoutineBody(fullDef: string): string {
+    const tagged = /\bAS\s+\$(\w*)\$([\s\S]*?)\$\1\$/i.exec(fullDef);
+    return this.stripRoutineBody(tagged ? tagged[2] : fullDef);
   }
 
   private getSchemaQualifiedTriggerFnName(table: DatabaseTable, trigger: SqlTriggerDef): string {
