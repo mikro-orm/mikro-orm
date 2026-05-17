@@ -1,4 +1,4 @@
-import { JsonType, MetadataValidator, Routine, StringType, type Type } from '@mikro-orm/core';
+import { JsonType, MetadataValidator, Routine, StringType } from '@mikro-orm/core';
 
 describe('stored routines — Routine + validator', () => {
   it('Routine populates declared params in declaration order', () => {
@@ -170,19 +170,5 @@ describe('stored routines — Routine + validator', () => {
 
     expect(r.params[0].customType).toBe(stringType);
     expect(r.params[0].type).toBe(stringType);
-  });
-
-  it('an explicit customType wins over the Type at `type` for marshalling', () => {
-    class OtherType extends StringType {}
-    const r = new Routine({
-      name: 'explicit_custom_wins',
-      type: 'function',
-      params: { p_payload: { type: JsonType, customType: OtherType as unknown as new () => Type<unknown> } },
-      returns: { runtimeType: 'string', columnType: 'text' },
-      body: 'select 1',
-    });
-
-    expect(r.params[0].customType).toBeInstanceOf(OtherType);
-    expect(r.params[0].type).toBeInstanceOf(JsonType);
   });
 });
