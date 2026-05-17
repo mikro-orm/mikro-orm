@@ -13,11 +13,41 @@ import {
   type Transaction,
   Utils,
 } from '@mikro-orm/sql';
+import type { Routine } from '@mikro-orm/core';
 import { CompiledQuery } from 'kysely';
 import oracledb, { type ExecuteOptions, type PoolAttributes } from 'oracledb';
+import type { OraclePlatform } from './OraclePlatform.js';
 
-/** Oracle database connection using the `oracledb` driver. */
+/**
+ * Maps a routine's declared runtime type to an oracledb bind descriptor. Delegates the
+ * runtime → DB_TYPE mapping to `OraclePlatform.mapToOracleType`; only the VARCHAR/RAW out-binds
+ * need an extra `maxSize` hint.
+ */
+function oracleBindTypeFromRuntime(platform: OraclePlatform, runtime: string | undefined): Dictionary {
+  const type = platform.mapToOracleType(runtime ?? 'string');
+  return type === oracledb.DB_TYPE_VARCHAR || type === oracledb.DB_TYPE_RAW ? { type, maxSize: 4000 } : { type };
+}
+
+function oracleReturnBind(platform: OraclePlatform, routine: Routine): Dictionary {
+  const returns = routine.returns;
+  const runtime = returns && typeof returns === 'object' && 'runtimeType' in returns ? returns.runtimeType : undefined;
+  return { dir: oracledb.BIND_OUT, ...oracleBindTypeFromRuntime(platform, runtime) };
+}
+
+/** Read-only functions can run on a separate Oracle connection inside an EM transaction — write-ish routines would silently auto-commit. */
+function isReadOnlyRoutine(routine: Routine): boolean {
+  if (routine.type !== 'function') {
+    return false;
+  }
+
+  return routine.dataAccess === 'no-sql' || routine.dataAccess === 'reads-sql-data';
+}
+
 export class OracleConnection extends AbstractSqlConnection {
+  private oraclePool?: oracledb.Pool;
+  // Resolves `password` callbacks per acquire so `callRoutine` doesn't bypass password rotation.
+  private acquireOracleConnection?: () => Promise<oracledb.Connection>;
+
   override async createKyselyDialect(overrides: PoolAttributes): Promise<OracleDialect> {
     const options = this.mapOptions(overrides);
     const password = options.password as ConnectionConfig['password'];
@@ -38,6 +68,7 @@ export class OracleConnection extends AbstractSqlConnection {
     for (let attempt = 1; ; attempt++) {
       try {
         pool = await oracledb.createPool(poolOptions);
+        this.oraclePool = pool;
         break;
         /* v8 ignore start: transient Oracle pool-creation errors are not reproducible in tests */
       } catch (e: any) {
@@ -72,14 +103,15 @@ export class OracleConnection extends AbstractSqlConnection {
       },
     };
 
-    // When password is a callback, wrap the pool to resolve it per-connection.
-    // oracledb supports per-connection password override via getConnection({ password }).
+    this.acquireOracleConnection =
+      typeof password === 'function'
+        ? async () => pool.getConnection({ password: await password() })
+        : () => pool.getConnection();
+
     const wrappedPool =
       typeof password === 'function'
         ? {
-            async getConnection() {
-              return pool.getConnection({ password: await password() });
-            },
+            getConnection: this.acquireOracleConnection,
             close: (drainTime?: number) => pool.close(drainTime),
           }
         : pool;
@@ -185,6 +217,120 @@ export class OracleConnection extends AbstractSqlConnection {
         this.logQuery(line, { took: Date.now() - now, level: 'error', query: line });
         throw e;
       }
+    }
+  }
+
+  /**
+   * Oracle routines acquire their own pool connection with `autoCommit: true` (refcursor binds
+   * and DML need to resolve in one round-trip), so they cannot share the EM's transaction. Wrapping
+   * a writing routine in `em.transactional(...)` would silently auto-commit its writes. Read-only
+   * functions are allowed through.
+   */
+  override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
+    /* v8 ignore next 3 */
+    if (!this.oraclePool || !this.acquireOracleConnection) {
+      throw new Error('Oracle pool not initialised — call connect() before callRoutine().');
+    }
+
+    if (ctx && !isReadOnlyRoutine(routine)) {
+      throw new Error(
+        `Routine ${routine.name} was invoked inside an EntityManager transaction, but Oracle's callRoutine runs on its own pool connection with autoCommit. Read-only functions are allowed through; for procedures or routines that may write, call em.callRoutine() outside em.transactional(), or mark the routine as 'dataAccess: \\'reads-sql-data\\'' / 'no-sql' if it really is read-only.`,
+      );
+    }
+
+    const name = routine.name.toUpperCase();
+    // Cross-schema needs an `OWNER.NAME` prefix; mirror the schema helper's quoting on both branches.
+    const quotedName = this.platform.quoteIdentifier(name);
+    /* v8 ignore next 3 — cross-schema invocation isn't reachable from the single-user test DB;
+       the qualified DDL path (createRoutine/dropRoutine) is covered by helpers.test.ts. */
+    const qualifiedName = routine.schema
+      ? `${this.platform.quoteIdentifier(routine.schema.toUpperCase())}.${quotedName}`
+      : quotedName;
+    const oracleConn = await this.acquireOracleConnection();
+
+    try {
+      if (routine.type === 'function') {
+        const argList = routine.params.map(p => `:${p.name}`).join(', ');
+        const block = `BEGIN :mo_ret := ${qualifiedName}(${argList}); END;`;
+        const bindings: Dictionary = { mo_ret: oracleReturnBind(this.platform as OraclePlatform, routine) };
+
+        for (const p of routine.params) {
+          bindings[p.name as string] = {
+            dir: oracledb.BIND_IN,
+            val: this.convertRoutineInbound(args[p.name as string], p),
+          };
+        }
+
+        const result = await oracleConn.execute(block, bindings, { autoCommit: true });
+        return this.convertRoutineOutbound<T>((result.outBinds as Dictionary)?.mo_ret, routine.returnCustomType);
+      }
+
+      const argList = routine.params.map(p => `:${p.name}`).join(', ');
+      const block = `BEGIN ${qualifiedName}(${argList}); END;`;
+      const bindings: Dictionary = {};
+      const refCursorParams: string[] = [];
+
+      for (const p of routine.params) {
+        const value = this.convertRoutineInbound(args[p.name as string], p);
+        const isRefCursor = typeof p.type === 'string' && /sys_refcursor|ref\s*cursor/i.test(p.type);
+
+        if (p.direction === 'in') {
+          bindings[p.name as string] = { dir: oracledb.BIND_IN, val: value };
+          continue;
+        }
+
+        if (isRefCursor) {
+          bindings[p.name as string] = { dir: oracledb.BIND_OUT, type: oracledb.DB_TYPE_CURSOR };
+          refCursorParams.push(p.name as string);
+          continue;
+        }
+
+        const binding: Dictionary = {
+          dir: p.direction === 'out' ? oracledb.BIND_OUT : oracledb.BIND_INOUT,
+          ...oracleBindTypeFromRuntime(this.platform as OraclePlatform, p.runtimeType),
+        };
+
+        if (p.direction === 'inout') {
+          binding.val = value;
+        }
+
+        bindings[p.name as string] = binding;
+      }
+
+      const result = await oracleConn.execute(block, bindings, {
+        autoCommit: true,
+        outFormat: oracledb.OUT_FORMAT_OBJECT,
+      });
+      const outBinds = result.outBinds as Dictionary | undefined;
+
+      if (refCursorParams.length > 0 && outBinds) {
+        const sets: Dictionary[][] = [];
+
+        for (const name of refCursorParams) {
+          const cursor = outBinds[name] as Dictionary & {
+            getRows: (n: number) => Promise<Dictionary[]>;
+            close: () => Promise<void>;
+          };
+          const rows = await cursor.getRows(0);
+          await cursor.close();
+          // outBinds ResultSets use raw column metadata (uppercase); lowercase for cross-driver parity.
+          sets.push(rows.map(row => Object.fromEntries(Object.entries(row).map(([k, v]) => [k.toLowerCase(), v]))));
+        }
+
+        return sets as T;
+      }
+
+      if (outBinds) {
+        this.applyRoutineOutParams(
+          outBinds as Dictionary,
+          routine.params.filter(p => p.direction !== 'in'),
+          args,
+        );
+      }
+
+      return undefined as T;
+    } finally {
+      await oracleConn.close();
     }
   }
 

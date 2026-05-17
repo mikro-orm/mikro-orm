@@ -21,7 +21,10 @@ import type {
   EntityManager,
   EntityName,
   RequiredEntityData,
+  RoutineArgs,
+  Dictionary,
 } from '@mikro-orm/core';
+import { JsonType, Routine, ScalarReference, StringType, UuidType } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
 import type { ObjectId } from 'bson';
@@ -1436,6 +1439,169 @@ describe('check typings', () => {
     const em = {} as EntityManager;
     if (false as boolean) {
       await em.findOne(ReproductionSchema, {}, { populate: ['owner'] });
+    }
+  });
+
+  test('Routine call types are inferred from the declaration', async () => {
+    const HashUser = new Routine({
+      name: 'hash_user',
+      type: 'function',
+      params: {
+        name: { type: 'varchar(255)', runtimeType: 'string' },
+        salt: { type: 'varchar(255)', runtimeType: 'string' },
+      },
+      returns: { runtimeType: 'string', columnType: 'char(40)' },
+      body: '...',
+    });
+
+    const AddRecord = new Routine({
+      name: 'add_record',
+      type: 'procedure',
+      params: {
+        p_name: { type: 'varchar(255)', runtimeType: 'string' },
+        p_age: { type: 'int', runtimeType: 'number', nullable: true },
+        p_hash: { type: 'char(40)', runtimeType: 'string', direction: 'inout', ref: true },
+      },
+      body: '...',
+    });
+
+    interface UserStats {
+      totalOrders: number;
+      lastOrderAt: Date;
+    }
+
+    const GetStats = Routine.create<{ user_id: number }, UserStats>({
+      name: 'get_user_stats',
+      type: 'function',
+      params: { user_id: { type: 'int', runtimeType: 'number' } },
+      returns: { runtimeType: 'object', columnType: 'json' },
+      body: '...',
+    });
+
+    const em = {} as EntityManager;
+    if (false as boolean) {
+      // Function return inferred from `returns.runtimeType`.
+      const hash = await em.callRoutine(HashUser, { name: 'jon', salt: 'pepper' });
+      assert<IsExact<typeof hash, string>>(true);
+
+      // @ts-expect-error - `salt` is required (typed as string).
+      await em.callRoutine(HashUser, { name: 'jon' });
+      // @ts-expect-error - `name` must be a string.
+      await em.callRoutine(HashUser, { name: 1, salt: 'pepper' });
+
+      // Procedure: void return, ref-typed INOUT param.
+      const hashRef = new ScalarReference<string>();
+      const procReturn = await em.callRoutine(AddRecord, {
+        p_name: 'jon',
+        p_age: 30,
+        p_hash: hashRef,
+      });
+      assert<IsExact<typeof procReturn, void>>(true);
+
+      // Nullable params accept `null` in addition to the runtime type.
+      await em.callRoutine(AddRecord, { p_name: 'jon', p_age: null, p_hash: hashRef });
+
+      // @ts-expect-error - p_hash must be a `ScalarReference<string>`, not a bare string.
+      await em.callRoutine(AddRecord, { p_name: 'jon', p_age: 30, p_hash: 'literal' });
+
+      // Routine.create override refines the object return into a concrete shape.
+      const stats = await em.callRoutine(GetStats, { user_id: 1 });
+      assert<IsExact<typeof stats, UserStats>>(true);
+    }
+  });
+
+  test('Routine param types are inferred from the SQL `type` string when runtimeType is omitted', async () => {
+    const SqlInferred = new Routine({
+      name: 'sql_inferred',
+      type: 'procedure',
+      params: {
+        p_name: { type: 'varchar(255)' },
+        p_age: { type: 'int' },
+        p_flag: { type: 'boolean' },
+        p_bool: { type: 'bool' },
+        p_mysql_bool: { type: 'tinyint(1)' },
+        p_byte: { type: 'tinyint(4)' },
+        p_when: { type: 'timestamp' },
+        p_blob: { type: 'bytea' },
+        p_payload: { type: 'jsonb' },
+        p_nullable_id: { type: 'int', nullable: true },
+        p_ref: { type: 'char(40)', direction: 'inout', ref: true },
+        // `decimal`/`numeric`/`money` default to `string` (drivers return them as strings to
+        // preserve precision); pass `runtimeType: 'number'` to opt into `number`.
+        p_decimal: { type: 'decimal(10,2)' },
+        // Explicit runtimeType overrides the SQL-inferred type.
+        p_override: { type: 'int', runtimeType: 'string' },
+      },
+      body: '...',
+    });
+
+    type Args = RoutineArgs<typeof SqlInferred>;
+    assert<IsExact<Args['p_name'], string>>(true);
+    assert<IsExact<Args['p_age'], number>>(true);
+    assert<IsExact<Args['p_flag'], boolean>>(true);
+    assert<IsExact<Args['p_bool'], boolean>>(true);
+    assert<IsExact<Args['p_mysql_bool'], boolean>>(true);
+    assert<IsExact<Args['p_byte'], number>>(true);
+    assert<IsExact<Args['p_when'], Date>>(true);
+    assert<IsExact<Args['p_blob'], Buffer>>(true);
+    assert<IsExact<Args['p_payload'], Dictionary>>(true);
+    assert<IsExact<Args['p_nullable_id'], number | null>>(true);
+    assert<IsExact<Args['p_ref'], ScalarReference<string>>>(true);
+    assert<IsExact<Args['p_decimal'], string>>(true);
+    assert<IsExact<Args['p_override'], string>>(true);
+  });
+
+  test('Routine param types are inferred from a Type class or instance passed as `type`', async () => {
+    const TypeInferred = new Routine({
+      name: 'type_inferred',
+      type: 'procedure',
+      params: {
+        p_name: { type: StringType },
+        p_uuid: { type: UuidType },
+        p_payload: { type: JsonType },
+        p_payload_instance: { type: new JsonType() },
+        p_nullable_name: { type: StringType, nullable: true },
+        p_out_uuid: { type: UuidType, direction: 'out', ref: true },
+        // Explicit `runtimeType` still wins over the Type-inferred TS type.
+        p_override: { type: StringType, runtimeType: 'number' },
+      },
+      body: '...',
+    });
+
+    type Args = RoutineArgs<typeof TypeInferred>;
+    assert<IsExact<Args['p_name'], string>>(true);
+    assert<IsExact<Args['p_uuid'], string>>(true);
+    // JsonType extends Type<unknown>; we surface the JSType verbatim so users can refine via Routine.create.
+    assert<IsExact<Args['p_payload'], unknown>>(true);
+    assert<IsExact<Args['p_payload_instance'], unknown>>(true);
+    assert<IsExact<Args['p_nullable_name'], string | null>>(true);
+    assert<IsExact<Args['p_out_uuid'], ScalarReference<string>>>(true);
+    assert<IsExact<Args['p_override'], number>>(true);
+  });
+
+  test('Routine returns: { type: SomeType } infers the return TS type from the Type generic', async () => {
+    const Hash = new Routine({
+      name: 'hash',
+      type: 'function',
+      params: { input: { type: 'varchar(255)' } },
+      returns: { type: StringType },
+      body: '...',
+    });
+
+    const Stringy = new Routine({
+      name: 'stringy',
+      type: 'function',
+      params: {},
+      returns: { type: new UuidType(), nullable: true },
+      body: '...',
+    });
+
+    const em = {} as EntityManager;
+    if (false as boolean) {
+      const h = await em.callRoutine(Hash, { input: 'x' });
+      assert<IsExact<typeof h, string>>(true);
+      const s = await em.callRoutine(Stringy, {});
+      assert<IsExact<typeof s, string | null>>(true);
     }
   });
 });

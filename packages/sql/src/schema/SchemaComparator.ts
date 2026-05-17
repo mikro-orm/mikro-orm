@@ -10,7 +10,15 @@ import {
   parseJsonSafe,
   Utils,
 } from '@mikro-orm/core';
-import type { Column, ForeignKey, IndexDef, SchemaDifference, TableDifference, SqlTriggerDef } from '../typings.js';
+import type {
+  Column,
+  ForeignKey,
+  IndexDef,
+  SchemaDifference,
+  TableDifference,
+  SqlTriggerDef,
+  SqlRoutineDef,
+} from '../typings.js';
 import type { DatabaseSchema } from './DatabaseSchema.js';
 import { DatabaseTable } from './DatabaseTable.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
@@ -46,6 +54,9 @@ export class SchemaComparator {
       newViews: {},
       changedViews: {},
       removedViews: {},
+      newRoutines: {},
+      changedRoutines: {},
+      removedRoutines: {},
       orphanedForeignKeys: [],
       newNativeEnums: [],
       removedNativeEnums: [],
@@ -220,7 +231,187 @@ export class SchemaComparator {
       }
     }
 
+    this.compareRoutines(fromSchema, toSchema, diff);
+
     return diff;
+  }
+
+  private compareRoutines(fromSchema: DatabaseSchema, toSchema: DatabaseSchema, diff: SchemaDifference): void {
+    // Case-fold so user-written `'sql_hash'` matches Oracle's introspected `'SQL_HASH'`.
+    const routineKey = (r: SqlRoutineDef): string => ((r.schema ? `${r.schema}.` : '') + r.name).toLowerCase();
+    const fromByKey = new Map(fromSchema.getRoutines().map(r => [routineKey(r), r]));
+    const toByKey = new Map(toSchema.getRoutines().map(r => [routineKey(r), r]));
+
+    for (const [key, toRoutine] of toByKey) {
+      const fromRoutine = fromByKey.get(key);
+
+      if (!fromRoutine) {
+        diff.newRoutines[key] = toRoutine;
+        this.log(`routine ${key} added`);
+        continue;
+      }
+
+      if (this.diffRoutine(fromRoutine, toRoutine)) {
+        diff.changedRoutines[key] = { from: fromRoutine, to: toRoutine };
+        this.log(`routine ${key} changed`, { fromRoutine, toRoutine });
+      }
+    }
+
+    for (const [key, fromRoutine] of fromByKey) {
+      if (!toByKey.has(key)) {
+        diff.removedRoutines[key] = fromRoutine;
+        this.log(`routine ${key} removed`);
+      }
+    }
+  }
+
+  private diffRoutine(from: SqlRoutineDef, to: SqlRoutineDef): boolean {
+    const ignore = new Set(to.ignoreSchemaChanges ?? []);
+
+    if (from.type !== to.type) {
+      this.log(`routine ${from.name}: type ${from.type} -> ${to.type}`);
+      return true;
+    }
+
+    if (!ignore.has('body') && from.expression == null && to.expression == null) {
+      const a = this.normaliseBody(from.body);
+      const b = this.normaliseBody(to.body);
+      if (a !== b) {
+        this.log(`routine ${from.name}: body differs`, { from: a, to: b });
+        return true;
+      }
+    }
+
+    if (!ignore.has('comment') && (from.comment ?? '') !== (to.comment ?? '')) {
+      return true;
+    }
+
+    // For security/deterministic/definer, unset on the metadata side means "don't care": the
+    // DB always has some server default, comparing it would force a drop+create on every run.
+    if (!ignore.has('security') && to.security != null && from.security !== to.security) {
+      return true;
+    }
+
+    if (
+      !ignore.has('deterministic') &&
+      to.deterministic != null &&
+      (from.deterministic ?? false) !== to.deterministic
+    ) {
+      return true;
+    }
+
+    if (!ignore.has('definer') && to.definer != null && from.definer !== to.definer) {
+      return true;
+    }
+
+    // `language` (PG) / `dataAccess` (MySQL) follow the same to-side-wins policy: only diff when
+    // the metadata explicitly declares them, otherwise the create DDL's defaults will line up with
+    // whatever the engine introspected.
+    if (to.language != null && (from.language ?? '').toLowerCase() !== to.language.toLowerCase()) {
+      this.log(`routine ${from.name}: language ${from.language} -> ${to.language}`);
+      return true;
+    }
+
+    if (to.dataAccess != null && from.dataAccess !== to.dataAccess) {
+      this.log(`routine ${from.name}: dataAccess ${from.dataAccess} -> ${to.dataAccess}`);
+      return true;
+    }
+
+    if (this.diffRoutineParams(from.params, to.params)) {
+      this.log(`routine ${from.name}: params differ`, { from: from.params, to: to.params });
+      return true;
+    }
+
+    if (this.diffRoutineReturns(from.returns, to.returns)) {
+      this.log(`routine ${from.name}: returns differ`, { from: from.returns, to: to.returns });
+      return true;
+    }
+
+    return false;
+  }
+
+  /** Strips outer `BEGIN ... END` and trailing semicolons so the comparator doesn't churn on cosmetic round-trip differences. */
+  private normaliseBody(body?: string): string {
+    let result = (body ?? '').replace(/\s+/g, ' ').trim();
+    const beginEnd = /^begin\s+([\s\S]*?)\s*end\s*;?\s*$/i.exec(result);
+
+    if (beginEnd) {
+      result = beginEnd[1].trim();
+    }
+
+    return result.replace(/;+\s*$/, '').trim();
+  }
+
+  private diffRoutineParams(from: SqlRoutineDef['params'], to: SqlRoutineDef['params']): boolean {
+    if (from.length !== to.length) {
+      return true;
+    }
+
+    for (let i = 0; i < from.length; i++) {
+      const a = from[i];
+      const b = to[i];
+
+      if (
+        a.name.toLowerCase() !== b.name.toLowerCase() ||
+        this.normaliseParamType(a.type) !== this.normaliseParamType(b.type) ||
+        a.direction !== b.direction
+      ) {
+        return true;
+      }
+
+      // Asymmetric: drivers don't currently introspect param nullability, so the from side is
+      // always undefined; comparing eagerly would churn metadata-declared `nullable: true`.
+      if (a.nullable != null && !!a.nullable !== !!b.nullable) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /** Engines drop length/precision modifiers and use different aliases for the same logical type — canonicalise both sides. */
+  private normaliseParamType(type: string): string {
+    const lengthMatch = /^([^()]+)\(([^)]*)\)\s*$/.exec(type);
+    const base = (lengthMatch ? lengthMatch[1] : type).trim().toLowerCase();
+    const aliased = SchemaComparator.PARAM_TYPE_ALIASES[base] ?? base;
+    const length = lengthMatch ? Number.parseInt(lengthMatch[2].split(',')[0].trim(), 10) : NaN;
+    const options = Number.isFinite(length) ? { length } : {};
+    return this.#platform.normalizeColumnType(aliased, options).toLowerCase();
+  }
+
+  private static readonly PARAM_TYPE_ALIASES: Record<string, string> = {
+    int: 'integer',
+    int4: 'integer',
+    int8: 'bigint',
+    int2: 'smallint',
+    bool: 'boolean',
+    'character varying': 'varchar',
+    bpchar: 'char',
+    float8: 'double precision',
+    float4: 'real',
+    // Oracle's USER_ARGUMENTS reports `REF CURSOR`; users declare `sys_refcursor`.
+    'ref cursor': 'sys_refcursor',
+  };
+
+  private diffRoutineReturns(from: SqlRoutineDef['returns'], to: SqlRoutineDef['returns']): boolean {
+    if (from == null && to == null) {
+      return false;
+    }
+
+    if (from == null || to == null) {
+      return true;
+    }
+
+    if (this.normaliseParamType(from.type) !== this.normaliseParamType(to.type)) {
+      return true;
+    }
+
+    // Engines report function returns as nullable; only diff when metadata explicitly declares it.
+    if (to.nullable != null && (from.nullable ?? false) !== to.nullable) {
+      return true;
+    }
+
+    return false;
   }
 
   /**

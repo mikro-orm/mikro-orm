@@ -24,6 +24,7 @@ import { writeFile } from 'node:fs/promises';
 import { DefineEntitySourceFile } from './DefineEntitySourceFile.js';
 import { EntitySchemaSourceFile } from './EntitySchemaSourceFile.js';
 import { NativeEnumSourceFile } from './NativeEnumSourceFile.js';
+import { RoutineSourceFile } from './RoutineSourceFile.js';
 import { SourceFile } from './SourceFile.js';
 
 /** Generates entity source files by introspecting an existing database schema. */
@@ -34,7 +35,7 @@ export class EntityGenerator {
   readonly #helper: SchemaHelper;
   readonly #connection: AbstractSqlConnection;
   readonly #namingStrategy: NamingStrategy;
-  readonly #sources: (SourceFile | NativeEnumSourceFile)[] = [];
+  readonly #sources: (SourceFile | NativeEnumSourceFile | RoutineSourceFile)[] = [];
   readonly #referencedEntities = new WeakSet<EntityMetadata>();
   readonly #em: EntityManager;
 
@@ -63,6 +64,8 @@ export class EntityGenerator {
       options.takeTables,
       options.skipTables,
     );
+    // The generator emits whatever it can find, so always load routines here.
+    await schema.loadRoutines(this.#connection, this.#platform);
     const metadata = await this.getEntityMetadata(schema, options);
     const defaultPath = `${this.#config.get('baseDir')}/generated-entities`;
     const baseDir = fs.normalizePath(options.path ?? defaultPath);
@@ -90,6 +93,10 @@ export class EntityGenerator {
       this.#sources.push(
         new NativeEnumSourceFile({} as any, this.#namingStrategy, this.#platform, options, nativeEnum),
       );
+    }
+
+    for (const routine of schema.getRoutines()) {
+      this.#sources.push(new RoutineSourceFile(routine, this.#namingStrategy, this.#platform, options));
     }
 
     const files = this.#sources.map(file => [file.getBaseName(), file.generate()]);

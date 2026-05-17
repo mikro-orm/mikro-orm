@@ -23,6 +23,8 @@ import { OracleSchemaHelper } from './OracleSchemaHelper.js';
 import { OracleExceptionConverter } from './OracleExceptionConverter.js';
 import { OracleSchemaGenerator } from './OracleSchemaGenerator.js';
 
+// `bigint` deliberately absent — falls through to DB_TYPE_VARCHAR so oracledb returns a
+// string and the caller doesn't lose precision on values past Number.MAX_SAFE_INTEGER.
 const ORACLE_TYPE_MAP: Record<string, unknown> = {
   string: oracledb.DB_TYPE_VARCHAR,
   number: oracledb.DB_TYPE_NUMBER,

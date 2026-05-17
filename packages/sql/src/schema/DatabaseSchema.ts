@@ -1,15 +1,18 @@
 import {
   ReferenceKind,
   type Configuration,
+  type Constructor,
   type Dictionary,
   type EntityMetadata,
   type EntityProperty,
+  type Routine,
   type Transaction,
+  type Type,
   isRaw,
 } from '@mikro-orm/core';
 import { DatabaseTable } from './DatabaseTable.js';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
-import type { DatabaseView } from '../typings.js';
+import type { DatabaseView, SqlRoutineDef } from '../typings.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import { getTablePartitioning } from './partitioning.js';
 
@@ -19,6 +22,7 @@ import { getTablePartitioning } from './partitioning.js';
 export class DatabaseSchema {
   #tables: DatabaseTable[] = [];
   #views: DatabaseView[] = [];
+  #routines: SqlRoutineDef[] = [];
   #namespaces = new Set<string>();
   #nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {}; // for postgres
   readonly #platform: AbstractSqlPlatform;
@@ -101,6 +105,20 @@ export class DatabaseSchema {
     return !!this.getView(name);
   }
 
+  addRoutine(routine: SqlRoutineDef): SqlRoutineDef {
+    this.#routines.push(routine);
+
+    if (routine.schema != null) {
+      this.#namespaces.add(routine.schema);
+    }
+
+    return routine;
+  }
+
+  getRoutines(): SqlRoutineDef[] {
+    return this.#routines;
+  }
+
   setNativeEnums(nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }>): void {
     this.#nativeEnums = nativeEnums;
 
@@ -170,6 +188,15 @@ export class DatabaseSchema {
     }
 
     return schema;
+  }
+
+  /** Separate from `create()` so the comparator only pays for routine introspection when the user actually defined routines. SQLite/libSQL helpers return []. */
+  async loadRoutines(
+    connection: AbstractSqlConnection,
+    platform: AbstractSqlPlatform,
+    schemas: string[] = [],
+  ): Promise<void> {
+    this.#routines = await platform.getSchemaHelper()!.getAllRoutines(connection, schemas);
   }
 
   static fromMetadata(
@@ -346,6 +373,135 @@ export class DatabaseSchema {
     }
 
     return schema;
+  }
+
+  /** Separate from {@link fromMetadata} so the comparator only walks routines when the user defined any. */
+  addRoutinesFromMetadata(routines: readonly Routine[], platform: AbstractSqlPlatform, em?: any): void {
+    const resolveBody = (raw: unknown): string | undefined => {
+      if (raw == null) {
+        return undefined;
+      }
+
+      if (typeof raw === 'string') {
+        return raw;
+      }
+
+      if (isRaw(raw)) {
+        return platform.formatQuery(raw.sql, raw.params);
+      }
+
+      return undefined;
+    };
+
+    const helper = platform.getSchemaHelper()!;
+
+    for (const routine of routines) {
+      const paramMap = routine.params.reduce(
+        (o, p) => {
+          o[p.name as string] = helper.routineParamReference(p.name as string);
+          return o;
+        },
+        {} as Record<string, string>,
+      );
+      const evaluated = typeof routine.body === 'function' ? routine.body(paramMap as any, em) : routine.body;
+      const body = resolveBody(evaluated);
+
+      const returns = DatabaseSchema.normaliseRoutineReturns(routine.returns, platform);
+
+      this.addRoutine({
+        name: routine.name,
+        // MySQL has no schema namespace for routines, so leave undefined to align with the introspection side.
+        schema: routine.schema ?? (platform.getDefaultSchemaName() != null ? this.name : undefined),
+        type: routine.type,
+        language: routine.language,
+        comment: routine.comment,
+        security: routine.security,
+        definer: routine.definer,
+        deterministic: routine.deterministic,
+        dataAccess: routine.dataAccess,
+        body,
+        expression: routine.expression,
+        ignoreSchemaChanges: routine.ignoreSchemaChanges,
+        params: routine.params.map(p => ({
+          name: p.name as string,
+          type: DatabaseSchema.resolveRoutineColumnType(p.type, platform),
+          direction: helper.normaliseRoutineParamDirection(p.direction),
+          nullable: p.nullable,
+          defaultRaw: p.defaultRaw,
+        })),
+        returns,
+      });
+    }
+  }
+
+  /**
+   * Normalises a routine's `returns` config to the `{ type, runtimeType, nullable }` shape the
+   * DDL side and introspection-comparator both consume. Supports both `{ type: SomeType }`
+   * (Type drives column + runtime types) and `{ runtimeType, columnType, ... }` (explicit).
+   *
+   * @internal
+   */
+  static normaliseRoutineReturns(
+    returns: Routine['returns'],
+    platform: AbstractSqlPlatform,
+  ): { type: string; runtimeType: string; nullable?: boolean } | undefined {
+    if (!returns || typeof returns !== 'object') {
+      return undefined;
+    }
+
+    if ('runtimeType' in returns) {
+      return {
+        type: (returns.columnType ?? returns.runtimeType) as string,
+        runtimeType: returns.runtimeType,
+        nullable: returns.nullable,
+      };
+    }
+
+    if ('type' in returns && returns.type) {
+      const instance =
+        typeof returns.type === 'function' ? new (returns.type as Constructor<Type<unknown>>)() : returns.type;
+
+      return {
+        type: DatabaseSchema.resolveRoutineColumnType(instance, platform),
+        runtimeType: instance.runtimeType,
+        nullable: returns.nullable,
+      };
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Maps a routine param's declared `type` to a dialect-specific SQL column type. A `Type`
+   * instance (when the user passed a `Type` class/instance at `type`) routes through
+   * `Type.getColumnType` so its dialect-aware mapping wins. String aliases (`'string'`,
+   * `'number'`, …) go through the platform's type registry; literal SQL types pass through.
+   *
+   * @internal
+   */
+  static resolveRoutineColumnType(type: string | Type<unknown>, platform: AbstractSqlPlatform): string {
+    if (typeof type !== 'string') {
+      return type.getColumnType({ columnTypes: [], runtimeType: 'any' } as any, platform);
+    }
+
+    const lower = type.toLowerCase();
+    const aliases: Record<string, string> = {
+      string: 'string',
+      number: 'integer',
+      bigint: 'bigint',
+      boolean: 'boolean',
+      date: 'datetime',
+      buffer: 'blob',
+    };
+
+    const mappedKey = aliases[lower];
+
+    if (!mappedKey) {
+      return type;
+    }
+
+    const t = platform.getMappedType(mappedKey);
+    return t.getColumnType({ type: mappedKey, length: undefined } as any, platform);
   }
 
   private static getViewDefinition(meta: EntityMetadata, em: any, platform: AbstractSqlPlatform): string | undefined {

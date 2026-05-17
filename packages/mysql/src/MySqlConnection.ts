@@ -1,5 +1,6 @@
 import { type ControlledTransaction, type MysqlPool, type MysqlPoolConnection, MysqlDialect } from 'kysely';
 import { createPool, type Pool, type PoolOptions } from 'mysql2';
+import { type Routine, type Transaction } from '@mikro-orm/core';
 import {
   type ConnectionConfig,
   type Dictionary,
@@ -87,6 +88,77 @@ export class MySqlConnection extends AbstractSqlConnection {
     ret.dateStrings = true;
 
     return Utils.mergeConfig(ret, overrides);
+  }
+
+  override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
+    if (routine.type === 'function') {
+      return this.callRoutineFunction(routine, args, ctx);
+    }
+
+    const name = this.platform.quoteIdentifier(routine.name);
+
+    const callPlaceholders: string[] = [];
+    const callValues: unknown[] = [];
+    const outVarParams: { name: string; varName: string; param: (typeof routine.params)[number] }[] = [];
+
+    routine.params.forEach((p, i) => {
+      if (p.direction === 'in') {
+        callPlaceholders.push('?');
+        callValues.push(this.convertRoutineInbound(args[p.name as string], p));
+        return;
+      }
+
+      const varName = `@_mikro_orm_routine_${i}`;
+      outVarParams.push({ name: p.name as string, varName, param: p });
+      callPlaceholders.push(varName);
+    });
+
+    // MySQL `@var`s are connection-scoped, so SET + CALL + SELECT must share one physical
+    // connection — wrap in an implicit transaction when the caller didn't supply one.
+    const needsConnectionAffinity = outVarParams.length > 0 && !ctx;
+    const runSteps = async (sharedCtx: Transaction | undefined): Promise<T> => {
+      for (let i = 0; i < routine.params.length; i++) {
+        const p = routine.params[i];
+        if (p.direction === 'inout') {
+          const varName = `@_mikro_orm_routine_${i}`;
+          await this.execute(
+            `set ${varName} := ?`,
+            [this.convertRoutineInbound(args[p.name as string], p)],
+            'run',
+            sharedCtx,
+          );
+        }
+      }
+
+      // mysql2 trails the result sets with an OK packet (non-array); filter to row arrays.
+      const callResult = (await this.execute(
+        `call ${name}(${callPlaceholders.join(', ')})`,
+        callValues,
+        'all',
+        sharedCtx,
+      )) as unknown[];
+      const resultSets = callResult.filter(Array.isArray) as Dictionary[][];
+
+      if (outVarParams.length > 0) {
+        const selectClause = outVarParams
+          .map(o => `${o.varName} as ${this.platform.quoteIdentifier(o.name)}`)
+          .join(', ');
+        const rows = (await this.execute(`select ${selectClause}`, [], 'all', sharedCtx)) as Dictionary[];
+        this.applyRoutineOutParams(
+          rows[0] ?? {},
+          outVarParams.map(o => o.param),
+          args,
+        );
+      }
+
+      return (resultSets.length > 0 ? resultSets : undefined) as T;
+    };
+
+    if (needsConnectionAffinity) {
+      return this.transactional(trx => runSteps(trx));
+    }
+
+    return runSteps(ctx);
   }
 
   override async commit(

@@ -21,6 +21,7 @@ import { helper } from './entity/wrap.js';
 import type { SerializationContext } from './serialization/SerializationContext.js';
 import type { SerializeOptions } from './serialization/EntitySerializer.js';
 import type { MetadataStorage } from './metadata/MetadataStorage.js';
+import type { Routine } from './metadata/Routine.js';
 import type { EntitySchema } from './metadata/EntitySchema.js';
 import type { EntityPartitionBy, IndexColumnOptions } from './metadata/types.js';
 import type { Type, types } from './types/index.js';
@@ -1143,6 +1144,289 @@ export interface TriggerDef<T = any> {
   /** Raw DDL escape hatch — full CREATE TRIGGER statement. Mutually exclusive with `body`. */
   expression?: string;
 }
+
+export type RoutineParamDirection = 'in' | 'out' | 'inout';
+
+/** Mirrors MySQL/MariaDB's `SQL DATA ACCESS` clause; ignored by other dialects. */
+export type RoutineDataAccess = 'contains-sql' | 'no-sql' | 'reads-sql-data' | 'modifies-sql-data';
+
+export type RoutineSecurity = 'invoker' | 'definer';
+
+export type RoutineKind = 'procedure' | 'function';
+
+export type RoutineIgnoreField = 'body' | 'comment' | 'security' | 'deterministic' | 'definer';
+
+export type RoutineParamMap<T> = Record<PropertyName<T>, string>;
+
+export type RoutineBodyCallback<T> = (params: RoutineParamMap<T>, em: any) => string | Raw;
+
+/**
+ * Routine return shape:
+ *  - omitted/`void`: procedures with no result set
+ *  - `() => Entity` (single or tuple): hydrated row arrays, one per result set
+ *  - `{ type: Type<...> }`: scalar function return — runtime/column types both inferred
+ *    from the {@link Type} generics
+ *  - `{ runtimeType, columnType }`: scalar function return with explicit SQL+TS types
+ *  - `{ hydrate }`: fully custom row mapping
+ */
+export type RoutineReturns<T = unknown> =
+  | (() => EntityName<any>)
+  | (() => EntityName<any>)[]
+  | { type: Type<unknown> | Constructor<Type<unknown>>; nullable?: boolean }
+  | {
+      runtimeType: RoutineRuntimeType;
+      columnType?: string;
+      nullable?: boolean;
+      customType?: Type<unknown> | Constructor<Type<unknown>>;
+    }
+  | { hydrate: (rows: Dictionary[][], args: T, em: any) => unknown };
+
+/** JS fallback registered as a UDF on SQLite (better-sqlite3). Functions only. */
+export type RoutineJsBody<T> = (params: T) => unknown;
+
+export interface RoutineDef<T = any> {
+  type: RoutineKind;
+  name?: string;
+  schema?: string;
+  comment?: string;
+  security?: RoutineSecurity;
+  /** User the routine runs as when `security: 'definer'`. */
+  definer?: string;
+  deterministic?: boolean;
+  /** MySQL/MariaDB only. */
+  dataAccess?: RoutineDataAccess;
+  language?: 'sql' | 'plpgsql' | 'tsql' | 'plsql' | AnyString;
+  /** Mutually exclusive with `expression`. */
+  body?: string | Raw | RoutineBodyCallback<T>;
+  /** Raw `CREATE PROCEDURE`/`FUNCTION` escape hatch — schema diff can't detect changes. Prefer `body`. */
+  expression?: string;
+  /** JS fallback registered as a UDF on SQLite (better-sqlite3). Functions only. */
+  bodyJs?: RoutineJsBody<T>;
+  returns?: RoutineReturns<T>;
+  /** Skip selected fields in schema diff; useful when the engine normalises the body differently. */
+  ignoreSchemaChanges?: RoutineIgnoreField[];
+}
+
+export interface RoutineProperty<Owner = any> {
+  name: EntityKey<Owner>;
+  /** SQL string, or a `Type` instance (resolved to the dialect column type at schema-gen time via `getColumnType`). */
+  type: keyof typeof types | AnyString | Type<unknown>;
+  runtimeType: EntityProperty['runtimeType'];
+  /** Singleton array to align with EntityProperty's `columnTypes`/Type API surface. */
+  columnTypes: string[];
+  customType?: Type<unknown>;
+  direction: RoutineParamDirection;
+  /** Required for OUT/INOUT params — wraps the JS-side value in `ScalarReference`. */
+  ref?: boolean;
+  length?: number;
+  precision?: number;
+  scale?: number;
+  nullable?: boolean;
+  /** Default expression used when the caller omits the parameter, where the dialect supports it. */
+  defaultRaw?: string;
+  /** Original declaration order, used to rebuild positional argument lists. */
+  index: number;
+}
+
+export interface RoutineParamConfig {
+  runtimeType?: RoutineRuntimeType;
+  type?: keyof typeof types | AnyString | Type<any> | Constructor<Type<any>>;
+  direction?: RoutineParamDirection;
+  ref?: boolean;
+  length?: number;
+  precision?: number;
+  scale?: number;
+  nullable?: boolean;
+  defaultRaw?: string;
+  /** Marshals the param via `Type.convertToDatabaseValue` inbound and `convertToJSValue` outbound. */
+  customType?: Type<unknown> | Constructor<Type<unknown>>;
+}
+
+/** Routine declaration shape accepted by the {@link Routine} class. */
+export interface RoutineConfig<T = any> extends Omit<RoutineDef<T>, 'name'> {
+  name: string;
+  /** Order is preserved from `Object.keys`. */
+  params?: Record<string, RoutineParamConfig>;
+}
+
+export type RoutineRuntimeTypeMap = {
+  string: string;
+  number: number;
+  boolean: boolean;
+  bigint: bigint;
+  Buffer: Buffer;
+  Date: Date;
+  object: Dictionary;
+  any: any;
+};
+
+/** Narrow union (vs `EntityProperty['runtimeType']`) so literals survive `const` inference and feed args/return inference. */
+export type RoutineRuntimeType = keyof RoutineRuntimeTypeMap;
+
+type RoutineRuntimeOf<R> = R extends keyof RoutineRuntimeTypeMap ? RoutineRuntimeTypeMap[R] : unknown;
+
+type Nullify<P, V> = P extends { nullable: true } ? V | null : V;
+
+type StripSqlTypeArgs<S extends string> = S extends `${infer Base}(${string}` ? Base : S;
+
+type SqlStringTypes =
+  | 'varchar'
+  | 'char'
+  | 'character'
+  | 'nvarchar'
+  | 'nchar'
+  | 'text'
+  | 'mediumtext'
+  | 'longtext'
+  | 'tinytext'
+  | 'ntext'
+  | 'clob'
+  | 'nclob'
+  | 'citext'
+  | 'xml'
+  | 'uuid'
+  | 'string'
+  | 'decimal'
+  | 'numeric'
+  | 'money'
+  | 'bigint'
+  | 'int8'
+  | 'bigserial';
+
+type SqlNumberTypes =
+  | 'int'
+  | 'integer'
+  | 'smallint'
+  | 'tinyint'
+  | 'mediumint'
+  | 'int2'
+  | 'int4'
+  | 'serial'
+  | 'smallserial'
+  | 'real'
+  | 'float'
+  | 'float4'
+  | 'float8'
+  | 'double';
+
+type SqlBooleanTypes = 'boolean' | 'bool' | 'bit';
+
+type SqlDateTypes =
+  | 'date'
+  | 'datetime'
+  | 'datetime2'
+  | 'smalldatetime'
+  | 'timestamp'
+  | 'timestamptz'
+  | 'time'
+  | 'timetz';
+
+type SqlJsonTypes = 'json' | 'jsonb';
+
+type SqlBufferTypes =
+  | 'blob'
+  | 'tinyblob'
+  | 'mediumblob'
+  | 'longblob'
+  | 'binary'
+  | 'varbinary'
+  | 'bytea'
+  | 'bytes'
+  | 'image'
+  | 'raw';
+
+type SqlTypeMap = { [K in SqlStringTypes]: string } & { [K in SqlNumberTypes]: number } & {
+  [K in SqlBooleanTypes]: boolean;
+} & { [K in SqlDateTypes]: Date } & { [K in SqlJsonTypes]: Dictionary } & { [K in SqlBufferTypes]: Buffer } & {
+  'character varying': string;
+  'double precision': number;
+  'time with time zone': Date;
+  'timestamp with time zone': Date;
+  'long raw': Buffer;
+};
+
+type LookupSqlType<K> = K extends keyof SqlTypeMap ? SqlTypeMap[K] : any;
+
+/**
+ * Maps a SQL-flavoured `type` string (e.g. `'varchar(255)'`, `'int'`, `'timestamp'`) to a TS
+ * runtime type, used as a fallback when {@link RoutineParamConfig} does not declare an explicit
+ * `runtimeType`. Length/precision arguments are stripped, the lowercase token is matched
+ * against {@link SqlTypeMap}. `decimal`/`numeric`/`money`/`bigint` default to `string` since
+ * drivers typically return them as strings to preserve precision; opt in to `number` or
+ * `bigint` via `runtimeType` when the value range is safe. Unrecognised or genuinely
+ * ambiguous types (`refcursor`, `sys_refcursor`, …) fall through to `any`.
+ */
+export type SqlTypeToTs<S> = S extends string
+  ? Lowercase<S> extends `tinyint(1)${string}`
+    ? boolean
+    : LookupSqlType<StripSqlTypeArgs<Lowercase<S>>>
+  : any;
+
+/** Strips `null | undefined` from a `Type<JSType, _>` JSType, so e.g. `StringType extends Type<string | null | undefined>` resolves to `string`. */
+type TypeJsType<T> =
+  T extends Type<infer J, any>
+    ? Exclude<J, null | undefined>
+    : T extends new (...args: any[]) => Type<infer J, any>
+      ? Exclude<J, null | undefined>
+      : never;
+
+/**
+ * TS value type for a single routine parameter. Resolution order:
+ *
+ * 1. explicit `runtimeType`
+ * 2. `type` set to a {@link Type} class or instance — JSType is extracted from the Type generic
+ * 3. `type` set to a SQL string — mapped via {@link SqlTypeToTs}
+ * 4. fallback `any`
+ *
+ * `ref: true` wraps the result in `ScalarReference`; `nullable: true` adds `| null`.
+ */
+export type RoutineParamValue<P> = P extends { runtimeType: infer R }
+  ? P extends { ref: true }
+    ? ScalarReference<Nullify<P, RoutineRuntimeOf<R>>>
+    : Nullify<P, RoutineRuntimeOf<R>>
+  : P extends { type: infer T }
+    ? [TypeJsType<T>] extends [never]
+      ? T extends string
+        ? P extends { ref: true }
+          ? ScalarReference<Nullify<P, SqlTypeToTs<T>>>
+          : Nullify<P, SqlTypeToTs<T>>
+        : P extends { ref: true }
+          ? ScalarReference<any>
+          : any
+      : P extends { ref: true }
+        ? ScalarReference<Nullify<P, TypeJsType<T>>>
+        : Nullify<P, TypeJsType<T>>
+    : P extends { ref: true }
+      ? ScalarReference<any>
+      : any;
+
+/** Default `TArgs` for {@link Routine}; consumers use {@link RoutineArgs}, which honours overrides from {@link Routine.create}. */
+export type RoutineArgsOf<Config> = Config extends { params: infer P }
+  ? P extends Record<string, RoutineParamConfig>
+    ? { [K in keyof P]: RoutineParamValue<P[K]> }
+    : Record<string, unknown>
+  : Record<string, unknown>;
+
+/** Default `TReturn` for {@link Routine}; consumers use {@link RoutineReturn}, which honours overrides from {@link Routine.create}. */
+export type RoutineReturnOf<Config> = Config extends { returns: infer R }
+  ? R extends { runtimeType: infer RT }
+    ? Nullify<R, RoutineRuntimeOf<RT>>
+    : R extends { type: infer T }
+      ? [TypeJsType<T>] extends [never]
+        ? unknown
+        : Nullify<R, TypeJsType<T>>
+      : R extends readonly (() => EntityName<any>)[]
+        ? { [K in keyof R]: R[K] extends () => EntityName<infer E> ? E[] : never }
+        : R extends () => EntityName<infer E>
+          ? E[]
+          : R extends { hydrate: (...args: any[]) => infer H }
+            ? Awaited<H>
+            : void
+  : void;
+
+export type RoutineArgs<R> = R extends Routine<any, infer A, any> ? A : Record<string, unknown>;
+
+export type RoutineReturn<R> = R extends Routine<any, any, infer Re> ? Re : unknown;
 
 /** Branded string that accepts any string value while preserving autocompletion for known literals. */
 export type AnyString = string & {};

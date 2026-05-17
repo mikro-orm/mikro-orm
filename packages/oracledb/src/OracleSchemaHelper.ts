@@ -16,8 +16,13 @@ import {
   TextType,
   type Transaction,
   type Type,
+  type SqlRoutineDef,
   Utils,
 } from '@mikro-orm/sql';
+
+function stripTypeLength(type: string): string {
+  return type.replace(/\(\s*[^)]*\)\s*$/, '').trim();
+}
 
 /** Schema introspection helper for Oracle Database. */
 export class OracleSchemaHelper extends SchemaHelper {
@@ -894,5 +899,136 @@ export class OracleSchemaHelper extends SchemaHelper {
   protected wrap(val: string | undefined, type: Type<unknown>): string | undefined {
     const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType;
     return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;
+  }
+
+  /** Oracle identifiers are upper-cased before quoting to match `USER_PROCEDURES` introspection. Cross-schema qualifier mirrors `OracleConnection.callRoutine`. */
+  private qualifiedOracleRoutineName(routine: SqlRoutineDef): string {
+    const name = this.quote(routine.name.toUpperCase());
+    const defaultSchema = this.platform.getDefaultSchemaName();
+
+    if (routine.schema && routine.schema !== defaultSchema) {
+      return `${this.quote(routine.schema.toUpperCase())}.${name}`;
+    }
+
+    return name;
+  }
+
+  override createRoutine(routine: SqlRoutineDef): string {
+    if (routine.expression) {
+      return routine.expression;
+    }
+
+    const name = this.qualifiedOracleRoutineName(routine);
+    const params = routine.params
+      .map(p => {
+        const dir = p.direction === 'in' ? 'IN' : p.direction === 'out' ? 'OUT' : 'IN OUT';
+        // PL/SQL formal params require unconstrained types — `VARCHAR2`, not `VARCHAR2(255)`.
+        return `${this.quote(p.name.toUpperCase())} ${dir} ${stripTypeLength(p.type)}`;
+      })
+      .join(', ');
+    const argsClause = routine.params.length ? `(${params})` : '';
+    const body = this.wrapRoutineBody(routine.body ?? '');
+
+    if (routine.type === 'procedure') {
+      return `create or replace procedure ${name}${argsClause} as ${body};`;
+    }
+
+    const returnType = stripTypeLength(routine.returns?.type ?? 'VARCHAR2');
+    return `create or replace function ${name}${argsClause} return ${returnType} as ${body};`;
+  }
+
+  /** Uses `IF EXISTS` (Oracle 23c+); older versions can extend this helper. */
+  override dropRoutine(routine: SqlRoutineDef): string {
+    const kind = routine.type === 'procedure' ? 'procedure' : 'function';
+    return `drop ${kind} if exists ${this.qualifiedOracleRoutineName(routine)}`;
+  }
+
+  override async getAllRoutines(connection: AbstractSqlConnection): Promise<SqlRoutineDef[]> {
+    const sql = `
+      select
+        p.OBJECT_NAME as name,
+        p.OBJECT_TYPE as kind,
+        (
+          select listagg(s.TEXT, '') within group (order by s.LINE)
+          from USER_SOURCE s
+          where s.NAME = p.OBJECT_NAME and s.TYPE = p.OBJECT_TYPE
+        ) as source
+      from USER_PROCEDURES p
+      where p.OBJECT_TYPE in ('PROCEDURE', 'FUNCTION')
+        and p.PROCEDURE_NAME is null
+    `;
+
+    const [rows, paramsAndReturns] = await Promise.all([
+      connection.execute<{ name: string; kind: 'PROCEDURE' | 'FUNCTION'; source: string }[]>(sql),
+      this.getAllRoutineParams(connection),
+    ]);
+    const { params, returns } = paramsAndReturns;
+
+    // Surface the connected user as the schema so the comparator's routineKey matches the
+    // metadata side (which fills `schema` from `getDefaultSchemaName()` when not declared).
+    const schemaName = this.platform.getDefaultSchemaName();
+
+    return rows.map(row => ({
+      name: row.name,
+      schema: schemaName,
+      type: row.kind.toLowerCase() as 'procedure' | 'function',
+      body: this.unwrapPlSqlBody(row.source ?? ''),
+      params: params.get(row.name) ?? [],
+      returns: row.kind === 'FUNCTION' ? (returns.get(row.name) ?? { type: 'VARCHAR2', nullable: true }) : undefined,
+    }));
+  }
+
+  private async getAllRoutineParams(connection: AbstractSqlConnection): Promise<{
+    params: Map<string, SqlRoutineDef['params']>;
+    returns: Map<string, NonNullable<SqlRoutineDef['returns']>>;
+  }> {
+    // POSITION = 0 / ARGUMENT_NAME = NULL is the function return type; `PACKAGE_NAME is null`
+    // restricts to standalone routines so packaged ones don't leak through name collisions.
+    const sql = `
+      select
+        OBJECT_NAME as routine_name,
+        ARGUMENT_NAME as param_name,
+        DATA_TYPE as type,
+        IN_OUT as direction,
+        POSITION as position
+      from USER_ARGUMENTS
+      where PACKAGE_NAME is null
+      order by OBJECT_NAME, POSITION
+    `;
+    const rows = await connection.execute<
+      {
+        routine_name: string;
+        param_name: string | null;
+        type: string;
+        direction: 'IN' | 'OUT' | 'IN/OUT';
+        position: number;
+      }[]
+    >(sql);
+
+    const params = new Map<string, SqlRoutineDef['params']>();
+    const returns = new Map<string, NonNullable<SqlRoutineDef['returns']>>();
+    for (const row of rows) {
+      if (row.position === 0 && row.param_name == null) {
+        returns.set(row.routine_name, { type: row.type, nullable: true });
+        continue;
+      }
+
+      if (!params.has(row.routine_name)) {
+        params.set(row.routine_name, []);
+      }
+      const direction = row.direction === 'IN/OUT' ? 'inout' : row.direction === 'OUT' ? 'out' : 'in';
+      params.get(row.routine_name)!.push({
+        name: row.param_name!,
+        type: row.type,
+        direction,
+      });
+    }
+
+    return { params, returns };
+  }
+
+  private unwrapPlSqlBody(source: string): string {
+    const match = /\b(?:as|is)\s+(?:begin\s+)?([\s\S]*?)\s*end\s*;?\s*$/i.exec(source.trim());
+    return match ? match[1].trim() : source.trim();
   }
 }

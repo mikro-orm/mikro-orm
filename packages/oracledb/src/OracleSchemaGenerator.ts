@@ -78,6 +78,11 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     const metadata = this.getOrderedMetadata(options.schema).reverse();
     const ret: string[] = [];
 
+    // Routines before tables — bodies reference columns and Oracle has no CASCADE for them.
+    for (const routine of this.getTargetSchema(options.schema).getRoutines()) {
+      this.helper.append(ret, this.helper.dropRoutine(routine), true);
+    }
+
     for (const meta of metadata) {
       const schemaName = options.schema ?? this.config.get('schema');
       /* v8 ignore next: wildcard schema branch */

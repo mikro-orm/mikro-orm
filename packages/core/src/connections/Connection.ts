@@ -2,8 +2,18 @@ import { type Configuration, type ConnectionOptions } from '../utils/Configurati
 import { Utils } from '../utils/Utils.js';
 import type { LogContext, Logger } from '../logging/Logger.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
-import type { ConnectionType, Dictionary, ISchemaGenerator, MaybePromise, Primary } from '../typings.js';
+import type {
+  ConnectionType,
+  Dictionary,
+  ISchemaGenerator,
+  MaybePromise,
+  Primary,
+  RoutineProperty,
+} from '../typings.js';
+import type { Routine } from '../metadata/Routine.js';
 import type { Platform } from '../platforms/Platform.js';
+import type { Type } from '../types/Type.js';
+import { ScalarReference } from '../entity/Reference.js';
 import type { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster.js';
 import type { IsolationLevel } from '../enums.js';
 
@@ -158,6 +168,89 @@ export abstract class Connection {
     method?: 'all' | 'get' | 'run',
     ctx?: Transaction,
   ): Promise<QueryResult<T> | any | any[]>;
+
+  /** @internal — public callers go through {@link EntityManager.callRoutine}. */
+  async callRoutine<T>(routine: Routine, args: Record<string, unknown>, ctx?: Transaction): Promise<T> {
+    throw new Error(`Stored routines are not supported by the current driver`);
+  }
+
+  /**
+   * Unwraps a routine argument (resolving any `ScalarReference` wrapper) and, when the param
+   * declares a `customType`, marshals it through `convertToDatabaseValue`. `undefined` is
+   * normalised to `null` so every driver sees the same shape.
+   *
+   * @internal
+   */
+  protected convertRoutineInbound(value: unknown, param: RoutineProperty | undefined): unknown {
+    const resolved = value instanceof ScalarReference ? value.unwrap() : value;
+    const coerced = resolved === undefined ? null : resolved;
+
+    if (coerced === null || !param?.customType) {
+      return coerced;
+    }
+
+    return param.customType.convertToDatabaseValue(coerced, this.platform);
+  }
+
+  /**
+   * Converts a raw database value to its JS representation via the supplied `customType`, when
+   * one is declared. Used to marshal scalar function returns and OUT/INOUT values back to the
+   * caller before they land in a `ScalarReference` or `em.callRoutine`'s return value.
+   *
+   * @internal
+   */
+  protected convertRoutineOutbound<T>(value: unknown, customType: Type<unknown> | undefined): T {
+    if (value === null || value === undefined || !customType) {
+      return value as T;
+    }
+
+    return customType.convertToJSValue(value, this.platform) as T;
+  }
+
+  /**
+   * Executes a scalar function routine as `select <qualified>(?, ?, ...) as value`, marshalling
+   * IN params on the way in and the return value on the way out. The qualified name is built
+   * from `routine.schema`, falling back to the platform's default schema (e.g. `dbo` on MSSQL),
+   * which gives MySQL/SQLite a bare name and MSSQL/Oracle the mandatory `schema.name` form.
+   *
+   * @internal
+   */
+  protected async callRoutineFunction<T>(
+    routine: Routine,
+    args: Record<string, unknown>,
+    ctx?: Transaction,
+  ): Promise<T> {
+    const schema = routine.schema ?? this.platform.getDefaultSchemaName();
+    const qualified =
+      (schema ? `${this.platform.quoteIdentifier(schema)}.` : '') + this.platform.quoteIdentifier(routine.name);
+    const placeholders = routine.params.map(() => '?').join(', ');
+    const positional = routine.params.map(p => this.convertRoutineInbound(args[p.name as string], p));
+    const rows = (await this.execute(
+      `select ${qualified}(${placeholders}) as value`,
+      positional,
+      'all',
+      ctx,
+    )) as Dictionary[];
+
+    return this.convertRoutineOutbound<T>(rows[0]?.value, routine.returnCustomType);
+  }
+
+  /**
+   * Walks a result row produced by an OUT/INOUT-param SELECT and writes each value into the
+   * caller's `ScalarReference` slot. Non-reference args are ignored (the user opted out of
+   * receiving the OUT value).
+   *
+   * @internal
+   */
+  protected applyRoutineOutParams(row: Dictionary, outParams: RoutineProperty[], args: Record<string, unknown>): void {
+    for (const param of outParams) {
+      const ref = args[param.name as string];
+
+      if (ref instanceof ScalarReference) {
+        ref.set(this.convertRoutineOutbound(row[param.name as string], param.customType));
+      }
+    }
+  }
 
   /** Parses and returns the resolved connection configuration (host, port, user, etc.). */
   getConnectionOptions(): ConnectionConfig {
