@@ -1778,7 +1778,7 @@ class Tag {
 }
 ```
 
-### Union-target M:N Polymorphic Relations
+### Union-target M:N Polymorphic Relations {#union-target-mn-polymorphic-relations}
 
 The previous section covers the case where several owner types (`Post`, `Video`) share one pivot pointing at a single target (`Tag`) — the discriminator identifies the owner type. The mirror shape is also supported: a single owner holding a **union collection** of multiple target types, where the discriminator identifies the target type on each pivot row.
 
