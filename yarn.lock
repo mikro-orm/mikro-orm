@@ -1258,7 +1258,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.0.16"
     "@mikro-orm/sql": "npm:7.0.16"
-    kysely: "npm:0.29.0"
+    kysely: "npm:0.29.2"
     libsql: "npm:0.5.29"
   peerDependencies:
     "@mikro-orm/core": 7.0.16
@@ -1271,7 +1271,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.0.16"
     "@mikro-orm/mysql": "npm:7.0.16"
-    kysely: "npm:0.29.0"
+    kysely: "npm:0.29.2"
   peerDependencies:
     "@mikro-orm/core": 7.0.16
   languageName: unknown
@@ -1326,7 +1326,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.0.16"
     "@mikro-orm/sql": "npm:7.0.16"
-    kysely: "npm:0.29.0"
+    kysely: "npm:0.29.2"
     tarn: "npm:3.0.2"
     tedious: "npm:19.2.1"
     tsqlstring: "npm:1.0.1"
@@ -1341,7 +1341,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.0.16"
     "@mikro-orm/sql": "npm:7.0.16"
-    kysely: "npm:0.29.0"
+    kysely: "npm:0.29.2"
     mysql2: "npm:3.22.3"
     sqlstring: "npm:2.3.3"
   peerDependencies:
@@ -1355,7 +1355,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.0.16"
     "@mikro-orm/sql": "npm:7.0.16"
-    kysely: "npm:0.29.0"
+    kysely: "npm:0.29.2"
     oracledb: "npm:6.10.0"
   peerDependencies:
     "@mikro-orm/core": 7.0.16
@@ -1368,7 +1368,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.0.16"
     "@mikro-orm/sql": "npm:7.0.16"
-    kysely: "npm:0.29.0"
+    kysely: "npm:0.29.2"
     pg: "npm:8.20.0"
     pg-cursor: "npm:2.19.0"
     postgres-array: "npm:3.0.4"
@@ -1471,7 +1471,7 @@ __metadata:
   resolution: "@mikro-orm/sql@workspace:packages/sql"
   dependencies:
     "@mikro-orm/core": "npm:^7.0.16"
-    kysely: "npm:0.29.0"
+    kysely: "npm:0.29.2"
   peerDependencies:
     "@mikro-orm/core": 7.0.16
   languageName: unknown
@@ -1484,7 +1484,7 @@ __metadata:
     "@mikro-orm/core": "npm:^7.0.16"
     "@mikro-orm/sql": "npm:7.0.16"
     better-sqlite3: "npm:12.10.0"
-    kysely: "npm:0.29.0"
+    kysely: "npm:0.29.2"
   peerDependencies:
     "@mikro-orm/core": 7.0.16
   languageName: unknown
@@ -6325,10 +6325,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"kysely@npm:0.29.0":
-  version: 0.29.0
-  resolution: "kysely@npm:0.29.0"
-  checksum: 10/30b1e93cf0975c5782c4bb91075a9977ba3e077cee9cb7b3d5e5a270d6d3d59a2531f6b82d8bdc48058a7723b854b9f6814f7dc2cf7ff0e61e9541213a447c0e
+"kysely@npm:0.29.2":
+  version: 0.29.2
+  resolution: "kysely@npm:0.29.2"
+  checksum: 10/abe40e648447880e06a7dfdb829717859162e0cc762e0d53d0c9193c51be7bc2fd9f30f58c7fc71679a49f8e95dd3a4ac5c9147434a83decdbf0cfcea8eeae0d
   languageName: node
   linkType: hard
 
