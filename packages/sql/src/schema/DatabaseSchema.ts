@@ -435,14 +435,6 @@ export class DatabaseSchema {
   }
 
   /**
-   * Maps a routine param's declared `type` to a dialect-specific SQL column type. A `Type`
-   * instance (when the user passed a `Type` class/instance at `type`) routes through
-   * `Type.getColumnType` so its dialect-aware mapping wins. String aliases (`'string'`,
-   * `'number'`, …) go through the platform's type registry; literal SQL types pass through.
-   *
-   * @internal
-   */
-  /**
    * Normalises a routine's `returns` config to the `{ type, runtimeType, nullable }` shape the
    * DDL side and introspection-comparator both consume. Supports both `{ type: SomeType }`
    * (Type drives column + runtime types) and `{ runtimeType, columnType, ... }` (explicit).
@@ -479,6 +471,14 @@ export class DatabaseSchema {
     return undefined;
   }
 
+  /**
+   * Maps a routine param's declared `type` to a dialect-specific SQL column type. A `Type`
+   * instance (when the user passed a `Type` class/instance at `type`) routes through
+   * `Type.getColumnType` so its dialect-aware mapping wins. String aliases (`'string'`,
+   * `'number'`, …) go through the platform's type registry; literal SQL types pass through.
+   *
+   * @internal
+   */
   static resolveRoutineColumnType(type: string | Type<unknown>, platform: AbstractSqlPlatform): string {
     if (typeof type !== 'string') {
       return type.getColumnType({ columnTypes: [], runtimeType: 'any' } as any, platform);
