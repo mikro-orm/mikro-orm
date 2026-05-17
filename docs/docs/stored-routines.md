@@ -269,7 +269,8 @@ Driver support:
 - **PostgreSQL**: full support via `refcursor` OUT params. **Must** be called inside `em.transactional`. Refcursor params are detected by `type: 'refcursor'` — non-refcursor OUT params still behave as scalar `ScalarReference` outputs.
 - **Oracle**: full support via `sys_refcursor` OUT params. **Must not** be called inside `em.transactional`.
 - **MSSQL**: result sets emitted by a procedure are not surfaced through `em.callRoutine` — tedious flattens them through the kysely wrapper without per-set boundaries. Use `em.getConnection().execute()` for raw multi-recordset access.
-- **SQLite / libSQL**: no stored procedure concept, so multi-result-set calls throw. Functions are still bridged via `bodyJs` UDFs on SQLite — see [Cross-DB testing with SQLite](#cross-db-testing-with-sqlite).
+- **SQLite**: no stored procedure concept, so multi-result-set calls throw. Functions are bridged via `bodyJs` UDFs — see [Cross-DB testing with SQLite](#cross-db-testing-with-sqlite).
+- **libSQL**: throws unconditionally; the libsql client does not implement runtime UDF registration.
 - **Mongo**: no stored routines at all; throws.
 
 :::note Likely to evolve
