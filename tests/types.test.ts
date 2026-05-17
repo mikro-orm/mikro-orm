@@ -1578,4 +1578,30 @@ describe('check typings', () => {
     assert<IsExact<Args['p_out_uuid'], ScalarReference<string>>>(true);
     assert<IsExact<Args['p_override'], number>>(true);
   });
+
+  test('Routine returns: { type: SomeType } infers the return TS type from the Type generic', async () => {
+    const Hash = new Routine({
+      name: 'hash',
+      type: 'function',
+      params: { input: { type: 'varchar(255)' } },
+      returns: { type: StringType },
+      body: '...',
+    });
+
+    const Stringy = new Routine({
+      name: 'stringy',
+      type: 'function',
+      params: {},
+      returns: { type: new UuidType(), nullable: true },
+      body: '...',
+    });
+
+    const em = {} as EntityManager;
+    if (false as boolean) {
+      const h = await em.callRoutine(Hash, { input: 'x' });
+      assert<IsExact<typeof h, string>>(true);
+      const s = await em.callRoutine(Stringy, {});
+      assert<IsExact<typeof s, string | null>>(true);
+    }
+  });
 });

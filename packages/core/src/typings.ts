@@ -1164,12 +1164,15 @@ export type RoutineBodyCallback<T> = (params: RoutineParamMap<T>, em: any) => st
  * Routine return shape:
  *  - omitted/`void`: procedures with no result set
  *  - `() => Entity` (single or tuple): hydrated row arrays, one per result set
- *  - `{ runtimeType, columnType }`: scalar function return
+ *  - `{ type: Type<...> }`: scalar function return — runtime/column types both inferred
+ *    from the {@link Type} generics
+ *  - `{ runtimeType, columnType }`: scalar function return with explicit SQL+TS types
  *  - `{ hydrate }`: fully custom row mapping
  */
 export type RoutineReturns<T = unknown> =
   | (() => EntityName<any>)
   | (() => EntityName<any>)[]
+  | { type: Type<unknown> | Constructor<Type<unknown>>; nullable?: boolean }
   | {
       runtimeType: RoutineRuntimeType;
       columnType?: string;
@@ -1408,13 +1411,17 @@ export type RoutineArgsOf<Config> = Config extends { params: infer P }
 export type RoutineReturnOf<Config> = Config extends { returns: infer R }
   ? R extends { runtimeType: infer RT }
     ? Nullify<R, RoutineRuntimeOf<RT>>
-    : R extends readonly (() => EntityName<any>)[]
-      ? { [K in keyof R]: R[K] extends () => EntityName<infer E> ? E[] : never }
-      : R extends () => EntityName<infer E>
-        ? E[]
-        : R extends { hydrate: (...args: any[]) => infer H }
-          ? Awaited<H>
-          : void
+    : R extends { type: infer T }
+      ? [TypeJsType<T>] extends [never]
+        ? unknown
+        : Nullify<R, TypeJsType<T>>
+      : R extends readonly (() => EntityName<any>)[]
+        ? { [K in keyof R]: R[K] extends () => EntityName<infer E> ? E[] : never }
+        : R extends () => EntityName<infer E>
+          ? E[]
+          : R extends { hydrate: (...args: any[]) => infer H }
+            ? Awaited<H>
+            : void
   : void;
 
 export type RoutineArgs<R> = R extends Routine<any, infer A, any> ? A : Record<string, unknown>;

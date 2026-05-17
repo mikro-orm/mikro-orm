@@ -58,24 +58,25 @@ const NoArgPi = new Routine({
   body: 'select 3.14159',
 });
 
-// `customType` on an IN param goes through `convertToDatabaseValue` before being bound;
-// on the scalar function return it goes through `convertToJSValue` before being returned.
+// A Type class at `type` drives marshalling, runtime type, and column type — IN params go
+// through `convertToDatabaseValue` before binding; the scalar function return goes through
+// `convertToJSValue` before being returned to the caller.
 const TaggedEcho = new Routine({
   name: 'tagged_echo',
   type: 'function',
   language: 'sql',
-  params: { input: { type: 'text', customType: TaggedStringType } },
-  returns: { runtimeType: 'string', columnType: 'text', customType: new TaggedStringType() },
+  params: { input: { type: TaggedStringType } },
+  returns: { type: TaggedStringType },
   body: 'select input',
 });
 
-// `customType` on an INOUT param applies in both directions: inbound seed via
+// A Type class on an INOUT param applies in both directions: inbound seed via
 // `convertToDatabaseValue`, outbound return via `convertToJSValue`.
 const TaggedRoundtrip = new Routine({
   name: 'tagged_roundtrip',
   type: 'procedure',
   language: 'plpgsql',
-  params: { val: { type: 'text', direction: 'inout', ref: true, customType: TaggedStringType } },
+  params: { val: { type: TaggedStringType, direction: 'inout', ref: true } },
   body: "val := val || '!';",
 });
 

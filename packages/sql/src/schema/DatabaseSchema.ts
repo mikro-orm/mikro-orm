@@ -1,6 +1,7 @@
 import {
   ReferenceKind,
   type Configuration,
+  type Constructor,
   type Dictionary,
   type EntityMetadata,
   type EntityProperty,
@@ -405,14 +406,7 @@ export class DatabaseSchema {
       const evaluated = typeof routine.body === 'function' ? routine.body(paramMap as any, em) : routine.body;
       const body = resolveBody(evaluated);
 
-      const returns =
-        routine.returns && 'runtimeType' in routine.returns
-          ? {
-              type: (routine.returns.columnType ?? routine.returns.runtimeType) as string,
-              runtimeType: routine.returns.runtimeType,
-              nullable: routine.returns.nullable,
-            }
-          : undefined;
+      const returns = DatabaseSchema.normaliseRoutineReturns(routine.returns, platform);
 
       this.addRoutine({
         name: routine.name,
@@ -448,6 +442,43 @@ export class DatabaseSchema {
    *
    * @internal
    */
+  /**
+   * Normalises a routine's `returns` config to the `{ type, runtimeType, nullable }` shape the
+   * DDL side and introspection-comparator both consume. Supports both `{ type: SomeType }`
+   * (Type drives column + runtime types) and `{ runtimeType, columnType, ... }` (explicit).
+   *
+   * @internal
+   */
+  static normaliseRoutineReturns(
+    returns: Routine['returns'],
+    platform: AbstractSqlPlatform,
+  ): { type: string; runtimeType: string; nullable?: boolean } | undefined {
+    if (!returns || typeof returns !== 'object') {
+      return undefined;
+    }
+
+    if ('runtimeType' in returns) {
+      return {
+        type: (returns.columnType ?? returns.runtimeType) as string,
+        runtimeType: returns.runtimeType,
+        nullable: returns.nullable,
+      };
+    }
+
+    if ('type' in returns && returns.type) {
+      const instance =
+        typeof returns.type === 'function' ? new (returns.type as Constructor<Type<unknown>>)() : returns.type;
+
+      return {
+        type: DatabaseSchema.resolveRoutineColumnType(instance, platform),
+        runtimeType: instance.runtimeType,
+        nullable: returns.nullable,
+      };
+    }
+
+    return undefined;
+  }
+
   static resolveRoutineColumnType(type: string | Type<unknown>, platform: AbstractSqlPlatform): string {
     if (typeof type !== 'string') {
       return type.getColumnType({ columnTypes: [], runtimeType: 'any' } as any, platform);

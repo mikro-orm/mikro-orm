@@ -123,13 +123,14 @@ export class Routine<
       };
     });
 
-    if (
-      config.returns &&
-      typeof config.returns === 'object' &&
-      'customType' in config.returns &&
-      config.returns.customType
-    ) {
-      this.returnCustomType = toTypeInstance(config.returns.customType);
+    if (config.returns && typeof config.returns === 'object') {
+      // `returns: { type: SomeType }` is the canonical scalar-return shape — the Type drives
+      // both the column type (via `getColumnType` at schema-gen time) and the marshalling.
+      if ('type' in config.returns && config.returns.type) {
+        this.returnCustomType = toTypeInstance(config.returns.type);
+      } else if ('customType' in config.returns && config.returns.customType) {
+        this.returnCustomType = toTypeInstance(config.returns.customType);
+      }
     }
   }
 

@@ -156,32 +156,36 @@ PostgreSQL multi-result-set procedures (refcursor OUT params) **require** `em.tr
 
 ## Custom types
 
-Routine params and scalar function returns accept a `customType` that marshals values through `Type.convertToDatabaseValue` (inbound) and `Type.convertToJSValue` (outbound). Pass either a `Type` instance or a constructor:
+A `Type` class or instance can be passed directly as `type` on params and on the scalar return. The Type drives **all three** sides:
+
+- the SQL column type (via `Type.getColumnType`), used for DDL generation
+- the TS type (extracted from the `Type<JSType, DBType>` generics), used for `em.callRoutine` inference
+- marshalling, via `convertToDatabaseValue` inbound and `convertToJSValue` outbound
 
 ```ts
-import { JsonType } from '@mikro-orm/core';
+import { JsonType, StringType } from '@mikro-orm/core';
 
 const CountItems = new Routine({
   name: 'count_items',
   type: 'function',
   language: 'plpgsql',
   params: {
-    data: { type: 'jsonb', runtimeType: 'object', customType: JsonType },
+    data: { type: JsonType },
   },
-  returns: { runtimeType: 'string', columnType: 'text' },
+  returns: { type: StringType },
   body: 'BEGIN RETURN jsonb_array_length(data)::text; END;',
 });
 
 const length = await em.callRoutine(CountItems, { data: [1, 2, 3, 4] });
 // `data` is serialised via JsonType.convertToDatabaseValue before binding;
-// the scalar return passes through as plain text since `returns.customType` is unset.
+// the scalar return is marshalled via StringType.convertToJSValue on the way back.
+// `length` is typed as `string` — inferred from `StringType extends Type<string, ...>`.
 ```
 
-`customType` applies to:
+This is the recommended shape. The longer form is still supported when you need to split the SQL column type from the marshaller (e.g. a `Type<string, string>` with a non-default column type):
 
-- IN params (via `convertToDatabaseValue` on the way to the database).
-- OUT/INOUT params (via `convertToJSValue` back into the caller's `ScalarReference`).
-- The scalar return descriptor on functions: `returns: { runtimeType, columnType, customType: MyType }`.
+- `params: { x: { type: 'text', customType: MyType } }` — explicit column type, separate marshaller.
+- `returns: { runtimeType: 'string', columnType: 'text', customType: new MyType() }` — explicit runtime + column, separate marshaller.
 
 ## Schema generator integration
 

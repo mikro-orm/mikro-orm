@@ -93,14 +93,14 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
     expect(typeof ScalarReference).toBe('function');
   });
 
-  describe('customType on routine params/return', () => {
+  describe('Type class at params/returns drives marshalling, runtime type, and column type', () => {
     let orm2: MikroORM;
 
     const Echo = new Routine({
       name: 'echo_typed',
       type: 'function',
-      params: { input: { type: 'text', customType: UpperCaseType } },
-      returns: { runtimeType: 'string', columnType: 'text', customType: new UpperCaseType() },
+      params: { input: { type: UpperCaseType } },
+      returns: { type: UpperCaseType },
       body: 'SELECT input',
       // bodyJs sees the value after convertToDatabaseValue (uppercase).
       bodyJs: ({ input }: { input: string }) => input,
@@ -123,7 +123,7 @@ describe('stored routines — end-to-end via MikroORM.init', () => {
       expect(result).toBe('<<JON>>');
     });
 
-    it('accepts customType as either an instance or a constructor', () => {
+    it('accepts a Type class at `type` for both params and returns', () => {
       const param = Echo.params[0];
       expect(param.customType).toBeInstanceOf(UpperCaseType);
       expect(Echo.returnCustomType).toBeInstanceOf(UpperCaseType);
