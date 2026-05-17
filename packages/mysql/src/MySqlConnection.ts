@@ -1,6 +1,6 @@
 import { type ControlledTransaction, type MysqlPool, type MysqlPoolConnection, MysqlDialect } from 'kysely';
 import { createPool, type Pool, type PoolOptions } from 'mysql2';
-import { type Routine, ScalarReference, type Transaction } from '@mikro-orm/core';
+import { type Routine, type Transaction } from '@mikro-orm/core';
 import {
   type ConnectionConfig,
   type Dictionary,
@@ -94,15 +94,7 @@ export class MySqlConnection extends AbstractSqlConnection {
     const name = this.platform.quoteIdentifier(routine.name);
 
     if (routine.type === 'function') {
-      const placeholders = routine.params.map(() => '?').join(', ');
-      const positional = routine.params.map(p => this.convertRoutineInbound(args[p.name as string], p));
-      const rows = (await this.execute(
-        `select ${name}(${placeholders}) as value`,
-        positional,
-        'all',
-        ctx,
-      )) as Dictionary[];
-      return this.convertRoutineOutbound<T>(rows[0]?.value, routine.returnCustomType);
+      return this.callRoutineFunction(routine, args, name, ctx);
     }
 
     const callPlaceholders: string[] = [];
@@ -152,15 +144,11 @@ export class MySqlConnection extends AbstractSqlConnection {
           .map(o => `${o.varName} as ${this.platform.quoteIdentifier(o.name)}`)
           .join(', ');
         const rows = (await this.execute(`select ${selectClause}`, [], 'all', sharedCtx)) as Dictionary[];
-        const row = rows[0] ?? {};
-
-        for (const { name: paramName, param } of outVarParams) {
-          const ref = args[paramName];
-
-          if (ref instanceof ScalarReference) {
-            ref.set(this.convertRoutineOutbound(row[paramName], param.customType));
-          }
-        }
+        this.applyRoutineOutParams(
+          rows[0] ?? {},
+          outVarParams.map(o => o.param),
+          args,
+        );
       }
 
       return (resultSets.length > 0 ? resultSets : undefined) as T;

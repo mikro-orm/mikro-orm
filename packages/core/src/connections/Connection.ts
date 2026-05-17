@@ -207,6 +207,48 @@ export abstract class Connection {
     return customType.convertToJSValue(value, this.platform) as T;
   }
 
+  /**
+   * Executes a scalar function routine as `select <qualifiedName>(?, ?, ...) as value`, marshalling
+   * IN params on the way in and the return value on the way out. Drivers that build the qualified
+   * name differently (schema-mandatory MSSQL, optional schema on PG) supply the pre-quoted string.
+   *
+   * @internal
+   */
+  protected async callRoutineFunction<T>(
+    routine: Routine,
+    args: Record<string, unknown>,
+    qualifiedName: string,
+    ctx?: Transaction,
+  ): Promise<T> {
+    const placeholders = routine.params.map(() => '?').join(', ');
+    const positional = routine.params.map(p => this.convertRoutineInbound(args[p.name as string], p));
+    const rows = (await this.execute(
+      `select ${qualifiedName}(${placeholders}) as value`,
+      positional,
+      'all',
+      ctx,
+    )) as Dictionary[];
+
+    return this.convertRoutineOutbound<T>(rows[0]?.value, routine.returnCustomType);
+  }
+
+  /**
+   * Walks a result row produced by an OUT/INOUT-param SELECT and writes each value into the
+   * caller's `ScalarReference` slot. Non-reference args are ignored (the user opted out of
+   * receiving the OUT value).
+   *
+   * @internal
+   */
+  protected applyRoutineOutParams(row: Dictionary, outParams: RoutineProperty[], args: Record<string, unknown>): void {
+    for (const param of outParams) {
+      const ref = args[param.name as string];
+
+      if (ref instanceof ScalarReference) {
+        ref.set(this.convertRoutineOutbound(row[param.name as string], param.customType));
+      }
+    }
+  }
+
   /** Parses and returns the resolved connection configuration (host, port, user, etc.). */
   getConnectionOptions(): ConnectionConfig {
     const ret: ConnectionConfig = {};

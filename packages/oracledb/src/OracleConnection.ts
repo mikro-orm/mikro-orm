@@ -14,7 +14,6 @@ import {
   Utils,
 } from '@mikro-orm/sql';
 import type { Routine } from '@mikro-orm/core';
-import { ScalarReference } from '@mikro-orm/core';
 import { CompiledQuery } from 'kysely';
 import oracledb, { type ExecuteOptions, type PoolAttributes } from 'oracledb';
 
@@ -326,17 +325,11 @@ export class OracleConnection extends AbstractSqlConnection {
       }
 
       if (outBinds) {
-        for (const p of routine.params) {
-          if (p.direction === 'in') {
-            continue;
-          }
-
-          const ref = args[p.name as string];
-
-          if (ref instanceof ScalarReference) {
-            ref.set(this.convertRoutineOutbound(outBinds[p.name as string], p.customType));
-          }
-        }
+        this.applyRoutineOutParams(
+          outBinds as Dictionary,
+          routine.params.filter(p => p.direction !== 'in'),
+          args,
+        );
       }
 
       return undefined as T;

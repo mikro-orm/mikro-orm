@@ -2,7 +2,7 @@ import { Pool, type PoolConfig, TypeOverrides } from 'pg';
 import Cursor from 'pg-cursor';
 import { PostgresDialect } from 'kysely';
 import array from 'postgres-array';
-import { type Dictionary, type Routine, ScalarReference, type Transaction } from '@mikro-orm/core';
+import { type Dictionary, type Routine, type Transaction } from '@mikro-orm/core';
 import { AbstractSqlConnection, createPostgreSqlTypeParsers, Utils } from '@mikro-orm/sql';
 
 /** PostgreSQL database connection using the `pg` driver. */
@@ -37,19 +37,11 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
   }
 
   override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
-    const placeholders = routine.params.map(() => '?').join(', ');
-    const positional = routine.params.map(p => this.convertRoutineInbound(args[p.name as string], p));
     const quoted = (id: string) => this.platform.quoteIdentifier(id);
     const qualified = (routine.schema ? `${quoted(routine.schema)}.` : '') + quoted(routine.name);
 
     if (routine.type === 'function') {
-      const rows = (await this.execute(
-        `select ${qualified}(${placeholders}) as value`,
-        positional,
-        'all',
-        ctx,
-      )) as Dictionary[];
-      return this.convertRoutineOutbound<T>(rows[0]?.value, routine.returnCustomType);
+      return this.callRoutineFunction(routine, args, qualified, ctx);
     }
 
     // Refcursor OUT params come back as server-generated cursor names to FETCH from later.
@@ -64,20 +56,13 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
       );
     }
 
+    const placeholders = routine.params.map(() => '?').join(', ');
+    const positional = routine.params.map(p => this.convertRoutineInbound(args[p.name as string], p));
     const rows = (await this.execute(`call ${qualified}(${placeholders})`, positional, 'all', ctx)) as Dictionary[];
     const row = rows[0] ?? {};
 
-    for (const param of routine.params) {
-      if (param.direction === 'in' || refcursorParams.includes(param)) {
-        continue;
-      }
-
-      const ref = args[param.name as string];
-
-      if (ref instanceof ScalarReference) {
-        ref.set(this.convertRoutineOutbound(row[param.name as string], param.customType));
-      }
-    }
+    const scalarOutParams = routine.params.filter(p => p.direction !== 'in' && !refcursorParams.includes(p));
+    this.applyRoutineOutParams(row, scalarOutParams, args);
 
     if (refcursorParams.length > 0) {
       return (await this.fetchRefcursors(row, routine, refcursorParams, ctx)) as T;

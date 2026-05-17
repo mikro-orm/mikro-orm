@@ -60,15 +60,6 @@ export class SqliteConnection extends BaseSqliteConnection {
       this.#registeredRoutines.set(routine.name, fn);
     }
 
-    const positional = routine.params.map(p => this.convertRoutineInbound(args[p.name as string], p));
-    const placeholders = routine.params.map(() => '?').join(', ');
-    const rows = await this.execute<Dictionary[]>(
-      `select ${this.platform.quoteIdentifier(routine.name)}(${placeholders}) as value`,
-      positional,
-      'all',
-      ctx,
-    );
-
-    return this.convertRoutineOutbound<T>(rows[0]?.value, routine.returnCustomType);
+    return this.callRoutineFunction(routine, args, this.platform.quoteIdentifier(routine.name), ctx);
   }
 }

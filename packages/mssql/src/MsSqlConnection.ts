@@ -6,7 +6,7 @@ import {
   Utils,
 } from '@mikro-orm/sql';
 import { type ControlledTransaction, MssqlDialect } from 'kysely';
-import { type Dictionary, type Routine, ScalarReference, type Transaction } from '@mikro-orm/core';
+import { type Dictionary, type Routine, type Transaction } from '@mikro-orm/core';
 import type { ConnectionConfiguration } from 'tedious';
 import * as Tedious from 'tedious';
 import * as Tarn from 'tarn';
@@ -79,15 +79,7 @@ export class MsSqlConnection extends AbstractSqlConnection {
     const qualified = `${this.platform.quoteIdentifier(schema)}.${this.platform.quoteIdentifier(routine.name)}`;
 
     if (routine.type === 'function') {
-      const placeholders = routine.params.map(() => '?').join(', ');
-      const positional = routine.params.map(p => this.convertRoutineInbound(args[p.name as string], p));
-      const rows = (await this.execute(
-        `select ${qualified}(${placeholders}) as value`,
-        positional,
-        'all',
-        ctx,
-      )) as Dictionary[];
-      return this.convertRoutineOutbound<T>(rows[0]?.value, routine.returnCustomType);
+      return this.callRoutineFunction(routine, args, qualified, ctx);
     }
 
     // T-SQL session variables don't persist across execute() calls (different pool connections),
@@ -136,15 +128,11 @@ export class MsSqlConnection extends AbstractSqlConnection {
     }
 
     const rows = result as Dictionary[];
-    const row = rows[0] ?? {};
-
-    for (const { name: paramName, param } of outVars) {
-      const ref = args[paramName];
-
-      if (ref instanceof ScalarReference) {
-        ref.set(this.convertRoutineOutbound(row[paramName], param.customType));
-      }
-    }
+    this.applyRoutineOutParams(
+      rows[0] ?? {},
+      outVars.map(o => o.param),
+      args,
+    );
 
     return undefined as T;
   }
