@@ -1225,22 +1225,6 @@ export interface RoutineProperty<Owner = any> {
   index: number;
 }
 
-/** @internal */
-export function resolveRoutineCustomType(
-  value: Type<unknown> | Constructor<Type<unknown>> | undefined,
-): Type<unknown> | undefined {
-  if (!value) {
-    return undefined;
-  }
-
-  // `__mappedType` lives on the prototype, so a truthy check on the value works.
-  if ((value as Dictionary).__mappedType) {
-    return value as Type<unknown>;
-  }
-
-  return new (value as Constructor<Type<unknown>>)();
-}
-
 export interface RoutineParamConfig {
   runtimeType?: RoutineRuntimeType;
   type?: keyof typeof types | AnyString | Type<any> | Constructor<Type<any>>;
@@ -1282,6 +1266,72 @@ type Nullify<P, V> = P extends { nullable: true } ? V | null : V;
 
 type StripSqlTypeArgs<S extends string> = S extends `${infer Base}(${string}` ? Base : S;
 
+type SqlStringTypes =
+  | 'varchar'
+  | 'char'
+  | 'character'
+  | 'nvarchar'
+  | 'nchar'
+  | 'text'
+  | 'mediumtext'
+  | 'longtext'
+  | 'tinytext'
+  | 'ntext'
+  | 'clob'
+  | 'nclob'
+  | 'citext'
+  | 'xml'
+  | 'uuid'
+  | 'string'
+  | 'decimal'
+  | 'numeric'
+  | 'money'
+  | 'bigint'
+  | 'int8'
+  | 'bigserial';
+
+type SqlNumberTypes =
+  | 'int'
+  | 'integer'
+  | 'smallint'
+  | 'tinyint'
+  | 'mediumint'
+  | 'int2'
+  | 'int4'
+  | 'serial'
+  | 'smallserial'
+  | 'real'
+  | 'float'
+  | 'float4'
+  | 'float8'
+  | 'double';
+
+type SqlBooleanTypes = 'boolean' | 'bool' | 'bit';
+
+type SqlDateTypes =
+  | 'date'
+  | 'datetime'
+  | 'datetime2'
+  | 'smalldatetime'
+  | 'timestamp'
+  | 'timestamptz'
+  | 'time'
+  | 'timetz';
+
+type SqlJsonTypes = 'json' | 'jsonb';
+
+type SqlBufferTypes =
+  | 'blob'
+  | 'tinyblob'
+  | 'mediumblob'
+  | 'longblob'
+  | 'binary'
+  | 'varbinary'
+  | 'bytea'
+  | 'bytes'
+  | 'image'
+  | 'raw';
+
 /**
  * Maps a SQL-flavoured `type` string (e.g. `'varchar(255)'`, `'int'`, `'timestamp'`) to a TS
  * runtime type, used as a fallback when {@link RoutineParamConfig} does not declare an explicit
@@ -1302,71 +1352,17 @@ export type SqlTypeToTs<S> = S extends string
           ? Date
           : Lowercase<StripSqlTypeArgs<S>> extends 'long raw'
             ? Buffer
-            : Lowercase<StripSqlTypeArgs<S>> extends
-                  | 'varchar'
-                  | 'char'
-                  | 'character'
-                  | 'nvarchar'
-                  | 'nchar'
-                  | 'text'
-                  | 'mediumtext'
-                  | 'longtext'
-                  | 'tinytext'
-                  | 'ntext'
-                  | 'clob'
-                  | 'nclob'
-                  | 'citext'
-                  | 'xml'
-                  | 'uuid'
-                  | 'string'
-                  | 'decimal'
-                  | 'numeric'
-                  | 'money'
-                  | 'bigint'
-                  | 'int8'
-                  | 'bigserial'
+            : Lowercase<StripSqlTypeArgs<S>> extends SqlStringTypes
               ? string
-              : Lowercase<StripSqlTypeArgs<S>> extends
-                    | 'int'
-                    | 'integer'
-                    | 'smallint'
-                    | 'tinyint'
-                    | 'mediumint'
-                    | 'int2'
-                    | 'int4'
-                    | 'serial'
-                    | 'smallserial'
-                    | 'real'
-                    | 'float'
-                    | 'float4'
-                    | 'float8'
-                    | 'double'
+              : Lowercase<StripSqlTypeArgs<S>> extends SqlNumberTypes
                 ? number
-                : Lowercase<StripSqlTypeArgs<S>> extends 'boolean' | 'bool' | 'bit'
+                : Lowercase<StripSqlTypeArgs<S>> extends SqlBooleanTypes
                   ? boolean
-                  : Lowercase<StripSqlTypeArgs<S>> extends
-                        | 'date'
-                        | 'datetime'
-                        | 'datetime2'
-                        | 'smalldatetime'
-                        | 'timestamp'
-                        | 'timestamptz'
-                        | 'time'
-                        | 'timetz'
+                  : Lowercase<StripSqlTypeArgs<S>> extends SqlDateTypes
                     ? Date
-                    : Lowercase<StripSqlTypeArgs<S>> extends 'json' | 'jsonb'
+                    : Lowercase<StripSqlTypeArgs<S>> extends SqlJsonTypes
                       ? Dictionary
-                      : Lowercase<StripSqlTypeArgs<S>> extends
-                            | 'blob'
-                            | 'tinyblob'
-                            | 'mediumblob'
-                            | 'longblob'
-                            | 'binary'
-                            | 'varbinary'
-                            | 'bytea'
-                            | 'bytes'
-                            | 'image'
-                            | 'raw'
+                      : Lowercase<StripSqlTypeArgs<S>> extends SqlBufferTypes
                         ? Buffer
                         : any
   : any;

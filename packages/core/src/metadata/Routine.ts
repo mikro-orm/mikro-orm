@@ -12,9 +12,15 @@ import type {
   RoutineReturns,
   RoutineSecurity,
 } from '../typings.js';
-import { resolveRoutineCustomType } from '../typings.js';
 import type { Type } from '../types/Type.js';
 import type { Raw } from '../utils/RawQueryFragment.js';
+
+// Resolve a `Type<unknown> | Constructor<Type<unknown>>` to an instance. Each built-in `Type` has
+// `__mappedType` on its prototype so any constructed instance carries it; a missing brand means a
+// raw constructor that we instantiate.
+const toTypeInstance = (value: Type<unknown> | Constructor<Type<unknown>>): Type<unknown> => {
+  return (value as Dictionary).__mappedType ? (value as Type<unknown>) : new (value as Constructor<Type<unknown>>)();
+};
 
 /**
  * Stored procedure or function declaration. Register instances via the `routines` config option
@@ -83,7 +89,7 @@ export class Routine<
     this.ignoreSchemaChanges = config.ignoreSchemaChanges;
 
     this.params = Object.entries(config.params ?? {}).map(([name, opts], index) => {
-      const explicitCustom = resolveRoutineCustomType(opts.customType);
+      const explicitCustom = opts.customType ? toTypeInstance(opts.customType) : undefined;
       const rawType = opts.type;
       let type: string | Type<unknown>;
       let customType: Type<unknown> | undefined;
@@ -95,9 +101,7 @@ export class Routine<
         // A `Type` instance or constructor at `type` both defines the column (via
         // `getColumnType` at schema-gen time) and acts as the default `customType` for
         // marshalling. An explicit `customType` on the same param overrides the marshalling side.
-        const instance = (rawType as Dictionary).__mappedType
-          ? (rawType as Type<unknown>)
-          : new (rawType as Constructor<Type<unknown>>)();
+        const instance = toTypeInstance(rawType);
         type = instance;
         customType = explicitCustom ?? instance;
       }
@@ -119,8 +123,13 @@ export class Routine<
       };
     });
 
-    if (config.returns && typeof config.returns === 'object' && 'customType' in config.returns) {
-      this.returnCustomType = resolveRoutineCustomType(config.returns.customType);
+    if (
+      config.returns &&
+      typeof config.returns === 'object' &&
+      'customType' in config.returns &&
+      config.returns.customType
+    ) {
+      this.returnCustomType = toTypeInstance(config.returns.customType);
     }
   }
 
