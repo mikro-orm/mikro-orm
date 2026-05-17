@@ -42,11 +42,14 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
         }),
       );
 
+    // Collections must exist before we touch indexes. `createIndex` on a missing collection
+    // races with the explicit `createCollection` above, and on retries the recovery path can
+    // see partial state and drop indexes that were already created successfully.
+    await Promise.all(promises);
+
     if (options.ensureIndexes) {
       await this.ensureIndexes({ ensureCollections: false });
     }
-
-    await Promise.all(promises);
   }
 
   override async drop(options: { dropMigrationsTable?: boolean } = {}): Promise<void> {
