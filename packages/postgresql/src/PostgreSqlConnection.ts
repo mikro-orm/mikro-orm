@@ -2,14 +2,7 @@ import { Pool, type PoolConfig, TypeOverrides } from 'pg';
 import Cursor from 'pg-cursor';
 import { PostgresDialect } from 'kysely';
 import array from 'postgres-array';
-import {
-  convertRoutineInbound,
-  convertRoutineOutbound,
-  type Dictionary,
-  ScalarReference,
-  type Routine,
-  type Transaction,
-} from '@mikro-orm/core';
+import { type Dictionary, Routine, ScalarReference, type Transaction } from '@mikro-orm/core';
 import { AbstractSqlConnection, createPostgreSqlTypeParsers, Utils } from '@mikro-orm/sql';
 
 /** PostgreSQL database connection using the `pg` driver. */
@@ -45,7 +38,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
 
   override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
     const placeholders = routine.params.map(() => '?').join(', ');
-    const positional = routine.params.map(p => convertRoutineInbound(args[p.name as string], p, this.platform));
+    const positional = routine.params.map(p => Routine.convertInbound(args[p.name as string], p, this.platform));
     const quoted = (id: string) => this.platform.quoteIdentifier(id);
     const qualified = (routine.schema ? `${quoted(routine.schema)}.` : '') + quoted(routine.name);
 
@@ -56,7 +49,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
         'all',
         ctx,
       )) as Dictionary[];
-      return convertRoutineOutbound<T>(rows[0]?.value, routine.returnCustomType, this.platform);
+      return Routine.convertOutbound<T>(rows[0]?.value, routine.returnCustomType, this.platform);
     }
 
     // Refcursor OUT params come back as server-generated cursor names to FETCH from later.
@@ -80,7 +73,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
       const ref = args[param.name as string];
 
       if (ref instanceof ScalarReference) {
-        ref.set(convertRoutineOutbound(row[param.name as string], param.customType, this.platform));
+        ref.set(Routine.convertOutbound(row[param.name as string], param.customType, this.platform));
       }
     }
 

@@ -13,7 +13,7 @@ import {
   type Transaction,
   Utils,
 } from '@mikro-orm/sql';
-import { convertRoutineInbound, convertRoutineOutbound, ScalarReference, type Routine } from '@mikro-orm/core';
+import { Routine, ScalarReference } from '@mikro-orm/core';
 import { CompiledQuery } from 'kysely';
 import oracledb, { type ExecuteOptions, type PoolAttributes } from 'oracledb';
 
@@ -261,12 +261,12 @@ export class OracleConnection extends AbstractSqlConnection {
         for (const p of routine.params) {
           bindings[p.name as string] = {
             dir: oracledb.BIND_IN,
-            val: convertRoutineInbound(args[p.name as string], p, this.platform),
+            val: Routine.convertInbound(args[p.name as string], p, this.platform),
           };
         }
 
         const result = await oracleConn.execute(block, bindings, { autoCommit: true });
-        return convertRoutineOutbound<T>(
+        return Routine.convertOutbound<T>(
           (result.outBinds as Dictionary)?.mo_ret,
           routine.returnCustomType,
           this.platform,
@@ -279,7 +279,7 @@ export class OracleConnection extends AbstractSqlConnection {
       const refCursorParams: string[] = [];
 
       for (const p of routine.params) {
-        const value = convertRoutineInbound(args[p.name as string], p, this.platform);
+        const value = Routine.convertInbound(args[p.name as string], p, this.platform);
         const isRefCursor = /sys_refcursor|ref\s*cursor/i.test(p.type);
 
         if (p.direction === 'in') {
@@ -337,7 +337,7 @@ export class OracleConnection extends AbstractSqlConnection {
           const ref = args[p.name as string];
 
           if (ref instanceof ScalarReference) {
-            ref.set(convertRoutineOutbound(outBinds[p.name as string], p.customType, this.platform));
+            ref.set(Routine.convertOutbound(outBinds[p.name as string], p.customType, this.platform));
           }
         }
       }

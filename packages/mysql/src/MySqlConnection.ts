@@ -1,12 +1,6 @@
 import { type ControlledTransaction, type MysqlPool, type MysqlPoolConnection, MysqlDialect } from 'kysely';
 import { createPool, type Pool, type PoolOptions } from 'mysql2';
-import {
-  convertRoutineInbound,
-  convertRoutineOutbound,
-  ScalarReference,
-  type Routine,
-  type Transaction,
-} from '@mikro-orm/core';
+import { Routine, ScalarReference, type Transaction } from '@mikro-orm/core';
 import {
   type ConnectionConfig,
   type Dictionary,
@@ -101,14 +95,14 @@ export class MySqlConnection extends AbstractSqlConnection {
 
     if (routine.type === 'function') {
       const placeholders = routine.params.map(() => '?').join(', ');
-      const positional = routine.params.map(p => convertRoutineInbound(args[p.name as string], p, this.platform));
+      const positional = routine.params.map(p => Routine.convertInbound(args[p.name as string], p, this.platform));
       const rows = (await this.execute(
         `select ${name}(${placeholders}) as value`,
         positional,
         'all',
         ctx,
       )) as Dictionary[];
-      return convertRoutineOutbound<T>(rows[0]?.value, routine.returnCustomType, this.platform);
+      return Routine.convertOutbound<T>(rows[0]?.value, routine.returnCustomType, this.platform);
     }
 
     const callPlaceholders: string[] = [];
@@ -118,7 +112,7 @@ export class MySqlConnection extends AbstractSqlConnection {
     routine.params.forEach((p, i) => {
       if (p.direction === 'in') {
         callPlaceholders.push('?');
-        callValues.push(convertRoutineInbound(args[p.name as string], p, this.platform));
+        callValues.push(Routine.convertInbound(args[p.name as string], p, this.platform));
         return;
       }
 
@@ -137,7 +131,7 @@ export class MySqlConnection extends AbstractSqlConnection {
           const varName = `@_mikro_orm_routine_${i}`;
           await this.execute(
             `set ${varName} := ?`,
-            [convertRoutineInbound(args[p.name as string], p, this.platform)],
+            [Routine.convertInbound(args[p.name as string], p, this.platform)],
             'run',
             sharedCtx,
           );
@@ -162,7 +156,7 @@ export class MySqlConnection extends AbstractSqlConnection {
           const ref = args[paramName];
 
           if (ref instanceof ScalarReference) {
-            ref.set(convertRoutineOutbound(row[paramName], param.customType, this.platform));
+            ref.set(Routine.convertOutbound(row[paramName], param.customType, this.platform));
           }
         }
       }

@@ -12,7 +12,9 @@ import type {
 } from '../typings.js';
 import { resolveRoutineCustomType } from '../typings.js';
 import type { Type } from '../types/Type.js';
+import type { Platform } from '../platforms/Platform.js';
 import type { Raw } from '../utils/RawQueryFragment.js';
+import { ScalarReference } from '../entity/Reference.js';
 
 /**
  * Stored procedure or function declaration. Register instances via the `routines` config option
@@ -141,5 +143,26 @@ export class Routine<
 
   static is(item: unknown): item is Routine {
     return item instanceof Routine;
+  }
+
+  /** @internal */
+  static convertInbound(value: unknown, param: RoutineProperty | undefined, platform: Platform): unknown {
+    const resolved = value instanceof ScalarReference ? value.unwrap() : value;
+    const coerced = resolved === undefined ? null : resolved;
+
+    if (coerced === null || !param?.customType) {
+      return coerced;
+    }
+
+    return param.customType.convertToDatabaseValue(coerced, platform);
+  }
+
+  /** @internal */
+  static convertOutbound<T>(value: unknown, customType: Type<unknown> | undefined, platform: Platform): T {
+    if (value === null || value === undefined || !customType) {
+      return value as T;
+    }
+
+    return customType.convertToJSValue(value, platform) as T;
   }
 }
