@@ -98,7 +98,6 @@ import { TransactionManager } from './utils/TransactionManager.js';
  * such as UnitOfWork, Query Language, and Repository API.
  * @template {IDatabaseDriver} Driver current driver type
  */
-
 export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /** @internal */
   declare readonly '~entities'?: unknown;
