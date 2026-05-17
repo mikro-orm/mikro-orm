@@ -304,6 +304,19 @@ export class SchemaComparator {
       return true;
     }
 
+    // `language` (PG) / `dataAccess` (MySQL) follow the same to-side-wins policy: only diff when
+    // the metadata explicitly declares them, otherwise the create DDL's defaults will line up with
+    // whatever the engine introspected.
+    if (to.language != null && (from.language ?? '').toLowerCase() !== to.language.toLowerCase()) {
+      this.log(`routine ${from.name}: language ${from.language} -> ${to.language}`);
+      return true;
+    }
+
+    if (to.dataAccess != null && from.dataAccess !== to.dataAccess) {
+      this.log(`routine ${from.name}: dataAccess ${from.dataAccess} -> ${to.dataAccess}`);
+      return true;
+    }
+
     if (this.diffRoutineParams(from.params, to.params)) {
       this.log(`routine ${from.name}: params differ`, { from: from.params, to: to.params });
       return true;

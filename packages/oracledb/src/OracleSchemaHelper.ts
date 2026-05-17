@@ -901,12 +901,24 @@ export class OracleSchemaHelper extends SchemaHelper {
     return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;
   }
 
+  /** Oracle identifiers are upper-cased before quoting to match `USER_PROCEDURES` introspection. Cross-schema qualifier mirrors `OracleConnection.callRoutine`. */
+  private qualifiedOracleRoutineName(routine: SqlRoutineDef): string {
+    const name = this.quote(routine.name.toUpperCase());
+    const defaultSchema = this.platform.getDefaultSchemaName();
+
+    if (routine.schema && routine.schema !== defaultSchema) {
+      return `${this.quote(routine.schema.toUpperCase())}.${name}`;
+    }
+
+    return name;
+  }
+
   override createRoutine(routine: SqlRoutineDef): string {
     if (routine.expression) {
       return routine.expression;
     }
 
-    const name = this.quote(routine.name.toUpperCase());
+    const name = this.qualifiedOracleRoutineName(routine);
     const params = routine.params
       .map(p => {
         const dir = p.direction === 'in' ? 'IN' : p.direction === 'out' ? 'OUT' : 'IN OUT';
@@ -928,7 +940,7 @@ export class OracleSchemaHelper extends SchemaHelper {
   /** Uses `IF EXISTS` (Oracle 23c+); older versions can extend this helper. */
   override dropRoutine(routine: SqlRoutineDef): string {
     const kind = routine.type === 'procedure' ? 'procedure' : 'function';
-    return `drop ${kind} if exists ${this.quote(routine.name.toUpperCase())}`;
+    return `drop ${kind} if exists ${this.qualifiedOracleRoutineName(routine)}`;
   }
 
   override async getAllRoutines(connection: AbstractSqlConnection): Promise<SqlRoutineDef[]> {

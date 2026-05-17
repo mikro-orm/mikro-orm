@@ -85,6 +85,21 @@ describe('stored routines — comparator unit tests', () => {
       expect(compare(makeRoutine({ definer: 'root' }), makeRoutine({ definer: undefined }))).toBe(false);
       expect(compare(makeRoutine({ definer: 'root' }), makeRoutine({ definer: 'admin' }))).toBe(true);
     });
+
+    it('only diffs language when metadata side specifies it, case-insensitively', () => {
+      expect(compare(makeRoutine({ language: 'sql' }), makeRoutine({ language: undefined }))).toBe(false);
+      expect(compare(makeRoutine({ language: 'SQL' }), makeRoutine({ language: 'sql' }))).toBe(false);
+      expect(compare(makeRoutine({ language: 'sql' }), makeRoutine({ language: 'plpgsql' }))).toBe(true);
+    });
+
+    it('only diffs dataAccess when metadata side specifies it', () => {
+      expect(compare(makeRoutine({ dataAccess: 'reads-sql-data' }), makeRoutine({ dataAccess: undefined }))).toBe(
+        false,
+      );
+      expect(
+        compare(makeRoutine({ dataAccess: 'reads-sql-data' }), makeRoutine({ dataAccess: 'modifies-sql-data' })),
+      ).toBe(true);
+    });
   });
 
   describe('diffRoutineParams', () => {
