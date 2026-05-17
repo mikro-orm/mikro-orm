@@ -91,11 +91,11 @@ export class MySqlConnection extends AbstractSqlConnection {
   }
 
   override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
-    const name = this.platform.quoteIdentifier(routine.name);
-
     if (routine.type === 'function') {
-      return this.callRoutineFunction(routine, args, name, ctx);
+      return this.callRoutineFunction(routine, args, ctx);
     }
+
+    const name = this.platform.quoteIdentifier(routine.name);
 
     const callPlaceholders: string[] = [];
     const callValues: unknown[] = [];

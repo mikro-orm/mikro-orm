@@ -208,22 +208,25 @@ export abstract class Connection {
   }
 
   /**
-   * Executes a scalar function routine as `select <qualifiedName>(?, ?, ...) as value`, marshalling
-   * IN params on the way in and the return value on the way out. Drivers that build the qualified
-   * name differently (schema-mandatory MSSQL, optional schema on PG) supply the pre-quoted string.
+   * Executes a scalar function routine as `select <qualified>(?, ?, ...) as value`, marshalling
+   * IN params on the way in and the return value on the way out. The qualified name is built
+   * from `routine.schema`, falling back to the platform's default schema (e.g. `dbo` on MSSQL),
+   * which gives MySQL/SQLite a bare name and MSSQL/Oracle the mandatory `schema.name` form.
    *
    * @internal
    */
   protected async callRoutineFunction<T>(
     routine: Routine,
     args: Record<string, unknown>,
-    qualifiedName: string,
     ctx?: Transaction,
   ): Promise<T> {
+    const schema = routine.schema ?? this.platform.getDefaultSchemaName();
+    const qualified =
+      (schema ? `${this.platform.quoteIdentifier(schema)}.` : '') + this.platform.quoteIdentifier(routine.name);
     const placeholders = routine.params.map(() => '?').join(', ');
     const positional = routine.params.map(p => this.convertRoutineInbound(args[p.name as string], p));
     const rows = (await this.execute(
-      `select ${qualifiedName}(${placeholders}) as value`,
+      `select ${qualified}(${placeholders}) as value`,
       positional,
       'all',
       ctx,

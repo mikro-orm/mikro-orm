@@ -60,6 +60,6 @@ export class SqliteConnection extends BaseSqliteConnection {
       this.#registeredRoutines.set(routine.name, fn);
     }
 
-    return this.callRoutineFunction(routine, args, this.platform.quoteIdentifier(routine.name), ctx);
+    return this.callRoutineFunction(routine, args, ctx);
   }
 }

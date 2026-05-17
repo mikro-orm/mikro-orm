@@ -74,13 +74,13 @@ export class MsSqlConnection extends AbstractSqlConnection {
   }
 
   override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
-    const schema = routine.schema ?? this.platform.getDefaultSchemaName() ?? 'dbo';
-    // MSSQL scalar UDF calls must be schema-qualified — `select sql_hash(...)` fails to parse.
-    const qualified = `${this.platform.quoteIdentifier(schema)}.${this.platform.quoteIdentifier(routine.name)}`;
-
     if (routine.type === 'function') {
-      return this.callRoutineFunction(routine, args, qualified, ctx);
+      return this.callRoutineFunction(routine, args, ctx);
     }
+
+    // MSSQL scalar UDF calls must be schema-qualified — `select sql_hash(...)` fails to parse.
+    const schema = routine.schema ?? this.platform.getDefaultSchemaName() ?? 'dbo';
+    const qualified = `${this.platform.quoteIdentifier(schema)}.${this.platform.quoteIdentifier(routine.name)}`;
 
     // T-SQL session variables don't persist across execute() calls (different pool connections),
     // so DECLARE/SET/EXEC/SELECT must go through as a single batch.

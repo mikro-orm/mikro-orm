@@ -37,12 +37,12 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
   }
 
   override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
+    if (routine.type === 'function') {
+      return this.callRoutineFunction(routine, args, ctx);
+    }
+
     const quoted = (id: string) => this.platform.quoteIdentifier(id);
     const qualified = (routine.schema ? `${quoted(routine.schema)}.` : '') + quoted(routine.name);
-
-    if (routine.type === 'function') {
-      return this.callRoutineFunction(routine, args, qualified, ctx);
-    }
 
     // Refcursor OUT params come back as server-generated cursor names to FETCH from later.
     const refcursorParams = routine.params.filter(
