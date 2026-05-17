@@ -181,7 +181,7 @@ export class Configuration<
   readonly #platform!: ReturnType<D['getPlatform']>;
   readonly #cache = new Map<string, any>();
   readonly #extensions = new Map<string, () => unknown>();
-  readonly #routines = new Set<Routine>();
+  readonly #routines: Routine[] = [];
   #routinesNormalised = false;
 
   constructor(options: Partial<Options<any, any, any>>, validate = true) {
@@ -247,15 +247,15 @@ export class Configuration<
    * Mirrors how `subscribers` is exposed — routines are user-supplied input, normalised in place
    * on first access. Duplicate `(schema, name)` pairs and non-Routine entries throw here.
    */
-  getRoutines(): Routine[] {
+  getRoutines(): readonly Routine[] {
     this.normaliseRoutines();
-    return [...this.#routines];
+    return this.#routines;
   }
 
   /** Returns true when the given `Routine` instance was registered via the `routines` config. */
   hasRoutine(routine: Routine): boolean {
     this.normaliseRoutines();
-    return this.#routines.has(routine);
+    return this.#routines.includes(routine);
   }
 
   private normaliseRoutines(): void {
@@ -284,7 +284,7 @@ export class Configuration<
       }
 
       seenKeys.add(key);
-      this.#routines.add(item);
+      this.#routines.push(item);
     }
 
     this.#routinesNormalised = true;

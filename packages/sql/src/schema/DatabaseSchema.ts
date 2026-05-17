@@ -385,7 +385,7 @@ export class DatabaseSchema {
    * from {@link fromMetadata} so the comparator only walks routines when the user actually
    * defined them.
    */
-  addRoutinesFromMetadata(routines: Routine[], platform: AbstractSqlPlatform, em?: any): void {
+  addRoutinesFromMetadata(routines: readonly Routine[], platform: AbstractSqlPlatform, em?: any): void {
     const resolveBody = (raw: unknown): string | undefined => {
       if (raw == null) {
         return undefined;
