@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.17](https://github.com/mikro-orm/mikro-orm/compare/v7.0.16...v7.0.17) (2026-05-17)
+
+
+### Bug Fixes
+
+* **core:** allow local `forceObject: false` to override global setting ([#7739](https://github.com/mikro-orm/mikro-orm/issues/7739)) ([4f5b71d](https://github.com/mikro-orm/mikro-orm/commit/4f5b71d15e5beda58fbb2e803ac4dbebb7bf6ce4)), closes [#7738](https://github.com/mikro-orm/mikro-orm/issues/7738)
+* **core:** avoid duplicate queries when `:ref` populate overlaps with `fields` ([#7720](https://github.com/mikro-orm/mikro-orm/issues/7720)) ([793f079](https://github.com/mikro-orm/mikro-orm/commit/793f079f2f9566a238bfec1a080bffe03aed9141))
+* **core:** carry user-declared STI discriminator through mergeData ([#7736](https://github.com/mikro-orm/mikro-orm/issues/7736)) ([826ab28](https://github.com/mikro-orm/mikro-orm/commit/826ab28d61ab67332cc68279313f15581b5e79c2)), closes [#7735](https://github.com/mikro-orm/mikro-orm/issues/7735)
+* **core:** populate partial inverse one-to-one refs ([#7721](https://github.com/mikro-orm/mikro-orm/issues/7721)) ([a235b42](https://github.com/mikro-orm/mikro-orm/commit/a235b422027f6d1ad8f96c85ad5f59b377272575))
+* **core:** propagate pivot entity to STI root for inverse M:N ([#7725](https://github.com/mikro-orm/mikro-orm/issues/7725)) ([8852875](https://github.com/mikro-orm/mikro-orm/commit/885287580f5a352b51acfe8085fc62960b437bfe)), closes [#7724](https://github.com/mikro-orm/mikro-orm/issues/7724)
+* **core:** scope auto-joined filter refs to fields shared by all polymorphic targets ([#7723](https://github.com/mikro-orm/mikro-orm/issues/7723)) ([d67c2c5](https://github.com/mikro-orm/mikro-orm/commit/d67c2c5f826b68a5175ca848df4f8347fb5a6ec2)), closes [#7722](https://github.com/mikro-orm/mikro-orm/issues/7722)
+* **core:** scope STI subclass discriminator when extends is a schema ([#7727](https://github.com/mikro-orm/mikro-orm/issues/7727)) ([df74b4b](https://github.com/mikro-orm/mikro-orm/commit/df74b4bd6116d9e31812a264fd3903e47f6d8ec4)), closes [#7726](https://github.com/mikro-orm/mikro-orm/issues/7726)
+
+
+
+
+
 ## [7.0.16](https://github.com/mikro-orm/mikro-orm/compare/v7.0.15...v7.0.16) (2026-05-14)
 
 ### Bug Fixes

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.17](https://github.com/mikro-orm/mikro-orm/compare/v7.0.16...v7.0.17) (2026-05-17)
+
+
+### Bug Fixes
+
+* **core:** merge index `columns` overrides with the full property list ([#7733](https://github.com/mikro-orm/mikro-orm/issues/7733)) ([7aad84b](https://github.com/mikro-orm/mikro-orm/commit/7aad84b99c6c018424eadb9ba0923b5f49e6f4bc))
+
+
+
+
+
 ## [7.0.16](https://github.com/mikro-orm/mikro-orm/compare/v7.0.15...v7.0.16) (2026-05-14)
 
 ### Bug Fixes
