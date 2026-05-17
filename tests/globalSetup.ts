@@ -237,7 +237,13 @@ async function cleanupMssqlOrphanFiles(t: SqlTarget): Promise<number> {
 }
 
 export async function setup() {
-  if (!(globalThis as any).__MONGOINSTANCE) {
+  // Narrow-scope test scripts (currently only `test:sqlite`, used by the Windows CI matrix) don't
+  // touch MongoDB, so skip the ~781MB binary download and 3-process replica-set spawn entirely.
+  // It's wasted work on every run and a flake source on Windows where worker startup occasionally
+  // emits unhandled errors that kill the vitest process before its try/catch can absorb them.
+  const skipMongo = process.env.npm_lifecycle_event === 'test:sqlite';
+
+  if (!skipMongo && !(globalThis as any).__MONGOINSTANCE) {
     try {
       const instance = await MongoMemoryReplSet.create({
         replSet: { name: 'rs', count: 3 },
