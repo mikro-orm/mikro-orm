@@ -6,7 +6,6 @@ import type {
   RoutineDataAccess,
   RoutineIgnoreField,
   RoutineKind,
-  RoutineParamConfig,
   RoutineParamMap,
   RoutineProperty,
   RoutineReturnOf,
@@ -86,7 +85,25 @@ export class Routine<
     this.ignoreSchemaChanges = config.ignoreSchemaChanges;
 
     this.params = Object.entries(config.params ?? {}).map(([name, opts], index) => {
-      const { type, customType } = Routine.resolveParamType(opts);
+      const explicitCustom = resolveRoutineCustomType(opts.customType);
+      const rawType = opts.type;
+      let type: string | Type<unknown>;
+      let customType: Type<unknown> | undefined;
+
+      if (rawType == null || typeof rawType === 'string') {
+        type = (rawType as string) ?? 'string';
+        customType = explicitCustom;
+      } else {
+        // A `Type` instance or constructor at `type` both defines the column (via
+        // `getColumnType` at schema-gen time) and acts as the default `customType` for
+        // marshalling. An explicit `customType` on the same param overrides the marshalling side.
+        const instance = (rawType as Dictionary).__mappedType
+          ? (rawType as Type<unknown>)
+          : new (rawType as Constructor<Type<unknown>>)();
+        type = instance;
+        customType = explicitCustom ?? instance;
+      }
+
       return {
         name,
         direction: opts.direction ?? 'in',
@@ -149,33 +166,6 @@ export class Routine<
 
   static is(item: unknown): item is Routine {
     return item instanceof Routine;
-  }
-
-  /**
-   * Resolves the param's `type` option, which may be a SQL string, a `Type` instance, or a `Type`
-   * constructor. When a `Type` is supplied, that Type both defines the column (via its
-   * `getColumnType` — invoked at schema-gen time when the platform is known) and acts as the
-   * default `customType` for marshalling. An explicit `customType` on the same param overrides
-   * the marshalling side; the Type at `type` still drives the column.
-   *
-   * @internal
-   */
-  static resolveParamType(opts: RoutineParamConfig): {
-    type: string | Type<unknown>;
-    customType: Type<unknown> | undefined;
-  } {
-    const rawType = opts.type;
-    const explicitCustom = resolveRoutineCustomType(opts.customType);
-
-    if (rawType == null || typeof rawType === 'string') {
-      return { type: (rawType as string) ?? 'string', customType: explicitCustom };
-    }
-
-    const instance = (rawType as Dictionary).__mappedType
-      ? (rawType as Type<unknown>)
-      : new (rawType as Constructor<Type<unknown>>)();
-
-    return { type: instance, customType: explicitCustom ?? instance };
   }
 
   /** @internal */
