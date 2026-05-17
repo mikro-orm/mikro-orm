@@ -64,9 +64,7 @@ export class EntityGenerator {
       options.takeTables,
       options.skipTables,
     );
-    // Routines are loaded separately from `create()` so the schema comparator only pays for
-    // introspection when the user actually declares routines. The entity generator wants to emit
-    // anything it can find, so we always pull them in here.
+    // The generator emits whatever it can find, so always load routines here.
     await schema.loadRoutines(this.#connection, this.#platform);
     const metadata = await this.getEntityMetadata(schema, options);
     const defaultPath = `${this.#config.get('baseDir')}/generated-entities`;

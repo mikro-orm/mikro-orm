@@ -23,13 +23,7 @@ export class LibSqlConnection extends BaseSqliteConnection {
     });
   }
 
-  /**
-   * libSQL does not currently support user-defined-function registration at runtime —
-   * `libsql.Database.function()` exists in the type declarations but throws "not implemented"
-   * when called. Until upstream wires it up, all routine invocations against libSQL throw with
-   * a clear message. SQLite (better-sqlite3) gets the `bodyJs` UDF bridge in
-   * {@link SqliteConnection.callRoutine}.
-   */
+  /** libsql's `Database.function()` is declared but throws "not implemented"; better-sqlite3 has the UDF bridge. */
   override async callRoutine<T>(routine: Routine, _args: Record<string, unknown> = {}, _ctx?: Transaction): Promise<T> {
     throw new Error(
       `Stored routines are not supported on libSQL. The libsql client does not implement user-defined-function registration; calling routine ${routine.name} would fail at runtime. Use the better-sqlite3 driver for cross-DB testing, or call against a server-side database.`,

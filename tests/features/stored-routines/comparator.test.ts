@@ -66,10 +66,8 @@ describe('stored routines — comparator unit tests', () => {
     });
 
     it('diffs comment in both directions including removal', () => {
-      // Removing a comment from metadata must trigger a diff so the DB-side comment gets dropped.
       expect(compare(makeRoutine({ comment: 'from db' }), makeRoutine({ comment: undefined }))).toBe(true);
       expect(compare(makeRoutine({ comment: 'old' }), makeRoutine({ comment: 'new' }))).toBe(true);
-      // Both sides undefined — no diff.
       expect(compare(makeRoutine({ comment: undefined }), makeRoutine({ comment: undefined }))).toBe(false);
     });
 

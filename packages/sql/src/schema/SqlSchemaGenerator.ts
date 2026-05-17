@@ -153,8 +153,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     for (const routine of toSchema.getRoutines()) {
-      // pad: true forces a blank-line break so each routine becomes its own batch.
-      // MSSQL requires CREATE PROCEDURE/FUNCTION to be the first statement in a batch.
+      // pad=true so each routine is its own batch — MSSQL requires CREATE PROC to be first in a batch.
       this.append(ret, this.helper.createRoutine(routine), true);
     }
 
@@ -353,9 +352,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         this.options.skipViews,
       ));
 
-    // Load routines from DB whenever the dialect supports them (so removing the last
-    // metadata routine still detects the orphan in DB). Dialects without routine support
-    // return [] from getAllRoutines, which is the silent-skip path.
+    // Always load DB routines so orphans are detected when the user removes the last metadata
+    // routine. Dialects without routine support return []; that's the silent-skip path.
     if (options.fromSchema == null) {
       await fromSchema.loadRoutines(this.connection, this.platform, [...schemas]);
     }

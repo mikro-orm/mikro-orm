@@ -17,12 +17,7 @@ import { convertRoutineInbound, convertRoutineOutbound, ScalarReference, type Ro
 import { CompiledQuery } from 'kysely';
 import oracledb, { type ExecuteOptions, type PoolAttributes } from 'oracledb';
 
-/**
- * Maps a routine's declared runtime type to an oracledb bind-descriptor fragment (type + optional
- * `maxSize`). Falls back to STRING/4000 when the metadata doesn't pin down a primitive runtime
- * type — the previous default — so existing string-returning routines keep working without
- * changes. Shared between scalar function returns and procedure OUT/INOUT params.
- */
+/** Maps a routine's declared runtime type to an oracledb bind descriptor; falls back to STRING/4000 when the runtime type is unset. */
 function oracleBindTypeFromRuntime(runtime: string | undefined): Dictionary {
   if (runtime === 'number' || runtime === 'bigint') {
     return { type: oracledb.NUMBER };
@@ -45,12 +40,7 @@ function oracleReturnBind(routine: Routine): Dictionary {
   return { dir: oracledb.BIND_OUT, ...oracleBindTypeFromRuntime(runtime) };
 }
 
-/**
- * Side-effect-free routines (read-only functions) can safely run on a separate Oracle pool
- * connection inside an EM transaction — there's no write to silently auto-commit. Procedures or
- * functions that declare write-ish `dataAccess` are blocked so their writes don't escape the
- * surrounding tx.
- */
+/** Read-only functions can run on a separate Oracle connection inside an EM transaction — write-ish routines would silently auto-commit. */
 function isReadOnlyRoutine(routine: Routine): boolean {
   if (routine.type !== 'function') {
     return false;
@@ -59,11 +49,9 @@ function isReadOnlyRoutine(routine: Routine): boolean {
   return routine.dataAccess === 'no-sql' || routine.dataAccess === 'reads-sql-data';
 }
 
-/** Oracle database connection using the `oracledb` driver. */
 export class OracleConnection extends AbstractSqlConnection {
   private oraclePool?: oracledb.Pool;
-  // Connection acquirer that mirrors the wrapped pool handed to kysely — when `password` is a
-  // callback, this resolves it per-acquire so `callRoutine` doesn't bypass password rotation.
+  // Resolves `password` callbacks per acquire so `callRoutine` doesn't bypass password rotation.
   private acquireOracleConnection?: () => Promise<oracledb.Connection>;
 
   override async createKyselyDialect(overrides: PoolAttributes): Promise<OracleDialect> {
@@ -121,8 +109,6 @@ export class OracleConnection extends AbstractSqlConnection {
       },
     };
 
-    // When password is a callback, wrap the pool to resolve it per-connection.
-    // oracledb supports per-connection password override via getConnection({ password }).
     this.acquireOracleConnection =
       typeof password === 'function'
         ? async () => pool.getConnection({ password: await password() })
@@ -241,17 +227,10 @@ export class OracleConnection extends AbstractSqlConnection {
   }
 
   /**
-   * Oracle-specific routine invocation. Builds an anonymous PL/SQL block that calls the routine
-   * with named bind parameters, using oracledb's `BIND_IN` / `BIND_INOUT` / `BIND_OUT` direction
-   * flags. INOUT/OUT values are copied back into the caller's `ScalarReference` instances.
-   *
-   * The Oracle path acquires its own pool connection with `autoCommit: true` so refcursor binds
-   * and DML inside the routine resolve in a single round-trip. That means it can't share the
-   * EntityManager's transaction — wrapping a call in `em.transactional(...)` would silently let
-   * a procedure's writes auto-commit while the surrounding tx rolls back. We throw early when
-   * `ctx` is set AND the routine could mutate state (procedures, or functions whose `dataAccess`
-   * says they write); read-only functions are allowed through so callers don't have to wrap
-   * every adjacent `em.callRoutine` in a fork.
+   * Oracle routines acquire their own pool connection with `autoCommit: true` (refcursor binds
+   * and DML need to resolve in one round-trip), so they cannot share the EM's transaction. Wrapping
+   * a writing routine in `em.transactional(...)` would silently auto-commit its writes. Read-only
+   * functions are allowed through.
    */
   override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
     /* v8 ignore next 3 */
@@ -266,16 +245,11 @@ export class OracleConnection extends AbstractSqlConnection {
     }
 
     const name = routine.name.toUpperCase();
-    // Oracle resolves routine names against the connected user's schema by default; cross-schema
-    // invocation needs an `OWNER.NAME` prefix. Mirror the schema-helper's quoting (uppercased,
-    // double-quoted) on both branches so identifiers with case-sensitive characters survive
-    // verbatim regardless of whether a schema prefix is present.
+    // Cross-schema needs an `OWNER.NAME` prefix; mirror the schema helper's quoting on both branches.
     const quotedName = this.platform.quoteIdentifier(name);
     const qualifiedName = routine.schema
       ? `${this.platform.quoteIdentifier(routine.schema.toUpperCase())}.${quotedName}`
       : quotedName;
-    // Use the same per-acquire password resolution as the kysely path so callers using a
-    // `password` callback don't hit ORA-01017 on routine invocations.
     const oracleConn = await this.acquireOracleConnection();
 
     try {
@@ -319,8 +293,6 @@ export class OracleConnection extends AbstractSqlConnection {
           continue;
         }
 
-        // Derive the bind type from the param's declared runtimeType so NUMBER/DATE/BUFFER OUT/INOUT
-        // params bind correctly instead of being coerced to STRING.
         const binding: Dictionary = {
           dir: p.direction === 'out' ? oracledb.BIND_OUT : oracledb.BIND_INOUT,
           ...oracleBindTypeFromRuntime(p.runtimeType),
@@ -339,10 +311,6 @@ export class OracleConnection extends AbstractSqlConnection {
       });
       const outBinds = result.outBinds as Dictionary | undefined;
 
-      // When the proc has REF CURSOR OUT params, walk them in declaration order and drain each
-      // into rows. Otherwise treat OUT/INOUT binds as scalar refs. Oracle's REF CURSOR ResultSet
-      // inherits the execute call's `outFormat`, so we set OBJECT mode above to get
-      // `{ column: value }` rows that match the other drivers' shape.
       if (refCursorParams.length > 0 && outBinds) {
         const sets: Dictionary[][] = [];
 
@@ -353,9 +321,7 @@ export class OracleConnection extends AbstractSqlConnection {
           };
           const rows = await cursor.getRows(0);
           await cursor.close();
-          // Oracle lower-cases identifiers via the platform's fetchTypeHandler set in createKyselyDialect,
-          // but ResultSets returned through outBinds use the raw column metadata, so keys come back
-          // uppercase. Normalise to lowercase here for cross-driver consistency.
+          // outBinds ResultSets use raw column metadata (uppercase); lowercase for cross-driver parity.
           sets.push(rows.map(row => Object.fromEntries(Object.entries(row).map(([k, v]) => [k.toLowerCase(), v]))));
         }
 

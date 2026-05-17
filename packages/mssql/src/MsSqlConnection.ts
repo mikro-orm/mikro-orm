@@ -74,15 +74,9 @@ export class MsSqlConnection extends AbstractSqlConnection {
     return Utils.mergeConfig(ret, overrides);
   }
 
-  /**
-   * MSSQL-specific routine invocation. Functions are called via `SELECT dbo.fn(?, ?)`. Procedures
-   * use `DECLARE @v0 ... ; SET @v0 = ?; EXEC dbo.proc ?, @v0 OUTPUT; SELECT @v0` to bind the
-   * caller's `ScalarReference` values for INOUT params and pull the post-call values back out.
-   */
   override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
     const schema = routine.schema ?? this.platform.getDefaultSchemaName() ?? 'dbo';
-    // MSSQL scalar UDF calls must be schema-qualified - `select sql_hash(...)` fails to parse,
-    // while `select dbo.sql_hash(...)` works.
+    // MSSQL scalar UDF calls must be schema-qualified — `select sql_hash(...)` fails to parse.
     const qualified = `${this.platform.quoteIdentifier(schema)}.${this.platform.quoteIdentifier(routine.name)}`;
 
     if (routine.type === 'function') {
@@ -97,9 +91,8 @@ export class MsSqlConnection extends AbstractSqlConnection {
       return convertRoutineOutbound<T>(rows[0]?.value, routine.returnCustomType, this.platform);
     }
 
-    // T-SQL session variables don't persist across separate execute() calls (each one may use a
-    // different pool connection). Build a single batch with DECLARE + SET + EXEC + SELECT so the
-    // variables stay scoped to one request.
+    // T-SQL session variables don't persist across execute() calls (different pool connections),
+    // so DECLARE/SET/EXEC/SELECT must go through as a single batch.
     const declareLines: string[] = [];
     const setLines: string[] = [];
     const setValues: unknown[] = [];
@@ -126,7 +119,6 @@ export class MsSqlConnection extends AbstractSqlConnection {
       callArgs.push(`${varName} output`);
     });
 
-    // Order values to match the `?` order in the joined batch: SET values first, then EXEC IN values.
     const allValues = [...setValues, ...inValues];
     const batch = [...declareLines, ...setLines, `exec ${qualified} ${callArgs.join(', ')}`];
 

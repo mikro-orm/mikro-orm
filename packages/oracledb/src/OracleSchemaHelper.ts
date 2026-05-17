@@ -901,7 +901,6 @@ export class OracleSchemaHelper extends SchemaHelper {
     return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;
   }
 
-  /** Generates PL/SQL to create or replace an Oracle stored procedure or function. */
   override createRoutine(routine: SqlRoutineDef): string {
     if (routine.expression) {
       return routine.expression;
@@ -911,8 +910,7 @@ export class OracleSchemaHelper extends SchemaHelper {
     const params = routine.params
       .map(p => {
         const dir = p.direction === 'in' ? 'IN' : p.direction === 'out' ? 'OUT' : 'IN OUT';
-        // PL/SQL formal parameters require unconstrained types (e.g. `VARCHAR2`, not
-        // `VARCHAR2(255)` — the length spec only applies to columns).
+        // PL/SQL formal params require unconstrained types — `VARCHAR2`, not `VARCHAR2(255)`.
         return `${this.quote(p.name.toUpperCase())} ${dir} ${stripTypeLength(p.type)}`;
       })
       .join(', ');
@@ -927,13 +925,12 @@ export class OracleSchemaHelper extends SchemaHelper {
     return `create or replace function ${name}${argsClause} return ${returnType} as ${body};`;
   }
 
-  /** Generates PL/SQL to drop an Oracle stored procedure or function. Uses `if exists` to be idempotent (Oracle 23c+); older versions can extend this helper if needed. */
+  /** Uses `IF EXISTS` (Oracle 23c+); older versions can extend this helper. */
   override dropRoutine(routine: SqlRoutineDef): string {
     const kind = routine.type === 'procedure' ? 'procedure' : 'function';
     return `drop ${kind} if exists ${this.quote(routine.name.toUpperCase())}`;
   }
 
-  /** Lists all stored routines from `USER_PROCEDURES`/`USER_SOURCE`/`USER_ARGUMENTS`. */
   override async getAllRoutines(connection: AbstractSqlConnection): Promise<SqlRoutineDef[]> {
     const sql = `
       select
@@ -955,11 +952,8 @@ export class OracleSchemaHelper extends SchemaHelper {
     ]);
     const { params, returns } = paramsAndReturns;
 
-    // Oracle has no per-schema routine catalog (USER_PROCEDURES is implicitly scoped to the
-    // connected user), but the metadata side of `addRoutinesFromMetadata` sets `schema` to the
-    // platform default (the dbName/user) for any platform whose `getDefaultSchemaName()` is
-    // defined. Surface the same value here so `SchemaComparator.routineKey` matches both sides;
-    // without it every routine introspects with `schema: undefined` and churns as new + removed.
+    // Surface the connected user as the schema so the comparator's routineKey matches the
+    // metadata side (which fills `schema` from `getDefaultSchemaName()` when not declared).
     const schemaName = this.platform.getDefaultSchemaName();
 
     return rows.map(row => ({
@@ -976,12 +970,8 @@ export class OracleSchemaHelper extends SchemaHelper {
     params: Map<string, SqlRoutineDef['params']>;
     returns: Map<string, NonNullable<SqlRoutineDef['returns']>>;
   }> {
-    // USER_ARGUMENTS represents a function's return type as a row with POSITION = 0 and
-    // ARGUMENT_NAME = NULL. Read both shapes in one query so schema-diff sees the real return
-    // type rather than a hard-coded VARCHAR2 fallback. The `PACKAGE_NAME is null` filter scopes
-    // results to standalone routines (matching the `PROCEDURE_NAME is null` filter on the parent
-    // USER_PROCEDURES query) so packaged routine rows don't leak into the standalone map when
-    // names collide.
+    // POSITION = 0 / ARGUMENT_NAME = NULL is the function return type; `PACKAGE_NAME is null`
+    // restricts to standalone routines so packaged ones don't leak through name collisions.
     const sql = `
       select
         OBJECT_NAME as routine_name,

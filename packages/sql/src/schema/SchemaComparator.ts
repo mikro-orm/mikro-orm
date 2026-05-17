@@ -236,11 +236,8 @@ export class SchemaComparator {
     return diff;
   }
 
-  /** Compares stored routines between two schemas, populating new/changed/removed buckets. */
   private compareRoutines(fromSchema: DatabaseSchema, toSchema: DatabaseSchema, diff: SchemaDifference): void {
-    // SQL identifiers are case-insensitive when unquoted, and dialects fold the stored form
-    // differently (Oracle uppercases, PG lowercases, MySQL preserves). Compare via case-folded
-    // keys so a user-written `'sql_hash'` matches Oracle's introspected `'SQL_HASH'`.
+    // Case-fold so user-written `'sql_hash'` matches Oracle's introspected `'SQL_HASH'`.
     const routineKey = (r: SqlRoutineDef): string => ((r.schema ? `${r.schema}.` : '') + r.name).toLowerCase();
     const fromByKey = new Map(fromSchema.getRoutines().map(r => [routineKey(r), r]));
     const toByKey = new Map(toSchema.getRoutines().map(r => [routineKey(r), r]));
@@ -268,7 +265,6 @@ export class SchemaComparator {
     }
   }
 
-  /** Returns true if the two routine definitions differ in a way that requires a drop+create. */
   private diffRoutine(from: SqlRoutineDef, to: SqlRoutineDef): boolean {
     const ignore = new Set(to.ignoreSchemaChanges ?? []);
 
@@ -286,17 +282,12 @@ export class SchemaComparator {
       }
     }
 
-    // Comment compares both sides directly so removing `comment: 'foo'` from metadata triggers
-    // a diff and the DB-side comment gets dropped. All drivers introspect missing comments as
-    // `undefined`, so unset-vs-unset agrees.
     if (!ignore.has('comment') && (from.comment ?? '') !== (to.comment ?? '')) {
       return true;
     }
 
-    // security / deterministic / definer differ: every routine in the DB always has a value
-    // (server defaults if not explicitly declared), so leaving them undefined in metadata
-    // means "don't care", not "remove". Compare only when the metadata side declares a value;
-    // users who want to revert to the server default should drop and recreate the routine.
+    // For security/deterministic/definer, unset on the metadata side means "don't care": the
+    // DB always has some server default, comparing it would force a drop+create on every run.
     if (!ignore.has('security') && to.security != null && from.security !== to.security) {
       return true;
     }
@@ -326,22 +317,15 @@ export class SchemaComparator {
     return false;
   }
 
-  /**
-   * Normalises a routine body for comparison: collapses whitespace, strips outer `BEGIN ... END`
-   * wrappers and trailing semicolons so the comparator doesn't churn on cosmetic differences
-   * between the metadata's source body and what the engine round-trips through introspection.
-   */
+  /** Strips outer `BEGIN ... END` and trailing semicolons so the comparator doesn't churn on cosmetic round-trip differences. */
   private normaliseBody(body?: string): string {
     let result = (body ?? '').replace(/\s+/g, ' ').trim();
-
-    // strip outer begin/end if present
     const beginEnd = /^begin\s+([\s\S]*?)\s*end\s*;?\s*$/i.exec(result);
 
     if (beginEnd) {
       result = beginEnd[1].trim();
     }
 
-    // strip trailing semicolons
     return result.replace(/;+\s*$/, '').trim();
   }
 
@@ -362,10 +346,8 @@ export class SchemaComparator {
         return true;
       }
 
-      // No driver currently introspects routine parameter nullability, so the introspected
-      // side is always undefined. Only compare nullable when the introspected side actually
-      // reports it (mirrors the asymmetric `to.nullable != null` guard in `diffRoutineReturns`)
-      // — otherwise a metadata-declared `nullable: true` would churn every `schema:update`.
+      // Asymmetric: drivers don't currently introspect param nullability, so the from side is
+      // always undefined; comparing eagerly would churn metadata-declared `nullable: true`.
       if (a.nullable != null && !!a.nullable !== !!b.nullable) {
         return true;
       }
@@ -374,12 +356,7 @@ export class SchemaComparator {
     return false;
   }
 
-  /**
-   * Normalises a routine parameter type for comparison. Engines drop length/precision modifiers
-   * from parameter signatures (PG turns `varchar(255)` into `character varying`, MySQL keeps
-   * `varchar` without the length, etc.), and use different aliases for the same logical type
-   * (`int` vs `integer`, `varchar` vs `character varying`), so we canonicalise both sides.
-   */
+  /** Engines drop length/precision modifiers and use different aliases for the same logical type — canonicalise both sides. */
   private normaliseParamType(type: string): string {
     const lengthMatch = /^([^()]+)\(([^)]*)\)\s*$/.exec(type);
     const base = (lengthMatch ? lengthMatch[1] : type).trim().toLowerCase();
@@ -389,7 +366,6 @@ export class SchemaComparator {
     return this.#platform.normalizeColumnType(aliased, options).toLowerCase();
   }
 
-  /** Aliases used by `normaliseParamType` so MySQL/PG/MSSQL/Oracle dialect synonyms compare equal. */
   private static readonly PARAM_TYPE_ALIASES: Record<string, string> = {
     int: 'integer',
     int4: 'integer',
@@ -400,8 +376,7 @@ export class SchemaComparator {
     bpchar: 'char',
     float8: 'double precision',
     float4: 'real',
-    // Oracle's USER_ARGUMENTS reports REF CURSOR params as `REF CURSOR` while users declare
-    // them as `sys_refcursor` (the only PL/SQL keyword form); canonicalise to the latter.
+    // Oracle's USER_ARGUMENTS reports `REF CURSOR`; users declare `sys_refcursor`.
     'ref cursor': 'sys_refcursor',
   };
 
@@ -418,8 +393,7 @@ export class SchemaComparator {
       return true;
     }
 
-    // Only diff nullable when the metadata side explicitly specified it - engines tend to
-    // report function returns as nullable, while user metadata typically leaves it undefined.
+    // Engines report function returns as nullable; only diff when metadata explicitly declares it.
     if (to.nullable != null && (from.nullable ?? false) !== to.nullable) {
       return true;
     }

@@ -242,17 +242,12 @@ export class Configuration<
     return this.#options;
   }
 
-  /**
-   * Returns the validated list of stored routines registered via the `routines` config option.
-   * Mirrors how `subscribers` is exposed — routines are user-supplied input, normalised in place
-   * on first access. Duplicate `(schema, name)` pairs and non-Routine entries throw here.
-   */
+  /** Validates the `routines` config option on first access and throws on duplicate `(schema, name)` pairs or non-Routine entries. */
   getRoutines(): readonly Routine[] {
     this.normaliseRoutines();
     return this.#routines;
   }
 
-  /** Returns true when the given `Routine` instance was registered via the `routines` config. */
   hasRoutine(routine: Routine): boolean {
     this.normaliseRoutines();
     return this.#routines.includes(routine);
@@ -273,8 +268,6 @@ export class Configuration<
 
       validator.validateRoutineDefinition(item);
 
-      // Collide on `(schema?, name)` — same pair would emit the same CREATE DDL and
-      // overwrite each other. Surface duplicates loudly instead of silently last-wins.
       const key = (item.schema ? `${item.schema}.` : '') + item.name;
 
       if (seenKeys.has(key)) {
@@ -471,8 +464,7 @@ export class Configuration<
     this.#options.clientUrl ??= this.#platform.getDefaultClientUrl();
     this.#options.implicitTransactions ??= this.#platform.usesImplicitTransactions();
 
-    // Build the routine registry eagerly when validating so invalid declarations and
-    // duplicate names surface at MikroORM.init time rather than on first call.
+    // Eagerly trigger routine validation so errors surface at init time, not on first call.
     if (validate) {
       this.getRoutines();
     }
@@ -893,10 +885,7 @@ export interface Options<
    */
   subscribers: Iterable<EventSubscriber | Constructor<EventSubscriber>>;
   /**
-   * Stored routines (procedures and functions) to register. Accepts {@link Routine} class
-   * instances. Routines are kept separate from `entities` because they don't share discovery
-   * semantics — they're never folder-discovered and never participate in unit-of-work or
-   * query building.
+   * Stored procedures and functions, declared as {@link Routine} instances.
    *
    * @example
    * routines: [HashUser, AddRecord]

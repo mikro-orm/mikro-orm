@@ -721,7 +721,6 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `drop trigger if exists ${triggerName} on ${table.getQuotedName()};\ndrop function if exists ${fnName}()`;
   }
 
-  /** Generates SQL to create a PostgreSQL stored procedure or function. */
   override createRoutine(routine: SqlRoutineDef): string {
     if (routine.expression) {
       return routine.expression;
@@ -729,17 +728,13 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     const qualifiedName = this.qualifiedRoutineName(routine);
     const params = this.formatRoutineParams(routine);
-    // Default to `sql` for functions (most user-supplied bodies are a single SELECT/expression)
-    // and `plpgsql` for procedures (which need block syntax). User can override via `language`.
+    // Default `sql` for functions, `plpgsql` for procedures (block syntax required).
     const language = (routine.language ?? (routine.type === 'procedure' ? 'plpgsql' : 'sql')).toLowerCase();
     const security =
       routine.security === 'definer' ? ' security definer' : routine.security === 'invoker' ? ' security invoker' : '';
     const determinism =
       routine.deterministic === true ? ' immutable' : routine.deterministic === false ? ' volatile' : '';
 
-    // Strip the `;\n` boundaries the schema generator's statement splitter would otherwise trip
-    // on, but keep other whitespace intact so line comments and multi-line string literals in
-    // SQL function bodies survive emission.
     const flatten = (s: string): string => stripStatementNewlines(s).trim();
 
     if (routine.type === 'procedure') {
@@ -752,7 +747,6 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `create or replace function ${qualifiedName}(${params}) returns ${returnType}${security}${determinism} language ${language} as $$ ${body} $$`;
   }
 
-  /** Generates SQL to drop a PostgreSQL stored procedure or function. */
   override dropRoutine(routine: SqlRoutineDef): string {
     const qualifiedName = this.qualifiedRoutineName(routine);
     const argTypes = routine.params.map(p => p.type).join(', ');
@@ -760,7 +754,6 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `drop ${kind} if exists ${qualifiedName}(${argTypes})`;
   }
 
-  /** Lists all stored procedures and functions in the user-visible schemas, with their full source. */
   override async getAllRoutines(connection: AbstractSqlConnection, schemas: string[] = []): Promise<SqlRoutineDef[]> {
     const target = (schemas.length > 0 ? schemas : [this.platform.getDefaultSchemaName()]).filter(Boolean) as string[];
     const schemaList = target.map(s => this.platform.quoteValue(s)).join(', ');
@@ -790,8 +783,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
             and dep.classid = 'pg_proc'::regclass
             and dep.deptype = 'e'
         )
-        -- exclude trigger-helper functions (e.g. created by createTrigger); these are
-        -- managed alongside their owning trigger, not as standalone routines.
+        -- exclude trigger-helper functions; they're managed alongside their owning trigger.
         and p.prorettype <> 'trigger'::regtype
     `;
     const rows = await connection.execute<
@@ -845,11 +837,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     return signature.split(/,(?![^()]*\))/).map(part => {
       const trimmed = part.trim();
-      // Order alternatives longest-first so `INOUT` isn't matched as `IN` + extra chars.
-      // Require trailing whitespace after the direction keyword so parameter names that happen to
-      // begin with `IN` / `OUT` (e.g. `input`) aren't mis-parsed as `IN` + `put`.
-      // Quoted identifier path accepts any character except embedded double quotes (PG escapes
-      // those as `""`); the bare path keeps the `\w$` set.
+      // INOUT before IN/OUT, with required trailing space so identifiers like `input` aren't
+      // mis-parsed as a direction keyword.
       const match = /^(?:(INOUT|VARIADIC|IN|OUT)\s+)?(?:"((?:[^"]|"")+)"|([\w$]+))\s+(.+?)(?:\s+default\s+.+)?$/i.exec(
         trimmed,
       );
@@ -871,11 +860,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     });
   }
 
-  /**
-   * Extracts the routine body from `pg_get_functiondef` output. PG canonicalises dollar quotes
-   * to a tagged form like `$function$ ... $function$` or `$procedure$ ... $procedure$` (with
-   * collision-avoiding tags when needed), so we match the tag-aware form rather than bare `$$`.
-   */
+  /** PG canonicalises `$$` quoting to a tagged form like `$function$ ... $function$`; match the tag-aware form. */
   private extractRoutineBody(fullDef: string): string {
     const tagged = /\bAS\s+\$(\w*)\$([\s\S]*?)\$\1\$/i.exec(fullDef);
     return this.stripRoutineBody(tagged ? tagged[2] : fullDef);

@@ -103,7 +103,6 @@ export class DatabaseSchema {
     return !!this.getView(name);
   }
 
-  /** Adds a stored routine definition to the schema snapshot. */
   addRoutine(routine: SqlRoutineDef): SqlRoutineDef {
     this.#routines.push(routine);
 
@@ -114,7 +113,6 @@ export class DatabaseSchema {
     return routine;
   }
 
-  /** Returns all stored routines tracked by this schema. */
   getRoutines(): SqlRoutineDef[] {
     return this.#routines;
   }
@@ -190,12 +188,7 @@ export class DatabaseSchema {
     return schema;
   }
 
-  /**
-   * Loads stored routines (procedures/functions) from the database into this schema snapshot.
-   * Called separately from `create()` so the comparator only pays for routine introspection
-   * when the user actually defined routines in metadata. SQLite/libSQL helpers return [] which
-   * is the silent-skip path.
-   */
+  /** Separate from `create()` so the comparator only pays for routine introspection when the user actually defined routines. SQLite/libSQL helpers return []. */
   async loadRoutines(
     connection: AbstractSqlConnection,
     platform: AbstractSqlPlatform,
@@ -380,11 +373,7 @@ export class DatabaseSchema {
     return schema;
   }
 
-  /**
-   * Populates this schema with routine entries derived from routine metadata. Called separately
-   * from {@link fromMetadata} so the comparator only walks routines when the user actually
-   * defined them.
-   */
+  /** Separate from {@link fromMetadata} so the comparator only walks routines when the user defined any. */
   addRoutinesFromMetadata(routines: readonly Routine[], platform: AbstractSqlPlatform, em?: any): void {
     const resolveBody = (raw: unknown): string | undefined => {
       if (raw == null) {
@@ -426,9 +415,7 @@ export class DatabaseSchema {
 
       this.addRoutine({
         name: routine.name,
-        // Only attach schema when explicitly declared or when the platform actually scopes
-        // routines per schema. MySQL has no schema namespace for routines, so leave undefined
-        // to align with the introspection side.
+        // MySQL has no schema namespace for routines, so leave undefined to align with the introspection side.
         schema: routine.schema ?? (platform.getDefaultSchemaName() != null ? this.name : undefined),
         type: routine.type,
         language: routine.language,
@@ -452,12 +439,7 @@ export class DatabaseSchema {
     }
   }
 
-  /**
-   * Resolves a user-supplied routine param type (e.g. `'string'`, `'int'`, or a literal SQL type
-   * like `'varchar(255)'`) to a platform-specific column type. If the user already supplied a SQL
-   * type literal it's passed through; common aliases ('string', 'number', etc.) are mapped via
-   * the platform's type system.
-   */
+  /** Maps `'string'`/`'number'`/… aliases through the platform's type system; literal SQL types pass through. */
   private static resolveRoutineColumnType(type: string, platform: AbstractSqlPlatform): string {
     const lower = type.toLowerCase();
     const aliases: Record<string, string> = {

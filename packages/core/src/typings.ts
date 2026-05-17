@@ -1154,22 +1154,18 @@ export type RoutineSecurity = 'invoker' | 'definer';
 
 export type RoutineKind = 'procedure' | 'function';
 
-/** Fields the schema comparator can be told to ignore when diffing a routine's DB shape vs metadata. */
 export type RoutineIgnoreField = 'body' | 'comment' | 'security' | 'deterministic' | 'definer';
 
-/** Mapping from routine parameter names to their SQL placeholder/identifier inside a routine body callback. */
 export type RoutineParamMap<T> = Record<PropertyName<T>, string>;
 
-/** Callback for the SQL body of a stored routine. Receives parameter name mappings and the EntityManager building the routine. */
 export type RoutineBodyCallback<T> = (params: RoutineParamMap<T>, em: any) => string | Raw;
 
 /**
- * Type of a routine's return shape. May be:
- *  - omitted/`void` for procedures with no result set,
- *  - a single thunk returning an entity class or schema (single result set hydrated as that entity),
- *  - a tuple of such thunks for procedures returning multiple result sets,
- *  - a `{ runtimeType, columnType }` descriptor for scalar function returns,
- *  - a `{ hydrate }` callback for fully custom row mapping.
+ * Routine return shape:
+ *  - omitted/`void`: procedures with no result set
+ *  - `() => Entity` (single or tuple): hydrated row arrays, one per result set
+ *  - `{ runtimeType, columnType }`: scalar function return
+ *  - `{ hydrate }`: fully custom row mapping
  */
 export type RoutineReturns<T = unknown> =
   | (() => EntityName<any>)
@@ -1178,98 +1174,58 @@ export type RoutineReturns<T = unknown> =
       runtimeType: RoutineRuntimeType;
       columnType?: string;
       nullable?: boolean;
-      /** Custom `Type` instance (or constructor) used to marshal the scalar return value back into JS. */
       customType?: Type<unknown> | Constructor<Type<unknown>>;
     }
   | { hydrate: (rows: Dictionary[][], args: T, em: any) => unknown };
 
-/**
- * JS fallback body used by SQLite/libSQL drivers, registered via the underlying
- * driver's user-defined-function API on connection open. Only valid for `type: 'function'`.
- * Other drivers ignore this option entirely.
- */
+/** JS fallback registered as a UDF on SQLite (better-sqlite3). Functions only. */
 export type RoutineJsBody<T> = (params: T) => unknown;
 
-/** Definition of a stored procedure or function declared via the {@link Routine} class. */
 export interface RoutineDef<T = any> {
-  /** Whether this routine is a stored procedure or stored function. */
   type: RoutineKind;
-  /** Routine name. Falls back to the class/declaration name when omitted. */
+  /** Falls back to the class/declaration name when omitted. */
   name?: string;
-  /** Optional schema/namespace (PostgreSQL, MSSQL, Oracle). */
   schema?: string;
-  /** Optional comment stored alongside the routine in the database. */
   comment?: string;
-  /** Security context used at execution time. Defaults to driver-specific behaviour. */
   security?: RoutineSecurity;
-  /** User the routine runs as when `security: 'definer'`. Driver-specific. */
+  /** User the routine runs as when `security: 'definer'`. */
   definer?: string;
-  /** Whether the routine is declared deterministic. Drives optimizer hints (MySQL) and replication semantics. */
   deterministic?: boolean;
-  /** SQL data-access category (MySQL/MariaDB). */
+  /** MySQL/MariaDB only. */
   dataAccess?: RoutineDataAccess;
-  /** Implementation language. Most useful in PostgreSQL (`sql`, `plpgsql`, `plperl`, …) and Oracle (`plsql`). */
   language?: 'sql' | 'plpgsql' | 'tsql' | 'plsql' | AnyString;
-  /**
-   * SQL body of the routine. Can be a literal string, a `Raw` fragment, or a callback
-   * receiving the resolved parameter name map and an EntityManager instance.
-   * Mutually exclusive with `expression`.
-   */
+  /** Mutually exclusive with `expression`. */
   body?: string | Raw | RoutineBodyCallback<T>;
-  /**
-   * Raw DDL escape hatch — the full `CREATE PROCEDURE`/`CREATE FUNCTION` statement.
-   * Schema diff cannot detect changes to expression-based routines; prefer `body`.
-   * Mutually exclusive with `body`.
-   */
+  /** Raw `CREATE PROCEDURE`/`FUNCTION` escape hatch — schema diff can't detect changes. Prefer `body`. */
   expression?: string;
-  /**
-   * JS fallback used by SQLite/libSQL only. Registered via `db.function()` on connection open
-   * so that calling code can target the same routine name on a SQLite test database while
-   * production runs on a server-side SQL implementation. Functions only — procedures cannot be bridged.
-   */
+  /** JS fallback registered as a UDF on SQLite (better-sqlite3). Functions only. */
   bodyJs?: RoutineJsBody<T>;
-  /** Routine return shape — see {@link RoutineReturns}. Required for `type: 'function'`. */
   returns?: RoutineReturns<T>;
-  /**
-   * Schema-diff fields to ignore when comparing this routine's database state with the metadata.
-   * Useful for routines whose body is normalised differently by the server vs. what the user wrote.
-   */
+  /** Skip selected fields in schema diff; useful when the engine normalises the body differently. */
   ignoreSchemaChanges?: RoutineIgnoreField[];
 }
 
-/** Describes a single parameter of a stored routine. */
 export interface RoutineProperty<Owner = any> {
-  /** Parameter name (also the JS-side property name). */
   name: EntityKey<Owner>;
-  /** Resolved SQL column/parameter type (e.g. `'varchar(255)'`, `'int'`). */
   type: keyof typeof types | AnyString;
-  /** Resolved JS runtime type. */
   runtimeType: EntityProperty['runtimeType'];
-  /** Stored as a singleton array to align with EntityProperty's `columnTypes`/Type API surface. */
+  /** Singleton array to align with EntityProperty's `columnTypes`/Type API surface. */
   columnTypes: string[];
-  /** Mapped type instance for value conversion at the boundary. */
   customType?: Type<unknown>;
-  /** Direction of the parameter — `in` (default), `out`, or `inout`. */
   direction: RoutineParamDirection;
-  /** Whether the value is wrapped in `ScalarReference` on the JS side (required for OUT/INOUT). */
+  /** Required for OUT/INOUT params — wraps the JS-side value in `ScalarReference`. */
   ref?: boolean;
   length?: number;
   precision?: number;
   scale?: number;
-  /** Whether this parameter accepts `null`. */
   nullable?: boolean;
-  /** Default expression (function-side) used when the caller omits the parameter, where supported. */
+  /** Default expression used when the caller omits the parameter, where the dialect supports it. */
   defaultRaw?: string;
   /** Original declaration order, used to rebuild positional argument lists. */
   index: number;
 }
 
-/**
- * Resolves a {@link Type} declaration (instance or constructor) into a singleton instance.
- * Used by the {@link Routine} constructor to materialise `customType` on params and returns.
- *
- * @internal
- */
+/** @internal */
 export function resolveRoutineCustomType(
   value: Type<unknown> | Constructor<Type<unknown>> | undefined,
 ): Type<unknown> | undefined {
@@ -1277,16 +1233,14 @@ export function resolveRoutineCustomType(
     return undefined;
   }
 
-  // Mapped-type instance — `__mappedType` lives on the prototype, so checking the value directly works.
+  // `__mappedType` lives on the prototype, so a truthy check on the value works.
   if ((value as Dictionary).__mappedType) {
     return value as Type<unknown>;
   }
 
-  // Constructor — instantiate it (callers may pass a class without instantiating).
   return new (value as Constructor<Type<unknown>>)();
 }
 
-/** Single parameter configuration, accepted by the {@link Routine} class. */
 export interface RoutineParamConfig {
   runtimeType?: RoutineRuntimeType;
   type?: keyof typeof types | AnyString;
@@ -1297,27 +1251,17 @@ export interface RoutineParamConfig {
   scale?: number;
   nullable?: boolean;
   defaultRaw?: string;
-  /**
-   * Custom `Type` instance (or constructor) used to marshal this parameter at the call boundary.
-   * On the way in, the JS value passes through `convertToDatabaseValue`; on the way out (OUT/INOUT
-   * directions, or scalar function returns when set on `returns`), the raw value passes through
-   * `convertToJSValue` before being handed back to the caller.
-   */
+  /** Marshals the param via `Type.convertToDatabaseValue` inbound and `convertToJSValue` outbound. */
   customType?: Type<unknown> | Constructor<Type<unknown>>;
 }
 
 /** Routine declaration shape accepted by the {@link Routine} class. */
 export interface RoutineConfig<T = any> extends Omit<RoutineDef<T>, 'name'> {
-  /** Routine name. Required — used both as the schema-level identifier and the database name fallback. */
   name: string;
-  /** Parameter map keyed by parameter name. Order is preserved from `Object.keys`. */
+  /** Order is preserved from `Object.keys`. */
   params?: Record<string, RoutineParamConfig>;
 }
 
-/**
- * Maps a `runtimeType` literal back to its TypeScript representation. Drives the per-param and
- * per-return type inference for {@link Routine}.
- */
 export type RoutineRuntimeTypeMap = {
   string: string;
   number: number;
@@ -1329,13 +1273,7 @@ export type RoutineRuntimeTypeMap = {
   any: any;
 };
 
-/**
- * Narrow union of routine-supported runtime types. Used in {@link RoutineParamConfig} and
- * {@link RoutineReturns} instead of `EntityProperty['runtimeType']` so that the literal type is
- * preserved through `const` inference on {@link Routine}, enabling args/return type inference.
- * Routines that need a dialect-specific runtime hint can still pass any string at the call site
- * via {@link Routine.create} or fall back to `'any'`.
- */
+/** Narrow union (vs `EntityProperty['runtimeType']`) so literals survive `const` inference and feed args/return inference. */
 export type RoutineRuntimeType = keyof RoutineRuntimeTypeMap;
 
 type RoutineRuntimeOf<R> = R extends keyof RoutineRuntimeTypeMap ? RoutineRuntimeTypeMap[R] : unknown;
@@ -1456,29 +1394,14 @@ export type RoutineParamValue<P> = P extends { runtimeType: infer R }
       ? ScalarReference<any>
       : any;
 
-/**
- * Computes the call-site args object type from a {@link RoutineConfig}. Used as the default
- * `TArgs` parameter of {@link Routine}; consumers should reach for {@link RoutineArgs} instead,
- * which honours any explicit {@link Routine.create} override.
- */
+/** Default `TArgs` for {@link Routine}; consumers use {@link RoutineArgs}, which honours overrides from {@link Routine.create}. */
 export type RoutineArgsOf<Config> = Config extends { params: infer P }
   ? P extends Record<string, RoutineParamConfig>
     ? { [K in keyof P]: RoutineParamValue<P[K]> }
     : Record<string, unknown>
   : Record<string, unknown>;
 
-/**
- * Computes the return type from a {@link RoutineConfig}'s `returns` shape. Used as the default
- * `TReturn` of {@link Routine}; consumers should reach for {@link RoutineReturn}, which honours
- * any explicit override passed to {@link Routine.create}.
- *
- * Resolution order:
- *  - `{ runtimeType }` → corresponding TS scalar (with `| null` when nullable)
- *  - tuple of `() => Entity` thunks → tuple of row arrays (one per result set)
- *  - single `() => Entity` thunk → array of that entity
- *  - `{ hydrate }` callback → inferred from the callback's return type
- *  - omitted `returns` → `void`
- */
+/** Default `TReturn` for {@link Routine}; consumers use {@link RoutineReturn}, which honours overrides from {@link Routine.create}. */
 export type RoutineReturnOf<Config> = Config extends { returns: infer R }
   ? R extends { runtimeType: infer RT }
     ? Nullify<R, RoutineRuntimeOf<RT>>
@@ -1491,10 +1414,8 @@ export type RoutineReturnOf<Config> = Config extends { returns: infer R }
           : void
   : void;
 
-/** Args object expected by `em.callRoutine(routine, args)`. Reads the carrier on {@link Routine}. */
 export type RoutineArgs<R> = R extends Routine<any, infer A, any> ? A : Record<string, unknown>;
 
-/** Return type of `em.callRoutine(routine, args)`. Reads the carrier on {@link Routine}. */
 export type RoutineReturn<R> = R extends Routine<any, any, infer Re> ? Re : unknown;
 
 /** Branded string that accepts any string value while preserving autocompletion for known literals. */

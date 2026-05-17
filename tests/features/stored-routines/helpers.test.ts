@@ -21,11 +21,9 @@ SET y = 'hello
 world';
 SELECT y`;
       const out = stripStatementNewlines(body);
-      // `;\n` boundaries collapsed to `; ` so the statement-splitter doesn't break the body.
       expect(out).toContain('SET x = 1; SET y');
       // line-comment newline preserved — otherwise the comment would swallow the next statement.
       expect(out).toContain('-- header comment\nSET x = 1');
-      // string-literal newline preserved.
       expect(out).toContain("'hello\nworld'");
     });
   });

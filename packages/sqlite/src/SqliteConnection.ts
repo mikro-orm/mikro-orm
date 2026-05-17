@@ -6,15 +6,13 @@ import { convertRoutineInbound, convertRoutineOutbound, type Routine, type Trans
 /** SQLite database connection using the `better-sqlite3` driver. */
 export class SqliteConnection extends BaseSqliteConnection {
   private database!: Database.Database;
-  // Keyed by routine name → the `bodyJs` function reference we registered. Comparing references
-  // lets us detect HMR-style swaps and re-register, avoiding stale closures running indefinitely.
+  // Routine name → registered `bodyJs` ref. Reference compare to detect HMR swaps and re-register.
   readonly #registeredRoutines = new Map<string, (params: Record<string, unknown>) => unknown>();
 
   override createKyselyDialect(options: Dictionary): Dialect {
     const dbName = options.dbName ?? this.config.get('dbName');
     this.database = new Database(dbName, options);
-    // Reset routine registrations: each new better-sqlite3 Database instance is a fresh
-    // process-side function table, so previously cached `bodyJs` registrations are gone.
+    // Fresh Database = fresh process-side function table; clear cached registrations.
     this.#registeredRoutines.clear();
     return new SqliteDialect({
       database: this.database,
@@ -28,11 +26,7 @@ export class SqliteConnection extends BaseSqliteConnection {
     this.database.exec(dump);
   }
 
-  /**
-   * SQLite has no server-side stored procedures. Functions can be bridged via better-sqlite3's
-   * `db.function()` UDF API when the routine declares a `bodyJs` callback. Procedures and
-   * functions without `bodyJs` throw — the routine metadata is silently skipped at schema time.
-   */
+  /** SQLite has no procedures; functions bridge via `bodyJs` registered as a UDF. */
   override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
     if (routine.type === 'procedure') {
       throw new Error(
@@ -50,9 +44,7 @@ export class SqliteConnection extends BaseSqliteConnection {
 
     const fn = routine.bodyJs as (params: Record<string, unknown>) => unknown;
 
-    // Re-register when the registered function reference doesn't match (HMR swap, or a fresh
-    // routine instance with the same name binding a different closure). better-sqlite3 silently
-    // replaces an existing UDF, so this is safe.
+    // Re-register on reference mismatch (HMR or a re-bound closure); better-sqlite3 replaces silently.
     if (this.#registeredRoutines.get(routine.name) !== fn) {
       this.database.function(
         routine.name,

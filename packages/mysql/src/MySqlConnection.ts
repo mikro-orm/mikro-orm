@@ -96,14 +96,6 @@ export class MySqlConnection extends AbstractSqlConnection {
     return Utils.mergeConfig(ret, overrides);
   }
 
-  /**
-   * MySQL-specific routine invocation. Functions are invoked via `SELECT fn(?, ?) AS value`.
-   * Procedures bind OUT/INOUT parameters to session variables (`SET @v0 := ?; CALL proc(?, @v0);
-   * SELECT @v0`) and copy the values back into the caller's `ScalarReference` instances. When
-   * the procedure body emits one or more SELECT statements, the result sets are returned as
-   * `Dictionary[][]`; mysql2's response marks end-of-stream with a non-array OkPacket, so the
-   * count of emitted sets is detected at runtime without needing user-side declaration.
-   */
   override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
     const name = this.platform.quoteIdentifier(routine.name);
 
@@ -135,16 +127,10 @@ export class MySqlConnection extends AbstractSqlConnection {
       callPlaceholders.push(varName);
     });
 
-    // MySQL session variables (`@var`) are scoped to a single physical connection. Without a
-    // shared `ctx`, each `execute()` call acquires a fresh connection from the pool, so the
-    // INOUT seed `SET @var := ?` and the subsequent `CALL` / `SELECT @var` could run on
-    // different connections — silently corrupting INOUT inputs and reading NULL back out.
-    // When the procedure has any OUT/INOUT params and the caller is not already inside a
-    // transaction, wrap the multi-step sequence in an implicit transaction so all queries
-    // share the same physical connection.
+    // MySQL `@var`s are connection-scoped, so SET + CALL + SELECT must share one physical
+    // connection — wrap in an implicit transaction when the caller didn't supply one.
     const needsConnectionAffinity = outVarParams.length > 0 && !ctx;
     const runSteps = async (sharedCtx: Transaction | undefined): Promise<T> => {
-      // Seed inbound INOUT variables first.
       for (let i = 0; i < routine.params.length; i++) {
         const p = routine.params[i];
         if (p.direction === 'inout') {
@@ -158,8 +144,7 @@ export class MySqlConnection extends AbstractSqlConnection {
         }
       }
 
-      // CALL response from mysql2 is an array of result sets followed by a trailing OK packet
-      // (non-array). Filter to just the row arrays — that's the natural result-set count.
+      // mysql2 trails the result sets with an OK packet (non-array); filter to row arrays.
       const callResult = (await this.execute(
         `call ${name}(${callPlaceholders.join(', ')})`,
         callValues,

@@ -78,8 +78,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     const metadata = this.getOrderedMetadata(options.schema).reverse();
     const ret: string[] = [];
 
-    // Drop routines before tables — routine bodies typically reference table columns,
-    // and Oracle has no CASCADE for stored procedures/functions tied to dropped tables.
+    // Routines before tables — bodies reference columns and Oracle has no CASCADE for them.
     for (const routine of this.getTargetSchema(options.schema).getRoutines()) {
       this.helper.append(ret, this.helper.dropRoutine(routine), true);
     }

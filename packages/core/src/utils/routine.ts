@@ -8,6 +8,8 @@ import type { RoutineProperty } from '../typings.js';
  * declares a `customType`, marshals the value through `convertToDatabaseValue` so callers can
  * pass JS-native values without per-call boilerplate. `undefined` is normalised to `null` so all
  * drivers see the same shape regardless of how the caller declared optional params.
+ *
+ * @internal
  */
 export function convertRoutineInbound(value: unknown, param: RoutineProperty | undefined, platform: Platform): unknown {
   const resolved = value instanceof ScalarReference ? value.unwrap() : value;
@@ -24,6 +26,8 @@ export function convertRoutineInbound(value: unknown, param: RoutineProperty | u
  * Converts a raw database value to its JS representation via the supplied `customType`, when one
  * is declared. Used by drivers to marshal scalar function returns and OUT/INOUT parameter values
  * back to the caller before they hit a `ScalarReference` or the return value of `em.callRoutine`.
+ *
+ * @internal
  */
 export function convertRoutineOutbound<T>(
   value: unknown,

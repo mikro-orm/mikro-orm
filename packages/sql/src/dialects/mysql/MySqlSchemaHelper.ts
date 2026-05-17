@@ -453,15 +453,13 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return ret.join(';\n');
   }
 
-  /** Generates SQL to create a MySQL/MariaDB stored procedure or function. */
   override createRoutine(routine: SqlRoutineDef): string {
     if (routine.expression) {
       return routine.expression;
     }
 
     const name = this.platform.quoteIdentifier(routine.name);
-    // MySQL functions reject IN/OUT/INOUT direction prefixes (function params are always IN).
-    // Procedures use the direction prefix as normal.
+    // MySQL functions reject direction prefixes (function params are always IN); procedures use them.
     const params = routine.params
       .map(p => {
         const dir = routine.type === 'procedure' ? `${p.direction.toUpperCase()} ` : '';
@@ -488,13 +486,11 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `create function ${name}(${params}) returns ${returnType}${determinism}${dataAccess}${security}${comment} ${body}`;
   }
 
-  /** Generates SQL to drop a MySQL/MariaDB stored procedure or function. */
   override dropRoutine(routine: SqlRoutineDef): string {
     const kind = routine.type === 'procedure' ? 'procedure' : 'function';
     return `drop ${kind} if exists ${this.platform.quoteIdentifier(routine.name)}`;
   }
 
-  /** Lists all stored procedures and functions in the current database. */
   override async getAllRoutines(connection: AbstractSqlConnection): Promise<SqlRoutineDef[]> {
     const sql = `
       select
@@ -532,8 +528,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return rows.map(row => ({
       name: row.name,
       type: row.type,
-      // MySQL routines live in the current database; the schema is implicit. Leave it undefined
-      // so it matches metadata-side declarations that don't carry a schema either.
+      // MySQL has no schema namespace for routines — undefined matches the metadata side.
       schema: undefined,
       body: this.stripRoutineBody(row.body ?? ''),
       deterministic: row.is_deterministic === 'YES',
@@ -599,7 +594,6 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   private parseDataAccess(access: string): SqlRoutineDef['dataAccess'] {
-    // information_schema.routines.sql_data_access is always one of these four values per the MySQL spec.
     return access.toLowerCase().replace(/\s+/g, '-') as SqlRoutineDef['dataAccess'];
   }
 

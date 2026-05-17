@@ -474,22 +474,15 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return `drop trigger if exists ${this.getSchemaQualifiedName(table, trigger.name)}`;
   }
 
-  /** T-SQL refers to routine parameters as `@name` inside the routine body. */
   override routineParamReference(name: string): string {
     return `@${name}`;
   }
 
-  /**
-   * T-SQL has no distinct OUT-only direction — `OUTPUT` covers both OUT and INOUT semantics, and
-   * `sys.parameters.is_output` is true for both. Fold metadata-side `'out'` to `'inout'` so the
-   * schema comparator's strict direction equality match doesn't flag pure-OUT declarations as
-   * permanently changed on every `schema:update` run.
-   */
+  /** T-SQL's `OUTPUT` covers both OUT and INOUT; `sys.parameters.is_output` is true for both. */
   override normaliseRoutineParamDirection(direction: 'in' | 'out' | 'inout'): 'in' | 'out' | 'inout' {
     return direction === 'out' ? 'inout' : direction;
   }
 
-  /** Generates T-SQL to create an MSSQL stored procedure or function. */
   override createRoutine(routine: SqlRoutineDef): string {
     if (routine.expression) {
       return routine.expression;
@@ -512,13 +505,11 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return `create or alter function ${qualifiedName}(${params}) returns ${returnType} as ${body}`;
   }
 
-  /** Generates T-SQL to drop an MSSQL stored procedure or function. */
   override dropRoutine(routine: SqlRoutineDef): string {
     const kind = routine.type === 'procedure' ? 'procedure' : 'function';
     return `drop ${kind} if exists ${this.qualifiedRoutineName(routine)}`;
   }
 
-  /** Lists all stored procedures and scalar/table-valued functions via `sys.sql_modules`. */
   override async getAllRoutines(connection: AbstractSqlConnection): Promise<SqlRoutineDef[]> {
     const sql = `
       select
@@ -571,9 +562,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     params: Map<string, SqlRoutineDef['params']>;
     returns: Map<string, NonNullable<SqlRoutineDef['returns']>>;
   }> {
-    // `parameter_id = 0` is the function's return type; positive IDs are formal parameters. We
-    // read both in one round-trip so functions emit their real return type during schema diff and
-    // entity-generator emission (previously hard-coded to `nvarchar(max)`).
+    // `parameter_id = 0` is the function's return type; positive IDs are formal parameters.
     const sql = `
       select
         s.name as schema_name,
@@ -614,10 +603,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
         params.set(key, []);
       }
 
-      // sys.parameters.is_output is true for both pure OUT and INOUT params and the catalog has
-      // no flag to distinguish them. Metadata-side `'out'` declarations are folded to `'inout'`
-      // by `normaliseRoutineParamDirection` so the comparator sees matching directions on both
-      // sides regardless of which form the user declared.
+      // is_output is true for both OUT and INOUT; we always report `inout`. See normaliseRoutineParamDirection.
       params.get(key)!.push({
         name: row.param_name.replace(/^@/, ''),
         type: row.type,

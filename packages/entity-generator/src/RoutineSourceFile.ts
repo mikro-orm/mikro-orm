@@ -4,9 +4,7 @@ import type { SqlRoutineDef, SqlRoutineParamDef } from '@mikro-orm/sql';
 const identifierRegex = /^(?:[$_\p{ID_Start}])(?:[$\p{ID_Continue}])*$/u;
 
 function quote(val: string): string {
-  // Escape backslashes first (otherwise `replaceAll("'", "\\'")` would re-escape the backslash
-  // we just added). Routine bodies containing `\n`, `\t`, regex literals, or `chr(10)` workarounds
-  // would otherwise emit corrupt single-quoted strings.
+  // Backslashes first so subsequent escapes don't double up the `\` we just added.
   const escaped = val
     .replaceAll('\\', '\\\\')
     .replaceAll('\r', '\\r')
@@ -22,7 +20,6 @@ function safeKey(name: string): string {
 
 function quoteMultiline(val: string): string {
   if (val.includes('\n') || val.includes('`') || val.includes('${')) {
-    // Backslashes first, then backticks and `${` so we don't accidentally re-escape our own escapes.
     return `\`${val.replaceAll('\\', '\\\\').replaceAll('`', '\\`').replaceAll('${', '\\${')}\``;
   }
 
@@ -37,8 +34,7 @@ function toPascalCase(name: string): string {
     .join('');
 }
 
-// `satisfies` ties this list to `RoutineRuntimeType` — adding a key to the type without
-// updating this tuple is a compile error, so the runtime set never silently lags the union.
+// `satisfies` ties this list to `RoutineRuntimeType` so the runtime set can't drift from the union.
 const ROUTINE_RUNTIME_TYPES = [
   'string',
   'number',
@@ -55,11 +51,7 @@ function narrowRuntimeType(runtimeType: string | undefined): string {
   return runtimeType && ROUTINE_RUNTIME_TYPE_SET.has(runtimeType) ? runtimeType : 'any';
 }
 
-/**
- * Emits source code for a stored routine introspected from the database. Always emits the
- * `new Routine(...)` class-less form regardless of the `entityDefinition` option — there is
- * no decorator form for routines.
- */
+/** Always emits the class-less `new Routine(...)` form; there is no decorator form for routines. */
 export class RoutineSourceFile {
   constructor(
     private readonly routine: SqlRoutineDef,
@@ -154,9 +146,7 @@ export class RoutineSourceFile {
   private formatReturns(returns: NonNullable<SqlRoutineDef['returns']>): string {
     const parts: string[] = [];
 
-    // Constrain emitted `runtimeType` to the narrow `RoutineRuntimeType` union so the generated
-    // file stays type-clean; unrecognised dialect-specific types (e.g. `'unknown'` from
-    // `getMappedType`) collapse to `'any'` and the user can refine via `Routine.create(...)`.
+    // Narrow to `RoutineRuntimeType`; unrecognised types collapse to `'any'`.
     const inferred = returns.runtimeType ?? this.platform.getMappedType(returns.type)?.runtimeType;
     parts.push(`runtimeType: ${quote(narrowRuntimeType(inferred))}`);
 

@@ -1949,48 +1949,23 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Invokes a stored procedure or function declared via the {@link Routine} class. Argument and
-   * return types are inferred from the routine's literal config — no explicit generic needed.
-   * Each param's TS type comes from `runtimeType` when set, otherwise from the SQL `type`
-   * string (`varchar(255)`/`decimal`/`numeric` → `string`, `int` → `number`, `timestamp` →
-   * `Date`, `jsonb` → `Dictionary`, `bytea`/`blob` → `Buffer`, …). Ambiguous SQL types
-   * (`bigint`, `refcursor`, …) fall through to `any` — opt in with `runtimeType`. `ref: true` wraps the
-   * arg in `ScalarReference<T>`; `nullable: true` adds `| null`. Use {@link Routine.create}
-   * when the inferred type is too loose (e.g. `runtimeType: 'object'` returns default to
-   * `Dictionary`); it accepts explicit `<TArgs, TReturn>` override generics.
+   * Invokes a stored procedure or function declared via the {@link Routine} class. Arg and return
+   * types are inferred from the literal config; use {@link Routine.create} to refine when needed.
    *
-   * - Functions return their scalar value, optionally marshalled through `returns.customType`.
-   * - Procedures return `void`; OUT/INOUT params are written back into the caller's
-   *   {@link ScalarReference} instances, marshalled through each param's `customType` when set.
-   * - When the procedure emits result sets — N `SELECT`s on MySQL/MariaDB, N `refcursor`
-   *   OUT params on PostgreSQL, N `sys_refcursor` OUT params on Oracle — `em.callRoutine`
-   *   returns `Dictionary[][]` (one row array per set). The count is detected at runtime, no
-   *   metadata declaration is needed. MSSQL does not expose multi-result-set procs through this
-   *   path; use `em.getConnection().execute()` for raw access.
+   * Procedures emitting result sets (MySQL `SELECT`s, PG/Oracle refcursor OUT params) return
+   * `Dictionary[][]`; MSSQL multi-result procs aren't exposed here, use `em.getConnection().execute()`.
    *
-   * Throws on drivers that do not support stored routines (mongo). On SQLite, functions
-   * declared with a `bodyJs` fallback are bridged via better-sqlite3's UDF API; procedures and
-   * functions without `bodyJs` throw at call time. libSQL throws unconditionally (no runtime
-   * UDF registration in the libsql client).
-   *
-   * **Oracle exception**: the Oracle driver runs each routine call on a dedicated pool
-   * connection with `autoCommit: true`, so wrapping a call in `em.transactional(...)` throws.
-   * Call Oracle routines outside the EM transaction context. The PostgreSQL multi-result-set
-   * example below applies to PG only.
+   * Mongo throws. SQLite bridges `bodyJs` functions via better-sqlite3 UDFs (procedures and
+   * function-without-bodyJs throw); libSQL throws unconditionally. Oracle calls run on their own
+   * pool connection with `autoCommit: true`, so wrapping in `em.transactional(...)` throws.
    *
    * @example
    * ```ts
-   * // Function: scalar return — `string` is inferred from `returns.runtimeType`.
    * const hash = await em.callRoutine(HashUser, { name: 'jon', salt: 'pepper' });
    *
-   * // Procedure with INOUT param — `ScalarReference<string>` inferred from the `ref: true` param.
-   * const hash = new ScalarReference<string>();
-   * await em.callRoutine(AddRecord, { p_name: 'jon', p_age: 30, p_hash: hash });
+   * const hashRef = new ScalarReference<string>();
+   * await em.callRoutine(AddRecord, { p_name: 'jon', p_age: 30, p_hash: hashRef });
    *
-   * // PostgreSQL multi-result-set procedure (must run inside an EM transaction so the
-   * // refcursors stay alive for FETCH). MySQL/MariaDB do not need em.transactional;
-   * // Oracle multi-result-set calls must NOT use em.transactional — call them directly.
-   * // Declare the result-set shape on the routine via `Routine.create` overrides.
    * const TwoCursors = Routine.create<Record<string, never>, unknown[][]>({ ... });
    * const [users, books] = await em.transactional(em => em.callRoutine(TwoCursors, {}));
    * ```
@@ -1998,9 +1973,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   async callRoutine<R extends Routine>(routine: R, args: RoutineArgs<R>): Promise<RoutineReturn<R>> {
     const em = this.getContext(false);
 
-    // Reference-based check — the routine must be the same instance that was registered via the
-    // `routines` config option. Keeps the user-held import wired through the bundler so unused
-    // routines tree-shake correctly, and avoids the name string ever becoming the identity key.
+    // Identity by reference so the user-held import survives bundling and tree-shakes unused routines.
     if (!em.config.hasRoutine(routine)) {
       throw new Error(`Routine '${routine.name}' is not registered in the 'routines' config option.`);
     }

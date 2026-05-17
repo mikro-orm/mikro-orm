@@ -47,11 +47,8 @@ export class Routine<
   TArgs = RoutineArgsOf<TConfig>,
   TReturn = RoutineReturnOf<TConfig>,
 > {
-  /** Routine name in the database. */
   readonly name: string;
-  /** Whether this is a stored procedure or function. */
   readonly type: RoutineKind;
-  /** Optional schema/namespace (PostgreSQL, MSSQL, Oracle). */
   readonly schema?: string;
   readonly comment?: string;
   readonly security?: RoutineSecurity;
@@ -63,10 +60,8 @@ export class Routine<
   readonly expression?: string;
   readonly bodyJs?: (params: any) => unknown;
   readonly returns?: RoutineReturns;
-  /** Resolved Type instance for scalar function returns, when `returns.customType` is declared. */
   readonly returnCustomType?: Type<unknown>;
   readonly ignoreSchemaChanges?: RoutineIgnoreField[];
-  /** Parameters in declaration order. */
   readonly params: RoutineProperty[];
 
   constructor(config: TConfig) {
@@ -106,11 +101,7 @@ export class Routine<
     }
   }
 
-  /**
-   * Returns a `{ paramName: paramName }` map. Body callbacks receive a similar map as their first
-   * argument so they can reference parameters symbolically (`p.name`) instead of hard-coding the
-   * names; this method is useful when constructing a body literal outside the callback context.
-   */
+  /** Mirrors what body callbacks receive — `{ paramName: paramName }` — for callers building a body literal outside the callback context. */
   createParamMappingObject(): Record<string, string> {
     return this.params.reduce<Record<string, string>>((o, p) => {
       o[p.name as string] = p.name as string;
@@ -119,36 +110,18 @@ export class Routine<
   }
 
   /**
-   * Declares a routine with an explicit argument and/or return type override. Use this when the
-   * inferred types are too loose — typically `runtimeType: 'object'` returns that should be a
-   * concrete shape rather than `Dictionary`, or `params` whose `runtimeType` is left unset.
+   * Overrides the inferred TArgs/TReturn. Omit a generic to keep inference; pass `never` in the
+   * args slot to refine only the return type.
    *
-   * Omit a generic to fall back to inference; pass `never` in the args slot to refine only the
-   * return type. The order is `<TArgs, TReturn>`, matching the order on the class itself.
-   *
-   * @example Refine the return type only
+   * @example
    * ```ts
    * interface UserStats { totalOrders: number; lastOrderAt: Date }
-   *
    * const GetStats = Routine.create<never, UserStats>({
    *   name: 'get_user_stats',
    *   type: 'function',
    *   params: { user_id: { type: 'int', runtimeType: 'number' } },
    *   returns: { runtimeType: 'object', columnType: 'json' },
    *   body: '...',
-   * });
-   *
-   * const stats = await em.callRoutine(GetStats, { user_id: 1 });
-   * stats.totalOrders; // typed as `number`
-   * ```
-   *
-   * @example Refine both arg and return types
-   * ```ts
-   * const TwoSets = Routine.create<Record<string, never>, unknown[][]>({
-   *   name: 'two_sets',
-   *   type: 'procedure',
-   *   params: {},
-   *   body: 'select 1; select 2;',
    * });
    * ```
    */
@@ -166,7 +139,6 @@ export class Routine<
     >;
   }
 
-  /** Type guard that recognises {@link Routine} instances. */
   static is(item: unknown): item is Routine {
     return item instanceof Routine;
   }

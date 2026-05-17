@@ -43,11 +43,6 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     return Utils.mergeConfig(ret, overrides);
   }
 
-  /**
-   * PostgreSQL-specific routine invocation. Procedures' OUT/INOUT parameters come back as a single
-   * result row from `CALL routine(...)`. Functions use `SELECT routine(...)`. INOUT values are
-   * pulled out of the returned row and written back into the user's `ScalarReference` instances.
-   */
   override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
     const placeholders = routine.params.map(() => '?').join(', ');
     const positional = routine.params.map(p => convertRoutineInbound(args[p.name as string], p, this.platform));
@@ -64,14 +59,10 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
       return convertRoutineOutbound<T>(rows[0]?.value, routine.returnCustomType, this.platform);
     }
 
-    // Detect refcursor OUT params declaratively — their value in the CALL response row is the
-    // server-generated cursor name we need to FETCH from. Non-refcursor OUT/INOUT params get
-    // copied back into the caller's ScalarReference as a scalar value.
+    // Refcursor OUT params come back as server-generated cursor names to FETCH from later.
     const refcursorParams = routine.params.filter(p => p.direction !== 'in' && /^refcursor$/i.test(p.type));
 
-    // Refcursors are scoped to the owning transaction — fail fast before executing the CALL when
-    // the caller forgot to wrap it in em.transactional(), instead of wasting a round-trip on a
-    // proc whose cursors we'd just have to throw away.
+    // Refcursors are transaction-scoped — fail fast instead of opening cursors we can't read.
     if (refcursorParams.length > 0 && !ctx) {
       throw new Error(
         `Routine ${routine.name} declares refcursor OUT params on PostgreSQL but was not called inside a transaction. Wrap the call in 'em.transactional(...)' so the refcursor OUT params remain valid for FETCH.`,
@@ -100,11 +91,6 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     return undefined as T;
   }
 
-  /**
-   * Iterates the refcursor OUT params in declaration order, FETCHes `all` rows from each cursor
-   * name, and returns the per-cursor row arrays. The caller guarantees `ctx` is set — refcursors
-   * are scoped to their owning transaction, so the precondition is validated before the CALL.
-   */
   private async fetchRefcursors(
     row: Dictionary,
     routine: Routine,

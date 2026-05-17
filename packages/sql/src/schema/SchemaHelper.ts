@@ -22,11 +22,7 @@ import type {
 import type { DatabaseSchema } from './DatabaseSchema.js';
 import type { DatabaseTable } from './DatabaseTable.js';
 
-/**
- * Flattens `;\n` boundaries in a routine body so the schema-generator's statement splitter
- * doesn't break the routine DDL apart. Other whitespace (line comments, multi-line strings) is
- * preserved. Exported for the PG `sql` function path which doesn't go through `wrapRoutineBody`.
- */
+/** Flattens `;\n` boundaries so the schema-generator's statement splitter doesn't break the routine DDL apart. Other whitespace is preserved. */
 export function stripStatementNewlines(body: string): string {
   return body.replace(/;[\t ]*\r?\n/g, '; ');
 }
@@ -1106,32 +1102,20 @@ export abstract class SchemaHelper {
     return `drop trigger if exists ${this.quote(trigger.name)}`;
   }
 
-  /**
-   * Generates SQL to create a stored procedure or function. Default implementation throws —
-   * dialects that support routines must override (PostgreSQL, MySQL, MariaDB, MSSQL, Oracle).
-   * SQLite/libSQL leave the default in place to silent-skip routines from schema generation.
-   */
+  /** Default no-op so SQLite/libSQL silent-skip routine DDL; routine-capable dialects override. */
   createRoutine(_routine: SqlRoutineDef): string {
     return '';
   }
 
-  /** Generates SQL to drop a stored procedure or function. Defaults to a no-op for drivers that don't manage routines. */
   dropRoutine(_routine: SqlRoutineDef): string {
     return '';
   }
 
-  /** Reads stored routines from the database for diffing. Default: no routines tracked. */
   async getAllRoutines(_connection: AbstractSqlConnection, _schemas: string[] = []): Promise<SqlRoutineDef[]> {
     return [];
   }
 
-  /**
-   * Wraps a routine body in `BEGIN ... END` if it isn't already so wrapped. Internal `;\n`
-   * sequences (and trailing semicolons followed by a newline) are flattened to `; ` so the
-   * schema-generator's `;\n` statement splitter doesn't break the routine DDL apart inside its
-   * dollar-quoted/AS-block body — other whitespace is preserved so line comments (`-- foo\n…`)
-   * and multi-line string literals inside the body keep working.
-   */
+  /** Wraps the body in `BEGIN ... END` if not already, and flattens internal `;\n` so the schema-generator's statement splitter doesn't tear the DDL. */
   protected wrapRoutineBody(body: string): string {
     const trimmed = stripStatementNewlines(body).trim();
 
@@ -1143,7 +1127,6 @@ export abstract class SchemaHelper {
     return `begin ${withSemi} end`;
   }
 
-  /** Strips an outer `BEGIN ... END` wrapper from an introspected routine body for round-trip comparison. */
   protected stripRoutineBody(body: string): string {
     const match = /^\s*begin\s+([\s\S]*?)\s*end\s*;?\s*$/i.exec(body.trim());
 
@@ -1154,24 +1137,16 @@ export abstract class SchemaHelper {
     return body.trim();
   }
 
-  /**
-   * Returns the dialect-specific reference syntax for a routine parameter as it appears
-   * inside a routine body. T-SQL requires `@name`; PG/MySQL/Oracle use the bare name.
-   */
+  /** T-SQL requires `@name` inside the body; PG/MySQL/Oracle use the bare name. */
   routineParamReference(name: string): string {
     return name;
   }
 
-  /**
-   * Normalises a routine param direction for schema comparison. Some dialects (notably T-SQL)
-   * don't distinguish `OUT` from `INOUT` at the DDL or catalog level, so metadata-side `'out'`
-   * declarations must be folded into `'inout'` for the diff to agree with introspection.
-   */
+  /** T-SQL doesn't distinguish `OUT` from `INOUT` in the catalog — overrides fold `'out'` into `'inout'`. */
   normaliseRoutineParamDirection(direction: 'in' | 'out' | 'inout'): 'in' | 'out' | 'inout' {
     return direction;
   }
 
-  /** Returns the schema-qualified, dialect-quoted name of a routine for DDL emission. */
   protected qualifiedRoutineName(routine: SqlRoutineDef): string {
     const defaultSchema = this.platform.getDefaultSchemaName();
 
