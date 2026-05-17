@@ -83,13 +83,12 @@ describe('stored routines — Oracle', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      dbName: 'mikro_orm_test_sg',
+      dbName: 'mikro_orm_test_routines',
       password: 'oracle123',
       schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
       entities: [RecordEntity],
       routines: [SqlHash, AddRecord, TwoCursors, NumberDoubler, TodayPlus, TagBytes],
     });
-    // Oracle test schema is shared across runs; clean up any leftover state first.
     await orm.schema.refresh();
   });
 
@@ -109,6 +108,11 @@ describe('stored routines — Oracle', () => {
     const dbRoutines = await helper.getAllRoutines(orm.em.getConnection());
     const names = dbRoutines.map(r => r.name).sort();
     expect(names).toEqual(expect.arrayContaining(['ADD_RECORD', 'SQL_HASH']));
+  });
+
+  it('schema:diff round-trips cleanly after refresh (no churn)', async () => {
+    const diff = await orm.schema.getUpdateSchemaSQL();
+    expect(diff).toBe('');
   });
 
   it('em.callRoutine invokes a function and returns scalar value', async () => {

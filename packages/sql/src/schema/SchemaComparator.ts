@@ -238,7 +238,10 @@ export class SchemaComparator {
 
   /** Compares stored routines between two schemas, populating new/changed/removed buckets. */
   private compareRoutines(fromSchema: DatabaseSchema, toSchema: DatabaseSchema, diff: SchemaDifference): void {
-    const routineKey = (r: SqlRoutineDef): string => (r.schema ? `${r.schema}.` : '') + r.name;
+    // SQL identifiers are case-insensitive when unquoted, and dialects fold the stored form
+    // differently (Oracle uppercases, PG lowercases, MySQL preserves). Compare via case-folded
+    // keys so a user-written `'sql_hash'` matches Oracle's introspected `'SQL_HASH'`.
+    const routineKey = (r: SqlRoutineDef): string => ((r.schema ? `${r.schema}.` : '') + r.name).toLowerCase();
     const fromByKey = new Map(fromSchema.getRoutines().map(r => [routineKey(r), r]));
     const toByKey = new Map(toSchema.getRoutines().map(r => [routineKey(r), r]));
 
@@ -352,7 +355,7 @@ export class SchemaComparator {
       const b = to[i];
 
       if (
-        a.name !== b.name ||
+        a.name.toLowerCase() !== b.name.toLowerCase() ||
         this.normaliseParamType(a.type) !== this.normaliseParamType(b.type) ||
         a.direction !== b.direction
       ) {
@@ -397,6 +400,9 @@ export class SchemaComparator {
     bpchar: 'char',
     float8: 'double precision',
     float4: 'real',
+    // Oracle's USER_ARGUMENTS reports REF CURSOR params as `REF CURSOR` while users declare
+    // them as `sys_refcursor` (the only PL/SQL keyword form); canonicalise to the latter.
+    'ref cursor': 'sys_refcursor',
   };
 
   private diffRoutineReturns(from: SqlRoutineDef['returns'], to: SqlRoutineDef['returns']): boolean {
