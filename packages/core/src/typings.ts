@@ -1332,39 +1332,31 @@ type SqlBufferTypes =
   | 'image'
   | 'raw';
 
+type SqlTypeMap = { [K in SqlStringTypes]: string } & { [K in SqlNumberTypes]: number } & {
+  [K in SqlBooleanTypes]: boolean;
+} & { [K in SqlDateTypes]: Date } & { [K in SqlJsonTypes]: Dictionary } & { [K in SqlBufferTypes]: Buffer } & {
+  'character varying': string;
+  'double precision': number;
+  'time with time zone': Date;
+  'timestamp with time zone': Date;
+  'long raw': Buffer;
+};
+
+type LookupSqlType<K> = K extends keyof SqlTypeMap ? SqlTypeMap[K] : any;
+
 /**
  * Maps a SQL-flavoured `type` string (e.g. `'varchar(255)'`, `'int'`, `'timestamp'`) to a TS
  * runtime type, used as a fallback when {@link RoutineParamConfig} does not declare an explicit
  * `runtimeType`. Length/precision arguments are stripped, the lowercase token is matched
- * against the known type families below. `decimal`/`numeric`/`money`/`bigint` default to
- * `string` since drivers typically return them as strings to preserve precision; opt in to
- * `number` or `bigint` via `runtimeType` when the value range is safe. Unrecognised or
- * genuinely ambiguous types (`refcursor`, `sys_refcursor`, …) fall through to `any`.
+ * against {@link SqlTypeMap}. `decimal`/`numeric`/`money`/`bigint` default to `string` since
+ * drivers typically return them as strings to preserve precision; opt in to `number` or
+ * `bigint` via `runtimeType` when the value range is safe. Unrecognised or genuinely
+ * ambiguous types (`refcursor`, `sys_refcursor`, …) fall through to `any`.
  */
 export type SqlTypeToTs<S> = S extends string
   ? Lowercase<S> extends `tinyint(1)${string}`
     ? boolean
-    : Lowercase<StripSqlTypeArgs<S>> extends 'character varying'
-      ? string
-      : Lowercase<StripSqlTypeArgs<S>> extends 'double precision'
-        ? number
-        : Lowercase<StripSqlTypeArgs<S>> extends 'time with time zone' | 'timestamp with time zone'
-          ? Date
-          : Lowercase<StripSqlTypeArgs<S>> extends 'long raw'
-            ? Buffer
-            : Lowercase<StripSqlTypeArgs<S>> extends SqlStringTypes
-              ? string
-              : Lowercase<StripSqlTypeArgs<S>> extends SqlNumberTypes
-                ? number
-                : Lowercase<StripSqlTypeArgs<S>> extends SqlBooleanTypes
-                  ? boolean
-                  : Lowercase<StripSqlTypeArgs<S>> extends SqlDateTypes
-                    ? Date
-                    : Lowercase<StripSqlTypeArgs<S>> extends SqlJsonTypes
-                      ? Dictionary
-                      : Lowercase<StripSqlTypeArgs<S>> extends SqlBufferTypes
-                        ? Buffer
-                        : any
+    : LookupSqlType<StripSqlTypeArgs<Lowercase<S>>>
   : any;
 
 /** Strips `null | undefined` from a `Type<JSType, _>` JSType, so e.g. `StringType extends Type<string | null | undefined>` resolves to `string`. */
