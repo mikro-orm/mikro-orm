@@ -102,6 +102,16 @@ describe('stored routines — Routine + validator', () => {
     expect(() => validator.validateRoutineDefinition(routine)).toThrow(/missing the required 'type' option/);
   });
 
+  it('validator rejects routines whose name is empty or whitespace', () => {
+    const validator = new MetadataValidator();
+    expect(() =>
+      validator.validateRoutineDefinition(new Routine({ name: '', type: 'function', body: 'select 1' } as any)),
+    ).toThrow(/missing the required 'name'/);
+    expect(() =>
+      validator.validateRoutineDefinition(new Routine({ name: '   ', type: 'function', body: 'select 1' } as any)),
+    ).toThrow(/missing the required 'name'/);
+  });
+
   it('validator rejects routines with no body/expression/bodyJs', () => {
     const routine = new Routine({ name: 'empty', type: 'function' } as any);
 

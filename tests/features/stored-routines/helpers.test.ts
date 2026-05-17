@@ -348,5 +348,13 @@ SELECT y`;
       const sql = helper.dropRoutine(baseRoutine);
       expect(sql).toMatch(/drop function if exists "R"/i);
     });
+
+    it('createRoutine/dropRoutine prefix the owner schema for cross-schema routines', () => {
+      const crossSchema: SqlRoutineDef = { ...baseRoutine, schema: 'analytics' };
+      const create = helper.createRoutine(crossSchema);
+      expect(create).toMatch(/create or replace function "ANALYTICS"\."R"/i);
+      const drop = helper.dropRoutine(crossSchema);
+      expect(drop).toMatch(/drop function if exists "ANALYTICS"\."R"/i);
+    });
   });
 });

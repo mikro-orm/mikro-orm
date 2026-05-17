@@ -155,33 +155,36 @@ describe('stored routines — Oracle', () => {
     ).rejects.toThrow(/Oracle's callRoutine runs on its own pool connection/);
   });
 
-  it("read-only functions (dataAccess: 'reads-sql-data' / 'no-sql') are allowed inside em.transactional", async () => {
-    const PureHash = new Routine({
-      name: 'pure_hash',
-      type: 'function',
-      dataAccess: 'no-sql',
-      params: { p_name: { type: 'varchar2(255)' } },
-      returns: { runtimeType: 'string', columnType: 'varchar2(40)' },
-      body: p => `return upper(${p.p_name});`,
-    });
+  it.each([['no-sql'], ['reads-sql-data']] as const)(
+    "read-only functions (dataAccess: '%s') are allowed inside em.transactional",
+    async dataAccess => {
+      const PureHash = new Routine({
+        name: 'pure_hash',
+        type: 'function',
+        dataAccess,
+        params: { p_name: { type: 'varchar2(255)' } },
+        returns: { runtimeType: 'string', columnType: 'varchar2(40)' },
+        body: p => `return upper(${p.p_name});`,
+      });
 
-    const orm2 = await MikroORM.init({
-      dbName: 'mikro_orm_test_sg',
-      password: 'oracle123',
-      schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
-      entities: [RecordEntity],
-      routines: [PureHash],
-    });
-    await orm2.schema.execute(
-      'create or replace function "PURE_HASH"("P_NAME" varchar2) return varchar2 as begin return upper("P_NAME"); end;',
-    );
+      const orm2 = await MikroORM.init({
+        dbName: 'mikro_orm_test_sg',
+        password: 'oracle123',
+        schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
+        entities: [RecordEntity],
+        routines: [PureHash],
+      });
+      await orm2.schema.execute(
+        'create or replace function "PURE_HASH"("P_NAME" varchar2) return varchar2 as begin return upper("P_NAME"); end;',
+      );
 
-    const result = await orm2.em.transactional(em => em.callRoutine(PureHash, { p_name: 'sam' }));
-    expect(result).toBe('SAM');
+      const result = await orm2.em.transactional(em => em.callRoutine(PureHash, { p_name: 'sam' }));
+      expect(result).toBe('SAM');
 
-    await orm2.schema.execute('drop function "PURE_HASH"');
-    await orm2.close(true);
-  });
+      await orm2.schema.execute('drop function "PURE_HASH"');
+      await orm2.close(true);
+    },
+  );
 
   it('function with NUMBER return binds via oracledb.NUMBER (not coerced to STRING)', async () => {
     const result = await orm.em.callRoutine(NumberDoubler, { x: 21 });
