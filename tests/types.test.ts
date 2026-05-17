@@ -1523,8 +1523,8 @@ describe('check typings', () => {
         p_payload: { type: 'jsonb' },
         p_nullable_id: { type: 'int', nullable: true },
         p_ref: { type: 'char(40)', direction: 'inout', ref: true },
-        // `decimal` is intentionally ambiguous (drivers may return string for precision);
-        // stays `any` so users opt in via runtimeType.
+        // `decimal`/`numeric`/`money` default to `string` (drivers return them as strings to
+        // preserve precision); pass `runtimeType: 'number'` to opt into `number`.
         p_decimal: { type: 'decimal(10,2)' },
         // Explicit runtimeType overrides the SQL-inferred type.
         p_override: { type: 'int', runtimeType: 'string' },
@@ -1541,7 +1541,7 @@ describe('check typings', () => {
     assert<IsExact<Args['p_payload'], Dictionary>>(true);
     assert<IsExact<Args['p_nullable_id'], number | null>>(true);
     assert<IsExact<Args['p_ref'], ScalarReference<string>>>(true);
-    assert<IsExact<Args['p_decimal'], any>>(true);
+    assert<IsExact<Args['p_decimal'], string>>(true);
     assert<IsExact<Args['p_override'], string>>(true);
   });
 });

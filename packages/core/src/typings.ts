@@ -1348,9 +1348,10 @@ type StripSqlTypeArgs<S extends string> = S extends `${infer Base}(${string}` ? 
  * Maps a SQL-flavoured `type` string (e.g. `'varchar(255)'`, `'int'`, `'timestamp'`) to a TS
  * runtime type, used as a fallback when {@link RoutineParamConfig} does not declare an explicit
  * `runtimeType`. Length/precision arguments are stripped, the lowercase token is matched
- * against the known type families below, and unrecognised types fall through to `any` so
- * dialect-specific or genuinely ambiguous types (`bigint`, `numeric`, `decimal`, `refcursor`,
- * `sys_refcursor`, …) must opt in via `runtimeType`.
+ * against the known type families below. `decimal`/`numeric`/`money` default to `string` since
+ * drivers typically return them as strings to preserve precision; opt in to `number` via
+ * `runtimeType` when the value range is safe. Unrecognised or genuinely ambiguous types
+ * (`bigint`, `refcursor`, `sys_refcursor`, …) fall through to `any`.
  */
 export type SqlTypeToTs<S> = S extends string
   ? Lowercase<StripSqlTypeArgs<S>> extends 'character varying'
@@ -1378,6 +1379,9 @@ export type SqlTypeToTs<S> = S extends string
                 | 'xml'
                 | 'uuid'
                 | 'string'
+                | 'decimal'
+                | 'numeric'
+                | 'money'
             ? string
             : Lowercase<StripSqlTypeArgs<S>> extends
                   | 'int'

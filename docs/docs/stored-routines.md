@@ -67,8 +67,8 @@ The `Routine` instance you import is also the identity used at call time, so unu
 `em.callRoutine` infers the argument and return types from the routine's config — no explicit generic needed. Each param's TS type is resolved in this order:
 
 1. **Explicit `runtimeType`** wins when set (`'string' | 'number' | 'boolean' | 'bigint' | 'Buffer' | 'Date' | 'object' | 'any'`).
-2. Otherwise the SQL **`type`** string is mapped to a TS type — `varchar(255)`, `text`, `uuid` → `string`; `int`, `smallint`, `real`, `double precision` → `number`; `boolean`, `bit` → `boolean`; `timestamp`, `date`, `time` → `Date`; `json`, `jsonb` → `Dictionary`; `bytea`, `blob`, `binary` → `Buffer`. Length/precision arguments are stripped, and the lowercase token is matched.
-3. Genuinely ambiguous SQL types (`bigint`, `numeric`, `decimal`, `refcursor`, `sys_refcursor`, …) and unrecognised dialect-specific types fall through to `any`. Opt in with an explicit `runtimeType` when you want them typed.
+2. Otherwise the SQL **`type`** string is mapped to a TS type — `varchar(255)`, `text`, `uuid`, `decimal`, `numeric`, `money` → `string`; `int`, `smallint`, `real`, `double precision` → `number`; `boolean`, `bit` → `boolean`; `timestamp`, `date`, `time` → `Date`; `json`, `jsonb` → `Dictionary`; `bytea`, `blob`, `binary` → `Buffer`. Length/precision arguments are stripped, and the lowercase token is matched. `decimal`/`numeric`/`money` default to `string` because drivers typically return them as strings to preserve precision — pass `runtimeType: 'number'` to opt into `number`.
+3. Genuinely ambiguous SQL types (`bigint`, `refcursor`, `sys_refcursor`, …) and unrecognised dialect-specific types fall through to `any`. Opt in with an explicit `runtimeType` when you want them typed.
 
 `nullable: true` adds `| null`. `ref: true` wraps the result in `ScalarReference<T>`.
 

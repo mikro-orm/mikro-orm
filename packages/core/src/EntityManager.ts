@@ -1952,9 +1952,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * Invokes a stored procedure or function declared via the {@link Routine} class. Argument and
    * return types are inferred from the routine's literal config — no explicit generic needed.
    * Each param's TS type comes from `runtimeType` when set, otherwise from the SQL `type`
-   * string (`varchar(255)` → `string`, `int` → `number`, `timestamp` → `Date`, `jsonb` →
-   * `Dictionary`, `bytea`/`blob` → `Buffer`, …). Ambiguous SQL types (`bigint`, `numeric`,
-   * `refcursor`, …) fall through to `any` — opt in with `runtimeType`. `ref: true` wraps the
+   * string (`varchar(255)`/`decimal`/`numeric` → `string`, `int` → `number`, `timestamp` →
+   * `Date`, `jsonb` → `Dictionary`, `bytea`/`blob` → `Buffer`, …). Ambiguous SQL types
+   * (`bigint`, `refcursor`, …) fall through to `any` — opt in with `runtimeType`. `ref: true` wraps the
    * arg in `ScalarReference<T>`; `nullable: true` adds `| null`. Use {@link Routine.create}
    * when the inferred type is too loose (e.g. `runtimeType: 'object'` returns default to
    * `Dictionary`); it accepts explicit `<TArgs, TReturn>` override generics.
