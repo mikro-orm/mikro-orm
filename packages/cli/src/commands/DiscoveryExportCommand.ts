@@ -249,10 +249,12 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
       }
     }
 
-    // Bring in the driver's `EntityManager` class type so we can graft the
-    // entity tuple onto it. Aliasing avoids clashing with the `EntityManager`
-    // type we export below.
-    lines.push(`import type { EntityManager as DriverEntityManager } from '${driverPackage}';`);
+    // Bring in the driver's `EntityManager` class as a runtime value, not just
+    // a type — DI containers (NestJS, etc.) read it via `design:paramtypes`
+    // reflect-metadata, so the consumer needs the actual class reference, not
+    // an erased type alias. Aliasing keeps the local name free for our own
+    // `EntityManager` re-export.
+    lines.push(`import { EntityManager as DriverEntityManager } from '${driverPackage}';`);
 
     lines.push('');
 
@@ -274,11 +276,14 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
 
     lines.push('');
 
-    // Typed `EntityManager` for DI / NestJS contexts where the entity tuple
-    // would otherwise be erased. Grafting `'~entities'` keeps inference
-    // intact for `em.getKysely(opts)` (and any other entity-aware method
-    // that reads from `EntitiesFromManager<this>`).
+    // Typed `EntityManager` for DI / NestJS contexts. Declaration merging
+    // lets us export the same name twice: the `type` carries the entity
+    // tuple via the `'~entities'` graft (so `em.getKysely(opts)` keeps full
+    // inference), and the `const` is the driver's actual EM class — so
+    // `constructor(em: EntityManager) {}` resolves through Nest's container
+    // just like importing the class straight from the driver package.
     lines.push("export type EntityManager = DriverEntityManager & { '~entities': Database };");
+    lines.push('export const EntityManager = DriverEntityManager;');
 
     lines.push('');
 

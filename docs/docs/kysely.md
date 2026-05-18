@@ -294,10 +294,10 @@ import { entities } from './entities.generated';
 export default defineConfig({ entities });
 ```
 
-In DI / framework contexts (e.g. NestJS) where the EntityManager would otherwise be received with its entity tuple erased, import the generated `EntityManager` type. The driver is already pinned by the codegen — no driver generic to fill in — and `em.getKysely(opts)` keeps full type inference for both the database shape and the call-site plugin options:
+In DI / framework contexts (e.g. NestJS) where the EntityManager would otherwise be received with its entity tuple erased, import the generated `EntityManager`. The generated file exports it as both a type (carrying the entity tuple via a phantom `'~entities'` graft) and a `const` re-exporting the driver's actual EM class — so it doubles as Nest's DI token and the parameter's type annotation. The driver is already pinned by the codegen — no driver generic to fill in — and `em.getKysely(opts)` keeps full type inference for both the database shape and the call-site plugin options:
 
 ```ts
-import type { EntityManager } from './entities.generated';
+import { EntityManager } from './entities.generated';
 
 @Injectable()
 export class ArticleService {

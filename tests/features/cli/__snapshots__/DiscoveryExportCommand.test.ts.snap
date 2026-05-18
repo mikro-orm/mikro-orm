@@ -5,7 +5,7 @@ exports[`DiscoveryExportCommand > discovers decorator entities via MetadataStora
 // Re-run \`mikro-orm discovery:export\` to update.
 
 import { Author } from './Author.js';
-import type { EntityManager as DriverEntityManager } from '@mikro-orm/sqlite';
+import { EntityManager as DriverEntityManager } from '@mikro-orm/sqlite';
 
 export const entities = [
   Author,
@@ -14,6 +14,7 @@ export const entities = [
 export type Database = typeof entities;
 
 export type EntityManager = DriverEntityManager & { '~entities': Database };
+export const EntityManager = DriverEntityManager;
 "
 `;
 
@@ -23,7 +24,7 @@ exports[`DiscoveryExportCommand > discovers multiple entities from multiple file
 
 import { Author } from './Author.js';
 import { BookSchema } from './Book.js';
-import type { EntityManager as DriverEntityManager } from '@mikro-orm/sqlite';
+import { EntityManager as DriverEntityManager } from '@mikro-orm/sqlite';
 
 export const entities = [
   Author,
@@ -33,6 +34,7 @@ export const entities = [
 export type Database = typeof entities;
 
 export type EntityManager = DriverEntityManager & { '~entities': Database };
+export const EntityManager = DriverEntityManager;
 "
 `;
 
@@ -41,7 +43,7 @@ exports[`DiscoveryExportCommand > dumps output to stdout with --dump flag 1`] = 
 // Re-run \`mikro-orm discovery:export\` to update.
 
 import { AuthorSchema } from './Author.js';
-import type { EntityManager as DriverEntityManager } from '@mikro-orm/sqlite';
+import { EntityManager as DriverEntityManager } from '@mikro-orm/sqlite';
 
 export const entities = [
   AuthorSchema,
@@ -50,6 +52,7 @@ export const entities = [
 export type Database = typeof entities;
 
 export type EntityManager = DriverEntityManager & { '~entities': Database };
+export const EntityManager = DriverEntityManager;
 "
 `;
 
@@ -58,7 +61,7 @@ exports[`DiscoveryExportCommand > emits typed EntityManager alias for MongoDB dr
 // Re-run \`mikro-orm discovery:export\` to update.
 
 import { Author } from './Author.js';
-import type { EntityManager as DriverEntityManager } from '@mikro-orm/mongodb';
+import { EntityManager as DriverEntityManager } from '@mikro-orm/mongodb';
 
 export const entities = [
   Author,
@@ -67,6 +70,7 @@ export const entities = [
 export type Database = typeof entities;
 
 export type EntityManager = DriverEntityManager & { '~entities': Database };
+export const EntityManager = DriverEntityManager;
 "
 `;
 
@@ -75,7 +79,7 @@ exports[`DiscoveryExportCommand > generates CJS imports without extension 1`] = 
 // Re-run \`mikro-orm discovery:export\` to update.
 
 import { Author } from './Author';
-import type { EntityManager as DriverEntityManager } from '@mikro-orm/sqlite';
+import { EntityManager as DriverEntityManager } from '@mikro-orm/sqlite';
 
 export const entities = [
   Author,
@@ -84,6 +88,7 @@ export const entities = [
 export type Database = typeof entities;
 
 export type EntityManager = DriverEntityManager & { '~entities': Database };
+export const EntityManager = DriverEntityManager;
 "
 `;
 
@@ -92,7 +97,7 @@ exports[`DiscoveryExportCommand > generates ESM imports with .js extension 1`] =
 // Re-run \`mikro-orm discovery:export\` to update.
 
 import { Author } from './Author.js';
-import type { EntityManager as DriverEntityManager } from '@mikro-orm/sqlite';
+import { EntityManager as DriverEntityManager } from '@mikro-orm/sqlite';
 
 export const entities = [
   Author,
@@ -101,6 +106,7 @@ export const entities = [
 export type Database = typeof entities;
 
 export type EntityManager = DriverEntityManager & { '~entities': Database };
+export const EntityManager = DriverEntityManager;
 "
 `;
 
@@ -109,7 +115,7 @@ exports[`DiscoveryExportCommand > includes Database type export 1`] = `
 // Re-run \`mikro-orm discovery:export\` to update.
 
 import { Author } from './Author.js';
-import type { EntityManager as DriverEntityManager } from '@mikro-orm/sqlite';
+import { EntityManager as DriverEntityManager } from '@mikro-orm/sqlite';
 
 export const entities = [
   Author,
@@ -118,6 +124,7 @@ export const entities = [
 export type Database = typeof entities;
 
 export type EntityManager = DriverEntityManager & { '~entities': Database };
+export const EntityManager = DriverEntityManager;
 "
 `;
 
@@ -126,7 +133,7 @@ exports[`DiscoveryExportCommand > resolves driver package from config 1`] = `
 // Re-run \`mikro-orm discovery:export\` to update.
 
 import { Author } from './Author.js';
-import type { EntityManager as DriverEntityManager } from '@mikro-orm/postgresql';
+import { EntityManager as DriverEntityManager } from '@mikro-orm/postgresql';
 
 export const entities = [
   Author,
@@ -135,6 +142,7 @@ export const entities = [
 export type Database = typeof entities;
 
 export type EntityManager = DriverEntityManager & { '~entities': Database };
+export const EntityManager = DriverEntityManager;
 "
 `;
 
@@ -143,7 +151,7 @@ exports[`DiscoveryExportCommand > skips class implementations linked from Entity
 // Re-run \`mikro-orm discovery:export\` to update.
 
 import { AuthorSchema } from './Author.js';
-import type { EntityManager as DriverEntityManager } from '@mikro-orm/sqlite';
+import { EntityManager as DriverEntityManager } from '@mikro-orm/sqlite';
 
 export const entities = [
   AuthorSchema,
@@ -152,6 +160,7 @@ export const entities = [
 export type Database = typeof entities;
 
 export type EntityManager = DriverEntityManager & { '~entities': Database };
+export const EntityManager = DriverEntityManager;
 "
 `;
 
@@ -160,7 +169,7 @@ exports[`DiscoveryExportCommand > writes to file when --dump is not set 1`] = `
 // Re-run \`mikro-orm discovery:export\` to update.
 
 import { Author } from './Author.js';
-import type { EntityManager as DriverEntityManager } from '@mikro-orm/sqlite';
+import { EntityManager as DriverEntityManager } from '@mikro-orm/sqlite';
 
 export const entities = [
   Author,
@@ -169,5 +178,6 @@ export const entities = [
 export type Database = typeof entities;
 
 export type EntityManager = DriverEntityManager & { '~entities': Database };
+export const EntityManager = DriverEntityManager;
 "
 `;

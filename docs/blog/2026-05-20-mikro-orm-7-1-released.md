@@ -141,10 +141,10 @@ The generated file gives you three exports:
 
 - **`export const entities = [...] as const`** — a frozen tuple of every entity class the discovery saw. Drop it into your ORM config in place of the glob (NestJS, plain `MikroORM.init`, anywhere), and the config now carries the exact set of entity classes at the type level. The ORM keeps doing folder-style registration at runtime — nothing about your module structure or decorator usage changes.
 - **`export type Database = typeof entities`** — the entity tuple as a reusable type. Plug it into anywhere a tuple of entities is accepted (`MikroORM<Driver, EM, Database>`, custom repository helpers, etc.).
-- **`export type EntityManager = DriverEntityManager & { '~entities': Database }`** — a driver-pinned, entity-aware `EntityManager` alias for DI contexts. The codegen knows your driver from the ORM config, so this alias never makes you fill in driver generics. In a NestJS service you inject `EntityManager` from `./entities.generated` and `em.getKysely(opts)` keeps full type inference for both the database shape **and** the call-site plugin options:
+- **`export type EntityManager` / `export const EntityManager`** — a driver-pinned, entity-aware `EntityManager` for DI contexts. The same name is exported twice on purpose: the type carries the entity tuple via a phantom `'~entities'` graft (so `em.getKysely(opts)` keeps full inference), and the const re-exports the driver's real EM class — so it works as Nest's DI token *and* the parameter's type annotation in one import. The codegen pins the driver, so you never fill in driver generics:
 
 ```ts
-import type { EntityManager } from './entities.generated';
+import { EntityManager } from './entities.generated';
 
 @Injectable()
 export class ArticleService {
