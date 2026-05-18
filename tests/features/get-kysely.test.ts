@@ -804,6 +804,46 @@ describe('InferClassEntityDB', () => {
     type DBEntity = InferClassEntityDB<typeof Foo7423, { tableNamingStrategy: 'entity' }>;
     expectTypeOf<DBEntity>().toHaveProperty('Foo7423');
   });
+
+  test('scalar array properties are inferred as columns (GH #7751)', () => {
+    interface Stop {
+      offset: number;
+      color: string;
+    }
+
+    @Entity()
+    class ColorTemplateFlat {
+      [EntityName]?: 'ColorTemplateFlat';
+
+      @PrimaryKey({ type: 'uuid' })
+      id!: string;
+
+      @Property({ nullable: true })
+      name!: null | string;
+
+      @Property({ default: true })
+      visible: boolean = true;
+
+      @Property()
+      hexColors!: string[];
+
+      @Property({ defaultRaw: `'[]'::jsonb`, nullable: false, type: 'jsonb' })
+      stops!: Stop[];
+    }
+
+    type DB = InferClassEntityDB<typeof ColorTemplateFlat>;
+    type ColumnKeys = keyof DB['color_template_flat'];
+    expectTypeOf<'hex_colors'>().toExtend<ColumnKeys>();
+    expectTypeOf<'stops'>().toExtend<ColumnKeys>();
+    expectTypeOf<DB['color_template_flat']['hex_colors']>().toEqualTypeOf<string[]>();
+    expectTypeOf<DB['color_template_flat']['stops']>().toEqualTypeOf<Stop[]>();
+
+    type DBProp = InferClassEntityDB<typeof ColorTemplateFlat, { columnNamingStrategy: 'property' }>;
+    type ColumnKeysProp = keyof DBProp['color_template_flat'];
+    expectTypeOf<'hexColors'>().toExtend<ColumnKeysProp>();
+    expectTypeOf<'stops'>().toExtend<ColumnKeysProp>();
+    expectTypeOf<DBProp['color_template_flat']['hexColors']>().toEqualTypeOf<string[]>();
+  });
 });
 
 interface Generated<T> {
