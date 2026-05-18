@@ -540,6 +540,17 @@ export class UnitOfWork {
         continue;
       }
 
+      // inlined pivot M:N (mongo): we can't scrub references from owning-side documents we haven't loaded
+      if (
+        prop.kind === ReferenceKind.MANY_TO_MANY &&
+        prop.mappedBy &&
+        !this.#platform.usesPivotTable() &&
+        Utils.isCollection<AnyEntity>(relation) &&
+        !relation.isInitialized()
+      ) {
+        throw ValidationError.cannotModifyInverseCollection(entity as AnyEntity, prop);
+      }
+
       const target = relation?.[inverseProp as keyof typeof relation] as unknown;
 
       if (relation && Utils.isCollection(target)) {
