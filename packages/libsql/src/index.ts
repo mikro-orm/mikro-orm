@@ -7,8 +7,8 @@ export {
   defineLibSqlConfig as defineConfig,
 } from './LibSqlMikroORM.js';
 
-import { SqlEntityManager } from '@mikro-orm/sql';
+import { type AbstractSqlDriver, SqlEntityManager } from '@mikro-orm/sql';
 import type { LibSqlDriver } from './LibSqlDriver.js';
 
-export type EntityManager = SqlEntityManager<LibSqlDriver>;
+export type EntityManager<Driver extends AbstractSqlDriver = LibSqlDriver> = SqlEntityManager<Driver>;
 export const EntityManager = SqlEntityManager;

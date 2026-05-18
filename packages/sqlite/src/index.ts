@@ -7,8 +7,8 @@ export {
   defineSqliteConfig as defineConfig,
 } from './SqliteMikroORM.js';
 
-import { SqlEntityManager } from '@mikro-orm/sql';
+import { type AbstractSqlDriver, SqlEntityManager } from '@mikro-orm/sql';
 import type { SqliteDriver as SqliteDriverType } from './SqliteDriver.js';
 
-export type EntityManager = SqlEntityManager<SqliteDriverType>;
+export type EntityManager<Driver extends AbstractSqlDriver = SqliteDriverType> = SqlEntityManager<Driver>;
 export const EntityManager = SqlEntityManager;
