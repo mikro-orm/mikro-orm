@@ -19,7 +19,7 @@ const features = [
   },
   {
     title: 'Fully Type-Safe',
-    docsUrl: 'docs/next/type-safe-relations',
+    docsUrl: 'docs/type-safe-relations',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="9 11 12 14 22 4"/>
@@ -109,7 +109,7 @@ const features = [
   },
   {
     title: 'First-Class Kysely Integration',
-    docsUrl: 'docs/next/kysely',
+    docsUrl: 'docs/kysely',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M15 7h3a5 5 0 0 1 0 10h-3"/>
