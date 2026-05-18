@@ -1289,14 +1289,19 @@ export abstract class AbstractSqlDriver<
               const field = prop.fieldNames[0];
 
               if (!duplicates.includes(field) || !usedDups.includes(field)) {
+                const rowValue = row[prop.name];
+                const rowValueIsRaw = isRaw(rowValue);
                 if (
                   prop.customType &&
                   !prop.object &&
                   'convertToDatabaseValueSQL' in prop.customType &&
-                  row[prop.name] != null &&
-                  !isRaw(row[prop.name])
+                  rowValue != null &&
+                  !rowValueIsRaw
                 ) {
                   keys.push(prop.customType.convertToDatabaseValueSQL!('?', this.platform));
+                } else if (rowValueIsRaw && /^\s*(?:with|select)\b/i.test(rowValue.sql)) {
+                  // raw subqueries must be parenthesized when inlined as a VALUES position
+                  keys.push('(?)');
                 } else {
                   keys.push('?');
                 }
