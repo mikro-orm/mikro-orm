@@ -4,6 +4,7 @@ title: 'MikroORM 7.1: Loaded'
 authors: [B4nan]
 tags: [typescript, javascript, node, sql]
 image: './img/og-v7-1.png'
+draft: true
 ---
 
 import Tabs from '@theme/Tabs';
