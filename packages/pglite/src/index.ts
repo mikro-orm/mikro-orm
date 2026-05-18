@@ -9,3 +9,9 @@ export {
   definePgliteConfig as defineConfig,
 } from './PgliteMikroORM.js';
 export { raw } from './raw.js';
+
+import { type AbstractSqlDriver, SqlEntityManager } from '@mikro-orm/sql';
+import type { PgliteDriver } from './PgliteDriver.js';
+
+export type EntityManager<Driver extends AbstractSqlDriver = PgliteDriver> = SqlEntityManager<Driver>;
+export const EntityManager = SqlEntityManager;

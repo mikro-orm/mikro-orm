@@ -7,3 +7,9 @@ export {
   type MariaDbOptions as Options,
   defineMariaDbConfig as defineConfig,
 } from './MariaDbMikroORM.js';
+
+import { type AbstractSqlDriver, SqlEntityManager } from '@mikro-orm/sql';
+import type { MariaDbDriver } from './MariaDbDriver.js';
+
+export type EntityManager<Driver extends AbstractSqlDriver = MariaDbDriver> = SqlEntityManager<Driver>;
+export const EntityManager = SqlEntityManager;
