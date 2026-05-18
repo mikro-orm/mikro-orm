@@ -1,5 +1,6 @@
 import { Collection, MikroORM, ObjectId, ValidationError } from '@mikro-orm/mongodb';
 import { Entity, ManyToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { mockLogger } from '../helpers.js';
 
 @Entity()
 class User {
@@ -49,6 +50,35 @@ test('throws when removing target of inlined-pivot M:N without owning side initi
 
   expect(() => em.remove(user)).toThrow(ValidationError);
   expect(() => em.remove(user)).toThrow(/devices.*owning side is not initialized/);
+});
+
+test('throws when owning side is populated as `:ref` only (items not fully loaded)', async () => {
+  const em = orm.em.fork();
+  const user = await em.findOneOrFail(User, { _id: { $exists: true } }, { populate: ['devices:ref'] });
+
+  expect(() => em.remove(user)).toThrow(ValidationError);
+  expect(() => em.remove(user)).toThrow(/devices.*owning side is not initialized/);
+});
+
+test('inlined pivot cleanup works when owning side is populated', async () => {
+  const em = orm.em.fork();
+  const user = await em.findOneOrFail(User, { _id: { $exists: true } }, { populate: ['devices'] });
+
+  const [loadedDevice] = user.devices.getItems();
+  expect(loadedDevice.users).toHaveLength(1);
+
+  const mock = mockLogger(orm);
+  em.remove(user);
+  await em.flush();
+
+  const queries = mock.mock.calls.map(c => c[0]);
+  expect(queries.some(q => /db\.getCollection\('device'\)\.updateMany/.test(q))).toBe(true);
+  expect(queries.some(q => /db\.getCollection\('user'\)\.deleteMany/.test(q))).toBe(true);
+
+  expect(loadedDevice.users).toHaveLength(0);
+
+  const device = await em.fork().findOneOrFail(Device, { name: 'Monitor' });
+  expect(device.users).toHaveLength(0);
 });
 
 test('inlined pivot cleanup works when owning side is removed first', async () => {
