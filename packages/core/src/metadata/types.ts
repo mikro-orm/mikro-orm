@@ -93,8 +93,10 @@ export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
    * 3. Entity-level `@Entity({ orderBy })`
    */
   orderBy?: QueryOrderMap<E> | QueryOrderMap<E>[];
-  /** For {@doclink inheritance-mapping#single-table-inheritance | Single Table Inheritance}. */
-  discriminatorColumn?: (T extends EntityClass<infer P> ? keyof P : string) | AnyString;
+  /** For {@doclink inheritance-mapping#single-table-inheritance | Single Table Inheritance}. Property name on the entity that stores the discriminator value. */
+  discriminator?: (T extends EntityClass<infer P> ? keyof P : string) | AnyString;
+  /** For {@doclink inheritance-mapping#single-table-inheritance | Single Table Inheritance}. Override the discriminator column name (the property is named via `discriminator`; defaults to the naming-strategy-derived column). */
+  discriminatorColumn?: string;
   /** For {@doclink inheritance-mapping#single-table-inheritance | Single Table Inheritance}. */
   discriminatorMap?: Dictionary<string>;
   /** For {@doclink inheritance-mapping#single-table-inheritance | Single Table Inheritance}. */
@@ -714,10 +716,10 @@ export interface EmbeddedOptions<Owner, Target> extends PropertyOptions<Owner> {
 export interface EmbeddableOptions<Owner> {
   /** Specify constructor parameters to be used in `em.create` or when `forceConstructor` is enabled. Those should be names of declared entity properties in the same order as your constructor uses them. The ORM tries to infer those automatically, use this option in case the inference fails. */
   constructorParams?: (Owner extends EntityClass<infer P> ? keyof P : string)[];
-  /** For polymorphic embeddables. Specify the property name that stores the discriminator value. Alias for `discriminatorColumn`. */
+  /** For polymorphic embeddables. Property name on the embeddable class that stores the discriminator value. */
   discriminator?: (Owner extends EntityClass<infer P> ? keyof P : string) | AnyString;
-  /** For polymorphic embeddables. @deprecated Use `discriminator` instead. */
-  discriminatorColumn?: (Owner extends EntityClass<infer P> ? keyof P : string) | AnyString;
+  /** For polymorphic embeddables. Override the discriminator column name (the property is named via `discriminator`; defaults to the naming-strategy-derived column). */
+  discriminatorColumn?: string;
   discriminatorMap?: Dictionary<string>;
   discriminatorValue?: number | string;
   abstract?: boolean;

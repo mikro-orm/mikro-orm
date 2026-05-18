@@ -8,7 +8,7 @@ export function Entity<T extends EntityClass<unknown>>(options: EntityOptions<T>
     Utils.mergeConfig(meta, options);
     meta.class = target as any;
 
-    if (!options.abstract || meta.discriminatorColumn) {
+    if (!options.abstract || meta.discriminatorColumn || meta.discriminator) {
       meta.name = target.name;
     }
   };

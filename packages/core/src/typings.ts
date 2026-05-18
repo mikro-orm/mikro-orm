@@ -1931,7 +1931,12 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
         options: FindOptions<Entity, any, any, any>,
         stream?: boolean,
       ) => MaybePromise<Raw | object | string>);
+  /** Property name on the entity that stores the discriminator value. */
+  discriminator?: EntityKey<Entity> | AnyString;
+  /** Internally holds the discriminator property name (legacy) or a column-name override (when different from `discriminator`); normalized in `EntitySchema.init()`. */
   discriminatorColumn?: EntityKey<Entity> | AnyString;
+  /** Explicit column-name override for the auto-managed discriminator property. Set when both `discriminator` and `discriminatorColumn` are provided and differ. */
+  discriminatorFieldName?: string;
   discriminatorValue?: number | string;
   discriminatorMap?: Dictionary<EntityClass>;
   embeddable: boolean;

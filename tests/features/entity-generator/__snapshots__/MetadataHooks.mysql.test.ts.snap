@@ -129,7 +129,7 @@ export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 export const BaseUser2Schema = defineEntity({
   class: BaseUser2,
   abstract: true,
-  discriminatorColumn: 'type',
+  discriminator: 'type',
   discriminatorMap: { employee: 'Employee2', manager: 'Manager2' },
   properties: {
     id: p.integer().primary(),
@@ -894,7 +894,7 @@ export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 export const BaseUser2Schema = new EntitySchema({
   class: BaseUser2,
   abstract: true,
-  discriminatorColumn: 'type',
+  discriminator: 'type',
   discriminatorMap: { employee: 'Employee2', manager: 'Manager2' },
   properties: {
     id: { primary: true, type: 'integer' },
@@ -1762,7 +1762,7 @@ export const BaseUser2Type = {
 
 export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
-@Entity({ abstract: true, discriminatorColumn: 'type', discriminatorMap: { employee: 'Employee2', manager: 'Manager2' } })
+@Entity({ abstract: true, discriminator: 'type', discriminatorMap: { employee: 'Employee2', manager: 'Manager2' } })
 export abstract class BaseUser2 extends CustomBase2 {
 
   @PrimaryKey()
@@ -2504,7 +2504,7 @@ export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 export const BaseUser2Schema = defineEntity({
   class: BaseUser2,
   abstract: true,
-  discriminatorColumn: 'type',
+  discriminator: 'type',
   discriminatorMap: { employee: 'Employee2', manager: 'Manager2' },
   properties: {
     id: p.integer().primary(),
@@ -3277,7 +3277,7 @@ export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 export const BaseUser2Schema = new EntitySchema({
   class: BaseUser2,
   abstract: true,
-  discriminatorColumn: 'type',
+  discriminator: 'type',
   discriminatorMap: { employee: 'Employee2', manager: 'Manager2' },
   properties: {
     id: { primary: true, type: 'integer' },
@@ -4164,7 +4164,7 @@ export const BaseUser2Type = {
 
 export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
-@Entity({ abstract: true, discriminatorColumn: 'type', discriminatorMap: { employee: 'Employee2', manager: 'Manager2' } })
+@Entity({ abstract: true, discriminator: 'type', discriminatorMap: { employee: 'Employee2', manager: 'Manager2' } })
 export abstract class BaseUser2 extends CustomBase2 {
 
   @PrimaryKey()
@@ -4908,7 +4908,7 @@ export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 export const BaseUser2Schema = defineEntity({
   class: BaseUser2,
   abstract: true,
-  discriminatorColumn: 'type',
+  discriminator: 'type',
   discriminatorMap: { employee: 'Employee2', manager: 'Manager2' },
   properties: {
     id: p.integer().primary(),
@@ -5673,7 +5673,7 @@ export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 export const BaseUser2Schema = new EntitySchema({
   class: BaseUser2,
   abstract: true,
-  discriminatorColumn: 'type',
+  discriminator: 'type',
   discriminatorMap: { employee: 'Employee2', manager: 'Manager2' },
   properties: {
     id: { primary: true, type: 'integer' },
@@ -6541,7 +6541,7 @@ export const BaseUser2Type = {
 
 export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
-@Entity({ abstract: true, discriminatorColumn: 'type', discriminatorMap: { employee: 'Employee2', manager: 'Manager2' } })
+@Entity({ abstract: true, discriminator: 'type', discriminatorMap: { employee: 'Employee2', manager: 'Manager2' } })
 export abstract class BaseUser2 extends CustomBase2 {
 
   @PrimaryKey()
@@ -7283,7 +7283,7 @@ export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 export const BaseUser2Schema = defineEntity({
   class: BaseUser2,
   abstract: true,
-  discriminatorColumn: 'type',
+  discriminator: 'type',
   discriminatorMap: { employee: 'Employee2', manager: 'Manager2' },
   properties: {
     id: p.integer().primary(),
@@ -8056,7 +8056,7 @@ export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 export const BaseUser2Schema = new EntitySchema({
   class: BaseUser2,
   abstract: true,
-  discriminatorColumn: 'type',
+  discriminator: 'type',
   discriminatorMap: { employee: 'Employee2', manager: 'Manager2' },
   properties: {
     id: { primary: true, type: 'integer' },
@@ -8943,7 +8943,7 @@ export const BaseUser2Type = {
 
 export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
-@Entity({ abstract: true, discriminatorColumn: 'type', discriminatorMap: { employee: 'Employee2', manager: 'Manager2' } })
+@Entity({ abstract: true, discriminator: 'type', discriminatorMap: { employee: 'Employee2', manager: 'Manager2' } })
 export abstract class BaseUser2 extends CustomBase2 {
 
   @PrimaryKey()
