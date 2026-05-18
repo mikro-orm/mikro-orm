@@ -249,12 +249,10 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
       }
     }
 
-    const isMongo = driverPackage === '@mikro-orm/mongodb';
-
-    // Type imports (Kysely types are not available for MongoDB)
-    if (!isMongo) {
-      lines.push(`import type { EntitySchemaWithMeta, InferKyselyDB, InferClassEntityDB } from '${driverPackage}';`);
-    }
+    // Bring in the driver's `EntityManager` class type so we can graft the
+    // entity tuple onto it. Aliasing avoids clashing with the `EntityManager`
+    // type we export below.
+    lines.push(`import type { EntityManager as DriverEntityManager } from '${driverPackage}';`);
 
     lines.push('');
 
@@ -267,12 +265,20 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
 
     lines.push('] as const;');
 
-    // Database type (Kysely is SQL-only, skip for MongoDB)
-    if (!isMongo) {
-      lines.push('');
-      lines.push('export type Database = InferKyselyDB<Extract<(typeof entities)[number], EntitySchemaWithMeta>>');
-      lines.push('  & InferClassEntityDB<(typeof entities)[number]>;');
-    }
+    lines.push('');
+
+    // The entity tuple type — usable in `MikroORM<Driver, EM, Database>`,
+    // for typed repository helpers, and anywhere entity classes/schemas are
+    // accepted as a tuple.
+    lines.push('export type Database = typeof entities;');
+
+    lines.push('');
+
+    // Typed `EntityManager` for DI / NestJS contexts where the entity tuple
+    // would otherwise be erased. Grafting `'~entities'` keeps inference
+    // intact for `em.getKysely(opts)` (and any other entity-aware method
+    // that reads from `EntitiesFromManager<this>`).
+    lines.push("export type EntityManager = DriverEntityManager & { '~entities': Database };");
 
     lines.push('');
 

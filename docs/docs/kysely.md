@@ -258,8 +258,9 @@ const stats = await kysely.selectFrom('view_stats').selectAll().executeTakeFirst
 
 For projects with many entities, maintaining a manual `entities` array in your ORM config can be tedious and error-prone. The `discovery:export` CLI command scans your entity source files and generates a TypeScript barrel file that exports:
 
-- An `entities` array for use in your ORM config
-- A `Database` type for typed `getKysely()` usage
+- An `entities` array for your ORM config
+- A `Database` type — the entity tuple, usable wherever a tuple of entities is accepted (e.g. `MikroORM<Driver, EM, Database>`)
+- An `EntityManager` type — a driver-pinned, entity-aware `EntityManager` alias for DI contexts
 
 ```bash
 npx mikro-orm discovery:export
@@ -273,18 +274,19 @@ The command reads entity paths from your ORM config (`entitiesTs` or `entities`)
 
 import { Author } from './entities/Author.js';
 import { BookSchema } from './entities/Book.js';
-import type { EntitySchemaWithMeta, InferKyselyDB, InferClassEntityDB } from '@mikro-orm/postgresql';
+import type { EntityManager as DriverEntityManager } from '@mikro-orm/postgresql';
 
 export const entities = [
   Author,
   BookSchema,
 ] as const;
 
-export type Database = InferKyselyDB<Extract<(typeof entities)[number], EntitySchemaWithMeta>>
-  & InferClassEntityDB<(typeof entities)[number]>;
+export type Database = typeof entities;
+
+export type EntityManager = DriverEntityManager & { '~entities': Database };
 ```
 
-Use the generated file in your ORM config:
+Use the generated `entities` array in your ORM config:
 
 ```ts
 import { entities } from './entities.generated';
@@ -292,12 +294,29 @@ import { entities } from './entities.generated';
 export default defineConfig({ entities });
 ```
 
-And for typed Kysely in DI contexts (e.g., NestJS):
+In DI / framework contexts (e.g. NestJS) where the EntityManager would otherwise be received with its entity tuple erased, import the generated `EntityManager` type. The driver is already pinned by the codegen — no driver generic to fill in — and `em.getKysely(opts)` keeps full type inference for both the database shape and the call-site plugin options:
 
 ```ts
-import type { Database } from './entities.generated';
+import type { EntityManager } from './entities.generated';
 
-const kysely = this.em.getKysely<Database>();
+@Injectable()
+export class ArticleService {
+  constructor(private readonly em: EntityManager) {}
+
+  list() {
+    // physical/underscore names
+    return this.em.getKysely().selectFrom('article').selectAll().execute();
+  }
+
+  listByEntityName() {
+    // entity-named tables and property-named columns — inferred from the runtime options
+    return this.em
+      .getKysely({ tableNamingStrategy: 'entity', columnNamingStrategy: 'property' })
+      .selectFrom('Article')
+      .selectAll()
+      .execute();
+  }
+}
 ```
 
 #### Command Options

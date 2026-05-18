@@ -846,6 +846,62 @@ describe('InferClassEntityDB', () => {
   });
 });
 
+describe('typed EntityManager via `~entities` graft (discovery:export DI use case)', () => {
+  // Mirrors the shape `mikro-orm discovery:export` emits:
+  //   export const entities = [Author, BookSchema] as const;
+  //   export type Database = typeof entities;
+  //   export type EntityManager = DriverEntityManager & { '~entities': Database };
+  test('getKysely return type respects naming strategies even when EM is received via DI', async () => {
+    const Author = defineEntity({
+      name: 'Author',
+      tableName: 'authors',
+      properties: {
+        id: p.integer().primary().autoincrement(),
+        firstName: p.string(),
+        lastName: p.string(),
+      },
+    });
+
+    const Book = defineEntity({
+      name: 'Book',
+      properties: {
+        id: p.integer().primary().autoincrement(),
+        title: p.string(),
+        author: () => p.manyToOne(Author),
+      },
+    });
+
+    const entities = [Author, Book] as const;
+    type Database = typeof entities;
+
+    const orm = new MikroORM({ entities, dbName: ':memory:' });
+
+    // simulate DI: forget the inferred EM type, recover entities via graft alone
+    type DriverEntityManager = typeof orm.em;
+    type TypedEm = DriverEntityManager & { '~entities': Database };
+    const em = orm.em as unknown as TypedEm;
+
+    // default (physical/underscore naming) — picks up `tableName: 'authors'`
+    const k1 = em.getKysely();
+    type K1 = InferDBFromKysely<typeof k1>;
+    expectTypeOf<keyof K1>().toEqualTypeOf<'authors' | 'book'>();
+    expectTypeOf<keyof K1['authors']>().toExtend<'first_name' | 'last_name' | 'id'>();
+    expectTypeOf<keyof K1['book']>().toExtend<'title' | 'author_id' | 'id'>();
+
+    // entity-name tables — overrides `tableName` and uses the `name` field
+    const k2 = em.getKysely({ tableNamingStrategy: 'entity' });
+    type K2 = InferDBFromKysely<typeof k2>;
+    expectTypeOf<keyof K2>().toEqualTypeOf<'Author' | 'Book'>();
+
+    // property-name columns
+    const k3 = em.getKysely({ columnNamingStrategy: 'property' });
+    type K3 = InferDBFromKysely<typeof k3>;
+    expectTypeOf<keyof K3['authors']>().toExtend<'firstName' | 'lastName' | 'id'>();
+
+    await orm.close();
+  });
+});
+
 interface Generated<T> {
   readonly __select__: T;
   readonly __insert__: T | undefined;
