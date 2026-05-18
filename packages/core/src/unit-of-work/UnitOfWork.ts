@@ -540,15 +540,27 @@ export class UnitOfWork {
         continue;
       }
 
-      // inlined pivot M:N (mongo): we can't scrub references from owning-side documents we haven't loaded
+      // inlined pivot M:N: scrub the deleted entity from each owning-side document's array;
+      // the owner's collection update rides along inside its UPDATE changeset in the same flush
       if (
         prop.kind === ReferenceKind.MANY_TO_MANY &&
         prop.mappedBy &&
         !this.#platform.usesPivotTable() &&
-        Utils.isCollection<AnyEntity>(relation) &&
-        !relation.isInitialized()
+        Utils.isCollection<AnyEntity>(relation)
       ) {
-        throw ValidationError.cannotModifyInverseCollection(entity as AnyEntity, prop);
+        if (!relation.isInitialized(true)) {
+          throw ValidationError.cannotModifyInverseCollection(entity as AnyEntity, prop);
+        }
+
+        for (const owner of relation.getItems(false)) {
+          const ownerColl = (owner as Dictionary)[inverseProp];
+
+          if (Utils.isCollection(ownerColl)) {
+            ownerColl.removeWithoutPropagation(entity);
+          }
+        }
+
+        continue;
       }
 
       const target = relation?.[inverseProp as keyof typeof relation] as unknown;
