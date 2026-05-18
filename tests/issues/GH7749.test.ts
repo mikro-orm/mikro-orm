@@ -44,7 +44,7 @@ test('raw(qb) with kysely CTE wraps WITH in parens inside INSERT VALUES', async 
   const mock = mockLogger(orm, ['query', 'query-params']);
 
   const item = orm.em.create(Item, {
-    order: raw($order) as unknown as number,
+    order: raw<number>($order),
     pk: 'e809c1d7-02a0-4993-b4b1-ea813bdbdfb0',
   });
   orm.em.persist(item);
