@@ -22,6 +22,24 @@ class ProductPackageLocalizedTitle {
   el?: string;
 }
 
+@Embeddable()
+class FontStyle {
+  @Property({ nullable: true })
+  fontFamily?: string;
+
+  @Property({ nullable: true })
+  fontWeight?: string;
+}
+
+@Embeddable()
+class DisplayInfo {
+  @Property({ nullable: true })
+  badgeLabel?: string;
+
+  @Embedded(() => FontStyle, { nullable: true })
+  font?: FontStyle;
+}
+
 @Entity()
 class Product {
   @PrimaryKey()
@@ -44,6 +62,9 @@ class ProductPackage {
 
   @Embedded(() => ProductPackageLocalizedTitle)
   localizedTitle!: ProductPackageLocalizedTitle;
+
+  @Embedded(() => DisplayInfo, { nullable: true })
+  display?: DisplayInfo;
 
   @Property()
   quantity!: number;
@@ -89,12 +110,14 @@ beforeEach(async () => {
     quantity: 2,
     multiplier: 3,
     localizedTitle: { en: 'Package 1' },
+    display: { badgeLabel: 'Hot', font: { fontFamily: 'Inter', fontWeight: '700' } },
     product: product1,
   });
   orm.em.create(ProductPackage, {
     quantity: 4,
     multiplier: 5,
     localizedTitle: { en: 'Package 2' },
+    display: { badgeLabel: 'New', font: { fontFamily: 'Arial', fontWeight: '400' } },
     product: product2,
   });
   orm.em.create(ClientProduct, { title: 'Client Product 1', product: product1 });
@@ -131,4 +154,25 @@ test('em.find with nested populate + projected fields runs a single query', asyn
   expect(queries).toHaveLength(1);
   expect(queries[0]).toContain('inner join `product`');
   expect(queries[0]).toContain('left join `product_package`');
+});
+
+// Same scenario, but the populated relation contains an inline embeddable that itself
+// contains another inline embeddable — exercises the recursive embedded-leaf check.
+test('em.find with nested populate + projected fields handles nested inline embeddables', async () => {
+  const em = orm.em.fork();
+  const mock = mockLogger(orm, ['query']);
+
+  const results = await em.find(
+    ClientProduct,
+    {},
+    {
+      fields: ['product.package.title', 'product.package.display'],
+      populate: ['product.package'],
+    },
+  );
+
+  const queries = mock.mock.calls.map(call => String(call[0]));
+  expect(queries).toHaveLength(1);
+  expect(results[0].product.package?.display?.font?.fontFamily).toBe('Inter');
+  expect(results[0].product.package?.display?.font?.fontWeight).toBe('700');
 });
