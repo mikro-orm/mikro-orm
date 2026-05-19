@@ -527,10 +527,23 @@ export class UnitOfWork {
     }
 
     // remove from referencing relations that are nullable
-    for (const prop of helper(entity).__meta.bidirectionalRelations) {
+    const entityMeta = helper(entity).__meta;
+    for (const prop of entityMeta.bidirectionalRelations) {
       const inverseProp = prop.mappedBy || prop.inversedBy;
       const relation = Reference.unwrapReference(entity[prop.name] as T);
       const prop2 = prop.targetMeta!.properties[inverseProp];
+
+      // skip relations that this entity's class can't actually participate in.
+      // happens with STI: a child meta picks up a sibling's inverse-side relation via the root,
+      // but the owning side targets the sibling — no collection can reference this entity.
+      const inverseTarget = prop2.targetMeta!;
+      if (
+        inverseTarget.abstract
+          ? inverseTarget.root.class !== entityMeta.root.class
+          : inverseTarget.class !== entityMeta.class
+      ) {
+        continue;
+      }
 
       if (prop.kind === ReferenceKind.ONE_TO_MANY && prop2.nullable && Utils.isCollection<AnyEntity>(relation)) {
         for (const item of relation.getItems(false)) {
