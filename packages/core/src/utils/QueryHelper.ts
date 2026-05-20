@@ -221,12 +221,16 @@ export class QueryHelper {
       const meta2 = metadata.find(prop?.targetMeta?.class as any) || meta;
 
       if (this.inlinePrimaryKeyObjects(where[k], meta2, metadata, k)) {
-        // Skip the PK collapse when the relation's FK column count does not match the target's
-        // PK column count (e.g. FK references target PK + an extra unique column). Otherwise the
-        // criteria layer would emit a malformed tuple predicate such as `(joinCol1, joinCol2) =
-        // scalar` (single-PK target) or `(joinCol1, joinCol2, joinCol3) = [v1, v2]` (composite
-        // target + extra FK column).
-        if (prop?.joinColumns && prop.joinColumns.length !== meta2.primaryKeys.length) {
+        // Skip the PK collapse when an owning M:1/1:1 relation's FK column count does not match
+        // the target's PK column count (e.g. FK references target PK + an extra unique column).
+        // The criteria layer would otherwise emit a malformed predicate such as
+        // `(joinCol1, joinCol2) = scalar`. Limited to owning relations — `joinColumns` on the
+        // inverse side (1:m) describes the owning entity's FK columns, not the LHS tuple.
+        if (
+          prop?.owner &&
+          [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
+          prop.joinColumns.length !== meta2.primaryKeys.length
+        ) {
           return;
         }
 
