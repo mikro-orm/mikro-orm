@@ -19,7 +19,7 @@ const features = [
   },
   {
     title: 'Fully Type-Safe',
-    docsUrl: 'docs/next/type-safe-relations',
+    docsUrl: 'docs/type-safe-relations',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="9 11 12 14 22 4"/>
@@ -109,7 +109,7 @@ const features = [
   },
   {
     title: 'First-Class Kysely Integration',
-    docsUrl: 'docs/next/kysely',
+    docsUrl: 'docs/kysely',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M15 7h3a5 5 0 0 1 0 10h-3"/>
@@ -133,7 +133,7 @@ const databases = [
   { name: 'Oracle', logo: 'img/databases/oracle.svg', docsUrl: 'docs/usage-with-sql#oracle-limitations' },
   { name: 'Turso', logo: 'img/databases/turso.svg', docsUrl: 'docs/usage-with-sqlite#using-turso-embedded-database' },
   { name: 'Cloudflare D1', logo: 'img/databases/cloudflare-d1.svg', docsUrl: 'docs/usage-with-sqlite#using-cloudflare-d1' },
-  { name: 'PGlite', logo: 'img/databases/pglite.svg', docsUrl: 'docs/next/usage-with-pglite' },
+  { name: 'PGlite', logo: 'img/databases/pglite.svg', docsUrl: 'docs/usage-with-pglite' },
 ];
 
 function Feature({ title, icon, description, docsUrl }) {

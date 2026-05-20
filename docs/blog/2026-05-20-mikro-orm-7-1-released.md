@@ -4,7 +4,6 @@ title: 'MikroORM 7.1: Loaded'
 authors: [B4nan]
 tags: [typescript, javascript, node, sql]
 image: './img/og-v7-1.png'
-draft: true
 ---
 
 import Tabs from '@theme/Tabs';
@@ -57,7 +56,7 @@ function logAuthor(book: Book) {
 }
 ```
 
-All three additions are opt-in and non-breaking. `BaseEntity`, `Ref<T>`, plain relations and `@ManyToOne({ ref: true })` are unchanged. See [type-safe relations](/docs/next/type-safe-relations#lazyreft--type-only-reference) for the full reference.
+All three additions are opt-in and non-breaking. `BaseEntity`, `Ref<T>`, plain relations and `@ManyToOne({ ref: true })` are unchanged. See [type-safe relations](/docs/type-safe-relations#lazyreft--type-only-reference) for the full reference.
 
 ## Per-parent limiting for populated collections
 
@@ -72,7 +71,7 @@ const users = await em.find(User, {}, {
 });
 ```
 
-On SQL, this uses `ROW_NUMBER() OVER (PARTITION BY <fk> ORDER BY ...)` wrapped in a subquery. On MongoDB, it uses a `$group` / `$push` / `$slice` aggregation pipeline. Limited collections are marked partial and read-only so the Unit of Work doesn't try to delete unloaded items, and the `joined` strategy automatically falls back to `select-in` when a limit is set. See [loading strategies](/docs/next/loading-strategies#per-parent-limiting) for the full reference.
+On SQL, this uses `ROW_NUMBER() OVER (PARTITION BY <fk> ORDER BY ...)` wrapped in a subquery. On MongoDB, it uses a `$group` / `$push` / `$slice` aggregation pipeline. Limited collections are marked partial and read-only so the Unit of Work doesn't try to delete unloaded items, and the `joined` strategy automatically falls back to `select-in` when a limit is set. See [loading strategies](/docs/loading-strategies#per-parent-limiting) for the full reference.
 
 ![Expanding brain: from "load it all, slice in JS" to "ROW_NUMBER() OVER PARTITION BY"](./img/v7-1/expanding-brain-partition.jpg)
 
@@ -91,7 +90,7 @@ em.find(User, { name: 'foo' }, { using: ['idx_user_name', 'uniq_user_email'] });
 
 The type system narrows `where` to only allow properties covered by the named index(es), and the index name itself is checked against your entity's declared indexes. For `defineEntity`, index names are inferred automatically from `.index('name')` / `.unique('name')` calls; for decorator entities you declare them via the `[IndexHints]` symbol (same pattern as `[PrimaryKeyProp]`).
 
-Driver support includes MySQL/MariaDB (`USE INDEX`), MSSQL (`WITH (INDEX(...))`), MongoDB (passed as the `hint` option), and validation-only on PostgreSQL/SQLite/libSQL. The existing `indexHint` option still works and takes precedence when explicitly set. See [indexes](/docs/next/indexes) for the full reference.
+Driver support includes MySQL/MariaDB (`USE INDEX`), MSSQL (`WITH (INDEX(...))`), MongoDB (passed as the `hint` option), and validation-only on PostgreSQL/SQLite/libSQL. The existing `indexHint` option still works and takes precedence when explicitly set. See [indexes](/docs/indexes) for the full reference.
 
 ## Partial indexes via `where`
 
@@ -117,7 +116,7 @@ Per-driver output:
 
 The `CASE WHEN` trick on MySQL/Oracle works because `NULL` is distinct in unique indexes — rows where the predicate is false get a `NULL` key and don't conflict.
 
-Predicates are diffed **structurally** through the same expression normalizer the schema generator uses for check constraints (collapsing whitespace, quoting, and casing), so there's no name-only fallback and the output round-trips cleanly through the entity generator. See [partial indexes](/docs/next/indexes#partial-indexes) for the full reference.
+Predicates are diffed **structurally** through the same expression normalizer the schema generator uses for check constraints (collapsing whitespace, quoting, and casing), so there's no name-only fallback and the output round-trips cleanly through the entity generator. See [partial indexes](/docs/indexes#partial-indexes) for the full reference.
 
 ## Typed Kysely across DI-driven projects
 
@@ -167,7 +166,7 @@ export class ArticleService {
 }
 ```
 
-Re-run the command whenever your entity set changes, or wire it into your build step / pre-commit hook. There are no decorator changes, no migration off folder discovery, no double-registration of entities at the framework level — the barrel is purely a type-level companion to whatever registration mechanism your framework already prefers. See the [Kysely integration guide](/docs/next/kysely#generating-entity-exports-with-the-cli) for the full reference.
+Re-run the command whenever your entity set changes, or wire it into your build step / pre-commit hook. There are no decorator changes, no migration off folder discovery, no double-registration of entities at the framework level — the barrel is purely a type-level companion to whatever registration mechanism your framework already prefers. See the [Kysely integration guide](/docs/kysely#generating-entity-exports-with-the-cli) for the full reference.
 
 ### `getKysely()` now binds to the active transaction
 
@@ -235,7 +234,7 @@ await em.execute('select pg_sleep(30)', [], {
 });
 ```
 
-For streaming queries (`em.stream()` / `qb.stream()`), `inflightQueryAbortStrategy` is silently treated as `'ignore query'` regardless of the value — there's no server-side cancel for an open cursor. See the [query cancellation guide](/docs/next/query-cancellation) for the full picture.
+For streaming queries (`em.stream()` / `qb.stream()`), `inflightQueryAbortStrategy` is silently treated as `'ignore query'` regardless of the value — there's no server-side cancel for an open cursor. See the [query cancellation guide](/docs/query-cancellation) for the full picture.
 
 ## PGlite driver
 
@@ -259,7 +258,7 @@ Use cases this unlocks:
 - **Browser-side persistence** — Mikro­ORM in the browser was always SQLite-only; with PGlite you can use the full PostgreSQL feature set (JSON operators, CTEs, window functions, full-text search, etc.) backed by IndexedDB.
 - **Local-first apps** — embed a real Postgres in Electron / Tauri / mobile shells without bundling `pg` and a server.
 
-Behind the scenes, the v7 driver layout was reshuffled so `@mikro-orm/sql` now owns everything postgres-but-not-`pg`-specific (escape, type parsers, etc.). `@mikro-orm/postgresql` kept its name and behavior; `@mikro-orm/pglite` is a small, focused wrapper that consumes the shared base. Streaming isn't supported (PGliteDialect doesn't implement it) — use `@mikro-orm/postgresql` if you need cursor-based streaming. See [usage with PGlite](/docs/next/usage-with-pglite) for setup details.
+Behind the scenes, the v7 driver layout was reshuffled so `@mikro-orm/sql` now owns everything postgres-but-not-`pg`-specific (escape, type parsers, etc.). `@mikro-orm/postgresql` kept its name and behavior; `@mikro-orm/pglite` is a small, focused wrapper that consumes the shared base. Streaming isn't supported (PGliteDialect doesn't implement it) — use `@mikro-orm/postgresql` if you need cursor-based streaming. See [usage with PGlite](/docs/usage-with-pglite) for setup details.
 
 <img src={require('./img/v7-1/pglite-drake.jpg').default} alt='Drake meme: "docker compose up + wait for healthy" nope, "Postgres in-process via PGlite" yes' style={{maxHeight: 450}} />
 
@@ -275,7 +274,7 @@ const counts = await em.countBy(Order, ['status', 'country']);
 // { 'pending~~~US': 5, 'shipped~~~DE': 3 }
 ```
 
-For composite keys, the result keys are joined with `~~~` (the same separator the ORM uses internally for composite PKs). SQL generates a single `GROUP BY` query; MongoDB uses a `$group` aggregation pipeline. The method is also exposed on `EntityRepository` as `repo.countBy(...)`. See [counting by group](/docs/next/entity-manager#counting-by-group) for the full reference.
+For composite keys, the result keys are joined with `~~~` (the same separator the ORM uses internally for composite PKs). SQL generates a single `GROUP BY` query; MongoDB uses a `$group` aggregation pipeline. The method is also exposed on `EntityRepository` as `repo.countBy(...)`. See [counting by group](/docs/entity-manager#counting-by-group) for the full reference.
 
 ## Dataloader for `Collection.loadCount()`
 
@@ -287,7 +286,7 @@ const counts = await Promise.all(
 );
 ```
 
-It also respects the global `DataloaderType.ALL` / `COLLECTION` config, so you can enable it project-wide without the per-call option. See the [dataloader docs](/docs/next/dataloaders#collectionloadcount) for more.
+It also respects the global `DataloaderType.ALL` / `COLLECTION` config, so you can enable it project-wide without the per-call option. See the [dataloader docs](/docs/dataloaders#collectionloadcount) for more.
 
 ## Database triggers
 
@@ -327,7 +326,7 @@ const Product = defineEntity({
 });
 ```
 
-Triggers are created, diffed, and dropped during schema updates like any other schema object. Driver-specific DDL covers PostgreSQL (function + trigger), MySQL/MariaDB/SQLite (one per event — these databases require it), and MSSQL (multi-event, `after` / `instead of` only). Schema introspection round-trips cleanly, so there are no spurious diffs. See the [database triggers section in defining entities](/docs/next/defining-entities#database-triggers) for the full reference.
+Triggers are created, diffed, and dropped during schema updates like any other schema object. Driver-specific DDL covers PostgreSQL (function + trigger), MySQL/MariaDB/SQLite (one per event — these databases require it), and MSSQL (multi-event, `after` / `instead of` only). Schema introspection round-trips cleanly, so there are no spurious diffs. See the [database triggers section in defining entities](/docs/defining-entities#database-triggers) for the full reference.
 
 ## Union-target polymorphic M:N
 
@@ -358,7 +357,7 @@ The pivot `(post_id, attachable_type, attachable_id)` has a composite PK and no 
 
 > The `defineEntity` DSL doesn't support union targets for M:N yet — the `.manyToMany()` builder accepts a single `EntityTarget` today. Rails-style polymorphic M:N (single target, pivot-row discriminator) is available in both forms.
 
-See [union-target M:N polymorphic relations](/docs/next/relationships#union-target-mn-polymorphic-relations) for the full reference.
+See [union-target M:N polymorphic relations](/docs/relationships#union-target-mn-polymorphic-relations) for the full reference.
 
 ## PostgreSQL table partitioning
 
@@ -383,7 +382,7 @@ class Event {
 }
 ```
 
-The schema generator emits both the parent table DDL (`PARTITION BY ...`) and the child partition DDL, and the PostgreSQL introspection correctly round-trips partitioned tables so there are no perpetual diffs. See [PostgreSQL partitioned tables](/docs/next/schema-generator#postgresql-partitioned-tables) for the full reference.
+The schema generator emits both the parent table DDL (`PARTITION BY ...`) and the child partition DDL, and the PostgreSQL introspection correctly round-trips partitioned tables so there are no perpetual diffs. See [PostgreSQL partitioned tables](/docs/schema-generator#postgresql-partitioned-tables) for the full reference.
 
 ## Server-side row cloning
 
@@ -421,7 +420,7 @@ serialize(jon, { populate: ['books'], fields: ['name', 'books.title'] });
 wrap(jon).serialize({ fields: ['id', 'name'] });
 ```
 
-The semantics are strict — unlike the partial-loading `toObject()` path, PKs are dropped unless listed explicitly. `exclude` wins on conflict, so `{ fields: ['name', 'email'], exclude: ['email'] }` returns just `{ name }`. The return type narrows end to end. See [whitelisting properties via `fields`](/docs/next/serializing#whitelisting-properties-via-fields) for the full reference.
+The semantics are strict — unlike the partial-loading `toObject()` path, PKs are dropped unless listed explicitly. `exclude` wins on conflict, so `{ fields: ['name', 'email'], exclude: ['email'] }` returns just `{ name }`. The return type narrows end to end. See [whitelisting properties via `fields`](/docs/serializing#whitelisting-properties-via-fields) for the full reference.
 
 ## Stored procedures and functions (experimental)
 
@@ -464,7 +463,7 @@ The schema generator manages routines as first-class objects — creating, diffi
 
 Body and parameter-type comparisons are platform-aware (`int` ↔ `integer`, `varchar` ↔ `character varying`, outer `BEGIN ... END` wrappers stripped, statement-splitter taught to keep multi-line bodies intact), so introspected DDL round-trips through `schema:diff` cleanly. OUT/INOUT params are exposed via `ScalarReference` so you can pass them in and read them back out, and multi-result-set procedures are auto-detected — when a procedure emits any result sets, `em.callRoutine` returns `Dictionary[][]` (one row array per set); otherwise it returns `void`.
 
-The entity generator picks up introspected routines and emits them as `new Routine({...})` source alongside your entities, with backslashes and `${...}` interpolations in user-supplied bodies properly escaped — so reverse-engineering an existing database brings the routines along for the ride. See [stored routines](/docs/next/stored-routines) for the full reference.
+The entity generator picks up introspected routines and emits them as `new Routine({...})` source alongside your entities, with backslashes and `${...}` interpolations in user-supplied bodies properly escaped — so reverse-engineering an existing database brings the routines along for the ride. See [stored routines](/docs/stored-routines) for the full reference.
 
 ## Runtime schema context for migrations
 
@@ -494,7 +493,7 @@ When a runtime schema is resolved, the migrator prepends the driver's "set curre
 
 For the multi-tenant case, opt wildcard entities (`@Entity({ schema: '*' })`) into `migration:create` with `migrations.includeWildcardSchema: true` so the emitted DDL is unqualified and safe to apply against any schema. Tenant orchestration and failure recovery remain the caller's responsibility — this ships primitives, not a managed multi-tenant migrator.
 
-The CLI gets a matching `--schema` flag on `migration:up` / `migration:down`, and `migrator.getExecuted({ schema })` / `getPending({ schema })` let you inspect per-tenant state without mutating global config. Strictly additive — nothing changes unless you opt in. See [runtime schema context](/docs/next/migrations#runtime-schema-context) for the full reference.
+The CLI gets a matching `--schema` flag on `migration:up` / `migration:down`, and `migrator.getExecuted({ schema })` / `getPending({ schema })` let you inspect per-tenant state without mutating global config. Strictly additive — nothing changes unless you opt in. See [runtime schema context](/docs/migrations#runtime-schema-context) for the full reference.
 
 ## CLI: more migration commands
 
@@ -504,7 +503,7 @@ Two other CLI additions on the migrations side:
 
 - **`migration:log`** / **`migration:unlog`** mark a migration as executed (or not) without actually running (or reverting) it. Useful when bootstrapping a project from an existing database, or when recovering after a partial migration failure.
 
-See [using via CLI](/docs/next/migrations#using-via-cli) for the full list of migration commands.
+See [using via CLI](/docs/migrations#using-via-cli) for the full list of migration commands.
 
 ## Smaller improvements
 
