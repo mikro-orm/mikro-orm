@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.1.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.17...v7.1.0) (2026-05-20)
+
+
+### Bug Fixes
+
+* **core:** coerce ISO date strings to `Date` in `em.assign()` ([#7740](https://github.com/mikro-orm/mikro-orm/issues/7740)) ([0940a5f](https://github.com/mikro-orm/mikro-orm/commit/0940a5f32c57a7ad2287b11b10147a1f83338df0)), closes [#7737](https://github.com/mikro-orm/mikro-orm/issues/7737)
+* **core:** skip M:N inverse scrub for STI siblings that can't reference the entity ([#7759](https://github.com/mikro-orm/mikro-orm/issues/7759)) ([6971c8a](https://github.com/mikro-orm/mikro-orm/commit/6971c8a171ace363518cffd175b526ffe4766548)), closes [/github.com/ameinhardt/reproduction/blob/e7faf2d4863c2a71c847277973a84bc8333da50b/src/example.test.ts#L45-L51](https://github.com//github.com/ameinhardt/reproduction/blob/e7faf2d4863c2a71c847277973a84bc8333da50b/src/example.test.ts/issues/L45-L51)
+* **core:** treat inlined embeddables as loaded when their leaves are ([#7758](https://github.com/mikro-orm/mikro-orm/issues/7758)) ([e89dab0](https://github.com/mikro-orm/mikro-orm/commit/e89dab0d9f84de36b249295bd3c580589f8237ab))
+* **mongo:** clean up inlined pivot on em.remove when owning side is populated ([#7755](https://github.com/mikro-orm/mikro-orm/issues/7755)) ([4c5f03a](https://github.com/mikro-orm/mikro-orm/commit/4c5f03a82ed2662b3510049e1d2db30ee26124ec)), closes [#7752](https://github.com/mikro-orm/mikro-orm/issues/7752)
+* **mongo:** throw on em.remove of inlined-pivot M:N target with uninitialized owning side ([#7752](https://github.com/mikro-orm/mikro-orm/issues/7752)) ([231f84c](https://github.com/mikro-orm/mikro-orm/commit/231f84cd6f4f29cf229259cbfba861dad0c9858b)), closes [#7750](https://github.com/mikro-orm/mikro-orm/issues/7750)
+
+
+### Features
+
+* **cli:** add `discovery:export` command ([#7335](https://github.com/mikro-orm/mikro-orm/issues/7335)) ([e38f5c4](https://github.com/mikro-orm/mikro-orm/commit/e38f5c4a10c8bef488a5236e8061c50605f97ad3)), closes [#7323](https://github.com/mikro-orm/mikro-orm/issues/7323) [#7323](https://github.com/mikro-orm/mikro-orm/issues/7323)
+* **cli:** add `migration:log` and `migration:unlog` commands ([#7347](https://github.com/mikro-orm/mikro-orm/issues/7347)) ([6cf1045](https://github.com/mikro-orm/mikro-orm/commit/6cf10454cbdc80a36aaa5e7fd9ec79f1e3305fa2)), closes [#5390](https://github.com/mikro-orm/mikro-orm/issues/5390)
+* **core:** accept enum references directly in `items` ([#7606](https://github.com/mikro-orm/mikro-orm/issues/7606)) ([3d67892](https://github.com/mikro-orm/mikro-orm/commit/3d67892cbb763776e3e00f43d18161839a4ccdab))
+* **core:** add `discriminator` option and column-name override ([#7748](https://github.com/mikro-orm/mikro-orm/issues/7748)) ([5390ce8](https://github.com/mikro-orm/mikro-orm/commit/5390ce8ccaa0c8755b5a5cd03f8e029c1ad86408)), closes [#7121](https://github.com/mikro-orm/mikro-orm/issues/7121)
+* **core:** add `em.clone()` and `qb.insertFrom()` for server-side row cloning ([#7365](https://github.com/mikro-orm/mikro-orm/issues/7365)) ([13ca566](https://github.com/mikro-orm/mikro-orm/commit/13ca5667ed66867326735461b2ce2c14d400e3bb)), closes [#5820](https://github.com/mikro-orm/mikro-orm/issues/5820)
+* **core:** add `em.countBy()` for grouped counting ([#7372](https://github.com/mikro-orm/mikro-orm/issues/7372)) ([c4d2e99](https://github.com/mikro-orm/mikro-orm/commit/c4d2e990fb7e559c19fad772a23bc8808611335b))
+* **core:** add `fields` whitelist option to `serialize()` ([#7517](https://github.com/mikro-orm/mikro-orm/issues/7517)) ([6ea6d64](https://github.com/mikro-orm/mikro-orm/commit/6ea6d64a1aad6036f87765b857fb784397d3a1e9)), closes [#7507](https://github.com/mikro-orm/mikro-orm/issues/7507)
+* **core:** add `initNullableProperties` config option ([#7554](https://github.com/mikro-orm/mikro-orm/issues/7554)) ([03a3122](https://github.com/mikro-orm/mikro-orm/commit/03a3122129aee5ade3a5d74bc61b629eb0905063)), closes [#7551](https://github.com/mikro-orm/mikro-orm/issues/7551)
+* **core:** add `LazyRef<T>`, `Loadable` mixin, and `unref()` escape hatch ([#7587](https://github.com/mikro-orm/mikro-orm/issues/7587)) ([221c2fc](https://github.com/mikro-orm/mikro-orm/commit/221c2fca23e94a5ce6fd40c8cdc0ea910f014607))
+* **core:** add `where` option for partial indexes and unique constraints ([#7593](https://github.com/mikro-orm/mikro-orm/issues/7593)) ([78d00e3](https://github.com/mikro-orm/mikro-orm/commit/78d00e3530d68001b875d3bf1be62a0d70bc822d))
+* **core:** add a `chunkSize` option to streams ([#7520](https://github.com/mikro-orm/mikro-orm/issues/7520)) ([13c61fa](https://github.com/mikro-orm/mikro-orm/commit/13c61fad8e0db72ba48bcb936ab886058c2f8d37))
+* **core:** add column-level `collation` support for SQL drivers ([#7615](https://github.com/mikro-orm/mikro-orm/issues/7615)) ([12e3a73](https://github.com/mikro-orm/mikro-orm/commit/12e3a7321085ca974244d1c847f6f71e075c8ad8)), closes [#4286](https://github.com/mikro-orm/mikro-orm/issues/4286)
+* **core:** add dataloader support for `Collection.loadCount()` ([#7373](https://github.com/mikro-orm/mikro-orm/issues/7373)) ([120189c](https://github.com/mikro-orm/mikro-orm/commit/120189cfd413888c368312b9558b58688bb49693)), closes [#7372](https://github.com/mikro-orm/mikro-orm/issues/7372) [#6425](https://github.com/mikro-orm/mikro-orm/issues/6425)
+* **core:** add type-safe `using` option for index hints ([#7375](https://github.com/mikro-orm/mikro-orm/issues/7375)) ([3337b58](https://github.com/mikro-orm/mikro-orm/commit/3337b5812ee49841edb69b5c331ec06345fb440d)), closes [#7175](https://github.com/mikro-orm/mikro-orm/issues/7175)
+* **core:** auto-generated classes inherit from parent with defineEntity extends ([#7404](https://github.com/mikro-orm/mikro-orm/issues/7404)) ([94450ef](https://github.com/mikro-orm/mikro-orm/commit/94450eff3f52c36c08c42ca64a6981e8a4ceea44))
+* **core:** expose query cancellation via `AbortSignal` ([#7629](https://github.com/mikro-orm/mikro-orm/issues/7629)) ([1a8379c](https://github.com/mikro-orm/mikro-orm/commit/1a8379c0c3e533bb1594ccb63dbf3fee665f92b5))
+* **core:** per-parent limiting for populated collections ([#7370](https://github.com/mikro-orm/mikro-orm/issues/7370)) ([6ff01e4](https://github.com/mikro-orm/mikro-orm/commit/6ff01e488741aca1b181c4704d42b3960d59b263)), closes [#1059](https://github.com/mikro-orm/mikro-orm/issues/1059)
+* **core:** support `array` option on scalar properties ([#7378](https://github.com/mikro-orm/mikro-orm/issues/7378)) ([b54b756](https://github.com/mikro-orm/mikro-orm/commit/b54b7567fda1a38636869d43c2e788777c7c9862)), closes [#7363](https://github.com/mikro-orm/mikro-orm/issues/7363)
+* **core:** support stored procedures and functions ([#7693](https://github.com/mikro-orm/mikro-orm/issues/7693)) ([9bbbb8b](https://github.com/mikro-orm/mikro-orm/commit/9bbbb8b3f9e0bbcd9e1da9150fb9565f012ea210)), closes [#5253](https://github.com/mikro-orm/mikro-orm/issues/5253)
+* **core:** union-target polymorphic M:N relations ([#7569](https://github.com/mikro-orm/mikro-orm/issues/7569)) ([dfbe1c2](https://github.com/mikro-orm/mikro-orm/commit/dfbe1c263f730c3d267178a285c4177de44dfb09)), closes [#7564](https://github.com/mikro-orm/mikro-orm/issues/7564) [#7564](https://github.com/mikro-orm/mikro-orm/issues/7564)
+* **migrations:** add migration:rollup command ([#7468](https://github.com/mikro-orm/mikro-orm/issues/7468)) ([8de2c92](https://github.com/mikro-orm/mikro-orm/commit/8de2c923d9af285139377969dbe5a9011659dcc7)), closes [#3633](https://github.com/mikro-orm/mikro-orm/issues/3633)
+* **migrations:** support runtime schema context ([#7597](https://github.com/mikro-orm/mikro-orm/issues/7597)) ([9b00229](https://github.com/mikro-orm/mikro-orm/commit/9b00229a36ccc9dcc857434ec8a39ceafd274ab8)), closes [#3319](https://github.com/mikro-orm/mikro-orm/issues/3319) [#4928](https://github.com/mikro-orm/mikro-orm/issues/4928)
+* **postgresql:** add support for table partitioning ([#7497](https://github.com/mikro-orm/mikro-orm/issues/7497)) ([63d0977](https://github.com/mikro-orm/mikro-orm/commit/63d0977edd86726b51e75ac74899457d1aa7bd92)), closes [#6944](https://github.com/mikro-orm/mikro-orm/issues/6944) [#6944](https://github.com/mikro-orm/mikro-orm/issues/6944)
+* **schema:** add database trigger support ([#7379](https://github.com/mikro-orm/mikro-orm/issues/7379)) ([da4010d](https://github.com/mikro-orm/mikro-orm/commit/da4010d290f3aa3cc2bf0aa2fba31a694d53f38c)), closes [#5053](https://github.com/mikro-orm/mikro-orm/issues/5053)
+
+
+
+
+
 ## [7.0.17](https://github.com/mikro-orm/mikro-orm/compare/v7.0.16...v7.0.17) (2026-05-17)
 
 ### Bug Fixes

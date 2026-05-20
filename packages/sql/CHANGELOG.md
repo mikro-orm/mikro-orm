@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.1.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.17...v7.1.0) (2026-05-20)
+
+
+### Bug Fixes
+
+* **sql:** infer scalar array properties as columns in Kysely types ([#7753](https://github.com/mikro-orm/mikro-orm/issues/7753)) ([111d69d](https://github.com/mikro-orm/mikro-orm/commit/111d69d962edebbbf014f4209952f4a3128c23c2)), closes [#7751](https://github.com/mikro-orm/mikro-orm/issues/7751)
+* **sql:** wrap raw subqueries with parens inside INSERT VALUES ([#7754](https://github.com/mikro-orm/mikro-orm/issues/7754)) ([d379880](https://github.com/mikro-orm/mikro-orm/commit/d3798800bc62eeb51a28267fb3fee60c5b6249bd)), closes [#7749](https://github.com/mikro-orm/mikro-orm/issues/7749)
+
+
+### Features
+
+* **cli:** emit typed `EntityManager` alias from `discovery:export` ([#7756](https://github.com/mikro-orm/mikro-orm/issues/7756)) ([fd06439](https://github.com/mikro-orm/mikro-orm/commit/fd064396bd6e6b941204a0a62133cbe6b9f9bbfe))
+* **core:** add `em.clone()` and `qb.insertFrom()` for server-side row cloning ([#7365](https://github.com/mikro-orm/mikro-orm/issues/7365)) ([13ca566](https://github.com/mikro-orm/mikro-orm/commit/13ca5667ed66867326735461b2ce2c14d400e3bb)), closes [#5820](https://github.com/mikro-orm/mikro-orm/issues/5820)
+* **core:** add `em.countBy()` for grouped counting ([#7372](https://github.com/mikro-orm/mikro-orm/issues/7372)) ([c4d2e99](https://github.com/mikro-orm/mikro-orm/commit/c4d2e990fb7e559c19fad772a23bc8808611335b))
+* **core:** add `where` option for partial indexes and unique constraints ([#7593](https://github.com/mikro-orm/mikro-orm/issues/7593)) ([78d00e3](https://github.com/mikro-orm/mikro-orm/commit/78d00e3530d68001b875d3bf1be62a0d70bc822d))
+* **core:** add a `chunkSize` option to streams ([#7520](https://github.com/mikro-orm/mikro-orm/issues/7520)) ([13c61fa](https://github.com/mikro-orm/mikro-orm/commit/13c61fad8e0db72ba48bcb936ab886058c2f8d37))
+* **core:** add column-level `collation` support for SQL drivers ([#7615](https://github.com/mikro-orm/mikro-orm/issues/7615)) ([12e3a73](https://github.com/mikro-orm/mikro-orm/commit/12e3a7321085ca974244d1c847f6f71e075c8ad8)), closes [#4286](https://github.com/mikro-orm/mikro-orm/issues/4286)
+* **core:** add type-safe `using` option for index hints ([#7375](https://github.com/mikro-orm/mikro-orm/issues/7375)) ([3337b58](https://github.com/mikro-orm/mikro-orm/commit/3337b5812ee49841edb69b5c331ec06345fb440d)), closes [#7175](https://github.com/mikro-orm/mikro-orm/issues/7175)
+* **core:** expose query cancellation via `AbortSignal` ([#7629](https://github.com/mikro-orm/mikro-orm/issues/7629)) ([1a8379c](https://github.com/mikro-orm/mikro-orm/commit/1a8379c0c3e533bb1594ccb63dbf3fee665f92b5))
+* **core:** per-parent limiting for populated collections ([#7370](https://github.com/mikro-orm/mikro-orm/issues/7370)) ([6ff01e4](https://github.com/mikro-orm/mikro-orm/commit/6ff01e488741aca1b181c4704d42b3960d59b263)), closes [#1059](https://github.com/mikro-orm/mikro-orm/issues/1059)
+* **core:** support stored procedures and functions ([#7693](https://github.com/mikro-orm/mikro-orm/issues/7693)) ([9bbbb8b](https://github.com/mikro-orm/mikro-orm/commit/9bbbb8b3f9e0bbcd9e1da9150fb9565f012ea210)), closes [#5253](https://github.com/mikro-orm/mikro-orm/issues/5253)
+* **core:** union-target polymorphic M:N relations ([#7569](https://github.com/mikro-orm/mikro-orm/issues/7569)) ([dfbe1c2](https://github.com/mikro-orm/mikro-orm/commit/dfbe1c263f730c3d267178a285c4177de44dfb09)), closes [#7564](https://github.com/mikro-orm/mikro-orm/issues/7564) [#7564](https://github.com/mikro-orm/mikro-orm/issues/7564)
+* **migrations:** support runtime schema context ([#7597](https://github.com/mikro-orm/mikro-orm/issues/7597)) ([9b00229](https://github.com/mikro-orm/mikro-orm/commit/9b00229a36ccc9dcc857434ec8a39ceafd274ab8)), closes [#3319](https://github.com/mikro-orm/mikro-orm/issues/3319) [#4928](https://github.com/mikro-orm/mikro-orm/issues/4928)
+* **pglite:** add PGlite driver ([#7622](https://github.com/mikro-orm/mikro-orm/issues/7622)) ([01f18c5](https://github.com/mikro-orm/mikro-orm/commit/01f18c59f2a3022f01d0d190c003982f275c1192))
+* **postgresql:** add support for table partitioning ([#7497](https://github.com/mikro-orm/mikro-orm/issues/7497)) ([63d0977](https://github.com/mikro-orm/mikro-orm/commit/63d0977edd86726b51e75ac74899457d1aa7bd92)), closes [#6944](https://github.com/mikro-orm/mikro-orm/issues/6944) [#6944](https://github.com/mikro-orm/mikro-orm/issues/6944)
+* **schema:** add database trigger support ([#7379](https://github.com/mikro-orm/mikro-orm/issues/7379)) ([da4010d](https://github.com/mikro-orm/mikro-orm/commit/da4010d290f3aa3cc2bf0aa2fba31a694d53f38c)), closes [#5053](https://github.com/mikro-orm/mikro-orm/issues/5053)
+* **sql:** bind `getKysely()` to the current transaction context ([#7701](https://github.com/mikro-orm/mikro-orm/issues/7701)) ([344be12](https://github.com/mikro-orm/mikro-orm/commit/344be129472ee5f108dbed38db58463af30ff2bf)), closes [#7679](https://github.com/mikro-orm/mikro-orm/issues/7679)
+
+
+
+
+
 ## [7.0.17](https://github.com/mikro-orm/mikro-orm/compare/v7.0.16...v7.0.17) (2026-05-17)
 
 ### Bug Fixes

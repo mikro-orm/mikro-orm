@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.1.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.17...v7.1.0) (2026-05-20)
+
+
+### Features
+
+* **cli:** add `discovery:export` command ([#7335](https://github.com/mikro-orm/mikro-orm/issues/7335)) ([e38f5c4](https://github.com/mikro-orm/mikro-orm/commit/e38f5c4a10c8bef488a5236e8061c50605f97ad3)), closes [#7323](https://github.com/mikro-orm/mikro-orm/issues/7323) [#7323](https://github.com/mikro-orm/mikro-orm/issues/7323)
+* **core:** support stored procedures and functions ([#7693](https://github.com/mikro-orm/mikro-orm/issues/7693)) ([9bbbb8b](https://github.com/mikro-orm/mikro-orm/commit/9bbbb8b3f9e0bbcd9e1da9150fb9565f012ea210)), closes [#5253](https://github.com/mikro-orm/mikro-orm/issues/5253)
+* **pglite:** add PGlite driver ([#7622](https://github.com/mikro-orm/mikro-orm/issues/7622)) ([01f18c5](https://github.com/mikro-orm/mikro-orm/commit/01f18c59f2a3022f01d0d190c003982f275c1192))
+
+
+
+
+
 ## [7.0.17](https://github.com/mikro-orm/mikro-orm/compare/v7.0.16...v7.0.17) (2026-05-17)
 
 **Note:** Version bump only for package @mikro-orm/postgresql

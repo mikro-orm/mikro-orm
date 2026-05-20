@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.1.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.17...v7.1.0) (2026-05-20)
+
+
+### Features
+
+* **cli:** add `discovery:export` command ([#7335](https://github.com/mikro-orm/mikro-orm/issues/7335)) ([e38f5c4](https://github.com/mikro-orm/mikro-orm/commit/e38f5c4a10c8bef488a5236e8061c50605f97ad3)), closes [#7323](https://github.com/mikro-orm/mikro-orm/issues/7323) [#7323](https://github.com/mikro-orm/mikro-orm/issues/7323)
+* **cli:** add `migration:log` and `migration:unlog` commands ([#7347](https://github.com/mikro-orm/mikro-orm/issues/7347)) ([6cf1045](https://github.com/mikro-orm/mikro-orm/commit/6cf10454cbdc80a36aaa5e7fd9ec79f1e3305fa2)), closes [#5390](https://github.com/mikro-orm/mikro-orm/issues/5390)
+* **cli:** emit typed `EntityManager` alias from `discovery:export` ([#7756](https://github.com/mikro-orm/mikro-orm/issues/7756)) ([fd06439](https://github.com/mikro-orm/mikro-orm/commit/fd064396bd6e6b941204a0a62133cbe6b9f9bbfe))
+* **migrations:** add migration:rollup command ([#7468](https://github.com/mikro-orm/mikro-orm/issues/7468)) ([8de2c92](https://github.com/mikro-orm/mikro-orm/commit/8de2c923d9af285139377969dbe5a9011659dcc7)), closes [#3633](https://github.com/mikro-orm/mikro-orm/issues/3633)
+* **migrations:** support runtime schema context ([#7597](https://github.com/mikro-orm/mikro-orm/issues/7597)) ([9b00229](https://github.com/mikro-orm/mikro-orm/commit/9b00229a36ccc9dcc857434ec8a39ceafd274ab8)), closes [#3319](https://github.com/mikro-orm/mikro-orm/issues/3319) [#4928](https://github.com/mikro-orm/mikro-orm/issues/4928)
+* **pglite:** add PGlite driver ([#7622](https://github.com/mikro-orm/mikro-orm/issues/7622)) ([01f18c5](https://github.com/mikro-orm/mikro-orm/commit/01f18c59f2a3022f01d0d190c003982f275c1192))
+
+
+
+
+
 ## [7.0.17](https://github.com/mikro-orm/mikro-orm/compare/v7.0.16...v7.0.17) (2026-05-17)
 
 **Note:** Version bump only for package @mikro-orm/cli

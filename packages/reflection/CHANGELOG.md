@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.1.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.17...v7.1.0) (2026-05-20)
+
+
+### Features
+
+* **core:** add `LazyRef<T>`, `Loadable` mixin, and `unref()` escape hatch ([#7587](https://github.com/mikro-orm/mikro-orm/issues/7587)) ([221c2fc](https://github.com/mikro-orm/mikro-orm/commit/221c2fca23e94a5ce6fd40c8cdc0ea910f014607))
+
+
+
+
+
 ## [7.0.17](https://github.com/mikro-orm/mikro-orm/compare/v7.0.16...v7.0.17) (2026-05-17)
 
 **Note:** Version bump only for package @mikro-orm/reflection
