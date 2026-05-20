@@ -5,18 +5,13 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 # [7.1.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.17...v7.1.0) (2026-05-20)
 
-
 ### Features
 
-* **core:** add `discriminator` option and column-name override ([#7748](https://github.com/mikro-orm/mikro-orm/issues/7748)) ([5390ce8](https://github.com/mikro-orm/mikro-orm/commit/5390ce8ccaa0c8755b5a5cd03f8e029c1ad86408)), closes [#7121](https://github.com/mikro-orm/mikro-orm/issues/7121)
-* **core:** add `where` option for partial indexes and unique constraints ([#7593](https://github.com/mikro-orm/mikro-orm/issues/7593)) ([78d00e3](https://github.com/mikro-orm/mikro-orm/commit/78d00e3530d68001b875d3bf1be62a0d70bc822d))
-* **core:** add column-level `collation` support for SQL drivers ([#7615](https://github.com/mikro-orm/mikro-orm/issues/7615)) ([12e3a73](https://github.com/mikro-orm/mikro-orm/commit/12e3a7321085ca974244d1c847f6f71e075c8ad8)), closes [#4286](https://github.com/mikro-orm/mikro-orm/issues/4286)
-* **core:** support stored procedures and functions ([#7693](https://github.com/mikro-orm/mikro-orm/issues/7693)) ([9bbbb8b](https://github.com/mikro-orm/mikro-orm/commit/9bbbb8b3f9e0bbcd9e1da9150fb9565f012ea210)), closes [#5253](https://github.com/mikro-orm/mikro-orm/issues/5253)
-* **postgresql:** add support for table partitioning ([#7497](https://github.com/mikro-orm/mikro-orm/issues/7497)) ([63d0977](https://github.com/mikro-orm/mikro-orm/commit/63d0977edd86726b51e75ac74899457d1aa7bd92)), closes [#6944](https://github.com/mikro-orm/mikro-orm/issues/6944) [#6944](https://github.com/mikro-orm/mikro-orm/issues/6944)
-
-
-
-
+- **core:** add `discriminator` option and column-name override ([#7748](https://github.com/mikro-orm/mikro-orm/issues/7748)) ([5390ce8](https://github.com/mikro-orm/mikro-orm/commit/5390ce8ccaa0c8755b5a5cd03f8e029c1ad86408)), closes [#7121](https://github.com/mikro-orm/mikro-orm/issues/7121)
+- **core:** add `where` option for partial indexes and unique constraints ([#7593](https://github.com/mikro-orm/mikro-orm/issues/7593)) ([78d00e3](https://github.com/mikro-orm/mikro-orm/commit/78d00e3530d68001b875d3bf1be62a0d70bc822d))
+- **core:** add column-level `collation` support for SQL drivers ([#7615](https://github.com/mikro-orm/mikro-orm/issues/7615)) ([12e3a73](https://github.com/mikro-orm/mikro-orm/commit/12e3a7321085ca974244d1c847f6f71e075c8ad8)), closes [#4286](https://github.com/mikro-orm/mikro-orm/issues/4286)
+- **core:** support stored procedures and functions ([#7693](https://github.com/mikro-orm/mikro-orm/issues/7693)) ([9bbbb8b](https://github.com/mikro-orm/mikro-orm/commit/9bbbb8b3f9e0bbcd9e1da9150fb9565f012ea210)), closes [#5253](https://github.com/mikro-orm/mikro-orm/issues/5253)
+- **postgresql:** add support for table partitioning ([#7497](https://github.com/mikro-orm/mikro-orm/issues/7497)) ([63d0977](https://github.com/mikro-orm/mikro-orm/commit/63d0977edd86726b51e75ac74899457d1aa7bd92)), closes [#6944](https://github.com/mikro-orm/mikro-orm/issues/6944) [#6944](https://github.com/mikro-orm/mikro-orm/issues/6944)
 
 ## [7.0.17](https://github.com/mikro-orm/mikro-orm/compare/v7.0.16...v7.0.17) (2026-05-17)
 
