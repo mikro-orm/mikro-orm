@@ -217,9 +217,19 @@ export class QueryHelper {
     }
 
     Object.keys(where).forEach(k => {
-      const meta2 = metadata.find(meta.properties[k as EntityKey<T>]?.targetMeta?.class as any) || meta;
+      const prop = meta.properties[k as EntityKey<T>];
+      const meta2 = metadata.find(prop?.targetMeta?.class as any) || meta;
 
       if (this.inlinePrimaryKeyObjects(where[k], meta2, metadata, k)) {
+        // Skip the PK collapse when the relation's FK column count does not match the target's
+        // PK column count (e.g. FK references target PK + an extra unique column). Otherwise the
+        // criteria layer would emit a malformed tuple predicate such as `(joinCol1, joinCol2) =
+        // scalar` (single-PK target) or `(joinCol1, joinCol2, joinCol3) = [v1, v2]` (composite
+        // target + extra FK column).
+        if (prop?.joinColumns && prop.joinColumns.length !== meta2.primaryKeys.length) {
+          return;
+        }
+
         where[k] = Utils.getPrimaryKeyValues(where[k], meta2, true);
       }
     });
