@@ -7,3 +7,9 @@ export {
   type MySqlOptions as Options,
   defineMySqlConfig as defineConfig,
 } from './MySqlMikroORM.js';
+
+import { type AbstractSqlDriver, SqlEntityManager } from '@mikro-orm/sql';
+import type { MySqlDriver } from './MySqlDriver.js';
+
+export type EntityManager<Driver extends AbstractSqlDriver = MySqlDriver> = SqlEntityManager<Driver>;
+export const EntityManager = SqlEntityManager;

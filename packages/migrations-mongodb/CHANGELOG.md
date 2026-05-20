@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.1.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.17...v7.1.0) (2026-05-20)
+
+### Features
+
+- **migrations:** support runtime schema context ([#7597](https://github.com/mikro-orm/mikro-orm/issues/7597)) ([9b00229](https://github.com/mikro-orm/mikro-orm/commit/9b00229a36ccc9dcc857434ec8a39ceafd274ab8)), closes [#3319](https://github.com/mikro-orm/mikro-orm/issues/3319) [#4928](https://github.com/mikro-orm/mikro-orm/issues/4928)
+
 ## [7.0.17](https://github.com/mikro-orm/mikro-orm/compare/v7.0.16...v7.0.17) (2026-05-17)
 
 **Note:** Version bump only for package @mikro-orm/migrations-mongodb

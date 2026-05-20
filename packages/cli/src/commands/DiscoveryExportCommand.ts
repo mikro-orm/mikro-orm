@@ -249,12 +249,12 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
       }
     }
 
-    const isMongo = driverPackage === '@mikro-orm/mongodb';
-
-    // Type imports (Kysely types are not available for MongoDB)
-    if (!isMongo) {
-      lines.push(`import type { EntitySchemaWithMeta, InferKyselyDB, InferClassEntityDB } from '${driverPackage}';`);
-    }
+    // Bring in the driver's `EntityManager` class as a runtime value, not just
+    // a type — DI containers (NestJS, etc.) read it via `design:paramtypes`
+    // reflect-metadata, so the consumer needs the actual class reference, not
+    // an erased type alias. Aliasing keeps the local name free for our own
+    // `EntityManager` re-export.
+    lines.push(`import { EntityManager as DriverEntityManager } from '${driverPackage}';`);
 
     lines.push('');
 
@@ -267,12 +267,23 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
 
     lines.push('] as const;');
 
-    // Database type (Kysely is SQL-only, skip for MongoDB)
-    if (!isMongo) {
-      lines.push('');
-      lines.push('export type Database = InferKyselyDB<Extract<(typeof entities)[number], EntitySchemaWithMeta>>');
-      lines.push('  & InferClassEntityDB<(typeof entities)[number]>;');
-    }
+    lines.push('');
+
+    // The entity tuple type — usable in `MikroORM<Driver, EM, Database>`,
+    // for typed repository helpers, and anywhere entity classes/schemas are
+    // accepted as a tuple.
+    lines.push('export type Database = typeof entities;');
+
+    lines.push('');
+
+    // Typed `EntityManager` for DI / NestJS contexts. Declaration merging
+    // lets us export the same name twice: the `type` carries the entity
+    // tuple via the `'~entities'` graft (so `em.getKysely(opts)` keeps full
+    // inference), and the `const` is the driver's actual EM class — so
+    // `constructor(em: EntityManager) {}` resolves through Nest's container
+    // just like importing the class straight from the driver package.
+    lines.push("export type EntityManager = DriverEntityManager & { '~entities': Database };");
+    lines.push('export const EntityManager = DriverEntityManager;');
 
     lines.push('');
 

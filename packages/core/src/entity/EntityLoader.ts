@@ -1118,7 +1118,18 @@ export class EntityLoader {
     const wrapped = helper(entity);
 
     if (!field.includes('.')) {
-      return wrapped.__loadedProperties.has(field);
+      if (wrapped.__loadedProperties.has(field)) {
+        return true;
+      }
+
+      // Inlined embeddables track each leaf child separately, not the parent property,
+      // so we need to recurse for nested inline embeddables.
+      const prop = wrapped.__meta.properties[field];
+      if (prop?.kind === ReferenceKind.EMBEDDED && !prop.object) {
+        return Object.values(prop.embeddedProps).every(child => this.isPropertyLoaded(entity, child.name));
+      }
+
+      return false;
     }
 
     const [f, ...r] = field.split('.');

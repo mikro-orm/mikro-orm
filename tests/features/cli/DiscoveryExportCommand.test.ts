@@ -887,7 +887,7 @@ describe('DiscoveryExportCommand', () => {
     expect(dumpSpy).toHaveBeenCalledWith(expect.stringContaining('Entity exports generated'));
   });
 
-  test('skips Kysely Database type for MongoDB driver', async () => {
+  test('emits typed EntityManager alias for MongoDB driver', async () => {
     pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
     dynamicImportMock.mockImplementation((path: string) => {
       if (path.includes('mikro-orm.config')) {
@@ -926,9 +926,6 @@ describe('DiscoveryExportCommand', () => {
     } as any);
 
     const output = dumpSpy.mock.calls[0][0] as string;
-    expect(output).not.toContain('Database');
-    expect(output).not.toContain('InferKyselyDB');
-    expect(output).not.toContain('EntitySchemaWithMeta');
-    expect(output).toContain('export const entities');
+    expect(output).toMatchSnapshot();
   });
 });

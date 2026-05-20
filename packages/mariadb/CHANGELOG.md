@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.1.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.17...v7.1.0) (2026-05-20)
+
+### Features
+
+- **cli:** add `discovery:export` command ([#7335](https://github.com/mikro-orm/mikro-orm/issues/7335)) ([e38f5c4](https://github.com/mikro-orm/mikro-orm/commit/e38f5c4a10c8bef488a5236e8061c50605f97ad3)), closes [#7323](https://github.com/mikro-orm/mikro-orm/issues/7323) [#7323](https://github.com/mikro-orm/mikro-orm/issues/7323)
+- **cli:** emit typed `EntityManager` alias from `discovery:export` ([#7756](https://github.com/mikro-orm/mikro-orm/issues/7756)) ([fd06439](https://github.com/mikro-orm/mikro-orm/commit/fd064396bd6e6b941204a0a62133cbe6b9f9bbfe))
+- **core:** add `where` option for partial indexes and unique constraints ([#7593](https://github.com/mikro-orm/mikro-orm/issues/7593)) ([78d00e3](https://github.com/mikro-orm/mikro-orm/commit/78d00e3530d68001b875d3bf1be62a0d70bc822d))
+- **core:** add column-level `collation` support for SQL drivers ([#7615](https://github.com/mikro-orm/mikro-orm/issues/7615)) ([12e3a73](https://github.com/mikro-orm/mikro-orm/commit/12e3a7321085ca974244d1c847f6f71e075c8ad8)), closes [#4286](https://github.com/mikro-orm/mikro-orm/issues/4286)
+- **schema:** add database trigger support ([#7379](https://github.com/mikro-orm/mikro-orm/issues/7379)) ([da4010d](https://github.com/mikro-orm/mikro-orm/commit/da4010d290f3aa3cc2bf0aa2fba31a694d53f38c)), closes [#5053](https://github.com/mikro-orm/mikro-orm/issues/5053)
+
 ## [7.0.17](https://github.com/mikro-orm/mikro-orm/compare/v7.0.16...v7.0.17) (2026-05-17)
 
 **Note:** Version bump only for package @mikro-orm/mariadb

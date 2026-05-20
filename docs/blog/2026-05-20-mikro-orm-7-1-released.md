@@ -128,7 +128,7 @@ The catch is that in a lot of real-world setups, the root ORM config simply isn'
 - **Fastify / Encore / Nitro / any other DI-flavored framework** with module-based bootstrapping has the same shape — the root config is loaded first, before the modules that own the classes.
 - **Folder discovery** (`entities: ['./dist/**/*.entity.js']`) is the dominant pattern even outside DI containers, and globs erase the type-level set entirely.
 
-In all three cases, `em.getKysely<Database>()` falls back to `any` because the config has nothing concrete to infer from. You can hand-write a `Database` interface, but it goes stale the moment anyone adds a column.
+In all three cases, `em.getKysely()` falls back to `any` because the config has nothing concrete to infer from. You can hand-write a `Database` interface, but it goes stale the moment anyone adds a column — and trying to drive the type via an inline `em.getKysely<Database>({ tableNamingStrategy: 'entity' })` runs straight into TypeScript's partial-inference limitation: once you fill the first generic, TS stops inferring the rest, so the call-site plugin options never make it into the resulting `Kysely<DB>` shape.
 
 The new `discovery:export` CLI command closes that gap. It scans your entity source files and emits a TypeScript barrel:
 
@@ -136,10 +136,35 @@ The new `discovery:export` CLI command closes that gap. It scans your entity sou
 mikro-orm discovery:export --path './src/entities/*.ts' --out ./entities.generated.ts
 ```
 
-The generated file gives you two exports:
+The generated file gives you three exports:
 
 - **`export const entities = [...] as const`** — a frozen tuple of every entity class the discovery saw. Drop it into your ORM config in place of the glob (NestJS, plain `MikroORM.init`, anywhere), and the config now carries the exact set of entity classes at the type level. The ORM keeps doing folder-style registration at runtime — nothing about your module structure or decorator usage changes.
-- **`export type Database = ...`** — the Kysely `Database` interface, derived from your entity metadata. Use it as `em.getKysely<Database>()` and get autocomplete for every table and column, with the configured naming strategy already applied. Embedded properties, JSON columns, custom types — all carried through.
+- **`export type Database = typeof entities`** — the entity tuple as a reusable type. Plug it into anywhere a tuple of entities is accepted (`MikroORM<Driver, EM, Database>`, custom repository helpers, etc.).
+- **`export type EntityManager` / `export const EntityManager`** — a driver-pinned, entity-aware `EntityManager` for DI contexts. The same name is exported twice on purpose: the type carries the entity tuple via a phantom `'~entities'` graft (so `em.getKysely(opts)` keeps full inference), and the const re-exports the driver's real EM class — so it works as Nest's DI token *and* the parameter's type annotation in one import. The codegen pins the driver, so you never fill in driver generics:
+
+```ts
+import { EntityManager } from './entities.generated';
+
+@Injectable()
+export class ArticleService {
+  constructor(private readonly em: EntityManager) {}
+
+  list() {
+    // physical/underscore column names
+    return this.em.getKysely().selectFrom('article').selectAll().execute();
+  }
+
+  listByEntityName() {
+    // entity-named tables, property-named columns — inferred straight from the runtime options,
+    // no explicit `<Database>` generic, no duplication
+    return this.em
+      .getKysely({ tableNamingStrategy: 'entity', columnNamingStrategy: 'property' })
+      .selectFrom('Article')
+      .selectAll()
+      .execute();
+  }
+}
+```
 
 Re-run the command whenever your entity set changes, or wire it into your build step / pre-commit hook. There are no decorator changes, no migration off folder discovery, no double-registration of entities at the framework level — the barrel is purely a type-level companion to whatever registration mechanism your framework already prefers. See the [Kysely integration guide](/docs/kysely#generating-entity-exports-with-the-cli) for the full reference.
 
@@ -149,7 +174,7 @@ Closing one more gap on the typed-Kysely side: `em.getKysely()` now picks up the
 
 ```ts
 await em.transactional(async em => {
-  await em.getKysely<Database>()
+  await em.getKysely()
     .updateTable('user')
     .set({ banned: true })
     .where('id', '=', userId)
@@ -162,7 +187,7 @@ Previously the only way to keep a Kysely-built query inside an `em.transactional
 
 ```ts
 await em.transactional(async em => {
-  await em.fork().getKysely<Database>()
+  await em.fork().getKysely()
     .selectFrom('audit_log').selectAll().execute();
   // ↑ deliberately outside the surrounding transaction
 });

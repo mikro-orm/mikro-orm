@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.1.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.17...v7.1.0) (2026-05-20)
+
+### Features
+
+- **core:** add `discriminator` option and column-name override ([#7748](https://github.com/mikro-orm/mikro-orm/issues/7748)) ([5390ce8](https://github.com/mikro-orm/mikro-orm/commit/5390ce8ccaa0c8755b5a5cd03f8e029c1ad86408)), closes [#7121](https://github.com/mikro-orm/mikro-orm/issues/7121)
+- **core:** union-target polymorphic M:N relations ([#7569](https://github.com/mikro-orm/mikro-orm/issues/7569)) ([dfbe1c2](https://github.com/mikro-orm/mikro-orm/commit/dfbe1c263f730c3d267178a285c4177de44dfb09)), closes [#7564](https://github.com/mikro-orm/mikro-orm/issues/7564) [#7564](https://github.com/mikro-orm/mikro-orm/issues/7564)
+- **schema:** add database trigger support ([#7379](https://github.com/mikro-orm/mikro-orm/issues/7379)) ([da4010d](https://github.com/mikro-orm/mikro-orm/commit/da4010d290f3aa3cc2bf0aa2fba31a694d53f38c)), closes [#5053](https://github.com/mikro-orm/mikro-orm/issues/5053)
+
 ## [7.0.17](https://github.com/mikro-orm/mikro-orm/compare/v7.0.16...v7.0.17) (2026-05-17)
 
 **Note:** Version bump only for package @mikro-orm/decorators

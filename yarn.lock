@@ -1204,15 +1204,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/cli@workspace:packages/cli"
   dependencies:
-    "@mikro-orm/core": "npm:7.0.17"
-    mikro-orm: "npm:7.0.17"
+    "@mikro-orm/core": "npm:7.1.0"
+    mikro-orm: "npm:7.1.0"
     yargs: "npm:17.7.2"
   bin:
     mikro-orm: ./dist/cli.js
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/core@npm:7.0.17, @mikro-orm/core@npm:^7.0.17, @mikro-orm/core@workspace:packages/core":
+"@mikro-orm/core@npm:7.1.0, @mikro-orm/core@npm:^7.1.0, @mikro-orm/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/core@workspace:packages/core"
   peerDependencies:
@@ -1227,9 +1227,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/decorators@workspace:packages/decorators"
   dependencies:
-    "@mikro-orm/core": "npm:^7.0.17"
+    "@mikro-orm/core": "npm:^7.1.0"
   peerDependencies:
-    "@mikro-orm/core": 7.0.17
+    "@mikro-orm/core": 7.1.0
     reflect-metadata: ^0.1.0 || ^0.2.0
   peerDependenciesMeta:
     reflect-metadata:
@@ -1241,10 +1241,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/entity-generator@workspace:packages/entity-generator"
   dependencies:
-    "@mikro-orm/core": "npm:^7.0.17"
-    "@mikro-orm/sql": "npm:7.0.17"
+    "@mikro-orm/core": "npm:^7.1.0"
+    "@mikro-orm/sql": "npm:7.1.0"
   peerDependencies:
-    "@mikro-orm/core": 7.0.17
+    "@mikro-orm/core": 7.1.0
   languageName: unknown
   linkType: soft
 
@@ -1252,9 +1252,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/knex-compat@workspace:packages/knex-compat"
   dependencies:
-    "@mikro-orm/sql": "npm:^7.0.17"
+    "@mikro-orm/sql": "npm:^7.1.0"
   peerDependencies:
-    "@mikro-orm/sql": 7.0.17
+    "@mikro-orm/sql": 7.1.0
     knex: ^3.0.0
   languageName: unknown
   linkType: soft
@@ -1263,12 +1263,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/libsql@workspace:packages/libsql"
   dependencies:
-    "@mikro-orm/core": "npm:^7.0.17"
-    "@mikro-orm/sql": "npm:7.0.17"
+    "@mikro-orm/core": "npm:^7.1.0"
+    "@mikro-orm/sql": "npm:7.1.0"
     kysely: "npm:0.29.2"
     libsql: "npm:0.5.29"
   peerDependencies:
-    "@mikro-orm/core": 7.0.17
+    "@mikro-orm/core": 7.1.0
   languageName: unknown
   linkType: soft
 
@@ -1276,11 +1276,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/mariadb@workspace:packages/mariadb"
   dependencies:
-    "@mikro-orm/core": "npm:^7.0.17"
-    "@mikro-orm/mysql": "npm:7.0.17"
+    "@mikro-orm/core": "npm:^7.1.0"
+    "@mikro-orm/mysql": "npm:7.1.0"
     kysely: "npm:0.29.2"
   peerDependencies:
-    "@mikro-orm/core": 7.0.17
+    "@mikro-orm/core": 7.1.0
   languageName: unknown
   linkType: soft
 
@@ -1288,11 +1288,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/migrations-mongodb@workspace:packages/migrations-mongodb"
   dependencies:
-    "@mikro-orm/core": "npm:^7.0.17"
-    "@mikro-orm/mongodb": "npm:7.0.17"
+    "@mikro-orm/core": "npm:^7.1.0"
+    "@mikro-orm/mongodb": "npm:7.1.0"
     mongodb: "npm:7.2.0"
   peerDependencies:
-    "@mikro-orm/core": 7.0.17
+    "@mikro-orm/core": 7.1.0
   languageName: unknown
   linkType: soft
 
@@ -1300,10 +1300,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/migrations@workspace:packages/migrations"
   dependencies:
-    "@mikro-orm/core": "npm:^7.0.17"
-    "@mikro-orm/sql": "npm:7.0.17"
+    "@mikro-orm/core": "npm:^7.1.0"
+    "@mikro-orm/sql": "npm:7.1.0"
   peerDependencies:
-    "@mikro-orm/core": 7.0.17
+    "@mikro-orm/core": 7.1.0
   languageName: unknown
   linkType: soft
 
@@ -1316,14 +1316,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/mongodb@npm:7.0.17, @mikro-orm/mongodb@workspace:packages/mongodb":
+"@mikro-orm/mongodb@npm:7.1.0, @mikro-orm/mongodb@workspace:packages/mongodb":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/mongodb@workspace:packages/mongodb"
   dependencies:
-    "@mikro-orm/core": "npm:^7.0.17"
+    "@mikro-orm/core": "npm:^7.1.0"
     mongodb: "npm:7.2.0"
   peerDependencies:
-    "@mikro-orm/core": 7.0.17
+    "@mikro-orm/core": 7.1.0
   languageName: unknown
   linkType: soft
 
@@ -1331,28 +1331,28 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/mssql@workspace:packages/mssql"
   dependencies:
-    "@mikro-orm/core": "npm:^7.0.17"
-    "@mikro-orm/sql": "npm:7.0.17"
+    "@mikro-orm/core": "npm:^7.1.0"
+    "@mikro-orm/sql": "npm:7.1.0"
     kysely: "npm:0.29.2"
     tarn: "npm:3.0.2"
     tedious: "npm:19.2.1"
     tsqlstring: "npm:1.0.1"
   peerDependencies:
-    "@mikro-orm/core": 7.0.17
+    "@mikro-orm/core": 7.1.0
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/mysql@npm:7.0.17, @mikro-orm/mysql@workspace:packages/mysql":
+"@mikro-orm/mysql@npm:7.1.0, @mikro-orm/mysql@workspace:packages/mysql":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/mysql@workspace:packages/mysql"
   dependencies:
-    "@mikro-orm/core": "npm:^7.0.17"
-    "@mikro-orm/sql": "npm:7.0.17"
+    "@mikro-orm/core": "npm:^7.1.0"
+    "@mikro-orm/sql": "npm:7.1.0"
     kysely: "npm:0.29.2"
     mysql2: "npm:3.22.3"
     sqlstring: "npm:2.3.3"
   peerDependencies:
-    "@mikro-orm/core": 7.0.17
+    "@mikro-orm/core": 7.1.0
   languageName: unknown
   linkType: soft
 
@@ -1360,12 +1360,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/oracledb@workspace:packages/oracledb"
   dependencies:
-    "@mikro-orm/core": "npm:^7.0.17"
-    "@mikro-orm/sql": "npm:7.0.17"
+    "@mikro-orm/core": "npm:^7.1.0"
+    "@mikro-orm/sql": "npm:7.1.0"
     kysely: "npm:0.29.2"
     oracledb: "npm:6.10.0"
   peerDependencies:
-    "@mikro-orm/core": 7.0.17
+    "@mikro-orm/core": 7.1.0
   languageName: unknown
   linkType: soft
 
@@ -1374,14 +1374,14 @@ __metadata:
   resolution: "@mikro-orm/pglite@workspace:packages/pglite"
   dependencies:
     "@electric-sql/pglite": "npm:0.4.5"
-    "@mikro-orm/core": "npm:^7.0.17"
-    "@mikro-orm/sql": "npm:7.0.17"
+    "@mikro-orm/core": "npm:^7.1.0"
+    "@mikro-orm/sql": "npm:7.1.0"
     kysely: "npm:0.29.2"
     postgres-array: "npm:3.0.4"
     postgres-date: "npm:2.1.0"
     postgres-interval: "npm:4.0.2"
   peerDependencies:
-    "@mikro-orm/core": 7.0.17
+    "@mikro-orm/core": 7.1.0
   languageName: unknown
   linkType: soft
 
@@ -1389,16 +1389,16 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/postgresql@workspace:packages/postgresql"
   dependencies:
-    "@mikro-orm/core": "npm:^7.0.17"
-    "@mikro-orm/sql": "npm:7.0.17"
+    "@mikro-orm/core": "npm:^7.1.0"
+    "@mikro-orm/sql": "npm:7.1.0"
     kysely: "npm:0.29.2"
-    pg: "npm:8.20.0"
-    pg-cursor: "npm:2.19.0"
+    pg: "npm:8.21.0"
+    pg-cursor: "npm:2.20.0"
     postgres-array: "npm:3.0.4"
     postgres-date: "npm:2.1.0"
     postgres-interval: "npm:4.0.2"
   peerDependencies:
-    "@mikro-orm/core": 7.0.17
+    "@mikro-orm/core": 7.1.0
   languageName: unknown
   linkType: soft
 
@@ -1406,10 +1406,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/reflection@workspace:packages/reflection"
   dependencies:
-    "@mikro-orm/core": "npm:^7.0.17"
+    "@mikro-orm/core": "npm:^7.1.0"
     ts-morph: "npm:28.0.0"
   peerDependencies:
-    "@mikro-orm/core": 7.0.17
+    "@mikro-orm/core": 7.1.0
   languageName: unknown
   linkType: soft
 
@@ -1447,11 +1447,11 @@ __metadata:
     mongodb-memory-server-core: "npm:11.1.0"
     oxfmt: "npm:0.50.0"
     oxlint: "npm:1.65.0"
-    oxlint-tsgolint: "npm:^0.22.0"
+    oxlint-tsgolint: "npm:^0.23.0"
     reflect-metadata: "npm:0.2.2"
     rimraf: "npm:6.1.3"
     tsimp: "npm:2.0.12"
-    tsx: "npm:4.22.1"
+    tsx: "npm:4.22.2"
     typescript: "npm:6.0.3"
     unplugin-swc: "npm:1.5.9"
     uuid: "npm:14.0.0"
@@ -1474,9 +1474,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/seeder@workspace:packages/seeder"
   dependencies:
-    "@mikro-orm/core": "npm:^7.0.17"
+    "@mikro-orm/core": "npm:^7.1.0"
   peerDependencies:
-    "@mikro-orm/core": 7.0.17
+    "@mikro-orm/core": 7.1.0
   languageName: unknown
   linkType: soft
 
@@ -1489,14 +1489,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/sql@npm:7.0.17, @mikro-orm/sql@npm:^7.0.17, @mikro-orm/sql@workspace:packages/sql":
+"@mikro-orm/sql@npm:7.1.0, @mikro-orm/sql@npm:^7.1.0, @mikro-orm/sql@workspace:packages/sql":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/sql@workspace:packages/sql"
   dependencies:
-    "@mikro-orm/core": "npm:^7.0.17"
+    "@mikro-orm/core": "npm:^7.1.0"
     kysely: "npm:0.29.2"
   peerDependencies:
-    "@mikro-orm/core": 7.0.17
+    "@mikro-orm/core": 7.1.0
   languageName: unknown
   linkType: soft
 
@@ -1504,12 +1504,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/sqlite@workspace:packages/sqlite"
   dependencies:
-    "@mikro-orm/core": "npm:^7.0.17"
-    "@mikro-orm/sql": "npm:7.0.17"
+    "@mikro-orm/core": "npm:^7.1.0"
+    "@mikro-orm/sql": "npm:7.1.0"
     better-sqlite3: "npm:12.10.0"
     kysely: "npm:0.29.2"
   peerDependencies:
-    "@mikro-orm/core": 7.0.17
+    "@mikro-orm/core": 7.1.0
   languageName: unknown
   linkType: soft
 
@@ -2314,44 +2314,44 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@oxlint-tsgolint/darwin-arm64@npm:0.22.0":
-  version: 0.22.0
-  resolution: "@oxlint-tsgolint/darwin-arm64@npm:0.22.0"
+"@oxlint-tsgolint/darwin-arm64@npm:0.23.0":
+  version: 0.23.0
+  resolution: "@oxlint-tsgolint/darwin-arm64@npm:0.23.0"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@oxlint-tsgolint/darwin-x64@npm:0.22.0":
-  version: 0.22.0
-  resolution: "@oxlint-tsgolint/darwin-x64@npm:0.22.0"
+"@oxlint-tsgolint/darwin-x64@npm:0.23.0":
+  version: 0.23.0
+  resolution: "@oxlint-tsgolint/darwin-x64@npm:0.23.0"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@oxlint-tsgolint/linux-arm64@npm:0.22.0":
-  version: 0.22.0
-  resolution: "@oxlint-tsgolint/linux-arm64@npm:0.22.0"
+"@oxlint-tsgolint/linux-arm64@npm:0.23.0":
+  version: 0.23.0
+  resolution: "@oxlint-tsgolint/linux-arm64@npm:0.23.0"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"@oxlint-tsgolint/linux-x64@npm:0.22.0":
-  version: 0.22.0
-  resolution: "@oxlint-tsgolint/linux-x64@npm:0.22.0"
+"@oxlint-tsgolint/linux-x64@npm:0.23.0":
+  version: 0.23.0
+  resolution: "@oxlint-tsgolint/linux-x64@npm:0.23.0"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"@oxlint-tsgolint/win32-arm64@npm:0.22.0":
-  version: 0.22.0
-  resolution: "@oxlint-tsgolint/win32-arm64@npm:0.22.0"
+"@oxlint-tsgolint/win32-arm64@npm:0.23.0":
+  version: 0.23.0
+  resolution: "@oxlint-tsgolint/win32-arm64@npm:0.23.0"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@oxlint-tsgolint/win32-x64@npm:0.22.0":
-  version: 0.22.0
-  resolution: "@oxlint-tsgolint/win32-x64@npm:0.22.0"
+"@oxlint-tsgolint/win32-x64@npm:0.23.0":
+  version: 0.23.0
+  resolution: "@oxlint-tsgolint/win32-x64@npm:0.23.0"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -6978,7 +6978,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mikro-orm@npm:7.0.17, mikro-orm@workspace:packages/mikro-orm":
+"mikro-orm@npm:7.1.0, mikro-orm@workspace:packages/mikro-orm":
   version: 0.0.0-use.local
   resolution: "mikro-orm@workspace:packages/mikro-orm"
   languageName: unknown
@@ -7898,16 +7898,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oxlint-tsgolint@npm:^0.22.0":
-  version: 0.22.0
-  resolution: "oxlint-tsgolint@npm:0.22.0"
+"oxlint-tsgolint@npm:^0.23.0":
+  version: 0.23.0
+  resolution: "oxlint-tsgolint@npm:0.23.0"
   dependencies:
-    "@oxlint-tsgolint/darwin-arm64": "npm:0.22.0"
-    "@oxlint-tsgolint/darwin-x64": "npm:0.22.0"
-    "@oxlint-tsgolint/linux-arm64": "npm:0.22.0"
-    "@oxlint-tsgolint/linux-x64": "npm:0.22.0"
-    "@oxlint-tsgolint/win32-arm64": "npm:0.22.0"
-    "@oxlint-tsgolint/win32-x64": "npm:0.22.0"
+    "@oxlint-tsgolint/darwin-arm64": "npm:0.23.0"
+    "@oxlint-tsgolint/darwin-x64": "npm:0.23.0"
+    "@oxlint-tsgolint/linux-arm64": "npm:0.23.0"
+    "@oxlint-tsgolint/linux-x64": "npm:0.23.0"
+    "@oxlint-tsgolint/win32-arm64": "npm:0.23.0"
+    "@oxlint-tsgolint/win32-x64": "npm:0.23.0"
   dependenciesMeta:
     "@oxlint-tsgolint/darwin-arm64":
       optional: true
@@ -7923,7 +7923,7 @@ __metadata:
       optional: true
   bin:
     tsgolint: bin/tsgolint.js
-  checksum: 10/d255f83f12fb977cc24262c7fc0a832f70d05f3c67bf4c674dfc7a3b846f9c694452b4c4478548924b68d391cd690068caebe8dc64f9592efa6cc34ae2c454cf
+  checksum: 10/7f4d61fbdedbce703ac61278f060f4717e061afe5a5fadece5253fd50c333a676366bdd35895b2f464c5d5640bf2cd6b017b259fd1b5d777d154cd307aa3ba22
   languageName: node
   linkType: hard
 
@@ -8330,10 +8330,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-cloudflare@npm:^1.3.0":
-  version: 1.3.0
-  resolution: "pg-cloudflare@npm:1.3.0"
-  checksum: 10/04007ebbd314bdc8e5983d5d0f71a942f1915d2312ed84894d55475010559665bcbb9941d55523d36be6386cd83490dffb5b1ea98ffbbc82a140ef5dfb68ab8d
+"pg-cloudflare@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "pg-cloudflare@npm:1.4.0"
+  checksum: 10/7b4ad661a5f73e5ed86ae84b18a82434d38acec00ab47e79896ade7321e9d59aeecf4f88c33323cfa0504fda52c39ccfc7add508c1165a866264fd54ac30191e
   languageName: node
   linkType: hard
 
@@ -8344,19 +8344,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-connection-string@npm:^2.12.0":
-  version: 2.12.0
-  resolution: "pg-connection-string@npm:2.12.0"
-  checksum: 10/03e5462c1f4da57166344a9eae105f95af6887a501dfe4ca2feb85ca8d351162afe9fc581cb27d44ecdaecc59a8bd55a1ec35b66714b01a9db148f0a91c0b36c
+"pg-connection-string@npm:^2.13.0":
+  version: 2.13.0
+  resolution: "pg-connection-string@npm:2.13.0"
+  checksum: 10/b38bb5e27ff375b1c53e7fd805dba7c0380674db1325860d1b59a4ad668970ef0d9a97b15b8625ce393696a4b47083af9f345d998afa8abfe99a5180de52922a
   languageName: node
   linkType: hard
 
-"pg-cursor@npm:2.19.0":
-  version: 2.19.0
-  resolution: "pg-cursor@npm:2.19.0"
+"pg-cursor@npm:2.20.0":
+  version: 2.20.0
+  resolution: "pg-cursor@npm:2.20.0"
   peerDependencies:
     pg: ^8
-  checksum: 10/7bcfb1f7823e7bf84a8346de9af4808d8379379ba04204cbeb35481b140f0b02f23f69ea0f2abce29ceb367244fc33b2a345a67c72b786ba0dce96a82cb06098
+  checksum: 10/43533b50be693a5d7cf5a17a5f64298593cb97dd124ab3cb843b7300f27ea7e849e11b48ddb618d576de12583105ce925bde520e9e334a60eda881fdf059b358
   languageName: node
   linkType: hard
 
@@ -8367,19 +8367,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-pool@npm:^3.13.0":
-  version: 3.13.0
-  resolution: "pg-pool@npm:3.13.0"
+"pg-pool@npm:^3.14.0":
+  version: 3.14.0
+  resolution: "pg-pool@npm:3.14.0"
   peerDependencies:
     pg: ">=8.0"
-  checksum: 10/0addd11b3f3f49fb1d16bf181583411e8a9809730dbfc5edb9bbf5110bc02beb4ac346c52a121f446ff76bcd420a76a3409952ea743aa5f6a04705ea953bd8aa
+  checksum: 10/0d90984fa8304fc07c4d06f8324ac5f5f6dcf4fe387b02263fa3f4e1f7bb6e7d8f3a97471836c3d38ca1ee129dae2f1fc28cb53e72bf48cb6515a848729c863a
   languageName: node
   linkType: hard
 
-"pg-protocol@npm:*, pg-protocol@npm:^1.13.0":
+"pg-protocol@npm:*":
   version: 1.13.0
   resolution: "pg-protocol@npm:1.13.0"
   checksum: 10/302cd3920df00f178519693557c34949d64c8b3af7e2c12772b14f61547b947e4c761b4ca2319dbba5b0906207bb1b535cbfc7006d40d47fd823e277c2690a71
+  languageName: node
+  linkType: hard
+
+"pg-protocol@npm:^1.14.0":
+  version: 1.14.0
+  resolution: "pg-protocol@npm:1.14.0"
+  checksum: 10/81c69dba142f3cecf3926afbef97c18c53ba54717d2073d759e2cde98dff61ac7b178c4676950e0e3e6bd43fcf4ba21ef96a217b2765020aadeef6bf6bf82a7e
   languageName: node
   linkType: hard
 
@@ -8396,14 +8403,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg@npm:8.20.0":
-  version: 8.20.0
-  resolution: "pg@npm:8.20.0"
+"pg@npm:8.21.0":
+  version: 8.21.0
+  resolution: "pg@npm:8.21.0"
   dependencies:
-    pg-cloudflare: "npm:^1.3.0"
-    pg-connection-string: "npm:^2.12.0"
-    pg-pool: "npm:^3.13.0"
-    pg-protocol: "npm:^1.13.0"
+    pg-cloudflare: "npm:^1.4.0"
+    pg-connection-string: "npm:^2.13.0"
+    pg-pool: "npm:^3.14.0"
+    pg-protocol: "npm:^1.14.0"
     pg-types: "npm:2.2.0"
     pgpass: "npm:1.0.5"
   peerDependencies:
@@ -8414,7 +8421,7 @@ __metadata:
   peerDependenciesMeta:
     pg-native:
       optional: true
-  checksum: 10/a30b99c799eddbd4f7f98bef906fe25e17c17d7d8918bc7545108947388df0d9c490858b04dabd37ce0063f40b1e58987b0079f99d5a661fb66f40c17f172bfc
+  checksum: 10/c02cdd43f54001910cd45a181f6c702f89d3a7336d70375502c296727fc1a1ff0242b2f64dfb55fb05b0af26926ebea409810f5a52bdc0e6a9dc01dcf5fbb441
   languageName: node
   linkType: hard
 
@@ -9892,9 +9899,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsx@npm:4.22.1":
-  version: 4.22.1
-  resolution: "tsx@npm:4.22.1"
+"tsx@npm:4.22.2":
+  version: 4.22.2
+  resolution: "tsx@npm:4.22.2"
   dependencies:
     esbuild: "npm:~0.28.0"
     fsevents: "npm:~2.3.3"
@@ -9903,7 +9910,7 @@ __metadata:
       optional: true
   bin:
     tsx: dist/cli.mjs
-  checksum: 10/67915e7c7b66eb92da27ab9c777bae660944f01aaa340c92abde44f09d2c191cf70f46325de0a55ac76d70114ceb4dab9804f7ce416ebf194e0039718b2684ea
+  checksum: 10/544b0ae0f0b30be3354136c0f544fb284223351cd20d9e63c2e4905a5861070925d84d09fa29c639bb3dfd5fbb09a957e908a813efd28dd03cefa55174d77318
   languageName: node
   linkType: hard
 
