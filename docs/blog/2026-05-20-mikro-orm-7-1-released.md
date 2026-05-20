@@ -90,7 +90,7 @@ em.find(User, { name: 'foo' }, { using: ['idx_user_name', 'uniq_user_email'] });
 
 The type system narrows `where` to only allow properties covered by the named index(es), and the index name itself is checked against your entity's declared indexes. For `defineEntity`, index names are inferred automatically from `.index('name')` / `.unique('name')` calls; for decorator entities you declare them via the `[IndexHints]` symbol (same pattern as `[PrimaryKeyProp]`).
 
-Driver support includes MySQL/MariaDB (`USE INDEX`), MSSQL (`WITH (INDEX(...))`), MongoDB (passed as the `hint` option), and validation-only on PostgreSQL/SQLite/libSQL. The existing `indexHint` option still works and takes precedence when explicitly set. See [indexes](/docs/indexes) for the full reference.
+Driver support includes MySQL/MariaDB (`USE INDEX`), MSSQL (`WITH (INDEX(...))`), MongoDB (passed as the `hint` option), and validation-only on PostgreSQL/SQLite/libSQL. The existing `indexHint` option still works and takes precedence when explicitly set. See [query-time index hints](/docs/indexes#query-time-index-hints-using) for the full reference.
 
 ## Partial indexes via `where`
 
@@ -404,7 +404,7 @@ const qb = em.qb(Book).insertFrom(
 
 `em.clone()` returns a hydrated entity (registered in the identity map) and delegates to a new `driver.nativeClone()` method. It handles TPT inheritance (multi-table inserts), embedded properties, M:1 FK preservation, and version property reset automatically. `qb.insertFrom()` is the lower-level building block, with 3-tier column derivation: metadata-driven, select-field-driven, or explicit.
 
-Works across all SQL drivers; MongoDB uses a find+insert fallback.
+Works across all SQL drivers; MongoDB uses a find+insert fallback. See [cloning entities](/docs/entity-manager#cloning-entities) and [insert from select](/docs/query-builder#insert-from-select-insertfrom) for the full reference.
 
 ## `fields` whitelist in `serialize()`
 

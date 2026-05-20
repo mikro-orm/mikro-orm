@@ -776,6 +776,58 @@ const qb3 = em.createQueryBuilder(Author)
 ```
 
 
+## Insert from select (`insertFrom()`)
+
+`qb.insertFrom(source, options?)` generates an `INSERT INTO ... SELECT` statement that copies rows produced by a source `QueryBuilder` into the target table — without round-tripping the rows through Node.js.
+
+It is the lower-level building block that powers [`em.clone()`](./entity-manager.md#cloning-entities), but you can use it directly to bulk-clone, archive, or seed rows from another query.
+
+```ts
+// Copy a single row, all columns auto-derived from entity metadata
+const source = em.createQueryBuilder(Book).where({ id: 1 });
+await em.createQueryBuilder(Book).insertFrom(source).execute();
+
+// Copy with overrides via raw() aliases on the SELECT side
+const source = em.createQueryBuilder(Author)
+  .select(['name', raw("'cloned@test.com'").as('email'), 'age', 'createdAt'])
+  .where({ id: 1 });
+await em.createQueryBuilder(Author).insertFrom(source).execute();
+
+// Explicit column list — useful when raw() expressions in the SELECT have no `.as()` alias
+await em.createQueryBuilder(Author)
+  .insertFrom(source, { columns: ['name', 'email', 'age', 'createdAt'] })
+  .execute();
+```
+
+### Column resolution
+
+`insertFrom()` derives the `INSERT (col, col, ...)` column list in three tiers, in order of precedence:
+
+1. **Explicit `columns` option** — the user-supplied array wins over everything else.
+2. **Explicit `select()` on the source** — when the source query has its own `select(...)`, the selected field names (or `.as()` aliases) become the column list.
+3. **No `select()` on the source** — MikroORM derives the column list from the entity metadata, excluding auto-increment primary keys, generated columns, formula properties, `persist: false`, and 1:M / M:N (inverse-side) relations. Embedded properties and M:1 foreign-key columns are included.
+
+### Composable with `onConflict()` and `returning()`
+
+The returned `InsertQueryBuilder` exposes the same methods as a regular `qb.insert()`, so you can chain conflict handlers or RETURNING clauses:
+
+```ts
+// Skip duplicates by unique constraint
+const source = em.createQueryBuilder(Author).where({ id: 1 });
+await em.createQueryBuilder(Author)
+  .insertFrom(source)
+  .onConflict('email').ignore()
+  .execute();
+
+// Return the inserted rows (PostgreSQL / MSSQL / SQLite / libSQL)
+const inserted = await em.createQueryBuilder(Author)
+  .insertFrom(source)
+  .returning('*')
+  .execute();
+```
+
+The statement runs on all SQL drivers (SQLite, libSQL, PostgreSQL, MySQL, MariaDB, MSSQL). MySQL / MariaDB don't support `RETURNING`, so prefer `onConflict()` or a follow-up SELECT there.
+
 ## Referring to column in update queries
 
 You can use static `raw()` helper to insert raw SQL snippets like this:
