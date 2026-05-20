@@ -696,6 +696,130 @@ export class User {
 | Clustered indexes | - | ✅ | - | - | - | ✅ | - | - | - | - |
 | Deferrable constraints | - | - | ✅ | ✅ | - | - | ✅ | - | - | - |
 
+## Query-time index hints (`using`)
+
+The `using` option on `FindOptions` lets you tell the database which named index to use for a given query, with validation built in. It is the higher-level companion to the raw [`indexHint`](./entity-manager.md#index-hints) option — instead of writing dialect-specific hint syntax by hand, you pass the **name** of an index declared on the entity, and MikroORM:
+
+1. Validates that the index exists on the entity.
+2. Validates that every property used in `where` / `orderBy` is covered by that index.
+3. Emits the appropriate SQL hint for the underlying driver.
+
+```ts
+const users = await em.find(User, { name: 'foo' }, {
+  using: 'idx_user_name',
+});
+
+// also accepts an array — where/orderBy may use the union of their properties
+em.find(User, { name: 'foo', email: 'bar@x' }, {
+  using: ['idx_user_name', 'uniq_user_email'],
+});
+```
+
+Per-driver behavior:
+
+| Driver           | Emitted hint                          |
+|------------------|---------------------------------------|
+| MySQL / MariaDB  | `USE INDEX (idx_name[, ...])`         |
+| MSSQL            | `WITH (INDEX(idx_name[, ...]))`       |
+| MongoDB          | passed as the `hint` option (single index only) |
+| PostgreSQL       | validation only — no native hint syntax |
+| SQLite / libSQL  | validation only                       |
+
+When both `using` and `indexHint` are set, the raw `indexHint` wins and is emitted verbatim; `using` still validates `where` / `orderBy`.
+
+### Type-safe `using`
+
+To make `using` autocomplete index names and narrow `where` to only the properties covered by the chosen index, the entity has to declare an index map. The mechanism differs between definition styles:
+
+#### `defineEntity` — automatic inference
+
+Named indexes declared via property-level `.index('name')` / `.unique('name')` and the entity-level `indexes` / `uniques` arrays are picked up automatically. No extra declaration is needed:
+
+```ts
+import { defineEntity, p } from '@mikro-orm/core';
+
+const Article = defineEntity({
+  name: 'Article',
+  properties: {
+    id: p.integer().primary(),
+    title: p.string().index('idx_article_title'),
+    slug: p.string().unique('uniq_article_slug'),
+    status: p.string(),
+    views: p.integer(),
+  },
+  indexes: [{ name: 'idx_article_status_views', properties: ['status', 'views'] }],
+});
+
+em.find(Article, { title: 'foo' }, { using: 'idx_article_title' });
+em.find(Article, { slug: 'foo' }, { using: 'uniq_article_slug' });
+em.find(Article, { status: 'draft', views: 100 }, { using: 'idx_article_status_views' });
+
+// @ts-expect-error 'views' is not covered by 'idx_article_title'
+em.find(Article, { views: 100 }, { using: 'idx_article_title' });
+```
+
+#### Decorator entities — `[IndexHints]` symbol
+
+Decorator metadata doesn't carry the index names into the entity type, so you spell the index map out as a phantom property using the `IndexHints` symbol (same pattern as `[PrimaryKeyProp]` or `[OptionalProps]`):
+
+```ts
+import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { IndexHints, PrimaryKeyProp } from '@mikro-orm/core';
+
+@Entity()
+@Index({ name: 'idx_user_name', properties: ['name'] })
+@Index({ name: 'idx_user_name_email', properties: ['name', 'email'] })
+@Unique({ name: 'uniq_user_email', properties: ['email'] })
+class User {
+
+  [PrimaryKeyProp]?: 'id';
+  [IndexHints]?: {
+    idx_user_name: 'name';
+    idx_user_name_email: 'name' | 'email';
+    uniq_user_email: 'email';
+  };
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @Property()
+  email!: string;
+
+  @Property({ nullable: true })
+  age?: number;
+
+}
+
+em.find(User, { name: 'foo' }, { using: 'idx_user_name' });
+
+// @ts-expect-error 'age' is not in idx_user_name
+em.find(User, { age: 30 }, { using: 'idx_user_name' });
+```
+
+The phantom `[IndexHints]?` declaration is type-only — it does not exist at runtime and is never serialized. Each key is an index name; each value is the union of property names covered by that index. When `[IndexHints]` is not declared, `using` falls back to `string` and accepts any name (runtime validation still applies).
+
+### Runtime validation
+
+Validation runs even when the type system doesn't catch the mistake (e.g. for entities without `[IndexHints]`, or when `where` is cast to `any`):
+
+```ts
+// throws: Index 'nonexistent_idx' not found on entity 'User'. Available indexes: ...
+em.find(User, { name: 'foo' }, { using: 'nonexistent_idx' });
+
+// throws: Property 'age' in where clause is not covered by index 'idx_user_name'
+em.find(User, { age: 30 } as any, { using: 'idx_user_name' });
+
+// throws: Property 'age' in orderBy is not covered by index 'idx_user_name'
+em.find(User, { name: 'foo' }, { using: 'idx_user_name', orderBy: { age: 'asc' } });
+```
+
+The validator walks `$and` / `$or` / `$not` recursively, so nested conditions are checked too. Non-property operators inside a property value (e.g. `{ name: { $eq: 'foo' } }`) are accepted as long as the surrounding property is covered.
+
+See [Index Hints](./entity-manager.md#index-hints) and [Named Index Hints via `using`](./entity-manager.md#named-index-hints-via-using) on the Entity Manager page for the matching FindOptions reference.
+
 ## See Also
 
 - [Defining Entities](./defining-entities.md) - General entity definition guide

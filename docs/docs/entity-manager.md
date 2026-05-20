@@ -529,6 +529,43 @@ const users = await em.find(User, {}, {
 });
 ```
 
+#### Named Index Hints via `using`
+
+The `using` option is a higher-level alternative to `indexHint`. You pass the **name** of a declared index and MikroORM does three things:
+
+1. Validates that the index exists on the entity.
+2. Validates that every property used in `where` / `orderBy` is covered by that index — typos and accidentally-unindexed queries become compile-time and runtime errors instead of silent table scans.
+3. Emits the driver-specific SQL hint for you (`USE INDEX (...)` on MySQL/MariaDB, `WITH (INDEX(...))` on MSSQL, `hint` option on MongoDB, validation-only on PostgreSQL / SQLite / libSQL).
+
+```ts
+// single index
+const users = await em.find(User, { name: 'foo' }, {
+  using: 'idx_user_name',
+});
+
+// multiple indexes — where/orderBy may use the union of their covered properties
+const users = await em.find(User, { name: 'foo', email: 'bar@x' }, {
+  using: ['idx_user_name', 'uniq_user_email'],
+});
+```
+
+The option works on every read method: `find`, `findOne`, `findOneOrFail`, `findAndCount`, `findAll`, `findByCursor`, `stream`, and the matching `EntityRepository` methods.
+
+For type-safe `using`, declare the available indexes on the entity — see [Query-time index hints](./indexes.md#query-time-index-hints-using) on the indexes page.
+
+`using` and `indexHint` can be used together: when both are set, `indexHint` wins and emits its raw string verbatim. `using` still validates `where` / `orderBy` against the named index, which is useful if you want the runtime check but need to spell out a non-standard hint manually:
+
+```ts
+await em.find(User, { name: 'foo' }, {
+  using: 'idx_user_name',                        // validation only
+  indexHint: 'force index for join (idx_user_name)', // emitted as-is
+});
+```
+
+If the named index does not exist, or `where` / `orderBy` references a property the index doesn't cover, MikroORM throws a clear error listing the available indexes and the offending property.
+
+MongoDB accepts only a single index per query — passing an array throws. For SQLite / libSQL the option is validation-only (the engines don't expose a public way to force an index from a `SELECT` statement).
+
 #### MongoDB-only Options
 
 ```ts
@@ -729,6 +766,49 @@ await em.upsert(Document, {
   onConflictWhere: { version: { $lt: 2 } },
 });
 ```
+
+## Cloning entities
+
+`em.clone()` copies rows at the database level via `INSERT ... SELECT`, without round-tripping the data through Node.js. It returns a hydrated entity that is already registered in the identity map.
+
+```ts
+// clone(EntityClass, where, overrides?, options?)
+const cloned = await em.clone(Author, { id: 1 }, { email: 'new@email.com' });
+
+// clone(entity, overrides?, options?)
+const author = await em.findOneOrFail(Author, 1);
+const cloned = await em.clone(author, { email: 'new@email.com' });
+
+// pure clone (no overrides) — all non-PK fields are copied
+const cloned = await em.clone(Author, { id: 1 });
+```
+
+The `where` argument is a regular `FilterQuery<T>` — the same shape `em.find()` accepts. When you pass an entity instance instead of an entity class, the entity's primary key is used as the where clause automatically.
+
+The `overrides` argument is an `EntityData<T>` partial used to replace selected columns in the cloned row. It is typically used to satisfy unique constraints (e.g. a unique `email`) or to mark the clone with a new value:
+
+```ts
+const cloned = await em.clone(
+  Author,
+  { id: 1 },
+  { email: 'cloned@example.com', age: 99 },
+);
+```
+
+What gets cloned:
+
+- Auto-increment primary keys are excluded — the database assigns a new PK to the cloned row.
+- Embedded properties are copied (they live on the same row).
+- M:1 foreign keys are preserved (both rows point at the same parent).
+- Version properties are reset to their initial value.
+- Generated / `persist: false` / formula columns are excluded.
+- M:N and 1:M relations are **not** cloned — pivot rows and inverse side rows stay attached to the original entity. If you need them, follow up with explicit `em.persist()` calls.
+
+Cloning works across single-table-inheritance and table-per-type (TPT) inheritance — for TPT, MikroORM emits one `INSERT ... SELECT` per ancestor table so the full row is reconstructed in every table.
+
+All SQL drivers (SQLite, libSQL, PostgreSQL, MySQL, MariaDB, MSSQL) execute a server-side `INSERT ... SELECT`. MongoDB falls back to a `find` + `insertOne` round-trip with the same end shape.
+
+> For the lower-level building block, see [`qb.insertFrom()`](./query-builder.md#insert-from-select-insertfrom) in the Query Builder — it generates the raw `INSERT ... SELECT` statement that `em.clone()` builds on top of.
 
 ## Refreshing entity state
 
