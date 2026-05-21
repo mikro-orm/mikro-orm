@@ -2,7 +2,7 @@
 # Manual changes might be lost - proceed with caution!
 
 __metadata:
-  version: 9
+  version: 10
   cacheKey: 10
 
 "@ark/attest@npm:0.56.0":
@@ -1426,7 +1426,7 @@ __metadata:
     "@swc/core": "npm:1.15.33"
     "@types/better-sqlite3": "npm:7.6.13"
     "@types/node": "npm:24.12.4"
-    "@types/oracledb": "npm:6.10.3"
+    "@types/oracledb": "npm:6.10.4"
     "@types/pg": "npm:8.20.0"
     "@types/pg-cursor": "npm:2.7.2"
     "@types/picomatch": "npm:4.0.3"
@@ -3028,12 +3028,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/oracledb@npm:6.10.3":
-  version: 6.10.3
-  resolution: "@types/oracledb@npm:6.10.3"
+"@types/oracledb@npm:6.10.4":
+  version: 6.10.4
+  resolution: "@types/oracledb@npm:6.10.4"
   dependencies:
     "@types/node": "npm:*"
-  checksum: 10/96a885daeab3fe2de91ca7ab22c0a1c99a905bb62511de471a9c769a1f0fcbeae46ccda031e26b3382bebf8bff8c38f51267f08cf980238741b2ef20e868b853
+  checksum: 10/7de37034c28997b31747ca0eaae036d01ab195fecf77f94e8a7b7b38ab7091a265cdcee3dff104545efa13c6336452e5caf257279d8bbbc0a19b64a7b1505230
   languageName: node
   linkType: hard
 

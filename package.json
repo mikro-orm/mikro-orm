@@ -138,7 +138,7 @@
     "@swc/core": "1.15.33",
     "@types/better-sqlite3": "7.6.13",
     "@types/node": "24.12.4",
-    "@types/oracledb": "6.10.3",
+    "@types/oracledb": "6.10.4",
     "@types/pg": "8.20.0",
     "@types/pg-cursor": "2.7.2",
     "@types/picomatch": "4.0.3",
@@ -169,5 +169,5 @@
     "uuid": "14.0.0",
     "vitest": "4.1.6"
   },
-  "packageManager": "yarn@4.14.1"
+  "packageManager": "yarn@4.15.0"
 }
