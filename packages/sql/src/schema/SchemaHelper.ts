@@ -658,12 +658,24 @@ export abstract class SchemaHelper {
 
   alterTableColumn(column: Column, table: DatabaseTable, changedProperties: Set<string>): string[] {
     const sql: string[] = [];
+    const typeChanged = changedProperties.has('type') || changedProperties.has('collation');
+    const defaultChanged = changedProperties.has('default');
+    // Postgres can't implicitly cast a stored DEFAULT across array element types
+    // (e.g. `'{}'::text[]` -> `numeric(3,2)[]`), so drop+re-set it around ALTER TYPE.
+    const fromColumn = typeChanged ? table.getColumn(column.name) : undefined;
+    const needsArrayDefaultRecast =
+      typeChanged &&
+      fromColumn?.default != null &&
+      fromColumn.type.endsWith(']') &&
+      column.type.endsWith(']') &&
+      fromColumn.type !== column.type;
+    const recastDefault = needsArrayDefaultRecast && !defaultChanged;
 
-    if (changedProperties.has('default') && column.default == null) {
+    if ((defaultChanged && column.default == null) || needsArrayDefaultRecast) {
       sql.push(`alter table ${table.getQuotedName()} alter column ${this.quote(column.name)} drop default`);
     }
 
-    if (changedProperties.has('type') || changedProperties.has('collation')) {
+    if (typeChanged) {
       let type = column.type + (column.generated ? ` generated always as ${column.generated}` : '');
 
       if (column.nativeEnumName) {
@@ -685,7 +697,7 @@ export abstract class SchemaHelper {
       );
     }
 
-    if (changedProperties.has('default') && column.default != null) {
+    if ((defaultChanged && column.default != null) || recastDefault) {
       sql.push(
         `alter table ${table.getQuotedName()} alter column ${this.quote(column.name)} set default ${column.default}`,
       );
