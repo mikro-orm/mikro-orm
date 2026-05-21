@@ -319,6 +319,21 @@ export class ArticleService {
 }
 ```
 
+#### Using a custom `EntityManager` subclass
+
+The generated `EntityManager` re-exports the driver's stock EM. If you extend it (see [Extending `EntityManager`](./entity-manager.md#extending-entitymanager)) and want the same entity-aware typing for your subclass, leave the generated file alone and write a tiny adjacent wrapper that grafts the generated `Database` tuple onto your own class:
+
+```ts title="custom-em.ts"
+import { entities, type Database } from './entities.generated.js';
+import { MyEntityManager } from './MyEntityManager.js';
+
+export { entities };
+export type EntityManager = MyEntityManager & { '~entities': Database };
+export const EntityManager = MyEntityManager;
+```
+
+Then import `EntityManager` from `./custom-em` instead of `./entities.generated` in your DI bindings and services. The generated barrel stays purely mechanical (so re-running `discovery:export` never clobbers your custom-EM glue), and `em.getKysely(opts)` keeps full type inference through the subclass.
+
 #### Command Options
 
 | Flag | Type | Description |
