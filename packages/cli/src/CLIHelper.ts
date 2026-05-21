@@ -35,7 +35,7 @@ export class CLIHelper {
     paths ??= await this.getConfigPaths();
     const deps = fs.getORMPackages();
 
-    if (!deps.has('@mikro-orm/cli') && !process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI) {
+    if (!deps.has('@mikro-orm/cli') && !process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI && !process.versions.deno) {
       throw new Error('@mikro-orm/cli needs to be installed as a local dependency!');
     }
 
