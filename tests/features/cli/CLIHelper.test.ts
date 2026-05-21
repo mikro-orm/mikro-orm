@@ -218,6 +218,24 @@ describe('CLIHelper', () => {
     );
   });
 
+  test('skips local-dependency check under Deno', async () => {
+    delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI;
+    const originalDeno = process.versions.deno;
+    Object.defineProperty(process.versions, 'deno', { value: '2.7.14', configurable: true });
+
+    try {
+      await expect(CLIHelper.getConfiguration()).rejects.not.toThrow(
+        '@mikro-orm/cli needs to be installed as a local dependency!',
+      );
+    } finally {
+      if (originalDeno === undefined) {
+        delete (process.versions as any).deno;
+      } else {
+        Object.defineProperty(process.versions, 'deno', { value: originalDeno, configurable: true });
+      }
+    }
+  });
+
   test('gets ORM configuration [no mikro-orm.config]', async () => {
     delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CONTEXT;
     await expect(CLIHelper.getConfiguration()).rejects.toThrow(
