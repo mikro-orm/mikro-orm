@@ -311,7 +311,7 @@ exports[`em.upsert [mariadb] em.upsert(Type, data, options) with advanced option
     "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`, \`foo\`) values (2, 42, 'a2', true) on duplicate key update \`current_age\` = values(\`current_age\`)",
   ],
   [
-    "[query] select \`a0\`.\`_id\`, \`a0\`.\`foo\`, \`a0\`.\`bar\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a2' limit 1",
+    "[query] select \`a0\`.\`_id\`, \`a0\`.\`foo\`, \`a0\`.\`bar\`, \`a0\`.\`current_age\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a2' limit 1",
   ],
   [
     "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`, \`foo\`) values (5, 43, 'a3', true) on duplicate key update \`current_age\` = values(\`current_age\`), \`foo\` = values(\`foo\`)",
@@ -334,7 +334,7 @@ exports[`em.upsert [mariadb] em.upsert(Type, entity, options) with advanced opti
     "[query] insert into \`author\` (\`_id\`, \`bar\`, \`current_age\`, \`email\`, \`foo\`) values (2, 123, 42, 'a2', true) on duplicate key update \`current_age\` = values(\`current_age\`)",
   ],
   [
-    "[query] select \`a0\`.\`_id\`, \`a0\`.\`foo\`, \`a0\`.\`bar\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a2' limit 1",
+    "[query] select \`a0\`.\`_id\`, \`a0\`.\`foo\`, \`a0\`.\`bar\`, \`a0\`.\`current_age\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a2' limit 1",
   ],
   [
     "[query] insert into \`author\` (\`_id\`, \`bar\`, \`current_age\`, \`email\`, \`foo\`) values (5, 123, 43, 'a3', true) on duplicate key update \`current_age\` = values(\`current_age\`), \`foo\` = values(\`foo\`), \`bar\` = values(\`bar\`)",
@@ -420,7 +420,7 @@ exports[`em.upsert [mariadb] em.upsertMany(Type, [data], options) with advanced 
     "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`, \`foo\`) values (1, 41, 'a1', true), (2, 42, 'a2', true), (5, 43, 'a3', true) on duplicate key update \`current_age\` = values(\`current_age\`)",
   ],
   [
-    "[query] select \`a0\`.\`_id\`, \`a0\`.\`foo\`, \`a0\`.\`bar\`, \`a0\`.\`email\` from \`author\` as \`a0\` where (\`a0\`.\`email\` = 'a1' or \`a0\`.\`email\` = 'a2' or \`a0\`.\`email\` = 'a3')",
+    "[query] select \`a0\`.\`_id\`, \`a0\`.\`foo\`, \`a0\`.\`bar\`, \`a0\`.\`email\`, \`a0\`.\`current_age\` from \`author\` as \`a0\` where (\`a0\`.\`email\` = 'a1' or \`a0\`.\`email\` = 'a2' or \`a0\`.\`email\` = 'a3')",
   ],
 ]
 `;
@@ -475,7 +475,7 @@ exports[`em.upsert [mariadb] em.upsertMany(Type, [entity], options) with advance
     "[query] insert into \`author\` (\`_id\`, \`bar\`, \`current_age\`, \`email\`, \`foo\`) values (1, 123, 41, 'a1', true), (2, 123, 42, 'a2', true), (5, 123, 43, 'a3', true) on duplicate key update \`current_age\` = values(\`current_age\`)",
   ],
   [
-    "[query] select \`a0\`.\`_id\`, \`a0\`.\`foo\`, \`a0\`.\`bar\`, \`a0\`.\`email\` from \`author\` as \`a0\` where (\`a0\`.\`email\` = 'a1' or \`a0\`.\`email\` = 'a2' or \`a0\`.\`email\` = 'a3')",
+    "[query] select \`a0\`.\`_id\`, \`a0\`.\`foo\`, \`a0\`.\`bar\`, \`a0\`.\`email\`, \`a0\`.\`current_age\` from \`author\` as \`a0\` where (\`a0\`.\`email\` = 'a1' or \`a0\`.\`email\` = 'a2' or \`a0\`.\`email\` = 'a3')",
   ],
 ]
 `;
@@ -584,7 +584,7 @@ exports[`em.upsert [mongo] em.upsert(Type, data, options) with advanced options 
     "[query] db.getCollection('author').updateMany({ email: 'a2' }, { '$set': { current_age: 42 }, '$setOnInsert': { _id: 2, email: 'a2', foo: true } }, { upsert: true });",
   ],
   [
-    "[query] db.getCollection('author').find({ email: 'a2' }, { projection: { _id: 1, foo: 1, bar: 1 } }).limit(1).toArray();",
+    "[query] db.getCollection('author').find({ email: 'a2' }, { projection: { _id: 1, foo: 1, bar: 1, current_age: 1 } }).limit(1).toArray();",
   ],
   [
     "[query] db.getCollection('author').updateMany({ email: 'a3' }, { '$set': { email: 'a3', current_age: 43, foo: true }, '$setOnInsert': { _id: 5 } }, { upsert: true });",
@@ -607,7 +607,7 @@ exports[`em.upsert [mongo] em.upsert(Type, entity, options) with advanced option
     "[query] db.getCollection('author').updateMany({ email: 'a2' }, { '$set': { current_age: 42 }, '$setOnInsert': { _id: 2, email: 'a2', foo: true, bar: 123 } }, { upsert: true });",
   ],
   [
-    "[query] db.getCollection('author').find({ email: 'a2' }, { projection: { _id: 1, foo: 1, bar: 1 } }).limit(1).toArray();",
+    "[query] db.getCollection('author').find({ email: 'a2' }, { projection: { _id: 1, foo: 1, bar: 1, current_age: 1 } }).limit(1).toArray();",
   ],
   [
     "[query] db.getCollection('author').updateMany({ email: 'a3' }, { '$set': { email: 'a3', current_age: 43, foo: true, bar: 123 }, '$setOnInsert': { _id: 5 } }, { upsert: true });",
@@ -693,7 +693,7 @@ exports[`em.upsert [mongo] em.upsertMany(Type, [data], options) with advanced op
     "[query] bulk = db.getCollection('author').initializeUnorderedBulkOp({ upsert: true });bulk.find({ email: 'a1' }).upsert().update({ '$set': { current_age: 41 }, '$setOnInsert': { _id: 1, email: 'a1', foo: true } });bulk.find({ email: 'a2' }).upsert().update({ '$set': { current_age: 42 }, '$setOnInsert': { _id: 2, email: 'a2', foo: true } });bulk.find({ email: 'a3' }).upsert().update({ '$set': { current_age: 43 }, '$setOnInsert': { _id: 5, email: 'a3', foo: true } });bulk.execute()",
   ],
   [
-    "[query] db.getCollection('author').find({ '$or': [ { email: 'a1' }, { email: 'a2' }, { email: 'a3' } ] }, { projection: { _id: 1, foo: 1, bar: 1, email: 1 } }).toArray();",
+    "[query] db.getCollection('author').find({ '$or': [ { email: 'a1' }, { email: 'a2' }, { email: 'a3' } ] }, { projection: { _id: 1, foo: 1, bar: 1, email: 1, current_age: 1 } }).toArray();",
   ],
 ]
 `;
@@ -748,7 +748,7 @@ exports[`em.upsert [mongo] em.upsertMany(Type, [entity], options) with advanced 
     "[query] bulk = db.getCollection('author').initializeUnorderedBulkOp({ upsert: true });bulk.find({ email: 'a1' }).upsert().update({ '$set': { current_age: 41 }, '$setOnInsert': { _id: 1, email: 'a1', foo: true, bar: 123 } });bulk.find({ email: 'a2' }).upsert().update({ '$set': { current_age: 42 }, '$setOnInsert': { _id: 2, email: 'a2', foo: true, bar: 123 } });bulk.find({ email: 'a3' }).upsert().update({ '$set': { current_age: 43 }, '$setOnInsert': { _id: 5, email: 'a3', foo: true, bar: 123 } });bulk.execute()",
   ],
   [
-    "[query] db.getCollection('author').find({ '$or': [ { email: 'a1' }, { email: 'a2' }, { email: 'a3' } ] }, { projection: { _id: 1, foo: 1, bar: 1, email: 1 } }).toArray();",
+    "[query] db.getCollection('author').find({ '$or': [ { email: 'a1' }, { email: 'a2' }, { email: 'a3' } ] }, { projection: { _id: 1, foo: 1, bar: 1, email: 1, current_age: 1 } }).toArray();",
   ],
 ]
 `;
@@ -857,7 +857,7 @@ exports[`em.upsert [mysql] em.upsert(Type, data, options) with advanced options 
     "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`, \`foo\`) values (2, 42, 'a2', true) on duplicate key update \`current_age\` = values(\`current_age\`)",
   ],
   [
-    "[query] select \`a0\`.\`_id\`, \`a0\`.\`foo\`, \`a0\`.\`bar\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a2' limit 1",
+    "[query] select \`a0\`.\`_id\`, \`a0\`.\`foo\`, \`a0\`.\`bar\`, \`a0\`.\`current_age\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a2' limit 1",
   ],
   [
     "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`, \`foo\`) values (5, 43, 'a3', true) on duplicate key update \`current_age\` = values(\`current_age\`), \`foo\` = values(\`foo\`)",
@@ -880,7 +880,7 @@ exports[`em.upsert [mysql] em.upsert(Type, entity, options) with advanced option
     "[query] insert into \`author\` (\`_id\`, \`bar\`, \`current_age\`, \`email\`, \`foo\`) values (2, 123, 42, 'a2', true) on duplicate key update \`current_age\` = values(\`current_age\`)",
   ],
   [
-    "[query] select \`a0\`.\`_id\`, \`a0\`.\`foo\`, \`a0\`.\`bar\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a2' limit 1",
+    "[query] select \`a0\`.\`_id\`, \`a0\`.\`foo\`, \`a0\`.\`bar\`, \`a0\`.\`current_age\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a2' limit 1",
   ],
   [
     "[query] insert into \`author\` (\`_id\`, \`bar\`, \`current_age\`, \`email\`, \`foo\`) values (5, 123, 43, 'a3', true) on duplicate key update \`current_age\` = values(\`current_age\`), \`foo\` = values(\`foo\`), \`bar\` = values(\`bar\`)",
@@ -966,7 +966,7 @@ exports[`em.upsert [mysql] em.upsertMany(Type, [data], options) with advanced op
     "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`, \`foo\`) values (1, 41, 'a1', true), (2, 42, 'a2', true), (5, 43, 'a3', true) on duplicate key update \`current_age\` = values(\`current_age\`)",
   ],
   [
-    "[query] select \`a0\`.\`_id\`, \`a0\`.\`foo\`, \`a0\`.\`bar\`, \`a0\`.\`email\` from \`author\` as \`a0\` where (\`a0\`.\`email\` = 'a1' or \`a0\`.\`email\` = 'a2' or \`a0\`.\`email\` = 'a3')",
+    "[query] select \`a0\`.\`_id\`, \`a0\`.\`foo\`, \`a0\`.\`bar\`, \`a0\`.\`email\`, \`a0\`.\`current_age\` from \`author\` as \`a0\` where (\`a0\`.\`email\` = 'a1' or \`a0\`.\`email\` = 'a2' or \`a0\`.\`email\` = 'a3')",
   ],
 ]
 `;
@@ -1021,7 +1021,7 @@ exports[`em.upsert [mysql] em.upsertMany(Type, [entity], options) with advanced 
     "[query] insert into \`author\` (\`_id\`, \`bar\`, \`current_age\`, \`email\`, \`foo\`) values (1, 123, 41, 'a1', true), (2, 123, 42, 'a2', true), (5, 123, 43, 'a3', true) on duplicate key update \`current_age\` = values(\`current_age\`)",
   ],
   [
-    "[query] select \`a0\`.\`_id\`, \`a0\`.\`foo\`, \`a0\`.\`bar\`, \`a0\`.\`email\` from \`author\` as \`a0\` where (\`a0\`.\`email\` = 'a1' or \`a0\`.\`email\` = 'a2' or \`a0\`.\`email\` = 'a3')",
+    "[query] select \`a0\`.\`_id\`, \`a0\`.\`foo\`, \`a0\`.\`bar\`, \`a0\`.\`email\`, \`a0\`.\`current_age\` from \`author\` as \`a0\` where (\`a0\`.\`email\` = 'a1' or \`a0\`.\`email\` = 'a2' or \`a0\`.\`email\` = 'a3')",
   ],
 ]
 `;
