@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.1](https://github.com/mikro-orm/mikro-orm/compare/v7.1.0...v7.1.1) (2026-05-22)
+
+
+### Bug Fixes
+
+* **cli:** skip local-dependency check under Deno ([#7767](https://github.com/mikro-orm/mikro-orm/issues/7767)) ([c27c211](https://github.com/mikro-orm/mikro-orm/commit/c27c2119ffb87f66b41d9ade761b185fb6f402db)), closes [#7766](https://github.com/mikro-orm/mikro-orm/issues/7766)
+* **core:** reload suppressed entities from partially-suppressed upsertMany ([#7779](https://github.com/mikro-orm/mikro-orm/issues/7779)) ([36eaff3](https://github.com/mikro-orm/mikro-orm/commit/36eaff3c7fac9ca7e351acaf71ad183b2e13ab76)), closes [#7775](https://github.com/mikro-orm/mikro-orm/issues/7775)
+* **core:** skip PK collapse when composite FK doesn't align with target PK ([#7765](https://github.com/mikro-orm/mikro-orm/issues/7765)) ([fce1cc6](https://github.com/mikro-orm/mikro-orm/commit/fce1cc6d97cb75fd215ab8b7b0410cafdf66a81f)), closes [#7764](https://github.com/mikro-orm/mikro-orm/issues/7764)
+* **migrations:** preserve partial unique index `where` predicate in snapshot ([#7778](https://github.com/mikro-orm/mikro-orm/issues/7778)) ([5616c3d](https://github.com/mikro-orm/mikro-orm/commit/5616c3dace1006f90887b1fb3f19232c7599faab)), closes [#7773](https://github.com/mikro-orm/mikro-orm/issues/7773)
+* **postgres:** recast column default when changing array element type ([#7769](https://github.com/mikro-orm/mikro-orm/issues/7769)) ([e122c20](https://github.com/mikro-orm/mikro-orm/commit/e122c2005a211e0a0b2bc5a44464cf4bb1ee233a))
+* **schema:** detect removed default on boolean columns ([#7777](https://github.com/mikro-orm/mikro-orm/issues/7777)) ([c0faca0](https://github.com/mikro-orm/mikro-orm/commit/c0faca002b65c4e4f1a7b29a0acdfd8c8bbdbc86)), closes [#7774](https://github.com/mikro-orm/mikro-orm/issues/7774)
+* **seeder:** widen `Factory.model` type to `EntityName<T>` ([#7776](https://github.com/mikro-orm/mikro-orm/issues/7776)) ([878078c](https://github.com/mikro-orm/mikro-orm/commit/878078c92e5a7d362d7584ccf194b4ef009c4df1)), closes [#7768](https://github.com/mikro-orm/mikro-orm/issues/7768)
+
+
+
+
+
 # [7.1.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.17...v7.1.0) (2026-05-20)
 
 

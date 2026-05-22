@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.1](https://github.com/mikro-orm/mikro-orm/compare/v7.1.0...v7.1.1) (2026-05-22)
+
+
+### Bug Fixes
+
+* **core:** reload suppressed entities from partially-suppressed upsertMany ([#7779](https://github.com/mikro-orm/mikro-orm/issues/7779)) ([36eaff3](https://github.com/mikro-orm/mikro-orm/commit/36eaff3c7fac9ca7e351acaf71ad183b2e13ab76)), closes [#7775](https://github.com/mikro-orm/mikro-orm/issues/7775)
+* **core:** skip PK collapse when composite FK doesn't align with target PK ([#7765](https://github.com/mikro-orm/mikro-orm/issues/7765)) ([fce1cc6](https://github.com/mikro-orm/mikro-orm/commit/fce1cc6d97cb75fd215ab8b7b0410cafdf66a81f)), closes [#7764](https://github.com/mikro-orm/mikro-orm/issues/7764)
+
+
+
+
+
 # [7.1.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.17...v7.1.0) (2026-05-20)
 
 ### Bug Fixes

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.1](https://github.com/mikro-orm/mikro-orm/compare/v7.1.0...v7.1.1) (2026-05-22)
+
+
+### Bug Fixes
+
+* **cli:** skip local-dependency check under Deno ([#7767](https://github.com/mikro-orm/mikro-orm/issues/7767)) ([c27c211](https://github.com/mikro-orm/mikro-orm/commit/c27c2119ffb87f66b41d9ade761b185fb6f402db)), closes [#7766](https://github.com/mikro-orm/mikro-orm/issues/7766)
+
+
+
+
+
 # [7.1.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.17...v7.1.0) (2026-05-20)
 
 ### Features
