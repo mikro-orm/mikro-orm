@@ -1241,6 +1241,10 @@ export class SchemaComparator {
       return to.default == null || to.default.toLowerCase() === 'null';
     }
 
+    if (to.default == null || to.default.toLowerCase() === 'null') {
+      return false;
+    }
+
     if (to.mappedType instanceof BooleanType) {
       const defaultValueFrom = !['0', 'false', 'f', 'n', 'no', 'off'].includes('' + from.default);
       const defaultValueTo = !['0', 'false', 'f', 'n', 'no', 'off'].includes('' + to.default!);
