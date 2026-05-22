@@ -1388,6 +1388,7 @@ export class DatabaseTable {
 
       const optional = [
         'expression',
+        'where',
         'type',
         'deferMode',
         'columns',
