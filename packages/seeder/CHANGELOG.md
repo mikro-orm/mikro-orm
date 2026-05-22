@@ -5,14 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.1.1](https://github.com/mikro-orm/mikro-orm/compare/v7.1.0...v7.1.1) (2026-05-22)
 
-
 ### Bug Fixes
 
-* **seeder:** widen `Factory.model` type to `EntityName<T>` ([#7776](https://github.com/mikro-orm/mikro-orm/issues/7776)) ([878078c](https://github.com/mikro-orm/mikro-orm/commit/878078c92e5a7d362d7584ccf194b4ef009c4df1)), closes [#7768](https://github.com/mikro-orm/mikro-orm/issues/7768)
-
-
-
-
+- **seeder:** widen `Factory.model` type to `EntityName<T>` ([#7776](https://github.com/mikro-orm/mikro-orm/issues/7776)) ([878078c](https://github.com/mikro-orm/mikro-orm/commit/878078c92e5a7d362d7584ccf194b4ef009c4df1)), closes [#7768](https://github.com/mikro-orm/mikro-orm/issues/7768)
 
 # [7.1.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.17...v7.1.0) (2026-05-20)
 

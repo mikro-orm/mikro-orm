@@ -5,16 +5,11 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.1.1](https://github.com/mikro-orm/mikro-orm/compare/v7.1.0...v7.1.1) (2026-05-22)
 
-
 ### Bug Fixes
 
-* **migrations:** preserve partial unique index `where` predicate in snapshot ([#7778](https://github.com/mikro-orm/mikro-orm/issues/7778)) ([5616c3d](https://github.com/mikro-orm/mikro-orm/commit/5616c3dace1006f90887b1fb3f19232c7599faab)), closes [#7773](https://github.com/mikro-orm/mikro-orm/issues/7773)
-* **postgres:** recast column default when changing array element type ([#7769](https://github.com/mikro-orm/mikro-orm/issues/7769)) ([e122c20](https://github.com/mikro-orm/mikro-orm/commit/e122c2005a211e0a0b2bc5a44464cf4bb1ee233a))
-* **schema:** detect removed default on boolean columns ([#7777](https://github.com/mikro-orm/mikro-orm/issues/7777)) ([c0faca0](https://github.com/mikro-orm/mikro-orm/commit/c0faca002b65c4e4f1a7b29a0acdfd8c8bbdbc86)), closes [#7774](https://github.com/mikro-orm/mikro-orm/issues/7774)
-
-
-
-
+- **migrations:** preserve partial unique index `where` predicate in snapshot ([#7778](https://github.com/mikro-orm/mikro-orm/issues/7778)) ([5616c3d](https://github.com/mikro-orm/mikro-orm/commit/5616c3dace1006f90887b1fb3f19232c7599faab)), closes [#7773](https://github.com/mikro-orm/mikro-orm/issues/7773)
+- **postgres:** recast column default when changing array element type ([#7769](https://github.com/mikro-orm/mikro-orm/issues/7769)) ([e122c20](https://github.com/mikro-orm/mikro-orm/commit/e122c2005a211e0a0b2bc5a44464cf4bb1ee233a))
+- **schema:** detect removed default on boolean columns ([#7777](https://github.com/mikro-orm/mikro-orm/issues/7777)) ([c0faca0](https://github.com/mikro-orm/mikro-orm/commit/c0faca002b65c4e4f1a7b29a0acdfd8c8bbdbc86)), closes [#7774](https://github.com/mikro-orm/mikro-orm/issues/7774)
 
 # [7.1.0](https://github.com/mikro-orm/mikro-orm/compare/v7.0.17...v7.1.0) (2026-05-20)
 
