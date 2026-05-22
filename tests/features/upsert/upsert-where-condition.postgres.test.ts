@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/postgresql';
+import { MikroORM, raw } from '@mikro-orm/postgresql';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
@@ -155,5 +155,58 @@ describe('upsert with where condition', () => {
     const doc5 = await orm.em.findOneOrFail(Document, { name: 'doc5' });
     expect(doc5.version).toBe(1);
     expect(doc5.content).toBe('new 5');
+  });
+
+  test('upsert should reload a suppressed entity with onConflictMergeFields (GH #7775)', async () => {
+    await orm.em.insert(Document, { name: 'doc-single', version: 5, content: 'original' });
+
+    const result = await orm.em.fork().upsert(
+      Document,
+      { name: 'doc-single', version: 3, content: 'stale-loser' },
+      {
+        onConflictFields: ['name'],
+        onConflictWhere: raw('"document"."version" < excluded."version"'),
+        onConflictMergeFields: ['version', 'content'],
+      },
+    );
+
+    expect(result.version).toBe(5);
+    expect(result.content).toBe('original');
+
+    const doc = await orm.em.fork().findOneOrFail(Document, { name: 'doc-single' });
+    expect(doc.version).toBe(5);
+    expect(doc.content).toBe('original');
+  });
+
+  test('upsertMany should reload suppressed entities in a partially-suppressed batch (GH #7775)', async () => {
+    await orm.em.insertMany(Document, [
+      { name: 'doc-a', version: 5, content: 'original a' },
+      { name: 'doc-b', version: 5, content: 'original b' },
+    ]);
+
+    const results = await orm.em.fork().upsertMany(
+      Document,
+      [
+        { name: 'doc-a', version: 3, content: 'stale-loser' },
+        { name: 'doc-b', version: 7, content: 'fresh-winner' },
+      ],
+      {
+        onConflictFields: ['name'],
+        onConflictWhere: raw('"document"."version" < excluded."version"'),
+        onConflictMergeFields: ['version', 'content'],
+      },
+    );
+
+    expect(results[0].version).toBe(5);
+    expect(results[0].content).toBe('original a');
+    expect(results[1].version).toBe(7);
+    expect(results[1].content).toBe('fresh-winner');
+
+    const docA = await orm.em.fork().findOneOrFail(Document, { name: 'doc-a' });
+    expect(docA.version).toBe(5);
+    expect(docA.content).toBe('original a');
+    const docB = await orm.em.fork().findOneOrFail(Document, { name: 'doc-b' });
+    expect(docB.version).toBe(7);
+    expect(docB.content).toBe('fresh-winner');
   });
 });
