@@ -1548,11 +1548,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       entitiesByData.set(row, entity);
     });
 
-    // skip if we got the PKs via returning statement (`rows`)
+    // skip the reload only when RETURNING brought back a row for every input
+    // (onConflictWhere can suppress writes, leaving some rows out)
     // oxfmt-ignore
     const uniqueFields = options.onConflictFields ?? ((Utils.isPlainObject(allWhere[0]) ? Object.keys(allWhere[0]).flatMap(key => Utils.splitPrimaryKeys(key)) : meta.primaryKeys) as (keyof Entity)[]);
     const returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options) as string[];
-    const reloadFields = returning.length > 0 && !(this.getPlatform().usesReturningStatement() && res.rows?.length);
+    const reloadFields =
+      returning.length > 0 && !(this.getPlatform().usesReturningStatement() && res.rows?.length === data.length);
 
     if (options.onConflictAction === 'ignore' || (!res.rows?.length && loadPK.size > 0) || reloadFields) {
       const unique = meta.hydrateProps.filter(p => !p.lazy).map(p => p.name);
@@ -1579,7 +1581,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       const data2 = await this.driver.find(meta.class, where, {
         fields: returning
           .concat(...add)
-          .concat(...((Array.isArray(uniqueFields) ? uniqueFields : []) as string[])) as any,
+          .concat(...((Array.isArray(uniqueFields) ? uniqueFields : []) as string[]))
+          .concat(...((options.onConflictMergeFields ?? []) as string[])) as any,
         ctx: em.#transactionContext,
         convertCustomTypes: true,
         connectionType: 'write',
