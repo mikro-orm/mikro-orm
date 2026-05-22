@@ -1340,7 +1340,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       const data2 = await this.driver.findOne(meta.class, where, {
-        fields: returning as any[],
+        fields: returning.concat(...((options.onConflictMergeFields ?? []) as string[])) as any[],
         ctx: em.#transactionContext,
         convertCustomTypes: true,
         connectionType: 'write',

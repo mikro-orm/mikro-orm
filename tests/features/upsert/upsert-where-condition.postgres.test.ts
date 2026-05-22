@@ -157,6 +157,27 @@ describe('upsert with where condition', () => {
     expect(doc5.content).toBe('new 5');
   });
 
+  test('upsert should reload a suppressed entity with onConflictMergeFields (GH #7775)', async () => {
+    await orm.em.insert(Document, { name: 'doc-single', version: 5, content: 'original' });
+
+    const result = await orm.em.fork().upsert(
+      Document,
+      { name: 'doc-single', version: 3, content: 'stale-loser' },
+      {
+        onConflictFields: ['name'],
+        onConflictWhere: raw('"document"."version" < excluded."version"'),
+        onConflictMergeFields: ['version', 'content'],
+      },
+    );
+
+    expect(result.version).toBe(5);
+    expect(result.content).toBe('original');
+
+    const doc = await orm.em.fork().findOneOrFail(Document, { name: 'doc-single' });
+    expect(doc.version).toBe(5);
+    expect(doc.content).toBe('original');
+  });
+
   test('upsertMany should reload suppressed entities in a partially-suppressed batch (GH #7775)', async () => {
     await orm.em.insertMany(Document, [
       { name: 'doc-a', version: 5, content: 'original a' },
