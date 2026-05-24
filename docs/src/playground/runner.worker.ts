@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
-import { Buffer } from 'node:buffer';
+// eslint-disable-next-line unicorn/prefer-node-protocol -- this is the `buffer` browser polyfill, not Node's builtin
+import { Buffer } from 'buffer';
 import * as core from '@mikro-orm/core';
 
 // @mikro-orm/core references the Node `Buffer` global (e.g. in clone/serialization paths).
