@@ -9,6 +9,7 @@
 .cache-loader
 /docs/api
 /typedoc-sidebar.js
+/static/playground/mikro-orm-types.json
 
 # misc
 .DS_Store

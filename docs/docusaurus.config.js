@@ -287,6 +287,21 @@ module.exports = {
     ],
   ],
   plugins: [
+    // The playground bundles @mikro-orm/core, which uses optional dynamic imports
+    // (extension auto-loading, import.meta.resolve) that bundlers flag but that never
+    // run under the playground's explicit config. Silence those known warnings.
+    () => ({
+      name: 'mikro-orm-playground-webpack',
+      configureWebpack() {
+        return {
+          ignoreWarnings: [
+            /Critical dependency: the request of a dependency is an expression/,
+            /Accessing import\.meta directly is unsupported/,
+          ],
+        };
+      },
+    }),
+    require.resolve('./plugins/playground-types'),
     ['@apify/docusaurus-plugin-typedoc-api', docusaurusPluginTypedocApiOptions],
     require.resolve('./plugins/changelog'),
     [
