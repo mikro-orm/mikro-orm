@@ -2,6 +2,9 @@
 title: 'Chapter 1: First Entity'
 ---
 
+import BrowserOnly from '@docusaurus/BrowserOnly';
+import Playground from '@site/src/playground/Playground';
+
 ## Setting up
 
 Before you start, ensure you meet the following pre-requisites first:
@@ -725,7 +728,6 @@ Currently, our app consists of a single `User` entity and a `server.ts` file whe
 
 > We use in-memory database, SQLite feature available via special database name `:memory:`.
 
-This is our [`server.ts` file](https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-1?file=src%2Fserver.ts) so far:
+This is our app so far — edit the code and press **Run** to execute it against a real SQLite database running entirely in your browser via WebAssembly:
 
-<iframe width="100%" height="800" frameborder="0" src="https://stackblitz.com/edit/mikro-orm-getting-started-guide-cp-1?embed=1&ctl=1&view=editor&file=src%2Fserver.ts">
-</iframe>
+<BrowserOnly>{() => <Playground project="first-entity" />}</BrowserOnly>

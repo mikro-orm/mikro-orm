@@ -1,0 +1,139 @@
+.playground {
+  border: 1px solid #3c3c3c;
+  border-radius: var(--ifm-global-radius);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  background: #252526;
+  border-bottom: 1px solid #3c3c3c;
+}
+
+.activeFile {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8rem;
+  color: #cccccc;
+  padding-left: 0.3rem;
+}
+
+.body {
+  display: flex;
+  align-items: stretch;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.4rem 0.35rem;
+  min-width: 190px;
+  background: #1e1e1e;
+  border-right: 1px solid #3c3c3c;
+  overflow-y: auto;
+}
+
+.file,
+.fileActive {
+  border: none;
+  border-left: 2px solid transparent;
+  background: transparent;
+  padding: 0.3rem 0.55rem;
+  border-radius: 0;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.78rem;
+  color: #b5b5b5;
+  white-space: nowrap;
+}
+
+.file:hover {
+  background: #2a2d2e;
+  color: #e6e6e6;
+}
+
+.fileActive {
+  background: #37373d;
+  border-left-color: var(--ifm-color-primary);
+  color: #ffffff;
+}
+
+.editorPane {
+  flex: 1;
+  min-width: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.run,
+.secondary {
+  border: none;
+  border-radius: var(--ifm-global-radius);
+  padding: 0.3rem 0.9rem;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.run {
+  background: var(--ifm-color-primary);
+  color: #fff;
+}
+
+.run:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.secondary {
+  background: #3a3d41;
+  color: #e6e6e6;
+}
+
+.secondary:hover:not(:disabled) {
+  background: #45494e;
+}
+
+.output {
+  max-height: 240px;
+  overflow: auto;
+  padding: 0.6rem 0.8rem;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.placeholder {
+  color: #888;
+  font-style: italic;
+}
+
+.log,
+.info,
+.debug {
+  color: #d4d4d4;
+}
+
+.warn {
+  color: #d7ba7d;
+}
+
+.error {
+  color: #f48771;
+}
+
+.system {
+  color: #6a9955;
+}
