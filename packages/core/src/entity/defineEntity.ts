@@ -1267,6 +1267,14 @@ function getBuilderOptions(builder: any) {
 /** Own keys + base entity keys (when TBase is not `never`). Guards against `keyof never = string | number | symbol`. */
 type AllKeys<TProperties, TBase> = keyof TProperties | (IsNever<TBase> extends true ? never : keyof TBase);
 
+// Loose `where` filter for index/unique definitions. Using the fully inferred entity
+// (`InferEntityFromProperties`) here forces eager evaluation while contextually typing the
+// `defineEntity` argument, which is circular for self-referencing relations (e.g. `() => m:1(Self)`).
+// A shallow key-only shape breaks that cycle, at the cost of per-property value typing and
+// unknown-key rejection in the filter (the `unknown` values make `FilterQuery` accept any key).
+// GH #7440 dodged the same trap for `filters.cond` by falling back to a loose `Dictionary` there.
+type PartialWhere<TProperties, TBase> = string | FilterQuery<{ [K in AllKeys<TProperties, TBase> & string]?: unknown }>;
+
 /** Metadata descriptor for `defineEntity()`, combining entity options with property definitions. */
 export interface EntityMetadataWithProperties<
   TName extends string,
@@ -1352,7 +1360,7 @@ export interface EntityMetadataWithProperties<
     type?: string;
     options?: Dictionary;
     expression?: string | IndexCallback<InferEntityFromProperties<TProperties, TPK, TBase>>;
-    where?: string | FilterQuery<InferEntityFromProperties<TProperties, TPK, TBase>>;
+    where?: PartialWhere<TProperties, TBase>;
     columns?: IndexColumnOptions[];
     include?: NoInfer<AllKeys<TProperties, TBase>> | NoInfer<AllKeys<TProperties, TBase>>[];
     fillFactor?: number;
@@ -1365,7 +1373,7 @@ export interface EntityMetadataWithProperties<
     name?: string;
     options?: Dictionary;
     expression?: string | IndexCallback<InferEntityFromProperties<TProperties, TPK, TBase>>;
-    where?: string | FilterQuery<InferEntityFromProperties<TProperties, TPK, TBase>>;
+    where?: PartialWhere<TProperties, TBase>;
     deferMode?: DeferMode | `${DeferMode}`;
     columns?: IndexColumnOptions[];
     include?: NoInfer<AllKeys<TProperties, TBase>> | NoInfer<AllKeys<TProperties, TBase>>[];
