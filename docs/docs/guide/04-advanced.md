@@ -2,6 +2,9 @@
 title: 'Chapter 4: Advanced'
 ---
 
+import BrowserOnly from '@docusaurus/BrowserOnly';
+import Playground from '@site/src/playground/Playground';
+
 In this chapter, you will first implement all the methods of `/user` endpoint, including a basic JWT authentication provided via `@fastify/jwt` package, and proceed with the rest of the `/article` endpoints. This chapter touches on some of the more advanced concepts like custom repositories, virtual entities, `QueryBuilder`, flush events, and more.
 
 ## Improving route registration
@@ -974,6 +977,10 @@ console.log(articles[0] instanceof Article); // true
 ```
 
 > You can also use `qb.getResultList()` which is alias for `qb.getResult()`.
+
+Here is the `QueryBuilder` in action — the same sub-queries, join, and `execute()`/`getSingleResult()` calls running against a real SQLite database in your browser. Press **Run** (or edit the query and re-run):
+
+<BrowserOnly>{() => <Playground project="query-builder" />}</BrowserOnly>
 
 ## Updating the tests
 
