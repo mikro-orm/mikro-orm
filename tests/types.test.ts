@@ -1420,6 +1420,32 @@ describe('check typings', () => {
     });
   });
 
+  test('defineEntity self-referencing relation with index/unique `where` does not circularly reference itself', () => {
+    // A self-referencing m:1 combined with a typed `where` on an index/unique used to force eager
+    // evaluation of the inferred entity while contextually typing the argument, which is circular.
+    const ClientSchema = defineEntity({
+      name: 'Client',
+      tableName: 'Clients',
+      properties: {
+        id: p.integer().primary(),
+        email: p.text(),
+        username: p.string().length(120),
+        chainAdmin: () => p.manyToOne(Client).nullable(),
+      },
+      uniques: [{ properties: ['username'] }],
+      // the cycle-breaking `where` type intentionally relaxes value typing and unknown-key
+      // rejection, so a typo'd key like `{ foo: null }` would type-check here.
+      indexes: [{ properties: ['chainAdmin'], where: { chainAdmin: { $ne: null } } }],
+    });
+
+    class Client extends ClientSchema.class {}
+    ClientSchema.setClass(Client);
+
+    const client = new Client();
+    assert<IsExact<typeof client.id, number>>(true);
+    assert<IsExact<typeof client.chainAdmin, Client | null | undefined>>(true);
+  });
+
   test('GH #7470 - entity with relation named "owner" should not break populate types', async () => {
     const UserSchema = defineEntity({
       name: 'User7470',
