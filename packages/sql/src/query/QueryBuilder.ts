@@ -2696,8 +2696,9 @@ export class QueryBuilder<
 
   /**
    * Returns native query builder instance with sub-query aliased with given alias.
+   * The alias literal is preserved in the type so `addSelect()` exposes it on `execute()` results.
    */
-  as(alias: string): NativeQueryBuilder;
+  as<Alias extends string>(alias: Alias): NativeQueryBuilder & RawQueryFragment<Alias>;
 
   /**
    * Returns native query builder instance with sub-query aliased with given alias.
@@ -4461,7 +4462,18 @@ type JoinDTO<T, K extends keyof T, F extends string> =
             >
           | Extract<T[K], null | undefined>;
 
-type ExecuteDTO<T, H extends string, F extends string> = [H] extends [never]
+/**
+ * Raw aliases (`sql`...`.as('x')`, `'col as x'`, or aliased sub-queries) are not entity keys,
+ * so they never appear in the selected-fields DTO. They are tracked in the `RawAliases` generic
+ * (preserved across joins), so expose them on the result as `unknown` — their value type is not
+ * known at the type level. Only intersected when raw aliases are present, to keep the plain DTO
+ * untouched when there are none.
+ */
+type WithRawAliases<DTO, RawAliases extends string> = [RawAliases] extends [never]
+  ? DTO
+  : DTO & { [K in RawAliases]: unknown };
+
+type ExecuteDTOInner<T, H extends string, F extends string> = [H] extends [never]
   ? [F] extends ['*']
     ? EntityDTOFlat<T>
     : DirectDTO<T, F & keyof T>
@@ -4475,6 +4487,11 @@ type ExecuteDTO<T, H extends string, F extends string> = [H] extends [never]
       ? EntityDTOFlat<Loaded<T, H, F>>
       : DirectDTO<T, (RootFields<F, H> | PrimaryProperty<T>) & keyof T> & { [K in H & keyof T]: JoinDTO<T, K, F> };
 
+type ExecuteDTO<T, H extends string, F extends string, RawAliases extends string = never> = WithRawAliases<
+  ExecuteDTOInner<T, H, F>,
+  RawAliases
+>;
+
 /** Shorthand for `QueryBuilder` with all generic parameters set to `any`. */
 export type AnyQueryBuilder<T extends object = AnyEntity> = QueryBuilder<T, any, any, any, any, any, any>;
 
@@ -4487,12 +4504,15 @@ export interface SelectQueryBuilder<
   Fields extends string = '*',
   CTEs extends Record<string, object> = {},
 > extends QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs> {
-  execute<Result = ExecuteDTO<Entity, Hint, Fields>[]>(
+  execute<Result = ExecuteDTO<Entity, Hint, Fields, RawAliases>[]>(
     method?: 'all' | 'get' | 'run',
     mapResults?: boolean,
   ): Promise<Result>;
-  execute<Result = ExecuteDTO<Entity, Hint, Fields>[]>(method: 'all', mapResults?: boolean): Promise<Result>;
-  execute<Result = ExecuteDTO<Entity, Hint, Fields>>(method: 'get', mapResults?: boolean): Promise<Result>;
+  execute<Result = ExecuteDTO<Entity, Hint, Fields, RawAliases>[]>(
+    method: 'all',
+    mapResults?: boolean,
+  ): Promise<Result>;
+  execute<Result = ExecuteDTO<Entity, Hint, Fields, RawAliases>>(method: 'get', mapResults?: boolean): Promise<Result>;
   execute<Result = QueryResult<Entity>>(method: 'run', mapResults?: boolean): Promise<Result>;
 }
 

@@ -1,6 +1,7 @@
 import {
   MikroORM,
   Loaded,
+  sql,
   type EntityDTO,
   type EntityDTOFlat,
   type SerializeDTO,
@@ -388,6 +389,41 @@ describe('QueryBuilder Fields type tracking', () => {
 
       const result = await qb.execute<Dictionary[]>();
       expectTypeOf(result).toEqualTypeOf<Dictionary[]>();
+    });
+
+    test('execute() should surface a raw fragment alias as a result property', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select(['a.id']).addSelect(sql.ref('a.name').as('authorName'));
+
+      const result = await qb.execute('all');
+      type Element = (typeof result)[number];
+      expectTypeOf<Element['id']>().toEqualTypeOf<number>();
+      expectTypeOf<Element['authorName']>().toEqualTypeOf<unknown>();
+    });
+
+    test('execute() should surface an aliased sub-query as a result property', async () => {
+      const bookCount = orm.em
+        .createQueryBuilder(Book2)
+        .count()
+        .where({ author: sql.ref('a.id') })
+        .as('bookCount');
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select(['a.id']).addSelect([bookCount]);
+
+      const result = await qb.execute('all');
+      type Element = (typeof result)[number];
+      expectTypeOf<Element['id']>().toEqualTypeOf<number>();
+      expectTypeOf<Element['bookCount']>().toEqualTypeOf<unknown>();
+    });
+
+    test('execute() should surface aliases alongside a join', async () => {
+      const qb = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select(['a.id'])
+        .addSelect(sql.ref('b.title').as('bookTitle'))
+        .join('a.books', 'b');
+
+      const result = await qb.execute('all');
+      type Element = (typeof result)[number];
+      expectTypeOf<Element['bookTitle']>().toEqualTypeOf<unknown>();
     });
   });
 });
