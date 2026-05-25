@@ -3287,39 +3287,39 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/core@npm:7.1.1":
-  version: 7.1.1
-  resolution: "@mikro-orm/core@npm:7.1.1"
+"@mikro-orm/core@npm:7.1.2-dev.2":
+  version: 7.1.2-dev.2
+  resolution: "@mikro-orm/core@npm:7.1.2-dev.2"
   peerDependencies:
     dataloader: 2.2.3
   peerDependenciesMeta:
     dataloader:
       optional: true
-  checksum: 10/5f8c09b4b9b128eb5db4a1f415769de8455851f31604ca76845be99b55822c9ced3ac4f2b043c9c59e2e14fb656b2db3c89ead4a2aa14d142b5dc7c3738b9834
+  checksum: 10/e8e51a409525b08dc69e986a43c753de5265e3d8a351ab772aa148fc6b2eae58e6fcea93d4703bfcd79f2df2a01fe287ed98cc6a70859e64880af40c42641f54
   languageName: node
   linkType: hard
 
-"@mikro-orm/sql@npm:7.1.1":
-  version: 7.1.1
-  resolution: "@mikro-orm/sql@npm:7.1.1"
+"@mikro-orm/sql@npm:7.1.2-dev.2":
+  version: 7.1.2-dev.2
+  resolution: "@mikro-orm/sql@npm:7.1.2-dev.2"
   dependencies:
     kysely: "npm:0.29.2"
   peerDependencies:
-    "@mikro-orm/core": 7.1.1
-  checksum: 10/bd54c1fddcee2f54062ff58106109d6f0219ae438a3f2da01662a5d7b2ff866a956fc622a3468dbd9785fe04710119bcb72daafe6403aa8d58a1001fcaaca1de
+    "@mikro-orm/core": 7.1.2-dev.2
+  checksum: 10/8dbda30d42a215dc684cd989505860983ed9df1cde387374034bd5aa7deff843eb20edc1eb8153ff468cdd2ab3ee4a82220d1c496b6f69bbb21f98bb3c5252aa
   languageName: node
   linkType: hard
 
-"@mikro-orm/sqlite@npm:7.1.1":
-  version: 7.1.1
-  resolution: "@mikro-orm/sqlite@npm:7.1.1"
+"@mikro-orm/sqlite@npm:7.1.2-dev.2":
+  version: 7.1.2-dev.2
+  resolution: "@mikro-orm/sqlite@npm:7.1.2-dev.2"
   dependencies:
-    "@mikro-orm/sql": "npm:7.1.1"
+    "@mikro-orm/sql": "npm:7.1.2-dev.2"
     better-sqlite3: "npm:12.10.0"
     kysely: "npm:0.29.2"
   peerDependencies:
-    "@mikro-orm/core": 7.1.1
-  checksum: 10/0e46687a63f6065a3f97ee6457028938395e538c205acaac469f7c0db0ebb67c3961614de6f2bf74ce9719bbb94d9699461e97a1edc87b1d622183f22682a91b
+    "@mikro-orm/core": 7.1.2-dev.2
+  checksum: 10/7b739ecdd692b07ffd1536f978148b1c6d04fb8dd046c16ba43a9d1558fbb250749940131bcdfdc3d6ef3888c73f8e948f56c40de440c237fda3c5d4a84fca98
   languageName: node
   linkType: hard
 
@@ -7523,9 +7523,9 @@ __metadata:
     "@docusaurus/types": "npm:3.10.1"
     "@giscus/react": "npm:^3.1.0"
     "@mdx-js/react": "npm:3.1.1"
-    "@mikro-orm/core": "npm:7.1.1"
-    "@mikro-orm/sql": "npm:7.1.1"
-    "@mikro-orm/sqlite": "npm:7.1.1"
+    "@mikro-orm/core": "npm:7.1.2-dev.2"
+    "@mikro-orm/sql": "npm:7.1.2-dev.2"
+    "@mikro-orm/sqlite": "npm:7.1.2-dev.2"
     "@monaco-editor/react": "npm:4.7.0"
     "@signalwire/docusaurus-plugin-llms-txt": "npm:^1.2.2"
     "@types/react": "npm:^19.1.6"

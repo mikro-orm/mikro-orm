@@ -195,6 +195,110 @@ console.log('password selected?', loaded.author.password ?? '(hidden & lazy — 
 await orm.close();
 `;
 
+const queryBuilderComment = `import { defineEntity, type InferEntity, p } from '@mikro-orm/core';
+import { BaseSchema } from '../common/base.entity.js';
+import { ArticleSchema } from './article.entity.js';
+
+export const CommentSchema = defineEntity({
+  name: 'Comment',
+  extends: BaseSchema,
+  properties: {
+    text: p.text(),
+    article: () => p.manyToOne(ArticleSchema),
+  },
+});
+
+export type IComment = InferEntity<typeof CommentSchema>;
+`;
+
+const queryBuilderConfig = `import { defineConfig } from '@mikro-orm/sqlite';
+import { UserSchema } from './modules/user/user.entity.js';
+import { ArticleSchema } from './modules/article/article.entity.js';
+import { TagSchema } from './modules/article/tag.entity.js';
+import { CommentSchema } from './modules/article/comment.entity.js';
+
+export default defineConfig({
+  dbName: ':memory:',
+  entities: [UserSchema, ArticleSchema, TagSchema, CommentSchema],
+  debug: true,
+});
+`;
+
+const queryBuilderServer = `import { MikroORM, sql } from '@mikro-orm/sqlite';
+import config from './mikro-orm.config.js';
+import { UserSchema } from './modules/user/user.entity.js';
+import { ArticleSchema } from './modules/article/article.entity.js';
+import { TagSchema } from './modules/article/tag.entity.js';
+import { CommentSchema } from './modules/article/comment.entity.js';
+
+const orm = await MikroORM.init(config);
+await orm.schema.refresh();
+
+// seed a couple of articles, each with some tags and comments
+const em = orm.em.fork();
+const author = em.create(UserSchema, { fullName: 'Foo Bar', email: 'foo@bar.com', password: '123456' });
+
+const a1 = em.create(ArticleSchema, {
+  title: 'Hello World',
+  text: 'Lorem ipsum dolor sit amet',
+  author,
+  tags: [em.create(TagSchema, { name: 'intro' }), em.create(TagSchema, { name: 'news' })],
+});
+
+const a2 = em.create(ArticleSchema, {
+  title: 'Second Post',
+  text: 'Another article body goes here',
+  author,
+  tags: [em.create(TagSchema, { name: 'news' })],
+});
+
+em.create(CommentSchema, { text: 'Great!', article: a1 });
+em.create(CommentSchema, { text: 'Nice read', article: a1 });
+em.create(CommentSchema, { text: 'Thanks', article: a2 });
+
+await em.flush();
+em.clear();
+
+// sub-query: total number of comments per article
+const totalComments = em.createQueryBuilder(CommentSchema)
+  .count()
+  .where({ article: sql.ref('a.id') })
+  .as('totalComments');
+
+// sub-query: all tag names of the article, concatenated
+const usedTags = em.createQueryBuilder(ArticleSchema, 'aa')
+  .select(sql\`group_concat(distinct t.name)\`)
+  .join('aa.tags', 't')
+  .where({ 'aa.id': sql.ref('a.id') })
+  .groupBy('aa.author')
+  .as('tags');
+
+// final query: join the author and pull in both sub-queries
+const qb = em.createQueryBuilder(ArticleSchema, 'a')
+  .select(['slug', 'title', 'description', 'author'])
+  .addSelect(sql.ref('u.full_name').as('authorName'))
+  .join('author', 'u')
+  .addSelect([totalComments, usedTags]);
+
+console.log('generated SQL:');
+console.log(qb.getFormattedQuery());
+
+// execute('all') returns plain rows with columns mapped to property names
+const rows = await qb.execute('all');
+for (const row of rows) {
+  console.log(\`- \${row.title} by \${row.authorName} — \${row.totalComments} comments, tags: \${row.tags ?? '(none)'}\`);
+}
+
+// getSingleResult() returns a managed entity instance instead of a plain row
+const single = await em.createQueryBuilder(ArticleSchema)
+  .select('*')
+  .where({ slug: 'hello-world' })
+  .getSingleResult();
+console.log('single result entity:', single?.title, '(slug: ' + single?.slug + ')');
+
+await orm.close();
+`;
+
 export const projects: Record<string, PlaygroundProject> = {
   'first-entity': {
     entry: 'src/server.ts',
@@ -213,6 +317,18 @@ export const projects: Record<string, PlaygroundProject> = {
       'src/modules/user/user.entity.ts': relationshipsUser,
       'src/modules/article/article.entity.ts': relationshipsArticle,
       'src/modules/article/tag.entity.ts': relationshipsTag,
+    },
+  },
+  'query-builder': {
+    entry: 'src/server.ts',
+    files: {
+      'src/server.ts': queryBuilderServer,
+      'src/mikro-orm.config.ts': queryBuilderConfig,
+      'src/modules/common/base.entity.ts': relationshipsBase,
+      'src/modules/user/user.entity.ts': relationshipsUser,
+      'src/modules/article/article.entity.ts': relationshipsArticle,
+      'src/modules/article/tag.entity.ts': relationshipsTag,
+      'src/modules/article/comment.entity.ts': queryBuilderComment,
     },
   },
 };
