@@ -70,7 +70,8 @@ export class QueryHelper {
 
     const keys = Object.keys(where);
     const groupOperator = keys.find(k => {
-      return Utils.isGroupOperator(k) && Array.isArray(where[k]) && where[k].every(cond => {
+      // sole-key only: caller drops the parent, so siblings would be silently lost
+      return keys.length === 1 && Utils.isGroupOperator(k) && Array.isArray(where[k]) && where[k].every(cond => {
         return Utils.isPlainObject(cond) && Object.keys(cond).every(k2 => {
           if (Utils.isOperator(k2, false)) {
             if (k2 === '$not') {
