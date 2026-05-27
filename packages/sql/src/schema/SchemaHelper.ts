@@ -27,6 +27,16 @@ export function stripStatementNewlines(body: string): string {
   return body.replace(/;[\t ]*\r?\n/g, '; ');
 }
 
+/**
+ * Detects `@Check` expressions that are full table-constraint bodies (e.g. `exclude using gist (...)`),
+ * so the emitter can skip the `check (...)` wrap. Used as an escape hatch for dialect-specific
+ * constraint kinds (currently PostgreSQL `EXCLUDE`) that share the lifecycle of a CHECK constraint
+ * but a different DDL keyword.
+ */
+export function isRawConstraintBody(expression: string): boolean {
+  return /^\s*exclude\b/i.test(expression);
+}
+
 /** Base class for database-specific schema helpers. Provides SQL generation for DDL operations. */
 export abstract class SchemaHelper {
   constructor(protected readonly platform: AbstractSqlPlatform) {}
@@ -1080,7 +1090,10 @@ export abstract class SchemaHelper {
   }
 
   createCheck(table: DatabaseTable, check: CheckDef): string {
-    return `alter table ${table.getQuotedName()} add constraint ${this.quote(check.name)} check (${check.expression})`;
+    const body = isRawConstraintBody(check.expression as string)
+      ? (check.expression as string)
+      : `check (${check.expression})`;
+    return `alter table ${table.getQuotedName()} add constraint ${this.quote(check.name)} ${body}`;
   }
 
   /**
