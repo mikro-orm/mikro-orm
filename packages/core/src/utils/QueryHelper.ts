@@ -113,6 +113,8 @@ export class QueryHelper {
     const keys = Object.keys(where);
     const groupOperator = keys.find(k => {
       return (
+        // sole-key only: caller drops the parent, so siblings would be silently lost
+        keys.length === 1 &&
         k in GroupOperator &&
         Array.isArray(where[k]) &&
         where[k].every(cond => {
