@@ -682,10 +682,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
       seen.add(dedupeKey);
       ret[key] ??= [];
-      // CHECK constraints come back as `CHECK ((<predicate>))`; strip the double-paren wrap and
-      // postgres-added type casts so the inner predicate matches what the user wrote in metadata.
-      // EXCLUDE constraints come back as `EXCLUDE USING <method> (<cols WITH ops>)` and are stored as-is
-      // (the user's @Check expression is itself the full body, see SchemaHelper.createCheck).
+      // CHECK: unwrap the `CHECK ((<predicate>))` shell and drop pg-added `::type` casts so the
+      // inner predicate matches the user's metadata. EXCLUDE bodies are kept verbatim — the user's
+      // `@Check` expression is the full body (see SchemaHelper.createCheck).
       const m = /^check \(\((.*)\)\)$/is.exec(check.expression);
       const def = m ? m[1].replace(/\((.*?)\)::\w+/g, '$1') : check.expression;
       ret[key].push({
@@ -1495,9 +1494,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
           `ccu.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and ccu.table_schema = ${this.platform.quoteValue(schema)}`,
       )
       .join(' or ');
-    // EXCLUDE constraints (contype='x') don't appear in information_schema.constraint_column_usage,
-    // so the EXCLUDE branch resolves table/schema directly from pg_class/pg_namespace. CHECK keeps the
-    // ccu join to surface column_name, which the comparator needs to diff enum changes on the column.
+    // EXCLUDE constraints don't appear in information_schema.constraint_column_usage, so the second
+    // branch resolves the table from pg_class/pg_namespace directly.
     const excludeFilter = [...tablesBySchemas.entries()]
       .map(
         ([schema, tables]) =>
