@@ -1080,7 +1080,14 @@ export abstract class SchemaHelper {
   }
 
   createCheck(table: DatabaseTable, check: CheckDef): string {
-    return `alter table ${table.getQuotedName()} add constraint ${this.quote(check.name)} check (${check.expression})`;
+    const expression = check.expression as string;
+    const body = this.isRawConstraintBody(expression) ? expression : `check (${expression})`;
+    return `alter table ${table.getQuotedName()} add constraint ${this.quote(check.name)} ${body}`;
+  }
+
+  /** True for `@Check` expressions that are a full table-constraint body (e.g. PostgreSQL `exclude using gist (...)`) and must be emitted verbatim instead of wrapped in `check (...)`. */
+  private isRawConstraintBody(expression: string): boolean {
+    return /^\s*exclude\b/i.test(expression);
   }
 
   /**

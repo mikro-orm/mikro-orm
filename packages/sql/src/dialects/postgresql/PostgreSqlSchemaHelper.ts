@@ -682,8 +682,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
       seen.add(dedupeKey);
       ret[key] ??= [];
+      // CHECK: unwrap the `CHECK ((<predicate>))` shell and drop pg-added `::type` casts so the
+      // inner predicate matches the user's metadata. EXCLUDE bodies are kept verbatim — the user's
+      // `@Check` expression is the full body (see SchemaHelper.createCheck).
       const m = /^check \(\((.*)\)\)$/is.exec(check.expression);
-      const def = m?.[1].replace(/\((.*?)\)::\w+/g, '$1');
+      const def = m ? m[1].replace(/\((.*?)\)::\w+/g, '$1') : check.expression;
       ret[key].push({
         name: check.name,
         columnName: check.column_name,
@@ -1480,17 +1483,38 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       join pg_am as am on am.oid = i.relam
       left join pg_constraint as c on c.conname = i.relname
       where indrelid in (${tables.map(t => `${this.platform.quoteValue(`${this.quote(t.schema_name)}.${this.quote(t.table_name)}`)}::regclass`).join(', ')})
+        and (c.contype is null or c.contype <> 'x')
       order by relname`;
   }
 
   private getChecksSQL(tablesBySchemas: Map<string | undefined, Table[]>): string {
+    const checkFilter = [...tablesBySchemas.entries()]
+      .map(
+        ([schema, tables]) =>
+          `ccu.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and ccu.table_schema = ${this.platform.quoteValue(schema)}`,
+      )
+      .join(' or ');
+    // EXCLUDE constraints don't appear in information_schema.constraint_column_usage, so the second
+    // branch resolves the table from pg_class/pg_namespace directly.
+    const excludeFilter = [...tablesBySchemas.entries()]
+      .map(
+        ([schema, tables]) =>
+          `cls.relname in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and nsp.nspname = ${this.platform.quoteValue(schema)}`,
+      )
+      .join(' or ');
     return `select ccu.table_name as table_name, ccu.table_schema as schema_name, pgc.conname as name, conrelid::regclass as table_from, ccu.column_name as column_name, pg_get_constraintdef(pgc.oid) as expression
       from pg_constraint pgc
       join pg_namespace nsp on nsp.oid = pgc.connamespace
       join pg_class cls on pgc.conrelid = cls.oid
       join information_schema.constraint_column_usage ccu on pgc.conname = ccu.constraint_name and nsp.nspname = ccu.constraint_schema and cls.relname = ccu.table_name
-      where contype = 'c' and (${[...tablesBySchemas.entries()].map(([schema, tables]) => `ccu.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and ccu.table_schema = ${this.platform.quoteValue(schema)}`).join(' or ')})
-      order by pgc.conname`;
+      where pgc.contype = 'c' and (${checkFilter})
+      union all
+      select cls.relname as table_name, nsp.nspname as schema_name, pgc.conname as name, conrelid::regclass as table_from, null as column_name, pg_get_constraintdef(pgc.oid) as expression
+      from pg_constraint pgc
+      join pg_namespace nsp on nsp.oid = pgc.connamespace
+      join pg_class cls on pgc.conrelid = cls.oid
+      where pgc.contype = 'x' and (${excludeFilter})
+      order by name`;
   }
 
   override inferLengthFromColumnType(type: string): number | undefined {
