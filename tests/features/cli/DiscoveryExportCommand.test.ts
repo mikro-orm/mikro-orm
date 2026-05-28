@@ -361,6 +361,34 @@ describe('DiscoveryExportCommand', () => {
     expect(dumpSpy).toHaveBeenCalledWith(expect.stringContaining('No entities found'));
   });
 
+  test('does not show warning when no entities found, if the discovery.warnWhenNoEntities config is set to false', async () => {
+    pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
+    dynamicImportMock.mockImplementation((path: string) => {
+      if (path.includes('mikro-orm.config')) {
+        return {
+          ...config,
+          discovery: {
+            warnWhenNoEntities: false,
+          },
+        };
+      }
+
+      return {};
+    });
+    globMock.mockReturnValue([]);
+
+    await command.handler({
+      _: ['discovery:export'],
+      $0: 'mikro-orm',
+      contextName: 'default',
+      config: undefined,
+      path: ['./src/entities'],
+      dump: true,
+      out: undefined,
+    } as any);
+    expect(dumpSpy.mock.calls[0][0]).toMatchSnapshot();
+  });
+
   test('discovers multiple entities from multiple files', async () => {
     pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
     dynamicImportMock.mockImplementation((path: string) => {

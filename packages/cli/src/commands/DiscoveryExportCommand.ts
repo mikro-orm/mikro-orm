@@ -61,7 +61,7 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
 
     const discovered = await this.discoverExports(paths, baseDir);
 
-    if (discovered.length === 0) {
+    if (discovered.length === 0 && config.get('discovery').warnWhenNoEntities !== false) {
       CLIHelper.dump(colors.yellow('No entities found in the specified paths.'));
       return;
     }
