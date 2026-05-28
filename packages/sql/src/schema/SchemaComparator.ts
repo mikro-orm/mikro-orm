@@ -2,6 +2,7 @@ import {
   ArrayType,
   BooleanType,
   DateTimeType,
+  DecimalType,
   type Dictionary,
   type EntityProperty,
   inspect,
@@ -1265,6 +1266,14 @@ export class SchemaComparator {
       const defaultValueTo = to.default.toLowerCase().replace('current_timestamp', 'now').replace(/\(\)$/, '');
 
       return defaultValueFrom === defaultValueTo;
+    }
+
+    // mysql stores decimal defaults padded to scale (`0` → `0.00`); compare numerically so the
+    // entity-side raw literal and the introspected padded form don't churn the no-op migration
+    if (to.mappedType instanceof DecimalType && Number.isFinite(+from.default) && Number.isFinite(+to.default)) {
+      return (
+        this.#platform.formatDecimal(from.default, to.scale) === this.#platform.formatDecimal(to.default, to.scale)
+      );
     }
 
     if (from.default && to.default) {

@@ -344,6 +344,21 @@ export abstract class Platform {
     return `numeric(${precision},${scale})`;
   }
 
+  /**
+   * Rounds a decimal value to the column's scale and returns it as a number. Used to compare
+   * decimal values across representations — `EntityComparator` for `compareValues`, and the
+   * schema layer for collapsing snapshot defaults like `0` / `0.00` to the same canonical form
+   * so databases that pad to scale (mysql) don't churn no-op migrations.
+   */
+  formatDecimal(value: string | number, scale?: number): number {
+    if (scale == null) {
+      return +value;
+    }
+
+    const base = Math.pow(10, scale);
+    return Math.round((+value + Number.EPSILON) * base) / base;
+  }
+
   getUuidTypeDeclarationSQL(column: { length?: number }): string {
     column.length ??= 36;
     return this.getVarcharTypeDeclarationSQL(column);
