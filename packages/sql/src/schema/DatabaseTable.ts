@@ -1340,6 +1340,15 @@ export class DatabaseTable {
       const normOptions = { length: c.length, precision: c.precision, scale: c.scale };
       const type = this.#platform.normalizeColumnType(c.type ?? '', normOptions)?.toLowerCase() || rawType;
       const fixedPrecision = isFixedPrecisionFamily(c.mappedType);
+      // only emit `length` for types that actually use one — text/enum/json/etc. don't, but mysql
+      // information_schema still reports `character_maximum_length` for them (65535 for text, etc.)
+      const hasMeaningfulLength = typeof c.mappedType.getDefaultLength !== 'undefined';
+      // mysql stores decimal defaults padded to scale (`0` → `0.00`); collapse to canonical numeric form
+      // so the metadata-side (`0`) and introspection-side (`0.00`) snapshots agree
+      let defaultValue: string | null = c.default ?? null;
+      if (defaultValue != null && c.mappedType instanceof DecimalType && Number.isFinite(+defaultValue)) {
+        defaultValue = this.#platform.formatDecimal(defaultValue, c.scale).toString();
+      }
       const normalized: Dictionary = {
         name: c.name,
         type,
@@ -1348,26 +1357,27 @@ export class DatabaseTable {
         primary: primaryColumns.has(c.name) || !!c.primary,
         nullable: !!c.nullable,
         unique: uniqueColumns.has(c.name) || !!c.unique,
-        length: c.length || null,
+        length: hasMeaningfulLength ? c.length || null : null,
         precision: fixedPrecision ? null : (c.precision ?? null),
         scale: fixedPrecision ? null : (c.scale ?? null),
-        default: c.default ?? null,
-        comment: c.comment ?? null,
+        default: defaultValue,
+        comment: c.comment || null,
         collation: c.collation ?? null,
         enumItems: c.enumItems ?? [],
         mappedType: Utils.keys(t).find(k => t[k] === c.mappedType.constructor),
       };
 
-      for (const field of [
-        'generated',
-        'nativeEnumName',
-        'extra',
-        'ignoreSchemaChanges',
-        'defaultConstraint',
-      ] as const) {
+      for (const field of ['generated', 'nativeEnumName', 'ignoreSchemaChanges', 'defaultConstraint'] as const) {
         if (c[field]) {
           normalized[field] = c[field];
         }
+      }
+
+      // `extra` casing varies between metadata (user-supplied, typically uppercase like
+      // `ON UPDATE CURRENT_TIMESTAMP`) and mysql introspection (returns it lowercased) — the
+      // comparator already lowercases both sides when diffing, mirror that in the snapshot
+      if (c.extra) {
+        normalized.extra = c.extra.toLowerCase();
       }
 
       o[col] = normalized;
@@ -1451,8 +1461,9 @@ export class DatabaseTable {
       checks: sortedChecks,
       triggers: sortedTriggers,
       foreignKeys: sortedForeignKeys,
-      // emit `comment` even when unset so introspection (which always reads it) matches metadata
-      comment: this.comment ?? null,
+      // emit `comment` even when unset so introspection (which always reads it) matches metadata;
+      // collapse mysql's `""` for unset comments to `null` so both sources agree
+      comment: this.comment || null,
     };
   }
 }

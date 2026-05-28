@@ -20,17 +20,7 @@ export class DecimalType<Mode extends 'number' | 'string' = 'string'> extends Ty
   }
 
   override compareValues(a: string, b: string): boolean {
-    return this.format(a) === this.format(b);
-  }
-
-  private format(val: string | number) {
-    /* v8 ignore next */
-    if (this.prop?.scale == null) {
-      return +val;
-    }
-
-    const base = Math.pow(10, this.prop.scale);
-    return Math.round((+val + Number.EPSILON) * base) / base;
+    return this.platform!.formatDecimal(a, this.prop?.scale) === this.platform!.formatDecimal(b, this.prop?.scale);
   }
 
   override getColumnType(prop: EntityProperty, platform: Platform): string {
