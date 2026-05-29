@@ -121,7 +121,10 @@ export function getOnConflictReturningFields<T, P extends string>(
         return true;
       }
 
-      return Array.isArray(uniqueFields) && !uniqueFields.includes(p.name);
+      // for a raw `onConflictFields` fragment we can't introspect which columns form the conflict
+      // target, so we keep every comparable prop (returning the unique key columns is harmless) –
+      // otherwise the non-merged columns would never be reloaded and the entity would diverge from db
+      return !Array.isArray(uniqueFields) || !uniqueFields.includes(p.name);
     })
     .map(p => p.name) as (keyof T)[];
 
