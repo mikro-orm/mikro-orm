@@ -448,7 +448,7 @@ export class SchemaComparator {
       toTable,
     };
 
-    if (this.diffComment(fromTable.comment, toTable.comment)) {
+    if (this.#platform.supportsComments() && this.diffComment(fromTable.comment, toTable.comment)) {
       tableDifferences.changedComment = toTable.comment;
       this.log(`table comment changed for ${tableDifferences.name}`, {
         fromTableComment: fromTable.comment,
@@ -914,7 +914,7 @@ export class SchemaComparator {
       changedProperties.add('default');
     }
 
-    if (this.diffComment(fromColumn.comment, toColumn.comment)) {
+    if (this.#platform.supportsComments() && this.diffComment(fromColumn.comment, toColumn.comment)) {
       log(`'comment' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('comment');
     }
