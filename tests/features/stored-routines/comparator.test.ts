@@ -343,4 +343,53 @@ describe('stored routines — comparator unit tests', () => {
       expect(diff.changedRoutines.foo.to.params[0].type).toBe('text');
     });
   });
+
+  describe('ignoreRoutines', () => {
+    let ignoreOrm: MikroORM;
+    let ignoreComparator: SchemaComparator;
+
+    beforeAll(async () => {
+      ignoreOrm = await MikroORM.init({
+        dbName: ':memory:',
+        entities: [],
+        discovery: { warnWhenNoEntities: false },
+        schemaGenerator: { ignoreRoutines: true },
+      });
+      ignoreComparator = new SchemaComparator(ignoreOrm.em.getPlatform());
+    });
+
+    afterAll(() => ignoreOrm.close(true));
+
+    const diffWith = (comp: SchemaComparator, from: SqlRoutineDef[], to: SqlRoutineDef[]) => {
+      const fromSchema = new DatabaseSchema(ignoreOrm.em.getPlatform(), '');
+      const toSchema = new DatabaseSchema(ignoreOrm.em.getPlatform(), '');
+      from.forEach(r => fromSchema.addRoutine(r));
+      to.forEach(r => toSchema.addRoutine(r));
+      return comp.compare(fromSchema, toSchema);
+    };
+
+    it('still creates new routines (create-only)', () => {
+      const diff = diffWith(ignoreComparator, [], [makeRoutine({ name: 'fresh' })]);
+      expect(Object.keys(diff.newRoutines)).toContain('fresh');
+    });
+
+    it('never drops existing routines missing from metadata', () => {
+      const diff = diffWith(ignoreComparator, [makeRoutine({ name: 'legacy' })], []);
+      expect(diff.removedRoutines).toEqual({});
+    });
+
+    it('never alters changed routines', () => {
+      const diff = diffWith(
+        ignoreComparator,
+        [makeRoutine({ name: 'foo', body: 'select 1' })],
+        [makeRoutine({ name: 'foo', body: 'select 2' })],
+      );
+      expect(diff.changedRoutines).toEqual({});
+    });
+
+    it('still diffs removals and changes without the flag', () => {
+      const diff = diffWith(comparator, [makeRoutine({ name: 'legacy' })], []);
+      expect(Object.keys(diff.removedRoutines)).toContain('legacy');
+    });
+  });
 });
