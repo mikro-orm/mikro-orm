@@ -541,6 +541,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       is_nullable,
       udt_name,
       udt_schema,
+      pg_catalog.format_type(pga.atttypid, pga.atttypmod) format_type,
       coalesce(datetime_precision, character_maximum_length) length,
       atttypmod custom_length,
       numeric_precision,
@@ -581,6 +582,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
       if (type === 'bpchar') {
         type = 'char';
+      }
+
+      // postgis stores the geometry/geography typmod (`geometry(point,4326)`) in atttypmod, which
+      // information_schema does not expose — recover the full type via format_type so it round-trips
+      if ((col.udt_name === 'geometry' || col.udt_name === 'geography') && col.format_type) {
+        type = col.format_type;
       }
 
       if (type === 'vector' && col.length == null && col.custom_length != null && col.custom_length !== -1) {

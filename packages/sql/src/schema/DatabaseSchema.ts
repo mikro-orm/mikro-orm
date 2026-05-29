@@ -348,7 +348,9 @@ export class DatabaseSchema {
           : (check.expression as string);
 
         table.addCheck({
-          name: check.name!,
+          // the engine truncates identifiers past its limit (postgres 63 bytes) on storage, so
+          // mirror that here — otherwise the introspected (truncated) name never matches metadata
+          name: check.name!.substring(0, platform.getMaxIdentifierLength()),
           expression,
           definition: `check (${expression})`,
           columnName,
