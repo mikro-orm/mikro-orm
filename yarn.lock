@@ -1444,7 +1444,7 @@ __metadata:
     knex: "npm:3.2.10"
     lerna: "npm:9.0.7"
     lint-staged: "npm:17.0.5"
-    mongodb-memory-server-core: "npm:11.1.0"
+    mongodb-memory-server-core: "npm:11.2.0"
     oxfmt: "npm:0.52.0"
     oxlint: "npm:1.67.0"
     oxlint-tsgolint: "npm:^0.23.0"
@@ -7200,9 +7200,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb-memory-server-core@npm:11.1.0":
-  version: 11.1.0
-  resolution: "mongodb-memory-server-core@npm:11.1.0"
+"mongodb-memory-server-core@npm:11.2.0":
+  version: 11.2.0
+  resolution: "mongodb-memory-server-core@npm:11.2.0"
   dependencies:
     async-mutex: "npm:^0.5.0"
     camelcase: "npm:^6.3.0"
@@ -7215,8 +7215,8 @@ __metadata:
     semver: "npm:^7.7.3"
     tar-stream: "npm:^3.1.8"
     tslib: "npm:^2.8.1"
-    yauzl: "npm:^3.3.0"
-  checksum: 10/bdf3929c03d59807d7a5a6f6700a2e9f4ca4a555350a95741d7e4a37da70fe0cc3e8bc4b2ecadd300276de7e048865fb4b94af90c1ca5badf8c850f28550a962
+    yauzl: "npm:^3.3.1"
+  checksum: 10/4282aa2837ebe1eebbffd812ba1a4830585002dde658a719b80123ad10967d4702a09d2fe609820789aee4a69e8237cad9dcaca82d9d71d32db3e21fd2de51aa
   languageName: node
   linkType: hard
 
@@ -10567,13 +10567,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yauzl@npm:^3.3.0":
-  version: 3.3.0
-  resolution: "yauzl@npm:3.3.0"
+"yauzl@npm:^3.3.1":
+  version: 3.3.1
+  resolution: "yauzl@npm:3.3.1"
   dependencies:
     buffer-crc32: "npm:~0.2.3"
     pend: "npm:~1.2.0"
-  checksum: 10/ac8ae5276a3fb89b80464fc828aadcb5f888af7306a7920e699b9de05aead0490ac6698bc71952ea867c3f2a2c73ed8df91f18f5b6a67ce3231065327817c08f
+  checksum: 10/b9ecac2dca8cf0ce83d29e24ab66af50c2488f12630d0778c5190cc3ca898308986a3955fb6bbc8ee6fe21eae1691ec26068760a54d873f3930718be3bbd1ce3
   languageName: node
   linkType: hard
 
