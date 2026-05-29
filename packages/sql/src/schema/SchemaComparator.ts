@@ -636,23 +636,26 @@ export class SchemaComparator {
       changes++;
     }
 
-    for (const trigger of fromTableTriggers) {
-      if (!toTable.hasTrigger(trigger.name)) {
-        tableDifferences.removedTriggers[trigger.name] = trigger;
-        this.log(`trigger ${trigger.name} removed from table ${tableDifferences.name}`);
-        changes++;
-        continue;
-      }
+    // `ignoreTriggers` makes triggers create-only: declared ones are still added above, but existing triggers are never diffed for drop/alter.
+    if (!this.#platform.getConfig().get('schemaGenerator').ignoreTriggers) {
+      for (const trigger of fromTableTriggers) {
+        if (!toTable.hasTrigger(trigger.name)) {
+          tableDifferences.removedTriggers[trigger.name] = trigger;
+          this.log(`trigger ${trigger.name} removed from table ${tableDifferences.name}`);
+          changes++;
+          continue;
+        }
 
-      const toTableTrigger = toTable.getTrigger(trigger.name)!;
+        const toTableTrigger = toTable.getTrigger(trigger.name)!;
 
-      if (this.diffTrigger(trigger, toTableTrigger)) {
-        this.log(`trigger ${trigger.name} changed in table ${tableDifferences.name}`, {
-          fromTableTrigger: trigger,
-          toTableTrigger,
-        });
-        tableDifferences.changedTriggers[trigger.name] = toTableTrigger;
-        changes++;
+        if (this.diffTrigger(trigger, toTableTrigger)) {
+          this.log(`trigger ${trigger.name} changed in table ${tableDifferences.name}`, {
+            fromTableTrigger: trigger,
+            toTableTrigger,
+          });
+          tableDifferences.changedTriggers[trigger.name] = toTableTrigger;
+          changes++;
+        }
       }
     }
 

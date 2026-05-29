@@ -515,8 +515,10 @@ export abstract class SchemaHelper {
       ret.push(this.dropConstraint(diff.name, check.name));
     }
 
-    for (const trigger of Object.values(diff.removedTriggers)) {
-      ret.push(this.dropTrigger(diff.toTable, trigger));
+    if (!safe) {
+      for (const trigger of Object.values(diff.removedTriggers)) {
+        ret.push(this.dropTrigger(diff.toTable, trigger));
+      }
     }
 
     for (const trigger of Object.values(diff.changedTriggers)) {
