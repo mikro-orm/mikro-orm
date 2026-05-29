@@ -841,6 +841,11 @@ export abstract class Platform {
     return false;
   }
 
+  /** Whether the platform persists table/column comments (so they round-trip through introspection). */
+  supportsComments(): boolean {
+    return true;
+  }
+
   /**
    * Maximum length of identifiers (table, column, index, constraint, …) the platform supports.
    * Names produced by {@link getIndexName} above this limit are hash-truncated. Defaults to

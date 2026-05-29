@@ -1332,6 +1332,7 @@ export class DatabaseTable {
       mappedType instanceof t.double;
 
     const supportsUnsigned = this.#platform.supportsUnsigned();
+    const supportsComments = this.#platform.supportsComments();
 
     const columnsMapped = sortedColumnKeys.reduce((o, col) => {
       const c = columns[col];
@@ -1361,7 +1362,7 @@ export class DatabaseTable {
         precision: fixedPrecision ? null : (c.precision ?? null),
         scale: fixedPrecision ? null : (c.scale ?? null),
         default: defaultValue,
-        comment: c.comment || null,
+        comment: supportsComments ? c.comment || null : null,
         collation: c.collation ?? null,
         enumItems: c.enumItems ?? [],
         mappedType: Utils.keys(t).find(k => t[k] === c.mappedType.constructor),
@@ -1462,8 +1463,9 @@ export class DatabaseTable {
       triggers: sortedTriggers,
       foreignKeys: sortedForeignKeys,
       // emit `comment` even when unset so introspection (which always reads it) matches metadata;
-      // collapse mysql's `""` for unset comments to `null` so both sources agree
-      comment: this.comment || null,
+      // collapse mysql's `""` for unset comments to `null` so both sources agree. drop entirely on
+      // platforms that can't read comments back (sqlite), where keeping it would flip the snapshot
+      comment: supportsComments ? this.comment || null : null,
     };
   }
 }

@@ -25,6 +25,11 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return true;
   }
 
+  // sqlite has no table/column comments, so they cannot round-trip through introspection
+  override supportsComments(): boolean {
+    return false;
+  }
+
   override getCurrentTimestampSQL(length: number): string {
     return `(strftime('%s', 'now') * 1000)`;
   }
