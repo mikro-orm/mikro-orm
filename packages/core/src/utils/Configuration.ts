@@ -127,6 +127,7 @@ const DEFAULTS = {
   schemaGenerator: {
     createForeignKeyConstraints: true,
     ignoreSchema: [],
+    ignoreTriggers: false,
     skipTables: [],
     skipViews: [],
     skipColumns: {},
@@ -1286,6 +1287,13 @@ export interface Options<
      * @default []
      */
     ignoreSchema?: string[];
+    /**
+     * Leave database triggers unmanaged. Declared triggers are still created, but existing triggers are never
+     * dropped or altered based on the entity metadata — use this to protect hand-written triggers from being
+     * removed when they are not mirrored in the entity definitions.
+     * @default false
+     */
+    ignoreTriggers?: boolean;
     /**
      * Table names or patterns to skip during schema generation.
      * @default []

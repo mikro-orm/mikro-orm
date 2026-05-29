@@ -435,4 +435,104 @@ describe('trigger (defineEntity)', () => {
 
     await orm2.close();
   });
+
+  it('should not drop unmanaged DB triggers with ignoreTriggers', async () => {
+    const schema1 = new EntitySchema({
+      name: 'IgnoreTrgTable',
+      tableName: 'ignore_trg_table',
+      properties: {
+        id: { type: 'number', primary: true, fieldName: 'id', columnType: 'integer' },
+        val: { type: 'number', name: 'val', fieldName: 'val', columnType: 'integer' },
+      },
+    });
+    const orm2 = await MikroORM.init({
+      dbName: ':memory:',
+      entities: [schema1],
+      schemaGenerator: { ignoreTriggers: true },
+    });
+    await orm2.schema.refresh();
+
+    // Simulate a hand-written trigger the ORM never declared (e.g. left over after upgrade)
+    await orm2.em
+      .getConnection()
+      .execute(
+        `create trigger trg_external after insert on ignore_trg_table for each row begin update ignore_trg_table set val = val + 1 where id = NEW.id; end`,
+      );
+
+    const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).not.toContain('drop trigger');
+
+    await orm2.close();
+  });
+
+  it('should still create declared triggers with ignoreTriggers (create-only)', async () => {
+    const withoutTrigger = new EntitySchema({
+      name: 'CreateOnlyTable',
+      tableName: 'create_only_table',
+      properties: {
+        id: { type: 'number', primary: true, fieldName: 'id', columnType: 'integer' },
+        val: { type: 'number', name: 'val', fieldName: 'val', columnType: 'integer' },
+      },
+    });
+    const orm2 = await MikroORM.init({
+      dbName: ':memory:',
+      entities: [withoutTrigger],
+      schemaGenerator: { ignoreTriggers: true },
+    });
+    await orm2.schema.refresh();
+
+    // Declaring a new trigger should still produce a create (only drops/diffs are suppressed)
+    const meta = orm2.getMetadata(withoutTrigger);
+    meta.triggers = [
+      {
+        name: 'trg_create_only',
+        timing: 'after',
+        events: ['insert'],
+        forEach: 'row',
+        body: 'UPDATE create_only_table SET val = val + 1 WHERE id = NEW.id',
+      },
+    ];
+
+    const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('create trigger');
+
+    await orm2.close();
+  });
+
+  it('should not drop removed triggers in safe mode', async () => {
+    const schema1 = new EntitySchema({
+      name: 'SafeTrgTable',
+      tableName: 'safe_trg_table',
+      properties: {
+        id: { type: 'number', primary: true, fieldName: 'id', columnType: 'integer' },
+        val: { type: 'number', name: 'val', fieldName: 'val', columnType: 'integer' },
+      },
+      triggers: [
+        {
+          name: 'trg_safe',
+          timing: 'after',
+          events: ['insert'],
+          body: 'UPDATE safe_trg_table SET val = val + 1 WHERE id = NEW.id',
+        },
+      ],
+    });
+    const orm2 = await MikroORM.init({
+      dbName: ':memory:',
+      entities: [schema1],
+    });
+    await orm2.schema.refresh();
+
+    // Remove the trigger from metadata — its drop is destructive, so safe mode must skip it
+    const meta = orm2.getMetadata(schema1);
+    meta.triggers = [];
+
+    const safeDiff = await orm2.schema.getUpdateSchemaSQL({ wrap: false, safe: true });
+    expect(safeDiff).not.toContain('drop trigger');
+
+    // Without safe mode the drop is still emitted
+    const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('drop trigger');
+
+    await orm2.close();
+  });
 });
