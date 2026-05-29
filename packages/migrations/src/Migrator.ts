@@ -17,6 +17,7 @@ import {
   DatabaseSchema,
   DatabaseTable,
   type EntityManager,
+  SchemaComparator,
   type SqlSchemaGenerator,
 } from '@mikro-orm/sql';
 import { MigrationRunner } from './MigrationRunner.js';
@@ -214,6 +215,15 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
         ctx,
       );
 
+      // keep the snapshot authored by `migration:create` when the migrated DB still matches it
+      // semantically — rewriting it from introspection only churns cosmetic serialization noise
+      // (expression casing/reformatting, native-enum mapped type, index method, ...) into the diff
+      const existing = await this.getSchemaFromSnapshot();
+
+      if (existing && !this.snapshotDiffers(existing, schema)) {
+        return result;
+      }
+
       try {
         await this.storeCurrentSchema(schema);
       } catch {
@@ -222,6 +232,13 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     }
 
     return result;
+  }
+
+  /** Whether the introspected schema differs from the snapshot in any way the comparator turns into SQL. */
+  private snapshotDiffers(snapshot: DatabaseSchema, schema: DatabaseSchema): boolean {
+    const comparator = new SchemaComparator(this.driver.getPlatform());
+    const diff = comparator.compare(snapshot, schema);
+    return this.#schemaGenerator.diffToSQL(diff, { wrap: false, safe: false, dropTables: true }).trim().length > 0;
   }
 
   override getStorage(): MigrationStorage {
