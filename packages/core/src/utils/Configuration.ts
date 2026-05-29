@@ -128,6 +128,7 @@ const DEFAULTS = {
     createForeignKeyConstraints: true,
     ignoreSchema: [],
     ignoreTriggers: false,
+    ignoreRoutines: false,
     skipTables: [],
     skipViews: [],
     skipColumns: {},
@@ -1294,6 +1295,13 @@ export interface Options<
      * @default false
      */
     ignoreTriggers?: boolean;
+    /**
+     * Leave database stored routines (functions/procedures) unmanaged. New routines are still created, but existing
+     * routines are never dropped or altered based on the entity metadata — use this to safely adopt routine support
+     * without having pre-existing, hand-written routines removed when they are not mirrored in your metadata.
+     * @default false
+     */
+    ignoreRoutines?: boolean;
     /**
      * Table names or patterns to skip during schema generation.
      * @default []

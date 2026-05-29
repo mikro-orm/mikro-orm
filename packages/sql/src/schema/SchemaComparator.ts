@@ -238,6 +238,8 @@ export class SchemaComparator {
   }
 
   private compareRoutines(fromSchema: DatabaseSchema, toSchema: DatabaseSchema, diff: SchemaDifference): void {
+    // `ignoreRoutines` makes routines create-only: new ones are still added, but existing routines are never diffed for drop/alter.
+    const ignoreRoutines = this.#platform.getConfig().get('schemaGenerator').ignoreRoutines;
     // Case-fold so user-written `'sql_hash'` matches Oracle's introspected `'SQL_HASH'`.
     const routineKey = (r: SqlRoutineDef): string => ((r.schema ? `${r.schema}.` : '') + r.name).toLowerCase();
     const fromByKey = new Map(fromSchema.getRoutines().map(r => [routineKey(r), r]));
@@ -252,16 +254,18 @@ export class SchemaComparator {
         continue;
       }
 
-      if (this.diffRoutine(fromRoutine, toRoutine)) {
+      if (!ignoreRoutines && this.diffRoutine(fromRoutine, toRoutine)) {
         diff.changedRoutines[key] = { from: fromRoutine, to: toRoutine };
         this.log(`routine ${key} changed`, { fromRoutine, toRoutine });
       }
     }
 
-    for (const [key, fromRoutine] of fromByKey) {
-      if (!toByKey.has(key)) {
-        diff.removedRoutines[key] = fromRoutine;
-        this.log(`routine ${key} removed`);
+    if (!ignoreRoutines) {
+      for (const [key, fromRoutine] of fromByKey) {
+        if (!toByKey.has(key)) {
+          diff.removedRoutines[key] = fromRoutine;
+          this.log(`routine ${key} removed`);
+        }
       }
     }
   }
