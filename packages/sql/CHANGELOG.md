@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.2](https://github.com/mikro-orm/mikro-orm/compare/v7.1.1...v7.1.2) (2026-05-29)
+
+
+### Bug Fixes
+
+* **sql:** expose raw aliases in QueryBuilder execute() result type ([#7785](https://github.com/mikro-orm/mikro-orm/issues/7785)) ([2944703](https://github.com/mikro-orm/mikro-orm/commit/29447039532eea662e32c222a382308a744d6b6e))
+* **sql:** handle scalar PK in joined mapping of composite-FK relations ([#7802](https://github.com/mikro-orm/mikro-orm/issues/7802)) ([88fae8e](https://github.com/mikro-orm/mikro-orm/commit/88fae8ea975e154bf62e17694a5dd53d8685f60d)), closes [#7801](https://github.com/mikro-orm/mikro-orm/issues/7801)
+* **sql:** stabilize MySQL snapshot serialization for decimal/text/extra/comment ([#7797](https://github.com/mikro-orm/mikro-orm/issues/7797)) ([184cfde](https://github.com/mikro-orm/mikro-orm/commit/184cfde5c581e31379b69a391c3af80baeb2428e)), closes [#7235](https://github.com/mikro-orm/mikro-orm/issues/7235) [#7608](https://github.com/mikro-orm/mikro-orm/issues/7608) [#7796](https://github.com/mikro-orm/mikro-orm/issues/7796)
+* **sql:** stop spurious Postgres schema diff on geometry typmod and truncated check names ([#7803](https://github.com/mikro-orm/mikro-orm/issues/7803)) ([a972992](https://github.com/mikro-orm/mikro-orm/commit/a972992cc93df264488adaf19efa60a380a3a9a3)), closes [#7798](https://github.com/mikro-orm/mikro-orm/issues/7798) [#7798](https://github.com/mikro-orm/mikro-orm/issues/7798)
+* **sql:** stop sqlite snapshot flip on table/column comments ([#7799](https://github.com/mikro-orm/mikro-orm/issues/7799)) ([bac9210](https://github.com/mikro-orm/mikro-orm/commit/bac9210e3afc42ad29c53ce9d44b45da0c2dd5ca)), closes [#7798](https://github.com/mikro-orm/mikro-orm/issues/7798)
+
+
+### Features
+
+* **postgres:** support `EXCLUDE` constraints via `@Check` ([#7789](https://github.com/mikro-orm/mikro-orm/issues/7789)) ([bcfb0cd](https://github.com/mikro-orm/mikro-orm/commit/bcfb0cd455cb78f72b9f3b9103fa9d7959c6753d)), closes [#7787](https://github.com/mikro-orm/mikro-orm/issues/7787)
+
+
+
+
+
 ## [7.1.1](https://github.com/mikro-orm/mikro-orm/compare/v7.1.0...v7.1.1) (2026-05-22)
 
 ### Bug Fixes

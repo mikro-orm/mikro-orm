@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.2](https://github.com/mikro-orm/mikro-orm/compare/v7.1.1...v7.1.2) (2026-05-29)
+
+
+### Bug Fixes
+
+* **cli:** allow `discovery:export` to generate an empty list of entities ([#7795](https://github.com/mikro-orm/mikro-orm/issues/7795)) ([604f109](https://github.com/mikro-orm/mikro-orm/commit/604f1094a98a80f1b59de6ed78b077d752c6f154))
+* **core:** avoid circular type in defineEntity index/unique `where` with self-referencing relations ([#7784](https://github.com/mikro-orm/mikro-orm/issues/7784)) ([82ad42a](https://github.com/mikro-orm/mikro-orm/commit/82ad42a6ba21002cf3f4d1467e5ec1a76d7c3cbf)), closes [#7440](https://github.com/mikro-orm/mikro-orm/issues/7440)
+* **core:** preserve sibling conditions next to `$and`/`$or` on relation filters ([#7790](https://github.com/mikro-orm/mikro-orm/issues/7790)) ([2b59672](https://github.com/mikro-orm/mikro-orm/commit/2b596729ad8cdb8c467c559f8b6b48bfa2a4f713))
+* **core:** reload non-merged columns after upsert with a raw conflict target ([#7800](https://github.com/mikro-orm/mikro-orm/issues/7800)) ([1366074](https://github.com/mikro-orm/mikro-orm/commit/13660743d5ebf85f5e2907e62bad7dd3f0fedcd8))
+* **migrations:** stop migrator.up() from churning a snapshot that matches the DB ([#7804](https://github.com/mikro-orm/mikro-orm/issues/7804)) ([3f1297c](https://github.com/mikro-orm/mikro-orm/commit/3f1297c60fce63e5e452225421a9b2e63b91b3a7)), closes [#7803](https://github.com/mikro-orm/mikro-orm/issues/7803) [#7798](https://github.com/mikro-orm/mikro-orm/issues/7798) [#7798](https://github.com/mikro-orm/mikro-orm/issues/7798)
+* **sql:** expose raw aliases in QueryBuilder execute() result type ([#7785](https://github.com/mikro-orm/mikro-orm/issues/7785)) ([2944703](https://github.com/mikro-orm/mikro-orm/commit/29447039532eea662e32c222a382308a744d6b6e))
+* **sql:** handle scalar PK in joined mapping of composite-FK relations ([#7802](https://github.com/mikro-orm/mikro-orm/issues/7802)) ([88fae8e](https://github.com/mikro-orm/mikro-orm/commit/88fae8ea975e154bf62e17694a5dd53d8685f60d)), closes [#7801](https://github.com/mikro-orm/mikro-orm/issues/7801)
+* **sql:** stabilize MySQL snapshot serialization for decimal/text/extra/comment ([#7797](https://github.com/mikro-orm/mikro-orm/issues/7797)) ([184cfde](https://github.com/mikro-orm/mikro-orm/commit/184cfde5c581e31379b69a391c3af80baeb2428e)), closes [#7235](https://github.com/mikro-orm/mikro-orm/issues/7235) [#7608](https://github.com/mikro-orm/mikro-orm/issues/7608) [#7796](https://github.com/mikro-orm/mikro-orm/issues/7796)
+* **sql:** stop spurious Postgres schema diff on geometry typmod and truncated check names ([#7803](https://github.com/mikro-orm/mikro-orm/issues/7803)) ([a972992](https://github.com/mikro-orm/mikro-orm/commit/a972992cc93df264488adaf19efa60a380a3a9a3)), closes [#7798](https://github.com/mikro-orm/mikro-orm/issues/7798) [#7798](https://github.com/mikro-orm/mikro-orm/issues/7798)
+* **sql:** stop sqlite snapshot flip on table/column comments ([#7799](https://github.com/mikro-orm/mikro-orm/issues/7799)) ([bac9210](https://github.com/mikro-orm/mikro-orm/commit/bac9210e3afc42ad29c53ce9d44b45da0c2dd5ca)), closes [#7798](https://github.com/mikro-orm/mikro-orm/issues/7798)
+
+
+### Features
+
+* **postgres:** support `EXCLUDE` constraints via `@Check` ([#7789](https://github.com/mikro-orm/mikro-orm/issues/7789)) ([bcfb0cd](https://github.com/mikro-orm/mikro-orm/commit/bcfb0cd455cb78f72b9f3b9103fa9d7959c6753d)), closes [#7787](https://github.com/mikro-orm/mikro-orm/issues/7787)
+
+
+
+
+
 ## [7.1.1](https://github.com/mikro-orm/mikro-orm/compare/v7.1.0...v7.1.1) (2026-05-22)
 
 

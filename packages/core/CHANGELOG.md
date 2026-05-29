@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.2](https://github.com/mikro-orm/mikro-orm/compare/v7.1.1...v7.1.2) (2026-05-29)
+
+
+### Bug Fixes
+
+* **core:** avoid circular type in defineEntity index/unique `where` with self-referencing relations ([#7784](https://github.com/mikro-orm/mikro-orm/issues/7784)) ([82ad42a](https://github.com/mikro-orm/mikro-orm/commit/82ad42a6ba21002cf3f4d1467e5ec1a76d7c3cbf)), closes [#7440](https://github.com/mikro-orm/mikro-orm/issues/7440)
+* **core:** preserve sibling conditions next to `$and`/`$or` on relation filters ([#7790](https://github.com/mikro-orm/mikro-orm/issues/7790)) ([2b59672](https://github.com/mikro-orm/mikro-orm/commit/2b596729ad8cdb8c467c559f8b6b48bfa2a4f713))
+* **core:** reload non-merged columns after upsert with a raw conflict target ([#7800](https://github.com/mikro-orm/mikro-orm/issues/7800)) ([1366074](https://github.com/mikro-orm/mikro-orm/commit/13660743d5ebf85f5e2907e62bad7dd3f0fedcd8))
+* **sql:** stabilize MySQL snapshot serialization for decimal/text/extra/comment ([#7797](https://github.com/mikro-orm/mikro-orm/issues/7797)) ([184cfde](https://github.com/mikro-orm/mikro-orm/commit/184cfde5c581e31379b69a391c3af80baeb2428e)), closes [#7235](https://github.com/mikro-orm/mikro-orm/issues/7235) [#7608](https://github.com/mikro-orm/mikro-orm/issues/7608) [#7796](https://github.com/mikro-orm/mikro-orm/issues/7796)
+* **sql:** stop sqlite snapshot flip on table/column comments ([#7799](https://github.com/mikro-orm/mikro-orm/issues/7799)) ([bac9210](https://github.com/mikro-orm/mikro-orm/commit/bac9210e3afc42ad29c53ce9d44b45da0c2dd5ca)), closes [#7798](https://github.com/mikro-orm/mikro-orm/issues/7798)
+
+
+
+
+
 ## [7.1.1](https://github.com/mikro-orm/mikro-orm/compare/v7.1.0...v7.1.1) (2026-05-22)
 
 ### Bug Fixes

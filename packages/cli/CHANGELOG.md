@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.2](https://github.com/mikro-orm/mikro-orm/compare/v7.1.1...v7.1.2) (2026-05-29)
+
+
+### Bug Fixes
+
+* **cli:** allow `discovery:export` to generate an empty list of entities ([#7795](https://github.com/mikro-orm/mikro-orm/issues/7795)) ([604f109](https://github.com/mikro-orm/mikro-orm/commit/604f1094a98a80f1b59de6ed78b077d752c6f154))
+
+
+
+
+
 ## [7.1.1](https://github.com/mikro-orm/mikro-orm/compare/v7.1.0...v7.1.1) (2026-05-22)
 
 ### Bug Fixes

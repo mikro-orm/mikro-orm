@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.2](https://github.com/mikro-orm/mikro-orm/compare/v7.1.1...v7.1.2) (2026-05-29)
+
+
+### Bug Fixes
+
+* **migrations:** stop migrator.up() from churning a snapshot that matches the DB ([#7804](https://github.com/mikro-orm/mikro-orm/issues/7804)) ([3f1297c](https://github.com/mikro-orm/mikro-orm/commit/3f1297c60fce63e5e452225421a9b2e63b91b3a7)), closes [#7803](https://github.com/mikro-orm/mikro-orm/issues/7803) [#7798](https://github.com/mikro-orm/mikro-orm/issues/7798) [#7798](https://github.com/mikro-orm/mikro-orm/issues/7798)
+
+
+
+
+
 ## [7.1.1](https://github.com/mikro-orm/mikro-orm/compare/v7.1.0...v7.1.1) (2026-05-22)
 
 **Note:** Version bump only for package @mikro-orm/migrations
