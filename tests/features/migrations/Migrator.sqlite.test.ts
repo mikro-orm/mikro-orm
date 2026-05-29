@@ -100,7 +100,7 @@ describe('Migrator (sqlite)', () => {
     migrations.snapshot = false;
   });
 
-  test('migration up and down both write the snapshot', async () => {
+  test('migration up and down do not churn a snapshot that still matches the DB', async () => {
     const migrations = orm.config.get('migrations');
     migrations.snapshot = true;
 
@@ -121,29 +121,21 @@ describe('Migrator (sqlite)', () => {
     const migration2 = await migrator.create();
     expect(migration2.diff).toEqual({ down: [], up: [] });
 
-    // spy on storeCurrentSchema to verify both up and down call it
-    const storeSchemaSpy = vi.spyOn(migrator as any, 'storeCurrentSchema');
-
     // mock the down method so we don't need real SQL
     const migratorMock = vi.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
 
     try {
-      // run the migration up — snapshot SHOULD be written
+      // a blank migration leaves the DB unchanged, so up/down must keep the snapshot
+      // authored by `migration:create` byte-for-byte instead of rewriting it from introspection
       await migrator.up(migration1.fileName);
-      expect(storeSchemaSpy).toHaveBeenCalledTimes(1);
-      const snapshotAfterUp = readFileSync(snapshotPath, 'utf8');
-      expect(snapshotAfterUp).toBeDefined();
+      expect(readFileSync(snapshotPath, 'utf8')).toBe(snapshotAfterCreate);
 
-      // run the migration down — snapshot SHOULD also be updated
       await migrator.down(migration1.fileName);
-      expect(storeSchemaSpy).toHaveBeenCalledTimes(2);
-      const snapshotAfterDown = readFileSync(snapshotPath, 'utf8');
-      expect(snapshotAfterDown).toBeDefined();
+      expect(readFileSync(snapshotPath, 'utf8')).toBe(snapshotAfterCreate);
     } finally {
       await rm(path + '/' + migration1.fileName);
       await rm(snapshotPath, { force: true });
-      storeSchemaSpy.mockRestore();
       migratorMock.mockRestore();
       migrations.snapshot = false;
     }
