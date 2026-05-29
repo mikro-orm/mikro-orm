@@ -1808,17 +1808,18 @@ export class MetadataDiscovery {
 
       // When multiple STI children share the same unique relation (OneToOne/ManyToOne),
       // replace the simple unique with a composite one including the discriminator column
-      // so different subtypes can independently reference the same target row.
-      if (
-        rootProp?.unique &&
-        newProp.unique &&
-        [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(newProp.kind)
-      ) {
+      // so different subtypes can independently reference the same target row. The second
+      // child already cleared `rootProp.unique`, so for 3+ children we key on the shared
+      // root property existing rather than its (now false) flag, and dedupe the composite.
+      if (rootProp && newProp.unique && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(newProp.kind)) {
         newProp.unique = false;
         rootProp.unique = false;
-        meta.root.uniques.push({
-          properties: [prop.name, meta.root.discriminatorColumn!] as EntityKey[],
-        });
+        const properties = [prop.name, meta.root.discriminatorColumn!] as EntityKey[];
+        const exists = meta.root.uniques.some(u => Utils.equals(Utils.asArray(u.properties), properties));
+
+        if (!exists) {
+          meta.root.uniques.push({ properties });
+        }
       }
 
       newProp.nullable = true;
