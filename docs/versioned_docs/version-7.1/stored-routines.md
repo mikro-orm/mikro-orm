@@ -195,6 +195,15 @@ Routines are picked up by `schema:create`, `schema:update`, `schema:diff`, and `
 - Removed routines (in DB but not in metadata) → `DROP`.
 - Body changes, parameter changes, return-type changes, and metadata changes (comment, security, deterministic, definer) → `DROP` + `CREATE` (no dialect supports `ALTER PROCEDURE` for the body).
 
+If your database already has hand-written routines, you can adopt routine support without having them removed by setting the `schemaGenerator.ignoreRoutines` option. With it enabled, routines become create-only: new routines are still created, but existing ones are never dropped or altered from the diff.
+
+```ts
+const orm = await MikroORM.init({
+  // ...
+  schemaGenerator: { ignoreRoutines: true },
+});
+```
+
 To skip specific fields when diffing, set `ignoreSchemaChanges` to any subset of `'body' | 'comment' | 'security' | 'deterministic' | 'definer'`:
 
 ```ts

@@ -1511,6 +1511,32 @@ export class Book {
   </TabItem>
 </Tabs>
 
+### Exclusion constraints (PostgreSQL)
+
+PostgreSQL's [`EXCLUDE`](https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-EXCLUSION) constraints share the same lifecycle as `CHECK` (table-level constraint, dropped via `ALTER TABLE … DROP CONSTRAINT`), so `@Check()` accepts a full constraint body as the `expression` and emits it verbatim when it starts with `EXCLUDE`:
+
+```ts
+@Entity()
+@Check({
+  name: 'room_booking_no_overlap',
+  expression: 'exclude using gist (room_id with =, during with &&)',
+})
+export class RoomBooking {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  room_id!: number;
+
+  @Property({ columnType: 'tstzrange' })
+  during!: string;
+
+}
+```
+
+This requires the `btree_gist` extension when the constraint uses `=` on a non-range type. The schema generator round-trips EXCLUDE constraints through introspection just like check constraints — no extra diffing churn.
+
 ## Database Triggers
 
 You can define database triggers via the `@Trigger()` decorator or the `triggers` option in `defineEntity`/`EntitySchema`. Triggers are managed by the schema generator and migration system — they are created, updated, and removed automatically.

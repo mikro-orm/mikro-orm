@@ -548,6 +548,8 @@ MikroORM.init({
     disableForeignKeys: true, // try to disable foreign_key_checks (or equivalent)
     createForeignKeyConstraints: true, // do not generate FK constraints
     ignoreSchema: [], // allows ignoring some schemas when diffing
+    ignoreTriggers: false, // leave triggers unmanaged (never drop or alter existing ones)
+    ignoreRoutines: false, // leave stored routines unmanaged (never drop or alter existing ones)
     skipTables: [], // ignore some database tables during schema generation
     skipColumns: {}, // ignore some database table columns during schema generation
   },
@@ -763,6 +765,8 @@ Full list of supported options:
 | `MIKRO_ORM_MIGRATIONS_EMIT`                                 | `migrations.emit`                              |
 | `MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS`           | `migrations.disableForeignKeys`                |
 | `MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS` | `migrations.createForeignKeyConstraints`       |
+| `MIKRO_ORM_SCHEMA_GENERATOR_IGNORE_TRIGGERS`               | `schemaGenerator.ignoreTriggers`               |
+| `MIKRO_ORM_SCHEMA_GENERATOR_IGNORE_ROUTINES`               | `schemaGenerator.ignoreRoutines`               |
 | `MIKRO_ORM_SEEDER_PATH`                                     | `seeder.path`                                  |
 | `MIKRO_ORM_SEEDER_PATH_TS`                                  | `seeder.pathTs`                                |
 | `MIKRO_ORM_SEEDER_GLOB`                                     | `seeder.glob`                                  |
