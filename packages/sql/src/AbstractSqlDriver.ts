@@ -829,8 +829,11 @@ export abstract class AbstractSqlDriver<
     } else if (prop.fieldNames.length > 1) {
       // composite keys
       const fk = prop.fieldNames.map(name => root[`${relationAlias}__${name}` as EntityKey<T>]) as Primary<T>[];
-      const pk = Utils.mapFlatCompositePrimaryKey(fk, prop) as unknown[];
-      relationPojo[prop.name] = pk.every(val => val != null) ? (pk as EntityDataValue<T>) : null;
+      // `mapFlatCompositePrimaryKey` collapses to a scalar when the target PK is a single prop
+      // (e.g. a relation referencing a composite unique key on a single-PK target).
+      const pk = Utils.mapFlatCompositePrimaryKey(fk, prop);
+      const valid = Array.isArray(pk) ? pk.every(val => val != null) : pk != null;
+      relationPojo[prop.name] = valid ? (pk as EntityDataValue<T>) : null;
     } else if (prop.runtimeType === 'Date') {
       const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
       const value = root[alias] as unknown;
