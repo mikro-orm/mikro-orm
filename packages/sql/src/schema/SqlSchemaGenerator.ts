@@ -15,8 +15,9 @@ import {
   Utils,
 } from '@mikro-orm/core';
 import { AbstractSchemaGenerator } from '@mikro-orm/core/schema';
-import type { DatabaseView, SchemaDifference, TableDifference } from '../typings.js';
+import type { DatabaseView, ForeignKey, SchemaDifference, TableDifference } from '../typings.js';
 import { DatabaseSchema } from './DatabaseSchema.js';
+import type { DatabaseTable } from './DatabaseTable.js';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
 import { SchemaComparator } from './SchemaComparator.js';
 import type { SchemaHelper } from './SchemaHelper.js';
@@ -469,15 +470,25 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       }
     }
 
-    for (const changedTable of Object.values(schemaDiff.changedTables)) {
+    // Tables whose partitioning was added/changed can't be altered in place — they are rebuilt as a unit
+    // (the helper handles the data-preserving swap), so keep them out of the regular alter passes.
+    const changedTables = Object.values(schemaDiff.changedTables);
+    const partitioningRebuilds = changedTables
+      .filter(changedTable => changedTable.changedPartitioning)
+      .map(diff => ({ diff, inboundForeignKeys: this.getInboundForeignKeys(schemaDiff.fromSchema, diff.toTable) }));
+    const alteredTables = changedTables.filter(changedTable => !changedTable.changedPartitioning);
+
+    this.append(ret, this.helper.getPartitioningRebuildSQL(partitioningRebuilds, options.safe!), true);
+
+    for (const changedTable of alteredTables) {
       this.append(ret, this.preAlterTable(changedTable, options.safe!), true);
     }
 
-    for (const changedTable of Object.values(schemaDiff.changedTables)) {
+    for (const changedTable of alteredTables) {
       this.append(ret, this.helper.alterTable(changedTable, options.safe), true);
     }
 
-    for (const changedTable of Object.values(schemaDiff.changedTables)) {
+    for (const changedTable of alteredTables) {
       this.append(ret, this.helper.getPostAlterTable(changedTable, options.safe!), true);
     }
 
@@ -526,6 +537,30 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   /**
    * We need to drop foreign keys first for all tables to allow dropping PK constraints.
    */
+  /** Collects foreign keys from other tables that reference `table` (self-references are excluded — those travel with the rebuild). */
+  private getInboundForeignKeys(
+    fromSchema: DatabaseSchema,
+    table: DatabaseTable,
+  ): { table: DatabaseTable; foreignKey: ForeignKey }[] {
+    const unqualified = (name: string) => name.split('.').pop();
+    const targetName = unqualified(table.name);
+    const ret: { table: DatabaseTable; foreignKey: ForeignKey }[] = [];
+
+    for (const other of fromSchema.getTables()) {
+      if (other.name === table.name && other.schema === table.schema) {
+        continue;
+      }
+
+      for (const foreignKey of Object.values(other.getForeignKeys())) {
+        if (unqualified(foreignKey.referencedTableName) === targetName) {
+          ret.push({ table: other, foreignKey });
+        }
+      }
+    }
+
+    return ret;
+  }
+
   private preAlterTable(diff: TableDifference, safe: boolean): string[] {
     const ret: string[] = [];
     this.append(ret, this.helper.getPreAlterTable(diff, safe));

@@ -1003,6 +1003,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       join pg_namespace nsp2 on nsp2.oid = cls2.relnamespace
       where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(cls1.relname in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and nsp1.nspname = ${this.platform.quoteValue(schema)})`).join(' or ')})
       and confrelid > 0
+      and con.conparentid = 0
       order by nsp1.nspname, cls1.relname, constraint_name, ord`;
 
     const allFks = await connection.execute<any[]>(sql, [], 'all', ctx);
@@ -1221,18 +1222,89 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return col.join(' ');
   }
 
-  override getPreAlterTable(tableDiff: TableDifference, safe: boolean): string[] {
-    // In-place partition changes aren't supported; surface a helpful error on a normal run, but in safe
-    // mode skip it so `migration:create` isn't blocked (the user can author the change manually).
-    if (tableDiff.changedPartitioning && !safe) {
-      const from = tableDiff.changedPartitioning.from?.definition;
-      const to = tableDiff.changedPartitioning.to?.definition;
-      const action = !from ? 'Adding' : !to ? 'Removing' : 'Changing';
-      throw new Error(
-        `${action} partition definitions for existing PostgreSQL tables is not supported automatically (${tableDiff.name}: '${from ?? '<none>'}' -> '${to ?? '<none>'}'); create a manual migration instead`,
-      );
+  /**
+   * Adding partitioning to an existing table (or changing an existing definition) can't be done in place in
+   * PostgreSQL, so we rebuild it: park the original table in a temp schema (its indexes/constraints/sequences
+   * move with it, freeing the names), create the new partitioned table, copy the data across, and restore the
+   * foreign keys that pointed at it. In safe mode the original table is kept in the temp schema for manual
+   * verification; otherwise the temp schema is dropped at the end.
+   */
+  override getPartitioningRebuildSQL(
+    rebuilds: { diff: TableDifference; inboundForeignKeys: { table: DatabaseTable; foreignKey: ForeignKey }[] }[],
+    safe: boolean,
+  ): string[] {
+    if (rebuilds.length === 0) {
+      return [];
     }
 
+    const tmpSchema = 'mikro_orm_partition_swap';
+    const ret: string[] = [];
+    ret.push(
+      `-- WARNING: changing partitioning rebuilds the table by copying all rows into a new partitioned table under an exclusive lock.`,
+    );
+    ret.push(`-- Review for data volume, locking and downtime before running.`);
+    ret.push(`create schema if not exists ${this.quote(tmpSchema)}`);
+
+    for (const { diff, inboundForeignKeys } of rebuilds) {
+      const table = diff.toTable;
+      const parked = `${this.quote(tmpSchema)}.${this.quote(table.name)}`;
+
+      // drop foreign keys that reference this table so it can be parked and replaced
+      for (const { table: localTable, foreignKey } of inboundForeignKeys) {
+        ret.push(`alter table ${localTable.getQuotedName()} drop constraint ${this.quote(foreignKey.constraintName)}`);
+      }
+
+      // move the existing table out of the way; its indexes/constraints/sequences travel with it
+      ret.push(`alter table ${table.getQuotedName()} set schema ${this.quote(tmpSchema)}`);
+
+      // child partitions are separate tables that don't move with the parent — park them too so their
+      // names are free for the new partitions
+      for (const partition of diff.fromTable.getPartitioning()?.partitions ?? []) {
+        const partitionName = this.quote(this.getTableName(partition.name, partition.schema ?? table.schema));
+        ret.push(`alter table ${partitionName} set schema ${this.quote(tmpSchema)}`);
+      }
+
+      // create the new partitioned table (+ partitions, indexes, checks)
+      this.append(ret, this.createTable(table, true));
+
+      // recreate the table's own foreign keys and triggers (createTable emits them separately)
+      if (this.options.createForeignKeyConstraints) {
+        for (const foreignKey of Object.values(table.getForeignKeys())) {
+          this.append(ret, this.createForeignKey(table, foreignKey));
+        }
+      }
+
+      for (const trigger of table.getTriggers()) {
+        this.append(ret, this.createTrigger(table, trigger));
+      }
+
+      // copy data for the columns that exist on both sides
+      const fromColumns = new Set(diff.fromTable.getColumns().map(col => col.name));
+      const columns = table
+        .getColumns()
+        .filter(col => fromColumns.has(col.name))
+        .map(col => this.quote(col.name))
+        .join(', ');
+      ret.push(`insert into ${table.getQuotedName()} (${columns}) select ${columns} from ${parked}`);
+
+      // restore the inbound foreign keys against the new table
+      for (const { table: localTable, foreignKey } of inboundForeignKeys) {
+        this.append(ret, this.createForeignKey(localTable, foreignKey));
+      }
+    }
+
+    if (safe) {
+      ret.push(
+        `-- safe mode: original tables kept in schema "${tmpSchema}"; drop that schema manually once the data is verified`,
+      );
+    } else {
+      ret.push(`drop schema if exists ${this.quote(tmpSchema)} cascade`);
+    }
+
+    return ret;
+  }
+
+  override getPreAlterTable(tableDiff: TableDifference, safe: boolean): string[] {
     const ret: string[] = [];
 
     const parts = tableDiff.name.split('.');
