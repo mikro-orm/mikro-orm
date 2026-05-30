@@ -168,36 +168,37 @@ jobs:
 
       - name: Init docker
         run: |
-          # mssql 2025-CU3 occasionally crashes shortly after first healthy
-          # probe (SQLPAL/lsass.exe segfault). `restart: always` recovers it,
-          # but `docker compose up -d --wait` aborts the moment it sees the
-          # restart cycle and reports the container "unhealthy", before the
-          # restart actually settles. Retry once after a brief delay so the
-          # second `--wait` observes the recovered container.
-          bring_up() {
-            for attempt in 1 2; do
-              if docker compose up -d --wait; then
-                return 0
-              fi
-              echo "::warning::docker compose up --wait failed (attempt $attempt); waiting 30s for any restart cycle to settle"
-              sleep 30
-            done
-            return 1
-          }
-          if bring_up; then
-            # Re-verify mssql stays reachable for a short stability window so
-            # any remaining crash-restart cycle settles before tests start.
-            for i in 1 2 3 4 5; do
-              sleep 5
-              docker compose exec -T mssql /opt/mssql-tools18/bin/sqlcmd -b -C -S tcp:localhost -U sa -P 'Root.Root' -Q 'select 1' >/dev/null 2>&1 && continue
-              echo "::warning::mssql probe $i failed; waiting 60s for restart"
-              sleep 60
-              docker compose exec -T mssql /opt/mssql-tools18/bin/sqlcmd -b -C -S tcp:localhost -U sa -P 'Root.Root' -Q 'select 1' || exit 1
-              break
-            done
+          # Start everything so all services boot in parallel.
+          docker compose up -d
+          rc=0
+          # Wait for the reliable services to become healthy; a failure here is a
+          # real problem, but route it through the diagnostics dump below.
+          docker compose up -d --wait mongo mysql9 mariadb postgre postgis cockroachdb oracledb || rc=1
+
+          # mssql 2025-CU3 intermittently crashes during early startup
+          # (SQLPAL/lsass.exe segfault) and is recovered by `restart: always`.
+          # `docker compose up --wait` aborts the moment it observes the restart
+          # cycle, so poll the probe ourselves until mssql is *stably* reachable;
+          # several consecutive successes rule out a pending crash-restart.
+          ok=0
+          for i in $(seq 1 72); do
+            if docker compose exec -T mssql /opt/mssql-tools18/bin/sqlcmd -b -C -S tcp:localhost -U sa -P 'Root.Root' -Q 'select 1' >/dev/null 2>&1; then
+              ok=$((ok + 1))
+              [ "$ok" -ge 5 ] && break
+            else
+              [ "$ok" -gt 0 ] && echo "::warning::mssql probe failed after $ok consecutive successes; tolerating restart cycle"
+              ok=0
+            fi
+            sleep 5
+          done
+          if [ "$ok" -lt 5 ]; then
+            echo "::error::mssql did not stabilise within the startup window"
+            rc=1
+          fi
+
+          if [ "$rc" -eq 0 ]; then
             exit 0
           fi
-          rc=1
           set +e
           echo "::group::docker compose ps -a"
           docker compose ps -a
