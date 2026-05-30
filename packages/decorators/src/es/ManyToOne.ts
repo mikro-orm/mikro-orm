@@ -4,6 +4,7 @@ import {
   type EntityKey,
   type EntityName,
   type EntityProperty,
+  type Primary,
   Utils,
   type Ref,
 } from '@mikro-orm/core';
@@ -13,10 +14,13 @@ import { prepareMetadataContext, processDecoratorParameters } from '../utils.js'
 export function ManyToOne<Target extends object, Owner extends object>(
   entity: ManyToOneOptions<Owner, Target> | ((e?: Owner) => EntityName<Target> | EntityName[]) = {},
   options: Partial<ManyToOneOptions<Owner, Target>> = {},
-): (_: unknown, context: ClassFieldDecoratorContext<Owner, Target | undefined | null | Ref<Target>>) => void {
+): (
+  _: unknown,
+  context: ClassFieldDecoratorContext<Owner, Target | Primary<Target> | undefined | null | Ref<Target>>,
+) => void {
   return function (
     _: unknown,
-    context: ClassFieldDecoratorContext<Owner, Target | undefined | null | Ref<Target>>,
+    context: ClassFieldDecoratorContext<Owner, Target | Primary<Target> | undefined | null | Ref<Target>>,
   ): void {
     const meta = prepareMetadataContext(context, ReferenceKind.MANY_TO_ONE);
     options = processDecoratorParameters<ManyToOneOptions<Owner, Target>>({ entity, options });
