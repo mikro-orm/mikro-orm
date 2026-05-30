@@ -240,7 +240,8 @@ Notes:
 - Property-name expressions are mapped to physical column names automatically.
 - For `list` and `range`, each `values` entry can be either the full `for values ...` clause or just its trailing part, such as `in (...)`, `from ... to ...`, or `default`.
 - Existing partitioned tables are introspected back from PostgreSQL, so `schema:update` will not keep recreating them.
-- Changing the partition definition of an existing table is not auto-migrated. Generate a manual migration for repartitioning work.
+- Mapping an already-partitioned table with an entity that does not declare `partitionBy` leaves the partitioning untouched — partitioning is only managed for entities that opt into it, so adopting MikroORM on a database with existing partitioned tables won't try to drop their partitioning.
+- Changing the partition definition of an existing table is not auto-migrated; on a normal `schema:update` this throws so the change isn't silently lost, while `--safe` runs (e.g. `migration:create`) skip it. Generate a manual migration for repartitioning work.
 
 ## Ignoring specific column changes
 

@@ -325,21 +325,21 @@ describe('SchemaHelper', () => {
       ]);
     });
 
-    test('getPreAlterTable tailors message for add/remove/change partitioning transitions', () => {
+    test('getPreAlterTable tailors message for add/remove/change partitioning transitions (non-safe only)', () => {
       const helper = new PostgreSqlPlatform().getSchemaHelper()!;
       const partitioning = { definition: 'hash (type)', partitions: [] } as any;
 
       expect(() =>
         helper.getPreAlterTable(
           { name: 'evt', changedPartitioning: { from: undefined, to: partitioning } } as TableDifference,
-          true,
+          false,
         ),
       ).toThrow(/Adding partition definitions.*'<none>' -> 'hash \(type\)'/);
 
       expect(() =>
         helper.getPreAlterTable(
           { name: 'evt', changedPartitioning: { from: partitioning, to: undefined } } as TableDifference,
-          true,
+          false,
         ),
       ).toThrow(/Removing partition definitions.*'hash \(type\)' -> '<none>'/);
 
@@ -352,9 +352,25 @@ describe('SchemaHelper', () => {
               to: { definition: 'hash (type, id)', partitions: [] } as any,
             },
           } as TableDifference,
-          true,
+          false,
         ),
       ).toThrow(/Changing partition definitions.*'hash \(type\)' -> 'hash \(type, id\)'/);
+    });
+
+    test('getPreAlterTable skips the partitioning change in safe mode instead of throwing', () => {
+      const helper = new PostgreSqlPlatform().getSchemaHelper()!;
+      const partitioning = { definition: 'hash (type)', partitions: [] } as any;
+
+      expect(
+        helper.getPreAlterTable(
+          {
+            name: 'evt',
+            changedColumns: {},
+            changedPartitioning: { from: partitioning, to: { definition: 'hash (type, id)', partitions: [] } as any },
+          } as TableDifference,
+          true,
+        ),
+      ).toEqual([]);
     });
 
     test('splices partition definitions containing regex-replacement tokens verbatim', () => {

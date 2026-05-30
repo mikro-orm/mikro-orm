@@ -1222,7 +1222,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   override getPreAlterTable(tableDiff: TableDifference, safe: boolean): string[] {
-    if (tableDiff.changedPartitioning) {
+    // In-place partition changes aren't supported; surface a helpful error on a normal run, but in safe
+    // mode skip it so `migration:create` isn't blocked (the user can author the change manually).
+    if (tableDiff.changedPartitioning && !safe) {
       const from = tableDiff.changedPartitioning.from?.definition;
       const to = tableDiff.changedPartitioning.to?.definition;
       const action = !from ? 'Adding' : !to ? 'Removing' : 'Changing';
