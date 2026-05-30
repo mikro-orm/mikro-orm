@@ -283,6 +283,51 @@ describe('SchemaGenerator [postgres]', () => {
     await orm.close(true);
   });
 
+  test('rebuild recreates the table own foreign keys and triggers [postgres]', async () => {
+    interface FkOwner {
+      id: number;
+    }
+    interface FkParent {
+      id: number;
+      owner: FkOwner;
+    }
+
+    const Owner = new EntitySchema<FkOwner>({
+      name: 'RebuildFkOwner',
+      tableName: 'rebuild_fk_owner',
+      properties: { id: { type: 'number', primary: true, fieldName: 'id', columnType: 'int' } },
+    });
+    const Parent = new EntitySchema<FkParent>({
+      name: 'RebuildFkParent',
+      tableName: 'rebuild_fk_parent',
+      partitionBy: { type: 'hash', expression: ['id'], partitions: 2 },
+      properties: {
+        id: { type: 'number', primary: true, fieldName: 'id', columnType: 'int' },
+        owner: { kind: ReferenceKind.MANY_TO_ONE, entity: () => Owner, fieldName: 'owner_id' },
+      },
+      triggers: [{ name: 'rebuild_fk_parent_trg', timing: 'after', events: ['insert'], body: 'return new' }],
+    });
+
+    const orm = await initORMPostgreSql(undefined, [Owner, Parent]);
+    await orm.em.execute('drop table if exists rebuild_fk_parent cascade');
+    await orm.em.execute('drop table if exists rebuild_fk_owner cascade');
+    await orm.schema.execute('drop schema if exists "mikro_orm_partition_swap" cascade');
+
+    // create the table non-partitioned (with its own FK + trigger), then declare partitioning
+    const parentMeta = orm.getMetadata().get(Parent);
+    const partitionBy = parentMeta.partitionBy;
+    parentMeta.partitionBy = undefined;
+    await orm.schema.update();
+    parentMeta.partitionBy = partitionBy;
+
+    // the rebuild must recreate the table's own foreign key and trigger
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatch(/alter table "rebuild_fk_parent" add constraint .* foreign key \("owner_id"\)/);
+    expect(diff).toContain('create trigger "rebuild_fk_parent_trg"');
+
+    await orm.close(true);
+  });
+
   test('update schema range partitioned timestamptz tables [postgres] (GH #6944)', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();
