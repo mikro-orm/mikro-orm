@@ -277,6 +277,27 @@ MikroORM.init({
 });
 ```
 
+### PostgreSQL connection reserve hook
+
+For PostgreSQL, `onReserveConnection` is forwarded to Kysely's `PostgresDialect` and awaited every time a connection is acquired from the pool. This can be used with `AsyncLocalStorage` to set request-scoped session variables before each query, for example when using PostgreSQL row-level security policies.
+
+```ts
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { CompiledQuery, type DatabaseConnection } from 'kysely';
+
+MikroORM.init({
+  driver: PostgreSqlDriver,
+  onReserveConnection: async connection => {
+    const db = connection as DatabaseConnection;
+    const tenantId = getTenantIdFromContext();
+
+    await db.executeQuery(
+      CompiledQuery.raw('select set_config($1, $2, false)', ['app.current_tenant_id', tenantId ?? '']),
+    );
+  },
+});
+```
+
 ### `onQuery` hook and observability
 
 Sometimes you might want to alter the generated queries. One use case for that might be adding contextual query hints to allow observability. Before a more native approach is added to the ORM, you can use the `onQuery` hook to modify all the queries by hand. The hook will be fired for every query before its execution.

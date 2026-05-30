@@ -54,6 +54,7 @@ export abstract class Connection {
         'pool',
         'schema',
         'driverOptions',
+        'onReserveConnection',
       ] as const;
       this.options = props.reduce((o, i) => {
         (o[i] as any) = this.config.get(i);

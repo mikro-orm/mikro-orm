@@ -622,6 +622,8 @@ export interface ConnectionOptions {
   driverOptions?: Dictionary;
   /** Callback to execute when a new connection is created. */
   onCreateConnection?: (connection: unknown) => Promise<void>;
+  /** Callback to execute every time a connection is acquired from the pool. */
+  onReserveConnection?: (connection: unknown) => Promise<void>;
   /**
    * SQLite/libSQL: databases to attach on connection.
    * Each attached database acts as a schema, accessible via `schema.table` syntax.
