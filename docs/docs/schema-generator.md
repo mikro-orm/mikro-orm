@@ -241,7 +241,7 @@ Notes:
 - For `list` and `range`, each `values` entry can be either the full `for values ...` clause or just its trailing part, such as `in (...)`, `from ... to ...`, or `default`.
 - Existing partitioned tables are introspected back from PostgreSQL, so `schema:update` will not keep recreating them.
 - Mapping an already-partitioned table with an entity that does not declare `partitionBy` leaves the partitioning untouched — partitioning is only managed for entities that opt into it, so adopting MikroORM on a database with existing partitioned tables won't try to drop their partitioning.
-- Changing the partition definition of an existing table is not auto-migrated; on a normal `schema:update` this throws so the change isn't silently lost, while `--safe` runs (e.g. `migration:create`) skip it. Generate a manual migration for repartitioning work.
+- Adding partitioning to an existing table, or changing an already-partitioned table's definition, cannot be applied in place, so `schema:update` and `migration:create` throw to avoid silently losing the change. Enabling safe mode (`schema:update --safe`, or `migrations: { safe: true }`) skips it instead. Generate a manual migration for repartitioning work.
 
 ## Ignoring specific column changes
 
