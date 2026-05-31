@@ -181,7 +181,7 @@ module.exports = {
       return ret;
     }
   },
-  'resultMapper-undefined_1000': function(PolymorphicRef) {
+  'resultMapper-undefined_1000': function(PolymorphicRef, knownKeys) {
     // compiled mapper for entity Address
     return function(result) {
       const ret = {};
@@ -190,7 +190,7 @@ module.exports = {
         ret.street = result.street;
         mapped.street = true;
       }
-      for (let k in result) { if (Object.hasOwn(result, k) && !mapped[k] && ret[k] === undefined) ret[k] = result[k]; }
+      for (let k in result) { if (Object.hasOwn(result, k) && !mapped[k] && ret[k] === undefined && knownKeys.has(k)) ret[k] = result[k]; }
       return ret;
     }
   }
@@ -378,7 +378,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       return ret;
     }
   },
-  'resultMapper-undefined_3000': function(PolymorphicRef) {
+  'resultMapper-undefined_3000': function(PolymorphicRef, knownKeys) {
     // compiled mapper for entity Address
     return function(result) {
       const ret = {};
@@ -387,7 +387,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
         ret.street = result.street;
         mapped.street = true;
       }
-      for (let k in result) { if (Object.hasOwn(result, k) && !mapped[k] && ret[k] === undefined) ret[k] = result[k]; }
+      for (let k in result) { if (Object.hasOwn(result, k) && !mapped[k] && ret[k] === undefined && knownKeys.has(k)) ret[k] = result[k]; }
       return ret;
     }
   }

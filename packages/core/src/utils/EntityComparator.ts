@@ -528,8 +528,31 @@ export class EntityComparator {
       mapEntityProperties(meta);
     }
 
+    // pass through any unmapped columns (e.g. extra selections or virtual props). for embeddables we restrict
+    // this to declared keys, otherwise JSON keys not part of the schema leak into the original data while
+    // hydration drops them from the entity, diverging the snapshot and triggering spurious updates.
+    let knownKeysGuard = '';
+
+    if (meta.embeddable) {
+      const knownKeys = new Set<string>();
+      for (const m of meta.polymorphs?.length ? meta.polymorphs : [meta]) {
+        for (const prop of m.props) {
+          knownKeys.add(prop.name);
+
+          if (prop.embedded) {
+            knownKeys.add(prop.embedded[1]);
+          }
+
+          prop.fieldNames?.forEach(field => knownKeys.add(field));
+        }
+      }
+
+      context.set('knownKeys', knownKeys);
+      knownKeysGuard = ' && knownKeys.has(k)';
+    }
+
     lines.push(
-      `  for (let k in result) { if (Object.hasOwn(result, k) && !mapped[k] && ret[k] === undefined) ret[k] = result[k]; }`,
+      `  for (let k in result) { if (Object.hasOwn(result, k) && !mapped[k] && ret[k] === undefined${knownKeysGuard}) ret[k] = result[k]; }`,
     );
 
     const code =
