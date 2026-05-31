@@ -258,6 +258,45 @@ describe('check constraint [postgres]', () => {
     await orm.close();
   });
 
+  test('check constraint using a JSON operator is not mis-detected as enum [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.schema.update();
+
+    // A check that compares a column against a JSON `->>` extraction (`name = data->>'name'`)
+    // was incorrectly parsed as an enum constraint by getEnumDefinitions(), corrupting the
+    // referenced `data` column into a native enum and producing phantom diffs on every run.
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+        name: { type: 'string', name: 'name', fieldName: 'name', columnType: 'varchar(255)' },
+        data: { type: 'json', name: 'data', fieldName: 'data', columnType: 'jsonb' },
+      },
+      name: 'JsonOperatorCheckTable',
+      tableName: 'json_operator_check_table',
+      checks: [{ name: 'chk_name', expression: `name = data->>'name'` }],
+    }).init().meta;
+    meta.set(newTableMeta.class, newTableMeta);
+
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).not.toBe('');
+    await orm.schema.execute(diff);
+
+    // The `data` column must remain a JSON column, not be corrupted into a native enum.
+    const schema = await DatabaseSchema.create(orm.em.getConnection(), orm.em.getPlatform(), orm.config);
+    const table = schema.getTable('json_operator_check_table')!;
+    const dataColumn = table.getColumn('data')!;
+    expect(dataColumn.enumItems ?? []).toEqual([]);
+    expect(dataColumn.nativeEnumName).toBeUndefined();
+
+    // After creation the diff must be empty — no phantom enum constraint changes
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
   test('check constraint with multiline expression does not cause drift [postgres]', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();
