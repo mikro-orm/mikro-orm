@@ -1146,7 +1146,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         // `CHECK ((type = 'a'::text))`
         const m1 =
           item.definition?.match(/check \(\(\("?(\w+)"?\)::/i) || item.definition?.match(/check \(\("?(\w+)"? = /i);
-        const m2 = item.definition?.match(/\(array\[(.*)]\)/i) || item.definition?.match(/ = (.*)\)/i);
+        // the single-value form must compare against a quoted literal (`= 'a'::text`); anything else
+        // (e.g. a JSON `->>` extraction like `name = data->>'name'`) is not an enum constraint
+        const m2 =
+          item.definition?.match(/\(array\[(.*)]\)/i) || item.definition?.match(/ = ('(?:[^']|'')*'::[\w ]+)\)/i);
 
         if (item.columnName && m1 && m2) {
           /* v8 ignore next */
