@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.3](https://github.com/mikro-orm/mikro-orm/compare/v7.1.2...v7.1.3) (2026-05-31)
+
+
+### Features
+
+* **core:** support onReserveConnection across SQL drivers ([#7815](https://github.com/mikro-orm/mikro-orm/issues/7815)) ([166c966](https://github.com/mikro-orm/mikro-orm/commit/166c9669c4668374d0a726e03a57390e3897000c)), closes [/github.com/mikro-orm/mikro-orm/discussions/6137#discussioncomment-16625910](https://github.com//github.com/mikro-orm/mikro-orm/discussions/6137/issues/discussioncomment-16625910)
+
+
+
+
+
 ## [7.1.2](https://github.com/mikro-orm/mikro-orm/compare/v7.1.1...v7.1.2) (2026-05-29)
 
 **Note:** Version bump only for package @mikro-orm/mysql

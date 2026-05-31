@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.3](https://github.com/mikro-orm/mikro-orm/compare/v7.1.2...v7.1.3) (2026-05-31)
+
+
+### Bug Fixes
+
+* **core:** support `mapToPk` scalar typing with ES decorators ([#7818](https://github.com/mikro-orm/mikro-orm/issues/7818)) ([9b8b4e4](https://github.com/mikro-orm/mikro-orm/commit/9b8b4e42c2ad86dc632d044f568e6a55043fc9f3)), closes [#7817](https://github.com/mikro-orm/mikro-orm/issues/7817)
+
+
+
+
+
 ## [7.1.2](https://github.com/mikro-orm/mikro-orm/compare/v7.1.1...v7.1.2) (2026-05-29)
 
 **Note:** Version bump only for package @mikro-orm/decorators

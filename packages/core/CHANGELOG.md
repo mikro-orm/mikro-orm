@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.3](https://github.com/mikro-orm/mikro-orm/compare/v7.1.2...v7.1.3) (2026-05-31)
+
+
+### Bug Fixes
+
+* **core:** emit composite unique for OneToOne across 3+ STI variants ([#7806](https://github.com/mikro-orm/mikro-orm/issues/7806)) ([ae89033](https://github.com/mikro-orm/mikro-orm/commit/ae890330cc5284d25ba3f609ea71425ab57dd59f)), closes [#7805](https://github.com/mikro-orm/mikro-orm/issues/7805)
+
+
+### Features
+
+* **core:** support onReserveConnection across SQL drivers ([#7815](https://github.com/mikro-orm/mikro-orm/issues/7815)) ([166c966](https://github.com/mikro-orm/mikro-orm/commit/166c9669c4668374d0a726e03a57390e3897000c)), closes [/github.com/mikro-orm/mikro-orm/discussions/6137#discussioncomment-16625910](https://github.com//github.com/mikro-orm/mikro-orm/discussions/6137/issues/discussioncomment-16625910)
+* **schema:** add `ignoreRoutines` option to leave routines unmanaged ([#7810](https://github.com/mikro-orm/mikro-orm/issues/7810)) ([84e2ed3](https://github.com/mikro-orm/mikro-orm/commit/84e2ed3f305ad110c041e695609417177ff3802a))
+* **schema:** add `ignoreTriggers` option and skip trigger drops in safe mode ([#7809](https://github.com/mikro-orm/mikro-orm/issues/7809)) ([cc35d88](https://github.com/mikro-orm/mikro-orm/commit/cc35d8889e867ea55d815d1fc50265ff8c8fe6a0))
+
+
+
+
+
 ## [7.1.2](https://github.com/mikro-orm/mikro-orm/compare/v7.1.1...v7.1.2) (2026-05-29)
 
 ### Bug Fixes

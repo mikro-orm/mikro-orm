@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.3](https://github.com/mikro-orm/mikro-orm/compare/v7.1.2...v7.1.3) (2026-05-31)
+
+
+### Features
+
+* **postgres:** support adding and changing partitioning on existing tables ([#7816](https://github.com/mikro-orm/mikro-orm/issues/7816)) ([db738bd](https://github.com/mikro-orm/mikro-orm/commit/db738bde917d3dffb1f3c900c59e126dc0d6c80b))
+* **schema:** add `ignoreRoutines` option to leave routines unmanaged ([#7810](https://github.com/mikro-orm/mikro-orm/issues/7810)) ([84e2ed3](https://github.com/mikro-orm/mikro-orm/commit/84e2ed3f305ad110c041e695609417177ff3802a))
+* **schema:** add `ignoreTriggers` option and skip trigger drops in safe mode ([#7809](https://github.com/mikro-orm/mikro-orm/issues/7809)) ([cc35d88](https://github.com/mikro-orm/mikro-orm/commit/cc35d8889e867ea55d815d1fc50265ff8c8fe6a0))
+
+
+
+
+
 ## [7.1.2](https://github.com/mikro-orm/mikro-orm/compare/v7.1.1...v7.1.2) (2026-05-29)
 
 ### Bug Fixes
