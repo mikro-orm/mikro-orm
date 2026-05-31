@@ -622,7 +622,11 @@ export interface ConnectionOptions {
   driverOptions?: Dictionary;
   /** Callback to execute when a new connection is created. */
   onCreateConnection?: (connection: unknown) => Promise<void>;
-  /** Callback to execute every time a connection is acquired from the pool. */
+  /**
+   * Callback to execute every time a connection is acquired from the pool, e.g. to set
+   * request-scoped session variables before each query (such as for row-level security).
+   * Supported by the PostgreSQL, MySQL/MariaDB, and MSSQL drivers; ignored by other drivers (SQLite, libSQL, Oracle).
+   */
   onReserveConnection?: (connection: unknown) => Promise<void>;
   /**
    * SQLite/libSQL: databases to attach on connection.

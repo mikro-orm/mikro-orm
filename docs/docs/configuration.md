@@ -277,9 +277,11 @@ MikroORM.init({
 });
 ```
 
-### PostgreSQL connection reserve hook
+### Connection reserve hook
 
-For PostgreSQL, `onReserveConnection` is forwarded to Kysely's `PostgresDialect` and awaited every time a connection is acquired from the pool. This can be used with `AsyncLocalStorage` to set request-scoped session variables before each query, for example when using PostgreSQL row-level security policies.
+`onReserveConnection` is awaited every time a connection is acquired from the pool, before any query runs on it. It can be combined with `AsyncLocalStorage` to set request-scoped session variables before each query, for example when using row-level security policies.
+
+It is supported by the PostgreSQL, MySQL/MariaDB, and MSSQL drivers; other drivers (SQLite, libSQL, Oracle) ignore it. For PostgreSQL and MySQL/MariaDB it is forwarded to Kysely's dialect; for MSSQL the hook runs on every checkout from the `tedious` pool. The example below uses PostgreSQL syntax — adapt the statement to your driver (e.g. `sp_set_session_context` on MSSQL).
 
 ```ts
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';

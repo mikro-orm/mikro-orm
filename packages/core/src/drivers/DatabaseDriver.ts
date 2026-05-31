@@ -667,7 +667,6 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       'pool',
       'name',
       'driverOptions',
-      'onReserveConnection',
     ] as const;
 
     for (const conf of replicas) {

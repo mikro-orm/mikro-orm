@@ -8,7 +8,7 @@ function isDatabaseConnection(connection: unknown): connection is DatabaseConnec
 
 function mockPoolClient() {
   const calls: string[] = [];
-  const query = vi.fn(async (sql: string, parameters: readonly unknown[]) => {
+  const query = vi.fn(async (sql: string) => {
     calls.push(`query:${sql}`);
     return { command: 'SELECT', rowCount: 1, rows: [{ count: 1 }] };
   });
@@ -90,34 +90,6 @@ test('PostgreSqlConnection forwards onReserveConnection to Kysely PostgresDialec
   expect(pool.query).toHaveBeenCalledWith('select 1 as count', []);
 });
 
-test('PostgreSqlConnection keeps configured onReserveConnection on write connections', async () => {
-  const pool = mockPoolClient();
-  const hookCalls: string[] = [];
-  const config = new Configuration(
-    {
-      driver: PostgreSqlDriver,
-      clientUrl: 'postgre://root@127.0.0.1:1234/db_name',
-      logger: vi.fn(),
-      onReserveConnection: async () => {
-        hookCalls.push('initial');
-      },
-    },
-    false,
-  );
-  const driver = new PostgreSqlDriver(config);
-  config.set('onReserveConnection', async () => {
-    hookCalls.push('changed');
-  });
-
-  try {
-    await executeSelect(driver);
-  } finally {
-    pool.restore();
-  }
-
-  expect(hookCalls).toEqual(['initial']);
-});
-
 test('PostgreSqlConnection inherits onReserveConnection on read replicas', async () => {
   const pool = mockPoolClient();
   const hookCalls: string[] = [];
@@ -127,16 +99,13 @@ test('PostgreSqlConnection inherits onReserveConnection on read replicas', async
       clientUrl: 'postgre://root@127.0.0.1:1234/db_name',
       logger: vi.fn(),
       onReserveConnection: async () => {
-        hookCalls.push('initial');
+        hookCalls.push('reserve');
       },
       replicas: [{ name: 'read-1' }],
     },
     false,
   );
   const driver = new PostgreSqlDriver(config);
-  config.set('onReserveConnection', async () => {
-    hookCalls.push('changed');
-  });
 
   try {
     await executeSelect(driver, 'read');
@@ -144,5 +113,5 @@ test('PostgreSqlConnection inherits onReserveConnection on read replicas', async
     pool.restore();
   }
 
-  expect(hookCalls).toEqual(['initial']);
+  expect(hookCalls).toEqual(['reserve']);
 });

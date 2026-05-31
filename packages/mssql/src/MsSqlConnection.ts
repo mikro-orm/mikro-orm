@@ -5,11 +5,51 @@ import {
   type TransactionEventBroadcaster,
   Utils,
 } from '@mikro-orm/sql';
-import { type ControlledTransaction, MssqlDialect } from 'kysely';
+import {
+  type AbortableOperationOptions,
+  type ControlledTransaction,
+  type DatabaseConnection,
+  type Driver,
+  MssqlDialect,
+  type MssqlDialectConfig,
+} from 'kysely';
 import { type Dictionary, type Routine, type Transaction } from '@mikro-orm/core';
 import type { ConnectionConfiguration } from 'tedious';
 import * as Tedious from 'tedious';
 import * as Tarn from 'tarn';
+
+/**
+ * Kysely's `MssqlDialect` has no native `onReserveConnection` hook, so we wrap the
+ * driver's `acquireConnection` to fire it on every pool checkout (e.g. to set the
+ * session context for row-level security).
+ */
+class MsSqlReserveDialect extends MssqlDialect {
+  readonly #onReserveConnection?: (connection: unknown) => Promise<void>;
+
+  constructor(config: MssqlDialectConfig, onReserveConnection?: (connection: unknown) => Promise<void>) {
+    super(config);
+    this.#onReserveConnection = onReserveConnection;
+  }
+
+  override createDriver(): Driver {
+    const driver = super.createDriver();
+    const onReserveConnection = this.#onReserveConnection;
+
+    if (!onReserveConnection) {
+      return driver;
+    }
+
+    const acquireConnection = driver.acquireConnection.bind(driver);
+    driver.acquireConnection = async (options?: AbortableOperationOptions): Promise<DatabaseConnection> => {
+      const connection = await acquireConnection(options);
+      await onReserveConnection(connection);
+
+      return connection;
+    };
+
+    return driver;
+  }
+}
 
 /** Microsoft SQL Server database connection using the `tedious` driver. */
 export class MsSqlConnection extends AbstractSqlConnection {
@@ -24,21 +64,25 @@ export class MsSqlConnection extends AbstractSqlConnection {
     );
     const password = options.authentication?.options?.password as ConnectionConfig['password'];
     const onCreateConnection = this.options.onCreateConnection ?? this.config.get('onCreateConnection');
+    const onReserveConnection = this.options.onReserveConnection ?? this.config.get('onReserveConnection');
 
-    return new MssqlDialect({
-      tarn: { ...Tarn, options: poolOptions },
-      tedious: {
-        ...Tedious,
-        connectionFactory: async () => {
-          options.authentication!.options.password = typeof password === 'function' ? await password() : password;
-          const connection = new Tedious.Connection(options);
-          /* v8 ignore next */
-          await onCreateConnection?.(connection);
+    return new MsSqlReserveDialect(
+      {
+        tarn: { ...Tarn, options: poolOptions },
+        tedious: {
+          ...Tedious,
+          connectionFactory: async () => {
+            options.authentication!.options.password = typeof password === 'function' ? await password() : password;
+            const connection = new Tedious.Connection(options);
+            /* v8 ignore next */
+            await onCreateConnection?.(connection);
 
-          return connection;
+            return connection;
+          },
         },
       },
-    });
+      onReserveConnection,
+    );
   }
 
   private mapOptions(overrides: ConnectionConfiguration): ConnectionConfiguration {
