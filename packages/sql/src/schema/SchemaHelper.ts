@@ -775,6 +775,17 @@ export abstract class SchemaHelper {
     return [];
   }
 
+  /**
+   * Generates a data-preserving rebuild for tables whose partitioning was added or changed. Empty by default;
+   * only PostgreSQL introspects partitioning, so this is never invoked for other platforms.
+   */
+  getPartitioningRebuildSQL(
+    rebuilds: { diff: TableDifference; inboundForeignKeys: { table: DatabaseTable; foreignKey: ForeignKey }[] }[],
+    safe: boolean,
+  ): string[] {
+    return [];
+  }
+
   getChangeColumnCommentSQL(tableName: string, to: Column, schemaName?: string): string {
     return '';
   }

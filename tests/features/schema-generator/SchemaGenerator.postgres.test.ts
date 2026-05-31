@@ -177,15 +177,153 @@ describe('SchemaGenerator [postgres]', () => {
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toBe('');
 
+    await orm.em.execute(`insert into "partitioned_event" ("type", "id") values ('a', 1), ('b', 2)`);
+
+    // changing the partition definition rebuilds the table (data-preserving) instead of throwing
     partitionedMeta.partitionBy = {
       type: 'hash',
       expression: ['type'],
       partitions: 8,
     };
 
-    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).rejects.toThrow(
-      /Changing partition definitions for existing PostgreSQL tables is not supported automatically/,
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('set schema "mikro_orm_partition_swap"');
+    expect(diff).toContain('with (modulus 8, remainder 7)');
+    expect(diff).toContain('insert into "partitioned_event"');
+    expect(diff).toContain('drop schema if exists "mikro_orm_partition_swap" cascade');
+    await orm.schema.execute(diff, { wrap: true });
+
+    const rows = await orm.em.execute<{ c: number }[]>(`select count(*)::int as c from "partitioned_event"`);
+    expect(rows[0].c).toBe(2);
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.close(true);
+  });
+
+  test('adding partitionBy to an existing table rebuilds it, preserving data and inbound FKs [postgres]', async () => {
+    interface RebuildParent {
+      id: number;
+      name: string;
+    }
+    interface RebuildChild {
+      id: number;
+      parent: RebuildParent;
+    }
+
+    const Parent = new EntitySchema<RebuildParent>({
+      name: 'RebuildParent',
+      tableName: 'rebuild_parent',
+      partitionBy: { type: 'hash', expression: ['id'], partitions: 2 },
+      properties: {
+        id: { type: 'number', primary: true, fieldName: 'id', columnType: 'int' },
+        name: { type: 'string', fieldName: 'name', columnType: 'varchar(255)', nullable: true },
+      },
+    });
+    const Child = new EntitySchema<RebuildChild>({
+      name: 'RebuildChild',
+      tableName: 'rebuild_child',
+      properties: {
+        id: { type: 'number', primary: true, fieldName: 'id', columnType: 'int' },
+        parent: { kind: ReferenceKind.MANY_TO_ONE, entity: () => Parent, fieldName: 'parent_id' },
+      },
+    });
+
+    const orm = await initORMPostgreSql(undefined, [Parent, Child]);
+    await orm.em.execute('drop table if exists rebuild_child cascade');
+    await orm.em.execute('drop table if exists rebuild_parent cascade');
+    await orm.schema.execute('drop schema if exists "mikro_orm_partition_swap" cascade');
+
+    // start non-partitioned to mimic a database that predates the partitionBy declaration
+    const parentMeta = orm.getMetadata().get(Parent);
+    const partitionBy = parentMeta.partitionBy;
+    parentMeta.partitionBy = undefined;
+    await orm.schema.update();
+
+    await orm.em.execute(`insert into "rebuild_parent" ("id", "name") values (1, 'a'), (2, 'b')`);
+    await orm.em.execute(`insert into "rebuild_child" ("id", "parent_id") values (10, 1), (20, 2)`);
+
+    // declare the partitioning — the diff must rebuild the table rather than throw
+    parentMeta.partitionBy = partitionBy;
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatch(/alter table "rebuild_child" drop constraint/);
+    expect(diff).toContain('alter table "rebuild_parent" set schema "mikro_orm_partition_swap"');
+    expect(diff).toContain('partition by hash ("id")');
+    expect(diff).toContain('insert into "rebuild_parent"');
+    expect(diff).toMatch(/alter table "rebuild_child" add constraint .* foreign key/);
+    expect(diff).toContain('drop schema if exists "mikro_orm_partition_swap" cascade');
+
+    // safe mode keeps the parked table instead of dropping it
+    const safeDiff = await orm.schema.getUpdateSchemaSQL({ wrap: false, safe: true });
+    expect(safeDiff).toContain('set schema "mikro_orm_partition_swap"');
+    expect(safeDiff).not.toContain('drop schema');
+    expect(safeDiff).toContain('original tables kept in schema "mikro_orm_partition_swap"');
+
+    await orm.schema.execute(diff, { wrap: true });
+
+    // table is now partitioned, data and the inbound FK survived
+    const partitioned = await orm.em.execute<{ c: number }[]>(
+      `select count(*)::int as c from pg_partitioned_table p join pg_class c on c.oid = p.partrelid where c.relname = 'rebuild_parent'`,
     );
+    expect(partitioned[0].c).toBe(1);
+    const parents = await orm.em.execute<{ c: number }[]>(`select count(*)::int as c from "rebuild_parent"`);
+    expect(parents[0].c).toBe(2);
+    const children = await orm.em.execute<{ c: number }[]>(`select count(*)::int as c from "rebuild_child"`);
+    expect(children[0].c).toBe(2);
+    // the named inbound FK is restored against the new partitioned table (PostgreSQL also adds internal
+    // per-partition FK entries, which is expected when referencing a partitioned table)
+    const fks = await orm.em.execute<{ constraint_name: string }[]>(
+      `select constraint_name from information_schema.table_constraints where table_name = 'rebuild_child' and constraint_type = 'FOREIGN KEY'`,
+    );
+    expect(fks.some(fk => fk.constraint_name === 'rebuild_child_parent_id_foreign')).toBe(true);
+
+    // no further drift, and the temp schema was cleaned up
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+
+    await orm.close(true);
+  });
+
+  test('rebuild recreates the table own foreign keys and triggers [postgres]', async () => {
+    interface FkOwner {
+      id: number;
+    }
+    interface FkParent {
+      id: number;
+      owner: FkOwner;
+    }
+
+    const Owner = new EntitySchema<FkOwner>({
+      name: 'RebuildFkOwner',
+      tableName: 'rebuild_fk_owner',
+      properties: { id: { type: 'number', primary: true, fieldName: 'id', columnType: 'int' } },
+    });
+    const Parent = new EntitySchema<FkParent>({
+      name: 'RebuildFkParent',
+      tableName: 'rebuild_fk_parent',
+      partitionBy: { type: 'hash', expression: ['id'], partitions: 2 },
+      properties: {
+        id: { type: 'number', primary: true, fieldName: 'id', columnType: 'int' },
+        owner: { kind: ReferenceKind.MANY_TO_ONE, entity: () => Owner, fieldName: 'owner_id' },
+      },
+      triggers: [{ name: 'rebuild_fk_parent_trg', timing: 'after', events: ['insert'], body: 'return new' }],
+    });
+
+    const orm = await initORMPostgreSql(undefined, [Owner, Parent]);
+    await orm.em.execute('drop table if exists rebuild_fk_parent cascade');
+    await orm.em.execute('drop table if exists rebuild_fk_owner cascade');
+    await orm.schema.execute('drop schema if exists "mikro_orm_partition_swap" cascade');
+
+    // create the table non-partitioned (with its own FK + trigger), then declare partitioning
+    const parentMeta = orm.getMetadata().get(Parent);
+    const partitionBy = parentMeta.partitionBy;
+    parentMeta.partitionBy = undefined;
+    await orm.schema.update();
+    parentMeta.partitionBy = partitionBy;
+
+    // the rebuild must recreate the table's own foreign key and trigger
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatch(/alter table "rebuild_fk_parent" add constraint .* foreign key \("owner_id"\)/);
+    expect(diff).toContain('create trigger "rebuild_fk_parent_trg"');
 
     await orm.close(true);
   });

@@ -325,38 +325,6 @@ describe('SchemaHelper', () => {
       ]);
     });
 
-    test('getPreAlterTable tailors message for add/remove/change partitioning transitions', () => {
-      const helper = new PostgreSqlPlatform().getSchemaHelper()!;
-      const partitioning = { definition: 'hash (type)', partitions: [] } as any;
-
-      expect(() =>
-        helper.getPreAlterTable(
-          { name: 'evt', changedPartitioning: { from: undefined, to: partitioning } } as TableDifference,
-          true,
-        ),
-      ).toThrow(/Adding partition definitions.*'<none>' -> 'hash \(type\)'/);
-
-      expect(() =>
-        helper.getPreAlterTable(
-          { name: 'evt', changedPartitioning: { from: partitioning, to: undefined } } as TableDifference,
-          true,
-        ),
-      ).toThrow(/Removing partition definitions.*'hash \(type\)' -> '<none>'/);
-
-      expect(() =>
-        helper.getPreAlterTable(
-          {
-            name: 'evt',
-            changedPartitioning: {
-              from: partitioning,
-              to: { definition: 'hash (type, id)', partitions: [] } as any,
-            },
-          } as TableDifference,
-          true,
-        ),
-      ).toThrow(/Changing partition definitions.*'hash \(type\)' -> 'hash \(type, id\)'/);
-    });
-
     test('splices partition definitions containing regex-replacement tokens verbatim', () => {
       // `String.prototype.replace` interprets `$$`, `$&`, `$1`..`$9` in the replacement string as
       // back-references, so definitions containing dollar-quoted literals or ampersands must be

@@ -169,7 +169,10 @@ describe('partitioning helpers', () => {
     };
 
     expect(diffPartitioning(undefined, undefined, 'public')).toBe(false);
-    expect(diffPartitioning(from, undefined, 'public')).toBe(true);
+    // metadata declares partitioning the table does not have yet (adding) — still a change
+    expect(diffPartitioning(undefined, equivalent, 'public')).toBe(true);
+    // DB is partitioned but metadata omits partitionBy — partitioning is left unmanaged (no-op)
+    expect(diffPartitioning(from, undefined, 'public')).toBe(false);
     expect(diffPartitioning(from, equivalent, 'public')).toBe(false);
     expect(diffPartitioning(from, { ...equivalent, definition: 'list (tenant_id, type)' }, 'public')).toBe(true);
     expect(diffPartitioning(from, { ...equivalent, partitions: equivalent.partitions.slice(0, 1) }, 'public')).toBe(
@@ -788,5 +791,26 @@ describe('partitioning helpers', () => {
       from: fromSchema.getTable('partitioned_event')!.getPartitioning(),
       to: toSchema.getTable('partitioned_event')!.getPartitioning(),
     });
+  });
+
+  test('does not flag partitioning when metadata omits partitionBy (adoption no-op)', () => {
+    const config = new Configuration({ driver: PostgreSqlDriver }, false);
+    const platform = config.getPlatform() as PostgreSqlPlatform;
+    // `from` mimics an existing partitioned table in the DB
+    const fromSchema = DatabaseSchema.fromMetadata(
+      [createPartitionedMeta({ type: 'hash', expression: ['type'], partitions: 4 })],
+      platform as any,
+      config,
+    );
+    // `to` is an entity that maps the same table without declaring partitionBy
+    const toSchema = DatabaseSchema.fromMetadata([createPartitionedMeta()], platform as any, config);
+    const comparator = new SchemaComparator(platform);
+    const diff = comparator.diffTable(
+      fromSchema.getTable('partitioned_event')!,
+      toSchema.getTable('partitioned_event')!,
+    );
+
+    // partitioning must be left untouched — no diff, hence no destructive throw downstream
+    expect(diff === false ? undefined : diff.changedPartitioning).toBeUndefined();
   });
 });

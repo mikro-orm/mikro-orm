@@ -378,11 +378,14 @@ export const diffPartitioning = (
   to: TablePartitioning | undefined,
   defaultSchema: string | undefined,
 ): boolean => {
-  if (!from && !to) {
+  // Metadata does not declare `partitionBy`, so partitioning is left unmanaged — never drop or alter an
+  // existing table's partitioning just because the entity omits it (in-place removal isn't supported anyway).
+  if (!to) {
     return false;
   }
 
-  if (!from || !to) {
+  // Metadata declares partitioning the table does not have yet (adding it in place isn't supported).
+  if (!from) {
     return true;
   }
 
