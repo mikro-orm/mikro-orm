@@ -1822,7 +1822,9 @@ export class MetadataDiscovery {
         }
       }
 
-      newProp.nullable = true;
+      // The primary key column is shared by every subtype, so it stays NOT NULL —
+      // only subtype-specific columns become nullable for the rows of other subtypes.
+      newProp.nullable = !newProp.primary;
       newProp.inherited = !rootProp;
 
       // For narrowed relation overrides, keep the root's declaration intact so
