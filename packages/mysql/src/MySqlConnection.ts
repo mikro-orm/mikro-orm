@@ -45,12 +45,14 @@ export class MySqlConnection extends AbstractSqlConnection {
       return new MysqlDialect({
         pool,
         onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
+        onReserveConnection: this.options.onReserveConnection ?? this.config.get('onReserveConnection'),
       });
     }
 
     return new MysqlDialect({
       pool: createPool(options) as any,
       onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
+      onReserveConnection: this.options.onReserveConnection ?? this.config.get('onReserveConnection'),
     });
   }
 
