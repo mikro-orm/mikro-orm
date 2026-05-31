@@ -171,6 +171,42 @@ console.log(user.createdAt); // current Date
 
 > This approach is useful when you want constructor-level defaults that work without an `EntityManager` context (i.e., with plain `new`). If you only need defaults during persistence, you can use `onCreate` hooks instead — see [Mapped Superclasses](./inheritance-mapping.md#mapped-superclasses) for more details.
 
+#### Inheriting base class methods {#extends-methods}
+
+Methods declared on the base class are always inherited **at runtime** — the auto-generated child class extends the base class, so a child instance is `instanceof` the base and can call its methods. At the **type level**, however, `extends: BaseSchema` only carries the mapped properties; TypeScript cannot see methods you attach to the schema later via `setClass`. To make those methods visible on the child entity type, point `extends` at the base **class** instead of the schema:
+
+```ts
+export class Base extends BaseSchema.class {
+  id = v4();
+  createdAt = new Date();
+  updatedAt = new Date();
+
+  wasUpdated(): boolean {
+    return this.updatedAt > this.createdAt;
+  }
+}
+
+BaseSchema.setClass(Base);
+
+const UserSchema = defineEntity({
+  name: 'User',
+  extends: Base, // the class, not BaseSchema — exposes `wasUpdated()` on the child type
+  properties: {
+    email: p.string().unique(),
+  },
+});
+
+export class User extends UserSchema.class {
+  describe() {
+    return this.wasUpdated() ? `${this.email} (edited)` : this.email;
+  }
+}
+
+UserSchema.setClass(User);
+```
+
+Both forms behave identically at runtime; passing the class simply lets TypeScript propagate the inherited method signatures. Extending the schema (`extends: BaseSchema`) still inherits all mapped properties and is the right choice when the base only contributes columns.
+
 ### Property types
 
 `defineEntity.properties` (aliased as `p`) provides all [MikroORM built-in types](./custom-types#types-provided-by-mikroorm). To use [custom types](./custom-types), use `p.type()`:
