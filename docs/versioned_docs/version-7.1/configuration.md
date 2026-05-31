@@ -277,6 +277,29 @@ MikroORM.init({
 });
 ```
 
+### Connection reserve hook
+
+`onReserveConnection` is awaited every time a connection is acquired from the pool, before any query runs on it. It can be combined with `AsyncLocalStorage` to set request-scoped session variables before each query, for example when using row-level security policies.
+
+It is supported by the PostgreSQL, MySQL/MariaDB, and MSSQL drivers; other drivers (SQLite, libSQL, Oracle) ignore it. For PostgreSQL and MySQL/MariaDB it is forwarded to Kysely's dialect; for MSSQL the hook runs on every checkout from the `tedious` pool. The example below uses PostgreSQL syntax — adapt the statement to your driver (e.g. `sp_set_session_context` on MSSQL).
+
+```ts
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { CompiledQuery, type DatabaseConnection } from 'kysely';
+
+MikroORM.init({
+  driver: PostgreSqlDriver,
+  onReserveConnection: async connection => {
+    const db = connection as DatabaseConnection;
+    const tenantId = getTenantIdFromContext();
+
+    await db.executeQuery(
+      CompiledQuery.raw('select set_config($1, $2, false)', ['app.current_tenant_id', tenantId ?? '']),
+    );
+  },
+});
+```
+
 ### `onQuery` hook and observability
 
 Sometimes you might want to alter the generated queries. One use case for that might be adding contextual query hints to allow observability. Before a more native approach is added to the ORM, you can use the `onQuery` hook to modify all the queries by hand. The hook will be fired for every query before its execution.
@@ -548,6 +571,8 @@ MikroORM.init({
     disableForeignKeys: true, // try to disable foreign_key_checks (or equivalent)
     createForeignKeyConstraints: true, // do not generate FK constraints
     ignoreSchema: [], // allows ignoring some schemas when diffing
+    ignoreTriggers: false, // leave triggers unmanaged (never drop or alter existing ones)
+    ignoreRoutines: false, // leave stored routines unmanaged (never drop or alter existing ones)
     skipTables: [], // ignore some database tables during schema generation
     skipColumns: {}, // ignore some database table columns during schema generation
   },
@@ -763,6 +788,8 @@ Full list of supported options:
 | `MIKRO_ORM_MIGRATIONS_EMIT`                                 | `migrations.emit`                              |
 | `MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS`           | `migrations.disableForeignKeys`                |
 | `MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS` | `migrations.createForeignKeyConstraints`       |
+| `MIKRO_ORM_SCHEMA_GENERATOR_IGNORE_TRIGGERS`               | `schemaGenerator.ignoreTriggers`               |
+| `MIKRO_ORM_SCHEMA_GENERATOR_IGNORE_ROUTINES`               | `schemaGenerator.ignoreRoutines`               |
 | `MIKRO_ORM_SEEDER_PATH`                                     | `seeder.path`                                  |
 | `MIKRO_ORM_SEEDER_PATH_TS`                                  | `seeder.pathTs`                                |
 | `MIKRO_ORM_SEEDER_GLOB`                                     | `seeder.glob`                                  |

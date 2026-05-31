@@ -22,7 +22,7 @@ npx mikro-orm schema:drop --dump     # Dumps drop schema SQL
 
 `schema:create` will automatically create the database if it does not exist.
 
-`schema:update` drops all unknown tables by default, you can use `--no-drop-tables` to get around it. There is also `--safe` flag that will disable both table dropping and column dropping.
+`schema:update` drops all unknown tables by default, you can use `--no-drop-tables` to get around it. There is also `--safe` flag that will disable destructive changes such as table dropping, column dropping and trigger dropping.
 
 `schema:drop` will by default drop all database tables. You can use `--drop-db` flag to drop the whole database instead.
 
@@ -50,6 +50,8 @@ const orm = await MikroORM.init({
     disableForeignKeys: true,
     createForeignKeyConstraints: true,
     ignoreSchema: [],
+    ignoreTriggers: false,
+    ignoreRoutines: false,
     skipTables: [],
     skipColumns: {},
   },
@@ -63,6 +65,8 @@ const orm = await MikroORM.init({
 | `disableForeignKeys: boolean`                             | Whether to wrap schema statements with `set foreign_key_checks = 0` or equivalent. Defaults to `true`. This disables foreign key checks during schema operations to avoid constraint violations during table creation/modification.                                                                                                                                    |
 | `createForeignKeyConstraints: boolean`                    | Whether to generate foreign key constraints. Defaults to `true`. When set to `false`, foreign key relationships will not create database-level constraints.                                                                                                                                                                                                           |
 | `ignoreSchema: string[]`                                  | Array of schema names to ignore during schema diffing. Useful when working with databases that have multiple schemas and you want to exclude certain schemas from being managed by MikroORM.                                                                                                                                                                          |
+| `ignoreTriggers: boolean`                                 | Leave database triggers unmanaged. Defaults to `false`. When set to `true`, declared triggers are still created, but existing triggers are never dropped or altered based on the entity metadata — use this to protect hand-written triggers that are not mirrored in your entity definitions (e.g. after upgrading to a version with trigger support).                |
+| `ignoreRoutines: boolean`                                 | Leave stored routines (functions/procedures) unmanaged. Defaults to `false`. When set to `true`, new routines are still created, but existing routines are never dropped or altered based on the entity metadata — use this to adopt routine support without removing pre-existing, hand-written routines.                                                            |
 | `skipTables: (string \| RegExp)[]`                        | Array of table names and patterns to exclude from schema generation. Accepts exact table names (case-insensitive) and RegExp patterns. Can include schema-qualified names like `'schema.table'`. Tables matching these names or patterns will be completely ignored during schema operations.                                                                      |
 | `skipColumns: Dictionary<(string \| RegExp)[]>`           | Object mapping table names to arrays of column names and patterns to exclude from schema generation. Keys can be table names or schema-qualified table names (e.g., `'auth.users'`). Values are arrays of exact column names (case-insensitive) or RegExp patterns. Columns matching these names or patterns will be ignored during schema operations for the specified tables. |
 | `managementDbName: string`                                | Name of the management database to use for operations that require administrative privileges (like creating databases). Platform-specific option mainly used by SQL Server.                                                                                                                                                                                           |
@@ -236,7 +240,8 @@ Notes:
 - Property-name expressions are mapped to physical column names automatically.
 - For `list` and `range`, each `values` entry can be either the full `for values ...` clause or just its trailing part, such as `in (...)`, `from ... to ...`, or `default`.
 - Existing partitioned tables are introspected back from PostgreSQL, so `schema:update` will not keep recreating them.
-- Changing the partition definition of an existing table is not auto-migrated. Generate a manual migration for repartitioning work.
+- Mapping an already-partitioned table with an entity that does not declare `partitionBy` leaves the partitioning untouched — partitioning is only managed for entities that opt into it, so adopting MikroORM on a database with existing partitioned tables won't try to drop their partitioning.
+- Adding partitioning to an existing table, or changing an already-partitioned table's definition, can't be done in place in PostgreSQL, so the schema generator rebuilds the table: it parks the original in a temporary schema, creates the new partitioned table, copies the data across, and restores the foreign keys that referenced it. **Review the generated SQL before running** — the copy rewrites the whole table under an exclusive lock, so consider data volume and downtime. In safe mode (`schema:update --safe`, or `migrations: { safe: true }`) the original table is kept in the temporary schema for manual verification; otherwise it is dropped once the data has been copied.
 
 ## Ignoring specific column changes
 
