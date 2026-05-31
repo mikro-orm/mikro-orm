@@ -690,10 +690,13 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       seen.add(dedupeKey);
       ret[key] ??= [];
       // CHECK: unwrap the `CHECK ((<predicate>))` shell and drop pg-added `::type` casts so the
-      // inner predicate matches the user's metadata. EXCLUDE bodies are kept verbatim — the user's
-      // `@Check` expression is the full body (see SchemaHelper.createCheck).
+      // inner predicate matches the user's metadata. Bare boolean bodies (e.g. a top-level CASE)
+      // are emitted as the single-paren `CHECK (<predicate>)` form, which we unwrap too. EXCLUDE
+      // bodies are kept verbatim — the user's `@Check` expression is the full body (see
+      // SchemaHelper.createCheck).
       const m = /^check \(\((.*)\)\)$/is.exec(check.expression);
-      const def = m ? m[1].replace(/\((.*?)\)::\w+/g, '$1') : check.expression;
+      const single = m ? null : /^check \((.*)\)$/is.exec(check.expression);
+      const def = m ? m[1].replace(/\((.*?)\)::\w+/g, '$1') : single ? single[1] : check.expression;
       ret[key].push({
         name: check.name,
         columnName: check.column_name,

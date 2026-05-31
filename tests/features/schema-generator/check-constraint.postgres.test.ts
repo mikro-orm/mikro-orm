@@ -294,4 +294,41 @@ describe('check constraint [postgres]', () => {
     await orm.schema.dropDatabase();
     await orm.close();
   });
+
+  test('check constraint with bare boolean CASE expression does not cause drift [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.schema.update();
+
+    // A CASE expression that yields a boolean directly (no surrounding comparison) is emitted by
+    // PostgreSQL as a single-paren `CHECK (CASE ... END)` shell, unlike `CHECK ((<predicate>))`.
+    // getAllChecks() must unwrap the single-paren form too, otherwise the `CHECK (` prefix leaks
+    // into the introspected expression and the constraint is dropped+recreated on every diff.
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+        kind: { type: 'string', name: 'kind', fieldName: 'kind', columnType: 'varchar(20)' },
+        value: { type: 'number', name: 'value', fieldName: 'value', columnType: 'int' },
+      },
+      name: 'BareCaseCheckTable',
+      tableName: 'bare_case_check_table',
+      checks: [
+        {
+          name: 'chk_kind_value',
+          expression: "CASE WHEN kind = 'POSITIVE' THEN value > 0 ELSE true END",
+        },
+      ],
+    }).init().meta;
+    meta.set(newTableMeta.class, newTableMeta);
+
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).not.toBe('');
+    await orm.schema.execute(diff);
+
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
 });
