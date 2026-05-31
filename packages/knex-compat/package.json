@@ -50,7 +50,7 @@
     "@mikro-orm/sql": "^7.1.3"
   },
   "peerDependencies": {
-    "@mikro-orm/sql": "7.1.2",
+    "@mikro-orm/sql": "7.1.3",
     "knex": "^3.0.0"
   },
   "engines": {
