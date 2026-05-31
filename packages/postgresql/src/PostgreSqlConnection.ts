@@ -18,6 +18,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
       pool,
       cursor: Cursor,
       onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
+      onReserveConnection: this.options.onReserveConnection ?? this.config.get('onReserveConnection'),
     });
   }
 
