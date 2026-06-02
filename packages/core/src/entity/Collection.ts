@@ -15,6 +15,7 @@ import {
   type Primary,
   CollectionBrand,
 } from '../typings.js';
+import { getInverseCollectionOwnerValue } from '../utils/RelationIdentity.js';
 import { Utils } from '../utils/Utils.js';
 import { MetadataError, ValidationError } from '../errors.js';
 import { DataloaderType, ReferenceKind } from '../enums.js';
@@ -454,9 +455,20 @@ export class Collection<T extends object, O extends object = object> {
     return em;
   }
 
+  private getInverseOwnerProp(): EntityProperty | undefined {
+    if (this.property.kind !== ReferenceKind.ONE_TO_MANY) {
+      return undefined;
+    }
+
+    return this.property.targetMeta!.properties[this.property.mappedBy];
+  }
+
   private createCondition<TT extends T>(cond: FilterQuery<TT> = {}): FilterQuery<TT> {
     if (this.property.kind === ReferenceKind.ONE_TO_MANY) {
-      cond[this.property.mappedBy as unknown as FilterKey<TT>] = helper(this.owner).getPrimaryKey() as any;
+      cond[this.property.mappedBy as unknown as FilterKey<TT>] = getInverseCollectionOwnerValue(
+        this.owner,
+        this.getInverseOwnerProp(),
+      ) as any;
     } else {
       // MANY_TO_MANY
       this.createManyToManyCondition(cond);
@@ -479,8 +491,7 @@ export class Collection<T extends object, O extends object = object> {
   }
 
   private createLoadCountCondition(cond: FilterQuery<T>) {
-    const wrapped = helper(this.owner);
-    const val = wrapped.__meta.compositePK ? { $in: wrapped.__primaryKeys } : wrapped.getPrimaryKey();
+    const val = getInverseCollectionOwnerValue(this.owner, this.getInverseOwnerProp(), true);
     const dict = cond as Dictionary;
 
     if (this.property.kind === ReferenceKind.ONE_TO_MANY) {

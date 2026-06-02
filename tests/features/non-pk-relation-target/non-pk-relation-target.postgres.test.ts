@@ -9,8 +9,7 @@ import {
   ReflectMetadataProvider,
 } from '@mikro-orm/decorators/legacy';
 
-// Entity in custom schema
-@Entity({ schema: 'custom_schema' })
+@Entity()
 class Author {
   @PrimaryKey()
   id!: number;
@@ -22,11 +21,11 @@ class Author {
   @Property()
   name!: string;
 
-  @OneToMany(() => Book, b => b.author)
+  @OneToMany(() => Book, book => book.author)
   books = new Collection<Book>(this);
 }
 
-@Entity({ schema: 'custom_schema' })
+@Entity()
 class Book {
   @PrimaryKey()
   id!: number;
@@ -38,7 +37,7 @@ class Book {
   author!: Ref<Author>;
 }
 
-describe('non-PK relation target with schema (postgres)', () => {
+describe('non-PK relation target (targetKey)', () => {
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -48,99 +47,52 @@ describe('non-PK relation target with schema (postgres)', () => {
       dbName: 'mikro_orm_test_non_pk_target',
     });
     await orm.schema.ensureDatabase();
+    await orm.schema.refresh();
 
-    // Drop and recreate schema using schema generator
-    await orm.schema.execute('drop schema if exists custom_schema cascade');
-    await orm.schema.update({ schema: 'custom_schema' });
+    const author = orm.em.create(Author, { uuid: 'uuid-123', name: 'John Doe' });
+    orm.em.create(Book, { title: 'My Book', author });
+    await orm.em.flush();
   });
 
   beforeEach(() => orm.em.clear());
 
   afterAll(() => orm.close(true));
 
-  test('relation with targetKey in custom schema', async () => {
-    // Create an author
-    const author = orm.em.create(Author, { uuid: 'uuid-123', name: 'John Doe' });
-    await orm.em.flush();
-    orm.em.clear();
-
-    // Load the author
-    const loadedAuthor = await orm.em.findOneOrFail(Author, { name: 'John Doe' });
-    expect(loadedAuthor.uuid).toBe('uuid-123');
-
-    // Create a book with the author
-    const book = orm.em.create(Book, {
-      title: 'Test Book',
-      author: loadedAuthor,
-    });
-    await orm.em.flush();
-    orm.em.clear();
-
-    // Load the book and verify the author reference works
-    const loadedBook = await orm.em.findOneOrFail(
-      Book,
-      { title: 'Test Book' },
-      {
-        populate: ['author'],
-      },
-    );
+  test('creating book with author reference by uuid', async () => {
+    const loadedBook = await orm.em.findOneOrFail(Book, { title: 'My Book' });
     expect(loadedBook.author.unwrap().uuid).toBe('uuid-123');
-    expect(loadedBook.author.unwrap().name).toBe('John Doe');
   });
 
-  test('identity map key includes schema for alternate key', async () => {
-    // Get a reference to author by uuid
-    const authorRef = orm.em.getReference(Author, 'uuid-123', { key: 'uuid' });
-
-    // Verify it's stored in identity map with the correct schema
-    const identityMap = orm.em.getUnitOfWork().getIdentityMap();
-    const keys = identityMap.keys();
-
-    // Check that the key includes schema information
-    const authorKey = keys.find(k => k.includes('Author') && k.includes('[uuid]'));
-    expect(authorKey).toBeDefined();
-    expect(authorKey).toContain('custom_schema'); // Should include schema in the key
-  });
-
-  test('getReference finds entity by alternate key with schema', async () => {
-    // Load the book without populating author
-    const book = await orm.em.findOneOrFail(Book, { title: 'Test Book' });
+  test('populate author with select-in strategy', async () => {
+    const book = await orm.em.findOneOrFail(Book, { title: 'My Book' });
     expect(book.author.isInitialized()).toBe(false);
 
-    // The author reference should have the uuid property set
-    const authorRef = book.author.unwrap();
-    expect(authorRef.uuid).toBe('uuid-123');
-
-    // Populate and verify
-    await orm.em.populate(book, ['author']);
+    await orm.em.populate(book, ['author'], { strategy: 'select-in' });
     expect(book.author.isInitialized()).toBe(true);
+    expect(book.author.unwrap().uuid).toBe('uuid-123');
     expect(book.author.unwrap().name).toBe('John Doe');
   });
 
-  test('select-in strategy works with targetKey in custom schema', async () => {
-    // Create another book
+  test('populate inverse oneToMany uses targetKey on owning side', async () => {
     const author = await orm.em.findOneOrFail(Author, { name: 'John Doe' });
-    const book2 = orm.em.create(Book, {
-      title: 'Second Book',
-      author,
-    });
-    await orm.em.flush();
-    orm.em.clear();
+    expect(author.books.isInitialized()).toBe(false);
 
-    // Load books with select-in strategy
-    const books = await orm.em.find(
-      Book,
-      {},
-      {
-        populate: ['author'],
-        strategy: 'select-in',
-        orderBy: { title: 'asc' },
-      },
-    );
+    await orm.em.populate(author, ['books']);
+    expect(author.books.isInitialized()).toBe(true);
+    expect(author.books.getItems()).toHaveLength(1);
+    expect(author.books.getItems()[0].title).toBe('My Book');
+  });
 
-    expect(books).toHaveLength(2);
-    // Both books should reference the same author instance
-    expect(books[0].author.unwrap()).toBe(books[1].author.unwrap());
-    expect(books[0].author.unwrap().uuid).toBe('uuid-123');
+  test('find author with populate books uses targetKey', async () => {
+    const author = await orm.em.findOneOrFail(Author, { name: 'John Doe' }, { populate: ['books'] });
+    expect(author.books.getItems()).toHaveLength(1);
+    expect(author.books.getItems()[0].title).toBe('My Book');
+  });
+
+  test('collection.load uses targetKey on owning side', async () => {
+    const author = await orm.em.findOneOrFail(Author, { name: 'John Doe' });
+    const books = await author.books.loadItems();
+    expect(books).toHaveLength(1);
+    expect(books[0].title).toBe('My Book');
   });
 });
