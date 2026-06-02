@@ -413,7 +413,7 @@ export class MikroTransformer extends OperationNodeTransformer {
 
     const newColumns = [...node.columns];
     for (const prop of missingProps) {
-      newColumns.push(ColumnNode.create(prop.name));
+      newColumns.push(ColumnNode.create(prop.fieldNames[0]));
     }
 
     const newRows = node.values.values.map(row => {
@@ -466,7 +466,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     const newUpdates = [...node.updates];
     for (const prop of missingProps) {
       const val = prop.onUpdate!(undefined, this.#em);
-      newUpdates.push(ColumnUpdateNode.create(ColumnNode.create(prop.name), ValueNode.create(val)));
+      newUpdates.push(ColumnUpdateNode.create(ColumnNode.create(prop.fieldNames[0]), ValueNode.create(val)));
     }
 
     return {
