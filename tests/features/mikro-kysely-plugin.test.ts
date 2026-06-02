@@ -1896,6 +1896,75 @@ describe('MikroKyselyPlugin', () => {
     });
   });
 
+  describe('hooks with default (column) naming strategy', () => {
+    interface PersonTable extends InferKyselyTable<
+      typeof Person,
+      { processOnCreateHooks: true; processOnUpdateHooks: true }
+    > {}
+    interface DB {
+      person: PersonTable;
+    }
+
+    let orm: MikroORM;
+    let kysely: Kysely<DB>;
+
+    beforeAll(async () => {
+      orm = new MikroORM({
+        entities: [Person, Pet, Toy],
+        dbName: ':memory:',
+      });
+      await orm.schema.refresh();
+      kysely = orm.em.getKysely({
+        processOnCreateHooks: true,
+        processOnUpdateHooks: true,
+        convertValues: true,
+      });
+    });
+
+    afterAll(async () => {
+      await orm.close(true);
+    });
+
+    test('ON CONFLICT with onUpdate hook emits column name, not property name', async () => {
+      const now = new Date(Date.now() - 1000);
+      await kysely
+        .insertInto('person')
+        .values({
+          id: 1234,
+          first_name: 'Conflict',
+          last_name: 'Test',
+          gender: 'male',
+          children: 0,
+          created_at: now,
+          updated_at: now,
+        })
+        .execute();
+
+      await kysely
+        .insertInto('person')
+        .values({
+          id: 1234,
+          first_name: 'NewName',
+          last_name: 'NewLast',
+          gender: 'female',
+          children: 1,
+          created_at: now,
+        })
+        .onConflict(oc =>
+          oc.column('id').doUpdateSet({
+            first_name: 'NewName',
+            // updated_at omitted: added by the onUpdate hook
+          }),
+        )
+        .execute();
+
+      const result = await kysely.selectFrom('person').selectAll().where('id', '=', 1234).executeTakeFirstOrThrow();
+
+      expect(result.first_name).toBe('NewName');
+      expect(new Date(result.updated_at!).getTime()).toBeGreaterThan(now.getTime());
+    });
+  });
+
   describe('type conversions and timezone handling', () => {
     interface TypeTable extends InferKyselyTable<
       typeof TypeEntity,
