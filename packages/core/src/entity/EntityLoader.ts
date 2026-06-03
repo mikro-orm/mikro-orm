@@ -487,26 +487,37 @@ export class EntityLoader {
     partial: boolean,
     readonly?: boolean,
   ): void {
-    const mapToPk = prop.targetMeta!.properties[prop.mappedBy].mapToPk;
+    const ownerProp = prop.targetMeta!.properties[prop.mappedBy];
+    const targetKey = ownerProp.targetKey;
     const map: Dictionary<Entity[]> = {};
+    // when the owning side targets a non-PK column, group by that value on both sides
+    const parentKey = (entity: AnyEntity) => helper(entity).getSerializedTargetKey(targetKey);
 
     for (const entity of filtered) {
-      const key = helper(entity).getSerializedPrimaryKey();
-      map[key] = [];
+      map[parentKey(entity)] = [];
     }
 
     for (const child of children) {
-      const pk = child.__helper.__data[prop.mappedBy] ?? child[prop.mappedBy];
+      const fk = child.__helper.__data[prop.mappedBy] ?? child[prop.mappedBy];
 
-      if (pk) {
-        const key = helper(mapToPk ? this.#em.getReference(prop.targetMeta!.class, pk) : pk).getSerializedPrimaryKey();
+      if (fk) {
+        let key: string;
+
+        if (targetKey) {
+          // `fk` is the owner reference (resolve its targetKey) unless the relation maps to the raw PK value
+          key = Utils.isEntity(fk, true) ? helper(fk).getSerializedTargetKey(targetKey) : '' + fk;
+        } else {
+          key = helper(
+            ownerProp.mapToPk ? this.#em.getReference(prop.targetMeta!.class, fk) : fk,
+          ).getSerializedPrimaryKey();
+        }
+
         map[key]?.push(child as Entity);
       }
     }
 
     for (const entity of filtered) {
-      const key = helper(entity).getSerializedPrimaryKey();
-      (entity[field] as unknown as Collection<Entity>).hydrate(map[key], undefined, partial, readonly);
+      (entity[field] as unknown as Collection<Entity>).hydrate(map[parentKey(entity)], undefined, partial, readonly);
     }
   }
 
@@ -555,10 +566,12 @@ export class EntityLoader {
     let schema: string | undefined = options.schema;
     const partial = !Utils.isEmpty(prop.where) || !Utils.isEmpty(options.where);
     let polymorphicOwnerProp: EntityProperty | undefined;
+    const ownerProp =
+      prop.kind === ReferenceKind.ONE_TO_MANY || (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner)
+        ? meta.properties[prop.mappedBy]
+        : undefined;
 
-    if (prop.kind === ReferenceKind.ONE_TO_MANY || (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner)) {
-      const ownerProp = meta.properties[prop.mappedBy];
-
+    if (ownerProp) {
       if (ownerProp.polymorphic && ownerProp.fieldNames.length >= 2) {
         const idColumns = ownerProp.fieldNames.slice(1);
         fk = idColumns.length === 1 ? idColumns[0] : idColumns;
@@ -582,7 +595,9 @@ export class EntityLoader {
       schema = children.find(e => e.__helper!.__schema)?.__helper!.__schema;
     }
 
-    const ids = Utils.unique(children.map(e => (prop.targetKey ? e[prop.targetKey] : e.__helper.getPrimaryKey())));
+    // for inverse sides the `targetKey` lives on the owning property, otherwise on the prop itself
+    const targetKey = prop.targetKey ?? ownerProp?.targetKey;
+    const ids = Utils.unique(children.map(e => e.__helper.getTargetKeyValue(targetKey)));
     let where: FilterQuery<Entity>;
 
     if (polymorphicOwnerProp && Array.isArray(fk)) {
@@ -670,7 +685,7 @@ export class EntityLoader {
     if (prop.targetKey && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind)) {
       const itemsByKey = new Map<string, AnyEntity>();
       for (const item of items) {
-        itemsByKey.set('' + item[prop.targetKey], item);
+        itemsByKey.set(helper(item).getSerializedTargetKey(prop.targetKey), item);
       }
 
       for (const entity of entities) {
@@ -680,8 +695,7 @@ export class EntityLoader {
           continue;
         }
 
-        // oxfmt-ignore
-        const keyValue = '' + (Reference.isReference(ref) ? (ref.unwrap() as Dictionary)[prop.targetKey] : (ref as Dictionary)[prop.targetKey]);
+        const keyValue = helper(ref).getSerializedTargetKey(prop.targetKey);
         const loadedItem = itemsByKey.get(keyValue);
 
         if (loadedItem) {
@@ -696,7 +710,8 @@ export class EntityLoader {
       const nullVal = this.#em.config.get('forceUndefined') ? undefined : null;
       const itemsMap = new Set<string>();
       const childrenMap = new Set<string>();
-      // Use targetKey value if set, otherwise use serialized PK
+      // `e` may be an unresolved reference here, so read the targetKey value directly instead of
+      // resolving it through the entity — that keeps orphaned references (missing target row) intact
       const getKey = (e: AnyEntity) => (prop.targetKey ? '' + e[prop.targetKey] : helper(e).getSerializedPrimaryKey());
 
       for (const item of items) {

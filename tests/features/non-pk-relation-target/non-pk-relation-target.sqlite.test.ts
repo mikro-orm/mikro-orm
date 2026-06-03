@@ -169,6 +169,34 @@ describe('non-PK relation target (targetKey)', () => {
     expect(book.author.unwrap().name).toBe('John Doe');
   });
 
+  test('populate inverse oneToMany uses targetKey on owning side', async () => {
+    const author = await orm.em.findOneOrFail(Author, { name: 'John Doe' });
+    expect(author.books.isInitialized()).toBe(false);
+
+    await orm.em.populate(author, ['books']);
+    expect(author.books.isInitialized()).toBe(true);
+    expect(author.books.getItems()).toHaveLength(1);
+    expect(author.books.getItems()[0].title).toBe('My Book');
+  });
+
+  test('find author with populate books uses targetKey', async () => {
+    const author = await orm.em.findOneOrFail(Author, { name: 'John Doe' }, { populate: ['books'] });
+    expect(author.books.getItems()).toHaveLength(1);
+    expect(author.books.getItems()[0].title).toBe('My Book');
+  });
+
+  test('collection.load uses targetKey on owning side', async () => {
+    const author = await orm.em.findOneOrFail(Author, { name: 'John Doe' });
+    const books = await author.books.loadItems();
+    expect(books).toHaveLength(1);
+    expect(books[0].title).toBe('My Book');
+  });
+
+  test('collection.loadCount uses targetKey on owning side', async () => {
+    const author = await orm.em.findOneOrFail(Author, { name: 'John Doe' });
+    await expect(author.books.loadCount()).resolves.toBe(1);
+  });
+
   test('multiple books with same author are resolved correctly', async () => {
     // Create another book with the same author
     const author = await orm.em.findOneOrFail(Author, { name: 'John Doe' });
@@ -433,6 +461,18 @@ describe('non-PK relation target with defineEntity', () => {
     );
     expect(loadedBook.author.uuid).toBe('def-uuid-123');
     expect(loadedBook.author.name).toBe('Defined Author');
+  });
+
+  test('defineEntity populate inverse oneToMany with targetKey', async () => {
+    const author = orm.em.create(DefAuthor, { uuid: 'def-uuid-456', name: 'Author For Books' });
+    orm.em.create(DefBook, { title: 'Inverse Book', author });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const loadedAuthor = await orm.em.findOneOrFail(DefAuthor, { uuid: 'def-uuid-456' });
+    await orm.em.populate(loadedAuthor, ['books']);
+    expect(loadedAuthor.books.getItems()).toHaveLength(1);
+    expect(loadedAuthor.books.getItems()[0].title).toBe('Inverse Book');
   });
 });
 

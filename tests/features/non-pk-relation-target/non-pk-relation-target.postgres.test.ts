@@ -143,4 +143,52 @@ describe('non-PK relation target with schema (postgres)', () => {
     expect(books[0].author.unwrap()).toBe(books[1].author.unwrap());
     expect(books[0].author.unwrap().uuid).toBe('uuid-123');
   });
+
+  test('populate inverse oneToMany uses targetKey on owning side', async () => {
+    const author = orm.em.create(Author, { uuid: 'uuid-inv-1', name: 'Inverse One' });
+    orm.em.create(Book, { title: 'Inverse Book 1', author });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const loaded = await orm.em.findOneOrFail(Author, { uuid: 'uuid-inv-1' });
+    expect(loaded.books.isInitialized()).toBe(false);
+
+    await orm.em.populate(loaded, ['books']);
+    expect(loaded.books.isInitialized()).toBe(true);
+    expect(loaded.books.getItems()).toHaveLength(1);
+    expect(loaded.books.getItems()[0].title).toBe('Inverse Book 1');
+  });
+
+  test('find author with populate books uses targetKey', async () => {
+    const author = orm.em.create(Author, { uuid: 'uuid-inv-2', name: 'Inverse Two' });
+    orm.em.create(Book, { title: 'Inverse Book 2', author });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const loaded = await orm.em.findOneOrFail(Author, { uuid: 'uuid-inv-2' }, { populate: ['books'] });
+    expect(loaded.books.getItems()).toHaveLength(1);
+    expect(loaded.books.getItems()[0].title).toBe('Inverse Book 2');
+  });
+
+  test('collection.load uses targetKey on owning side', async () => {
+    const author = orm.em.create(Author, { uuid: 'uuid-inv-3', name: 'Inverse Three' });
+    orm.em.create(Book, { title: 'Inverse Book 3', author });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const loaded = await orm.em.findOneOrFail(Author, { uuid: 'uuid-inv-3' });
+    const books = await loaded.books.loadItems();
+    expect(books).toHaveLength(1);
+    expect(books[0].title).toBe('Inverse Book 3');
+  });
+
+  test('collection.loadCount uses targetKey on owning side', async () => {
+    const author = orm.em.create(Author, { uuid: 'uuid-inv-4', name: 'Inverse Four' });
+    orm.em.create(Book, { title: 'Inverse Book 4', author });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const loaded = await orm.em.findOneOrFail(Author, { uuid: 'uuid-inv-4' });
+    await expect(loaded.books.loadCount()).resolves.toBe(1);
+  });
 });

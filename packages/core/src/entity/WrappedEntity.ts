@@ -296,6 +296,16 @@ export class WrappedEntity<Entity extends object> {
     return this.pkSerializer!(this.entity);
   }
 
+  /** Returns the value a relation references on this entity — the `targetKey` column when set, otherwise the primary key. */
+  getTargetKeyValue(targetKey?: string): Primary<Entity> | null {
+    return targetKey ? ((this.entity as Dictionary)[targetKey] as Primary<Entity>) : this.getPrimaryKey();
+  }
+
+  /** Serialized counterpart of `getTargetKeyValue`, suitable for identity map / grouping keys. */
+  getSerializedTargetKey(targetKey?: string): string {
+    return targetKey ? '' + (this.entity as Dictionary)[targetKey] : this.getSerializedPrimaryKey();
+  }
+
   get __meta(): EntityMetadata<Entity> {
     return (this.entity as IWrappedEntityInternal<Entity>).__meta;
   }

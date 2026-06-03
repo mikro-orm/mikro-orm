@@ -454,9 +454,17 @@ export class Collection<T extends object, O extends object = object> {
     return em;
   }
 
+  /** The owning-side property this collection is mapped by (the inverse of `mappedBy`); `undefined` for the owning side of m:n. */
+  private get mappedByProp(): EntityProperty | undefined {
+    return this.property.mappedBy ? this.property.targetMeta!.properties[this.property.mappedBy] : undefined;
+  }
+
   private createCondition<TT extends T>(cond: FilterQuery<TT> = {}): FilterQuery<TT> {
     if (this.property.kind === ReferenceKind.ONE_TO_MANY) {
-      cond[this.property.mappedBy as unknown as FilterKey<TT>] = helper(this.owner).getPrimaryKey() as any;
+      // the owning FK may reference a non-PK column (`targetKey`), so match on that value when set
+      cond[this.property.mappedBy as unknown as FilterKey<TT>] = helper(this.owner).getTargetKeyValue(
+        this.mappedByProp?.targetKey,
+      ) as any;
     } else {
       // MANY_TO_MANY
       this.createManyToManyCondition(cond);
@@ -480,7 +488,12 @@ export class Collection<T extends object, O extends object = object> {
 
   private createLoadCountCondition(cond: FilterQuery<T>) {
     const wrapped = helper(this.owner);
-    const val = wrapped.__meta.compositePK ? { $in: wrapped.__primaryKeys } : wrapped.getPrimaryKey();
+    const ownerProp = this.mappedByProp;
+    const val = ownerProp?.targetKey
+      ? wrapped.getTargetKeyValue(ownerProp.targetKey)
+      : wrapped.__meta.compositePK
+        ? { $in: wrapped.__primaryKeys }
+        : wrapped.getPrimaryKey();
     const dict = cond as Dictionary;
 
     if (this.property.kind === ReferenceKind.ONE_TO_MANY) {
