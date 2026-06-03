@@ -596,6 +596,8 @@ export interface IWrappedEntityInternal<Entity extends object> extends IWrappedE
   getPrimaryKeys(convertCustomTypes?: boolean): Primary<Entity>[] | null;
   setPrimaryKey(val: Primary<Entity>): void;
   getSerializedPrimaryKey(): string & keyof Entity;
+  getTargetKeyValue(targetKey?: string): Primary<Entity> | null;
+  getSerializedTargetKey(targetKey?: string): string;
   __meta: EntityMetadata<Entity>;
   __data: Dictionary;
   __em?: EntityManager;
