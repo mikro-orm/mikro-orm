@@ -169,5 +169,5 @@
     "uuid": "14.0.0",
     "vitest": "4.1.8"
   },
-  "packageManager": "yarn@4.15.0"
+  "packageManager": "yarn@4.16.0"
 }
