@@ -695,7 +695,7 @@ export class EntityLoader {
           continue;
         }
 
-        const keyValue = helper(Reference.isReference(ref) ? ref.unwrap() : ref).getSerializedTargetKey(prop.targetKey);
+        const keyValue = helper(ref).getSerializedTargetKey(prop.targetKey);
         const loadedItem = itemsByKey.get(keyValue);
 
         if (loadedItem) {
