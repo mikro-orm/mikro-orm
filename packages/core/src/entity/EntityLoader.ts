@@ -504,8 +504,8 @@ export class EntityLoader {
         let key: string;
 
         if (targetKey) {
-          const ref = Reference.isReference(fk) ? fk.unwrap() : fk;
-          key = Utils.isEntity(ref) ? helper(ref).getSerializedTargetKey(targetKey) : '' + fk;
+          // `fk` is the owner reference (resolve its targetKey) unless the relation maps to the raw PK value
+          key = Utils.isEntity(fk, true) ? helper(fk).getSerializedTargetKey(targetKey) : '' + fk;
         } else {
           key = helper(
             ownerProp.mapToPk ? this.#em.getReference(prop.targetMeta!.class, fk) : fk,
