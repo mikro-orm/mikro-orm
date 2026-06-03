@@ -10,12 +10,12 @@ import {
   type IDatabaseDriver,
   loadEnvironmentVars,
   loadOptionalDependencies,
-  searchConfiguration,
   MikroORM,
   type Options,
   Utils,
 } from '@mikro-orm/core';
 import { fs } from '@mikro-orm/core/fs-utils';
+import { searchConfiguration } from './searchConfiguration.js';
 
 /**
  * @internal
