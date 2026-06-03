@@ -192,6 +192,11 @@ describe('non-PK relation target (targetKey)', () => {
     expect(books[0].title).toBe('My Book');
   });
 
+  test('collection.loadCount uses targetKey on owning side', async () => {
+    const author = await orm.em.findOneOrFail(Author, { name: 'John Doe' });
+    await expect(author.books.loadCount()).resolves.toBe(1);
+  });
+
   test('multiple books with same author are resolved correctly', async () => {
     // Create another book with the same author
     const author = await orm.em.findOneOrFail(Author, { name: 'John Doe' });

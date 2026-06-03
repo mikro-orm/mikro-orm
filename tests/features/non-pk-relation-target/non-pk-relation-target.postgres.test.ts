@@ -181,4 +181,14 @@ describe('non-PK relation target with schema (postgres)', () => {
     expect(books).toHaveLength(1);
     expect(books[0].title).toBe('Inverse Book 3');
   });
+
+  test('collection.loadCount uses targetKey on owning side', async () => {
+    const author = orm.em.create(Author, { uuid: 'uuid-inv-4', name: 'Inverse Four' });
+    orm.em.create(Book, { title: 'Inverse Book 4', author });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const loaded = await orm.em.findOneOrFail(Author, { uuid: 'uuid-inv-4' });
+    await expect(loaded.books.loadCount()).resolves.toBe(1);
+  });
 });
