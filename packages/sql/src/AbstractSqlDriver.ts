@@ -814,7 +814,7 @@ export abstract class AbstractSqlDriver<
       return;
     }
 
-    if (prop.polymorphic) {
+    if (prop.polymorphic && prop.kind !== ReferenceKind.EMBEDDED) {
       const discriminatorAlias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
       const discriminatorValue = root[discriminatorAlias] as string;
       const pkFieldNames = prop.fieldNames.slice(1);
