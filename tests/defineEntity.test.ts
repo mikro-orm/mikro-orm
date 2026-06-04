@@ -1776,6 +1776,33 @@ describe('EmbeddedOptionsBuilder', () => {
     expect(User.meta).toEqual(asSnapshot(UserSchema.meta));
     User.init();
   });
+
+  it('should allow .onCreate() returning an array on embedded arrays', () => {
+    const Address = defineEntity({
+      name: 'Address',
+      embeddable: true,
+      properties: p => ({
+        street: p.string(),
+      }),
+    });
+
+    const User = defineEntity({
+      name: 'User',
+      properties: p => ({
+        id: p.integer().primary().autoincrement(),
+        addresses: () =>
+          p
+            .embedded(Address)
+            .array()
+            .onCreate(() => []),
+      }),
+    });
+
+    type IUser = InferEntity<typeof User>;
+    assert<IsExact<IUser['addresses'], Opt<InferEntity<typeof Address>[]>>>(true);
+
+    expect(User.meta.properties.addresses.array).toBe(true);
+  });
 });
 
 describe('ManyToManyRelationOptionsBuilder', () => {

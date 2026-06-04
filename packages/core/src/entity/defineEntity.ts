@@ -130,14 +130,14 @@ export interface PropertyChain<Value, Options> {
   name<T extends string>(name: T): PropertyChain<Value, Omit<Options, 'fieldName'> & { fieldName: T }>;
   fieldName<T extends string>(fieldName: T): PropertyChain<Value, Omit<Options, 'fieldName'> & { fieldName: T }>;
   onCreate(
-    onCreate: (entity: any, em: EntityManager) => Value,
+    onCreate: (entity: any, em: EntityManager) => MaybeArray<Value, Options>,
   ): PropertyChain<Value, Options & { onCreate: (...args: any[]) => any }>;
   default(
     defaultValue: string | string[] | number | number[] | boolean | null | Date | Raw,
   ): PropertyChain<Value, Omit<Options, 'default'> & { default: any }>;
   defaultRaw(defaultRaw: string): PropertyChain<Value, Options & { defaultRaw: string }>;
   formula(formula: string | FormulaCallback<any>): PropertyChain<Value, Omit<Options, 'formula'> & { formula: any }>;
-  onUpdate(onUpdate: (entity: any, em: EntityManager) => Value): PropertyChain<Value, Options>;
+  onUpdate(onUpdate: (entity: any, em: EntityManager) => MaybeArray<Value, Options>): PropertyChain<Value, Options>;
   fieldNames(...fieldNames: string[]): PropertyChain<Value, Options>;
   type(type: PropertyValueType): PropertyChain<Value, Options>;
   runtimeType(runtimeType: string): PropertyChain<Value, Options>;
@@ -468,7 +468,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    * Automatically set the property value when entity gets created, executed during flush operation.
    */
   onCreate(
-    onCreate: (entity: any, em: EntityManager) => Value,
+    onCreate: (entity: any, em: EntityManager) => MaybeArray<Value, Options>,
   ): Pick<
     UniversalPropertyOptionsBuilder<Value, Options & { onCreate: (...args: any[]) => any }, IncludeKeys>,
     IncludeKeys
@@ -480,7 +480,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    * Automatically update the property value every time entity gets updated, executed during flush operation.
    */
   onUpdate(
-    onUpdate: (entity: any, em: EntityManager) => Value,
+    onUpdate: (entity: any, em: EntityManager) => MaybeArray<Value, Options>,
   ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ onUpdate });
   }
