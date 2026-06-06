@@ -162,9 +162,22 @@ jobs:
 
       - name: Install & pull docker images
         run: |
-          for i in 1 2 3; do docker compose pull && break || sleep $((i*15)); done &
+          # mcr.microsoft.com (mssql) intermittently returns "the request is blocked";
+          # retry with backoff and surface a real failure instead of masking it (the old
+          # loop ended on `sleep`, so an exhausted pull still exited 0 and the missing
+          # image only blew up later in `docker compose up`).
+          (
+            for i in 1 2 3 4 5; do
+              docker compose pull && exit 0
+              echo "::warning::docker compose pull attempt $i failed, retrying in $((i * 15))s"
+              sleep $((i * 15))
+            done
+            echo "::error::docker compose pull failed after 5 attempts"
+            exit 1
+          ) &
+          pull_pid=$!
           yarn
-          wait
+          wait "$pull_pid"
 
       - name: Init docker
         run: |
