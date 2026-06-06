@@ -23,6 +23,26 @@ type PgliteDriverOptions = Partial<PGliteOptions> & {
 const isInMemoryDataDir = (dataDir: string | undefined): boolean =>
   !dataDir || dataDir === 'memory://' || dataDir.startsWith('memory:');
 
+/**
+ * Named-database mode is active when `driverOptions.dataDir` points at a real
+ * (persistent) cluster. In that case `dbName` selects a database *within* the
+ * cluster (PGlite's `database` option) instead of acting as the cluster
+ * location, which unlocks the real `CREATE DATABASE` lifecycle (`database:create`,
+ * migrations) handled by `PgliteSchemaHelper`. It stays off for in-memory
+ * clusters (we keep a single instance alive across reconnects, so the database
+ * can't be switched without losing data) and when a user-owned instance is passed.
+ *
+ * @internal — shared between the connection and `PgliteSchemaHelper`.
+ */
+export const pgliteUsesNamedDatabase = (driverOptions: unknown): boolean => {
+  if (!driverOptions || typeof driverOptions !== 'object') {
+    return false;
+  }
+
+  const { pglite, dataDir } = driverOptions as PgliteDriverOptions;
+  return !pglite && !isInMemoryDataDir(dataDir);
+};
+
 /** PostgreSQL-in-WASM database connection using `@electric-sql/pglite`. */
 export class PgliteConnection extends AbstractSqlConnection {
   // Stored as a Promise so `createKyselyDialect` can stay synchronous (else
@@ -36,7 +56,11 @@ export class PgliteConnection extends AbstractSqlConnection {
     const onCreateConnection = this.options.onCreateConnection ?? this.config.get('onCreateConnection');
     const options = (overrides ?? {}) as PgliteDriverOptions;
     const { pglite: userPglite, ...pgliteOptions } = options;
-    const dataDir = options.dataDir ?? (this.config.get('dbName') as string | undefined);
+    const namedDatabase = pgliteUsesNamedDatabase(options);
+    const dbName = this.config.get('dbName') as string | undefined;
+    // In named-database mode the cluster lives at `driverOptions.dataDir` and
+    // `dbName` selects a database inside it; otherwise `dbName` *is* the cluster.
+    const dataDir = options.dataDir ?? dbName;
     const parsers = { ...createPostgreSqlTypeParsers(s => array.parse(s)), ...options.parsers };
 
     this.#ownsPglite = !userPglite;
@@ -53,7 +77,12 @@ export class PgliteConnection extends AbstractSqlConnection {
       if (userPglite) {
         this.#pglite = typeof userPglite === 'function' ? Promise.resolve(userPglite()) : Promise.resolve(userPglite);
       } else {
-        this.#pglite = PGlite.create({ ...pgliteOptions, dataDir, parsers });
+        this.#pglite = PGlite.create({
+          ...pgliteOptions,
+          dataDir,
+          parsers,
+          ...(namedDatabase ? { database: dbName } : {}),
+        });
       }
     }
 

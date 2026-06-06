@@ -58,6 +58,24 @@ export default defineConfig({
 });
 ```
 
+### Named databases inside a cluster
+
+By default `dbName` *is* the PGlite cluster location (the `dataDir`), so each database lives in its own directory. If you point `driverOptions.dataDir` at the cluster explicitly, `dbName` instead selects a named database *within* that cluster (PGlite's [`database`](https://pglite.dev/docs/api) option), just like a regular PostgreSQL server:
+
+```ts
+import { defineConfig } from '@mikro-orm/pglite';
+
+export default defineConfig({
+  entities: [...],
+  dbName: 'app', // a database inside the cluster
+  driverOptions: {
+    dataDir: './cluster', // the cluster location
+  },
+});
+```
+
+The database lifecycle then behaves like a regular PostgreSQL server — `orm.schema.ensureDatabase()` and the `database:create`/`database:drop` commands run real `CREATE DATABASE`/`DROP DATABASE` statements against the cluster. This requires a persistent `dataDir` (file or `idb://`) and is not available for in-memory clusters.
+
 ### Reusing an existing PGlite instance
 
 Pass an existing `PGlite` instance (or async factory) under `driverOptions.pglite` if you need to share it with non-ORM code, run multiple ORMs against the same database, or pre-load the WASM module yourself. MikroORM will not own the lifecycle — closing the ORM leaves your instance untouched, and the default type parsers are not applied (configure them on your own instance).
