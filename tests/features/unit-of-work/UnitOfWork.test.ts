@@ -100,6 +100,19 @@ describe('UnitOfWork', () => {
     expect(uow.getIdentityMap().get('Author-00000001885f0a3cc37dc9f0')).toBeUndefined();
   });
 
+  test('identity map keys() and values() do not overflow the V8 argument limit', () => {
+    const map = new IdentityMap();
+    class Foo {}
+    const store = map.getStore({ class: Foo } as any);
+
+    for (let i = 0; i < 200_000; i++) {
+      store.set(`pk${i}`, {} as any);
+    }
+
+    expect(map.keys()).toHaveLength(200_000);
+    expect(map.values()).toHaveLength(200_000);
+  });
+
   test('changeSet is null for readonly entity', async () => {
     const dummy = new Dummy();
     uow.merge(dummy);
