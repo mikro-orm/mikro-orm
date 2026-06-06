@@ -54,6 +54,9 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await orm.schema.clear();
+  // result cache lives on the shared orm instance and survives `em.clear()`,
+  // so reset it between runs to keep retries from reusing a stale entry
+  await orm.config.getResultCacheAdapter().clear();
 });
 
 afterAll(() => orm.close(true));
@@ -68,13 +71,13 @@ describe('result cache with custom types (GH 7112)', () => {
     const mockLog = mockLogger(orm, ['query']);
 
     // First query - from database
-    const res1 = await orm.em.findOneOrFail(EntityWithEncryptedProp, 1, { cache: 50 });
+    const res1 = await orm.em.findOneOrFail(EntityWithEncryptedProp, 1, { cache: 5000 });
     expect(mockLog.mock.calls).toHaveLength(1);
     expect(res1.secret).toBe('my-secret-value'); // decrypted
     orm.em.clear();
 
     // Second query - should hit cache and still return decrypted value
-    const res2 = await orm.em.findOneOrFail(EntityWithEncryptedProp, 1, { cache: 50 });
+    const res2 = await orm.em.findOneOrFail(EntityWithEncryptedProp, 1, { cache: 5000 });
     expect(mockLog.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res2.secret).toBe('my-secret-value'); // should still be decrypted
   });
@@ -90,13 +93,13 @@ describe('result cache with custom types (GH 7112)', () => {
     const mockLog = mockLogger(orm, ['query']);
 
     // First query - from database
-    const res1 = await orm.em.find(EntityWithEncryptedProp, {}, { cache: 50 });
+    const res1 = await orm.em.find(EntityWithEncryptedProp, {}, { cache: 5000 });
     expect(mockLog.mock.calls).toHaveLength(1);
     expect(res1.map(e => e.secret)).toEqual(['secret-1', 'secret-2']);
     orm.em.clear();
 
     // Second query - should hit cache
-    const res2 = await orm.em.find(EntityWithEncryptedProp, {}, { cache: 50 });
+    const res2 = await orm.em.find(EntityWithEncryptedProp, {}, { cache: 5000 });
     expect(mockLog.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res2.map(e => e.secret)).toEqual(['secret-1', 'secret-2']);
   });
