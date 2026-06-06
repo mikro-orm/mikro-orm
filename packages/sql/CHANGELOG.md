@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.4](https://github.com/mikro-orm/mikro-orm/compare/v7.1.3...v7.1.4) (2026-06-06)
+
+
+### Bug Fixes
+
+* **core:** populate polymorphic embedded arrays loaded via a relation ([#7846](https://github.com/mikro-orm/mikro-orm/issues/7846)) ([18f9b58](https://github.com/mikro-orm/mikro-orm/commit/18f9b58225e2e6c26adec0f81dbb59c5500f1ff7)), closes [#7845](https://github.com/mikro-orm/mikro-orm/issues/7845)
+* **postgres:** don't mis-detect JSON operator checks as enums ([#7829](https://github.com/mikro-orm/mikro-orm/issues/7829)) ([dee3d3a](https://github.com/mikro-orm/mikro-orm/commit/dee3d3ab5478276fc99ce782d403edb2d205472e)), closes [#7822](https://github.com/mikro-orm/mikro-orm/issues/7822)
+* **postgres:** introspect native enums with no members ([#7830](https://github.com/mikro-orm/mikro-orm/issues/7830)) ([aab9970](https://github.com/mikro-orm/mikro-orm/commit/aab9970ab1aa076a10e70edcd4f63e170767e883)), closes [#7825](https://github.com/mikro-orm/mikro-orm/issues/7825)
+* **postgres:** unwrap single-paren CHECK shell for bare boolean CASE bodies ([#7827](https://github.com/mikro-orm/mikro-orm/issues/7827)) ([52ef9e9](https://github.com/mikro-orm/mikro-orm/commit/52ef9e925bbec59f84c821f2bf269e9e9beb97fb)), closes [#7824](https://github.com/mikro-orm/mikro-orm/issues/7824)
+* **sql:** emit column name for kysely on-create/on-update hook injection ([#7837](https://github.com/mikro-orm/mikro-orm/issues/7837)) ([f4135f7](https://github.com/mikro-orm/mikro-orm/commit/f4135f72f8a948982f0245123f70d6b23ee24324)), closes [#7836](https://github.com/mikro-orm/mikro-orm/issues/7836)
+
+
+
+
+
 ## [7.1.3](https://github.com/mikro-orm/mikro-orm/compare/v7.1.2...v7.1.3) (2026-05-31)
 
 ### Features

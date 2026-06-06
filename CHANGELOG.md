@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.4](https://github.com/mikro-orm/mikro-orm/compare/v7.1.3...v7.1.4) (2026-06-06)
+
+
+### Bug Fixes
+
+* **core:** allow array return in onCreate/onUpdate on embedded/scalar arrays ([#7848](https://github.com/mikro-orm/mikro-orm/issues/7848)) ([b7e5232](https://github.com/mikro-orm/mikro-orm/commit/b7e52326492f3f5e5dfb7a2aa68852229d552941)), closes [#7847](https://github.com/mikro-orm/mikro-orm/issues/7847)
+* **core:** avoid spurious updates for object embeddables with undeclared keys ([#7823](https://github.com/mikro-orm/mikro-orm/issues/7823)) ([6b017d9](https://github.com/mikro-orm/mikro-orm/commit/6b017d925a30fe6cfd42fcff7e39f798eb5b0e6a)), closes [#7821](https://github.com/mikro-orm/mikro-orm/issues/7821) [#7821](https://github.com/mikro-orm/mikro-orm/issues/7821)
+* **core:** avoid stack overflow in IdentityMap.keys()/values() for large maps ([#7857](https://github.com/mikro-orm/mikro-orm/issues/7857)) ([8adf861](https://github.com/mikro-orm/mikro-orm/commit/8adf86178ef5841f9191ca29a4eac5f0e7034d18))
+* **core:** keep STI primary key NOT NULL when a child re-declares it ([#7828](https://github.com/mikro-orm/mikro-orm/issues/7828)) ([31a12bb](https://github.com/mikro-orm/mikro-orm/commit/31a12bb52a41d7b32604724814762a9e9f3bb2f0)), closes [#7826](https://github.com/mikro-orm/mikro-orm/issues/7826)
+* **core:** populate polymorphic embedded arrays loaded via a relation ([#7846](https://github.com/mikro-orm/mikro-orm/issues/7846)) ([18f9b58](https://github.com/mikro-orm/mikro-orm/commit/18f9b58225e2e6c26adec0f81dbb59c5500f1ff7)), closes [#7845](https://github.com/mikro-orm/mikro-orm/issues/7845)
+* **core:** use owner targetKey for inverse collection loads ([#7844](https://github.com/mikro-orm/mikro-orm/issues/7844)) ([8d46fe9](https://github.com/mikro-orm/mikro-orm/commit/8d46fe9e0440d01d68048ebb190a17e92823919f)), closes [#7842](https://github.com/mikro-orm/mikro-orm/issues/7842) [#7842](https://github.com/mikro-orm/mikro-orm/issues/7842)
+* **postgres:** don't mis-detect JSON operator checks as enums ([#7829](https://github.com/mikro-orm/mikro-orm/issues/7829)) ([dee3d3a](https://github.com/mikro-orm/mikro-orm/commit/dee3d3ab5478276fc99ce782d403edb2d205472e)), closes [#7822](https://github.com/mikro-orm/mikro-orm/issues/7822)
+* **postgres:** introspect native enums with no members ([#7830](https://github.com/mikro-orm/mikro-orm/issues/7830)) ([aab9970](https://github.com/mikro-orm/mikro-orm/commit/aab9970ab1aa076a10e70edcd4f63e170767e883)), closes [#7825](https://github.com/mikro-orm/mikro-orm/issues/7825)
+* **postgres:** unwrap single-paren CHECK shell for bare boolean CASE bodies ([#7827](https://github.com/mikro-orm/mikro-orm/issues/7827)) ([52ef9e9](https://github.com/mikro-orm/mikro-orm/commit/52ef9e925bbec59f84c821f2bf269e9e9beb97fb)), closes [#7824](https://github.com/mikro-orm/mikro-orm/issues/7824)
+* **sql:** emit column name for kysely on-create/on-update hook injection ([#7837](https://github.com/mikro-orm/mikro-orm/issues/7837)) ([f4135f7](https://github.com/mikro-orm/mikro-orm/commit/f4135f72f8a948982f0245123f70d6b23ee24324)), closes [#7836](https://github.com/mikro-orm/mikro-orm/issues/7836)
+
+
+### Features
+
+* **cli:** added searchConfiguration() to analyze config file for context ([#7834](https://github.com/mikro-orm/mikro-orm/issues/7834)) ([8a1066b](https://github.com/mikro-orm/mikro-orm/commit/8a1066bbd79b89a045f99d1ef00d7dda739c8ac6))
+* **pglite:** support named databases inside a cluster ([#7854](https://github.com/mikro-orm/mikro-orm/issues/7854)) ([2038f07](https://github.com/mikro-orm/mikro-orm/commit/2038f075e863a7e56c7e18a3d796fe498ac5a42f)), closes [#7852](https://github.com/mikro-orm/mikro-orm/issues/7852)
+
+
+
+
+
 ## [7.1.3](https://github.com/mikro-orm/mikro-orm/compare/v7.1.2...v7.1.3) (2026-05-31)
 
 

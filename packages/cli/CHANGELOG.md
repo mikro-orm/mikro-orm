@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.4](https://github.com/mikro-orm/mikro-orm/compare/v7.1.3...v7.1.4) (2026-06-06)
+
+
+### Features
+
+* **cli:** added searchConfiguration() to analyze config file for context ([#7834](https://github.com/mikro-orm/mikro-orm/issues/7834)) ([8a1066b](https://github.com/mikro-orm/mikro-orm/commit/8a1066bbd79b89a045f99d1ef00d7dda739c8ac6))
+
+
+
+
+
 ## [7.1.3](https://github.com/mikro-orm/mikro-orm/compare/v7.1.2...v7.1.3) (2026-05-31)
 
 **Note:** Version bump only for package @mikro-orm/cli

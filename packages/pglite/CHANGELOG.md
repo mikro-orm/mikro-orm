@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.4](https://github.com/mikro-orm/mikro-orm/compare/v7.1.3...v7.1.4) (2026-06-06)
+
+
+### Features
+
+* **pglite:** support named databases inside a cluster ([#7854](https://github.com/mikro-orm/mikro-orm/issues/7854)) ([2038f07](https://github.com/mikro-orm/mikro-orm/commit/2038f075e863a7e56c7e18a3d796fe498ac5a42f)), closes [#7852](https://github.com/mikro-orm/mikro-orm/issues/7852)
+
+
+
+
+
 ## [7.1.3](https://github.com/mikro-orm/mikro-orm/compare/v7.1.2...v7.1.3) (2026-05-31)
 
 **Note:** Version bump only for package @mikro-orm/pglite
