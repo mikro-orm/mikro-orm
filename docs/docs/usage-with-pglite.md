@@ -74,7 +74,7 @@ export default defineConfig({
 });
 ```
 
-In this mode the database lifecycle behaves like a regular PostgreSQL server: `orm.schema.ensureDatabase()` and the `database:create`/`database:drop` CLI commands connect to the cluster's `postgres` management database, run a real `CREATE DATABASE`/`DROP DATABASE`, and reconnect to the target. The `CREATE DATABASE` is never part of a migration — migration files only contain schema DDL; it is the one-off bootstrap step `ensureDatabase()` performs (the same call the migrator runs on startup, so `migration:up` against a not-yet-existing database creates it first). This requires a persistent `dataDir` (file or `idb://`); it is not available for in-memory clusters, where a single instance is kept alive across reconnects.
+The database lifecycle then behaves like a regular PostgreSQL server — `orm.schema.ensureDatabase()` and the `database:create`/`database:drop` commands run real `CREATE DATABASE`/`DROP DATABASE` statements against the cluster. This requires a persistent `dataDir` (file or `idb://`) and is not available for in-memory clusters.
 
 ### Reusing an existing PGlite instance
 
