@@ -81,7 +81,9 @@ export class IdentityMap {
     const ret: AnyEntity[] = [];
 
     for (const store of this.#registry.values()) {
-      ret.push(...store.values());
+      for (const item of store.values()) {
+        ret.push(item);
+      }
     }
 
     return ret;
@@ -100,7 +102,9 @@ export class IdentityMap {
     const ret: string[] = [];
 
     for (const [cls, store] of this.#registry) {
-      ret.push(...[...store.keys()].map(hash => `${cls.name}-${hash}`));
+      for (const hash of store.keys()) {
+        ret.push(`${cls.name}-${hash}`);
+      }
     }
 
     return ret;
