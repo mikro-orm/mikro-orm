@@ -5,18 +5,13 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.1.4](https://github.com/mikro-orm/mikro-orm/compare/v7.1.3...v7.1.4) (2026-06-06)
 
-
 ### Bug Fixes
 
-* **core:** allow array return in onCreate/onUpdate on embedded/scalar arrays ([#7848](https://github.com/mikro-orm/mikro-orm/issues/7848)) ([b7e5232](https://github.com/mikro-orm/mikro-orm/commit/b7e52326492f3f5e5dfb7a2aa68852229d552941)), closes [#7847](https://github.com/mikro-orm/mikro-orm/issues/7847)
-* **core:** avoid spurious updates for object embeddables with undeclared keys ([#7823](https://github.com/mikro-orm/mikro-orm/issues/7823)) ([6b017d9](https://github.com/mikro-orm/mikro-orm/commit/6b017d925a30fe6cfd42fcff7e39f798eb5b0e6a)), closes [#7821](https://github.com/mikro-orm/mikro-orm/issues/7821) [#7821](https://github.com/mikro-orm/mikro-orm/issues/7821)
-* **core:** avoid stack overflow in IdentityMap.keys()/values() for large maps ([#7857](https://github.com/mikro-orm/mikro-orm/issues/7857)) ([8adf861](https://github.com/mikro-orm/mikro-orm/commit/8adf86178ef5841f9191ca29a4eac5f0e7034d18))
-* **core:** keep STI primary key NOT NULL when a child re-declares it ([#7828](https://github.com/mikro-orm/mikro-orm/issues/7828)) ([31a12bb](https://github.com/mikro-orm/mikro-orm/commit/31a12bb52a41d7b32604724814762a9e9f3bb2f0)), closes [#7826](https://github.com/mikro-orm/mikro-orm/issues/7826)
-* **core:** use owner targetKey for inverse collection loads ([#7844](https://github.com/mikro-orm/mikro-orm/issues/7844)) ([8d46fe9](https://github.com/mikro-orm/mikro-orm/commit/8d46fe9e0440d01d68048ebb190a17e92823919f)), closes [#7842](https://github.com/mikro-orm/mikro-orm/issues/7842) [#7842](https://github.com/mikro-orm/mikro-orm/issues/7842)
-
-
-
-
+- **core:** allow array return in onCreate/onUpdate on embedded/scalar arrays ([#7848](https://github.com/mikro-orm/mikro-orm/issues/7848)) ([b7e5232](https://github.com/mikro-orm/mikro-orm/commit/b7e52326492f3f5e5dfb7a2aa68852229d552941)), closes [#7847](https://github.com/mikro-orm/mikro-orm/issues/7847)
+- **core:** avoid spurious updates for object embeddables with undeclared keys ([#7823](https://github.com/mikro-orm/mikro-orm/issues/7823)) ([6b017d9](https://github.com/mikro-orm/mikro-orm/commit/6b017d925a30fe6cfd42fcff7e39f798eb5b0e6a)), closes [#7821](https://github.com/mikro-orm/mikro-orm/issues/7821) [#7821](https://github.com/mikro-orm/mikro-orm/issues/7821)
+- **core:** avoid stack overflow in IdentityMap.keys()/values() for large maps ([#7857](https://github.com/mikro-orm/mikro-orm/issues/7857)) ([8adf861](https://github.com/mikro-orm/mikro-orm/commit/8adf86178ef5841f9191ca29a4eac5f0e7034d18))
+- **core:** keep STI primary key NOT NULL when a child re-declares it ([#7828](https://github.com/mikro-orm/mikro-orm/issues/7828)) ([31a12bb](https://github.com/mikro-orm/mikro-orm/commit/31a12bb52a41d7b32604724814762a9e9f3bb2f0)), closes [#7826](https://github.com/mikro-orm/mikro-orm/issues/7826)
+- **core:** use owner targetKey for inverse collection loads ([#7844](https://github.com/mikro-orm/mikro-orm/issues/7844)) ([8d46fe9](https://github.com/mikro-orm/mikro-orm/commit/8d46fe9e0440d01d68048ebb190a17e92823919f)), closes [#7842](https://github.com/mikro-orm/mikro-orm/issues/7842) [#7842](https://github.com/mikro-orm/mikro-orm/issues/7842)
 
 ## [7.1.3](https://github.com/mikro-orm/mikro-orm/compare/v7.1.2...v7.1.3) (2026-05-31)
 

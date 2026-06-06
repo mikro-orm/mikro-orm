@@ -7,10 +7,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package @mikro-orm/knex-compat
 
-
-
-
-
 ## [7.1.3](https://github.com/mikro-orm/mikro-orm/compare/v7.1.2...v7.1.3) (2026-05-31)
 
 **Note:** Version bump only for package @mikro-orm/knex-compat
