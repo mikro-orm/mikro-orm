@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { MikroORM } from '@mikro-orm/pglite';
+import { MikroORM, pgliteUsesNamedDatabase } from '@mikro-orm/pglite';
 import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
@@ -77,6 +77,42 @@ describe('GH #7852 — named databases inside a pglite cluster', () => {
       .getConnection()
       .execute<{ datname: string }[]>(`select datname from pg_database where datname = 'mydb'`);
     expect(dbs).toHaveLength(0);
+
+    await orm.close();
+  });
+
+  test('driverOptions can be a factory (resolved consistently by the schema helper)', async () => {
+    const orm = await MikroORM.init({
+      entities: [User],
+      dbName: 'factory_db',
+      driverOptions: () => ({ dataDir }),
+    });
+
+    expect(await orm.schema.ensureDatabase()).toBe(true);
+    const [{ db }] = await orm.em.getConnection().execute<{ db: string }[]>('select current_database() as db');
+    expect(db).toBe('factory_db');
+
+    await orm.close();
+  });
+
+  test('pgliteUsesNamedDatabase only activates for a persistent, ORM-owned cluster', () => {
+    expect(pgliteUsesNamedDatabase(undefined)).toBe(false);
+    expect(pgliteUsesNamedDatabase('not-an-object')).toBe(false);
+    expect(pgliteUsesNamedDatabase({})).toBe(false); // no dataDir
+    expect(pgliteUsesNamedDatabase({ dataDir: 'memory://' })).toBe(false); // in-memory cluster
+    expect(pgliteUsesNamedDatabase({ dataDir })).toBe(true);
+    expect(pgliteUsesNamedDatabase({ dataDir, pglite: {} })).toBe(false); // user-owned instance
+  });
+
+  test('schema helper is a no-op in single-database mode (no driverOptions.dataDir)', async () => {
+    const orm = await MikroORM.init({ entities: [User], dbName: 'memory://' });
+    const helper = orm.em.getPlatform().getSchemaHelper()!;
+
+    expect(helper.getManagementDbName()).toBe('');
+    expect(helper.getCreateDatabaseSQL('foo')).toBe('');
+    expect(helper.getDropDatabaseSQL('foo')).toBe('');
+    expect(helper.getDatabaseNotExistsError('foo')).toContain('does not exist');
+    expect(await helper.databaseExists(orm.em.getConnection(), 'foo')).toBe(true);
 
     await orm.close();
   });
