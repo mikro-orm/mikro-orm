@@ -64,14 +64,16 @@ export class PgliteConnection extends AbstractSqlConnection {
     const parsers = { ...createPostgreSqlTypeParsers(s => array.parse(s)), ...options.parsers };
 
     this.#ownsPglite = !userPglite;
-    // Skip `pglite.close()` (called by kysely's `PGliteDriver.destroy()`) when:
-    //   - the user owns the instance (closing it is their responsibility), or
-    //   - we hold an in-memory DB whose data would otherwise be lost on
-    //     reconnect (e.g. test harnesses that drive `orm.close()` + `orm.connect()`).
-    // For file/IDB-backed instances we let kysely close so file handles / IDB
-    // connections are released; we drop our cached promise in `close()` below
-    // so the next dialect-construction rebuilds the PGlite instance.
-    this.#neuterClose = !this.#ownsPglite || isInMemoryDataDir(dataDir);
+    // Skip `pglite.close()` (called by kysely's `PGliteDriver.destroy()`) only
+    // when the user owns the instance — closing it is their responsibility, and
+    // patching `close` on it directly would orphan it (its real `close` would
+    // stay neutered after `orm.close()`). Instances we own (in-memory or
+    // file/IDB-backed) get really closed so the underlying WASM / file handle /
+    // IDB resources are released; we drop our cached promise in `close()` below
+    // so the next dialect-construction rebuilds the PGlite instance. In-memory
+    // data does not survive `orm.close()`, consistent with other in-memory
+    // drivers (e.g. SQLite `:memory:`).
+    this.#neuterClose = !this.#ownsPglite;
 
     if (!this.#pglite) {
       if (userPglite) {
@@ -118,9 +120,9 @@ export class PgliteConnection extends AbstractSqlConnection {
 
   override async close(force?: boolean): Promise<void> {
     await super.close(force);
-    // Persistent backings (file/IDB) we own get really closed by kysely — drop
-    // the cached promise so a subsequent reconnect rebuilds a fresh instance
-    // (which then re-reads the persisted data from disk / IDB).
+    // Instances we own get really closed by kysely — drop the cached promise so a
+    // subsequent reconnect rebuilds a fresh instance (file/IDB backings re-read the
+    // persisted data; in-memory starts empty, matching other in-memory drivers).
     if (this.#ownsPglite && !this.#neuterClose) {
       this.#pglite = undefined;
     }
