@@ -82,23 +82,27 @@ describe('EntityManagerPglite', () => {
   afterAll(async () => orm.close(true));
 
   test('isConnected()', async () => {
-    expect(orm.driver.getORMClass()).toBe(MikroORM);
-    expect(await orm.isConnected()).toBe(true);
-    expect(await orm.checkConnection()).toEqual({
+    // own throwaway ORM — closing an in-memory pglite really tears it down now,
+    // so we must not close the shared `orm` other tests rely on
+    const orm2 = await initORMPglite();
+    expect(orm2.driver.getORMClass()).toBe(MikroORM);
+    expect(await orm2.isConnected()).toBe(true);
+    expect(await orm2.checkConnection()).toEqual({
       ok: true,
     });
-    await orm.close(true);
-    expect(await orm.isConnected()).toBe(false);
-    const check = await orm.checkConnection();
+    await orm2.close(true);
+    expect(await orm2.isConnected()).toBe(false);
+    const check = await orm2.checkConnection();
     expect(check).toMatchObject({
       ok: false,
       reason: 'Connection not established',
     });
-    await orm.connect();
-    expect(await orm.isConnected()).toBe(true);
-    expect(await orm.checkConnection()).toEqual({
+    await orm2.connect();
+    expect(await orm2.isConnected()).toBe(true);
+    expect(await orm2.checkConnection()).toEqual({
       ok: true,
     });
+    await orm2.close(true);
   });
 
   test('raw query with array param', async () => {
