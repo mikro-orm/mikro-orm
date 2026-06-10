@@ -138,7 +138,7 @@
     "@swc/core": "1.15.40",
     "@types/better-sqlite3": "7.6.13",
     "@types/node": "24.13.1",
-    "@types/oracledb": "6.10.4",
+    "@types/oracledb": "7.0.0",
     "@types/pg": "8.20.0",
     "@types/pg-cursor": "2.7.2",
     "@types/picomatch": "4.0.3",
