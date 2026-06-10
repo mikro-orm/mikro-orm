@@ -1179,7 +1179,12 @@ export class MetadataDiscovery {
       return false;
     }
 
-    if (prop.kind !== ReferenceKind.MANY_TO_ONE && prop.kind !== ReferenceKind.ONE_TO_ONE) {
+    if (
+      prop.kind !== ReferenceKind.MANY_TO_ONE &&
+      prop.kind !== ReferenceKind.ONE_TO_ONE &&
+      prop.kind !== ReferenceKind.ONE_TO_MANY &&
+      prop.kind !== ReferenceKind.MANY_TO_MANY
+    ) {
       return false;
     }
 
@@ -1232,7 +1237,15 @@ export class MetadataDiscovery {
       const narrowedRelationOverride =
         rootProp != null && rootProp.type !== prop.type && this.sameRelationTargetRoot(rootProp, prop);
 
-      if (rootProp && !narrowedRelationOverride && (rootProp.type !== prop.type || (rootProp.fieldNames && prop.fieldNames && !compareArrays(rootProp.fieldNames, prop.fieldNames)))) {
+      // Inverse-side relations (1:m, inverse m:n) have no FK column on this
+      // entity, so the rename branch — which exists to disambiguate physical
+      // columns shared across STI children — doesn't apply. Skipping it also
+      // avoids crashing on `[...rootProp.fieldNames]` since fieldNames is
+      // never populated for inverse-side properties.
+      const isInverseSideRelation =
+        prop.kind === ReferenceKind.ONE_TO_MANY || (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner);
+
+      if (rootProp && !narrowedRelationOverride && !isInverseSideRelation && (rootProp.type !== prop.type || (rootProp.fieldNames && prop.fieldNames && !compareArrays(rootProp.fieldNames, prop.fieldNames)))) {
         const name = newProp.name;
         this.initFieldName(newProp, newProp.object);
         newProp.renamedFrom = name;
@@ -1275,6 +1288,15 @@ export class MetadataDiscovery {
       // the full target union (e.g. `Food`) is preserved for populates from the
       // abstract root — otherwise the last child processed would win.
       if (narrowedRelationOverride) {
+        return;
+      }
+
+      // STI siblings can declare the same property name on inverse-side relations
+      // pointing to disjoint targets (e.g. `Dog.items → DogItem` and
+      // `Cat.items → CatItem` with no shared base). There's no physical column
+      // to manage at root, and propagating would clobber the first child's
+      // declaration; each child keeps its local typed property instead.
+      if (isInverseSideRelation && rootProp && rootProp.type !== prop.type) {
         return;
       }
 
