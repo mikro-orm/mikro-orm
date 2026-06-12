@@ -254,7 +254,7 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
     // reflect-metadata, so the consumer needs the actual class reference, not
     // an erased type alias. Aliasing keeps the local name free for our own
     // `EntityManager` re-export.
-    lines.push(`import { EntityManager as DriverEntityManager } from '${driverPackage}';`);
+    lines.push(`import { type Constructor, EntityManager as DriverEntityManager } from '${driverPackage}';`);
 
     lines.push('');
 
@@ -283,7 +283,7 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
     // `constructor(em: EntityManager) {}` resolves through Nest's container
     // just like importing the class straight from the driver package.
     lines.push("export type EntityManager = DriverEntityManager & { '~entities': Database };");
-    lines.push('export const EntityManager = DriverEntityManager;');
+    lines.push('export const EntityManager = DriverEntityManager as Constructor<EntityManager>;');
 
     lines.push('');
 
