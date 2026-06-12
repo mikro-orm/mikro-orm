@@ -168,7 +168,7 @@ export class MsSqlConnection extends AbstractSqlConnection {
     const result = await this.execute(batch.join('; '), allValues, 'all', ctx);
 
     if (outVars.length === 0) {
-      return undefined as T;
+      return result as T;
     }
 
     const rows = result as Dictionary[];
@@ -178,7 +178,7 @@ export class MsSqlConnection extends AbstractSqlConnection {
       args,
     );
 
-    return undefined as T;
+    return result as T;
   }
 
   override async commit(

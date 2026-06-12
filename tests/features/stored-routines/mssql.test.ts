@@ -112,4 +112,35 @@ describe('stored routines — MSSQL', () => {
 
     await orm2.close(true);
   });
+
+  it('em.callRoutine returns result sets from procedures without OUT/INOUT params', async () => {
+    const GetRecords = Routine.create<{ p_name: string }, RecordEntity[]>({
+      name: 'get_records',
+      type: 'procedure',
+      params: {
+        p_name: { type: 'nvarchar(255)' },
+      },
+      body: 'select hash, name, age from record_entity where name = @p_name;',
+    });
+
+    const orm2 = await MikroORM.init({
+      dbName,
+      password: 'Root.Root',
+      entities: [RecordEntity],
+      routines: [GetRecords],
+    });
+    await orm2.schema.update();
+
+    // First insert a record to query
+    await orm2.em.insert(RecordEntity, { hash: 'test-hash-123', name: 'Alice', age: 30 });
+
+    // Now call the procedure that returns result sets
+    const result = await orm2.em.callRoutine(GetRecords, { p_name: 'Alice' });
+    expect(result).toBeDefined();
+    expect(Array.isArray(result)).toBe(true);
+    expect(result.length).toBeGreaterThan(0);
+    expect(result[0]).toEqual({ hash: 'test-hash-123', name: 'Alice', age: 30 });
+
+    await orm2.close(true);
+  });
 });
