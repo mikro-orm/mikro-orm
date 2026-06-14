@@ -451,7 +451,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
 
     const stmts: string[] = [];
 
-    for (const meta of this.getOrderedMetadata(options?.schema).reverse()) {
+    for (const meta of this.getOrderedMetadataForClear(options?.schema).reverse()) {
       const schema =
         meta.schema && meta.schema !== '*'
           ? meta.schema
