@@ -165,13 +165,14 @@ export class MsSqlConnection extends AbstractSqlConnection {
       batch.push(`select ${selectClause}`);
     }
 
-    const result = await this.execute(batch.join('; '), allValues, 'all', ctx);
+    const rows = (await this.execute(batch.join('; '), allValues, 'all', ctx)) as Dictionary[];
 
     if (outVars.length === 0) {
-      return undefined as T;
+      // A procedure can still return result sets via SELECT without declaring OUT params —
+      // surface those rows instead of discarding them. Pure-DML procedures yield no rows.
+      return (rows.length > 0 ? rows : undefined) as T;
     }
 
-    const rows = result as Dictionary[];
     this.applyRoutineOutParams(
       rows[0] ?? {},
       outVars.map(o => o.param),

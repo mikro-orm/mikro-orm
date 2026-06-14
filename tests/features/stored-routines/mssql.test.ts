@@ -85,6 +85,37 @@ describe('stored routines — MSSQL', () => {
     expect(found!.name).toBe('Jon Snow');
   });
 
+  it('em.callRoutine returns result set rows for a procedure without OUT params (#7872)', async () => {
+    const ListRecords = new Routine({
+      name: 'list_records',
+      type: 'procedure',
+      params: {
+        p_name: { type: 'nvarchar(255)' },
+      },
+      returns: () => RecordEntity,
+      body: 'select id, hash, name, age from record_entity where name = @p_name;',
+    });
+
+    const orm2 = await MikroORM.init({
+      dbName,
+      password: 'Root.Root',
+      entities: [RecordEntity],
+      routines: [ListRecords],
+    });
+    await orm2.schema.update();
+
+    await orm2.em.insertMany(RecordEntity, [
+      { hash: 'list-1', name: 'Arya', age: 18 },
+      { hash: 'list-2', name: 'Arya', age: 20 },
+    ]);
+
+    const rows = await orm2.em.callRoutine(ListRecords, { p_name: 'Arya' });
+    expect(rows).toBeDefined();
+    expect(rows!.map(r => r.hash).sort()).toEqual(['list-1', 'list-2']);
+
+    await orm2.close(true);
+  });
+
   it('em.callRoutine invokes an IN-only procedure (no OUT/INOUT params)', async () => {
     const InsertRecord = new Routine({
       name: 'insert_record',
