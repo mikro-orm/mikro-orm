@@ -225,6 +225,7 @@ describe('View entities (sqlite)', () => {
     await orm2.schema.create();
 
     await expect(orm2.schema.clear()).resolves.not.toThrow();
+    await expect(orm2.schema.clear({ truncate: false })).resolves.not.toThrow();
 
     await orm2.close(true);
   });

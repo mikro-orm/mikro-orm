@@ -451,12 +451,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
 
     const stmts: string[] = [];
 
-    for (const meta of this.getOrderedMetadata(options?.schema).reverse()) {
-      // view entities are not backed by a real table, so there is nothing to delete
-      if (meta.view) {
-        continue;
-      }
-
+    for (const meta of this.getOrderedMetadataForClear(options?.schema).reverse()) {
       const schema =
         meta.schema && meta.schema !== '*'
           ? meta.schema

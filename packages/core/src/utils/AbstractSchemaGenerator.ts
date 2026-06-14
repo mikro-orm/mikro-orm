@@ -58,12 +58,7 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
   }
 
   async clear(options?: ClearDatabaseOptions): Promise<void> {
-    for (const meta of this.getOrderedMetadata(options?.schema).reverse()) {
-      // view entities are not backed by a real table, so there is nothing to delete
-      if (meta.view) {
-        continue;
-      }
-
+    for (const meta of this.getOrderedMetadataForClear(options?.schema).reverse()) {
       await this.driver.nativeDelete(meta.class, {}, options);
     }
 
@@ -168,6 +163,11 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
         const targetSchema = meta.schema ?? this.config.get('schema', this.platform.getDefaultSchemaName());
         return schema ? [schema, '*'].includes(targetSchema) : meta.schema !== '*';
       });
+  }
+
+  /** View entities are not backed by real tables, so they must be skipped when truncating/deleting during `clear()`. */
+  protected getOrderedMetadataForClear(schema?: string): EntityMetadata[] {
+    return this.getOrderedMetadata(schema).filter(meta => !meta.view);
   }
 
   protected notImplemented(): never {
