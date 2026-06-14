@@ -3,6 +3,7 @@ export * from './PgliteConnection.js';
 export * from './PgliteDriver.js';
 export * from './PglitePlatform.js';
 export * from './PgliteSchemaHelper.js';
+export * from './PgliteSchemaGenerator.js';
 export {
   PgliteMikroORM as MikroORM,
   type PgliteOptions as Options,
