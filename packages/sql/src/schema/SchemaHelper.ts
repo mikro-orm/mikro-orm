@@ -27,6 +27,24 @@ export function stripStatementNewlines(body: string): string {
   return body.replace(/;[\t ]*\r?\n/g, '; ');
 }
 
+/**
+ * Strips SQL comments and blank lines from a view definition. Comments are dropped by the database
+ * on `create view` anyway, and a `--` comment would otherwise comment out the rest of the definition
+ * once newlines are collapsed; blank lines act as statement separators in the schema-generator's
+ * statement splitter, which would break the view DDL apart.
+ *
+ * The stripping is not string-literal aware, so comment markers inside string literals (or `a--b`
+ * style arithmetic) are treated as comments — an accepted tradeoff to avoid a full SQL tokenizer.
+ * @see https://github.com/mikro-orm/mikro-orm/issues/7875
+ */
+export function normalizeViewDefinition(definition: string): string {
+  return definition
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/--[^\n]*/g, '')
+    .replace(/[\t ]*\r?\n(?:[\t ]*\r?\n)+/g, '\n')
+    .trim();
+}
+
 /** Base class for database-specific schema helpers. Provides SQL generation for DDL operations. */
 export abstract class SchemaHelper {
   constructor(protected readonly platform: AbstractSqlPlatform) {}

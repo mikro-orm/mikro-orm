@@ -178,13 +178,11 @@ alter table "configuration2" add constraint "configuration2_test_id_foreign" for
 alter table "test2_bars" add constraint "test2_bars_test2_id_foreign" foreign key ("test2_id") references "test2" ("id") on update cascade on delete cascade;
 alter table "test2_bars" add constraint "test2_bars_foo_bar2_id_foreign" foreign key ("foo_bar2_id") references "foo_bar2" ("id") on update cascade on delete cascade;
 
-create view "select_star_view" as 
-    SELECT
+create view "select_star_view" as SELECT
     *
     FROM author2;
 
-create view "multiline_author_stats_view" as 
-    SELECT
+create view "multiline_author_stats_view" as SELECT
     name, (select count(*)::int from book2 b where b.author_id = a.id) as book_count
     FROM author2 a
     GROUP BY a.id;
@@ -375,8 +373,7 @@ alter table "configuration2" add constraint "configuration2_test_id_foreign" for
 alter table "test2_bars" add constraint "test2_bars_test2_id_foreign" foreign key ("test2_id") references "test2" ("id") on update cascade on delete cascade;
 alter table "test2_bars" add constraint "test2_bars_foo_bar2_id_foreign" foreign key ("foo_bar2_id") references "foo_bar2" ("id") on update cascade on delete cascade;
 
-create view "book_metadata_view" as 
-    select
+create view "book_metadata_view" as select
       b.uuid_pk,
       b.title,
       b.price,
