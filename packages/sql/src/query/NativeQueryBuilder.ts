@@ -558,7 +558,8 @@ export class NativeQueryBuilder implements Subquery {
 
   protected processInsertData(): string[] {
     const dataAsArray = Utils.asArray(this.options.data);
-    const keys = Object.keys(dataAsArray[0]);
+    const keys =
+      dataAsArray.length > 1 ? [...new Set(dataAsArray.flatMap(row => Object.keys(row)))] : Object.keys(dataAsArray[0]);
     const values = keys.map(() => '?');
     const parts = [];
     this.parts.push(`(${keys.map(key => this.quote(key)).join(', ')})`);
