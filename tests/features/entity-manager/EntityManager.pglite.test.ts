@@ -3109,6 +3109,10 @@ describe('EntityManagerPglite', () => {
   test('createDatabase / dropDatabase are no-ops on pglite', async () => {
     await orm.schema.createDatabase('whatever');
     await orm.schema.dropDatabase('whatever');
+
+    // single-database PGlite must not materialize an on-disk data directory for the name
+    const { existsSync } = await import('node:fs');
+    expect(existsSync('whatever')).toBe(false);
   });
 
   test('MikroORM.init resolves with PgliteDriver and accepts a PGlite instance', async () => {

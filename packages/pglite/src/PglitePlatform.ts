@@ -1,8 +1,10 @@
 import array from 'postgres-array';
 import parseDate from 'postgres-date';
 import PostgresInterval, { type IPostgresInterval } from 'postgres-interval';
-import { BasePostgreSqlPlatform, Utils } from '@mikro-orm/sql';
+import { BasePostgreSqlPlatform, type EntityManager, type IDatabaseDriver, type MikroORM, Utils } from '@mikro-orm/sql';
 import { PgliteSchemaHelper } from './PgliteSchemaHelper.js';
+import { PgliteSchemaGenerator } from './PgliteSchemaGenerator.js';
+import type { PgliteDriver } from './PgliteDriver.js';
 
 /** Platform implementation for PGlite (PostgreSQL in WASM, single-database). */
 export class PglitePlatform extends BasePostgreSqlPlatform {
@@ -11,6 +13,15 @@ export class PglitePlatform extends BasePostgreSqlPlatform {
   /** PGlite uses the extended query protocol — one statement per `query()` call. */
   override supportsMultipleStatements(): boolean {
     return false;
+  }
+
+  override lookupExtensions(orm: MikroORM<PgliteDriver>): void {
+    PgliteSchemaGenerator.register(orm);
+  }
+
+  /* v8 ignore next: kept for type inference only */
+  override getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): PgliteSchemaGenerator {
+    return new PgliteSchemaGenerator(em ?? (driver as any));
   }
 
   override convertIntervalToJSValue(value: string): unknown {
