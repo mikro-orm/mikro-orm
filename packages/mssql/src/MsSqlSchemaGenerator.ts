@@ -16,6 +16,11 @@ export class MsSqlSchemaGenerator extends SchemaGenerator {
 
     // https://stackoverflow.com/questions/253849/cannot-truncate-table-because-it-is-being-referenced-by-a-foreign-key-constraint
     for (const meta of this.getOrderedMetadata(options?.schema).reverse()) {
+      // view entities are not backed by a real table, so there is nothing to delete
+      if (meta.view) {
+        continue;
+      }
+
       const res = await this.driver.nativeDelete(meta.class, {}, options);
 
       if (meta.getPrimaryProps().some(pk => pk.autoincrement)) {

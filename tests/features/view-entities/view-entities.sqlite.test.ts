@@ -202,4 +202,30 @@ describe('View entities (sqlite)', () => {
     expect(prolificAuthors[0].name).toBe('Jon Snow');
     expect(prolificAuthors[0].bookCount).toBe(2);
   });
+
+  // GH #7874 - schema.clear() must not try to truncate/delete view entities
+  test('schema.clear() does not fail when views exist', async () => {
+    const orm2 = await MikroORM.init({
+      entities: [
+        Author4,
+        Book4,
+        BookTag4,
+        Publisher4,
+        Test4,
+        FooBar4,
+        FooBaz4,
+        BaseEntity4,
+        BaseEntity5,
+        IdentitySchema,
+        AuthorStatsSchema,
+      ],
+      dbName: ':memory:',
+      metadataProvider: ReflectMetadataProvider,
+    });
+    await orm2.schema.create();
+
+    await expect(orm2.schema.clear()).resolves.not.toThrow();
+
+    await orm2.close(true);
+  });
 });

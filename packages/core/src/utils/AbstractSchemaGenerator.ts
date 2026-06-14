@@ -59,6 +59,11 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
 
   async clear(options?: ClearDatabaseOptions): Promise<void> {
     for (const meta of this.getOrderedMetadata(options?.schema).reverse()) {
+      // view entities are not backed by a real table, so there is nothing to delete
+      if (meta.view) {
+        continue;
+      }
+
       await this.driver.nativeDelete(meta.class, {}, options);
     }
 
