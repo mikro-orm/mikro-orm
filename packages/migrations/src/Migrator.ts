@@ -329,6 +329,10 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
         table.setForeignKeys(tbl.foreignKeys);
       }
 
+      if (tbl.triggers) {
+        table.setTriggers(tbl.triggers);
+      }
+
       const cols = tbl.columns;
       Object.keys(cols).forEach(col => {
         const column = { ...cols[col] };
