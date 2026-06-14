@@ -33,8 +33,7 @@ create table \`publisher4_tests\` (\`id\` integer not null primary key autoincre
 create index \`publisher4_tests_publisher4_id_index\` on \`publisher4_tests\` (\`publisher4_id\`);
 create index \`publisher4_tests_test4_id_index\` on \`publisher4_tests\` (\`test4_id\`);
 
-create view \`multiline_author_stats_view\` as 
-    SELECT
+create view \`multiline_author_stats_view\` as SELECT
     name, (select count(*) from book4 b where b.author_id = a.id) as book_count
     FROM author4 a;
 

@@ -11,6 +11,7 @@ import {
   isRaw,
 } from '@mikro-orm/core';
 import { DatabaseTable } from './DatabaseTable.js';
+import { normalizeViewDefinition } from './SchemaHelper.js';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
 import type { DatabaseView, SqlRoutineDef } from '../typings.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
@@ -508,7 +509,7 @@ export class DatabaseSchema {
 
   private static getViewDefinition(meta: EntityMetadata, em: any, platform: AbstractSqlPlatform): string | undefined {
     if (typeof meta.expression === 'string') {
-      return meta.expression;
+      return normalizeViewDefinition(meta.expression);
     }
 
     // Expression is a function, need to evaluate it
@@ -528,7 +529,7 @@ export class DatabaseSchema {
 
     /* v8 ignore next */
     if (typeof result === 'string') {
-      return result;
+      return normalizeViewDefinition(result);
     }
 
     /* v8 ignore next */
