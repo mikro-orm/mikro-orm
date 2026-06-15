@@ -1426,7 +1426,7 @@ __metadata:
     "@swc/core": "npm:1.15.41"
     "@types/better-sqlite3": "npm:7.6.13"
     "@types/node": "npm:24.13.2"
-    "@types/oracledb": "npm:7.0.0"
+    "@types/oracledb": "npm:7.0.1"
     "@types/pg": "npm:8.20.0"
     "@types/pg-cursor": "npm:2.7.2"
     "@types/picomatch": "npm:4.0.3"
@@ -1506,7 +1506,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.1.4"
     "@mikro-orm/sql": "npm:7.1.4"
-    better-sqlite3: "npm:12.10.0"
+    better-sqlite3: "npm:12.10.1"
     kysely: "npm:0.29.2"
   peerDependencies:
     "@mikro-orm/core": 7.1.4
@@ -3028,12 +3028,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/oracledb@npm:7.0.0":
-  version: 7.0.0
-  resolution: "@types/oracledb@npm:7.0.0"
+"@types/oracledb@npm:7.0.1":
+  version: 7.0.1
+  resolution: "@types/oracledb@npm:7.0.1"
   dependencies:
     "@types/node": "npm:*"
-  checksum: 10/e1b09d84b5173751d89fdaf9ddb1fdb41d46d041c4d8cd8fcee487b067bd6abe91ca3aabc1bcf80d9c575031442197998f7b963493c119dd0a50ba9fb2c623d4
+  checksum: 10/7be238fe83c7bc54e0bfc330c5fafd2ac2af0e9432746609ae32655bcb139255840e05855b1622a48dc97f8db931b050fe5cc08841defa5f1ce036674f2d9a62
   languageName: node
   linkType: hard
 
@@ -3709,14 +3709,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:12.10.0":
-  version: 12.10.0
-  resolution: "better-sqlite3@npm:12.10.0"
+"better-sqlite3@npm:12.10.1":
+  version: 12.10.1
+  resolution: "better-sqlite3@npm:12.10.1"
   dependencies:
     bindings: "npm:^1.5.0"
     node-gyp: "npm:latest"
     prebuild-install: "npm:^7.1.1"
-  checksum: 10/99e213e78f15a7f40d5cb666b56781223a6b83ffc317c93846e2b63b694592978c1e3762e81afd6ce851e0e3c24ebc9d0c42341158ea93c8a39987e5e19602f8
+  checksum: 10/d7dd56a1ffe2e613ee22c47caff44ab081e4ce431e32d6fd59e4423839822e0768d7f3b2e1af2018b10997a1c3ef890a7b5034bbee940b8aae235dd399d904e5
   languageName: node
   linkType: hard
 
