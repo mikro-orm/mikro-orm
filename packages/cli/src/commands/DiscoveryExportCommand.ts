@@ -6,7 +6,7 @@ import { fs } from '@mikro-orm/core/fs-utils';
 import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
 import { CLIHelper } from '../CLIHelper.js';
 
-type DiscoveryExportArgs = BaseArgs & { path?: string[]; out?: string; dump?: boolean };
+type DiscoveryExportArgs = BaseArgs & { path?: string[]; out?: string; dump?: boolean; quiet?: boolean };
 
 interface DiscoveredExport {
   exportName: string;
@@ -48,6 +48,11 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
       desc: 'Print to stdout instead of writing a file',
       default: false,
     });
+    args.option('quiet', {
+      alias: 'q',
+      type: 'boolean',
+      desc: 'Do not show any auxiliary output. This is effectively ignored when using the "dump" option',
+    });
     return args as Argv<DiscoveryExportArgs>;
   };
 
@@ -79,6 +84,11 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
     const output = this.generateFile(discovered, outPath, esm, driverPackage);
     mkdirSync(dirname(outPath), { recursive: true });
     writeFileSync(outPath, output);
+
+    if (args.quiet) {
+      return;
+    }
+
     CLIHelper.dump(colors.green(`Entity exports generated to ${outPath} (${discovered.length} entities)`));
     CLIHelper.dump(`\nExample usage in your ORM config:\n`);
     const importExt = esm ? '.js' : '';
