@@ -337,6 +337,39 @@ describe('DiscoveryExportCommand', () => {
     expect(dumpSpy).toHaveBeenCalledWith(expect.stringContaining('Entity exports generated'));
   });
 
+  test('does not print success message when --quiet is passed', async () => {
+    const outPath = resolve(process.cwd(), '.mikro-orm-test-entities.generated.ts');
+    pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
+    dynamicImportMock.mockImplementation((path: string) => {
+      if (path.includes('mikro-orm.config')) {
+        return config;
+      }
+
+      return { Author };
+    });
+    globMock.mockReturnValue(['Author.ts']);
+    isKnownEntityMock.mockImplementation((name: string) => name === 'Author');
+
+    await command.handler({
+      _: ['discovery:export'],
+      $0: 'mikro-orm',
+      contextName: 'default',
+      config: undefined,
+      path: ['./src/entities'],
+      dump: false,
+      out: outPath,
+      quiet: true,
+    });
+
+    expect(existsSync(outPath)).toBe(true);
+    const content = readFileSync(outPath, 'utf-8');
+    expect(content).toMatchSnapshot();
+    unlinkSync(outPath);
+
+    // Should print success message
+    expect(dumpSpy).not.toHaveBeenCalled();
+  });
+
   test('shows warning when no entities found', async () => {
     pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
     dynamicImportMock.mockImplementation((path: string) => {
