@@ -42,6 +42,13 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
     }
 
     if (respectCustomCloneMethod && 'clone' in parent && typeof parent.clone === 'function') {
+      // an async `clone()` signals a live stateful resource (e.g. a PGlite instance
+      // in `driverOptions`, whose `clone()` boots a second WASM database) — this sync
+      // function cannot await it, so keep the instance by reference instead
+      if (parent.clone.constructor.name === 'AsyncFunction') {
+        return parent;
+      }
+
       return parent.clone();
     }
 
