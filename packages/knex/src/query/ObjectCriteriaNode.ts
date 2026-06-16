@@ -54,7 +54,11 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           }
 
           const payload = (this.payload[key] as CriteriaNode<T>).unwrap();
-          const qb2 = qb.clone(true, ['_schema']);
+          // entities with a fixed schema must resolve the `from` table's own schema in the subquery,
+          // otherwise a nested operator inherits the root entity's schema (GH #7894); for wildcard or
+          // schema-less entities the schema is resolved dynamically and needs to be carried over
+          const fixedSchema = parentMeta.schema && parentMeta.schema !== '*';
+          const qb2 = qb.clone(true, fixedSchema ? undefined : ['_schema']);
           const sub = qb2
             .from(parentMeta.className)
             .innerJoin(this.key!, qb2.getNextAlias(this.prop!.type))
