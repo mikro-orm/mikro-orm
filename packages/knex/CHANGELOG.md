@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.15](https://github.com/mikro-orm/mikro-orm/compare/v6.6.14...v6.6.15) (2026-06-17)
+
+
+### Bug Fixes
+
+* **knex:** resolve target entity schema in nested collection operators ([#7898](https://github.com/mikro-orm/mikro-orm/issues/7898)) ([6040aa1](https://github.com/mikro-orm/mikro-orm/commit/6040aa16b1c74ab54dded6b15eefe48b210ffd5f)), closes [#7895](https://github.com/mikro-orm/mikro-orm/issues/7895) [#7894](https://github.com/mikro-orm/mikro-orm/issues/7894)
+
+
+
+
+
 ## [6.6.14](https://github.com/mikro-orm/mikro-orm/compare/v6.6.13...v6.6.14) (2026-05-04)
 
 

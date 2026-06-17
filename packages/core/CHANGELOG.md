@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.15](https://github.com/mikro-orm/mikro-orm/compare/v6.6.14...v6.6.15) (2026-06-17)
+
+
+### Bug Fixes
+
+* **core:** avoid crash on STI subclass narrowing an inverse collection ([#7868](https://github.com/mikro-orm/mikro-orm/issues/7868)) ([49d73a5](https://github.com/mikro-orm/mikro-orm/commit/49d73a5d33b938718f45a3f900574c0618c88cc2)), closes [#7636](https://github.com/mikro-orm/mikro-orm/issues/7636) [#7867](https://github.com/mikro-orm/mikro-orm/issues/7867)
+* **core:** avoid stack overflow in IdentityMap.keys()/values() for large maps ([#7849](https://github.com/mikro-orm/mikro-orm/issues/7849)) ([a3db208](https://github.com/mikro-orm/mikro-orm/commit/a3db2084fc009821a5b19e67dd114753f70950f2))
+* **core:** preserve sibling conditions next to `$and`/`$or` on relation filters ([#7791](https://github.com/mikro-orm/mikro-orm/issues/7791)) ([5c5e4c9](https://github.com/mikro-orm/mikro-orm/commit/5c5e4c9d60d0450fa4f17a1f395eabdc775fd540)), closes [#7790](https://github.com/mikro-orm/mikro-orm/issues/7790)
+* **core:** reload suppressed entities from partially-suppressed upsertMany ([#7780](https://github.com/mikro-orm/mikro-orm/issues/7780)) ([65e1967](https://github.com/mikro-orm/mikro-orm/commit/65e19679259503310197f81d96cf86f2057f323d)), closes [#7779](https://github.com/mikro-orm/mikro-orm/issues/7779) [#7775](https://github.com/mikro-orm/mikro-orm/issues/7775)
+
+
+
+
+
 ## [6.6.14](https://github.com/mikro-orm/mikro-orm/compare/v6.6.13...v6.6.14) (2026-05-04)
 
 
