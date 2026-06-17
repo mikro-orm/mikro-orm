@@ -1320,7 +1320,7 @@ export class UnitOfWork {
   }
 
   private async persistToDatabase(
-    groups: { [K in ChangeSetType]: Map<EntityMetadata, ChangeSet<any>[]> },
+    groups: { [K in ChangeSetType]: Map<number, ChangeSet<any>[]> },
     ctx?: Transaction,
   ): Promise<void> {
     if (ctx) {
@@ -1332,12 +1332,12 @@ export class UnitOfWork {
 
     // early delete - when we recreate entity in the same UoW, we need to issue those delete queries before inserts
     for (const meta of commitOrderReversed) {
-      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE_EARLY].get(meta) ?? [], ctx);
+      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE_EARLY].get(meta._id) ?? [], ctx);
     }
 
     // early update - when we recreate entity in the same UoW, we need to issue those delete queries before inserts
     for (const meta of commitOrder) {
-      await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE_EARLY].get(meta) ?? [], ctx);
+      await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE_EARLY].get(meta._id) ?? [], ctx);
     }
 
     // extra updates
@@ -1345,12 +1345,12 @@ export class UnitOfWork {
 
     // create
     for (const meta of commitOrder) {
-      await this.commitCreateChangeSets(groups[ChangeSetType.CREATE].get(meta) ?? [], ctx);
+      await this.commitCreateChangeSets(groups[ChangeSetType.CREATE].get(meta._id) ?? [], ctx);
     }
 
     // update
     for (const meta of commitOrder) {
-      await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE].get(meta) ?? [], ctx);
+      await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE].get(meta._id) ?? [], ctx);
     }
 
     // extra updates
@@ -1361,7 +1361,7 @@ export class UnitOfWork {
 
     // delete - entity deletions need to be in reverse commit order
     for (const meta of commitOrderReversed) {
-      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE].get(meta) ?? [], ctx);
+      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE].get(meta._id) ?? [], ctx);
     }
 
     // take snapshots of all persisted collections
@@ -1608,13 +1608,13 @@ export class UnitOfWork {
   /**
    * Orders change sets so FK constrains are maintained, ensures stable order (needed for node < 11)
    */
-  private getChangeSetGroups(): { [K in ChangeSetType]: Map<EntityMetadata, ChangeSet<any>[]> } {
+  private getChangeSetGroups(): { [K in ChangeSetType]: Map<number, ChangeSet<any>[]> } {
     const groups = {
-      [ChangeSetType.CREATE]: new Map<EntityMetadata, ChangeSet<any>[]>(),
-      [ChangeSetType.UPDATE]: new Map<EntityMetadata, ChangeSet<any>[]>(),
-      [ChangeSetType.DELETE]: new Map<EntityMetadata, ChangeSet<any>[]>(),
-      [ChangeSetType.UPDATE_EARLY]: new Map<EntityMetadata, ChangeSet<any>[]>(),
-      [ChangeSetType.DELETE_EARLY]: new Map<EntityMetadata, ChangeSet<any>[]>(),
+      [ChangeSetType.CREATE]: new Map<number, ChangeSet<any>[]>(),
+      [ChangeSetType.UPDATE]: new Map<number, ChangeSet<any>[]>(),
+      [ChangeSetType.DELETE]: new Map<number, ChangeSet<any>[]>(),
+      [ChangeSetType.UPDATE_EARLY]: new Map<number, ChangeSet<any>[]>(),
+      [ChangeSetType.DELETE_EARLY]: new Map<number, ChangeSet<any>[]>(),
     };
 
     const addToGroup = (cs: ChangeSet<any>) => {
@@ -1627,7 +1627,10 @@ export class UnitOfWork {
       }
 
       const group = groups[cs.type];
-      const groupKey = cs.meta.inheritanceType === 'tpt' ? cs.meta : cs.rootMeta;
+      // keyed by `_id` so the groups share keys with `getCommitOrder()`, which dedupes by `_id`;
+      // two `EntityMetadata` instances with the same `_id` (shared metadata cache) must not split
+      // a group between them, or the lookup in `persistToDatabase()` misses and drops it (GH #7903)
+      const groupKey = cs.meta.inheritanceType === 'tpt' ? cs.meta._id : cs.rootMeta._id;
       const classGroup = group.get(groupKey) ?? [];
       classGroup.push(cs);
 
