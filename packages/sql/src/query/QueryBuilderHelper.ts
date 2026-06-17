@@ -871,6 +871,8 @@ export class QueryBuilderHelper {
         return `(${tmp.join(', ')})`;
       }
 
+      // array custom types (e.g. `$contains`/`$overlap` on `string[]` columns) are converted to a single
+      // array literal, so we emit a single bound parameter — not one per element wrapped in a tuple
       if (prop?.customType instanceof ArrayType) {
         const item = prop.customType.convertToDatabaseValue(value, this.#platform, {
           fromQuery: true,
@@ -878,9 +880,10 @@ export class QueryBuilderHelper {
           mode: 'query',
         });
         params.push(item);
-      } else {
-        value.forEach(p => params.push(p));
+        return '?';
       }
+
+      value.forEach(p => params.push(p));
 
       return `(${value.map(() => '?').join(', ')})`;
     }
