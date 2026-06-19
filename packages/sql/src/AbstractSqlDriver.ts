@@ -1835,6 +1835,12 @@ export abstract class AbstractSqlDriver<
       return {};
     }
 
+    // The pivot order is recomputed via `getPivotOrderBy`, so the parent `populateOrderBy` must not leak
+    // into the pivot subquery — its keys reference the parent entity, not the pivot (GH #7910).
+    if (options?.populateOrderBy != null) {
+      options = { ...options, populateOrderBy: undefined };
+    }
+
     const pivotMeta = this.metadata.get(prop.pivotEntity);
 
     if (prop.discriminatorColumn && QueryHelper.isUnionTargetPolymorphic(prop)) {
