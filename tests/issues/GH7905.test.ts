@@ -74,4 +74,29 @@ describe('GH issue 7905', () => {
 
     await orm2.close(true);
   });
+
+  test('detects a type change on the unnamed parameter (recreates the routine)', async () => {
+    // The DB function takes an unnamed `text`; declaring the (still unnamed) parameter as a
+    // different type must be picked up by the comparator rather than silently treated as equal.
+    const EchoMessage = new Routine({
+      name: 'echo_message',
+      type: 'function',
+      language: 'plpgsql',
+      params: { '': { type: 'integer', runtimeType: 'number' } },
+      returns: { runtimeType: 'string', columnType: 'text' },
+      expression: echoMessageDdl,
+    });
+
+    const orm2 = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [User],
+      dbName: `mikro_orm_test_gh_7905`,
+      routines: [EchoMessage],
+    });
+
+    const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatch(/create or replace function echo_message/i);
+
+    await orm2.close(true);
+  });
 });
