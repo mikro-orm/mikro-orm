@@ -11,14 +11,12 @@ class User {
 }
 
 describe('GH issue 7905', () => {
-  let orm: MikroORM;
-
-  beforeAll(async () => {
-    orm = await MikroORM.init({
+  async function createOrm(ignoreRoutines: boolean) {
+    const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
       entities: [User],
       dbName: `mikro_orm_test_gh_7905`,
-      schemaGenerator: { ignoreRoutines: true },
+      schemaGenerator: { ignoreRoutines },
     });
 
     await orm.schema.ensureDatabase();
@@ -33,15 +31,25 @@ describe('GH issue 7905', () => {
       end;
       $$ language plpgsql;
     `);
-  });
 
-  afterAll(async () => {
+    return orm;
+  }
+
+  it('introspects routines with unnamed parameters without throwing (ignoreRoutines enabled)', async () => {
+    const orm = await createOrm(true);
+    const sql = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    // routines are left unmanaged — no churn for the externally created function
+    expect(sql).toBe('');
     await orm.schema.execute(`drop function if exists echo_message(text)`);
     await orm.close(true);
   });
 
-  it('introspects routines with unnamed parameters without throwing', async () => {
+  it('diffs the unmanaged routine for removal without throwing (ignoreRoutines disabled)', async () => {
+    const orm = await createOrm(false);
     const sql = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(sql).toBe('');
+    // unmanaged routine gets dropped, with the unnamed parameter rendered as a bare type
+    expect(sql).toMatch(/drop function if exists "echo_message"\(text\)/i);
+    await orm.schema.execute(`drop function if exists echo_message(text)`);
+    await orm.close(true);
   });
 });
