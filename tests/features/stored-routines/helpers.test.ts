@@ -235,6 +235,14 @@ SELECT y`;
       });
       expect(sql).toContain('default 42');
     });
+
+    it('createRoutine omits the identifier for unnamed params (introspected as `text`)', () => {
+      const sql = helper.createRoutine({
+        ...baseRoutine,
+        params: [{ name: '', type: 'text', direction: 'in' }],
+      });
+      expect(sql).toMatch(/\(text\)/);
+    });
   });
 
   describe('MSSQL', () => {

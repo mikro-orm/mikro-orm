@@ -838,7 +838,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       .map(p => {
         const dir = p.direction === 'in' ? '' : `${p.direction.toUpperCase()} `;
         const def = p.defaultRaw ? ` default ${p.defaultRaw}` : '';
-        return `${dir}${this.platform.quoteIdentifier(p.name)} ${p.type}${def}`;
+        const name = p.name ? `${this.platform.quoteIdentifier(p.name)} ` : '';
+        return `${dir}${name}${p.type}${def}`;
       })
       .join(', ');
   }
@@ -851,10 +852,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return signature.split(/,(?![^()]*\))/).map(part => {
       const trimmed = part.trim();
       // INOUT before IN/OUT, with required trailing space so identifiers like `input` aren't
-      // mis-parsed as a direction keyword.
-      const match = /^(?:(INOUT|VARIADIC|IN|OUT)\s+)?(?:"((?:[^"]|"")+)"|([\w$]+))\s+(.+?)(?:\s+default\s+.+)?$/i.exec(
-        trimmed,
-      );
+      // mis-parsed as a direction keyword. The name is optional — `pg_get_function_arguments`
+      // omits it for unnamed parameters (e.g. `text`), leaving just the type.
+      const match =
+        /^(?:(INOUT|VARIADIC|IN|OUT)\s+)?(?:(?:"((?:[^"]|"")+)"|([\w$]+))\s+)?(.+?)(?:\s+default\s+.+)?$/i.exec(
+          trimmed,
+        );
 
       /* v8 ignore next 3: defensive guard for unexpected `pg_get_function_arguments` output shapes */
       if (!match) {
@@ -863,7 +866,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
       const dirRaw = (match[1] ?? 'in').toLowerCase();
       const direction = dirRaw === 'inout' ? 'inout' : dirRaw === 'out' ? 'out' : 'in';
-      const name = match[2] != null ? match[2].replaceAll('""', '"') : match[3];
+      const name = match[2] != null ? match[2].replaceAll('""', '"') : (match[3] ?? '');
 
       return {
         name,
