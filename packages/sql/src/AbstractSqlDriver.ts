@@ -3267,6 +3267,24 @@ export abstract class AbstractSqlDriver<
         const propAlias = qb.getAliasForJoinPath(join ?? path, { matchPopulateJoins: true }) ?? parentAlias;
 
         if (!join) {
+          // an owner to-one relation that is not joined (e.g. ordering a populated collection by such
+          // a relation's primary key) can be ordered by its local FK columns, matching the `select-in`
+          // and `balanced` strategies instead of silently dropping the clause
+          if (
+            prop.owner &&
+            [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
+            Utils.isPlainObject(childOrder)
+          ) {
+            for (const childField of Utils.getObjectQueryKeys(childOrder as Dictionary)) {
+              const idx = prop.referencedPKs.indexOf(childField as EntityKey);
+              const order = (childOrder as Dictionary)[childField as string];
+
+              if (idx !== -1 && order) {
+                orderBy.push({ [`${parentAlias}.${prop.joinColumns[idx]}` as EntityKey]: order } as QueryOrderMap<T>);
+              }
+            }
+          }
+
           continue;
         }
 
