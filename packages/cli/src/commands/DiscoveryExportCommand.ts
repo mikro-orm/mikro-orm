@@ -48,11 +48,6 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
       desc: 'Print to stdout instead of writing a file',
       default: false,
     });
-    args.option('quiet', {
-      alias: 'q',
-      type: 'boolean',
-      desc: 'Do not show any auxiliary output. This is effectively ignored when using the "dump" option',
-    });
     return args as Argv<DiscoveryExportArgs>;
   };
 
@@ -89,13 +84,13 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
       return;
     }
 
-    CLIHelper.dump(colors.green(`Entity exports generated to ${outPath} (${discovered.length} entities)`));
-    CLIHelper.dump(`\nExample usage in your ORM config:\n`);
+    CLIHelper.info(colors.green(`Entity exports generated to ${outPath} (${discovered.length} entities)`));
+    CLIHelper.info(`\nExample usage in your ORM config:\n`);
     const importExt = esm ? '.js' : '';
     const importPath = `./${basename(outPath).replace(/\.ts$/, importExt)}`;
-    CLIHelper.dump(`  import { entities } from ${colors.cyan(`'${importPath}'`)};`);
-    CLIHelper.dump('');
-    CLIHelper.dump('  export default defineConfig({ entities });\n');
+    CLIHelper.info(`  import { entities } from ${colors.cyan(`'${importPath}'`)};`);
+    CLIHelper.info('');
+    CLIHelper.info('  export default defineConfig({ entities });\n');
   };
 
   private resolvePaths(args: ArgumentsCamelCase<DiscoveryExportArgs>, config: Configuration): string[] {

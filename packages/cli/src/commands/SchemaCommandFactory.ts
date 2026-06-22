@@ -127,7 +127,7 @@ export class SchemaCommandFactory {
       await orm.seeder.seedString(args.seed || orm.config.get('seeder').defaultSeeder!);
     }
 
-    CLIHelper.dump(colors.green(successMessage));
+    CLIHelper.info(colors.green(successMessage));
     await orm.close(true);
   }
 }

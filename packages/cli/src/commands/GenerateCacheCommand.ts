@@ -36,7 +36,7 @@ export class GenerateCacheCommand implements BaseCommand<CacheArgs> {
     await discovery.discover(args.ts ?? false);
 
     const combined = args.combined && config.get('metadataCache').combined;
-    CLIHelper.dump(
+    CLIHelper.info(
       colors.green(
         `${combined ? 'Combined ' : ''}${args.ts ? 'TS' : 'JS'} metadata cache was successfully generated${combined ? ' to ' + combined : ''}`,
       ),

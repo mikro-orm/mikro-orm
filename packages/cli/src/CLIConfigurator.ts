@@ -42,6 +42,11 @@ function createBasicConfig(): Argv<{ config: string[] | undefined; contextName: 
       desc: 'Set name of config to load out of the ORM configuration file. Used when config file exports an array or a function',
       default: process.env.MIKRO_ORM_CONTEXT_NAME ?? 'default',
     })
+    .option('quiet', {
+      alias: 'q',
+      type: 'boolean',
+      desc: 'Do not show any auxiliary output.',
+    })
     .alias('v', 'version')
     .alias('h', 'help')
     .recommendCommands()
