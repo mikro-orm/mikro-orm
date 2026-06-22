@@ -795,7 +795,15 @@ export class EntityComparator {
     object?: boolean,
   ): string {
     const unwrap = prop.ref ? '?.unwrap()' : '';
-    let ret = `  if (${this.getPropertyCondition(path)}`;
+    let condition = this.getPropertyCondition(path);
+
+    // a getter may dereference state that only exists once hydrated, so when snapshotting an
+    // unhydrated reference we short-circuit the read behind the initialized check
+    if (prop.getter && !prop.setter && path.length === 1) {
+      condition = `entity.__helper.__initialized && ${condition}`;
+    }
+
+    let ret = `  if (${condition}`;
 
     if (prop.lazy && prop.ref) {
       ret += ` && entity${path.map(k => this.wrap(k)).join('')}?.isInitialized()`;

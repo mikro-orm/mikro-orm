@@ -157,6 +157,29 @@ describe('Utils', () => {
       expect(c.inner.p).toBeInstanceOf(Promise);
     });
 
+    test('should honor a sync custom clone method but keep async-clonable resources by reference', () => {
+      const sync = {
+        value: 1,
+        clone() {
+          return { value: 2 };
+        },
+      };
+      expect(Utils.copy({ inner: sync }).inner).toEqual({ value: 2 });
+
+      // an async `clone()` signals a live resource (e.g. a PGlite instance) that
+      // the sync copy must keep by reference rather than invoke
+      let cloned = false;
+      const resource = {
+        async clone() {
+          cloned = true;
+          return {};
+        },
+      };
+      const copy = Utils.copy({ inner: resource });
+      expect(copy.inner).toBe(resource);
+      expect(cloned).toBe(false);
+    });
+
     it('should copy child object even though getter property is dynamically injected', () => {
       function NameDecorator<T extends { new (...args: any[]): {} }>(constructor: T) {
         return class extends constructor {

@@ -1,5 +1,4 @@
-import type { EntityManager } from '../EntityManager.js';
-import { type LoggingOptions } from '../logging/Logger.js';
+import type { EntityManager, ForkOptions } from '../EntityManager.js';
 import { createAsyncContext } from './AsyncContext.js';
 
 /**
@@ -74,8 +73,8 @@ export class RequestContext {
   }
 }
 
-/** Options for creating a new RequestContext, allowing schema and logger overrides. */
-export interface CreateContextOptions {
-  schema?: string;
-  loggerContext?: LoggingOptions;
-}
+/** Options for creating a new RequestContext, allowing global overrides. */
+export interface CreateContextOptions extends Omit<
+  ForkOptions,
+  'useContext' | 'disableContextResolution' | 'keepTransactionContext' | 'clear'
+> {}

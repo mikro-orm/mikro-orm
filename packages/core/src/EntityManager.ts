@@ -259,6 +259,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       await em.#entityLoader.populate<Entity>(entityName, cached.data as Entity[], populate, {
         ...(options as Dictionary),
         ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
+        orderBy: options.populateOrderBy ?? options.orderBy,
         ignoreLazyScalarProperties: true,
         lookup: false,
       });
@@ -298,6 +299,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     await em.#entityLoader.populate<Entity, Fields>(entityName, unique as Entity[], populate, {
       ...(options as Dictionary),
       ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
+      orderBy: options.populateOrderBy ?? options.orderBy,
       ignoreLazyScalarProperties: true,
       lookup: false,
     });
