@@ -612,7 +612,15 @@ export class EntityComparator {
 
   private getPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, dataKey: string, entityKey: string, path: string[], level = 1, object?: boolean): string {
     const unwrap = prop.ref ? '?.unwrap()' : '';
-    let ret = `  if (${this.getPropertyCondition(path)}) {\n`;
+    let condition = this.getPropertyCondition(path);
+
+    // a getter may dereference state that only exists once hydrated, so when snapshotting an
+    // unhydrated reference we short-circuit the read behind the initialized check
+    if (prop.getter && !prop.setter && path.length === 1) {
+      condition = `entity.__helper.__initialized && ${condition}`;
+    }
+
+    let ret = `  if (${condition}) {\n`;
 
     if (['number', 'string', 'boolean'].includes(prop.type.toLowerCase())) {
       return ret + `    ret${dataKey} = entity${entityKey}${unwrap};\n  }\n`;
