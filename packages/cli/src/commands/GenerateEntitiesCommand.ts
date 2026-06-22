@@ -1,6 +1,7 @@
 import type { ArgumentsCamelCase, Argv } from 'yargs';
 import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
 import { CLIHelper } from '../CLIHelper.js';
+import { colors } from '@mikro-orm/core';
 
 export type GenerateEntitiesArgs = BaseArgs & { dump?: boolean; save?: boolean; path?: string; schema?: string };
 
@@ -52,6 +53,8 @@ export class GenerateEntitiesCommand implements BaseCommand<GenerateEntitiesArgs
 
     if (args.dump) {
       CLIHelper.dump(dump.join('\n\n'));
+    } else {
+      CLIHelper.info(colors.green(`Entities generated successfully`));
     }
 
     await orm.close(true);

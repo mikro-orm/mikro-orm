@@ -183,7 +183,7 @@ export class MigrationCommandFactory {
     const opts = MigrationCommandFactory.getUpDownOptions(args);
     await migrator[method](opts);
     const message = this.getUpDownSuccessMessage(method, opts);
-    CLIHelper.dump(colors.green(message));
+    CLIHelper.info(colors.green(message));
   }
 
   private static async handlePendingCommand(migrator: IMigrator) {
@@ -217,11 +217,11 @@ export class MigrationCommandFactory {
     const ret = await migrator.create(args.path, args.blank, args.initial, args.name);
 
     if (ret.diff.up.length === 0) {
-      return CLIHelper.dump(colors.green(`No changes required, schema is up-to-date`));
+      return CLIHelper.info(colors.green(`No changes required, schema is up-to-date`));
     }
 
     if (args.dump) {
-      CLIHelper.dump(colors.green('Creating migration with following queries:'));
+      CLIHelper.info(colors.green('Creating migration with following queries:'));
       CLIHelper.dump(colors.green('up:'));
       CLIHelper.dump(ret.diff.up.map(sql => '  ' + sql).join('\n'), config);
 
@@ -237,12 +237,12 @@ export class MigrationCommandFactory {
       }
     }
 
-    CLIHelper.dump(colors.green(`${ret.fileName} successfully created`));
+    CLIHelper.info(colors.green(`${ret.fileName} successfully created`));
   }
 
   private static async handleCheckCommand(migrator: IMigrator, orm: MikroORM): Promise<void> {
     if (!(await migrator.checkSchema())) {
-      return CLIHelper.dump(colors.green(`No changes required, schema is up-to-date`));
+      return CLIHelper.info(colors.green(`No changes required, schema is up-to-date`));
     }
     await orm.close(true);
     CLIHelper.dump(colors.yellow(`Changes detected. Please create migration to update schema.`));
@@ -255,16 +255,16 @@ export class MigrationCommandFactory {
     orm: MikroORM,
   ) {
     await orm.schema.drop({ dropMigrationsTable: true, dropDb: args.dropDb });
-    CLIHelper.dump(colors.green('Dropped schema successfully'));
+    CLIHelper.info(colors.green('Dropped schema successfully'));
     const opts = MigrationCommandFactory.getUpDownOptions(args);
     await migrator.up(opts);
     const message = this.getUpDownSuccessMessage('up', opts);
-    CLIHelper.dump(colors.green(message));
+    CLIHelper.info(colors.green(message));
 
     if (args.seed !== undefined) {
       const seederClass = args.seed || orm.config.get('seeder').defaultSeeder!;
       await orm.seeder.seedString(seederClass);
-      CLIHelper.dump(colors.green(`Database seeded successfully with seeder class ${seederClass}`));
+      CLIHelper.info(colors.green(`Database seeded successfully with seeder class ${seederClass}`));
     }
   }
 
@@ -275,12 +275,12 @@ export class MigrationCommandFactory {
   ) {
     await migrator[`${method}Migration`](args.name!);
     const action = method === 'log' ? 'logged' : 'unlogged';
-    CLIHelper.dump(colors.green(`Successfully ${action} migration '${args.name}'`));
+    CLIHelper.info(colors.green(`Successfully ${action} migration '${args.name}'`));
   }
 
   private static async handleRollupCommand(migrator: IMigrator): Promise<void> {
     const ret = await migrator.rollup();
-    CLIHelper.dump(colors.green(`${ret.fileName} successfully created (rollup)`));
+    CLIHelper.info(colors.green(`${ret.fileName} successfully created (rollup)`));
   }
 
   private static getUpDownOptions(flags: CliUpDownOptions): MigrateOptions {

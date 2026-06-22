@@ -23,6 +23,6 @@ export class ClearCacheCommand implements BaseCommand {
     const cache = config.getMetadataCacheAdapter();
     await cache.clear();
 
-    CLIHelper.dump(colors.green('Metadata cache was successfully cleared'));
+    CLIHelper.info(colors.green('Metadata cache was successfully cleared'));
   }
 }
