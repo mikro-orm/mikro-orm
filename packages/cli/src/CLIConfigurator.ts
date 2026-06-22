@@ -25,7 +25,7 @@ export type BaseArgs = Awaited<ReturnType<typeof createBasicConfig>['argv']>;
  */
 export interface BaseCommand<CommandArgs extends BaseArgs = BaseArgs> extends CommandModule<BaseArgs, CommandArgs> {}
 
-function createBasicConfig(): Argv<{ config: string[] | undefined; contextName: string }> {
+function createBasicConfig(): Argv<{ config: string[] | undefined; contextName: string; quiet: boolean }> {
   return yargs()
     .scriptName('mikro-orm')
     .usage('Usage: $0 <command> [options]')
@@ -46,6 +46,7 @@ function createBasicConfig(): Argv<{ config: string[] | undefined; contextName: 
       alias: 'q',
       type: 'boolean',
       desc: 'Do not show any auxiliary output.',
+      default: false,
     })
     .alias('v', 'version')
     .alias('h', 'help')
@@ -55,7 +56,9 @@ function createBasicConfig(): Argv<{ config: string[] | undefined; contextName: 
     .strict();
 }
 
-export async function configure(): Promise<Argv<{ config: string[] | undefined; contextName: string }>> {
+export async function configure(): Promise<
+  Argv<{ config: string[] | undefined; contextName: string; quiet: boolean }>
+> {
   fs.checkPackageVersion();
   const settings = CLIHelper.getSettings();
   const version = Utils.getORMVersion();

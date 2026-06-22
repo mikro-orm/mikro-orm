@@ -24,6 +24,7 @@ export class GenerateCacheCommand implements BaseCommand<CacheArgs> {
    * @inheritDoc
    */
   async handler(args: ArgumentsCamelCase<CacheArgs>) {
+    CLIHelper.quiet = args.quiet;
     const options = args.combined ? { combined: './metadata.json' } : {};
     const config = await CLIHelper.getConfiguration(args.contextName, args.config, {
       metadataCache: { enabled: true, adapter: FileCacheAdapter, options },

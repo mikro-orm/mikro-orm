@@ -147,6 +147,8 @@ describe('CompileCommand', () => {
 
     rmSync(outPath);
 
+    infoMock.mockReset();
+
     expect(discoverMock.mock.calls.length).toBe(1);
     await expect(cmd.handler({ out: outPath, quiet: true } as any)).resolves.toBeUndefined();
     expect(discoverMock.mock.calls.length).toBe(2);
@@ -163,7 +165,7 @@ describe('CompileCommand', () => {
     expect(dts2).toContain('export = compiledFunctions');
 
     // Verify the output message
-    expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Compiled functions generated'));
+    expect(infoMock).not.toHaveBeenCalled();
   });
 
   test('handler generates ESM output when project uses type=module', async () => {
@@ -175,6 +177,7 @@ describe('CompileCommand', () => {
     );
     vi.spyOn(MetadataDiscovery.prototype, 'discover').mockResolvedValue(createSimpleMetadata());
     vi.spyOn(CLIHelper, 'dump').mockImplementation(i => i);
+    vi.spyOn(CLIHelper, 'info').mockImplementation(i => i);
     vi.spyOn(CLIHelper, 'isESM').mockReturnValue(true);
 
     const cmd = new CompileCommand();
@@ -198,6 +201,7 @@ describe('CompileCommand', () => {
     );
     vi.spyOn(MetadataDiscovery.prototype, 'discover').mockResolvedValue(createSimpleMetadata());
     vi.spyOn(CLIHelper, 'dump').mockImplementation(i => i);
+    vi.spyOn(CLIHelper, 'info').mockImplementation(i => i);
     vi.spyOn(CLIHelper, 'getConfigPaths').mockResolvedValue([join(tmpDir, 'src', 'mikro-orm.config.ts')]);
     vi.spyOn(fsUtils, 'absolutePath').mockImplementation(p => p);
     vi.spyOn(fsUtils, 'pathExists').mockReturnValue(true);
@@ -217,6 +221,7 @@ describe('CompileCommand', () => {
     );
     vi.spyOn(MetadataDiscovery.prototype, 'discover').mockResolvedValue(createSimpleMetadata());
     vi.spyOn(CLIHelper, 'dump').mockImplementation(i => i);
+    vi.spyOn(CLIHelper, 'info').mockImplementation(i => i);
     vi.spyOn(CLIHelper, 'getConfigPaths').mockResolvedValue([join(tmpDir, 'src', 'mikro-orm.config.ts')]);
     vi.spyOn(fsUtils, 'absolutePath').mockImplementation(p => p);
     vi.spyOn(fsUtils, 'pathExists').mockReturnValue(false);

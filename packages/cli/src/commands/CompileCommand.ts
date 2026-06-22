@@ -32,6 +32,7 @@ export class CompileCommand implements BaseCommand<CompileArgs> {
    * @inheritDoc
    */
   async handler(args: ArgumentsCamelCase<CompileArgs>) {
+    CLIHelper.quiet = args.quiet;
     const config = await CLIHelper.getConfiguration(args.contextName, args.config);
     const settings = CLIHelper.getSettings();
     config.set('debug', !!settings.verbose);

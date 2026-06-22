@@ -40,6 +40,7 @@ export class GenerateEntitiesCommand implements BaseCommand<GenerateEntitiesArgs
    * @inheritDoc
    */
   async handler(args: ArgumentsCamelCase<GenerateEntitiesArgs>): Promise<void> {
+    CLIHelper.quiet = args.quiet;
     if (!args.save && !args.dump) {
       return CLIHelper.showHelp();
     }

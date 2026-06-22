@@ -14,6 +14,7 @@ export class ImportCommand implements BaseCommand<ImportArgs> {
    * @inheritDoc
    */
   async handler(args: ArgumentsCamelCase<ImportArgs>) {
+    CLIHelper.quiet = args.quiet;
     const orm = await CLIHelper.getORM(args.contextName, args.config, { multipleStatements: true });
     const buf = await readFile(args.file);
     await orm.em.getConnection().executeDump(buf.toString());

@@ -21,6 +21,7 @@ describe('GenerateCacheCommand', () => {
     const discoverMock = vi.spyOn(MetadataDiscovery.prototype, 'discover');
     discoverMock.mockResolvedValue({} as MetadataStorage);
     vi.spyOn(CLIHelper, 'dump').mockImplementation(i => i);
+    const infoMock = vi.spyOn(CLIHelper, 'info').mockImplementation(i => i);
 
     const cmd = new GenerateCacheCommand();
 
@@ -40,5 +41,15 @@ describe('GenerateCacheCommand', () => {
     await expect(cmd.handler({ ts: true } as any)).resolves.toBeUndefined();
     expect(discoverMock.mock.calls.length).toBe(2);
     expect(discoverMock.mock.calls[1][0]).toBe(true);
+
+    infoMock.mockReset();
+
+    await expect(cmd.handler({ quiet: true } as any)).resolves.toBeUndefined();
+    expect(discoverMock.mock.calls.length).toBe(3);
+    expect(discoverMock.mock.calls[2][0]).toBe(false);
+
+    await expect(cmd.handler({ quiet: true, ts: true } as any)).resolves.toBeUndefined();
+    expect(discoverMock.mock.calls.length).toBe(4);
+    expect(discoverMock.mock.calls[3][0]).toBe(true);
   });
 });

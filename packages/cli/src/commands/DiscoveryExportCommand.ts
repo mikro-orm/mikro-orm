@@ -55,6 +55,7 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
    * @inheritDoc
    */
   handler = async (args: ArgumentsCamelCase<DiscoveryExportArgs>) => {
+    CLIHelper.quiet = args.quiet;
     const config = await CLIHelper.getConfiguration(args.contextName, args.config);
     const paths = this.resolvePaths(args, config);
     const baseDir = fs.absolutePath(config.get('baseDir') ?? process.cwd());
