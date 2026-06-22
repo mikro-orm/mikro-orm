@@ -31,15 +31,15 @@ describe('LogMigrationCommand', () => {
     logMigration.mockResolvedValue(void 0);
     const ensureTable = vi.spyOn(MigrationStorage.prototype, 'ensureTable');
     ensureTable.mockResolvedValue(void 0);
-    const dumpMock = vi.spyOn(CLIHelper, 'dump');
-    dumpMock.mockImplementation(() => void 0);
+    const infoMock = vi.spyOn(CLIHelper, 'info');
+    infoMock.mockImplementation(() => void 0);
 
     const cmd = MigrationCommandFactory.create('log');
 
     await expect(cmd.handler({ name: 'Migration20240101' } as any)).resolves.toBeUndefined();
     expect(ensureTable).toHaveBeenCalled();
     expect(logMigration).toHaveBeenCalledWith({ name: 'Migration20240101' });
-    expect(dumpMock).toHaveBeenCalledWith(expect.stringContaining('logged'));
+    expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('logged'));
     expect(closeSpy).toHaveBeenCalledWith(true);
   });
 });

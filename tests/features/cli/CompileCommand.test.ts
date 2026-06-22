@@ -122,7 +122,7 @@ describe('CompileCommand', () => {
       ),
     );
     const discoverMock = vi.spyOn(MetadataDiscovery.prototype, 'discover').mockResolvedValue(createSimpleMetadata());
-    const dumpMock = vi.spyOn(CLIHelper, 'dump').mockImplementation(i => i);
+    const infoMock = vi.spyOn(CLIHelper, 'info').mockImplementation(i => i);
     vi.spyOn(CLIHelper, 'isESM').mockReturnValue(false);
 
     const cmd = new CompileCommand();
@@ -143,7 +143,27 @@ describe('CompileCommand', () => {
     expect(dts).toContain('export = compiledFunctions');
 
     // Verify the output message
-    expect(dumpMock).toHaveBeenCalledWith(expect.stringContaining('Compiled functions generated'));
+    expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Compiled functions generated'));
+
+    rmSync(outPath);
+
+    expect(discoverMock.mock.calls.length).toBe(1);
+    await expect(cmd.handler({ out: outPath, quiet: true } as any)).resolves.toBeUndefined();
+    expect(discoverMock.mock.calls.length).toBe(2);
+    expect(discoverMock.mock.calls[1][0]).toBe(false);
+
+    // Verify a valid CJS file was written with actual function entries
+    expect(existsSync(outPath)).toBe(true);
+    const content2 = readFileSync(outPath, 'utf-8');
+    expect(content2).toMatchSnapshot();
+
+    // Verify .d.ts file was generated with CJS export
+    expect(existsSync(outDtsPath)).toBe(true);
+    const dts2 = readFileSync(outDtsPath, 'utf-8');
+    expect(dts2).toContain('export = compiledFunctions');
+
+    // Verify the output message
+    expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Compiled functions generated'));
   });
 
   test('handler generates ESM output when project uses type=module', async () => {
