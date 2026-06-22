@@ -1825,7 +1825,10 @@ export class MetadataDiscovery {
       // The primary key column is shared by every subtype, so it stays NOT NULL —
       // only subtype-specific columns become nullable for the rows of other subtypes.
       newProp.nullable = !newProp.primary;
-      newProp.inherited = !rootProp;
+      // A subtype-specific property is `inherited` on the root so it is not pushed down to
+      // sibling subtypes that don't declare it. When a second child redeclares the same
+      // property, the root prop was already marked inherited by the first child, so keep it.
+      newProp.inherited = !rootProp || !!rootProp.inherited;
 
       // For narrowed relation overrides, keep the root's declaration intact so
       // the full target union (e.g. `Food`) is preserved for populates from the
