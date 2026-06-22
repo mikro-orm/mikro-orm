@@ -96,6 +96,7 @@ export class SchemaCommandFactory {
     method: SchemaMethod,
     successMessage: string,
   ): Promise<void> {
+    CLIHelper.quiet = args.quiet;
     if (!args.run && !args.dump) {
       return CLIHelper.showHelp();
     }

@@ -25,6 +25,7 @@ export class GenerateCacheCommand implements BaseCommand<CacheArgs> {
    * @inheritDoc
    */
   async handler(args: ArgumentsCamelCase<CacheArgs>) {
+    CLIHelper.quiet = args.quiet;
     const options =
       typeof args.combined !== 'undefined'
         ? { combined: args.combined === '' ? './metadata.json' : args.combined }

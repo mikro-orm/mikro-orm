@@ -11,6 +11,7 @@ export class ClearCacheCommand implements BaseCommand {
    * @inheritDoc
    */
   async handler(args: ArgumentsCamelCase<BaseArgs>) {
+    CLIHelper.quiet = args.quiet;
     const config = await CLIHelper.getConfiguration(args.contextName, args.config);
 
     if (!config.get('metadataCache').enabled) {
