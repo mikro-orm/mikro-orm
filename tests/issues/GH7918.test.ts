@@ -3,6 +3,7 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class MyEntity {
+
   @PrimaryKey()
   id!: number;
 
@@ -13,6 +14,7 @@ class MyEntity {
   get nameLength(): Opt<number> {
     return this.name.length;
   }
+
 }
 
 let orm: MikroORM;
