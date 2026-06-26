@@ -3944,7 +3944,7 @@ export class QueryBuilder<
     });
   }
 
-  #findVirtualField(fieldName: string, propName: string) {
+  private findVirtualField(fieldName: string, propName: string) {
     return this.#state.fields?.find(field => {
       if (typeof field === 'object' && field && '__as' in field) {
         return field.__as === fieldName || field.__as === propName;
@@ -3999,7 +3999,7 @@ export class QueryBuilder<
           if (!prop?.persist && !prop?.formula && !prop?.hasConvertToJSValueSQL && !pks.includes(fieldName)) {
             addToSelect.push({ fieldName, propName: f });
 
-            const matchedField = this.#findVirtualField(fieldName, f);
+            const matchedField = this.findVirtualField(fieldName, f);
 
             if (matchedField instanceof NativeQueryBuilder) {
               const expr = matchedField.toString().replace(/ as [`"][^`"]+[`"]$/, '');
@@ -4031,7 +4031,7 @@ export class QueryBuilder<
 
     if (addToSelect.length > 0) {
       addToSelect.forEach(({ fieldName, propName }) => {
-        const field = this.#findVirtualField(fieldName, propName);
+        const field = this.findVirtualField(fieldName, propName);
 
         /* v8 ignore next */
         if (isRaw(field)) {

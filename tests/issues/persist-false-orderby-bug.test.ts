@@ -83,9 +83,9 @@ test('qb.as() virtual field survives clone and orderBy works with M:N join', asy
 
   expect(count).toBe(2);
   expect(results[0].title).toBe('Product A');
-  expect(results[0].reviewCount).toBe(2);
+  expect((results[0] as any).reviewCount).toBe(2);
   expect(results[1].title).toBe('Product B');
-  expect(results[1].reviewCount).toBe(1);
+  expect((results[1] as any).reviewCount).toBe(1);
 });
 
 test('raw() getFormattedQuery virtual field works with orderBy and M:N join', async () => {
@@ -107,7 +107,7 @@ test('raw() getFormattedQuery virtual field works with orderBy and M:N join', as
 
   expect(count).toBe(2);
   expect(results[0].title).toBe('Product A');
-  expect(results[0].reviewCount).toBe(2);
+  expect((results[0] as any).reviewCount).toBe(2);
   expect(results[1].title).toBe('Product B');
-  expect(results[1].reviewCount).toBe(1);
+  expect((results[1] as any).reviewCount).toBe(1);
 });
