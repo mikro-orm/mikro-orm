@@ -7,10 +7,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package @mikro-orm/sqlite
 
-
-
-
-
 ## [7.1.4](https://github.com/mikro-orm/mikro-orm/compare/v7.1.3...v7.1.4) (2026-06-06)
 
 **Note:** Version bump only for package @mikro-orm/sqlite

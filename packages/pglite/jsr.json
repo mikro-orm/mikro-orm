@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/pglite",
-  "version": "7.1.4",
+  "version": "7.1.5",
   "exports": {
     ".": "./src/index.ts"
   },
@@ -8,12 +8,12 @@
     "exclude": ["dist/", "node_modules/", "tests/"]
   },
   "imports": {
-    "@electric-sql/pglite": "npm:@electric-sql/pglite@0.5.1",
-    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.1.4",
+    "@electric-sql/pglite": "npm:@electric-sql/pglite@0.5.3",
+    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.1.5",
     "kysely": "npm:kysely@0.29.2",
     "postgres-array": "npm:postgres-array@3.0.4",
     "postgres-date": "npm:postgres-date@2.1.0",
     "postgres-interval": "npm:postgres-interval@4.0.2",
-    "@mikro-orm/core": "jsr:@mikro-orm/core@7.1.4"
+    "@mikro-orm/core": "jsr:@mikro-orm/core@7.1.5"
   }
 }

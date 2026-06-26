@@ -5,21 +5,16 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.1.5](https://github.com/mikro-orm/mikro-orm/compare/v7.1.4...v7.1.5) (2026-06-26)
 
-
 ### Bug Fixes
 
-* **core:** apply populateOrderBy to select-in relations without leaking into M:N pivots ([#7915](https://github.com/mikro-orm/mikro-orm/issues/7915)) ([03bb827](https://github.com/mikro-orm/mikro-orm/commit/03bb8271624185da140a4b34acbe5d52885b400e)), closes [#7910](https://github.com/mikro-orm/mikro-orm/issues/7910)
-* **core:** skip view entities in schema.clear() ([#7880](https://github.com/mikro-orm/mikro-orm/issues/7880)) ([3b762fe](https://github.com/mikro-orm/mikro-orm/commit/3b762fe0bb82d45f1838355e17c3d553ea7c19d4)), closes [#7874](https://github.com/mikro-orm/mikro-orm/issues/7874)
-* **postgres:** handle stored routines with unnamed parameters ([#7917](https://github.com/mikro-orm/mikro-orm/issues/7917)) ([6302833](https://github.com/mikro-orm/mikro-orm/commit/6302833dab3489ceb3459d8e9af9561a5670885e)), closes [#7905](https://github.com/mikro-orm/mikro-orm/issues/7905)
-* **sql:** derive bulk insert columns from all rows, not just the first ([#7884](https://github.com/mikro-orm/mikro-orm/issues/7884)) ([4abfb52](https://github.com/mikro-orm/mikro-orm/commit/4abfb52dce8559090c3bbb9b1a34e690874895c4)), closes [#7871](https://github.com/mikro-orm/mikro-orm/issues/7871)
-* **sql:** keep nested collection populateOrderBy by a to-one relation field under joined strategy ([#7916](https://github.com/mikro-orm/mikro-orm/issues/7916)) ([e81d01b](https://github.com/mikro-orm/mikro-orm/commit/e81d01bf639a29d75e5dfc27ea6a663e86b39098)), closes [#7911](https://github.com/mikro-orm/mikro-orm/issues/7911)
-* **sql:** resolve target entity schema in nested collection operators ([#7895](https://github.com/mikro-orm/mikro-orm/issues/7895)) ([5be97fb](https://github.com/mikro-orm/mikro-orm/commit/5be97fb7ca11910582369d533df838e5031d1ef0)), closes [#7894](https://github.com/mikro-orm/mikro-orm/issues/7894)
-* **sql:** serialize array operators as a single literal in JOIN-ON conditions ([#7900](https://github.com/mikro-orm/mikro-orm/issues/7900)) ([c938c7a](https://github.com/mikro-orm/mikro-orm/commit/c938c7ad229a50330d60f3e06f79ba781808d519)), closes [#7899](https://github.com/mikro-orm/mikro-orm/issues/7899)
-* **sql:** strip comments from view definitions in schema generator ([#7883](https://github.com/mikro-orm/mikro-orm/issues/7883)) ([d56826b](https://github.com/mikro-orm/mikro-orm/commit/d56826b2fdd754ff197d35f9f7b4ffee24e364c6)), closes [#7875](https://github.com/mikro-orm/mikro-orm/issues/7875)
-
-
-
-
+- **core:** apply populateOrderBy to select-in relations without leaking into M:N pivots ([#7915](https://github.com/mikro-orm/mikro-orm/issues/7915)) ([03bb827](https://github.com/mikro-orm/mikro-orm/commit/03bb8271624185da140a4b34acbe5d52885b400e)), closes [#7910](https://github.com/mikro-orm/mikro-orm/issues/7910)
+- **core:** skip view entities in schema.clear() ([#7880](https://github.com/mikro-orm/mikro-orm/issues/7880)) ([3b762fe](https://github.com/mikro-orm/mikro-orm/commit/3b762fe0bb82d45f1838355e17c3d553ea7c19d4)), closes [#7874](https://github.com/mikro-orm/mikro-orm/issues/7874)
+- **postgres:** handle stored routines with unnamed parameters ([#7917](https://github.com/mikro-orm/mikro-orm/issues/7917)) ([6302833](https://github.com/mikro-orm/mikro-orm/commit/6302833dab3489ceb3459d8e9af9561a5670885e)), closes [#7905](https://github.com/mikro-orm/mikro-orm/issues/7905)
+- **sql:** derive bulk insert columns from all rows, not just the first ([#7884](https://github.com/mikro-orm/mikro-orm/issues/7884)) ([4abfb52](https://github.com/mikro-orm/mikro-orm/commit/4abfb52dce8559090c3bbb9b1a34e690874895c4)), closes [#7871](https://github.com/mikro-orm/mikro-orm/issues/7871)
+- **sql:** keep nested collection populateOrderBy by a to-one relation field under joined strategy ([#7916](https://github.com/mikro-orm/mikro-orm/issues/7916)) ([e81d01b](https://github.com/mikro-orm/mikro-orm/commit/e81d01bf639a29d75e5dfc27ea6a663e86b39098)), closes [#7911](https://github.com/mikro-orm/mikro-orm/issues/7911)
+- **sql:** resolve target entity schema in nested collection operators ([#7895](https://github.com/mikro-orm/mikro-orm/issues/7895)) ([5be97fb](https://github.com/mikro-orm/mikro-orm/commit/5be97fb7ca11910582369d533df838e5031d1ef0)), closes [#7894](https://github.com/mikro-orm/mikro-orm/issues/7894)
+- **sql:** serialize array operators as a single literal in JOIN-ON conditions ([#7900](https://github.com/mikro-orm/mikro-orm/issues/7900)) ([c938c7a](https://github.com/mikro-orm/mikro-orm/commit/c938c7ad229a50330d60f3e06f79ba781808d519)), closes [#7899](https://github.com/mikro-orm/mikro-orm/issues/7899)
+- **sql:** strip comments from view definitions in schema generator ([#7883](https://github.com/mikro-orm/mikro-orm/issues/7883)) ([d56826b](https://github.com/mikro-orm/mikro-orm/commit/d56826b2fdd754ff197d35f9f7b4ffee24e364c6)), closes [#7875](https://github.com/mikro-orm/mikro-orm/issues/7875)
 
 ## [7.1.4](https://github.com/mikro-orm/mikro-orm/compare/v7.1.3...v7.1.4) (2026-06-06)
 

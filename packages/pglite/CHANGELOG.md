@@ -5,15 +5,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.1.5](https://github.com/mikro-orm/mikro-orm/compare/v7.1.4...v7.1.5) (2026-06-26)
 
-
 ### Bug Fixes
 
-* **pglite:** make createDatabase/dropDatabase true no-ops in single-database mode ([#7885](https://github.com/mikro-orm/mikro-orm/issues/7885)) ([8248a16](https://github.com/mikro-orm/mikro-orm/commit/8248a16460d260354c6e33957c6e6e4edccbe1af))
-* **pglite:** really close in-memory instances on orm.close() ([#7870](https://github.com/mikro-orm/mikro-orm/issues/7870)) ([a1a4d1d](https://github.com/mikro-orm/mikro-orm/commit/a1a4d1dced26880fb3bc4fbca1715b9ee54689a3)), closes [#7862](https://github.com/mikro-orm/mikro-orm/issues/7862)
-
-
-
-
+- **pglite:** make createDatabase/dropDatabase true no-ops in single-database mode ([#7885](https://github.com/mikro-orm/mikro-orm/issues/7885)) ([8248a16](https://github.com/mikro-orm/mikro-orm/commit/8248a16460d260354c6e33957c6e6e4edccbe1af))
+- **pglite:** really close in-memory instances on orm.close() ([#7870](https://github.com/mikro-orm/mikro-orm/issues/7870)) ([a1a4d1d](https://github.com/mikro-orm/mikro-orm/commit/a1a4d1dced26880fb3bc4fbca1715b9ee54689a3)), closes [#7862](https://github.com/mikro-orm/mikro-orm/issues/7862)
 
 ## [7.1.4](https://github.com/mikro-orm/mikro-orm/compare/v7.1.3...v7.1.4) (2026-06-06)
 
