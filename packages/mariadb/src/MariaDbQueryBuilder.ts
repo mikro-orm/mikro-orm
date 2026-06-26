@@ -7,7 +7,7 @@ import {
   RawQueryFragment,
   Utils,
 } from '@mikro-orm/core';
-import { QueryBuilder } from '@mikro-orm/mysql';
+import { NativeQueryBuilder, QueryBuilder } from '@mikro-orm/mysql';
 
 /**
  * @inheritDoc
@@ -32,7 +32,21 @@ export class MariaDbQueryBuilder<
       subQuery.offset(this.state.offset);
     }
 
-    const addToSelect = [];
+    const addToSelect: { fieldName: string; propName: string }[] = [];
+
+    const findVirtualField = (fieldName: string, propName: string) => {
+      return this.state.fields?.find(field => {
+        if (typeof field === 'object' && field && '__as' in field) {
+          return field.__as === fieldName || field.__as === propName;
+        }
+
+        if (isRaw(field)) {
+          return field.sql.includes(fieldName);
+        }
+
+        return false;
+      });
+    };
 
     if (this.state.orderBy.length > 0) {
       const orderBy = [];
@@ -52,11 +66,27 @@ export class MariaDbQueryBuilder<
           const fieldName = this.helper.mapper(field, this.type, undefined, null);
 
           if (!prop?.persist && !prop?.formula && !pks.includes(fieldName)) {
-            addToSelect.push(fieldName);
-          }
+            addToSelect.push({ fieldName, propName: f });
 
-          const key = raw(`min(${this.platform.quoteIdentifier(fieldName)}${type})`);
-          orderBy.push({ [key as any]: direction });
+            const matchedField = findVirtualField(fieldName, f);
+
+            if (matchedField instanceof NativeQueryBuilder) {
+              const expr = matchedField.toString().replace(/\s+as\s+[`"][^`"]+[`"]\s*$/i, '');
+              const key = raw(`min(${expr}${type})`);
+              orderBy.push({ [key as any]: direction });
+            } else if (isRaw(matchedField)) {
+              const compiled = this.platform.formatQuery(matchedField.sql, matchedField.params);
+              const expr = compiled.replace(/\s+as\s+[`"][^`"]+[`"]\s*$/i, '');
+              const key = raw(`min(${expr}${type})`);
+              orderBy.push({ [key as any]: direction });
+            } else {
+              const key = raw(`min(${this.platform.quoteIdentifier(fieldName)}${type})`);
+              orderBy.push({ [key as any]: direction });
+            }
+          } else {
+            const key = raw(`min(${this.platform.quoteIdentifier(fieldName)}${type})`);
+            orderBy.push({ [key as any]: direction });
+          }
         }
       }
 
@@ -68,22 +98,13 @@ export class MariaDbQueryBuilder<
 
     /* v8 ignore next */
     if (addToSelect.length > 0) {
-      addToSelect.forEach(prop => {
-        const field = this.state.fields!.find(field => {
-          if (typeof field === 'object' && field && '__as' in field) {
-            return field.__as === prop;
-          }
-
-          if (isRaw(field)) {
-            // not perfect, but should work most of the time, ideally we should check only the alias (`... as alias`)
-            return field.sql.includes(prop);
-          }
-
-          return false;
-        });
+      addToSelect.forEach(({ fieldName, propName }) => {
+        const field = findVirtualField(fieldName, propName);
 
         if (isRaw(field)) {
           innerQuery.select(this.platform.formatQuery(field.sql, field.params));
+        } else if (field instanceof NativeQueryBuilder) {
+          innerQuery.select(field.toRaw());
         } else if (field) {
           innerQuery.select(field as string);
         }

@@ -2721,12 +2721,14 @@ export class QueryBuilder<
       const meta = this.metadata.get(aliasOrTargetEntity as EntityName<T>);
       /* v8 ignore next */
       finalAlias = meta.properties[alias]?.fieldNames[0] ?? alias;
+    } else {
+      finalAlias = this.driver.config.getNamingStrategy().propertyToColumnName(finalAlias);
     }
 
     qb.as(finalAlias);
 
     // tag the instance, so it is possible to detect it easily
-    Object.defineProperty(qb, '__as', { enumerable: false, value: finalAlias });
+    Object.defineProperty(qb, '__as', { enumerable: true, value: finalAlias });
 
     return qb;
   }
@@ -3942,6 +3944,20 @@ export class QueryBuilder<
     });
   }
 
+  #findVirtualField(fieldName: string, propName: string) {
+    return this.#state.fields?.find(field => {
+      if (typeof field === 'object' && field && '__as' in field) {
+        return field.__as === fieldName || field.__as === propName;
+      }
+
+      if (isRaw(field)) {
+        return field.sql.includes(fieldName);
+      }
+
+      return false;
+    });
+  }
+
   protected wrapPaginateSubQuery(meta: EntityMetadata): void {
     const schema = this.getSchema(this.mainAlias);
     const pks = this.prepareFields(meta.primaryKeys, 'sub-query', schema) as string[];
@@ -3961,7 +3977,7 @@ export class QueryBuilder<
       subQuery.offset(this.#state.offset);
     }
 
-    const addToSelect = [];
+    const addToSelect: { fieldName: string; propName: string }[] = [];
 
     if (this.#state.orderBy.length > 0) {
       const orderBy = [];
@@ -3981,12 +3997,29 @@ export class QueryBuilder<
           const fieldName = this.helper.mapper(field, this.type, undefined, null);
 
           if (!prop?.persist && !prop?.formula && !prop?.hasConvertToJSValueSQL && !pks.includes(fieldName)) {
-            addToSelect.push(fieldName);
-          }
+            addToSelect.push({ fieldName, propName: f });
 
-          const quoted = this.platform.quoteIdentifier(fieldName);
-          const key = raw(`min(${quoted}${type})`);
-          orderBy.push({ [key]: direction });
+            const matchedField = this.#findVirtualField(fieldName, f);
+
+            if (matchedField instanceof NativeQueryBuilder) {
+              const expr = matchedField.toString().replace(/\s+as\s+[`"][^`"]+[`"]\s*$/i, '');
+              const key = raw(`min(${expr}${type})`);
+              orderBy.push({ [key]: direction });
+            } else if (isRaw(matchedField)) {
+              const compiled = this.platform.formatQuery(matchedField.sql, matchedField.params);
+              const expr = compiled.replace(/\s+as\s+[`"][^`"]+[`"]\s*$/i, '');
+              const key = raw(`min(${expr}${type})`);
+              orderBy.push({ [key]: direction });
+            } else {
+              const quoted = this.platform.quoteIdentifier(fieldName);
+              const key = raw(`min(${quoted}${type})`);
+              orderBy.push({ [key]: direction });
+            }
+          } else {
+            const quoted = this.platform.quoteIdentifier(fieldName);
+            const key = raw(`min(${quoted}${type})`);
+            orderBy.push({ [key]: direction });
+          }
         }
       }
 
@@ -3997,19 +4030,8 @@ export class QueryBuilder<
     const innerQuery = subQuery.as(this.mainAlias.aliasName).clear('select').select(pks);
 
     if (addToSelect.length > 0) {
-      addToSelect.forEach(prop => {
-        const field = this.#state.fields!.find(field => {
-          if (typeof field === 'object' && field && '__as' in field) {
-            return field.__as === prop;
-          }
-
-          if (isRaw(field)) {
-            // not perfect, but should work most of the time, ideally we should check only the alias (`... as alias`)
-            return field.sql.includes(prop);
-          }
-
-          return false;
-        });
+      addToSelect.forEach(({ fieldName, propName }) => {
+        const field = this.#findVirtualField(fieldName, propName);
 
         /* v8 ignore next */
         if (isRaw(field)) {
