@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.5](https://github.com/mikro-orm/mikro-orm/compare/v7.1.4...v7.1.5) (2026-06-26)
+
+
+### Bug Fixes
+
+* **core:** skip view entities in schema.clear() ([#7880](https://github.com/mikro-orm/mikro-orm/issues/7880)) ([3b762fe](https://github.com/mikro-orm/mikro-orm/commit/3b762fe0bb82d45f1838355e17c3d553ea7c19d4)), closes [#7874](https://github.com/mikro-orm/mikro-orm/issues/7874)
+
+
+
+
+
 ## [7.1.4](https://github.com/mikro-orm/mikro-orm/compare/v7.1.3...v7.1.4) (2026-06-06)
 
 **Note:** Version bump only for package @mikro-orm/oracledb

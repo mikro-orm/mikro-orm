@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.5](https://github.com/mikro-orm/mikro-orm/compare/v7.1.4...v7.1.5) (2026-06-26)
+
+
+### Bug Fixes
+
+* **cli:** discovery:export casts the DriverEntityManager to the right type ([#7873](https://github.com/mikro-orm/mikro-orm/issues/7873)) ([b4fa4de](https://github.com/mikro-orm/mikro-orm/commit/b4fa4de0e018c19b952a6d53205af9fcf905a9a6))
+* **core:** apply populateOrderBy to select-in relations without leaking into M:N pivots ([#7915](https://github.com/mikro-orm/mikro-orm/issues/7915)) ([03bb827](https://github.com/mikro-orm/mikro-orm/commit/03bb8271624185da140a4b34acbe5d52885b400e)), closes [#7910](https://github.com/mikro-orm/mikro-orm/issues/7910)
+* **core:** avoid evaluating getters when snapshotting unhydrated references ([#7919](https://github.com/mikro-orm/mikro-orm/issues/7919)) ([528789b](https://github.com/mikro-orm/mikro-orm/commit/528789b69e1201800baac87073c388d5bcc7573e)), closes [#7918](https://github.com/mikro-orm/mikro-orm/issues/7918)
+* **core:** enable RequestContext to use almost all fork options ([#7920](https://github.com/mikro-orm/mikro-orm/issues/7920)) ([021457f](https://github.com/mikro-orm/mikro-orm/commit/021457fabd88bc86b02d581fd7a681953f3fe844))
+* **core:** keep async-clonable resources by reference in config clone ([#7887](https://github.com/mikro-orm/mikro-orm/issues/7887)) ([57f0b2c](https://github.com/mikro-orm/mikro-orm/commit/57f0b2cb8ef935c5c4ce8895cf4d598112fd3b2d)), closes [#7862](https://github.com/mikro-orm/mikro-orm/issues/7862) [#7862](https://github.com/mikro-orm/mikro-orm/issues/7862) [#7870](https://github.com/mikro-orm/mikro-orm/issues/7870) [#7862](https://github.com/mikro-orm/mikro-orm/issues/7862)
+* **core:** key change set groups by metadata id to avoid dropped writes ([#7904](https://github.com/mikro-orm/mikro-orm/issues/7904)) ([243247d](https://github.com/mikro-orm/mikro-orm/commit/243247dc5e156ccb23032cf00e481b59a1f6744b)), closes [#7511](https://github.com/mikro-orm/mikro-orm/issues/7511) [#7903](https://github.com/mikro-orm/mikro-orm/issues/7903)
+* **core:** skip view entities in schema.clear() ([#7880](https://github.com/mikro-orm/mikro-orm/issues/7880)) ([3b762fe](https://github.com/mikro-orm/mikro-orm/commit/3b762fe0bb82d45f1838355e17c3d553ea7c19d4)), closes [#7874](https://github.com/mikro-orm/mikro-orm/issues/7874)
+* **core:** stop STI subtype property leaking to siblings when shared by 2+ children ([#7923](https://github.com/mikro-orm/mikro-orm/issues/7923)) ([647b28c](https://github.com/mikro-orm/mikro-orm/commit/647b28c35db1f9000d8bb73823388ce88a3ec77e)), closes [#7922](https://github.com/mikro-orm/mikro-orm/issues/7922)
+* **migrations:** restore triggers when reading the migration snapshot ([#7882](https://github.com/mikro-orm/mikro-orm/issues/7882)) ([5e68e04](https://github.com/mikro-orm/mikro-orm/commit/5e68e04bc95b578eda0cb1a11a607256ccca5d05)), closes [#7878](https://github.com/mikro-orm/mikro-orm/issues/7878)
+* **mssql:** return result sets from callRoutine without OUT params ([#7879](https://github.com/mikro-orm/mikro-orm/issues/7879)) ([fbe7fd3](https://github.com/mikro-orm/mikro-orm/commit/fbe7fd317285c82786ab484a53b0c8fb2b3c0a34)), closes [#7872](https://github.com/mikro-orm/mikro-orm/issues/7872)
+* **pglite:** make createDatabase/dropDatabase true no-ops in single-database mode ([#7885](https://github.com/mikro-orm/mikro-orm/issues/7885)) ([8248a16](https://github.com/mikro-orm/mikro-orm/commit/8248a16460d260354c6e33957c6e6e4edccbe1af))
+* **pglite:** really close in-memory instances on orm.close() ([#7870](https://github.com/mikro-orm/mikro-orm/issues/7870)) ([a1a4d1d](https://github.com/mikro-orm/mikro-orm/commit/a1a4d1dced26880fb3bc4fbca1715b9ee54689a3)), closes [#7862](https://github.com/mikro-orm/mikro-orm/issues/7862)
+* **postgres:** handle stored routines with unnamed parameters ([#7917](https://github.com/mikro-orm/mikro-orm/issues/7917)) ([6302833](https://github.com/mikro-orm/mikro-orm/commit/6302833dab3489ceb3459d8e9af9561a5670885e)), closes [#7905](https://github.com/mikro-orm/mikro-orm/issues/7905)
+* **sql:** derive bulk insert columns from all rows, not just the first ([#7884](https://github.com/mikro-orm/mikro-orm/issues/7884)) ([4abfb52](https://github.com/mikro-orm/mikro-orm/commit/4abfb52dce8559090c3bbb9b1a34e690874895c4)), closes [#7871](https://github.com/mikro-orm/mikro-orm/issues/7871)
+* **sql:** keep nested collection populateOrderBy by a to-one relation field under joined strategy ([#7916](https://github.com/mikro-orm/mikro-orm/issues/7916)) ([e81d01b](https://github.com/mikro-orm/mikro-orm/commit/e81d01bf639a29d75e5dfc27ea6a663e86b39098)), closes [#7911](https://github.com/mikro-orm/mikro-orm/issues/7911)
+* **sql:** resolve target entity schema in nested collection operators ([#7895](https://github.com/mikro-orm/mikro-orm/issues/7895)) ([5be97fb](https://github.com/mikro-orm/mikro-orm/commit/5be97fb7ca11910582369d533df838e5031d1ef0)), closes [#7894](https://github.com/mikro-orm/mikro-orm/issues/7894)
+* **sql:** serialize array operators as a single literal in JOIN-ON conditions ([#7900](https://github.com/mikro-orm/mikro-orm/issues/7900)) ([c938c7a](https://github.com/mikro-orm/mikro-orm/commit/c938c7ad229a50330d60f3e06f79ba781808d519)), closes [#7899](https://github.com/mikro-orm/mikro-orm/issues/7899)
+* **sql:** strip comments from view definitions in schema generator ([#7883](https://github.com/mikro-orm/mikro-orm/issues/7883)) ([d56826b](https://github.com/mikro-orm/mikro-orm/commit/d56826b2fdd754ff197d35f9f7b4ffee24e364c6)), closes [#7875](https://github.com/mikro-orm/mikro-orm/issues/7875)
+
+
+
+
+
 ## [7.1.4](https://github.com/mikro-orm/mikro-orm/compare/v7.1.3...v7.1.4) (2026-06-06)
 
 

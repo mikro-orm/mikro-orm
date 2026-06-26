@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.5](https://github.com/mikro-orm/mikro-orm/compare/v7.1.4...v7.1.5) (2026-06-26)
+
+
+### Bug Fixes
+
+* **core:** apply populateOrderBy to select-in relations without leaking into M:N pivots ([#7915](https://github.com/mikro-orm/mikro-orm/issues/7915)) ([03bb827](https://github.com/mikro-orm/mikro-orm/commit/03bb8271624185da140a4b34acbe5d52885b400e)), closes [#7910](https://github.com/mikro-orm/mikro-orm/issues/7910)
+* **core:** avoid evaluating getters when snapshotting unhydrated references ([#7919](https://github.com/mikro-orm/mikro-orm/issues/7919)) ([528789b](https://github.com/mikro-orm/mikro-orm/commit/528789b69e1201800baac87073c388d5bcc7573e)), closes [#7918](https://github.com/mikro-orm/mikro-orm/issues/7918)
+* **core:** enable RequestContext to use almost all fork options ([#7920](https://github.com/mikro-orm/mikro-orm/issues/7920)) ([021457f](https://github.com/mikro-orm/mikro-orm/commit/021457fabd88bc86b02d581fd7a681953f3fe844))
+* **core:** keep async-clonable resources by reference in config clone ([#7887](https://github.com/mikro-orm/mikro-orm/issues/7887)) ([57f0b2c](https://github.com/mikro-orm/mikro-orm/commit/57f0b2cb8ef935c5c4ce8895cf4d598112fd3b2d)), closes [#7862](https://github.com/mikro-orm/mikro-orm/issues/7862) [#7862](https://github.com/mikro-orm/mikro-orm/issues/7862) [#7870](https://github.com/mikro-orm/mikro-orm/issues/7870) [#7862](https://github.com/mikro-orm/mikro-orm/issues/7862)
+* **core:** key change set groups by metadata id to avoid dropped writes ([#7904](https://github.com/mikro-orm/mikro-orm/issues/7904)) ([243247d](https://github.com/mikro-orm/mikro-orm/commit/243247dc5e156ccb23032cf00e481b59a1f6744b)), closes [#7511](https://github.com/mikro-orm/mikro-orm/issues/7511) [#7903](https://github.com/mikro-orm/mikro-orm/issues/7903)
+* **core:** skip view entities in schema.clear() ([#7880](https://github.com/mikro-orm/mikro-orm/issues/7880)) ([3b762fe](https://github.com/mikro-orm/mikro-orm/commit/3b762fe0bb82d45f1838355e17c3d553ea7c19d4)), closes [#7874](https://github.com/mikro-orm/mikro-orm/issues/7874)
+* **core:** stop STI subtype property leaking to siblings when shared by 2+ children ([#7923](https://github.com/mikro-orm/mikro-orm/issues/7923)) ([647b28c](https://github.com/mikro-orm/mikro-orm/commit/647b28c35db1f9000d8bb73823388ce88a3ec77e)), closes [#7922](https://github.com/mikro-orm/mikro-orm/issues/7922)
+
+
+
+
+
 ## [7.1.4](https://github.com/mikro-orm/mikro-orm/compare/v7.1.3...v7.1.4) (2026-06-06)
 
 ### Bug Fixes
