@@ -4002,12 +4002,12 @@ export class QueryBuilder<
             const matchedField = this.#findVirtualField(fieldName, f);
 
             if (matchedField instanceof NativeQueryBuilder) {
-              const expr = matchedField.toString().replace(/\s+as\s+[`"][^`"]+[`"]\s*$/i, '');
+              const expr = matchedField.toString().replace(/ as [`"][^`"]+[`"]$/, '');
               const key = raw(`min(${expr}${type})`);
               orderBy.push({ [key]: direction });
             } else if (isRaw(matchedField)) {
               const compiled = this.platform.formatQuery(matchedField.sql, matchedField.params);
-              const expr = compiled.replace(/\s+as\s+[`"][^`"]+[`"]\s*$/i, '');
+              const expr = compiled.replace(/ as [`"][^`"]+[`"]$/, '');
               const key = raw(`min(${expr}${type})`);
               orderBy.push({ [key]: direction });
             } else {
