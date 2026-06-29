@@ -6,6 +6,7 @@ import type {
   EntityName,
   EntityProperty,
   EntitySchemaWithMeta,
+  ExtractDefineEntityProperties,
   FilterQuery,
   GroupOperator,
   IndexColumnOptions,
@@ -330,7 +331,21 @@ export interface ICriteriaNode<T extends object> {
 export type MaybeReturnType<T> = T extends (...args: any[]) => infer R ? R : T;
 
 export type InferEntityProperties<Schema> =
-  Schema extends EntitySchemaWithMeta<any, any, any, any, infer Properties> ? Properties : never;
+  Schema extends EntitySchemaWithMeta<any, any, any, infer Base, infer Properties>
+    ? MergeInheritedProperties<Base, Properties>
+    : never;
+
+// Columns inherited via `extends` live in the base entity's own builders, recoverable from its
+// `[IndexHints]` marker; merge them under the child's own properties so the Kysely table type
+// exposes inherited columns too (GH #7937). Child properties win on name conflicts; bases without
+// recoverable builders (no base, or a decorator class) fall back to the child's own properties.
+type MergeInheritedProperties<Base, Properties extends Record<string, any>> = [
+  ExtractDefineEntityProperties<Base>,
+] extends [infer BaseProps extends Record<string, any>]
+  ? [BaseProps] extends [never]
+    ? Properties
+    : Omit<BaseProps, keyof Properties> & Properties
+  : Properties;
 
 export type InferKyselyDB<
   TEntities extends { name: string },
