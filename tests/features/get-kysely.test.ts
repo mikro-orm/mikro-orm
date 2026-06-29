@@ -440,6 +440,42 @@ describe('InferKyselyDB', () => {
     }>();
   });
 
+  test('infer columns inherited via extends (GH #7937)', async () => {
+    const BaseEntity = defineEntity({
+      abstract: true,
+      name: 'BaseEntity7937',
+      properties: {
+        id: p.integer().autoincrement().primary(),
+        createdAt: p.datetime().fieldName('created_at'),
+      },
+    });
+
+    const Book = defineEntity({
+      name: 'Book7937',
+      tableName: 'books7937',
+      extends: BaseEntity,
+      properties: p => ({
+        title: p.string(),
+      }),
+    });
+
+    const orm = new MikroORM({
+      entities: [Book],
+      dbName: ':memory:',
+    });
+
+    type KyselyDB = InferKyselyDB<typeof Book, {}>;
+    type BookTable = KyselyDB['books7937'];
+    expectTypeOf<BookTable>().toEqualTypeOf<{
+      id: Generated<number>;
+      created_at: Date;
+      title: string;
+    }>();
+
+    const kysely = orm.em.getKysely();
+    kysely.selectFrom('books7937').select(['id', 'created_at', 'title']);
+  });
+
   test('use InferKyselyTable manually', async () => {
     const User = defineEntity({
       name: 'User',

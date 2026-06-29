@@ -246,6 +246,15 @@ export type InferPropertyIndexMap<Properties extends Record<string, any>> = {
       : never]: K & string;
 };
 
+/**
+ * Extracts the raw `defineEntity` property builders that `[IndexHints]` carries as a `[Properties]`
+ * tuple. Used to recover a base entity's own builders so that columns inherited via `extends` can be
+ * mapped (e.g. for the Kysely table type). Returns `never` for decorator entities (object-shaped hints).
+ */
+export type ExtractDefineEntityProperties<T> = T extends { [IndexHints]?: [infer P extends Record<string, any>] }
+  ? P
+  : never;
+
 /** Union of declared index names on an entity. Falls back to `string` when no `[IndexHints]` are declared. */
 export type IndexName<T> = [ExtractIndexHints<T>] extends [never]
   ? string
