@@ -42,6 +42,7 @@ import type {
   MaybePromise,
   IndexHints,
   InferPropertyIndexMap,
+  ExtractDefineEntityProperties,
 } from '../typings.js';
 import type { Raw } from '../utils/RawQueryFragment.js';
 import type { ScalarReference } from './Reference.js';
@@ -1647,8 +1648,18 @@ export type InferEntityFromProperties<
     ? {}
     : NarrowDiscriminator<Omit<Base, typeof PrimaryKeyProp>, BaseDiscriminatorColumn, DiscriminatorValue>) &
   (ForceObject extends true ? { [Config]?: DefineConfig<{ forceObject: true }> } : {}) & {
-    [IndexHints]?: [Properties];
+    [IndexHints]?: [Omit<ExtractBaseProperties<Base>, keyof Properties> & Properties];
   };
+
+// Recovers a base entity's (already-merged) property builders from its `[IndexHints]` marker; `{}`
+// when there is no base or it's a decorator class. Because each base's marker is itself built this way,
+// the merge is transitive across multi-level `extends`, so inferred Kysely columns and index hints span
+// the full ancestor chain (own props win on clash).
+type ExtractBaseProperties<Base> = [ExtractDefineEntityProperties<Base>] extends [infer P extends Record<string, any>]
+  ? [P] extends [never]
+    ? {}
+    : P
+  : {};
 
 // Narrows the inherited discriminator property on `Base` to the literal `DiscValue` so a union
 // of sibling subtypes forms a proper discriminated union (GH #7677). Falls through to `Base`

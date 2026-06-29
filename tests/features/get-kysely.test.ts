@@ -582,6 +582,63 @@ describe('InferKyselyDB', () => {
 
     expectTypeOf<AutoInferredDB>().toEqualTypeOf<ManualDatabase>();
   });
+
+  test('infer columns inherited via extends, including multi-level chains (GH #7937)', () => {
+    const Base = defineEntity({
+      name: 'Base7937',
+      abstract: true,
+      properties: {
+        id: p.integer().primary().autoincrement(),
+        createdAt: p.datetime().fieldName('created_at_col'),
+      },
+    });
+
+    const Middle = defineEntity({
+      name: 'Middle7937',
+      extends: Base,
+      abstract: true,
+      properties: {
+        mid: p.string(),
+      },
+    });
+
+    // single-level child of Base
+    const Animal = defineEntity({
+      name: 'Animal7937',
+      tableName: 'animal',
+      extends: Base,
+      properties: {
+        species: p.string(),
+      },
+    });
+
+    // multi-level child: Base -> Middle -> Cat
+    const Cat = defineEntity({
+      name: 'Cat7937',
+      tableName: 'cat',
+      extends: Middle,
+      properties: {
+        lives: p.integer(),
+      },
+    });
+
+    type DB = InferKyselyDB<typeof Animal | typeof Cat, {}>;
+
+    // single-level: own + grandparent-less base columns (builder metadata like fieldName propagates)
+    expectTypeOf<DB['animal']>().toEqualTypeOf<{
+      id: Generated<number>;
+      created_at_col: Date;
+      species: string;
+    }>();
+
+    // multi-level: own + parent + grandparent columns
+    expectTypeOf<DB['cat']>().toEqualTypeOf<{
+      id: Generated<number>;
+      created_at_col: Date;
+      mid: string;
+      lives: number;
+    }>();
+  });
 });
 
 describe('InferClassEntityDB', () => {
