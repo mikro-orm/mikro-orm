@@ -344,6 +344,14 @@ export class DatabaseSchema {
 
       for (const check of meta.checks) {
         const columnName = check.property ? meta.properties[check.property].fieldNames[0] : undefined;
+
+        // In TPT, inherited columns live on the parent table only, so a check
+        // that references such a column must not be emitted onto the child
+        // table, where that column does not exist.
+        if (meta.inheritanceType === 'tpt' && meta.tptParent && columnName && !table.hasColumn(columnName)) {
+          continue;
+        }
+
         const expression = isRaw(check.expression)
           ? platform.formatQuery(check.expression.sql, check.expression.params)
           : (check.expression as string);
