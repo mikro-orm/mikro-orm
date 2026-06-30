@@ -2,6 +2,7 @@ import {
   ArrayType,
   BooleanType,
   DateTimeType,
+  DateType,
   DecimalType,
   type Dictionary,
   type EntityProperty,
@@ -1142,7 +1143,11 @@ export class SchemaComparator {
     const simplify = (str?: string) => {
       return (
         str
-          ?.replace(/_\w+'(.*?)'/g, '$1')
+          // Strip MySQL charset introducers (`_utf8mb4'foo'` -> `foo`). The negative lookbehind
+          // ensures we only match a real introducer (always preceded by a delimiter or the start of
+          // the expression), never an underscore inside a string literal such as `'a_b'` — which has
+          // no introducer on the entity side and would otherwise be corrupted (`'a_b'` -> `'a`).
+          ?.replace(/(?<![\w'])_\w+'(.*?)'/g, '$1')
           .replace(/!=/g, '<>')
           .replace(/in\s*\((.*?)\)/gi, '= any (array[$1])')
           // MySQL normalizes count(*) to count(0)
@@ -1273,6 +1278,15 @@ export class SchemaComparator {
       const defaultValueTo = to.default.toLowerCase().replace('current_timestamp', 'now').replace(/\(\)$/, '');
 
       return defaultValueFrom === defaultValueTo;
+    }
+
+    if (to.mappedType instanceof DateType && from.default && to.default) {
+      // MySQL stores/reports a `current_date` default as `curdate()`, while the entity keeps the raw
+      // (parenthesized) expression. Normalize the synonym and drop all parentheses so the introspected
+      // `curdate()` and the entity's `(current_date)`/`(curdate())` don't churn a no-op migration.
+      const norm = (d: string) => d.toLowerCase().replace('current_date', 'curdate').replace(/[()]/g, '');
+
+      return norm(from.default) === norm(to.default);
     }
 
     // mysql stores decimal defaults padded to scale (`0` → `0.00`); compare numerically so the
