@@ -596,7 +596,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         Object.keys(data[prop.name] as Dictionary).forEach(kk => {
           // explicitly allow `$exists`, `$eq`, `$ne` and `$elemMatch` operators here as they can't be misused this way
           const operator = Object.keys(data[prop.name] as Dictionary).some(
-            f => Utils.isOperator(f) && !['$exists', '$ne', '$eq', '$elemMatch'].includes(f),
+            f => Utils.isOperator(f) && !['$exists', '$ne', '$eq', '$elemMatch', '$all'].includes(f),
           );
 
           if (operator) {

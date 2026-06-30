@@ -440,6 +440,7 @@ export type OperatorMap<T> = {
   $ne?: ExpandScalar<T> | readonly ExpandScalar<T>[] | Subquery;
   $in?: readonly ExpandScalar<T>[] | readonly Primary<T>[] | Raw | Subquery;
   $nin?: readonly ExpandScalar<T>[] | readonly Primary<T>[] | Raw | Subquery;
+  $all?: readonly ExpandScalar<T>[] | readonly Primary<T>[] | Raw | Subquery;
   $not?: ExpandQuery<T>;
   $none?: ExpandQuery<T>;
   $some?: ExpandQuery<T>;
