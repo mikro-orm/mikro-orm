@@ -6,7 +6,7 @@ import { fs } from '@mikro-orm/core/fs-utils';
 import type { BaseArgs, BaseCommand } from '../CLIConfigurator.js';
 import { CLIHelper } from '../CLIHelper.js';
 
-type DiscoveryExportArgs = BaseArgs & { path?: string[]; out?: string; dump?: boolean };
+type DiscoveryExportArgs = BaseArgs & { path?: string[]; out?: string; dump?: boolean; quiet?: boolean };
 
 interface DiscoveredExport {
   exportName: string;
@@ -55,6 +55,7 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
    * @inheritDoc
    */
   handler = async (args: ArgumentsCamelCase<DiscoveryExportArgs>) => {
+    CLIHelper.quiet = args.quiet;
     const config = await CLIHelper.getConfiguration(args.contextName, args.config);
     const paths = this.resolvePaths(args, config);
     const baseDir = fs.absolutePath(config.get('baseDir') ?? process.cwd());
@@ -79,13 +80,18 @@ export class DiscoveryExportCommand implements BaseCommand<DiscoveryExportArgs> 
     const output = this.generateFile(discovered, outPath, esm, driverPackage);
     mkdirSync(dirname(outPath), { recursive: true });
     writeFileSync(outPath, output);
-    CLIHelper.dump(colors.green(`Entity exports generated to ${outPath} (${discovered.length} entities)`));
-    CLIHelper.dump(`\nExample usage in your ORM config:\n`);
+
+    if (args.quiet) {
+      return;
+    }
+
+    CLIHelper.info(colors.green(`Entity exports generated to ${outPath} (${discovered.length} entities)`));
+    CLIHelper.info(`\nExample usage in your ORM config:\n`);
     const importExt = esm ? '.js' : '';
     const importPath = `./${basename(outPath).replace(/\.ts$/, importExt)}`;
-    CLIHelper.dump(`  import { entities } from ${colors.cyan(`'${importPath}'`)};`);
-    CLIHelper.dump('');
-    CLIHelper.dump('  export default defineConfig({ entities });\n');
+    CLIHelper.info(`  import { entities } from ${colors.cyan(`'${importPath}'`)};`);
+    CLIHelper.info('');
+    CLIHelper.info('  export default defineConfig({ entities });\n');
   };
 
   private resolvePaths(args: ArgumentsCamelCase<DiscoveryExportArgs>, config: Configuration): string[] {

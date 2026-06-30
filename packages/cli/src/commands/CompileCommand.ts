@@ -32,6 +32,7 @@ export class CompileCommand implements BaseCommand<CompileArgs> {
    * @inheritDoc
    */
   async handler(args: ArgumentsCamelCase<CompileArgs>) {
+    CLIHelper.quiet = args.quiet;
     const config = await CLIHelper.getConfiguration(args.contextName, args.config);
     const settings = CLIHelper.getSettings();
     config.set('debug', !!settings.verbose);
@@ -77,14 +78,18 @@ export class CompileCommand implements BaseCommand<CompileArgs> {
     writeFileSync(outPath, output);
     writeFileSync(dtsPath, dts);
 
-    CLIHelper.dump(colors.green(`Compiled functions generated to ${outPath} (${captured.length} functions)`));
-    CLIHelper.dump(`\nExample usage in your ORM config:\n`);
+    if (args.quiet) {
+      return;
+    }
+
+    CLIHelper.info(colors.green(`Compiled functions generated to ${outPath} (${captured.length} functions)`));
+    CLIHelper.info(`\nExample usage in your ORM config:\n`);
     const importPath = esm ? './compiled-functions.js' : './compiled-functions';
-    CLIHelper.dump(
+    CLIHelper.info(
       `  ${esm ? 'import' : 'const'} compiledFunctions ${esm ? 'from ' : '= require('}${colors.cyan(`'${importPath}'`)}${esm ? '' : ')'};`,
     );
-    CLIHelper.dump('');
-    CLIHelper.dump(`  export default defineConfig({ compiledFunctions });\n`);
+    CLIHelper.info('');
+    CLIHelper.info(`  export default defineConfig({ compiledFunctions });\n`);
   }
 
   static capture(metadata: MetadataStorage, config: Configuration) {

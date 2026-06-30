@@ -15,6 +15,8 @@ const checkMigrationMock = vi.spyOn(Migrator.prototype, 'checkSchema');
 checkMigrationMock.mockResolvedValue(true);
 const dumpMock = vi.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
+const infoMock = vi.spyOn(CLIHelper, 'info');
+infoMock.mockImplementation(() => void 0);
 
 describe('CheckMigrationCommand', () => {
   let orm: MikroORM<SqliteDriver>;
@@ -52,7 +54,7 @@ describe('CheckMigrationCommand', () => {
     checkMigrationMock.mockImplementationOnce(async () => false);
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(checkMigrationMock.mock.calls.length).toBe(2);
-    expect(closeSpy).toHaveBeenCalledTimes(2);
-    expect(dumpMock).toHaveBeenLastCalledWith('No changes required, schema is up-to-date');
+    expect(infoMock).toHaveBeenCalledTimes(1);
+    expect(infoMock).toHaveBeenLastCalledWith('No changes required, schema is up-to-date');
   });
 });

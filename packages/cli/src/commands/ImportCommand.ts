@@ -14,10 +14,11 @@ export class ImportCommand implements BaseCommand<ImportArgs> {
    * @inheritDoc
    */
   async handler(args: ArgumentsCamelCase<ImportArgs>) {
+    CLIHelper.quiet = args.quiet;
     const orm = await CLIHelper.getORM(args.contextName, args.config, { multipleStatements: true });
     const buf = await readFile(args.file);
     await orm.em.getConnection().executeDump(buf.toString());
-    CLIHelper.dump(colors.green(`File ${args.file} successfully imported`));
+    CLIHelper.info(colors.green(`File ${args.file} successfully imported`));
     await orm.close(true);
   }
 }
