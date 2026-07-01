@@ -53,7 +53,7 @@
     "kysely": "0.29.2",
     "postgres-array": "3.0.4",
     "postgres-date": "2.1.0",
-    "postgres-interval": "4.0.2"
+    "postgres-interval": "4.1.0"
   },
   "devDependencies": {
     "@mikro-orm/core": "^7.1.5"
