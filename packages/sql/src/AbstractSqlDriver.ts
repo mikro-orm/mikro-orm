@@ -2980,6 +2980,10 @@ export abstract class AbstractSqlDriver<
 
     const alias = '__p';
     const qb = this.createQueryBuilder(entityName, undefined, undefined, undefined, undefined, alias);
+    // Select a constant instead of the default `*` — otherwise non-lazy `@Formula` properties
+    // (and their embedded subqueries, which may contain their own `where`/cross-table refs)
+    // leak into the SQL and corrupt the predicate extracted below. Only `from ... where` matters here.
+    qb.select(raw('1'));
     qb.where(where as any);
     const sql = qb.getFormattedQuery();
 
