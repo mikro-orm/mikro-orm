@@ -1,4 +1,4 @@
-import { serialize } from '@mikro-orm/core';
+import { Opt, serialize } from '@mikro-orm/core';
 import {
   Embeddable,
   Embedded,
@@ -24,7 +24,7 @@ export class ListEntity2Test {
   id!: string;
 
   @Property({ nullable: true })
-  title!: string;
+  title!: string & Opt;
 
   @Embedded(() => DetailsEntity)
   details!: DetailsEntity;
