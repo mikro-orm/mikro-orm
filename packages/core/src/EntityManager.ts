@@ -913,7 +913,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Using extends string = never,
   >(
     entityName: EntityName<Entity>,
-    options: WithUsingOptions<FindByCursorOptions<Entity, Hint, Fields, Excludes, IncludeCount>, Entity, Using>,
+    options: WithUsingOptions<
+      FindByCursorOptions<NoInfer<Entity>, Hint, Fields, Excludes, IncludeCount>,
+      NoInfer<Entity>,
+      Using
+    >,
   ): Promise<Cursor<Entity, Hint, Fields, Excludes, IncludeCount>> {
     const em = this.getContext(false);
     options.overfetch ??= true;
@@ -1763,7 +1767,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    */
   async insert<Entity extends object>(
     entityNameOrEntity: EntityName<Entity> | Entity,
-    data?: RequiredEntityData<Entity> | Entity,
+    data?: NoInfer<RequiredEntityData<Entity> | Entity>,
     options: NativeInsertUpdateOptions<Entity> = {},
   ): Promise<Primary<Entity>> {
     const em = this.getContext(false);
@@ -1868,7 +1872,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    */
   async insertMany<Entity extends object>(
     entityNameOrEntities: EntityName<Entity> | Entity[],
-    data?: RequiredEntityData<Entity>[] | Entity[],
+    data?: NoInfer<RequiredEntityData<Entity>[] | Entity[]>,
     options: NativeInsertUpdateOptions<Entity> = {},
   ): Promise<Primary<Entity>[]> {
     const em = this.getContext(false);
