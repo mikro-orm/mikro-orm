@@ -20,6 +20,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
   static readonly DEFAULT_VALUES = {
     'now()': ['now()', 'current_timestamp'],
     'current_timestamp(?)': ['current_timestamp(?)'],
+    'curdate()': ['(current_date)'],
     '0': ['0', 'false'],
   };
 
