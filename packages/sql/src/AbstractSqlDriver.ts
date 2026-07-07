@@ -853,6 +853,16 @@ export abstract class AbstractSqlDriver<
         relationPojo[prop.name] = value as EntityDataValue<T>;
       }
     } else {
+      // Inline (prefix:false, non-JSON) embedded props have no dedicated column of their
+      // own — the individual child SCALAR props carry each flattened column value and will
+      // be processed separately in this same loop.  Writing the raw DB column value here
+      // would corrupt __originalEntityData with a key in the wrong shape and produce a
+      // phantom changeset on the next flush whenever the embedded property's camelCase→
+      // snake_case column name coincidentally equals one of the child fieldNames.
+      if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && !meta.embeddable) {
+        return;
+      }
+
       const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
       relationPojo[prop.name] = root[alias];
 

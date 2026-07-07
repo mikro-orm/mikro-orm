@@ -4,6 +4,7 @@ import {
   Embedded,
   Entity,
   ManyToOne,
+  OneToOne,
   PrimaryKey,
   Property,
   ReflectMetadataProvider,
@@ -740,5 +741,108 @@ describe('embedded entities in postgresql', () => {
     expect(mock.mock.calls[0][0]).toMatch(
       `select "u0".* from "user" as "u0" where exists (select 1 from jsonb_array_elements("u0"."addresses") as "__je0" where "__je0"->>'postal_code' is not null)`,
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Regression test for https://github.com/mikro-orm/mikro-orm/issues/7954
+// A nullable prefix:false @Embedded whose child property has an explicit
+// fieldName containing an underscore (e.g. "comment_template") caused a
+// phantom changeset on flush when the parent entity was loaded via the
+// default joined populate strategy through a OneToOne relation.
+// ---------------------------------------------------------------------------
+
+@Embeddable()
+class CommentTemplate7954 {
+  // The explicit fieldName with an underscore is what triggers the bug:
+  // propertyToColumnName('commentTemplate') also yields 'comment_template',
+  // so the EMBEDDED prop's fieldNames[0] coincidentally equals the child's
+  // fieldNames[0].  mapJoinedProp was then writing the raw DB string to
+  // relationPojo['commentTemplate'], corrupting __originalEntityData.
+  @Property({ fieldName: 'comment_template', type: 'varchar' })
+  value!: string;
+}
+
+@Entity()
+class IssueChild7954 {
+  @PrimaryKey()
+  id!: number;
+
+  @Embedded(() => CommentTemplate7954, { prefix: false, nullable: true })
+  commentTemplate: CommentTemplate7954 | null = null;
+}
+
+@Entity()
+class IssueParent7954 {
+  @PrimaryKey()
+  id!: number;
+
+  @OneToOne(() => IssueChild7954, { fieldName: 'child_id', nullable: true })
+  child: Rel<IssueChild7954> | null = null;
+}
+
+describe('issue #7954 – phantom changeset for prefix:false nullable embedded with underscore fieldName loaded via joined populate', () => {
+  let orm: MikroORM<PostgreSqlDriver>;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [IssueParent7954, IssueChild7954],
+      dbName: 'mikro_orm_test_embeddables',
+      driver: PostgreSqlDriver,
+    });
+
+    const conn = orm.em.getConnection();
+    await conn.execute('drop table if exists "issue_parent7954" cascade');
+    await conn.execute('drop table if exists "issue_child7954" cascade');
+    await conn.execute(`
+      create table "issue_child7954" (
+        "id" int not null primary key,
+        "comment_template" varchar null
+      )
+    `);
+    await conn.execute(`
+      create table "issue_parent7954" (
+        "id" int not null primary key,
+        "child_id" int references "issue_child7954" ("id")
+      )
+    `);
+
+    // Seed
+    await conn.execute(`insert into "issue_child7954" values (1, 'hello')`);
+    await conn.execute(`insert into "issue_parent7954" values (1, 1)`);
+  });
+
+  afterAll(async () => {
+    const conn = orm.em.getConnection();
+    await conn.execute('drop table if exists "issue_parent7954" cascade');
+    await conn.execute('drop table if exists "issue_child7954" cascade');
+    await orm.close(true);
+  });
+
+  test('no phantom changeset after joined populate of child with prefix:false nullable embedded whose fieldName contains an underscore', async () => {
+    // Loading Parent with { populate: ['child'], strategy: 'joined' } triggers
+    // mapJoinedProp for every prop of Child, including the EMBEDDED
+    // commentTemplate.  Before the fix, mapJoinedProp was writing the raw DB
+    // string ('hello') to relationPojo['commentTemplate'] because
+    // propertyToColumnName('commentTemplate') → 'comment_template' happened to
+    // equal the child property's explicit fieldName.  That stray key then
+    // polluted __originalEntityData, causing a phantom { commentTemplate:
+    // undefined } changeset and an empty-SET-clause UPDATE on flush.
+    const em = orm.em.fork();
+    const found = await em.findOne(
+      IssueParent7954,
+      { id: 1 },
+      { populate: ['child'], strategy: LoadStrategy.JOINED },
+    );
+
+    expect(found).not.toBeNull();
+    expect(found!.child).not.toBeNull();
+    expect(found!.child!.commentTemplate).not.toBeNull();
+    expect(found!.child!.commentTemplate!.value).toBe('hello');
+
+    // Before the fix, flush() threw:
+    //   DriverException: No data provided (empty SET clause on Postgres)
+    await expect(em.flush()).resolves.toBeUndefined();
   });
 });
