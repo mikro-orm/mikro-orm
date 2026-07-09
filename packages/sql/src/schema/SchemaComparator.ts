@@ -1142,7 +1142,8 @@ export class SchemaComparator {
     const simplify = (str?: string) => {
       return (
         str
-          ?.replace(/_\w+'(.*?)'/g, '$1')
+          // lookbehind: only strip a real charset introducer, never an underscore inside a literal like 'a_b'
+          ?.replace(/(?<![\w'])_\w+'(.*?)'/g, '$1')
           .replace(/!=/g, '<>')
           .replace(/in\s*\((.*?)\)/gi, '= any (array[$1])')
           // MySQL normalizes count(*) to count(0)
