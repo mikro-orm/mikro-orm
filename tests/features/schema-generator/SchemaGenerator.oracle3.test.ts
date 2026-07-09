@@ -798,6 +798,31 @@ describe('SchemaGenerator3 [oracle]', () => {
     expect(sqlWithDefaultSchema).toBe('drop view if exists "test_view" cascade constraints');
   });
 
+  test('getAllForeignKeys keeps schema owner case consistent with getAllColumns (GH #7960)', async () => {
+    const helper = (orm.schema as any).helper;
+    const connection = orm.em.getConnection();
+    // Oracle returns owners in uppercase; getAllColumns keeps that case, so getAllForeignKeys must too,
+    // otherwise the schema differ cannot correlate FKs with their tables and re-adds every FK.
+    const executeSpy = vi.spyOn(connection, 'execute').mockResolvedValue([
+      {
+        constraint_name: 'children_parent_id_foreign',
+        table_name: 'poc_children',
+        schema_name: 'MY_SCHEMA',
+        column_name: 'parent_id',
+        referenced_schema_name: 'MY_SCHEMA',
+        referenced_column_name: 'id',
+        referenced_table_name: 'poc_parents',
+        update_rule: 'NO ACTION',
+        delete_rule: 'NO ACTION',
+      },
+    ] as any);
+    const tablesBySchemas = new Map([['MY_SCHEMA', [{ table_name: 'poc_children', schema_name: 'MY_SCHEMA' }]]]);
+    const fks = await helper.getAllForeignKeys(connection, tablesBySchemas);
+    executeSpy.mockRestore();
+    expect(Object.keys(fks)).toEqual(['MY_SCHEMA.poc_children']);
+    expect(fks['MY_SCHEMA.poc_children'].children_parent_id_foreign.referencedTableName).toBe('MY_SCHEMA.poc_parents');
+  });
+
   test('OracleConnection.execute handles RawQueryFragment and NativeQueryBuilder', async () => {
     const connection = orm.em.getConnection();
     const result = await connection.execute(raw('select 1 as "val" from dual'));
