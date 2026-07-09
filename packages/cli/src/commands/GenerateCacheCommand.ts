@@ -14,6 +14,7 @@ export class GenerateCacheCommand implements BaseCommand<CacheArgs> {
       desc: `Generate development cache for '.ts' files`,
     });
     args.option('combined', {
+      type: 'string',
       alias: 'c',
       desc: `Generate production cache into a single JSON file that can be used with the GeneratedCacheAdapter.`,
     });
@@ -24,7 +25,10 @@ export class GenerateCacheCommand implements BaseCommand<CacheArgs> {
    * @inheritDoc
    */
   async handler(args: ArgumentsCamelCase<CacheArgs>) {
-    const options = args.combined ? { combined: './metadata.json' } : {};
+    const options =
+      typeof args.combined !== 'undefined'
+        ? { combined: args.combined === '' ? './metadata.json' : args.combined }
+        : {};
     const config = await CLIHelper.getConfiguration(args.contextName, args.config, {
       metadataCache: { enabled: true, adapter: FileCacheAdapter, options },
     });
