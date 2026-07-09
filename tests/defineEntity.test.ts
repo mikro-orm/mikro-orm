@@ -350,6 +350,32 @@ describe('defineEntity', () => {
     >(true);
   });
 
+  it('should infer `string` for time type properties', () => {
+    const p = defineEntity.properties;
+
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: {
+        id: p.integer().primary(),
+        viaBuilder: p.time(),
+        viaTypeString: p.type('time'),
+      },
+    });
+
+    type IFoo = InferEntity<typeof Foo>;
+    assert<
+      IsExact<
+        Omit<IFoo, typeof IndexHints>,
+        {
+          id: number;
+          viaBuilder: string;
+          viaTypeString: string;
+          [PrimaryKeyProp]?: 'id';
+        }
+      >
+    >(true);
+  });
+
   it('should define entity with class constructor as extends', () => {
     class BaseEntity {
       id!: number;
