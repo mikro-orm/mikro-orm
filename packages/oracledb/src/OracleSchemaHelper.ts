@@ -430,9 +430,6 @@ export class OracleSchemaHelper extends SchemaHelper {
     const ret = {} as Dictionary;
 
     for (const fk of allFks) {
-      // Oracle returns schema names in uppercase - normalize to lowercase for consistency
-      fk.schema_name = fk.schema_name?.toLowerCase();
-      fk.referenced_schema_name = fk.referenced_schema_name?.toLowerCase();
       const key = this.getTableKey(fk);
       ret[key] ??= [];
       ret[key].push(fk);
