@@ -202,7 +202,8 @@ export class EntityFactory {
         loaded: options.initialized,
       });
 
-      if (options.recomputeSnapshot) {
+      // `data` may still hold un-converted customType values here, so recompute from the entity itself (GH #7966).
+      if (!options.newEntity && (options.recomputeSnapshot || meta.forceConstructor || !options.convertCustomTypes)) {
         wrapped.__originalEntityData = this.#comparator.prepareEntity(entity);
       }
     }
