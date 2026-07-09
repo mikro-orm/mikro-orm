@@ -516,4 +516,9 @@ type ClassEntityColumnName<K, V, TOptions extends MikroKyselyPluginOptions = {}>
 type ClassEntityJoinColumnName<TName extends string, V> =
   PrimaryProperty<V> extends string ? `${TName}_${SnakeCase<PrimaryProperty<V>>}` : never;
 
-type ClassEntityColumnValue<V> = NonNullable<V> extends Scalar | readonly any[] ? V : Primary<NonNullable<V>>;
+type ClassEntityColumnValue<V> =
+  NonNullable<V> extends Scalar | readonly any[]
+    ? V
+    : V extends NonNullable<V>
+      ? Primary<NonNullable<V>>
+      : Primary<NonNullable<V>> | null;

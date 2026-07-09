@@ -898,6 +898,51 @@ describe('InferClassEntityDB', () => {
     expectTypeOf<DBEntity>().toHaveProperty('Foo7423');
   });
 
+  test('nullable m:1 FK columns keep null in class inference (GH #7962)', async () => {
+    const Address = defineEntity({
+      name: 'Address7962',
+      properties: {
+        id: p.uuid().primary(),
+      },
+    });
+
+    const UserSchema = defineEntity({
+      name: 'User7962',
+      properties: {
+        id: p.integer().primary(),
+        address: () => p.manyToOne(Address).nullable(),
+      },
+    });
+
+    class User7962 extends UserSchema.class {}
+    UserSchema.setClass(User7962);
+
+    // nullable FK column must stay nullable on the class-based inference path,
+    // matching the schema-based path
+    type DB = InferClassEntityDB<typeof User7962>;
+    expectTypeOf<DB['user7962']['address_id']>().toEqualTypeOf<string | null>();
+
+    type DBProp = InferClassEntityDB<typeof User7962, { columnNamingStrategy: 'property' }>;
+    expectTypeOf<DBProp['user7962']['address']>().toEqualTypeOf<string | null>();
+
+    // the type surfaces through getKysely() the same as a class-less schema, so `null` is accepted
+    const orm = await MikroORM.init({
+      entities: [User7962, Address],
+      dbName: ':memory:',
+    });
+    await orm.schema.create();
+
+    const kysely = orm.em.getKysely();
+    type KyselyDB = InferDBFromKysely<typeof kysely>;
+    expectTypeOf<KyselyDB['user7962']['address_id']>().toEqualTypeOf<string | null>();
+
+    await kysely.insertInto('user7962').values({ id: 1, address_id: null }).execute();
+    const rows = await kysely.selectFrom('user7962').select(['id', 'address_id']).execute();
+    expect(rows).toEqual([{ id: 1, address_id: null }]);
+
+    await orm.close();
+  });
+
   test('scalar array properties are inferred as columns (GH #7751)', () => {
     interface Stop {
       offset: number;
