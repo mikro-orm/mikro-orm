@@ -2,7 +2,7 @@
 // desyncs `__originalEntityData` when a to-one relation is assigned a raw scalar PK,
 // causing a spurious UPDATE of the referenced entity's PK on every flush.
 import { defineEntity, MikroORM, p, Type } from '@mikro-orm/sqlite';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 // JS-form: "js-<n>"   DB-form: "db-<n>" (analogous to ULID <-> UUID)
 class RemappingType extends Type<string | null | undefined> {
