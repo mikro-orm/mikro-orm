@@ -814,6 +814,12 @@ export abstract class AbstractSqlDriver<
       return;
     }
 
+    // inline embeddables are mapped via their flattened child props; mapping the embedded root prop
+    // here would leak a raw column value into the snapshot and produce a phantom changeset
+    if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && !meta.embeddable) {
+      return;
+    }
+
     if (prop.polymorphic && prop.kind !== ReferenceKind.EMBEDDED) {
       const discriminatorAlias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
       const discriminatorValue = root[discriminatorAlias] as string;
