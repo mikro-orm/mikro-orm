@@ -194,25 +194,6 @@ export class EntityFactory {
     }
 
     if (options.merge && wrapped.hasPrimaryKey()) {
-      // A reference seeded from a raw scalar PK with `convertCustomTypes: false` (e.g. `em.getReference()` or a to-one
-      // relation assigned a raw scalar in `em.create()`) keeps the PK in JS-form, while `EntityComparator.prepareEntity()`
-      // derives DB-form. For a custom type mapping between different shapes (e.g. ULID <-> UUID) the two always diff,
-      // yielding a spurious PK update on every flush — so normalize the snapshot payload to DB-form here (GH #7966).
-      if (!options.convertCustomTypes && !options.initialized) {
-        for (const prop of meta.getPrimaryProps()) {
-          if (
-            prop.kind === ReferenceKind.SCALAR &&
-            prop.customType?.ensureComparable(meta, prop) &&
-            data[prop.name] != null
-          ) {
-            data[prop.name] = prop.customType.convertToDatabaseValue(data[prop.name], this.#platform, {
-              key: prop.name,
-              mode: 'hydration',
-            }) as EntityDataValue<T>;
-          }
-        }
-      }
-
       this.unitOfWork.register(entity, data, {
         // Always refresh to ensure the payload is in correct shape for joined strategy. When loading nested relations,
         // they will be created early without `Type.ensureComparable` being properly handled, resulting in extra updates.
@@ -221,7 +202,11 @@ export class EntityFactory {
         loaded: options.initialized,
       });
 
-      if (options.recomputeSnapshot) {
+      // A reference seeded from a raw scalar PK with `convertCustomTypes: false` (e.g. `em.getReference()` or a to-one
+      // relation assigned a raw scalar in `em.create()`) keeps its snapshot in JS-form, while `prepareEntity()` derives
+      // DB-form — so for a custom type mapping between different shapes (e.g. ULID <-> UUID) they always diff, yielding a
+      // spurious PK update on every flush. Recompute the snapshot from the entity to keep it in DB-form (GH #7966).
+      if (options.recomputeSnapshot || (!options.convertCustomTypes && !options.initialized)) {
         wrapped.__originalEntityData = this.#comparator.prepareEntity(entity);
       }
     }
