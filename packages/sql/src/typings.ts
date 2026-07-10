@@ -443,8 +443,14 @@ type InferColumnValue<TBuilder, TProcessOnCreate extends boolean> = TBuilder ext
   '~type'?: { value: infer Value };
   '~options': infer TOptions;
 }
-  ? MaybeNever<MaybeGenerated<MaybeJoinKey<Value, TOptions>, TOptions, TProcessOnCreate>, TOptions>
+  ? MaybeNever<
+      MaybeGenerated<MaybeJoinKey<MaybeArray<Value, TOptions>, TOptions>, TOptions, TProcessOnCreate>,
+      TOptions
+    >
   : never;
+
+// `.array()` marks a native array column (e.g. postgres text[]); mirror the em.create inference.
+type MaybeArray<TValue, TOptions> = TOptions extends { array: true } ? TValue[] : TValue;
 
 type MaybeGenerated<TValue, TOptions, TProcessOnCreate extends boolean> = TOptions extends { nullable: true }
   ? TValue | null
