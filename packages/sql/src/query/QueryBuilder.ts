@@ -3976,10 +3976,16 @@ export class QueryBuilder<
 
     if (isRaw(field)) {
       const compiled = this.platform.formatQuery(field.sql, field.params);
-      return {
-        alias: / as [`"[]([^`"\]]+)[`"\]]$/.exec(compiled)?.[1] ?? fieldName,
-        expr: compiled.replace(/ as [`"[][^`"\]]+[`"\]]$/, ''),
-      };
+      const close = compiled[compiled.length - 1];
+      const open = close === ']' ? '[' : close === '"' ? '"' : close === '`' ? '`' : undefined;
+      // scan back for the trailing `as <quoted alias>` (linear, avoids regex backtracking on user SQL)
+      const start = open ? compiled.lastIndexOf(open, compiled.length - 2) : -1;
+
+      if (start >= 4 && compiled.slice(start - 4, start) === ' as ') {
+        return { alias: compiled.slice(start + 1, -1), expr: compiled.slice(0, start - 4) };
+      }
+
+      return { alias: fieldName, expr: compiled };
     }
 
     return undefined;
