@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "tests/bench/types"
   ],
   "version": "7.0.0",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
@@ -129,7 +130,6 @@
     }
   },
   "devDependencies": {
-    "@ark/attest": "0.56.3",
     "@commitlint/cli": "21.2.1",
     "@commitlint/config-conventional": "21.2.0",
     "@mikro-orm/mongo-highlighter": "1.0.0",

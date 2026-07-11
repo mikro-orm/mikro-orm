@@ -1,0 +1,16 @@
+{
+  "name": "@mikro-orm/type-bench",
+  "version": "7.0.0",
+  "private": true,
+  "description": "Type instantiation benchmarks. Isolated so @ark/attest can keep using the classic (JS) TypeScript compiler API, which the native typescript@7 port no longer exposes.",
+  "type": "module",
+  "dependencies": {
+    "@ark/attest": "0.56.3",
+    "@mikro-orm/core": "workspace:*",
+    "@mikro-orm/sql": "workspace:*",
+    "typescript": "6.0.3"
+  },
+  "installConfig": {
+    "hoistingLimits": "workspaces"
+  }
+}

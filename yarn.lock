@@ -1215,7 +1215,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/core@npm:7.1.5, @mikro-orm/core@npm:^7.1.5, @mikro-orm/core@workspace:packages/core":
+"@mikro-orm/core@npm:7.1.5, @mikro-orm/core@npm:^7.1.5, @mikro-orm/core@workspace:*, @mikro-orm/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/core@workspace:packages/core"
   peerDependencies:
@@ -1420,7 +1420,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/root@workspace:."
   dependencies:
-    "@ark/attest": "npm:0.56.3"
     "@commitlint/cli": "npm:21.2.1"
     "@commitlint/config-conventional": "npm:21.2.0"
     "@mikro-orm/mongo-highlighter": "npm:1.0.0"
@@ -1492,7 +1491,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/sql@npm:7.1.5, @mikro-orm/sql@npm:^7.1.5, @mikro-orm/sql@workspace:packages/sql":
+"@mikro-orm/sql@npm:7.1.5, @mikro-orm/sql@npm:^7.1.5, @mikro-orm/sql@workspace:*, @mikro-orm/sql@workspace:packages/sql":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/sql@workspace:packages/sql"
   dependencies:
@@ -1513,6 +1512,17 @@ __metadata:
     kysely: "npm:0.29.3"
   peerDependencies:
     "@mikro-orm/core": 7.1.5
+  languageName: unknown
+  linkType: soft
+
+"@mikro-orm/type-bench@workspace:tests/bench/types":
+  version: 0.0.0-use.local
+  resolution: "@mikro-orm/type-bench@workspace:tests/bench/types"
+  dependencies:
+    "@ark/attest": "npm:0.56.3"
+    "@mikro-orm/core": "workspace:*"
+    "@mikro-orm/sql": "workspace:*"
+    typescript: "npm:6.0.3"
   languageName: unknown
   linkType: soft
 
@@ -10274,6 +10284,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"typescript@npm:6.0.3":
+  version: 6.0.3
+  resolution: "typescript@npm:6.0.3"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 10/0ef2357a4cffd916b52b683a021cdab0f81eea4e9aa35f2d254581c9a5106da02224e3392e1b0ed42b7a48f80c966e5f52b8e1a27941fa0523c1705a9c2e0330
+  languageName: node
+  linkType: hard
+
 "typescript@npm:7.0.2":
   version: 7.0.2
   resolution: "typescript@npm:7.0.2"
@@ -10352,6 +10372,16 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 10/c089d9d3da2729fd4ac517f9b0e0485914c4b3c26f80dc0cffcb5de1719a17951e92425d55db59515c1a7ddab65808466debb864d0d56dcf43f27007d0709594
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@npm%3A6.0.3#optional!builtin<compat/typescript>":
+  version: 6.0.3
+  resolution: "typescript@patch:typescript@npm%3A6.0.3#optional!builtin<compat/typescript>::version=6.0.3&hash=5786d5"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 10/22b67a18dafedf9b1468b64ca20d9aa02ea61d449b65413d8aa6552aeb63f52ef369e86beb25b6b4c91a803d9726ee5c196f391a9b64201263263410a4223ee6
   languageName: node
   linkType: hard
 
