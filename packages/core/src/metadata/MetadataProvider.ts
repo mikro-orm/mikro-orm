@@ -58,6 +58,10 @@ export class MetadataProvider {
 
   /** Merges cached metadata into the given entity metadata, preserving function expressions. */
   loadFromCache(meta: EntityMetadata, cache: EntityMetadata): void {
+    // `_id` is a process-local runtime counter; a cached value comes from a different discovery
+    // run and can collide with ids assigned in the current process, collapsing distinct entities.
+    Reflect.deleteProperty(cache, '_id');
+
     Object.values(cache.properties).forEach(prop => {
       const metaProp = meta.properties[prop.name];
 
