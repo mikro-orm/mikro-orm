@@ -85,13 +85,13 @@ export function compareObjects(a: any, b: any): boolean {
     return false;
   }
 
-  for (let i = length; i-- !== 0; ) {
+  for (let i = length; i-- !== 0;) {
     if (!Object.hasOwn(b, keys[i])) {
       return false;
     }
   }
 
-  for (let i = length; i-- !== 0; ) {
+  for (let i = length; i-- !== 0;) {
     const key = keys[i];
 
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -111,7 +111,7 @@ export function compareArrays(a: any[] | string, b: any[] | string): boolean {
     return false;
   }
 
-  for (let i = length; i-- !== 0; ) {
+  for (let i = length; i-- !== 0;) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     if (!equals(a[i], b[i])) {
       return false;
@@ -137,7 +137,7 @@ export function compareBuffers(a: Uint8Array, b: Uint8Array): boolean {
     return false;
   }
 
-  for (let i = length; i-- !== 0; ) {
+  for (let i = length; i-- !== 0;) {
     if ((a as unknown as unknown[])[i] !== (b as unknown as unknown[])[i]) {
       return false;
     }
