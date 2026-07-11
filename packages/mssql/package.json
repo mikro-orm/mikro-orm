@@ -48,8 +48,8 @@
   },
   "dependencies": {
     "@mikro-orm/sql": "7.1.5",
-    "kysely": "0.29.2",
-    "tarn": "3.1.0",
+    "kysely": "0.29.3",
+    "tarn": "3.1.2",
     "tedious": "20.0.0",
     "tsqlstring": "1.0.1"
   },
