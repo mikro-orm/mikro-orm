@@ -1247,10 +1247,10 @@ export class SchemaComparator {
       from.default.toString().toLowerCase() === 'null' ||
       from.default.toString().startsWith('nextval(')
     ) {
-      return to.default == null || to.default.toLowerCase() === 'null';
+      return to.default == null || to.default.toString().toLowerCase() === 'null';
     }
 
-    if (to.default == null || to.default.toLowerCase() === 'null') {
+    if (to.default == null || to.default.toString().toLowerCase() === 'null') {
       return false;
     }
 
