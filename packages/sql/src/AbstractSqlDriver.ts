@@ -1685,7 +1685,7 @@ export abstract class AbstractSqlDriver<
    * Always expects the same length of the arrays, since we only compare PKs of the same entity type.
    */
   private comparePrimaryKeyArrays(a: unknown[], b: unknown[]) {
-    for (let i = a.length; i-- !== 0; ) {
+    for (let i = a.length; i-- !== 0;) {
       if (['number', 'string', 'bigint', 'boolean'].includes(typeof a[i])) {
         if (a[i] !== b[i]) {
           return false;
