@@ -64,6 +64,13 @@ import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import { type CteOptions, NativeQueryBuilder } from './NativeQueryBuilder.js';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
 
+/**
+ * Tags a {@link NativeQueryBuilder} produced by `qb.as(alias)` with the alias literal, so it can be
+ * matched back to its `orderBy`/pagination usage. A symbol is used (rather than a string key) so the
+ * tag survives `clone()` — {@link Utils.copy} preserves non-enumerable symbols but drops string keys.
+ */
+const VirtualFieldAlias = Symbol('virtualFieldAlias');
+
 export interface ExecuteOptions {
   mapResults?: boolean;
   mergeResults?: boolean;
@@ -2198,7 +2205,7 @@ export class QueryBuilder<
     Utils.runIfNotEmpty(() => {
       const queryOrder = this.helper.getQueryOrder(
         this.type,
-        this.#state.orderBy as FlatQueryOrderMap[],
+        this.rewriteVirtualFieldOrderBy(this.#state.orderBy as FlatQueryOrderMap[]),
         this.#state.populateMap,
         this.#state.collation,
       );
@@ -2725,8 +2732,8 @@ export class QueryBuilder<
 
     qb.as(finalAlias);
 
-    // tag the instance, so it is possible to detect it easily
-    Object.defineProperty(qb, '__as', { enumerable: false, value: finalAlias });
+    // tag the instance, so it is possible to detect it easily (symbol survives clone, see VirtualFieldAlias)
+    Object.defineProperty(qb, VirtualFieldAlias, { value: finalAlias });
 
     return qb;
   }
@@ -3942,6 +3949,87 @@ export class QueryBuilder<
     });
   }
 
+  /**
+   * Resolves a `persist: false` virtual field referenced in `orderBy` (e.g. `qb.as('reviewCount')` or a
+   * `raw()` fragment aliased in the select) to the alias and SQL expression it was selected under. The
+   * alias is used to order the outer query; the raw expression is inlined into `min(...)` inside the
+   * pagination sub-query, where dialects like PostgreSQL cannot reference a select alias.
+   */
+  protected resolveVirtualField(propName: string, fieldName: string): { alias: string; expr: string } | undefined {
+    const field = this.#state.fields?.find(f => {
+      if (f instanceof NativeQueryBuilder) {
+        const as = (f as any)[VirtualFieldAlias];
+        return as === propName || as === fieldName;
+      }
+
+      // not perfect, but should work most of the time, ideally we should check only the alias (`... as alias`)
+      return isRaw(f) && (f.sql.includes(propName) || f.sql.includes(fieldName));
+    });
+
+    if (field instanceof NativeQueryBuilder) {
+      const alias = (field as any)[VirtualFieldAlias] as string;
+      const rendered = field.toString();
+      // strip the known trailing alias via the platform quoting, so it works on every dialect (mssql uses `[...]`)
+      const suffix = ` as ${this.platform.quoteIdentifier(alias)}`;
+      return { alias, expr: rendered.endsWith(suffix) ? rendered.slice(0, -suffix.length) : rendered };
+    }
+
+    if (isRaw(field)) {
+      const compiled = this.platform.formatQuery(field.sql, field.params);
+      const close = compiled[compiled.length - 1];
+      const open = close === ']' ? '[' : close === '"' ? '"' : close === '`' ? '`' : undefined;
+      // scan back for the trailing `as <quoted alias>` (linear, avoids regex backtracking on user SQL)
+      const start = open ? compiled.lastIndexOf(open, compiled.length - 2) : -1;
+
+      if (start >= 4 && compiled.slice(start - 4, start) === ' as ') {
+        return { alias: compiled.slice(start + 1, -1), expr: compiled.slice(0, start - 4) };
+      }
+
+      return { alias: fieldName, expr: compiled };
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Rewrites `orderBy` keys that reference a `persist: false` virtual field selected via `qb.as(alias)` so
+   * they point at the actual select alias. The mapper would otherwise resolve such a key to the property's
+   * naming-strategy column name, which does not exist when the alias literal differs (e.g. `reviewCount`).
+   */
+  private rewriteVirtualFieldOrderBy(orderBy: FlatQueryOrderMap[]): FlatQueryOrderMap[] {
+    // only aliased sub-queries (`qb.as(...)`) or `raw()` fragments can back a virtual field, skip otherwise
+    if (!this.#state.fields?.some(f => f instanceof NativeQueryBuilder || isRaw(f))) {
+      return orderBy;
+    }
+
+    return orderBy.map(orderMap => {
+      const out: FlatQueryOrderMap = {};
+
+      for (const key of Utils.getObjectQueryKeys(orderMap)) {
+        const direction = (orderMap as Dictionary)[key as any];
+
+        if (!RawQueryFragment.isKnownFragmentSymbol(key)) {
+          const [a, f] = this.helper.splitField<Entity>(key as EntityKey<Entity>);
+          const prop = this.helper.getProperty(f, a);
+
+          if (prop?.persist === false && !prop.formula && !prop.embedded) {
+            const fieldName = this.helper.mapper(key, this.type, undefined, null) as string;
+            const virtual = this.resolveVirtualField(f, fieldName);
+
+            if (virtual) {
+              (out as Dictionary)[raw(this.platform.quoteIdentifier(virtual.alias)) as any] = direction;
+              continue;
+            }
+          }
+        }
+
+        (out as Dictionary)[key as any] = direction;
+      }
+
+      return out;
+    });
+  }
+
   protected wrapPaginateSubQuery(meta: EntityMetadata): void {
     const schema = this.getSchema(this.mainAlias);
     const pks = this.prepareFields(meta.primaryKeys, 'sub-query', schema) as string[];
@@ -3961,8 +4049,6 @@ export class QueryBuilder<
       subQuery.offset(this.#state.offset);
     }
 
-    const addToSelect = [];
-
     if (this.#state.orderBy.length > 0) {
       const orderBy = [];
 
@@ -3980,13 +4066,14 @@ export class QueryBuilder<
           const type = this.platform.castColumn(prop);
           const fieldName = this.helper.mapper(field, this.type, undefined, null);
 
-          if (!prop?.persist && !prop?.formula && !prop?.hasConvertToJSValueSQL && !pks.includes(fieldName)) {
-            addToSelect.push(fieldName);
-          }
-
-          const quoted = this.platform.quoteIdentifier(fieldName);
-          const key = raw(`min(${quoted}${type})`);
-          orderBy.push({ [key]: direction });
+          // virtual fields (e.g. `qb.as(...)`) have no column to reference inside `min()`; inline their
+          // expression instead, as a select alias is not resolvable there on some dialects (e.g. PostgreSQL)
+          const virtual =
+            !prop?.persist && !prop?.formula && !prop?.hasConvertToJSValueSQL && !pks.includes(fieldName)
+              ? this.resolveVirtualField(f, fieldName)
+              : undefined;
+          const expr = virtual ? virtual.expr : this.platform.quoteIdentifier(fieldName);
+          orderBy.push({ [raw(`min(${expr}${type})`)]: direction });
         }
       }
 
@@ -3995,32 +4082,6 @@ export class QueryBuilder<
 
     subQuery.#state.finalized = true;
     const innerQuery = subQuery.as(this.mainAlias.aliasName).clear('select').select(pks);
-
-    if (addToSelect.length > 0) {
-      addToSelect.forEach(prop => {
-        const field = this.#state.fields!.find(field => {
-          if (typeof field === 'object' && field && '__as' in field) {
-            return field.__as === prop;
-          }
-
-          if (isRaw(field)) {
-            // not perfect, but should work most of the time, ideally we should check only the alias (`... as alias`)
-            return field.sql.includes(prop);
-          }
-
-          return false;
-        });
-
-        /* v8 ignore next */
-        if (isRaw(field)) {
-          innerQuery.select(field);
-        } else if (field instanceof NativeQueryBuilder) {
-          innerQuery.select(field.toRaw());
-        } else if (field) {
-          innerQuery.select(field as string);
-        }
-      });
-    }
 
     // multiple sub-queries are needed to get around mysql limitations with order by + limit + where in + group by (o.O)
     // https://stackoverflow.com/questions/17892762/mysql-this-version-of-mysql-doesnt-yet-support-limit-in-all-any-some-subqu
