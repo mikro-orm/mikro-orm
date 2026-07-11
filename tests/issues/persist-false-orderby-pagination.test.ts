@@ -109,6 +109,22 @@ test('qb.as() virtual field survives clone and orderBy works with M:N join', asy
   expect((results[1] as any).reviewCount).toBe(1);
 });
 
+test('raw() orderBy fragment works with M:N pagination', async () => {
+  await seedData();
+
+  const qb = orm.em
+    .createQueryBuilder(Product, 'p')
+    .select(['id', 'title'])
+    .joinAndSelect('p.tags', 't')
+    .orderBy({ [raw('length(??)', ['p.title'])]: 'asc' })
+    .limit(10);
+
+  const [results, count] = await qb.getResultAndCount();
+
+  expect(count).toBe(2);
+  expect(results.map(r => r.title)).toEqual(['Product A', 'Product B']);
+});
+
 test('raw() virtual field works with orderBy and M:N pagination', async () => {
   await seedData();
 
