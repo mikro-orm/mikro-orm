@@ -1019,7 +1019,7 @@ export class QueryBuilder<
     ModifyHint<RootAlias, Context, Hint, Field> & {},
     ModifyContext<Entity, Context, Field, Alias>,
     RawAliases,
-    '*',
+    Fields,
     CTEs
   >;
 
@@ -1033,7 +1033,15 @@ export class QueryBuilder<
     type?: JoinType,
     path?: string,
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, Hint, ModifyContext<Entity, Context, string, Alias>, RawAliases, '*', CTEs>;
+  ): SelectQueryBuilder<
+    Entity,
+    RootAlias,
+    Hint,
+    ModifyContext<Entity, Context, string, Alias>,
+    RawAliases,
+    Fields,
+    CTEs
+  >;
 
   join<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
     field: Field | RawQueryFragment | QueryBuilder<any>,
@@ -1048,7 +1056,7 @@ export class QueryBuilder<
     ModifyHint<RootAlias, Context, Hint, Field> & {},
     ModifyContext<Entity, Context, Field, Alias>,
     RawAliases,
-    '*',
+    Fields,
     CTEs
   > {
     this.joinReference(field, alias, cond, type, path, schema);
@@ -1069,7 +1077,7 @@ export class QueryBuilder<
     ModifyHint<RootAlias, Context, Hint, Field> & {},
     ModifyContext<Entity, Context, Field, Alias>,
     RawAliases,
-    '*',
+    Fields,
     CTEs
   >;
 
@@ -1081,7 +1089,15 @@ export class QueryBuilder<
     alias: Alias,
     cond?: RawJoinCondition,
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, Hint, ModifyContext<Entity, Context, string, Alias>, RawAliases, '*', CTEs>;
+  ): SelectQueryBuilder<
+    Entity,
+    RootAlias,
+    Hint,
+    ModifyContext<Entity, Context, string, Alias>,
+    RawAliases,
+    Fields,
+    CTEs
+  >;
 
   innerJoin<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
     field: Field | RawQueryFragment | QueryBuilder<any>,
@@ -1094,7 +1110,7 @@ export class QueryBuilder<
     ModifyHint<RootAlias, Context, Hint, Field> & {},
     ModifyContext<Entity, Context, Field, Alias>,
     RawAliases,
-    '*',
+    Fields,
     CTEs
   > {
     this.join(field as any, alias, cond as any, JoinType.innerJoin, undefined, schema);
@@ -1106,7 +1122,15 @@ export class QueryBuilder<
     alias: Alias,
     cond: RawJoinCondition = {},
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, Hint, ModifyContext<Entity, Context, string, Alias>, RawAliases, '*', CTEs> {
+  ): SelectQueryBuilder<
+    Entity,
+    RootAlias,
+    Hint,
+    ModifyContext<Entity, Context, string, Alias>,
+    RawAliases,
+    Fields,
+    CTEs
+  > {
     return this.join(field, alias, cond as any, JoinType.innerJoinLateral, undefined, schema) as any;
   }
 
@@ -1124,7 +1148,7 @@ export class QueryBuilder<
     ModifyHint<RootAlias, Context, Hint, Field> & {},
     ModifyContext<Entity, Context, Field, Alias>,
     RawAliases,
-    '*',
+    Fields,
     CTEs
   >;
 
@@ -1136,7 +1160,15 @@ export class QueryBuilder<
     alias: Alias,
     cond?: RawJoinCondition,
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, Hint, ModifyContext<Entity, Context, string, Alias>, RawAliases, '*', CTEs>;
+  ): SelectQueryBuilder<
+    Entity,
+    RootAlias,
+    Hint,
+    ModifyContext<Entity, Context, string, Alias>,
+    RawAliases,
+    Fields,
+    CTEs
+  >;
 
   leftJoin<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
     field: Field | RawQueryFragment | QueryBuilder<any>,
@@ -1149,7 +1181,7 @@ export class QueryBuilder<
     ModifyHint<RootAlias, Context, Hint, Field> & {},
     ModifyContext<Entity, Context, Field, Alias>,
     RawAliases,
-    '*',
+    Fields,
     CTEs
   > {
     return this.join(field as any, alias, cond as any, JoinType.leftJoin, undefined, schema);
@@ -1160,7 +1192,15 @@ export class QueryBuilder<
     alias: Alias,
     cond: RawJoinCondition = {},
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, Hint, ModifyContext<Entity, Context, string, Alias>, RawAliases, '*', CTEs> {
+  ): SelectQueryBuilder<
+    Entity,
+    RootAlias,
+    Hint,
+    ModifyContext<Entity, Context, string, Alias>,
+    RawAliases,
+    Fields,
+    CTEs
+  > {
     return this.join(field, alias, cond as any, JoinType.leftJoinLateral, undefined, schema) as any;
   }
 
