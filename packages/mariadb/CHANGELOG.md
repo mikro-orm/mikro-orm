@@ -5,14 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.1.6](https://github.com/mikro-orm/mikro-orm/compare/v7.1.5...v7.1.6) (2026-07-13)
 
-
 ### Bug Fixes
 
-* **sql:** support orderBy on persist(false) virtual fields with pagination ([#7979](https://github.com/mikro-orm/mikro-orm/issues/7979)) ([0454aea](https://github.com/mikro-orm/mikro-orm/commit/0454aea6509e4faac83a5280d7325904f62a917f)), closes [#7932](https://github.com/mikro-orm/mikro-orm/issues/7932)
-
-
-
-
+- **sql:** support orderBy on persist(false) virtual fields with pagination ([#7979](https://github.com/mikro-orm/mikro-orm/issues/7979)) ([0454aea](https://github.com/mikro-orm/mikro-orm/commit/0454aea6509e4faac83a5280d7325904f62a917f)), closes [#7932](https://github.com/mikro-orm/mikro-orm/issues/7932)
 
 ## [7.1.5](https://github.com/mikro-orm/mikro-orm/compare/v7.1.4...v7.1.5) (2026-06-26)
 

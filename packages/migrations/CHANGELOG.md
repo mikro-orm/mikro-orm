@@ -7,10 +7,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package @mikro-orm/migrations
 
-
-
-
-
 ## [7.1.5](https://github.com/mikro-orm/mikro-orm/compare/v7.1.4...v7.1.5) (2026-06-26)
 
 ### Bug Fixes

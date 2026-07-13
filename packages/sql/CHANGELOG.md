@@ -5,22 +5,17 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.1.6](https://github.com/mikro-orm/mikro-orm/compare/v7.1.5...v7.1.6) (2026-07-13)
 
-
 ### Bug Fixes
 
-* **mysql:** treat (current_date) and curdate() date defaults as equal ([#7956](https://github.com/mikro-orm/mikro-orm/issues/7956)) ([441eaa1](https://github.com/mikro-orm/mikro-orm/commit/441eaa110aeeb0920bb6ac40854802ab9ee7b78b))
-* **sql:** avoid phantom changeset for inline embeddable loaded via joined strategy ([#7971](https://github.com/mikro-orm/mikro-orm/issues/7971)) ([9c7612a](https://github.com/mikro-orm/mikro-orm/commit/9c7612afd371964d55d01e741bb058137ca331b8)), closes [#7954](https://github.com/mikro-orm/mikro-orm/issues/7954)
-* **sql:** do not propagate TPT parent check constraints to child tables ([#7944](https://github.com/mikro-orm/mikro-orm/issues/7944)) ([0f34374](https://github.com/mikro-orm/mikro-orm/commit/0f34374914211ade1ccb60acd2e01b46fb96fe99)), closes [#7714](https://github.com/mikro-orm/mikro-orm/issues/7714) [#7935](https://github.com/mikro-orm/mikro-orm/issues/7935)
-* **sql:** expose columns inherited via `extends` in `getKysely()` table type ([#7938](https://github.com/mikro-orm/mikro-orm/issues/7938)) ([ebaa2be](https://github.com/mikro-orm/mikro-orm/commit/ebaa2be3428bee4d269f51154ab11bfc16ae5656)), closes [#7937](https://github.com/mikro-orm/mikro-orm/issues/7937)
-* **sql:** infer array columns as arrays in Kysely table types ([#7972](https://github.com/mikro-orm/mikro-orm/issues/7972)) ([2b79554](https://github.com/mikro-orm/mikro-orm/commit/2b79554009180f247331218a8cab9480e71dd19c)), closes [#7967](https://github.com/mikro-orm/mikro-orm/issues/7967)
-* **sql:** keep non-lazy `@Formula` out of partial-index predicate rendering ([#7947](https://github.com/mikro-orm/mikro-orm/issues/7947)) ([368123d](https://github.com/mikro-orm/mikro-orm/commit/368123d8b05f3ae9ccaa0cbd4c7811b46570d6a9)), closes [#7946](https://github.com/mikro-orm/mikro-orm/issues/7946)
-* **sql:** keep nullable relation FK columns nullable in class-based Kysely inference ([#7965](https://github.com/mikro-orm/mikro-orm/issues/7965)) ([fde9258](https://github.com/mikro-orm/mikro-orm/commit/fde9258bedf8315a4f842b776241eeb8b50295a0)), closes [#7962](https://github.com/mikro-orm/mikro-orm/issues/7962)
-* **sql:** stop schema diff churning on generated columns with underscore literals ([#7955](https://github.com/mikro-orm/mikro-orm/issues/7955)) ([6c9f0a6](https://github.com/mikro-orm/mikro-orm/commit/6c9f0a6598a6bcd4f6d34b62242494199c7407a4))
-* **sql:** support orderBy on persist(false) virtual fields with pagination ([#7979](https://github.com/mikro-orm/mikro-orm/issues/7979)) ([0454aea](https://github.com/mikro-orm/mikro-orm/commit/0454aea6509e4faac83a5280d7325904f62a917f)), closes [#7932](https://github.com/mikro-orm/mikro-orm/issues/7932)
-
-
-
-
+- **mysql:** treat (current_date) and curdate() date defaults as equal ([#7956](https://github.com/mikro-orm/mikro-orm/issues/7956)) ([441eaa1](https://github.com/mikro-orm/mikro-orm/commit/441eaa110aeeb0920bb6ac40854802ab9ee7b78b))
+- **sql:** avoid phantom changeset for inline embeddable loaded via joined strategy ([#7971](https://github.com/mikro-orm/mikro-orm/issues/7971)) ([9c7612a](https://github.com/mikro-orm/mikro-orm/commit/9c7612afd371964d55d01e741bb058137ca331b8)), closes [#7954](https://github.com/mikro-orm/mikro-orm/issues/7954)
+- **sql:** do not propagate TPT parent check constraints to child tables ([#7944](https://github.com/mikro-orm/mikro-orm/issues/7944)) ([0f34374](https://github.com/mikro-orm/mikro-orm/commit/0f34374914211ade1ccb60acd2e01b46fb96fe99)), closes [#7714](https://github.com/mikro-orm/mikro-orm/issues/7714) [#7935](https://github.com/mikro-orm/mikro-orm/issues/7935)
+- **sql:** expose columns inherited via `extends` in `getKysely()` table type ([#7938](https://github.com/mikro-orm/mikro-orm/issues/7938)) ([ebaa2be](https://github.com/mikro-orm/mikro-orm/commit/ebaa2be3428bee4d269f51154ab11bfc16ae5656)), closes [#7937](https://github.com/mikro-orm/mikro-orm/issues/7937)
+- **sql:** infer array columns as arrays in Kysely table types ([#7972](https://github.com/mikro-orm/mikro-orm/issues/7972)) ([2b79554](https://github.com/mikro-orm/mikro-orm/commit/2b79554009180f247331218a8cab9480e71dd19c)), closes [#7967](https://github.com/mikro-orm/mikro-orm/issues/7967)
+- **sql:** keep non-lazy `@Formula` out of partial-index predicate rendering ([#7947](https://github.com/mikro-orm/mikro-orm/issues/7947)) ([368123d](https://github.com/mikro-orm/mikro-orm/commit/368123d8b05f3ae9ccaa0cbd4c7811b46570d6a9)), closes [#7946](https://github.com/mikro-orm/mikro-orm/issues/7946)
+- **sql:** keep nullable relation FK columns nullable in class-based Kysely inference ([#7965](https://github.com/mikro-orm/mikro-orm/issues/7965)) ([fde9258](https://github.com/mikro-orm/mikro-orm/commit/fde9258bedf8315a4f842b776241eeb8b50295a0)), closes [#7962](https://github.com/mikro-orm/mikro-orm/issues/7962)
+- **sql:** stop schema diff churning on generated columns with underscore literals ([#7955](https://github.com/mikro-orm/mikro-orm/issues/7955)) ([6c9f0a6](https://github.com/mikro-orm/mikro-orm/commit/6c9f0a6598a6bcd4f6d34b62242494199c7407a4))
+- **sql:** support orderBy on persist(false) virtual fields with pagination ([#7979](https://github.com/mikro-orm/mikro-orm/issues/7979)) ([0454aea](https://github.com/mikro-orm/mikro-orm/commit/0454aea6509e4faac83a5280d7325904f62a917f)), closes [#7932](https://github.com/mikro-orm/mikro-orm/issues/7932)
 
 ## [7.1.5](https://github.com/mikro-orm/mikro-orm/compare/v7.1.4...v7.1.5) (2026-06-26)
 

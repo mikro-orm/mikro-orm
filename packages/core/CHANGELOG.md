@@ -5,19 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.1.6](https://github.com/mikro-orm/mikro-orm/compare/v7.1.5...v7.1.6) (2026-07-13)
 
-
 ### Bug Fixes
 
-* **core:** carry merged ancestor builders so Kysely types span multi-level `extends` ([#7939](https://github.com/mikro-orm/mikro-orm/issues/7939)) ([3c56082](https://github.com/mikro-orm/mikro-orm/commit/3c560825f8123d277c1d493490e2f26dac66e0f6)), closes [#7938](https://github.com/mikro-orm/mikro-orm/issues/7938) [#7938](https://github.com/mikro-orm/mikro-orm/issues/7938) [#7938](https://github.com/mikro-orm/mikro-orm/issues/7938) [#7937](https://github.com/mikro-orm/mikro-orm/issues/7937)
-* **core:** ignore process-local metadata `_id` when loading from cache ([#7978](https://github.com/mikro-orm/mikro-orm/issues/7978)) ([4777f9d](https://github.com/mikro-orm/mikro-orm/commit/4777f9dc0703fe4736ad3e9b466b37d577f8cf77)), closes [#7975](https://github.com/mikro-orm/mikro-orm/issues/7975)
-* **core:** infer `string` for `time` type properties instead of `any` ([#7961](https://github.com/mikro-orm/mikro-orm/issues/7961)) ([486eff8](https://github.com/mikro-orm/mikro-orm/commit/486eff8e0cdc218e97b038f920e1579e3beb055e))
-* **core:** keep custom-typed PK snapshots in DB-form to avoid spurious updates ([#7973](https://github.com/mikro-orm/mikro-orm/issues/7973)) ([393a7f3](https://github.com/mikro-orm/mikro-orm/commit/393a7f3ab4f2eaef2cc9148a8507bb05ebf63279)), closes [#7966](https://github.com/mikro-orm/mikro-orm/issues/7966)
-* **core:** make entity type inference robust under TS 7 stable type ordering ([#7948](https://github.com/mikro-orm/mikro-orm/issues/7948)) ([a5d1827](https://github.com/mikro-orm/mikro-orm/commit/a5d18271d55b398a63d972cfce8a4874374107c8)), closes [microsoft/typescript-go#4464](https://github.com/microsoft/typescript-go/issues/4464)
-* **sql:** expose columns inherited via `extends` in `getKysely()` table type ([#7938](https://github.com/mikro-orm/mikro-orm/issues/7938)) ([ebaa2be](https://github.com/mikro-orm/mikro-orm/commit/ebaa2be3428bee4d269f51154ab11bfc16ae5656)), closes [#7937](https://github.com/mikro-orm/mikro-orm/issues/7937)
-
-
-
-
+- **core:** carry merged ancestor builders so Kysely types span multi-level `extends` ([#7939](https://github.com/mikro-orm/mikro-orm/issues/7939)) ([3c56082](https://github.com/mikro-orm/mikro-orm/commit/3c560825f8123d277c1d493490e2f26dac66e0f6)), closes [#7938](https://github.com/mikro-orm/mikro-orm/issues/7938) [#7938](https://github.com/mikro-orm/mikro-orm/issues/7938) [#7938](https://github.com/mikro-orm/mikro-orm/issues/7938) [#7937](https://github.com/mikro-orm/mikro-orm/issues/7937)
+- **core:** ignore process-local metadata `_id` when loading from cache ([#7978](https://github.com/mikro-orm/mikro-orm/issues/7978)) ([4777f9d](https://github.com/mikro-orm/mikro-orm/commit/4777f9dc0703fe4736ad3e9b466b37d577f8cf77)), closes [#7975](https://github.com/mikro-orm/mikro-orm/issues/7975)
+- **core:** infer `string` for `time` type properties instead of `any` ([#7961](https://github.com/mikro-orm/mikro-orm/issues/7961)) ([486eff8](https://github.com/mikro-orm/mikro-orm/commit/486eff8e0cdc218e97b038f920e1579e3beb055e))
+- **core:** keep custom-typed PK snapshots in DB-form to avoid spurious updates ([#7973](https://github.com/mikro-orm/mikro-orm/issues/7973)) ([393a7f3](https://github.com/mikro-orm/mikro-orm/commit/393a7f3ab4f2eaef2cc9148a8507bb05ebf63279)), closes [#7966](https://github.com/mikro-orm/mikro-orm/issues/7966)
+- **core:** make entity type inference robust under TS 7 stable type ordering ([#7948](https://github.com/mikro-orm/mikro-orm/issues/7948)) ([a5d1827](https://github.com/mikro-orm/mikro-orm/commit/a5d18271d55b398a63d972cfce8a4874374107c8)), closes [microsoft/typescript-go#4464](https://github.com/microsoft/typescript-go/issues/4464)
+- **sql:** expose columns inherited via `extends` in `getKysely()` table type ([#7938](https://github.com/mikro-orm/mikro-orm/issues/7938)) ([ebaa2be](https://github.com/mikro-orm/mikro-orm/commit/ebaa2be3428bee4d269f51154ab11bfc16ae5656)), closes [#7937](https://github.com/mikro-orm/mikro-orm/issues/7937)
 
 ## [7.1.5](https://github.com/mikro-orm/mikro-orm/compare/v7.1.4...v7.1.5) (2026-06-26)
 

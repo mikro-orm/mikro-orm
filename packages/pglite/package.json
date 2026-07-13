@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@electric-sql/pglite": "0.5.4",
-    "@mikro-orm/sql": "^7.1.6",
+    "@mikro-orm/sql": "7.1.6",
     "kysely": "0.29.3",
     "postgres-array": "3.0.4",
     "postgres-date": "2.1.0",
@@ -59,7 +59,7 @@
     "@mikro-orm/core": "^7.1.6"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "7.1.5"
+    "@mikro-orm/core": "7.1.6"
   },
   "engines": {
     "node": ">= 22.17.0"

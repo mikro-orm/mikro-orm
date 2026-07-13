@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/reflection",
-  "version": "7.1.5",
+  "version": "7.1.6",
   "exports": {
     ".": "./src/index.ts"
   },
@@ -9,6 +9,6 @@
   },
   "imports": {
     "ts-morph": "npm:ts-morph@28.0.0",
-    "@mikro-orm/core": "jsr:@mikro-orm/core@7.1.5"
+    "@mikro-orm/core": "jsr:@mikro-orm/core@7.1.6"
   }
 }
