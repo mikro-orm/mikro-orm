@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.6](https://github.com/mikro-orm/mikro-orm/compare/v7.1.5...v7.1.6) (2026-07-13)
+
+
+### Bug Fixes
+
+* **oracle:** keep FK schema owner case consistent with columns and tables ([#7964](https://github.com/mikro-orm/mikro-orm/issues/7964)) ([ad776b7](https://github.com/mikro-orm/mikro-orm/commit/ad776b7d971f3e868128dfd33e9c198bc9973515)), closes [#7960](https://github.com/mikro-orm/mikro-orm/issues/7960)
+
+
+
+
+
 ## [7.1.5](https://github.com/mikro-orm/mikro-orm/compare/v7.1.4...v7.1.5) (2026-06-26)
 
 ### Bug Fixes

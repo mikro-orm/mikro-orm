@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.6](https://github.com/mikro-orm/mikro-orm/compare/v7.1.5...v7.1.6) (2026-07-13)
+
+
+### Bug Fixes
+
+* **core:** support `@Check()` on class level with TC39 decorators ([#7982](https://github.com/mikro-orm/mikro-orm/issues/7982)) ([23e47d9](https://github.com/mikro-orm/mikro-orm/commit/23e47d9075e1cf04f2a1332164af3d9a293d691b))
+
+
+
+
+
 ## [7.1.5](https://github.com/mikro-orm/mikro-orm/compare/v7.1.4...v7.1.5) (2026-06-26)
 
 **Note:** Version bump only for package @mikro-orm/decorators
