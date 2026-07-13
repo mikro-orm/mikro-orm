@@ -1,9 +1,13 @@
 import { performance } from 'node:perf_hooks';
 import { v4 } from 'uuid';
 import {
+  CheckConstraintViolationException,
   Collection,
+  DeadlockException,
   EntityManager,
+  ForeignKeyConstraintViolationException,
   InvalidFieldNameException,
+  LockWaitTimeoutException,
   IsolationLevel,
   LockMode,
   MikroORM,
@@ -1482,11 +1486,30 @@ describe('EntityManagerMsSql', () => {
 
   test('exceptions', async () => {
     const driver = orm.em.getDriver();
-    await driver.nativeInsert(Author2, { name: 'author', email: 'email' });
+    const { insertId: authorId } = await driver.nativeInsert(Author2, { name: 'author', email: 'email' });
     await expect(driver.nativeInsert(Author2, { name: 'author', email: 'email' })).rejects.toThrow(
       UniqueConstraintViolationException,
     );
     await expect(driver.nativeInsert(Author2, {})).rejects.toThrow(NotNullConstraintViolationException);
+
+    // 547 with a referential constraint -> ForeignKeyConstraintViolationException
+    await expect(driver.nativeInsert(Book2, { uuid: v4(), author: 999999 })).rejects.toThrow(
+      ForeignKeyConstraintViolationException,
+    );
+
+    // 2627 (violation of PRIMARY KEY constraint) -> UniqueConstraintViolationException
+    const uuid = v4();
+    await driver.nativeInsert(Book2, { uuid, author: authorId });
+    await expect(driver.nativeInsert(Book2, { uuid, author: authorId })).rejects.toThrow(
+      UniqueConstraintViolationException,
+    );
+
+    // 547 with a CHECK constraint -> CheckConstraintViolationException (same error number as FK)
+    await driver.execute('create table check_test (id int check (id > 0))');
+    await expect(driver.execute('insert into check_test (id) values (-1)')).rejects.toThrow(
+      CheckConstraintViolationException,
+    );
+
     orm.getMetadata(Author2).tableName = 'test';
     await expect(driver.nativeInsert(Author2, { foo: 'bar' } as any)).rejects.toThrow(TableNotFoundException);
     orm.getMetadata(Author2).tableName = 'author2';
@@ -1494,6 +1517,44 @@ describe('EntityManagerMsSql', () => {
     await expect(driver.execute('foo bar 123')).rejects.toThrow(SyntaxErrorException);
     await expect(driver.execute('select id from author2, foo_bar2')).rejects.toThrow(NonUniqueFieldNameException);
     await expect(driver.execute('select uuid from author2')).rejects.toThrow(InvalidFieldNameException);
+  });
+
+  test('MsSqlExceptionConverter distinguishes 547 (FK vs CHECK) independently of message locale', () => {
+    const converter = orm.em.getPlatform().getExceptionConverter();
+    const convert = (number: number, message: string) =>
+      converter.convertException(Object.assign(new Error(message), { number }));
+
+    // 547 is shared by referential and CHECK constraints and only the message tells them
+    // apart. The surrounding text is localized, but the FOREIGN KEY/REFERENCE/CHECK keyword
+    // is not, so the mapping must not rely on the English wording. The messages below are
+    // verbatim en-US and de-DE server output; the DB-backed `exceptions` test above can only
+    // exercise the locale the CI server runs in.
+    expect(convert(547, 'The INSERT statement conflicted with the FOREIGN KEY constraint "FK_c_p".')).toBeInstanceOf(
+      ForeignKeyConstraintViolationException,
+    );
+    expect(convert(547, 'The DELETE statement conflicted with the REFERENCE constraint "FK_c_p".')).toBeInstanceOf(
+      ForeignKeyConstraintViolationException,
+    );
+    expect(convert(547, 'The INSERT statement conflicted with the CHECK constraint "CK_x".')).toBeInstanceOf(
+      CheckConstraintViolationException,
+    );
+    expect(
+      convert(547, 'Die INSERT-Anweisung steht in Konflikt mit der FOREIGN KEY-Einschränkung "FK_c_p".'),
+    ).toBeInstanceOf(ForeignKeyConstraintViolationException);
+    expect(
+      convert(547, 'Die INSERT-Anweisung steht in Konflikt mit der CHECK-Einschränkung "CK__ck_t".'),
+    ).toBeInstanceOf(CheckConstraintViolationException);
+
+    // 4712: TRUNCATE blocked by an FK reference is also a foreign-key violation.
+    expect(
+      convert(4712, 'Cannot truncate table "t" because it is being referenced by a FOREIGN KEY constraint.'),
+    ).toBeInstanceOf(ForeignKeyConstraintViolationException);
+
+    // 1205/1222 have no dedicated integration coverage, so assert the number mapping here.
+    expect(convert(1205, 'Transaction was deadlocked ... and has been chosen as the deadlock victim.')).toBeInstanceOf(
+      DeadlockException,
+    );
+    expect(convert(1222, 'Lock request time out period exceeded.')).toBeInstanceOf(LockWaitTimeoutException);
   });
 
   // this should run in ~300ms (when running single test locally)

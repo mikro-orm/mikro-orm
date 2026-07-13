@@ -1,6 +1,10 @@
 import {
+  CheckConstraintViolationException,
+  DeadlockException,
   ExceptionConverter,
+  ForeignKeyConstraintViolationException,
   InvalidFieldNameException,
+  LockWaitTimeoutException,
   NonUniqueFieldNameException,
   NotNullConstraintViolationException,
   SyntaxErrorException,
@@ -14,8 +18,8 @@ import {
 /** Converts MSSQL native errors into typed MikroORM driver exceptions. */
 export class MsSqlExceptionConverter extends ExceptionConverter {
   /**
-   * @see https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-511-database-engine-error?view=sql-server-ver15
-   * @see https://github.com/doctrine/dbal/blob/master/src/Driver/AbstractPostgreSQLDriver.php
+   * @see https://learn.microsoft.com/en-us/sql/relational-databases/errors-events/database-engine-events-and-errors
+   * @see https://github.com/doctrine/dbal/blob/4.4.x/src/Driver/API/SQLSrv/ExceptionConverter.php
    */
   override convertException(exception: Error & Dictionary): DriverException {
     let errno = exception.number;
@@ -43,7 +47,26 @@ export class MsSqlExceptionConverter extends ExceptionConverter {
         return new TableNotFoundException(exception);
       case 209:
         return new NonUniqueFieldNameException(exception);
+      case 547:
+        // 547 covers both referential (FOREIGN KEY/REFERENCE) and CHECK constraint
+        // violations; only the message distinguishes them. The surrounding text is
+        // localized (e.g. "CHECK-Einschränkung" on a German server), but the
+        // constraint-type keyword itself is an untranslated SQL keyword, so match on
+        // the bare `CHECK` token.
+        if (exception.message.includes('CHECK')) {
+          return new CheckConstraintViolationException(exception);
+        }
+
+        return new ForeignKeyConstraintViolationException(exception);
+      case 4712:
+        // TRUNCATE blocked because the table is referenced by a FOREIGN KEY.
+        return new ForeignKeyConstraintViolationException(exception);
+      case 1205:
+        return new DeadlockException(exception);
+      case 1222:
+        return new LockWaitTimeoutException(exception);
       case 2601:
+      case 2627:
         return new UniqueConstraintViolationException(exception);
       case 2714:
         return new TableExistsException(exception);
