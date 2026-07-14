@@ -191,6 +191,11 @@ export class Utils {
   static readonly PK_SEPARATOR = '~~~';
   static readonly #ORM_VERSION = '[[MIKRO_ORM_VERSION]]';
 
+  /** Default session variable name backing an RLS filter argument (`current_setting('mikro.<filter>.<arg>')`). */
+  static getRlsSettingName(filterName: string, argName: string): string {
+    return `mikro.${filterName}.${argName}`;
+  }
+
   /**
    * Checks if the argument is instance of `Object`. Returns false for arrays.
    */

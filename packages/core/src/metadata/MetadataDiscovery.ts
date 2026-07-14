@@ -218,6 +218,7 @@ export class MetadataDiscovery {
     filtered.forEach(meta => this.initAutoincrement(meta)); // once again after we init custom types
     filtered.forEach(meta => this.initCheckConstraints(meta));
     filtered.forEach(meta => this.initTriggers(meta));
+    filtered.forEach(meta => this.initPolicies(meta));
 
     forEachProp((_m, p) => {
       this.initDefaultValue(p);
@@ -1380,6 +1381,12 @@ export class MetadataDiscovery {
       meta.checks = Utils.unique([...base.checks, ...meta.checks]);
       meta.triggers = Utils.unique([...base.triggers, ...meta.triggers]);
     }
+
+    // Policies pass down only from inlined abstract bases; STI children share the root table
+    // and TPT children own their tables, so both declare policies directly on the root/child.
+    if (base.abstract && base.inheritanceType !== 'sti') {
+      meta.policies = Utils.unique([...base.policies, ...meta.policies]);
+    }
     const pks = Object.values(meta.properties)
       .filter(p => p.primary)
       .map(p => p.name);
@@ -2172,6 +2179,25 @@ export class MetadataDiscovery {
     }
 
     meta.hasTriggers = true;
+  }
+
+  private initPolicies(meta: EntityMetadata): void {
+    if (meta.policies.length === 0) {
+      return;
+    }
+
+    const columns = meta.createSchemaColumnMappingObject();
+    const table = this.createSchemaTable(meta);
+
+    for (const policy of meta.policies) {
+      if (policy.using instanceof Function) {
+        policy.using = policy.using(columns, table);
+      }
+
+      if (policy.check instanceof Function) {
+        policy.check = policy.check(columns, table);
+      }
+    }
   }
 
   private initGeneratedColumn(meta: EntityMetadata, prop: EntityProperty): void {

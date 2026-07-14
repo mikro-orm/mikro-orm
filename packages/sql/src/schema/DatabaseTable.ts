@@ -18,7 +18,15 @@ import {
   Utils,
 } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper.js';
-import type { CheckDef, Column, ForeignKey, IndexDef, TablePartitioning, SqlTriggerDef } from '../typings.js';
+import type {
+  CheckDef,
+  Column,
+  ForeignKey,
+  IndexDef,
+  TablePartitioning,
+  SqlPolicyDef,
+  SqlTriggerDef,
+} from '../typings.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
 import { toEntityPartitionBy } from './partitioning.js';
@@ -31,10 +39,15 @@ export class DatabaseTable {
   #indexes: IndexDef[] = [];
   #checks: CheckDef[] = [];
   #triggers: SqlTriggerDef[] = [];
+  #policies: SqlPolicyDef[] = [];
   #foreignKeys: Dictionary<ForeignKey> = {};
   readonly #platform: AbstractSqlPlatform;
   public nativeEnums: Dictionary<{ name: string; schema?: string; items: string[] }> = {}; // for postgres
   public comment?: string;
+  /** Whether row level security is enabled on the table (postgres only). */
+  public rlsEnabled = false;
+  /** Whether row level security is also enforced for the table owner (postgres `force`). */
+  public rlsForced = false;
   public partitioning?: TablePartitioning;
   /**
    * Effective collation the column defaults to when no explicit `COLLATE` is set on a column.
@@ -87,6 +100,15 @@ export class DatabaseTable {
 
   getTriggers(): SqlTriggerDef[] {
     return this.#triggers;
+  }
+
+  getPolicies(): SqlPolicyDef[] {
+    return this.#policies;
+  }
+
+  /** @internal */
+  setPolicies(policies: SqlPolicyDef[]): void {
+    this.#policies = policies;
   }
 
   /** @internal */
@@ -860,6 +882,14 @@ export class DatabaseTable {
     return !!this.getTrigger(triggerName);
   }
 
+  getPolicy(policyName: string): SqlPolicyDef | undefined {
+    return this.#policies.find(p => p.name === policyName);
+  }
+
+  hasPolicy(policyName: string): boolean {
+    return !!this.getPolicy(policyName);
+  }
+
   getPrimaryKey(): IndexDef | undefined {
     return this.#indexes.find(i => i.primary);
   }
@@ -1301,6 +1331,10 @@ export class DatabaseTable {
     this.#triggers.push(trigger);
   }
 
+  addPolicy(policy: SqlPolicyDef) {
+    this.#policies.push(policy);
+  }
+
   toJSON(): Dictionary {
     const columns = this.#columns;
     // locale-independent comparison so the snapshot is stable across machines
@@ -1446,15 +1480,31 @@ export class DatabaseTable {
       return out;
     };
 
+    // default roles (`[]` or `['public']`) both mean PUBLIC — collapse so metadata and introspection agree
+    const isDefaultRoles = (roles: string[]) => roles.length === 0 || (roles.length === 1 && roles[0] === 'public');
+    const normalizePolicy = (policy: SqlPolicyDef): Dictionary => {
+      const out: Dictionary = { name: policy.name, command: policy.command, type: policy.type };
+      if (!isDefaultRoles(policy.roles)) {
+        out.roles = [...policy.roles].sort(byString);
+      }
+      for (const field of ['using', 'check'] as const) {
+        if (policy[field]) {
+          out[field] = policy[field];
+        }
+      }
+      return out;
+    };
+
     const sortedIndexes = [...this.#indexes].sort((a, b) => byString(a.keyName, b.keyName)).map(normalizeIndex);
     const sortedChecks = [...this.#checks].sort((a, b) => byString(a.name, b.name)).map(normalizeCheck);
     const sortedTriggers = [...this.#triggers].sort((a, b) => byString(a.name, b.name));
+    const sortedPolicies = [...this.#policies].sort((a, b) => byString(a.name, b.name)).map(normalizePolicy);
     const sortedForeignKeys = Object.fromEntries(
       Object.entries(this.#foreignKeys)
         .sort(([a], [b]) => byString(a, b))
         .map(([k, v]) => [k, normalizeFk(v)]),
     );
-    return {
+    const ret: Dictionary = {
       name: this.name,
       schema: this.schema,
       columns: columnsMapped,
@@ -1467,5 +1517,20 @@ export class DatabaseTable {
       // platforms that can't read comments back (sqlite), where keeping it would flip the snapshot
       comment: supportsComments ? this.comment || null : null,
     };
+
+    // emit RLS state only when set, so snapshots of non-RLS tables stay byte-for-byte unchanged
+    if (sortedPolicies.length > 0) {
+      ret.policies = sortedPolicies;
+    }
+
+    if (this.rlsEnabled) {
+      ret.rlsEnabled = true;
+    }
+
+    if (this.rlsForced) {
+      ret.rlsForced = true;
+    }
+
+    return ret;
   }
 }

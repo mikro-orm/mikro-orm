@@ -66,6 +66,7 @@ import type {
   RequiredEntityData,
   RoutineArgs,
   RoutineReturn,
+  SessionContext,
   UnboxArray,
   IndexFilterQuery,
   WithUsingOptions,
@@ -88,7 +89,7 @@ import type { AbortQueryOptions, InflightQueryAbortStrategy, Transaction } from 
 import { EventManager } from './events/EventManager.js';
 import { TransactionEventBroadcaster } from './events/TransactionEventBroadcaster.js';
 import type { EntityComparator } from './utils/EntityComparator.js';
-import { OptimisticLockError, ValidationError } from './errors.js';
+import { MetadataError, OptimisticLockError, ValidationError } from './errors.js';
 import type { CacheAdapter } from './cache/CacheAdapter.js';
 import { applyPopulateHints, getLoadingStrategy } from './entity/utils.js';
 import { TransactionManager } from './utils/TransactionManager.js';
@@ -120,6 +121,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   readonly #resultCache: CacheAdapter;
   #filters: Dictionary<FilterDef> = {};
   #filterParams: Dictionary<Dictionary> = {};
+  #sessionContext?: SessionContext;
   protected loggerContext?: Dictionary;
   #transactionContext?: Transaction;
   #disableTransactions: boolean;
@@ -428,6 +430,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       options.entity = Utils.asArray(options.entity).map(n => Utils.className(n)) as any;
     }
 
+    // global filters have no entity to attach a policy to, so `rls` is only valid on entity-scoped `@Filter()`
+    if (options.rls) {
+      throw MetadataError.rlsFilterMustBeEntityScoped(options.name);
+    }
+
     options.default ??= true;
     this.getContext(false).#filters[options.name] = options as any;
   }
@@ -437,7 +444,46 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * If you want to set shared value for all contexts, be sure to use the root entity manager.
    */
   setFilterParams(name: string, args: Dictionary): void {
-    this.getContext().#filterParams[name] = args;
+    const em = this.getContext();
+    em.#filterParams[name] = args;
+
+    const filter = em.findFilterDef(name);
+
+    // an `rls` filter mirrors its params as session variables, so the matching DB policy sees the same values
+    if (filter?.rls) {
+      const setting = typeof filter.rls === 'object' ? filter.rls.setting : undefined;
+      const keys = Object.keys(args);
+      const variables: Dictionary<string | number | boolean> = {};
+
+      for (const key of keys) {
+        const name = setting && keys.length === 1 ? setting : Utils.getRlsSettingName(filter.name, key);
+        variables[name] = args[key];
+      }
+
+      em.setSessionContext({ variables });
+    }
+  }
+
+  /** Resolves a filter definition by name using the same precedence as `applyFilters` (config, EM, entity metadata). */
+  private findFilterDef(name: string): FilterDef | undefined {
+    const em = this.getContext(false);
+    const configFilters = em.config.get('filters');
+
+    if (configFilters[name]) {
+      return configFilters[name] as FilterDef;
+    }
+
+    if (em.#filters[name]) {
+      return em.#filters[name];
+    }
+
+    for (const meta of em.metadata) {
+      if (meta.filters[name]) {
+        return meta.filters[name];
+      }
+    }
+
+    return undefined;
   }
 
   /**
@@ -445,6 +491,68 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    */
   getFilterParams<T extends Dictionary = Dictionary>(name: string): T {
     return this.getContext().#filterParams[name] as T;
+  }
+
+  /**
+   * Sets the database session context (row level security) for this entity manager. Session variables are merged
+   * with any previously set ones, while the role is replaced. The variables are applied via `set_config()` and are
+   * typically referenced by RLS policies through `current_setting()`.
+   */
+  setSessionContext(context: SessionContext): void {
+    if (!this.getPlatform().supportsRowLevelSecurity()) {
+      throw ValidationError.sessionContextNotSupported();
+    }
+
+    // validate the global context like `setFilterParams` — a tenant context set on the global EM
+    // would be silently inherited by every later fork
+    const em = this.getContext();
+    const current = em.#sessionContext;
+    em.#sessionContext = {
+      variables: { ...current?.variables, ...context.variables },
+      role: context.role ?? current?.role,
+    };
+  }
+
+  /**
+   * Returns the database session context (row level security) set for this entity manager, or `undefined` if none.
+   */
+  getSessionContext(): SessionContext | undefined {
+    return this.getContext(false).#sessionContext;
+  }
+
+  /**
+   * Clears the database session context, since `setSessionContext()` only ever merges variables and updates the role.
+   */
+  clearSessionContext(): void {
+    this.getContext(false).#sessionContext = undefined;
+  }
+
+  /** @internal session context to apply on `begin()` under the `'transaction'` strategy (`undefined` otherwise). */
+  getTransactionSessionContext(): SessionContext | undefined {
+    const em = this.getContext(false);
+
+    if (!em.#sessionContext || em.config.get('sessionContext') !== 'transaction') {
+      return undefined;
+    }
+
+    return em.#sessionContext;
+  }
+
+  /**
+   * Wraps a driver call in a short implicit transaction when the session context needs to apply, so `set local`
+   * takes effect. Resolves to a plain call when already inside a transaction or when no session context is set.
+   *
+   * @internal
+   */
+  async withSessionContext<T>(ctx: Transaction | undefined, cb: (ctx?: Transaction) => Promise<T>): Promise<T> {
+    const em = this.getContext(false);
+    const sessionContext = ctx ? undefined : em.getTransactionSessionContext();
+
+    if (!sessionContext) {
+      return cb(ctx);
+    }
+
+    return em.getConnection('write').transactional(trx => cb(trx), { sessionContext, loggerContext: em.loggerContext });
   }
 
   /**
@@ -1300,12 +1408,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    const ret = await em.driver.nativeUpdate(entityName, where, data, {
-      ctx: em.#transactionContext,
-      upsert: true,
-      convertCustomTypes,
-      ...options,
-    });
+    const ret = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
+      em.driver.nativeUpdate(entityName, where, data, {
+        upsert: true,
+        convertCustomTypes,
+        ...options,
+        ctx,
+      }),
+    );
 
     em.#unitOfWork.getChangeSetPersister().mapReturnedValues(entity, data, ret.row, meta, true);
 
@@ -1345,13 +1455,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         }
       }
 
-      const data2 = await this.driver.findOne(meta.class, where, {
-        fields: returning.concat(...((options.onConflictMergeFields ?? []) as string[])) as any[],
-        ctx: em.#transactionContext,
-        convertCustomTypes: true,
-        connectionType: 'write',
-        schema: options.schema,
-      });
+      const data2 = await em.withSessionContext(em.#transactionContext, ctx =>
+        this.driver.findOne(meta.class, where, {
+          fields: returning.concat(...((options.onConflictMergeFields ?? []) as string[])) as any[],
+          ctx,
+          convertCustomTypes: true,
+          connectionType: 'write',
+          schema: options.schema,
+        }),
+      );
       em.getHydrator().hydrate(entity, meta, data2!, em.#entityFactory, 'full', false, true);
     }
 
@@ -1517,12 +1629,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    const res = await em.driver.nativeUpdateMany(entityName, allWhere, allData, {
-      ctx: em.#transactionContext,
-      upsert: true,
-      convertCustomTypes,
-      ...options,
-    });
+    const res = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
+      em.driver.nativeUpdateMany(entityName, allWhere, allData, {
+        upsert: true,
+        convertCustomTypes,
+        ...options,
+        ctx,
+      }),
+    );
 
     entities.clear();
     entitiesByData.clear();
@@ -1584,16 +1698,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         });
       });
 
-      const data2 = await this.driver.find(meta.class, where, {
-        fields: returning
-          .concat(...add)
-          .concat(...((Array.isArray(uniqueFields) ? uniqueFields : []) as string[]))
-          .concat(...((options.onConflictMergeFields ?? []) as string[])) as any,
-        ctx: em.#transactionContext,
-        convertCustomTypes: true,
-        connectionType: 'write',
-        schema: options.schema,
-      });
+      const data2 = await em.withSessionContext(em.#transactionContext, ctx =>
+        this.driver.find(meta.class, where, {
+          fields: returning
+            .concat(...add)
+            .concat(...((Array.isArray(uniqueFields) ? uniqueFields : []) as string[]))
+            .concat(...((options.onConflictMergeFields ?? []) as string[])) as any,
+          ctx,
+          convertCustomTypes: true,
+          connectionType: 'write',
+          schema: options.schema,
+        }),
+      );
 
       for (const [entity, cond] of loadPK.entries()) {
         const row = data2.find(row => {
@@ -1705,6 +1821,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const em = this.getContext(false);
     em.#transactionContext = await em.getConnection('write').begin({
+      sessionContext: em.getTransactionSessionContext(),
       ...options,
       eventBroadcaster: new TransactionEventBroadcaster(em, { topLevelTransaction: !options.ctx }),
     });
@@ -1801,10 +1918,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     data = QueryHelper.processObjectParams(data);
     validateParams(data, 'insert data');
-    const res = await em.driver.nativeInsert<Entity>(entityName, data as EntityData<Entity>, {
-      ctx: em.#transactionContext,
-      ...options,
-    });
+    const res = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
+      em.driver.nativeInsert<Entity>(entityName, data as EntityData<Entity>, { ...options, ctx }),
+    );
 
     return res.insertId!;
   }
@@ -1912,10 +2028,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     data = data.map(row => QueryHelper.processObjectParams(row));
     data.forEach(row => validateParams(row, 'insert data'));
-    const res = await em.driver.nativeInsertMany<Entity>(entityName, data as EntityData<Entity>[], {
-      ctx: em.#transactionContext,
-      ...options,
-    });
+    const res = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
+      em.driver.nativeInsertMany<Entity>(entityName, data as EntityData<Entity>[], { ...options, ctx }),
+    );
 
     if (res.insertedIds) {
       return res.insertedIds;
@@ -1947,11 +2062,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     );
     validateParams(data, 'update data');
     validateParams(where, 'update condition');
-    const res = await em.driver.nativeUpdate(entityName, where, data, {
-      ctx: em.#transactionContext,
-      em,
-      ...options,
-    } as NativeInsertUpdateOptions<Entity>);
+    const res = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
+      em.driver.nativeUpdate(entityName, where, data, {
+        em,
+        ...options,
+        ctx,
+      } as NativeInsertUpdateOptions<Entity>),
+    );
 
     return res.affectedRows;
   }
@@ -2010,11 +2127,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       'delete',
     )) as typeof where;
     validateParams(where, 'delete condition');
-    const res = await em.driver.nativeDelete(entityName, where, {
-      ctx: em.#transactionContext,
-      em,
-      ...options,
-    } as NativeDeleteOptions<Entity>);
+    const res = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
+      em.driver.nativeDelete(entityName, where, {
+        em,
+        ...options,
+        ctx,
+      } as NativeDeleteOptions<Entity>),
+    );
 
     return res.affectedRows;
   }
@@ -2328,7 +2447,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return cached.data as number;
     }
 
-    const count = await em.driver.count(entityName, where, { ctx: em.#transactionContext, em, ...options });
+    const count = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
+      em.driver.count(entityName, where, { em, ...options, ctx }),
+    );
     await em.storeCache(options.cache, cached!, () => +count);
 
     return +count;
@@ -2558,6 +2679,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     fork.#filters = { ...em.#filters };
     fork.#filterParams = Utils.copy(em.#filterParams);
+
+    if (options.session) {
+      fork.setSessionContext(options.session);
+    } else if (em.#sessionContext) {
+      fork.#sessionContext = Utils.copy(em.#sessionContext);
+    }
+
     fork.loggerContext = Utils.merge({}, em.loggerContext, options.loggerContext);
     fork.#schema = options.schema ?? em.#schema;
     fork.signal = options.signal ?? em.signal;
@@ -3130,7 +3258,16 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       delete opts[k as keyof typeof opts];
     }
 
-    return [Utils.className(entityName), method, opts, where];
+    const key: unknown[] = [Utils.className(entityName), method, opts, where];
+
+    // session context (row level security) scopes cached rows per tenant/role, avoiding cross-context serves
+    const sessionContext = this.getContext(false).#sessionContext;
+
+    if (sessionContext) {
+      key.push(sessionContext);
+    }
+
+    return key;
   }
 
   /**
@@ -3310,6 +3447,8 @@ export interface ForkOptions {
   keepTransactionContext?: boolean;
   /** default schema to use for this fork */
   schema?: string;
+  /** database session context (row level security) for this fork; inherited from the parent when not set */
+  session?: SessionContext;
   /** default logger context, can be overridden via {@apilink FindOptions} */
   loggerContext?: Dictionary;
   /**

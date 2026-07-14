@@ -124,6 +124,7 @@ export type {
   InferEntity,
   CheckConstraint,
   TriggerDef,
+  SessionContext,
   RoutineReturns,
   RoutineBodyCallback,
   RoutineJsBody,

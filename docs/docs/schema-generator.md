@@ -243,6 +243,10 @@ Notes:
 - Mapping an already-partitioned table with an entity that does not declare `partitionBy` leaves the partitioning untouched — partitioning is only managed for entities that opt into it, so adopting MikroORM on a database with existing partitioned tables won't try to drop their partitioning.
 - Adding partitioning to an existing table, or changing an already-partitioned table's definition, can't be done in place in PostgreSQL, so the schema generator rebuilds the table: it parks the original in a temporary schema, creates the new partitioned table, copies the data across, and restores the foreign keys that referenced it. **Review the generated SQL before running** — the copy rewrites the whole table under an exclusive lock, so consider data volume and downtime. In safe mode (`schema:update --safe`, or `migrations: { safe: true }`) the original table is kept in the temporary schema for manual verification; otherwise it is dropped once the data has been copied.
 
+## PostgreSQL row level security
+
+Table-level row level security policies declared via `@Entity({ policies, rowLevelSecurity })` (and the equivalent `EntitySchema` / `defineEntity` options) are managed by the schema generator just like check constraints and indexes: `schema:create`, `schema:update`, `schema:diff`, and `migration:create` create, alter, and drop policies, and existing policies are introspected back so the diff stays clean. See the [Row Level Security](./row-level-security.md) guide for details.
+
 ## Ignoring specific column changes
 
 When using generated columns, you'll get a perpetual diff on every `SchemaGenerator` run unless you set `ignoreSchemaChanges` to ignore changes to `type` and `extra`.

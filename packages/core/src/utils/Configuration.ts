@@ -39,7 +39,7 @@ import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import type { EventSubscriber } from '../events/EventSubscriber.js';
 import type { AssignOptions } from '../entity/EntityAssigner.js';
 import type { EntityManagerType, IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
-import { NotFoundError } from '../errors.js';
+import { MetadataError, NotFoundError } from '../errors.js';
 import { RequestContext } from './RequestContext.js';
 import { DataloaderType, FlushMode, LoadStrategy, PopulateHint, type EmbeddedPrefixMode } from '../enums.js';
 import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter.js';
@@ -108,6 +108,7 @@ const DEFAULTS = {
   ensureDatabase: true,
   ensureIndexes: false,
   batchSize: 300,
+  sessionContext: 'transaction',
   debug: false,
   ignoreDeprecations: false,
   verbose: false,
@@ -506,6 +507,11 @@ export class Configuration<
     this.#options.charset ??= this.#platform.getDefaultCharset();
 
     Object.keys(this.#options.filters).forEach(key => {
+      // global filters have no entity to attach a policy to, so `rls` is only valid on entity-scoped filters
+      if ((this.#options.filters[key] as { rls?: unknown }).rls) {
+        throw MetadataError.rlsFilterMustBeEntityScoped(key);
+      }
+
       this.#options.filters[key].default ??= true;
     });
 
@@ -948,6 +954,12 @@ export interface Options<
    * @default false
    */
   disableTransactions?: boolean;
+  /**
+   * How `em.setSessionContext()` session variables/role are applied for row level security.
+   * `'transaction'` (default) emits `set_config(..., true)` inside each transaction; `'connection'` applies them on every pooled connection acquire (PostgreSQL only).
+   * @default 'transaction'
+   */
+  sessionContext?: 'transaction' | 'connection';
   /**
    * Enable verbose logging of internal operations.
    * @default false

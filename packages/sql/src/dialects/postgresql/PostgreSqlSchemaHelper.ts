@@ -18,6 +18,7 @@ import type {
   Table,
   TableDifference,
   TablePartitioning,
+  SqlPolicyDef,
   SqlTriggerDef,
   SqlRoutineDef,
 } from '../../typings.js';
@@ -265,6 +266,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const fks = await this.getAllForeignKeys(connection, tablesBySchema, ctx);
     const partitionings = await this.getPartitions(connection, tablesBySchema, ctx);
     const triggers = await this.getAllTriggers(connection, tablesBySchema);
+    const policies = await this.getAllPolicies(connection, tablesBySchema, ctx);
     const dbCollation = await this.getDatabaseCollation(connection, ctx);
 
     for (const t of tables) {
@@ -280,6 +282,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
       if (triggers[key]) {
         table.setTriggers(triggers[key]);
+      }
+
+      const rls = policies[key];
+
+      if (rls) {
+        table.setPolicies(rls.policies);
+        table.rlsEnabled = rls.enabled;
+        table.rlsForced = rls.forced;
       }
 
       table.setPartitioning(partitionings[key]);
@@ -734,6 +744,115 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `drop trigger if exists ${triggerName} on ${table.getQuotedName()};\ndrop function if exists ${fnName}()`;
   }
 
+  override getRlsCreateSQL(table: DatabaseTable): string[] {
+    const ret: string[] = [];
+
+    if (table.rlsEnabled) {
+      ret.push(`alter table ${table.getQuotedName()} enable row level security`);
+    }
+
+    if (table.rlsForced) {
+      ret.push(`alter table ${table.getQuotedName()} force row level security`);
+    }
+
+    for (const policy of table.getPolicies()) {
+      ret.push(this.createPolicy(table, policy));
+    }
+
+    return ret;
+  }
+
+  override getRlsAlterSQL(diff: TableDifference): string[] {
+    const ret: string[] = [];
+    const table = diff.toTable;
+
+    // enable before creating policies
+    if (diff.changedRlsEnabled === true) {
+      ret.push(`alter table ${table.getQuotedName()} enable row level security`);
+    }
+
+    if (diff.changedRlsForced === true) {
+      ret.push(`alter table ${table.getQuotedName()} force row level security`);
+    } else if (diff.changedRlsForced === false) {
+      ret.push(`alter table ${table.getQuotedName()} no force row level security`);
+    }
+
+    for (const policy of Object.values(diff.removedPolicies)) {
+      ret.push(this.dropPolicy(table, policy));
+    }
+
+    for (const policy of Object.values(diff.changedPolicies)) {
+      ret.push(this.alterPolicy(table, policy));
+    }
+
+    for (const policy of Object.values(diff.addedPolicies)) {
+      ret.push(this.createPolicy(table, policy));
+    }
+
+    // disable only after its policies are gone
+    if (diff.changedRlsEnabled === false) {
+      ret.push(`alter table ${table.getQuotedName()} disable row level security`);
+    }
+
+    return ret;
+  }
+
+  private createPolicy(table: DatabaseTable, policy: SqlPolicyDef): string {
+    const parts = [`create policy ${this.quote(policy.name)} on ${table.getQuotedName()}`];
+
+    if (policy.type === 'restrictive') {
+      parts.push('as restrictive');
+    }
+
+    if (policy.command !== 'all') {
+      parts.push(`for ${policy.command}`);
+    }
+
+    if (policy.roles.length > 0) {
+      parts.push(`to ${this.formatPolicyRoles(policy.roles)}`);
+    }
+
+    if (policy.using) {
+      parts.push(`using (${policy.using})`);
+    }
+
+    if (policy.check) {
+      parts.push(`with check (${policy.check})`);
+    }
+
+    return parts.join(' ');
+  }
+
+  private alterPolicy(table: DatabaseTable, policy: SqlPolicyDef): string {
+    // ALTER POLICY without a TO clause keeps the old roles, so always restate them (public when default)
+    const parts = [
+      `alter policy ${this.quote(policy.name)} on ${table.getQuotedName()} to ${this.formatPolicyRoles(policy.roles)}`,
+    ];
+
+    if (policy.using) {
+      parts.push(`using (${policy.using})`);
+    }
+
+    if (policy.check) {
+      parts.push(`with check (${policy.check})`);
+    }
+
+    return parts.join(' ');
+  }
+
+  private dropPolicy(table: DatabaseTable, policy: SqlPolicyDef): string {
+    return `drop policy ${this.quote(policy.name)} on ${table.getQuotedName()}`;
+  }
+
+  // `public` is a keyword and must stay unquoted; other roles are quoted like any identifier
+  private formatPolicyRoles(roles: string[]): string {
+    if (roles.length === 0) {
+      return 'public';
+    }
+
+    return roles.map(role => (role === 'public' ? 'public' : this.quote(role))).join(', ');
+  }
+
   override createRoutine(routine: SqlRoutineDef): string {
     if (routine.expression) {
       return routine.expression;
@@ -989,6 +1108,90 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     left join pg_proc p on p.proname = t.event_object_table || '_' || t.trigger_name || '_fn' and p.pronamespace = n.oid
     where (${conditions.join(' or ')})
     order by t.trigger_name, t.event_manipulation`;
+  }
+
+  async getAllPolicies(
+    connection: AbstractSqlConnection,
+    tablesBySchemas: Map<string | undefined, Table[]>,
+    ctx?: Transaction,
+  ): Promise<Dictionary<{ policies: SqlPolicyDef[]; enabled: boolean; forced: boolean }>> {
+    const flagConditions = [...tablesBySchemas.entries()].map(([schema, tables]) => {
+      const names = tables.map(t => this.platform.quoteValue(t.table_name)).join(', ');
+      const schemaName = this.platform.quoteValue(schema ?? this.platform.getDefaultSchemaName());
+      return `(ns.nspname = ${schemaName} and cls.relname in (${names}))`;
+    });
+    const policyConditions = [...tablesBySchemas.entries()].map(([schema, tables]) => {
+      const names = tables.map(t => this.platform.quoteValue(t.table_name)).join(', ');
+      const schemaName = this.platform.quoteValue(schema ?? this.platform.getDefaultSchemaName());
+      return `(schemaname = ${schemaName} and tablename in (${names}))`;
+    });
+    // pg_class carries the enable/force flags (a table can enable RLS with zero policies)
+    const flagRows = await connection.execute<
+      { table_name: string; schema_name: string; enabled: boolean; forced: boolean }[]
+    >(
+      `select cls.relname as table_name, ns.nspname as schema_name, cls.relrowsecurity as enabled, cls.relforcerowsecurity as forced
+        from pg_class cls
+        join pg_namespace ns on ns.oid = cls.relnamespace
+        where (${flagConditions.join(' or ')})`,
+      [],
+      'all',
+      ctx,
+    );
+    const policyRows = await connection.execute<
+      {
+        table_name: string;
+        schema_name: string;
+        name: string;
+        permissive: string;
+        roles: string | string[];
+        cmd: string;
+        qual: string | null;
+        with_check: string | null;
+      }[]
+    >(
+      `select tablename as table_name, schemaname as schema_name, policyname as name, permissive, roles, cmd, qual, with_check
+        from pg_policies
+        where (${policyConditions.join(' or ')})
+        order by policyname`,
+      [],
+      'all',
+      ctx,
+    );
+
+    const policiesByTable = {} as Dictionary<SqlPolicyDef[]>;
+
+    for (const row of policyRows) {
+      const key = this.getTableKey(row);
+      (policiesByTable[key] ??= []).push({
+        name: row.name,
+        command: row.cmd.toLowerCase() as SqlPolicyDef['command'],
+        type: row.permissive === 'PERMISSIVE' ? 'permissive' : 'restrictive',
+        roles: this.parsePgRoles(row.roles),
+        using: row.qual ?? undefined,
+        check: row.with_check ?? undefined,
+      });
+    }
+
+    const ret = {} as Dictionary<{ policies: SqlPolicyDef[]; enabled: boolean; forced: boolean }>;
+
+    for (const row of flagRows) {
+      const key = this.getTableKey(row);
+      ret[key] = { policies: policiesByTable[key] ?? [], enabled: row.enabled, forced: row.forced };
+    }
+
+    return ret;
+  }
+
+  // node-postgres returns `pg_policies.roles` as an unparsed array literal (`{public}`), pglite as an array
+  private parsePgRoles(value: string | string[]): string[] {
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    return value
+      .replace(/^\{|\}$/g, '')
+      .split(',')
+      .map(role => role.replace(/^"(.*)"$/, '$1'));
   }
 
   async getAllForeignKeys(

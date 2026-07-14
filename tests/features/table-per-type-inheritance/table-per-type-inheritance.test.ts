@@ -1,4 +1,16 @@
-import { Collection, EntitySchema, MikroORM, quote, Ref, wrap, raw, Type, Opt, ChangeSetType } from '@mikro-orm/sqlite';
+import {
+  Collection,
+  EntityMetadata,
+  EntitySchema,
+  MikroORM,
+  quote,
+  Ref,
+  wrap,
+  raw,
+  Type,
+  Opt,
+  ChangeSetType,
+} from '@mikro-orm/sqlite';
 import type { EventSubscriber, FlushEventArgs } from '@mikro-orm/sqlite';
 import {
   Embeddable,
@@ -2611,7 +2623,8 @@ describe('TPT MongoDB validation', () => {
   test('MongoPlatform rejects TPT inheritance', async () => {
     const { MongoPlatform } = await import('@mikro-orm/mongodb');
     const platform = new MongoPlatform();
-    const meta = { className: 'TestEntity', inheritanceType: 'tpt' } as any;
+    // real EntityMetadata so newly validated collection fields (checks, filters, policies, ...) are initialized
+    const meta = new EntityMetadata({ className: 'TestEntity', inheritanceType: 'tpt' }) as any;
 
     expect(() => platform.validateMetadata(meta)).toThrow(/TPT.*not supported by the current driver/);
   });

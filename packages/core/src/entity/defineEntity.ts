@@ -1336,6 +1336,7 @@ export interface EntityMetadataWithProperties<
     entity?: EntityName<any> | EntityName<any>[];
     args?: boolean;
     strict?: boolean;
+    rls?: boolean | { setting?: string };
   }>;
   forceObject?: TForceObject;
 

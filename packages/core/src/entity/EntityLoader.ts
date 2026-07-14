@@ -935,14 +935,8 @@ export class EntityLoader {
       where = { $and: [where, prop.where] } as FilterQuery<Entity>;
     }
 
-    const map = await this.#driver.loadFromPivotTable<any, any>(
-      prop,
-      ids,
-      where,
-      orderBy,
-      this.#em.getTransactionContext(),
-      options2,
-      pivotJoin,
+    const map = await this.#em.withSessionContext(this.#em.getTransactionContext(), ctx =>
+      this.#driver.loadFromPivotTable<any, any>(prop, ids, where, orderBy, ctx, options2, pivotJoin),
     );
     const children: AnyEntity[][] = [];
     const isUnionTargetMN = QueryHelper.isUnionTargetPolymorphic(prop);

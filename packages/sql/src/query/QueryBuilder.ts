@@ -2484,7 +2484,15 @@ export class QueryBuilder<
     }
 
     const loggerContext = { id: this.em?.id, ...this.loggerContext, ...this.#abortOptions };
-    const res = await this.getConnection().execute(query.sql, query.params, method, this.context, loggerContext);
+    const conn = this.getConnection();
+    // outside a transaction, wrap in a short implicit one so RLS `set local` session context applies (no-op when unset)
+    const sessionContext = this.context ? undefined : this.em?.getTransactionSessionContext();
+    const res = await (sessionContext
+      ? conn.transactional(trx => conn.execute(query.sql, query.params, method, trx, loggerContext), {
+          sessionContext,
+          loggerContext,
+        })
+      : conn.execute(query.sql, query.params, method, this.context, loggerContext));
     const meta = this.mainAlias.meta;
 
     if (!options.mapResults || !meta) {

@@ -639,6 +639,8 @@ export abstract class SchemaHelper {
       ret.push(this.alterTableComment(diff.toTable, diff.changedComment));
     }
 
+    this.append(ret, this.getRlsAlterSQL(diff));
+
     return ret;
   }
 
@@ -807,6 +809,16 @@ export abstract class SchemaHelper {
 
   getChangeColumnCommentSQL(tableName: string, to: Column, schemaName?: string): string {
     return '';
+  }
+
+  /** Row level security DDL for a freshly created table (enable/force + create policies). Postgres only. */
+  getRlsCreateSQL(table: DatabaseTable): string[] {
+    return [];
+  }
+
+  /** Row level security DDL for a table difference (enable/disable/force transitions + policy add/drop/alter). Postgres only. */
+  getRlsAlterSQL(diff: TableDifference): string[] {
+    return [];
   }
 
   async getNamespaces(connection: AbstractSqlConnection, ctx?: Transaction): Promise<string[]> {
@@ -1009,6 +1021,8 @@ export abstract class SchemaHelper {
       for (const trigger of table.getTriggers()) {
         this.append(ret, this.createTrigger(table, trigger));
       }
+
+      this.append(ret, this.getRlsCreateSQL(table));
     }
 
     return ret;

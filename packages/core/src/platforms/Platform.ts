@@ -943,12 +943,44 @@ export abstract class Platform {
     return true;
   }
 
+  /** Whether the platform supports row level security (PostgreSQL). */
+  supportsRowLevelSecurity(): boolean {
+    return false;
+  }
+
+  /**
+   * SQL cast suffix (e.g. `'::uuid'`, or `''` when none is needed) applied when an RLS filter reads a session
+   * variable via `current_setting()` as the given column type, or `null` if the type has no automatic cast.
+   */
+  getCurrentSettingCast(mappedType: Type<unknown>): string | null {
+    return null;
+  }
+
   /** Platform-specific validation of entity metadata. */
   validateMetadata(meta: EntityMetadata): void {
     if (meta.partitionBy && !this.supportsPartitionedTables()) {
       throw new MetadataError(
         `Entity ${meta.className} uses partitionBy, but ${this.constructor.name} does not support partitioned tables`,
       );
+    }
+
+    const declaresRls = meta.policies.length > 0 || !!meta.rowLevelSecurity;
+
+    if (declaresRls && !this.supportsRowLevelSecurity()) {
+      throw MetadataError.rowLevelSecurityNotSupportedByDriver(meta);
+    }
+
+    // STI hierarchies share a single table, so only the root may declare policies
+    if (declaresRls && meta.root.inheritanceType === 'sti' && meta.root !== meta) {
+      throw MetadataError.rowLevelSecurityOnNonRootStiEntity(meta);
+    }
+
+    if (!this.supportsRowLevelSecurity()) {
+      for (const filter of Object.values(meta.filters)) {
+        if (filter.rls) {
+          throw MetadataError.rlsFilterNotSupportedByDriver(meta, filter.name);
+        }
+      }
     }
   }
 

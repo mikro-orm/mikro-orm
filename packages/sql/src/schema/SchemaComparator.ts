@@ -17,6 +17,7 @@ import type {
   IndexDef,
   SchemaDifference,
   TableDifference,
+  SqlPolicyDef,
   SqlTriggerDef,
   SqlRoutineDef,
 } from '../typings.js';
@@ -436,16 +437,19 @@ export class SchemaComparator {
       addedIndexes: {},
       addedChecks: {},
       addedTriggers: {},
+      addedPolicies: {},
       changedColumns: {},
       changedForeignKeys: {},
       changedIndexes: {},
       changedChecks: {},
       changedTriggers: {},
+      changedPolicies: {},
       removedColumns: {},
       removedForeignKeys: {},
       removedIndexes: {},
       removedChecks: {},
       removedTriggers: {},
+      removedPolicies: {},
       renamedColumns: {},
       renamedIndexes: {},
       fromTable,
@@ -661,6 +665,10 @@ export class SchemaComparator {
           changes++;
         }
       }
+    }
+
+    if (this.#platform.supportsRowLevelSecurity()) {
+      changes += this.diffPolicies(fromTable, toTable, tableDifferences);
     }
 
     const fromForeignKeys = { ...fromTable.getForeignKeys() };
@@ -1228,6 +1236,77 @@ export class SchemaComparator {
     }
 
     return this.diffExpression(from.body, to.body);
+  }
+
+  private diffPolicies(fromTable: DatabaseTable, toTable: DatabaseTable, diff: TableDifference): number {
+    let changes = 0;
+
+    for (const policy of toTable.getPolicies()) {
+      if (!fromTable.hasPolicy(policy.name)) {
+        diff.addedPolicies[policy.name] = policy;
+        this.log(`policy ${policy.name} added to table ${diff.name}`, { policy });
+        changes++;
+      }
+    }
+
+    for (const policy of fromTable.getPolicies()) {
+      const toPolicy = toTable.getPolicy(policy.name);
+
+      if (!toPolicy) {
+        diff.removedPolicies[policy.name] = policy;
+        this.log(`policy ${policy.name} removed from table ${diff.name}`);
+        changes++;
+        continue;
+      }
+
+      // postgres cannot alter a policy's command or type in place, nor unset an expression, so drop and recreate instead
+      if (
+        policy.command !== toPolicy.command ||
+        policy.type !== toPolicy.type ||
+        (policy.using && !toPolicy.using) ||
+        (policy.check && !toPolicy.check)
+      ) {
+        diff.removedPolicies[policy.name] = policy;
+        diff.addedPolicies[policy.name] = toPolicy;
+        this.log(`policy ${policy.name} recreated in table ${diff.name}`, { from: policy, to: toPolicy });
+        changes += 2;
+        continue;
+      }
+
+      if (this.diffPolicy(policy, toPolicy)) {
+        diff.changedPolicies[policy.name] = toPolicy;
+        this.log(`policy ${policy.name} changed in table ${diff.name}`, { from: policy, to: toPolicy });
+        changes++;
+      }
+    }
+
+    if (fromTable.rlsEnabled !== toTable.rlsEnabled) {
+      diff.changedRlsEnabled = toTable.rlsEnabled;
+      changes++;
+    }
+
+    if (fromTable.rlsForced !== toTable.rlsForced) {
+      diff.changedRlsForced = toTable.rlsForced;
+      changes++;
+    }
+
+    return changes;
+  }
+
+  private diffPolicy(from: SqlPolicyDef, to: SqlPolicyDef): boolean {
+    // `[]` and `['public']` both mean PUBLIC — normalize so an omitted `roles` matches introspected `{public}`
+    const normalizeRoles = (roles: string[]) =>
+      roles.length === 0 || (roles.length === 1 && roles[0] === 'public') ? '' : [...roles].sort().join(',');
+
+    if (normalizeRoles(from.roles) !== normalizeRoles(to.roles)) {
+      return true;
+    }
+
+    if (this.diffExpression(from.using ?? '', to.using ?? '')) {
+      return true;
+    }
+
+    return this.diffExpression(from.check ?? '', to.check ?? '');
   }
 
   parseJsonDefault(defaultValue?: string | null): Dictionary | string | null {

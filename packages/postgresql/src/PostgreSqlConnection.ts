@@ -1,8 +1,8 @@
 import { Pool, type PoolConfig, TypeOverrides } from 'pg';
 import Cursor from 'pg-cursor';
-import { PostgresDialect } from 'kysely';
+import { CompiledQuery, type DatabaseConnection, PostgresDialect } from 'kysely';
 import array from 'postgres-array';
-import { type Dictionary, type Routine, type Transaction } from '@mikro-orm/core';
+import { type Dictionary, type Routine, type SessionContext, type Transaction } from '@mikro-orm/core';
 import { AbstractSqlConnection, createPostgreSqlTypeParsers, Utils } from '@mikro-orm/sql';
 
 /** PostgreSQL database connection using the `pg` driver. */
@@ -14,12 +14,52 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     const options = this.mapOptions(poolOverrides);
     const pool = new Pool(options);
     void onPoolCreated?.(pool);
+    const userOnReserve = this.options.onReserveConnection ?? this.config.get('onReserveConnection');
     return new PostgresDialect({
       pool,
       cursor: Cursor,
       onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
-      onReserveConnection: this.options.onReserveConnection ?? this.config.get('onReserveConnection'),
+      onReserveConnection:
+        this.config.get('sessionContext') === 'connection'
+          ? this.composeSessionContextOnReserve(userOnReserve)
+          : userOnReserve,
     });
+  }
+
+  /** Applies the active EM's session context (or resets it) on every pooled connection acquire. */
+  private composeSessionContextOnReserve(
+    userHook?: (connection: unknown) => Promise<void>,
+  ): (connection: DatabaseConnection) => Promise<void> {
+    return async connection => {
+      const em = this.config.get('context')(this.config.get('contextName'));
+
+      for (const { sql, params } of this.buildConnectionSessionStatements(em?.getSessionContext())) {
+        await connection.executeQuery(CompiledQuery.raw(sql, params));
+        this.logQuery(sql);
+      }
+
+      await userHook?.(connection);
+    };
+  }
+
+  private buildConnectionSessionStatements(sessionContext?: SessionContext): { sql: string; params: unknown[] }[] {
+    const statements: { sql: string; params: unknown[] }[] = [];
+    const variables = Object.entries(sessionContext?.variables ?? {});
+
+    if (variables.length > 0) {
+      const parts = variables.map((_, i) => `set_config($${i * 2 + 1}, $${i * 2 + 2}, false)`).join(', ');
+      statements.push({ sql: `select ${parts}`, params: variables.flatMap(([key, value]) => [key, String(value)]) });
+    } else {
+      statements.push({ sql: 'reset all', params: [] });
+    }
+
+    if (sessionContext?.role) {
+      statements.push({ sql: `set role ${this.platform.quoteIdentifier(sessionContext.role)}`, params: [] });
+    } else {
+      statements.push({ sql: 'reset role', params: [] });
+    }
+
+    return statements;
   }
 
   mapOptions(overrides: PoolConfig): PoolConfig {

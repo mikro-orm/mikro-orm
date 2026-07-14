@@ -159,6 +159,12 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     );
   }
 
+  static sessionContextNotSupported(): ValidationError {
+    return new ValidationError(
+      'Database session context (row level security) is only supported by the PostgreSQL driver.',
+    );
+  }
+
   static cannotUseOperatorsInsideEmbeddables(
     entityName: EntityName,
     propName: string,
@@ -456,6 +462,62 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
   static triggersNotSupportedByDriver(meta: EntityMetadata): MetadataError {
     return new MetadataError(
       `Entity ${meta.className} defines database triggers which are not supported by the current driver. Triggers are only available with SQL drivers.`,
+    );
+  }
+
+  /** Thrown when row level security is declared on an entity using a driver that does not support it. */
+  static rowLevelSecurityNotSupportedByDriver(meta: EntityMetadata): MetadataError {
+    return new MetadataError(
+      `Entity ${meta.className} declares row level security which is not supported by the current driver. Row level security is only available with the PostgreSQL driver.`,
+    );
+  }
+
+  /** Thrown when row level security is declared on a non-root entity of an STI hierarchy. */
+  static rowLevelSecurityOnNonRootStiEntity(meta: EntityMetadata): MetadataError {
+    return new MetadataError(
+      `Entity ${meta.className} declares row level security, but it is part of a single table inheritance hierarchy. Declare policies on the root entity ${meta.root.className} instead, as the whole hierarchy shares a single table.`,
+    );
+  }
+
+  /** Thrown when a filter flagged with `rls` is declared on a driver that does not support row level security. */
+  static rlsFilterNotSupportedByDriver(meta: EntityMetadata, filterName: string): MetadataError {
+    return new MetadataError(
+      `Filter '${filterName}' on entity ${meta.className} is flagged with 'rls', which is only supported by the PostgreSQL driver.`,
+    );
+  }
+
+  /** Thrown when a global (config or EM registered) filter is flagged with `rls`; RLS filters must be entity scoped. */
+  static rlsFilterMustBeEntityScoped(filterName: string): MetadataError {
+    return new MetadataError(
+      `Filter '${filterName}' is a global filter and cannot be flagged with 'rls'. RLS filters must be declared on an entity via @Filter() so a policy can be attached to its table.`,
+    );
+  }
+
+  /** Thrown when a filter's custom `setting` is used with more than one argument. */
+  static rlsFilterMultiArgSetting(filterName: string, args: string[]): MetadataError {
+    return new MetadataError(
+      `Filter '${filterName}' sets a custom 'setting' but references multiple arguments (${args.join(', ')}). A custom 'setting' is only allowed for single-argument RLS filters; remove it to use the default 'mikro.${filterName}.<arg>' names.`,
+    );
+  }
+
+  /** Thrown when an `rls` filter's condition depends on runtime state and cannot be compiled to a static policy. */
+  static rlsFilterDependsOnRuntimeState(filterName: string): MetadataError {
+    return new MetadataError(
+      `Filter '${filterName}' cannot be compiled to an RLS policy because its condition depends on runtime state (it accesses 'em', 'type', 'options' or 'entityName', or resolves asynchronously). Declare an explicit policy instead.`,
+    );
+  }
+
+  /** Thrown when an `rls` filter compares against a column whose type has no automatic session-variable cast. */
+  static rlsFilterUncastableType(filterName: string, columnType: string): MetadataError {
+    return new MetadataError(
+      `Filter '${filterName}' cannot be compiled to an RLS policy because the column type '${columnType}' has no automatic session-variable cast. Declare an explicit policy instead.`,
+    );
+  }
+
+  /** Thrown when an `rls` filter references an argument outside of a direct comparison, which cannot be compiled. */
+  static rlsFilterUnsupportedCond(filterName: string): MetadataError {
+    return new MetadataError(
+      `Filter '${filterName}' cannot be compiled to an RLS policy because it references an argument outside of a direct comparison (only expressions like { prop: args.x } are supported). Declare an explicit policy instead.`,
     );
   }
 
