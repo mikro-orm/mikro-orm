@@ -443,13 +443,17 @@ export abstract class AbstractSqlDriver<
     const asKeyword = this.platform.usesAsKeyword() ? ' as ' : ' ';
     native.from(raw(`(${expression})${asKeyword}${this.platform.quoteIdentifier(qb.alias)}`));
     const query = native.compile();
-    const res = await this.execute<T[]>(
-      query.sql,
-      query.params,
-      'all',
-      options.ctx,
-      withAbortContext(options.loggerContext, options),
-    );
+    const loggerContext = withAbortContext(options.loggerContext, options);
+    // virtual entities execute directly (not via QueryBuilder), so wrap in a short implicit transaction outside an
+    // existing one when a session context (row level security) needs to apply — mirrors the QueryBuilder wrap
+    const sessionContext = options.ctx ? undefined : options.em?.getTransactionSessionContext();
+    const conn = this.getConnection(this.resolveConnectionType(options));
+    const res = await (sessionContext
+      ? conn.transactional(trx => this.execute<T[]>(query.sql, query.params, 'all', trx, loggerContext), {
+          sessionContext,
+          loggerContext,
+        })
+      : this.execute<T[]>(query.sql, query.params, 'all', options.ctx, loggerContext));
 
     if (type === QueryType.COUNT) {
       return (res[0] as Dictionary).count;
