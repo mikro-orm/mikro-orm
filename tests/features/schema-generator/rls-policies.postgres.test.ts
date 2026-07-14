@@ -202,6 +202,42 @@ describe('rls policies [postgres]', () => {
     await orm2.close();
   });
 
+  test('changing a policy together with dropping a column it referenced [postgres]', async () => {
+    const dbName = 'mikro_orm_test_rls_change_col';
+    const V1 = new EntitySchema({
+      name: 'RlsChangeCol',
+      tableName: 'rls_change_col',
+      properties: {
+        id: idColumn(),
+        tenantId: { type: 'string', name: 'tenantId', fieldName: 'tenant_id', columnType: 'uuid' },
+        owner: { type: 'string', name: 'owner', fieldName: 'owner', columnType: 'varchar(255)' },
+      },
+      policies: [{ name: 'p_tenant', using: `tenant_id = current_setting('app.tenant')::uuid and owner <> 'blocked'` }],
+    });
+    const orm1 = await MikroORM.init({ entities: [V1], dbName });
+    await orm1.schema.refresh();
+    await orm1.close();
+
+    // v2 drops the column and updates the policy to no longer reference it — the old policy still depends
+    // on the column, so it must be dropped before the column and recreated after
+    const V2 = new EntitySchema({
+      name: 'RlsChangeCol',
+      tableName: 'rls_change_col',
+      properties: {
+        id: idColumn(),
+        tenantId: { type: 'string', name: 'tenantId', fieldName: 'tenant_id', columnType: 'uuid' },
+      },
+      policies: [{ name: 'p_tenant', using: `tenant_id = current_setting('app.tenant')::uuid` }],
+    });
+    const orm2 = await MikroORM.init({ entities: [V2], dbName });
+    const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    await orm2.schema.execute(diff);
+    expect(await orm2.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+
+    await orm2.schema.dropDatabase();
+    await orm2.close();
+  });
+
   test('policy round-trips against postgres [postgres]', async () => {
     // starts with no RLS; the table is first materialized through the update (diff) path
     const Rls = new EntitySchema({
@@ -243,11 +279,12 @@ describe('rls policies [postgres]', () => {
     meta.policies.push({ name: 'p_ins', command: 'insert', check: `tenant_id = current_setting('app.tenant')::uuid` });
     await apply();
 
-    // change the using expression (alter, using present)
+    // every policy change is applied as drop + create — exercise each changeable attribute
+    // change the using expression
     meta.policies[0].using = `tenant_id = current_setting('app.tenant')::uuid and owner <> 'x'`;
     await apply();
 
-    // change a check-only policy's expression (alter, no using, check present)
+    // change a check-only policy's expression
     meta.policies[1].check = `tenant_id = current_setting('app.tenant')::uuid and owner is not null`;
     await apply();
 
@@ -257,19 +294,17 @@ describe('rls policies [postgres]', () => {
     meta.policies[0].roles = [];
     await apply();
 
-    // change command — postgres cannot alter it, so drop + create
+    // change command
     meta.policies[1].command = 'update';
     await apply();
 
-    // add a using expression to the update policy (alter can add it)
+    // add a using expression to the update policy, then remove it again
     meta.policies[1].using = `owner <> 'blocked'`;
     await apply();
-
-    // remove it again — `alter policy` cannot unset an expression, so drop + create
     delete meta.policies[1].using;
     await apply();
 
-    // change type — drop + create
+    // change type
     meta.policies[0].type = 'restrictive';
     await apply();
 
