@@ -161,7 +161,7 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 
   static sessionContextNotSupported(): ValidationError {
     return new ValidationError(
-      'Database session context (row level security) is only supported by the PostgreSQL driver.',
+      'Database session context (row level security) is only supported by the PostgreSQL driver. To test a PostgreSQL app without a server, use the `@mikro-orm/pglite` driver instead of sqlite.',
     );
   }
 
@@ -498,7 +498,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
   /** Thrown when row level security is declared on an entity using a driver that does not support it. */
   static rowLevelSecurityNotSupportedByDriver(meta: EntityMetadata): MetadataError {
     return new MetadataError(
-      `Entity ${meta.className} declares row level security which is not supported by the current driver. Row level security is only available with the PostgreSQL driver.`,
+      `Entity ${meta.className} declares row level security which is not supported by the current driver. Row level security is only available with the PostgreSQL driver. To test a PostgreSQL app without a server, use the \`@mikro-orm/pglite\` driver instead of sqlite.`,
     );
   }
 
@@ -519,7 +519,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
   /** Thrown when a filter flagged with `rls` is declared on a driver that does not support row level security. */
   static rlsFilterNotSupportedByDriver(meta: EntityMetadata, filterName: string): MetadataError {
     return new MetadataError(
-      `Filter '${filterName}' on entity ${meta.className} is flagged with 'rls', which is only supported by the PostgreSQL driver.`,
+      `Filter '${filterName}' on entity ${meta.className} is flagged with 'rls', which is only supported by the PostgreSQL driver. To test a PostgreSQL app without a server, use the \`@mikro-orm/pglite\` driver instead of sqlite.`,
     );
   }
 
