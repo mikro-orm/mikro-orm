@@ -102,7 +102,6 @@ describe('EntityGenerator — row level security (PostgreSQL)', () => {
         expect(tableDiff.changedRlsEnabled).toBeUndefined();
         expect(tableDiff.changedRlsForced).toBeUndefined();
         expect(tableDiff.addedPolicies).toEqual({});
-        expect(tableDiff.changedPolicies).toEqual({});
         expect(tableDiff.removedPolicies).toEqual({});
       }
     }

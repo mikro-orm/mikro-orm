@@ -448,17 +448,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    */
   setFilterParams(name: string, args: Dictionary): void {
     const em = this.getContext();
-    em.#filterParams[name] = args;
 
     // `rls` filters mirror their params as session variables, so the matching DB policies see the same values;
     // the same filter name can be declared on multiple entities, so stage the union across all `rls`-flagged defs
     const filters = em.findRlsFilterDefs(name);
 
     if (filters.length === 0) {
+      em.#filterParams[name] = args;
       return;
     }
 
-    // fail before the stale-variable pruning below, so an invalid staging attempt leaves the context untouched
+    // fail before storing the params and pruning stale variables below, so an invalid staging attempt leaves both
+    // the filter params and the session context untouched
     em.validateSessionContextStaging();
 
     const variables: Dictionary<string | number | boolean | Date> = {};
@@ -488,6 +489,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
+    em.#filterParams[name] = args;
+
     // this call replaces the filter's params, so drop any variables a previous call for this filter staged but this
     // one does not overwrite, otherwise they would linger in the merged session context forever
     const staged = em.#sessionContext?.variables;
@@ -499,6 +502,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         if (key.startsWith(prefix) || customSettings.has(key)) {
           delete staged[key];
         }
+      }
+
+      // pruning may have emptied the whole context — drop it, so it does not keep forcing the implicit
+      // transaction wrap (and a distinct cache key) while carrying no variables
+      if (Object.keys(staged).length === 0 && !em.#sessionContext!.role) {
+        em.#sessionContext = undefined;
       }
     }
 
@@ -551,6 +560,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       // silently bypass the policies — fail closed instead of leaking a base-role write
       if (this.config.get('implicitTransactions') === false) {
         throw ValidationError.sessionContextRequiresImplicitTransactions();
+      }
+
+      // same rationale for disabled transactions (config or fork option): the UoW flush would run untransacted
+      // and skip the context while reads still get the per-statement wrap — fail closed on the asymmetry
+      if (this.#disableTransactions) {
+        throw ValidationError.sessionContextWithDisabledTransactions();
       }
 
       // the context is only emitted at top-level begin; staging it inside an open transaction is inert (the DB

@@ -171,6 +171,12 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     );
   }
 
+  static sessionContextWithDisabledTransactions(): ValidationError {
+    return new ValidationError(
+      "Cannot set a database session context (row level security) with the 'transaction' strategy while transactions are disabled via 'disableTransactions'. The context is applied on transaction begin, so flushes would run without it and silently bypass the policies. Enable transactions, or use the 'connection' session context strategy.",
+    );
+  }
+
   static sessionContextInsideTransaction(): ValidationError {
     return new ValidationError(
       "Cannot set a database session context (row level security) inside an active transaction with the 'transaction' strategy. The context is only applied at the top-level transaction begin, so it would never reach this transaction. Set the session context before starting the transaction (e.g. via 'em.fork({ session })'), or use the 'connection' session context strategy.",
