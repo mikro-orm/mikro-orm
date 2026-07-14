@@ -548,6 +548,22 @@ const em = orm.em.fork({ session: { role: 'app_user', variables: { 'app.tenant':
 // policies now actually enforce in your tests
 ```
 
+If you really must stay on sqlite (e.g. a large existing suite you are not ready to migrate), the escape hatch is the `discovery.onMetadata` hook — it runs before validation and receives the platform, so one config works for both production and tests:
+
+```ts
+discovery: {
+  onMetadata: (meta, platform) => {
+    if (!platform.supportsRowLevelSecurity()) {
+      meta.policies = [];
+      delete meta.rowLevelSecurity;
+      Object.values(meta.filters).forEach(f => delete f.rls);
+    }
+  },
+},
+```
+
+Stripping only the `rls` flag keeps the filters themselves, so [filter bridge](#the-filter-bridge) users retain the app-level enforcement in such tests — only the DB layer is gone. Be aware of what that means: nothing guards raw SQL or forgotten filters anymore, and the session context API (`fork({ session })`, `setSessionContext`) still throws on non-PostgreSQL drivers, so code using it directly needs its own driver guard. Prefer pglite; use the hook knowingly.
+
 ## Entity generator
 
 Regenerating entities from a database that already has RLS emits explicit `policies` and the `rowLevelSecurity` flag on the generated entities, reflecting exactly what PostgreSQL reports. Note that policies which originated from the [filter bridge](#the-filter-bridge) come back as **plain policies** — the link back to the source filter is not stored in the database and cannot be recovered, so you will get the compiled `using`/`check` expression rather than a `filters: { ..., rls: true }` declaration. If you want to keep the one-declaration-two-layers ergonomics, re-introduce the filter by hand after generating. See the [Entity Generator](./entity-generator.md) guide for the overall workflow.
