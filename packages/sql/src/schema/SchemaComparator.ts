@@ -443,7 +443,6 @@ export class SchemaComparator {
       changedIndexes: {},
       changedChecks: {},
       changedTriggers: {},
-      changedPolicies: {},
       removedColumns: {},
       removedForeignKeys: {},
       removedIndexes: {},
@@ -1277,24 +1276,14 @@ export class SchemaComparator {
         continue;
       }
 
-      // postgres cannot alter a policy's command or type in place, nor unset an expression, so drop and recreate instead
-      if (
-        policy.command !== toPolicy.command ||
-        policy.type !== toPolicy.type ||
-        (policy.using && !toPolicy.using) ||
-        (policy.check && !toPolicy.check)
-      ) {
+      // changed policies are always dropped (before column drops, which the old expression can block via its
+      // column dependencies) and recreated (after column adds) — postgres could alter some of the changes in
+      // place, but not a policy's command or type, nor unset an expression
+      if (this.diffPolicy(policy, toPolicy)) {
         diff.removedPolicies[policy.name] = policy;
         diff.addedPolicies[policy.name] = toPolicy;
         this.log(`policy ${policy.name} recreated in table ${diff.name}`, { from: policy, to: toPolicy });
         changes += 2;
-        continue;
-      }
-
-      if (this.diffPolicy(policy, toPolicy)) {
-        diff.changedPolicies[policy.name] = toPolicy;
-        this.log(`policy ${policy.name} changed in table ${diff.name}`, { from: policy, to: toPolicy });
-        changes++;
       }
     }
 
@@ -1305,6 +1294,10 @@ export class SchemaComparator {
     // `[]` and `['public']` both mean PUBLIC — normalize so an omitted `roles` matches introspected `{public}`
     const normalizeRoles = (roles: string[]) =>
       roles.length === 0 || (roles.length === 1 && roles[0] === 'public') ? '' : [...roles].sort().join(',');
+
+    if (from.command !== to.command || from.type !== to.type) {
+      return true;
+    }
 
     if (normalizeRoles(from.roles) !== normalizeRoles(to.roles)) {
       return true;

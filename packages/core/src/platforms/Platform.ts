@@ -975,8 +975,9 @@ export abstract class Platform {
       throw MetadataError.rowLevelSecurityNotSupportedByDriver(meta);
     }
 
-    // STI hierarchies share a single table, so only the root may declare policies
-    if (declaresRls && meta.root.inheritanceType === 'sti' && meta.root !== meta) {
+    // STI hierarchies share a single table, so only the root may declare policies; `root` is optional-chained
+    // as `validateMetadata` is public API and tolerates partially populated metadata
+    if (declaresRls && meta.root?.inheritanceType === 'sti' && meta.root !== meta) {
       throw MetadataError.rowLevelSecurityOnNonRootStiEntity(meta);
     }
 

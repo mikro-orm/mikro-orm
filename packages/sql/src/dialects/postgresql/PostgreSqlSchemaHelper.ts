@@ -763,8 +763,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   override getRlsDropSQL(diff: TableDifference): string[] {
-    // a policy expression holds a dependency on the columns it references, so removed policies
-    // must be dropped before the column drops emitted later in the diff
+    // a policy expression holds a dependency on the columns it references, so removed policies (including the
+    // old version of changed ones) must be dropped before the column drops emitted later in the diff
     return Object.values(diff.removedPolicies).map(policy => this.dropPolicy(diff.toTable, policy));
   }
 
@@ -781,10 +781,6 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       ret.push(`alter table ${table.getQuotedName()} force row level security`);
     } else if (diff.changedRlsForced === false) {
       ret.push(`alter table ${table.getQuotedName()} no force row level security`);
-    }
-
-    for (const policy of Object.values(diff.changedPolicies)) {
-      ret.push(this.alterPolicy(table, policy));
     }
 
     for (const policy of Object.values(diff.addedPolicies)) {
@@ -813,23 +809,6 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     if (policy.roles.length > 0) {
       parts.push(`to ${this.formatPolicyRoles(policy.roles)}`);
     }
-
-    if (policy.using) {
-      parts.push(`using (${policy.using})`);
-    }
-
-    if (policy.check) {
-      parts.push(`with check (${policy.check})`);
-    }
-
-    return parts.join(' ');
-  }
-
-  private alterPolicy(table: DatabaseTable, policy: SqlPolicyDef): string {
-    // ALTER POLICY without a TO clause keeps the old roles, so always restate them (public when default)
-    const parts = [
-      `alter policy ${this.quote(policy.name)} on ${table.getQuotedName()} to ${this.formatPolicyRoles(policy.roles)}`,
-    ];
 
     if (policy.using) {
       parts.push(`using (${policy.using})`);
@@ -1117,16 +1096,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     tablesBySchemas: Map<string | undefined, Table[]>,
     ctx?: Transaction,
   ): Promise<Dictionary<{ policies: SqlPolicyDef[]; enabled: boolean; forced: boolean }>> {
-    const flagConditions = [...tablesBySchemas.entries()].map(([schema, tables]) => {
-      const names = tables.map(t => this.platform.quoteValue(t.table_name)).join(', ');
-      const schemaName = this.platform.quoteValue(schema ?? this.platform.getDefaultSchemaName());
-      return `(ns.nspname = ${schemaName} and cls.relname in (${names}))`;
-    });
-    const policyConditions = [...tablesBySchemas.entries()].map(([schema, tables]) => {
-      const names = tables.map(t => this.platform.quoteValue(t.table_name)).join(', ');
-      const schemaName = this.platform.quoteValue(schema ?? this.platform.getDefaultSchemaName());
-      return `(schemaname = ${schemaName} and tablename in (${names}))`;
-    });
+    const conditionsFor = (schemaColumn: string, tableColumn: string) =>
+      [...tablesBySchemas.entries()].map(([schema, tables]) => {
+        const names = tables.map(t => this.platform.quoteValue(t.table_name)).join(', ');
+        const schemaName = this.platform.quoteValue(schema ?? this.platform.getDefaultSchemaName());
+        return `(${schemaColumn} = ${schemaName} and ${tableColumn} in (${names}))`;
+      });
+    const flagConditions = conditionsFor('ns.nspname', 'cls.relname');
+    const policyConditions = conditionsFor('schemaname', 'tablename');
     // pg_class carries the enable/force flags (a table can enable RLS with zero policies)
     const flagRows = await connection.execute<
       { table_name: string; schema_name: string; enabled: boolean; forced: boolean }[]

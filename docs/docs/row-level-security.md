@@ -190,12 +190,11 @@ Policies declared on an abstract base entity are passed down to the concrete ent
 
 ## Schema generator and migrations
 
-Policies are picked up by `schema:create`, `schema:update`, `schema:diff`, and `migration:create` automatically, and PostgreSQL policies are introspected back so the diff stays clean. The comparator diffs each policy by name and can apply most changes in place:
+Policies are picked up by `schema:create`, `schema:update`, `schema:diff`, and `migration:create` automatically, and PostgreSQL policies are introspected back so the diff stays clean. The comparator diffs each policy by name:
 
 - **Added / removed policies** → `create policy` / `drop policy`. Policies are matched by name, so a **rename** shows up as a drop of the old name plus a create of the new one (policies carry no data, so nothing is lost).
 - **Enabling / disabling RLS** → `enable`/`disable row level security`, and `force`/`no force`.
-- **Expression changes** (`using`, `check`) and **role changes** → `alter policy` in place.
-- **Command or type changes, and expression removals** → `drop policy` + `create policy`. PostgreSQL cannot alter the `for <command>` or `as permissive|restrictive` of an existing policy, nor unset an expression via `alter policy`, so these are recreated.
+- **Any other change** (`using`, `check`, `roles`, `command`, `type`) → `drop policy` + `create policy`. The old policy is dropped **before** any column drops in the same diff and recreated **after** any column adds — a policy expression holds a dependency on the columns it references, so altering in place would block dropping a column the old expression referenced (and PostgreSQL cannot alter a policy's `for <command>` or `as permissive|restrictive` in place anyway).
 
 Because the target schema is compared against what PostgreSQL reports, expressions are canonicalized by the database (e.g. `in (1, 2, 3)` comes back as `= any (...)`), and the comparator accounts for that — a round-trip of `schema:create` followed by `schema:update` produces no drift. Migration snapshots serialize the full policy set and RLS state, so re-running `migration:create` against an unchanged schema yields an empty migration.
 

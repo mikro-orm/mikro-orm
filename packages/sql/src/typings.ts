@@ -228,7 +228,7 @@ export interface TableDifference {
   changedTriggers: Dictionary<SqlTriggerDef>;
   removedTriggers: Dictionary<SqlTriggerDef>;
   addedPolicies: Dictionary<SqlPolicyDef>;
-  changedPolicies: Dictionary<SqlPolicyDef>;
+  /** Changed policies surface as `removedPolicies` + `addedPolicies` pairs (drop + recreate). */
   removedPolicies: Dictionary<SqlPolicyDef>;
   /** New RLS enable state, present only when it changed. */
   changedRlsEnabled?: boolean;

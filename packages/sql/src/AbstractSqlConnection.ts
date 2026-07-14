@@ -243,8 +243,7 @@ export abstract class AbstractSqlConnection extends Connection {
     sessionContext: SessionContext,
     loggerContext?: LogContext,
   ): Promise<void> {
-    // `variables` is always normalized to an object by `em.setSessionContext()`
-    const variables = Object.entries(sessionContext.variables!);
+    const variables = Object.entries(sessionContext.variables ?? {});
 
     if (variables.length > 0) {
       const parts = variables.map(() => 'set_config(?, ?, true)').join(', ');

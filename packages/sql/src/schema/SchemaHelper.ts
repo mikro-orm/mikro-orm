@@ -818,12 +818,12 @@ export abstract class SchemaHelper {
     return [];
   }
 
-  /** Drops removed row level security policies; emitted before column drops, which a policy expression can block. Postgres only. */
+  /** Drops removed/changed row level security policies; emitted before column drops, which a policy expression can block. Postgres only. */
   getRlsDropSQL(diff: TableDifference): string[] {
     return [];
   }
 
-  /** Row level security DDL for a table difference (enable/disable/force transitions + policy add/alter). Postgres only. */
+  /** Row level security DDL for a table difference (enable/disable/force transitions + policy creation). Postgres only. */
   getRlsAlterSQL(diff: TableDifference): string[] {
     return [];
   }
