@@ -118,3 +118,8 @@ export class TableNotFoundException extends DatabaseObjectNotFoundException {}
  * Exception for a unique constraint violation detected in the driver.
  */
 export class UniqueConstraintViolationException extends ConstraintViolationException {}
+
+/**
+ * Exception for a row-level security policy violation (failed `WITH CHECK`) detected in the driver.
+ */
+export class RowLevelSecurityViolationException extends ConstraintViolationException {}
