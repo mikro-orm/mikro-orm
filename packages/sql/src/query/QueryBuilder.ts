@@ -2554,6 +2554,12 @@ export class QueryBuilder<
    * ```
    */
   async *stream(options?: QBStreamOptions): AsyncIterableIterator<Loaded<Entity, Hint, Fields>> {
+    // mirror EntityManager.stream — a stream can't open the implicit session-context transaction, so under the
+    // 'transaction' strategy fail closed instead of silently running the cursor without the staged context
+    if (!this.context && this.em?.getTransactionSessionContext()) {
+      throw ValidationError.sessionContextStreamRequiresTransaction();
+    }
+
     options ??= {};
     options.mergeResults ??= true;
     options.mapResults ??= true;

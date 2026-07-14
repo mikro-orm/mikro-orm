@@ -439,7 +439,8 @@ export class DatabaseSchema {
       );
 
       if (rlsFilters.length > 0) {
-        table.rlsEnabled = true;
+        // an explicit `rowLevelSecurity: false` still stages the filter's policy but keeps RLS off (dormant)
+        table.rlsEnabled = meta.rowLevelSecurity !== false;
 
         for (const filter of rlsFilters) {
           table.addPolicy(this.compileRlsFilterPolicy(meta, filter, table, platform, usedPolicyNames));
@@ -459,7 +460,7 @@ export class DatabaseSchema {
     usedPolicyNames: Set<string>,
   ): SqlPolicyDef {
     const accessed = new Set<string>();
-    const cond = QueryHelper.resolveRlsFilterCond(filter, accessed);
+    const cond = QueryHelper.resolveRlsFilterCond(filter, accessed, meta.className);
     const setting = typeof filter.rls === 'object' ? filter.rls.setting : undefined;
 
     if (setting && accessed.size > 1) {

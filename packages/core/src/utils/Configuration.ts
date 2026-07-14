@@ -923,7 +923,7 @@ export interface Options<
    * Filters are applied by default unless explicitly disabled.
    * @see https://mikro-orm.io/docs/filters
    */
-  filters: Dictionary<{ name?: string } & Omit<FilterDef, 'name'>>;
+  filters: Dictionary<{ name?: string } & Omit<FilterDef, 'name' | 'rls'>>;
   /**
    * Metadata discovery configuration options.
    * Controls how entities are discovered and validated.

@@ -1166,6 +1166,13 @@ export class SchemaComparator {
           .replace(/\b(\w+)\s+as\s+\1\b/gi, '$1')
           // Remove AS keyword (optional in SQL, MySQL may add/remove it)
           .replace(/\bas\b/gi, '')
+          // Strip multi-word type casts before the single-word pass below — postgres deparses `::timestamptz`
+          // to `::timestamp with time zone`, `::time` to `::time without time zone`, etc., so a plain `::\w+`
+          // strip would leave a `with time zone` residue and make policy/check diffs churn forever
+          .replace(
+            /::\s*(?:(?:timestamp|time)\s+with(?:out)?\s+time\s+zone|character\s+varying|double\s+precision|bit\s+varying)/gi,
+            '',
+          )
           // Remove remaining special chars, parentheses, type casts, asterisks, and normalize whitespace
           .replace(/[()\n[\]*]|::\w+| +/g, '')
           .replace(/anyarray\[(.*)]/gi, '$1')
@@ -1243,6 +1250,10 @@ export class SchemaComparator {
     // but existing policies are never diffed for drop/alter and RLS is never disabled or unforced — this protects
     // hand-written policies on databases that adopted RLS before the ORM managed it
     const ignorePolicies = this.#platform.getConfig().get('schemaGenerator').ignorePolicies;
+    // postgres rejects `alter column ... type` on a column referenced by any policy, so a type change forces us to
+    // drop every still-present policy around the alter (dropped before via `getRlsDropSQL`, recreated after via
+    // `getRlsAlterSQL`) even when the policy itself is otherwise unchanged
+    const hasColumnTypeChange = Object.values(diff.changedColumns).some(c => c.changedProperties.has('type'));
 
     for (const policy of toTable.getPolicies()) {
       if (!fromTable.hasPolicy(policy.name)) {
@@ -1263,6 +1274,16 @@ export class SchemaComparator {
     }
 
     if (ignorePolicies) {
+      // existing policies are unmanaged here, but a type change still needs them dropped and recreated for the
+      // alter to succeed — recreate each verbatim from introspection so the hand-written definition is preserved
+      if (hasColumnTypeChange) {
+        for (const policy of fromTable.getPolicies()) {
+          diff.removedPolicies[policy.name] = policy;
+          diff.addedPolicies[policy.name] = policy;
+          changes += 2;
+        }
+      }
+
       return changes;
     }
 
@@ -1283,6 +1304,15 @@ export class SchemaComparator {
         diff.removedPolicies[policy.name] = policy;
         diff.addedPolicies[policy.name] = toPolicy;
         this.log(`policy ${policy.name} recreated in table ${diff.name}`, { from: policy, to: toPolicy });
+        changes += 2;
+        continue;
+      }
+
+      // an unchanged policy still blocks a type change on any column, so drop + recreate it around the alter
+      if (hasColumnTypeChange) {
+        diff.removedPolicies[policy.name] = policy;
+        diff.addedPolicies[policy.name] = toPolicy;
+        this.log(`policy ${policy.name} recreated around a column type change in table ${diff.name}`);
         changes += 2;
       }
     }

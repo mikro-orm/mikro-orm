@@ -399,12 +399,12 @@ export class QueryHelper {
 
   /**
    * Resolves an `rls` filter's condition to a static `FilterQuery`. Function conditions are called with a proxy `args`
-   * that yields a unique sentinel per accessed argument, real `type` strings (validated to not affect the result), and
-   * throwing proxies for the remaining runtime-only parameters.
+   * that yields a unique sentinel per accessed argument, real `type`/`entityName` strings (validated to not affect the
+   * result), and a poison proxy or `undefined` for the remaining runtime-only parameters.
    *
    * @internal
    */
-  static resolveRlsFilterCond(filter: FilterDef, accessed: Set<string>): Dictionary {
+  static resolveRlsFilterCond(filter: FilterDef, accessed: Set<string>, entityName?: string): Dictionary {
     if (!(filter.cond instanceof Function)) {
       return filter.cond as Dictionary;
     }
@@ -425,11 +425,26 @@ export class QueryHelper {
         throw MetadataError.rlsFilterDependsOnRuntimeState(filter.name);
       },
     });
-    // property access on the poison `type` proxy throws, but equality checks like `type === 'read'` cannot be
-    // trapped — evaluate the cond for every command and require identical results, so a command-dependent
-    // condition cannot silently compile one branch into a policy guarding all commands
-    const evaluate = (type: string) => {
-      const result = (filter.cond as (...params: any[]) => unknown)(args, type, poison, poison, poison);
+    // property access on the poison proxies throws, but equality/truthiness checks (`type === 'read'`,
+    // `entityName === 'X'`, `options ? a : b`) cannot be trapped — vary all three across the evaluations and require
+    // identical results, so a command-, entity-, or options-dependent condition cannot silently compile one branch.
+    // `entityName` uses the real class name (plus two derived-distinct variants) so an `=== '<name>'` check diverges;
+    // `options` alternates the poison proxy and `undefined` so a truthiness check flips. `em` stays poison throughout.
+    const name = entityName ?? `${this.RLS_SENTINEL_PREFIX}entity${this.RLS_SENTINEL_SUFFIX}`;
+    const evaluate = (type: string, entity: string, options: Dictionary | undefined) => {
+      let result: unknown;
+
+      try {
+        result = (filter.cond as (...params: any[]) => unknown)(args, type, poison, options, entity);
+      } catch (e) {
+        // a raw TypeError from touching the `undefined` options/em must fail closed like the poison proxy does,
+        // but the descriptive MetadataErrors thrown above are already correct — let them surface unchanged
+        if (e instanceof MetadataError) {
+          throw e;
+        }
+
+        throw MetadataError.rlsFilterDependsOnRuntimeState(filter.name);
+      }
 
       if (result instanceof Promise) {
         throw MetadataError.rlsFilterDependsOnRuntimeState(filter.name);
@@ -437,7 +452,9 @@ export class QueryHelper {
 
       return result as Dictionary;
     };
-    const [read, update, del] = [evaluate('read'), evaluate('update'), evaluate('delete')];
+    const read = evaluate('read', name, poison);
+    const update = evaluate('update', `${name} a`, undefined);
+    const del = evaluate('delete', `${name} b`, poison);
 
     if (JSON.stringify(read) !== JSON.stringify(update) || JSON.stringify(read) !== JSON.stringify(del)) {
       throw MetadataError.rlsFilterDependsOnRuntimeState(filter.name);

@@ -363,6 +363,89 @@ describe('rls policies [postgres]', () => {
     await orm.close();
   });
 
+  test('policies with multi-word casts round-trip without drift [postgres]', async () => {
+    // postgres deparses `::timestamptz` to `::timestamp with time zone` and `::time` to `::time without time zone`
+    // in pg_policies.qual; the comparator must normalize those multi-word casts or the diff churns forever
+    const Casts = new EntitySchema({
+      name: 'RlsCasts',
+      tableName: 'rls_casts',
+      properties: {
+        id: idColumn(),
+        createdAt: { type: 'Date', name: 'createdAt', fieldName: 'created_at', columnType: 'timestamptz' },
+        startsAt: { type: 'Date', name: 'startsAt', fieldName: 'starts_at', columnType: 'time' },
+      },
+      policies: [
+        { name: 'casts_since', command: 'select', using: `created_at >= current_setting('app.since')::timestamptz` },
+        { name: 'casts_time', command: 'select', using: `starts_at >= current_setting('app.after')::time` },
+      ],
+    });
+
+    const orm = await MikroORM.init({ entities: [Casts], dbName: `mikro_orm_test_rls_casts` });
+    await orm.schema.ensureDatabase();
+    await orm.schema.create();
+
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
+  test('a column type change recreates its unchanged policy [postgres]', async () => {
+    const dbName = 'mikro_orm_test_rls_type_change';
+    const V1 = new EntitySchema({
+      name: 'RlsTypeChange',
+      tableName: 'rls_type_change',
+      properties: {
+        id: idColumn(),
+        orgId: { type: 'number', name: 'orgId', fieldName: 'org_id', columnType: 'int' },
+      },
+      // the policy references the column whose type changes, so postgres rejects the alter unless it is dropped first
+      policies: [{ name: 'p_org', using: 'org_id > 0' }],
+    });
+    const orm1 = await MikroORM.init({ entities: [V1], dbName });
+    await orm1.schema.refresh();
+    await orm1.close();
+
+    // int -> bigint on a policy-referenced column: the unchanged policy must be dropped before + recreated after
+    const V2 = new EntitySchema({
+      name: 'RlsTypeChange',
+      tableName: 'rls_type_change',
+      properties: {
+        id: idColumn(),
+        orgId: { type: 'number', name: 'orgId', fieldName: 'org_id', columnType: 'bigint' },
+      },
+      policies: [{ name: 'p_org', using: 'org_id > 0' }],
+    });
+    const orm2 = await MikroORM.init({ entities: [V2], dbName });
+
+    const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('drop policy "p_org"');
+    expect(diff).toContain('create policy "p_org"');
+    // the drop must come before the type alter, the recreate after
+    expect(diff.indexOf('drop policy "p_org"')).toBeLessThan(diff.indexOf('alter column'));
+    expect(diff.indexOf('alter column')).toBeLessThan(diff.indexOf('create policy "p_org"'));
+    await orm2.schema.execute(diff);
+
+    // the policy survives and the schema is stable afterwards
+    const policies = await orm2.em.execute<{ policyname: string }[]>(
+      `select policyname from pg_policies where tablename = 'rls_type_change'`,
+    );
+    expect(policies.map(p => p.policyname)).toEqual(['p_org']);
+    expect(await orm2.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+
+    // safe mode must still recreate the policy — the recreate is not a destructive removal, and the alter
+    // fails without it
+    const orm3 = await MikroORM.init({ entities: [V1], dbName });
+    const safeDiff = await orm3.schema.getUpdateSchemaSQL({ wrap: false, safe: true });
+    expect(safeDiff).toContain('drop policy "p_org"');
+    expect(safeDiff).toContain('create policy "p_org"');
+
+    await orm3.close();
+    await orm2.schema.dropDatabase();
+    await orm2.close();
+  });
+
   test('multi-schema policy round-trip [postgres]', async () => {
     const Scoped = new EntitySchema({
       name: 'RlsScoped',

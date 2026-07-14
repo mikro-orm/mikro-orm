@@ -37,7 +37,7 @@ const RlsSecretSchema = defineEntity({
 
 describe('EntityGenerator — row level security (PostgreSQL)', () => {
   let orm: MikroORM;
-  const dbName = `mikro_orm_test_rls_gen_${Math.random().toString(36).slice(2, 8)}`;
+  const dbName = 'mikro_orm_test_rls_gen';
 
   beforeAll(async () => {
     orm = await MikroORM.init({
@@ -109,7 +109,7 @@ describe('EntityGenerator — row level security (PostgreSQL)', () => {
 });
 
 describe('EntityGenerator — RLS disabled with staged policies (PostgreSQL)', () => {
-  const dbName = `mikro_orm_test_rls_gen_disabled_${Math.random().toString(36).slice(2, 8)}`;
+  const dbName = 'mikro_orm_test_rls_gen_disabled';
 
   // policies present but RLS disabled — a legal pg state the generator must reproduce faithfully
   const RlsStagedSchema = defineEntity({

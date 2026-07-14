@@ -179,7 +179,13 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 
   static sessionContextInsideTransaction(): ValidationError {
     return new ValidationError(
-      "Cannot set a database session context (row level security) inside an active transaction with the 'transaction' strategy. The context is only applied at the top-level transaction begin, so it would never reach this transaction. Set the session context before starting the transaction (e.g. via 'em.fork({ session })'), or use the 'connection' session context strategy.",
+      "Cannot set a database session context (row level security) inside an active transaction. The context is applied when the transaction begins or the connection is reserved, so it would never reach an already-open transaction (with the 'connection' strategy the pinned connection was reserved with the previous context). Set the session context before starting the transaction (e.g. via 'em.fork({ session })').",
+    );
+  }
+
+  static sessionContextStreamRequiresTransaction(): ValidationError {
+    return new ValidationError(
+      "Cannot stream under a database session context (row level security) with the 'transaction' strategy outside a transaction. Streaming never opens the implicit transaction that applies the context, so the streamed rows would not be scoped by it (other tenants' rows would leak). Wrap the stream in 'em.transactional()', or use the 'connection' session context strategy.",
     );
   }
 

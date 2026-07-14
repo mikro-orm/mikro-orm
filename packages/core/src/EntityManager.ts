@@ -104,6 +104,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   declare readonly '~entities'?: unknown;
 
   static #counter = 1;
+  /** Lazily-built `rls` filter lookup keyed by the shared (immutable) MetadataStorage, so forks reuse it. */
+  static readonly #rlsFilterDefs = new WeakMap<
+    MetadataStorage,
+    Map<string, { filter: FilterDef; entityName: string }[]>
+  >();
   /** @internal */
   readonly _id: number = EntityManager.#counter++;
   /** Whether this is the global (root) EntityManager instance. */
@@ -348,6 +353,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     > = {} as any,
   ): AsyncIterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
     const em = this.getContext();
+
+    // a stream never opens the implicit session-context transaction, so under the 'transaction' strategy the staged
+    // context would silently never apply outside an ambient transaction and other tenants' rows would leak — fail closed
+    if (!em.#transactionContext && em.getTransactionSessionContext()) {
+      throw ValidationError.sessionContextStreamRequiresTransaction();
+    }
+
     em.prepareOptions(options);
     (options as Dictionary).strategy = 'joined';
     await em.tryFlush(entityName, options);
@@ -425,14 +437,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
    */
-  addFilter<T extends EntityName | readonly EntityName[]>(options: FilterDef<T>): void {
+  addFilter<T extends EntityName | readonly EntityName[]>(options: Omit<FilterDef<T>, 'rls'>): void {
     if (options.entity) {
       options.entity = Utils.asArray(options.entity).map(n => Utils.className(n)) as any;
     }
 
     // runtime-registered filters are never part of entity metadata, so no policy can be generated for them — whether or
-    // not an `entity` was scoped, `rls` is only valid on filters declared in metadata via `@Filter()`
-    if (options.rls) {
+    // not an `entity` was scoped, `rls` is only valid on filters declared in metadata via `@Filter()`. `rls` is excluded
+    // from the type above so TS users fail at compile time; the runtime guard still covers JS callers using `as any`
+    if ((options as FilterDef<T>).rls) {
       throw options.entity
         ? MetadataError.rlsFilterCannotBeRegisteredAtRuntime(options.name)
         : MetadataError.rlsFilterMustBeEntityScoped(options.name);
@@ -462,44 +475,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     // the filter params and the session context untouched
     em.validateSessionContextStaging();
 
-    const variables: Dictionary<string | number | boolean | Date> = {};
-    // custom `setting` names this filter owns, cleared alongside the default-prefixed ones when re-called
-    const customSettings = new Set<string>();
-
-    for (const filter of filters) {
-      const setting = typeof filter.rls === 'object' ? filter.rls.setting : undefined;
-      let settingArg: string | undefined;
-
-      if (setting) {
-        // mirror the policy compilation — a custom `setting` binds the single argument the condition accesses
-        const accessed = new Set<string>();
-        QueryHelper.resolveRlsFilterCond(filter, accessed);
-
-        if (accessed.size > 1) {
-          throw MetadataError.rlsFilterMultiArgSetting(filter.name, [...accessed]);
-        }
-
-        settingArg = [...accessed][0];
-        customSettings.add(setting);
-      }
-
-      for (const key of Object.keys(args)) {
-        const settingName = key === settingArg ? setting! : Utils.getRlsSettingName(filter.name, key);
-        variables[settingName] = args[key];
-      }
-    }
-
+    const variables = em.computeRlsFilterVariables(filters, args);
+    const previousArgs = em.#filterParams[name];
     em.#filterParams[name] = args;
 
-    // this call replaces the filter's params, so drop any variables a previous call for this filter staged but this
-    // one does not overwrite, otherwise they would linger in the merged session context forever
+    // this call replaces the filter's params, so drop the exact variables a previous call for this filter staged but
+    // this one no longer sets — recompute them from the OLD args rather than matching by prefix, so a filter named
+    // `tenant` does not also prune a `tenant.x` filter's `mikro.tenant.x.*` variables
     const staged = em.#sessionContext?.variables;
 
-    if (staged) {
-      const prefix = Utils.getRlsSettingName(name, '');
-
-      for (const key of Object.keys(staged)) {
-        if (key.startsWith(prefix) || customSettings.has(key)) {
+    if (staged && previousArgs) {
+      for (const key of Object.keys(em.computeRlsFilterVariables(filters, previousArgs))) {
+        if (!(key in variables)) {
           delete staged[key];
         }
       }
@@ -511,26 +498,81 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    // an empty context would still switch on the implicit transaction wrapping;
-    // `em` is already the resolved context and staging was validated above
+    // an empty context would still switch on the implicit transaction wrapping
     if (Object.keys(variables).length > 0) {
       em.mergeSessionContext({ variables });
     }
   }
 
-  /** Collects all `rls`-flagged filter definitions with the given name (only entity-scoped filters can be `rls`). */
-  private findRlsFilterDefs(name: string): FilterDef[] {
-    const defs = new Set<FilterDef>();
+  /**
+   * Computes the `rls` session variables a set of same-named filter defs stages for the given args, mirroring the
+   * policy compilation (`current_setting` names and custom `setting` binding). Shared by staging and `fork({ session })`.
+   */
+  private computeRlsFilterVariables(
+    filters: { filter: FilterDef; entityName: string }[],
+    args: Dictionary,
+  ): Dictionary<string | number | boolean | Date> {
+    const variables: Dictionary<string | number | boolean | Date> = {};
 
-    for (const meta of this.metadata) {
-      const filter = meta.filters[name];
+    for (const { filter, entityName } of filters) {
+      const setting = typeof filter.rls === 'object' ? filter.rls.setting : undefined;
+      let settingArg: string | undefined;
 
-      if (filter?.rls) {
-        defs.add(filter);
+      if (setting) {
+        // mirror the policy compilation — a custom `setting` binds the single argument the condition accesses
+        const accessed = new Set<string>();
+        QueryHelper.resolveRlsFilterCond(filter, accessed, entityName);
+
+        if (accessed.size > 1) {
+          throw MetadataError.rlsFilterMultiArgSetting(filter.name, [...accessed]);
+        }
+
+        settingArg = [...accessed][0];
+      }
+
+      for (const key of Object.keys(args)) {
+        const settingName = key === settingArg ? setting! : Utils.getRlsSettingName(filter.name, key);
+        variables[settingName] = args[key];
       }
     }
 
-    return [...defs];
+    return variables;
+  }
+
+  /**
+   * Collects all `rls`-flagged filter definitions with the given name (only entity-scoped filters can be `rls`).
+   * The full name -> defs lookup is built once and cached on the shared (immutable) MetadataStorage, so repeated
+   * `setFilterParams` calls and forks reuse it instead of walking every entity each time.
+   */
+  private findRlsFilterDefs(name: string): { filter: FilterDef; entityName: string }[] {
+    let cache = EntityManager.#rlsFilterDefs.get(this.metadata);
+
+    if (!cache) {
+      cache = new Map();
+
+      for (const meta of this.metadata) {
+        for (const filterName of Object.keys(meta.filters)) {
+          const filter = meta.filters[filterName];
+
+          if (!filter.rls) {
+            continue;
+          }
+
+          const defs = cache.get(filterName) ?? [];
+
+          // inheritance shares the same filter object across base and child metadata — keep a single entry
+          if (!defs.some(d => d.filter === filter)) {
+            defs.push({ filter, entityName: meta.className });
+          }
+
+          cache.set(filterName, defs);
+        }
+      }
+
+      EntityManager.#rlsFilterDefs.set(this.metadata, cache);
+    }
+
+    return cache.get(name) ?? [];
   }
 
   /**
@@ -556,6 +598,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       throw ValidationError.sessionContextNotSupported();
     }
 
+    // staging inside an open transaction is inert under both strategies (the 'transaction' context is only emitted at
+    // top-level begin; the 'connection' context was applied when the pinned connection was reserved), while
+    // `getSessionContext()` would still claim it is set — fail closed regardless of strategy
+    if (this.#transactionContext) {
+      throw ValidationError.sessionContextInsideTransaction();
+    }
+
     if (this.config.get('sessionContext') === 'transaction') {
       // the context is applied on transaction begin, so without implicit transactions writes run untransacted and
       // silently bypass the policies — fail closed instead of leaking a base-role write
@@ -567,12 +616,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       // and skip the context while reads still get the per-statement wrap — fail closed on the asymmetry
       if (this.#disableTransactions) {
         throw ValidationError.sessionContextWithDisabledTransactions();
-      }
-
-      // the context is only emitted at top-level begin; staging it inside an open transaction is inert (the DB
-      // transaction never sees it) while `getSessionContext()` would still claim it is set — fail closed
-      if (this.#transactionContext) {
-        throw ValidationError.sessionContextInsideTransaction();
       }
     }
   }
@@ -601,8 +644,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   clearSessionContext(): void {
     const em = this.getContext(false);
 
-    // clearing inside an open transaction would be as inert (and cache-poisoning) as staging there — fail closed too
-    if (em.#sessionContext && em.#transactionContext && em.config.get('sessionContext') === 'transaction') {
+    // clearing inside an open transaction would be as inert (and cache-poisoning) as staging there — fail closed too,
+    // under both strategies (the 'connection' pinned connection was already reserved with the previous context)
+    if (em.#sessionContext && em.#transactionContext) {
       throw ValidationError.sessionContextInsideTransaction();
     }
 
@@ -2766,7 +2810,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     fork.#filterParams = Utils.copy(em.#filterParams);
 
     if (options.session) {
-      fork.mergeSessionContext(options.session);
+      // the fork's session replaces the parent context, but the copied `rls` filter params must stay consistent with
+      // it — re-stage their variables underneath the explicit `session.variables`, which win on any conflict
+      const variables: Dictionary<string | number | boolean | Date> = {};
+
+      for (const name of Object.keys(fork.#filterParams)) {
+        Object.assign(
+          variables,
+          fork.computeRlsFilterVariables(fork.findRlsFilterDefs(name), fork.#filterParams[name]),
+        );
+      }
+
+      fork.mergeSessionContext({ ...options.session, variables: { ...variables, ...options.session.variables } });
     } else if (em.#sessionContext) {
       fork.#sessionContext = Utils.copy(em.#sessionContext);
     }
@@ -3372,7 +3427,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const em = this.getContext();
-    const cacheKey = Array.isArray(config) ? config[0] : JSON.stringify(key);
+    // a named cache key (`config[0]`) discards the computed `key`, which already carries the session context — so
+    // scope it here too, otherwise a fork's rows would be served to another session context under the same name
+    const cacheKey = Array.isArray(config)
+      ? em.#sessionContext
+        ? `${config[0]}|${JSON.stringify(em.#sessionContext)}`
+        : config[0]
+      : JSON.stringify(key);
     const cached = await em.#resultCache.get(cacheKey);
 
     if (!cached) {

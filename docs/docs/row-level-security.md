@@ -196,7 +196,7 @@ Policies declared on an abstract base entity are passed down to the concrete ent
 
 ## Schema generator and migrations
 
-Policies are picked up by `schema:create`, `schema:update`, `schema:diff`, and `migration:create` automatically, and PostgreSQL policies are introspected back so the diff stays clean. The comparator diffs each policy by name:
+Policies are picked up by `schema:create`, `schema:update`, and `migration:create` automatically, and PostgreSQL policies are introspected back so the diff stays clean. The comparator diffs each policy by name:
 
 - **Added / removed policies** → `create policy` / `drop policy`. Policies are matched by name, so a **rename** shows up as a drop of the old name plus a create of the new one (policies carry no data, so nothing is lost).
 - **Enabling / disabling RLS** → `enable`/`disable row level security`, and `force`/`no force`.
@@ -219,7 +219,7 @@ If your database already has policies you created manually (raw SQL migrations, 
 
 :::caution
 
-Note that `safe` mode does **not** protect unmanaged policies — use one of the two paths above.
+`safe` mode suppresses policy drops and RLS disabling, so it shields unmanaged policies from a plain `schema:update --safe` — but it is not an adoption strategy: non-safe runs and migrations still drop them, and a hand-written policy whose name collides with a declared one is drop+recreated even under `safe`. Use one of the two paths above.
 
 :::
 
@@ -250,7 +250,7 @@ const ctx = em.getSessionContext();
 // { variables: { 'app.tenant': tenantId }, role: 'app_user' }
 ```
 
-`setSessionContext` **merges** the variables into any already set and updates the role when one is provided — use `clearSessionContext()` to drop the whole context (there is no per-key removal). Forks inherit the parent's session context; passing `session` to `fork()` replaces it for that fork.
+`setSessionContext` **merges** the variables into any already set and updates the role when one is provided — use `clearSessionContext()` to drop the whole context (there is no per-key removal). Neither can be called while a transaction is active (under either strategy) — the running transaction would never see the change, so the ORM fails closed. Forks inherit the parent's session context; passing `session` to `fork()` replaces it for that fork, except that variables staged by `setFilterParams` for [rls filters](#the-filter-bridge) are re-staged from the copied filter params (explicit `session.variables` win on conflict), so the app-level filters and the DB policies stay consistent.
 
 Session variables are applied as strings (`set_config` only takes text); `Date` values are serialized to ISO 8601 so casts like `::timestamptz` parse them.
 
@@ -288,9 +288,9 @@ Because `em.execute()` is wrapped too, statements that cannot run inside a trans
 
 Nested transactions (savepoints) do **not** re-emit the context — it is set once on the outermost `begin` and inherited by the savepoints.
 
-:::caution `em.stream()` is not auto-wrapped
+:::caution streaming requires a transaction
 
-A short implicit transaction cannot outlive a lazy async iterator, so `em.stream()` is **not** wrapped under the `'transaction'` strategy. Wrap streaming in an explicit `em.transactional()` (which does carry the context), or use the `'connection'` strategy.
+A short implicit transaction cannot outlive a lazy async iterator, so `em.stream()`/`qb.stream()` cannot be auto-wrapped. Rather than silently streaming rows the policies never scoped, the ORM **fails closed**: streaming with a staged session context outside a transaction throws under the `'transaction'` strategy. Wrap streaming in an explicit `em.transactional()` (which does carry the context), or use the `'connection'` strategy.
 
 ```ts
 await em.transactional(async em => {
@@ -379,7 +379,7 @@ try {
 
 ### Result cache
 
-The session context is folded into the [result cache](./caching.md) key automatically, so two tenants issuing the same query never share a cached result — there is no cross-tenant cache leak.
+The session context is folded into the [result cache](./caching.md) key automatically — including **named** cache keys (`cache: ['articles', 5000]`, stored as `articles|<serialized context>` when a context is set) — so two tenants issuing the same query never share a cached result. One consequence: `em.clearCache('articles')` removes only the unscoped entry; context-scoped entries expire via their TTL.
 
 ## The filter bridge
 
