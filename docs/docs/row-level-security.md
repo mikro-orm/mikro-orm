@@ -205,6 +205,19 @@ Tables without any RLS emit no policy or RLS keys into the migration snapshot at
 
 :::
 
+### Adopting on a database with hand-written policies
+
+If your database already has policies you created manually (raw SQL migrations, the patterns from the pre-native-support era), the schema generator now sees them — and since they are not mirrored in your entity metadata, any diff computed from **live introspection** (`schema:update`, or `migration:create` with `snapshot: false`) will propose to **drop them and disable RLS**. Snapshot-based `migration:create` is unaffected — pre-upgrade snapshots contain no policy state, so nothing is diffed. Pick one of two adoption paths before running any schema tooling after the upgrade:
+
+1. **Adopt them into metadata** — declare the existing policies on your entities (`generate-entities` round-trips them into all definition styles, so you can copy the emitted `policies` arrays verbatim). Once declared, the diff is clean and the ORM manages them from here on.
+2. **Leave them unmanaged** — set `schemaGenerator: { ignorePolicies: true }`. This makes RLS create-only: policies you declare in metadata are still created, and enabling/forcing RLS is still emitted, but existing policies are never dropped or altered and RLS is never disabled or unforced. This mirrors the `ignoreTriggers`/`ignoreRoutines` options.
+
+:::caution
+
+Note that `safe` mode does **not** protect unmanaged policies — use one of the two paths above.
+
+:::
+
 ## Runtime session context
 
 Policies almost always read per-request state through `current_setting('app.tenant')` or `current_user`. MikroORM carries that state as a **session context** on the `EntityManager` — a set of session variables plus an optional role — and emits it to PostgreSQL before your queries run.
