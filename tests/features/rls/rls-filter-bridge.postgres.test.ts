@@ -537,6 +537,41 @@ describe('rls filter bridge (staging) [postgres]', () => {
 
     await orm.close(true);
   });
+
+  test('staging rejects a custom setting on a multi-argument filter even without schema generation', async () => {
+    const C = defineEntity({
+      name: 'RlsFbStagingMultiArg',
+      tableName: 'rls_fb_staging_multi',
+      properties: {
+        id: p.integer().primary(),
+        tenantId: p.uuid(),
+        orgId: p.integer(),
+      },
+      filters: {
+        both: {
+          name: 'both',
+          cond: (args: any) => ({ tenantId: args.tenant, orgId: args.org }),
+          rls: { setting: 'app.current_tenant' },
+          default: false,
+        },
+      },
+    });
+
+    const orm = await MikroORM.init({
+      entities: [C],
+      dbName: 'mikro_orm_test_rls_fb_staging3',
+      driver: PostgreSqlDriver,
+      connect: false,
+    } as Options);
+
+    // the schema-time compiler has the same guard, but an app that never builds the schema still must not
+    // stage ambiguous variables at runtime
+    expect(() => orm.em.fork().setFilterParams('both', { tenant: T1, org: 1 })).toThrow(
+      /custom 'setting' but references multiple arguments/,
+    );
+
+    await orm.close(true);
+  });
 });
 
 describe('rls filter bridge (edge cases) [postgres]', () => {
