@@ -1240,6 +1240,10 @@ export class SchemaComparator {
 
   private diffPolicies(fromTable: DatabaseTable, toTable: DatabaseTable, diff: TableDifference): number {
     let changes = 0;
+    // `ignorePolicies` makes RLS create-only: declared policies are still added and RLS is still enabled/forced,
+    // but existing policies are never diffed for drop/alter and RLS is never disabled or unforced — this protects
+    // hand-written policies on databases that adopted RLS before the ORM managed it
+    const ignorePolicies = this.#platform.getConfig().get('schemaGenerator').ignorePolicies;
 
     for (const policy of toTable.getPolicies()) {
       if (!fromTable.hasPolicy(policy.name)) {
@@ -1247,6 +1251,20 @@ export class SchemaComparator {
         this.log(`policy ${policy.name} added to table ${diff.name}`, { policy });
         changes++;
       }
+    }
+
+    if (fromTable.rlsEnabled !== toTable.rlsEnabled && (!ignorePolicies || toTable.rlsEnabled)) {
+      diff.changedRlsEnabled = toTable.rlsEnabled;
+      changes++;
+    }
+
+    if (fromTable.rlsForced !== toTable.rlsForced && (!ignorePolicies || toTable.rlsForced)) {
+      diff.changedRlsForced = toTable.rlsForced;
+      changes++;
+    }
+
+    if (ignorePolicies) {
+      return changes;
     }
 
     for (const policy of fromTable.getPolicies()) {
@@ -1278,16 +1296,6 @@ export class SchemaComparator {
         this.log(`policy ${policy.name} changed in table ${diff.name}`, { from: policy, to: toPolicy });
         changes++;
       }
-    }
-
-    if (fromTable.rlsEnabled !== toTable.rlsEnabled) {
-      diff.changedRlsEnabled = toTable.rlsEnabled;
-      changes++;
-    }
-
-    if (fromTable.rlsForced !== toTable.rlsForced) {
-      diff.changedRlsForced = toTable.rlsForced;
-      changes++;
     }
 
     return changes;
