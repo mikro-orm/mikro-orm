@@ -7,6 +7,22 @@ export class MsSqlSchemaGenerator extends SchemaGenerator {
     orm.config.registerExtension('@mikro-orm/schema-generator', () => new MsSqlSchemaGenerator(orm.em));
   }
 
+  override async createDatabase(name?: string, options?: { skipOnConnect?: boolean }): Promise<void> {
+    // `create database` clones the `model` database under an exclusive lock, so concurrent
+    // calls (e.g. parallel test workers) can fail with error 1807 — retry a few times
+    for (let attempt = 1; ; attempt++) {
+      try {
+        return await super.createDatabase(name, options);
+      } catch (e: any) {
+        if (attempt >= 5 || e?.number !== 1807) {
+          throw e;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, attempt * 200));
+      }
+    }
+  }
+
   override async clear(options?: ClearDatabaseOptions): Promise<void> {
     // truncate by default, so no value is considered as true
     /* v8 ignore next */

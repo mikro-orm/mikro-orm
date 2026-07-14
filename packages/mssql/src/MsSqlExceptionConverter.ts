@@ -18,6 +18,13 @@ export class MsSqlExceptionConverter extends ExceptionConverter {
    * @see https://github.com/doctrine/dbal/blob/master/src/Driver/AbstractPostgreSQLDriver.php
    */
   override convertException(exception: Error & Dictionary): DriverException {
+    // the kysely mssql driver rejects with a plain array when a request produces multiple errors
+    if (Array.isArray(exception) && exception.length > 0) {
+      const [first, ...rest] = exception;
+      first.message += rest.map(e => '\n' + e.message).join('');
+      exception = first;
+    }
+
     let errno = exception.number;
 
     /* v8 ignore next */
