@@ -544,7 +544,7 @@ export abstract class SchemaHelper {
       ret.push(this.dropTrigger(diff.toTable, trigger));
     }
 
-    this.append(ret, this.getRlsDropSQL(diff));
+    this.append(ret, this.getRlsDropSQL(diff, safe));
 
     /* v8 ignore next */
     if (!safe && Object.values(diff.removedColumns).length > 0) {
@@ -641,7 +641,7 @@ export abstract class SchemaHelper {
       ret.push(this.alterTableComment(diff.toTable, diff.changedComment));
     }
 
-    this.append(ret, this.getRlsAlterSQL(diff));
+    this.append(ret, this.getRlsAlterSQL(diff, safe));
 
     return ret;
   }
@@ -819,12 +819,12 @@ export abstract class SchemaHelper {
   }
 
   /** Drops removed/changed row level security policies; emitted before column drops, which a policy expression can block. Postgres only. */
-  getRlsDropSQL(diff: TableDifference): string[] {
+  getRlsDropSQL(diff: TableDifference, safe?: boolean): string[] {
     return [];
   }
 
   /** Row level security DDL for a table difference (enable/disable/force transitions + policy creation). Postgres only. */
-  getRlsAlterSQL(diff: TableDifference): string[] {
+  getRlsAlterSQL(diff: TableDifference, safe?: boolean): string[] {
     return [];
   }
 
@@ -1029,7 +1029,8 @@ export abstract class SchemaHelper {
         this.append(ret, this.createTrigger(table, trigger));
       }
 
-      this.append(ret, this.getRlsCreateSQL(table));
+      // RLS policies can reference other tables, so they are deferred until every table exists (see the
+      // callers of getRlsCreateSQL in SqlSchemaGenerator) rather than emitted inline here
     }
 
     return ret;

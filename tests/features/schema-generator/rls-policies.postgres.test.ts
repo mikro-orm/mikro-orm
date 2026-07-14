@@ -454,6 +454,214 @@ describe('rls policies [postgres]', () => {
     await orm.close();
   });
 
+  test('rebuilding a table for a partitioning change restores RLS [postgres]', async () => {
+    const dbName = 'mikro_orm_test_rls_partition';
+    const makeEntity = (partitionBy?: any) =>
+      new EntitySchema({
+        name: 'RlsPartition',
+        tableName: 'rls_partition',
+        partitionBy,
+        rowLevelSecurity: 'force',
+        properties: {
+          id: idColumn(),
+          tenantId: { type: 'string', name: 'tenantId', fieldName: 'tenant_id', columnType: 'uuid' },
+        },
+        policies: [{ name: 'rls_partition_sel', using: `tenant_id = current_setting('app.tenant')::uuid` }],
+      });
+
+    const orm1 = await MikroORM.init({ entities: [makeEntity()], dbName });
+    await orm1.schema.refresh();
+    await orm1.close();
+
+    // declaring partitioning rebuilds the table (data-preserving swap); the rebuild must re-emit RLS + policies
+    const orm2 = await MikroORM.init({
+      entities: [makeEntity({ type: 'hash', expression: ['id'], partitions: 2 })],
+      dbName,
+    });
+    await orm2.schema.execute('drop schema if exists "mikro_orm_partition_swap" cascade');
+
+    const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('set schema "mikro_orm_partition_swap"');
+    expect(diff).toContain('enable row level security');
+    expect(diff).toContain('force row level security');
+    expect(diff).toContain('create policy "rls_partition_sel"');
+    await orm2.schema.execute(diff);
+
+    // RLS enablement + the policy are restored in the catalog
+    const rls = await orm2.em.execute<{ relrowsecurity: boolean; relforcerowsecurity: boolean }[]>(
+      `select relrowsecurity, relforcerowsecurity from pg_class where relname = 'rls_partition'`,
+    );
+    expect(rls[0].relrowsecurity).toBe(true);
+    expect(rls[0].relforcerowsecurity).toBe(true);
+    const policies = await orm2.em.execute<{ policyname: string }[]>(
+      `select policyname from pg_policies where tablename = 'rls_partition'`,
+    );
+    expect(policies.map(p => p.policyname)).toEqual(['rls_partition_sel']);
+
+    // and the schema is stable afterwards
+    expect(await orm2.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+
+    await orm2.schema.dropDatabase();
+    await orm2.close();
+  });
+
+  test('safe mode suppresses destructive RLS changes [postgres]', async () => {
+    const dbName = 'mikro_orm_test_rls_safe';
+    const V1 = new EntitySchema({
+      name: 'RlsSafe',
+      tableName: 'rls_safe',
+      rowLevelSecurity: 'force',
+      properties: {
+        id: idColumn(),
+        tenantId: { type: 'string', name: 'tenantId', fieldName: 'tenant_id', columnType: 'uuid' },
+      },
+      policies: [
+        { name: 'keep', using: `tenant_id = current_setting('app.tenant')::uuid` },
+        { name: 'changeme', command: 'select', using: `tenant_id = current_setting('app.tenant')::uuid` },
+        { name: 'removeme', command: 'insert', check: `tenant_id = current_setting('app.tenant')::uuid` },
+      ],
+    });
+    const orm1 = await MikroORM.init({ entities: [V1], dbName });
+    await orm1.schema.refresh();
+    await orm1.close();
+
+    // v2 removes `removeme`, changes `changeme`'s expression, and disables + un-forces RLS
+    const V2 = new EntitySchema({
+      name: 'RlsSafe',
+      tableName: 'rls_safe',
+      rowLevelSecurity: false,
+      properties: {
+        id: idColumn(),
+        tenantId: { type: 'string', name: 'tenantId', fieldName: 'tenant_id', columnType: 'uuid' },
+      },
+      policies: [
+        { name: 'keep', using: `tenant_id = current_setting('app.tenant')::uuid` },
+        {
+          name: 'changeme',
+          command: 'select',
+          using: `tenant_id = current_setting('app.tenant')::uuid and tenant_id is not null`,
+        },
+      ],
+    });
+    const orm2 = await MikroORM.init({ entities: [V2], dbName });
+
+    // safe mode: a changed policy still drops + recreates, but a merely removed policy and the disable/un-force
+    // transitions are all suppressed
+    const safeDiff = await orm2.schema.getUpdateSchemaSQL({ wrap: false, safe: true });
+    expect(safeDiff).toContain('drop policy "changeme"');
+    expect(safeDiff).toContain('create policy "changeme"');
+    expect(safeDiff).not.toContain('drop policy "removeme"');
+    expect(safeDiff).not.toContain('disable row level security');
+    expect(safeDiff).not.toContain('no force row level security');
+
+    // non-safe still emits every destructive change
+    const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('drop policy "removeme"');
+    expect(diff).toContain('disable row level security');
+    expect(diff).toContain('no force row level security');
+
+    await orm2.schema.dropDatabase();
+    await orm2.close();
+  });
+
+  test('policies referencing another table survive schema create [postgres]', async () => {
+    const dbName = 'mikro_orm_test_rls_cross';
+    // `aaa_docs` is created before `zzz_memberships`, but its policy references the latter — emitting the
+    // policy inline during createTable would fail with "relation does not exist"; RLS is deferred until every
+    // table exists
+    const Docs = new EntitySchema({
+      name: 'RlsCrossDocs',
+      tableName: 'aaa_docs',
+      properties: {
+        id: idColumn(),
+        userId: { type: 'string', name: 'userId', fieldName: 'user_id', columnType: 'uuid' },
+      },
+      policies: [
+        {
+          name: 'aaa_docs_sel',
+          using: `exists (select 1 from "zzz_memberships" m where m.user_id = current_setting('app.user')::uuid)`,
+        },
+      ],
+    });
+    const Memberships = new EntitySchema({
+      name: 'RlsMemberships',
+      tableName: 'zzz_memberships',
+      properties: {
+        id: idColumn(),
+        userId: { type: 'string', name: 'userId', fieldName: 'user_id', columnType: 'uuid' },
+      },
+    });
+
+    const orm = await MikroORM.init({ entities: [Docs, Memberships], dbName });
+    await orm.schema.ensureDatabase();
+    await orm.schema.create();
+
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
+  test('policies with RLS explicitly disabled round-trip [postgres]', async () => {
+    const dbName = 'mikro_orm_test_rls_disabled';
+    const Staged = new EntitySchema({
+      name: 'RlsStaged',
+      tableName: 'rls_staged',
+      rowLevelSecurity: false,
+      properties: {
+        id: idColumn(),
+        tenantId: { type: 'string', name: 'tenantId', fieldName: 'tenant_id', columnType: 'uuid' },
+      },
+      policies: [{ name: 'staged_sel', using: `tenant_id = current_setting('app.tenant')::uuid` }],
+    });
+    const orm = await MikroORM.init({ entities: [Staged], dbName });
+    await orm.schema.ensureDatabase();
+    await orm.schema.create();
+
+    // the policy is created but RLS stays disabled
+    const rls = await orm.em.execute<{ relrowsecurity: boolean }[]>(
+      `select relrowsecurity from pg_class where relname = 'rls_staged'`,
+    );
+    expect(rls[0].relrowsecurity).toBe(false);
+    const policies = await orm.em.execute<{ policyname: string }[]>(
+      `select policyname from pg_policies where tablename = 'rls_staged'`,
+    );
+    expect(policies.map(p => p.policyname)).toEqual(['staged_sel']);
+
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
+  test('duplicate explicit policy names are rejected [postgres]', async () => {
+    const Dup = new EntitySchema({
+      name: 'RlsDup',
+      tableName: 'rls_dup',
+      properties: {
+        id: idColumn(),
+        tenantId: { type: 'string', name: 'tenantId', fieldName: 'tenant_id', columnType: 'uuid' },
+      },
+      policies: [
+        { name: 'same', command: 'select', using: `tenant_id = current_setting('app.tenant')::uuid` },
+        { name: 'same', command: 'insert', check: `tenant_id = current_setting('app.tenant')::uuid` },
+      ],
+    });
+    const orm = await MikroORM.init({
+      entities: [Dup],
+      dbName: 'mikro_orm_test_rls_dup',
+      connect: false,
+    } as Options);
+
+    await expect(orm.schema.getCreateSchemaSQL({ wrap: false })).rejects.toThrow(
+      `Entity RlsDup declares multiple row level security policies named 'same'. Policy names must be unique per table; rename one of them or omit the name to use an auto-generated one.`,
+    );
+
+    await orm.close(true);
+  });
+
   test('migration snapshot reload produces no drift [postgres]', async () => {
     const path = process.cwd() + '/temp/rls-migrations';
     await rm(path, { recursive: true, force: true });

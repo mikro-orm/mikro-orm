@@ -132,7 +132,7 @@ export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   triggers?: TriggerDef<E>[];
   /** PostgreSQL row level security policies for this entity's table. Declaring policies implicitly enables RLS. */
   policies?: PolicyDef<E>[];
-  /** Enables PostgreSQL row level security on this entity's table. `'force'` also enforces it for the table owner. */
+  /** Enables PostgreSQL row level security on this entity's table. `'force'` also enforces it for the table owner. Set to `false` to keep declared policies staged while leaving RLS disabled. */
   rowLevelSecurity?: boolean | 'force';
   /**
    * PostgreSQL partitioning definition for this table.

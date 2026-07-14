@@ -503,6 +503,13 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     );
   }
 
+  /** Thrown when two policies on the same entity are given the same explicit name. */
+  static duplicatePolicyName(meta: EntityMetadata, name: string): MetadataError {
+    return new MetadataError(
+      `Entity ${meta.className} declares multiple row level security policies named '${name}'. Policy names must be unique per table; rename one of them or omit the name to use an auto-generated one.`,
+    );
+  }
+
   /** Thrown when a filter flagged with `rls` is declared on a driver that does not support row level security. */
   static rlsFilterNotSupportedByDriver(meta: EntityMetadata, filterName: string): MetadataError {
     return new MetadataError(

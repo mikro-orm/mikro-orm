@@ -399,7 +399,8 @@ export class QueryHelper {
 
   /**
    * Resolves an `rls` filter's condition to a static `FilterQuery`. Function conditions are called with a proxy `args`
-   * that yields a unique sentinel per accessed argument and throwing proxies for the runtime-only parameters.
+   * that yields a unique sentinel per accessed argument, real `type` strings (validated to not affect the result), and
+   * throwing proxies for the remaining runtime-only parameters.
    *
    * @internal
    */
@@ -410,10 +411,13 @@ export class QueryHelper {
 
     const args = new Proxy({} as Dictionary, {
       get: (_target, prop) => {
-        // conditions only ever read string argument names off `args`
-        const key = prop as string;
-        accessed.add(key);
-        return `${this.RLS_SENTINEL_PREFIX}${key}${this.RLS_SENTINEL_SUFFIX}`;
+        if (typeof prop === 'symbol') {
+          // e.g. coercing `args` itself in a template literal triggers a `Symbol.toPrimitive` lookup
+          throw MetadataError.rlsFilterUnsupportedCond(filter.name);
+        }
+
+        accessed.add(prop);
+        return `${this.RLS_SENTINEL_PREFIX}${prop}${this.RLS_SENTINEL_SUFFIX}`;
       },
     });
     const poison = new Proxy({} as Dictionary, {
@@ -421,13 +425,25 @@ export class QueryHelper {
         throw MetadataError.rlsFilterDependsOnRuntimeState(filter.name);
       },
     });
-    const result = (filter.cond as (...params: any[]) => unknown)(args, poison, poison, poison, poison);
+    // property access on the poison `type` proxy throws, but equality checks like `type === 'read'` cannot be
+    // trapped — evaluate the cond for every command and require identical results, so a command-dependent
+    // condition cannot silently compile one branch into a policy guarding all commands
+    const evaluate = (type: string) => {
+      const result = (filter.cond as (...params: any[]) => unknown)(args, type, poison, poison, poison);
 
-    if (result instanceof Promise) {
+      if (result instanceof Promise) {
+        throw MetadataError.rlsFilterDependsOnRuntimeState(filter.name);
+      }
+
+      return result as Dictionary;
+    };
+    const [read, update, del] = [evaluate('read'), evaluate('update'), evaluate('delete')];
+
+    if (JSON.stringify(read) !== JSON.stringify(update) || JSON.stringify(read) !== JSON.stringify(del)) {
       throw MetadataError.rlsFilterDependsOnRuntimeState(filter.name);
     }
 
-    return result as Dictionary;
+    return read;
   }
 
   static mergePropertyFilters(

@@ -223,6 +223,40 @@ describe('rls filter bridge (compile errors) [postgres]', () => {
     await orm.close(true);
   });
 
+  test('a condition that branches on type equality throws instead of compiling one branch', async () => {
+    // `type === 'read'` on the poison proxy cannot be trapped as a property access — the compiler
+    // evaluates the cond per command and rejects it when the results diverge
+    const orm = await init(
+      { id: p.integer().primary(), tenantId: p.uuid() },
+      { f: { name: 'f', cond: (a: any, type: any) => (type === 'read' ? { tenantId: a.t } : {}), rls: true } },
+    );
+    await expect(orm.schema.getCreateSchemaSQL({ wrap: false })).rejects.toThrow(
+      `Filter 'f' cannot be compiled to an RLS policy because its condition depends on runtime state`,
+    );
+    await orm.close(true);
+  });
+
+  test('a condition reading type without affecting the result still compiles', async () => {
+    const orm = await init(
+      { id: p.integer().primary(), tenantId: p.uuid() },
+      { f: { name: 'f', cond: (a: any, type: any) => (type === 'never' ? {} : { tenantId: a.t }), rls: true } },
+    );
+    const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
+    expect(sql).toContain(`current_setting('mikro.f.t')::uuid`);
+    await orm.close(true);
+  });
+
+  test('a condition coercing the args object itself throws a descriptive error', async () => {
+    const orm = await init(
+      { id: p.integer().primary(), status: p.string() },
+      { f: { name: 'f', cond: (a: any) => ({ status: `${a}` }), rls: true } },
+    );
+    await expect(orm.schema.getCreateSchemaSQL({ wrap: false })).rejects.toThrow(
+      `Filter 'f' cannot be compiled to an RLS policy because it references an argument outside of a direct comparison`,
+    );
+    await orm.close(true);
+  });
+
   test('an async condition throws', async () => {
     const orm = await init(
       { id: p.integer().primary(), tenantId: p.uuid() },

@@ -511,9 +511,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    // an empty context would still switch on the implicit transaction wrapping
+    // an empty context would still switch on the implicit transaction wrapping;
+    // `em` is already the resolved context and staging was validated above
     if (Object.keys(variables).length > 0) {
-      em.setSessionContext({ variables });
+      em.mergeSessionContext({ variables });
     }
   }
 
@@ -521,7 +522,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   private findRlsFilterDefs(name: string): FilterDef[] {
     const defs = new Set<FilterDef>();
 
-    for (const meta of this.getContext(false).metadata) {
+    for (const meta of this.metadata) {
       const filter = meta.filters[name];
 
       if (filter?.rls) {
@@ -598,7 +599,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * Clears the database session context, since `setSessionContext()` only ever merges variables and updates the role.
    */
   clearSessionContext(): void {
-    this.getContext(false).#sessionContext = undefined;
+    const em = this.getContext(false);
+
+    // clearing inside an open transaction would be as inert (and cache-poisoning) as staging there — fail closed too
+    if (em.#sessionContext && em.#transactionContext && em.config.get('sessionContext') === 'transaction') {
+      throw ValidationError.sessionContextInsideTransaction();
+    }
+
+    em.#sessionContext = undefined;
   }
 
   /** @internal session context to apply on `begin()` under the `'transaction'` strategy (`undefined` otherwise). */
@@ -1529,7 +1537,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         }
       }
 
-      const data2 = await em.withSessionContext(em.#transactionContext, ctx =>
+      const data2 = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
         this.driver.findOne(meta.class, where, {
           fields: returning.concat(...((options.onConflictMergeFields ?? []) as string[])) as any[],
           ctx,
@@ -1772,7 +1780,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         });
       });
 
-      const data2 = await em.withSessionContext(em.#transactionContext, ctx =>
+      const data2 = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
         this.driver.find(meta.class, where, {
           fields: returning
             .concat(...add)
@@ -1985,7 +1993,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       const meta = helper(data).__meta;
       const payload = em.#comparator.prepareEntity(data);
       const cs = new ChangeSet(data, ChangeSetType.CREATE, payload, meta);
-      await em.#unitOfWork.getChangeSetPersister().executeInserts([cs], { ctx: em.#transactionContext, ...options });
+      await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
+        em.#unitOfWork.getChangeSetPersister().executeInserts([cs], { ...options, ctx }),
+      );
 
       return cs.getPrimaryKey()!;
     }
@@ -2045,10 +2055,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     em.prepareOptions(options);
 
     const meta = em.metadata.get<Entity>(entityName);
-    const res = await em.driver.nativeClone<Entity>(entityName, where, overrides, {
-      ctx: em.#transactionContext,
-      ...options,
-    });
+    const res = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
+      em.driver.nativeClone<Entity>(entityName, where, overrides, { ...options, ctx }),
+    );
 
     const pk = res.insertId ?? res.row?.[meta.primaryKeys[0]];
 
@@ -2095,7 +2104,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         const payload = em.#comparator.prepareEntity(row) as EntityData<Entity>;
         return new ChangeSet<Entity>(row as Entity, ChangeSetType.CREATE, payload, meta);
       });
-      await em.#unitOfWork.getChangeSetPersister().executeInserts(css, { ctx: em.#transactionContext, ...options });
+      await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
+        em.#unitOfWork.getChangeSetPersister().executeInserts(css, { ...options, ctx }),
+      );
 
       return css.map(cs => cs.getPrimaryKey()!);
     }
@@ -2178,7 +2189,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const conn = em.driver.getConnection('write');
-    return conn.callRoutine(routine, args, em.#transactionContext);
+    return em.withSessionContext(em.#transactionContext, ctx => conn.callRoutine(routine, args, ctx));
   }
 
   /**

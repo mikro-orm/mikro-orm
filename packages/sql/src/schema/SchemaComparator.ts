@@ -1291,9 +1291,9 @@ export class SchemaComparator {
   }
 
   private diffPolicy(from: SqlPolicyDef, to: SqlPolicyDef): boolean {
-    // `[]` and `['public']` both mean PUBLIC — normalize so an omitted `roles` matches introspected `{public}`
+    // normalize so an omitted `roles` matches introspected `{public}`
     const normalizeRoles = (roles: string[]) =>
-      roles.length === 0 || (roles.length === 1 && roles[0] === 'public') ? '' : [...roles].sort().join(',');
+      DatabaseTable.isDefaultPolicyRoles(roles) ? '' : [...roles].sort().join(',');
 
     if (from.command !== to.command || from.type !== to.type) {
       return true;

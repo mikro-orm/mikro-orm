@@ -106,6 +106,11 @@ export class DatabaseTable {
     return this.#policies;
   }
 
+  /** `[]` and `['public']` both mean PUBLIC — a single predicate so metadata, introspection and codegen agree. */
+  static isDefaultPolicyRoles(roles: string[]): boolean {
+    return roles.length === 0 || (roles.length === 1 && roles[0] === 'public');
+  }
+
   /** @internal */
   setPolicies(policies: SqlPolicyDef[]): void {
     this.#policies = policies;
@@ -1480,11 +1485,9 @@ export class DatabaseTable {
       return out;
     };
 
-    // default roles (`[]` or `['public']`) both mean PUBLIC — collapse so metadata and introspection agree
-    const isDefaultRoles = (roles: string[]) => roles.length === 0 || (roles.length === 1 && roles[0] === 'public');
     const normalizePolicy = (policy: SqlPolicyDef): Dictionary => {
       const out: Dictionary = { name: policy.name, command: policy.command, type: policy.type };
-      if (!isDefaultRoles(policy.roles)) {
+      if (!DatabaseTable.isDefaultPolicyRoles(policy.roles)) {
         out.roles = [...policy.roles].sort(byString);
       }
       for (const field of ['using', 'check'] as const) {

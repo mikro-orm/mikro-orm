@@ -360,7 +360,11 @@ describe('row level security end-to-end under a non-owner role [postgres]', () =
 
     // the restricted role lacks INSERT, so a write is rejected with a privilege error (not an RLS violation)
     const writeEm = app.em.fork({ session: { role: 'rls_e2e_restricted', variables: { 'app.tenant': TA } } });
-    await expect(writeEm.insert(Author, { tenantId: TA, name: 'nope' })).rejects.toThrow(/permission denied/);
+    const err = await writeEm.insert(Author, { tenantId: TA, name: 'nope' }).catch((e: Error) => e);
+    expect(err).toBeInstanceOf(Error);
+    expect((err as Error).message).toMatch(/permission denied/);
+    // a 42501 privilege error must not fall through to the RLS branch of the exception converter
+    expect(err).not.toBeInstanceOf(RowLevelSecurityViolationException);
   });
 
   test('addFilter rejects an rls filter scoped to an entity with a runtime-registration message', () => {

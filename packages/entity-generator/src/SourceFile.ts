@@ -22,6 +22,7 @@ import {
   Utils,
   inspect,
 } from '@mikro-orm/core';
+import { DatabaseTable } from '@mikro-orm/sql';
 import { parse, relative } from 'node:path';
 import { POSSIBLE_TYPE_IMPORTS } from './CoreImportsHelper.js';
 
@@ -375,8 +376,10 @@ export class SourceFile {
 
   protected quote(val: string) {
     const backtick = val.startsWith(`'`) || val.includes('\n');
+    // backslashes must be escaped first, or SQL like `name ~ '^\d+'` silently degrades (`\d` -> `d`) in the emitted source
+    const escaped = val.replaceAll('\\', '\\\\');
     /* v8 ignore next */
-    return backtick ? `\`${val.replaceAll('`', '\\``')}\`` : `'${val.replaceAll(`'`, `\\'`)}'`;
+    return backtick ? `\`${escaped.replaceAll('`', '\\``')}\`` : `'${escaped.replaceAll(`'`, `\\'`)}'`;
   }
 
   protected getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
@@ -636,11 +639,14 @@ export class SourceFile {
     }
 
     // policies imply RLS on reload, so only emit `rowLevelSecurity` when it adds information:
-    // `'force'` always, plain `true` only for a deny-all table (enabled with no policies)
+    // `'force'` always, plain `true` only for a deny-all table (enabled with no policies),
+    // and explicit `false` only when policies are staged but RLS is disabled
     if (this.meta.rowLevelSecurity === 'force') {
       options.rowLevelSecurity = this.quote('force') as EntityOptions<unknown>['rowLevelSecurity'];
     } else if (this.meta.rowLevelSecurity === true && this.meta.policies.length === 0) {
       options.rowLevelSecurity = true;
+    } else if (this.meta.rowLevelSecurity === false && this.meta.policies.length > 0) {
+      options.rowLevelSecurity = false;
     }
 
     if (this.meta.policies.length > 0) {
@@ -720,8 +726,8 @@ export class SourceFile {
     }
 
     const roles = policy.roles;
-    // `[]` and `['public']` both mean PUBLIC — omit either
-    if (roles && !(roles.length === 0 || (roles.length === 1 && roles[0] === 'public'))) {
+
+    if (roles && !DatabaseTable.isDefaultPolicyRoles(roles)) {
       result.roles = roles.map(role => this.quote(role));
     }
 

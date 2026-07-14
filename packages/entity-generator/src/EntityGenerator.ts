@@ -250,6 +250,10 @@ export class EntityGenerator {
       meta.rowLevelSecurity = 'force';
     } else if (table.rlsEnabled) {
       meta.rowLevelSecurity = true;
+    } else if (meta.policies.length > 0) {
+      // policies staged but RLS disabled — record it explicitly so a reload does not re-enable RLS via the
+      // policies-imply-RLS default
+      meta.rowLevelSecurity = false;
     }
   }
 

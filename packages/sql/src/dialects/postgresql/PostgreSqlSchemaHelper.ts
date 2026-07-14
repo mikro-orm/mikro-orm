@@ -762,13 +762,17 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  override getRlsDropSQL(diff: TableDifference): string[] {
+  override getRlsDropSQL(diff: TableDifference, safe?: boolean): string[] {
     // a policy expression holds a dependency on the columns it references, so removed policies (including the
-    // old version of changed ones) must be dropped before the column drops emitted later in the diff
-    return Object.values(diff.removedPolicies).map(policy => this.dropPolicy(diff.toTable, policy));
+    // old version of changed ones) must be dropped before the column drops emitted later in the diff;
+    // in safe mode only recreated policies (present in both removed + added) are dropped, so a policy that is
+    // merely removed is left untouched like removed triggers/columns
+    return Object.values(diff.removedPolicies)
+      .filter(policy => !safe || policy.name in diff.addedPolicies)
+      .map(policy => this.dropPolicy(diff.toTable, policy));
   }
 
-  override getRlsAlterSQL(diff: TableDifference): string[] {
+  override getRlsAlterSQL(diff: TableDifference, safe?: boolean): string[] {
     const ret: string[] = [];
     const table = diff.toTable;
 
@@ -779,7 +783,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     if (diff.changedRlsForced === true) {
       ret.push(`alter table ${table.getQuotedName()} force row level security`);
-    } else if (diff.changedRlsForced === false) {
+    } else if (!safe && diff.changedRlsForced === false) {
       ret.push(`alter table ${table.getQuotedName()} no force row level security`);
     }
 
@@ -787,8 +791,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       ret.push(this.createPolicy(table, policy));
     }
 
-    // disable only after its policies are gone (removed ones were dropped via `getRlsDropSQL`)
-    if (diff.changedRlsEnabled === false) {
+    // disable only after its policies are gone (removed ones were dropped via `getRlsDropSQL`); skipped in
+    // safe mode so a safe run never lifts row level security off an existing table
+    if (!safe && diff.changedRlsEnabled === false) {
       ret.push(`alter table ${table.getQuotedName()} disable row level security`);
     }
 
@@ -827,10 +832,6 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   // `public` is a keyword and must stay unquoted; other roles are quoted like any identifier
   private formatPolicyRoles(roles: string[]): string {
-    if (roles.length === 0) {
-      return 'public';
-    }
-
     return roles.map(role => (role === 'public' ? 'public' : this.quote(role))).join(', ');
   }
 
@@ -1488,6 +1489,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       for (const { table: localTable, foreignKey } of inboundForeignKeys) {
         this.append(ret, this.createForeignKey(localTable, foreignKey));
       }
+
+      // re-enable row level security and recreate the policies (createTable skips them during a rebuild);
+      // emitted after the data copy so `force row level security` can't block the owner's insert
+      this.append(ret, this.getRlsCreateSQL(table));
     }
 
     if (safe) {

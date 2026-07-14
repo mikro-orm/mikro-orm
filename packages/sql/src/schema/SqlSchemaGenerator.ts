@@ -148,6 +148,11 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       }
     }
 
+    // RLS policies are deferred until every table exists, so a policy expression can reference another table
+    for (const table of toSchema.getTables()) {
+      this.append(ret, this.helper.getRlsCreateSQL(table));
+    }
+
     const sortedViews = this.sortViewsByDependencies(toSchema.getViews());
     for (const view of sortedViews) {
       this.appendViewCreation(ret, view);
