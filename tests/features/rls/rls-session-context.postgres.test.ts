@@ -99,7 +99,14 @@ describe('row level security session context', () => {
     await orm.schema.refresh();
 
     const conn = orm.em.getConnection();
-    await conn.execute('drop role if exists rls_sc_role');
+    // shared by every describe in this file; dropped in the last describe's afterAll — a crashed prior run can
+    // leave it behind with lingering grants, which block a plain `drop role`
+    await conn.execute(`do $$ begin
+      if exists (select from pg_roles where rolname = 'rls_sc_role') then
+        execute 'drop owned by rls_sc_role';
+        execute 'drop role rls_sc_role';
+      end if;
+    end $$;`);
     await conn.execute('create role rls_sc_role');
     await conn.execute('grant usage on schema public to rls_sc_role');
     await conn.execute('grant select, insert, update, delete on "rls_sc_article" to rls_sc_role');
@@ -732,6 +739,9 @@ describe('row level security session context — remaining native paths', () => 
 
   afterAll(async () => {
     await orm.em.execute('drop function if exists rls_sc_tenant_count');
+    // remove the shared role's privileges in this db before dropping it (created in the first describe)
+    await orm.em.execute('drop owned by rls_sc_role');
+    await orm.em.execute('drop role if exists rls_sc_role');
     await orm.close(true);
   });
 
