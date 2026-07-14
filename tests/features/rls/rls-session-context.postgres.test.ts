@@ -1,5 +1,6 @@
 import {
   defineEntity,
+  type EntityManager,
   MikroORM,
   p,
   PostgreSqlDriver,
@@ -47,8 +48,45 @@ const Article = defineEntity({
   ],
 });
 
+// virtual entity reading from the RLS-protected table — exercises the findVirtual execution path
+const ArticleView = defineEntity({
+  name: 'RlsScArticleView',
+  expression: 'select * from "rls_sc_article"',
+  properties: {
+    id: p.integer(),
+    tenantId: p.integer(),
+    title: p.string(),
+  },
+});
+
+// entity with `rls` filters (a multi-arg default-named one and a single-arg custom-`setting` one) for staging tests
+const FilterArticle = defineEntity({
+  name: 'RlsScFilterArticle',
+  tableName: 'rls_sc_filter_article',
+  rowLevelSecurity: true,
+  properties: {
+    id: p.integer().primary(),
+    tenantId: p.integer(),
+    region: p.string(),
+  },
+  filters: {
+    scByTenant: {
+      name: 'scByTenant',
+      cond: (args: any) => ({ tenantId: args.tenantId, region: args.region }),
+      rls: true,
+      default: false,
+    },
+    scByCustom: {
+      name: 'scByCustom',
+      cond: (args: any) => ({ tenantId: args.tenant }),
+      rls: { setting: 'app.sc_custom' },
+      default: false,
+    },
+  },
+});
+
 const dbName = 'mikro_orm_test_rls_session';
-const baseOptions: Options = { entities: [User, Article, Tag], dbName, driver: PostgreSqlDriver };
+const baseOptions: Options = { entities: [User, Article, Tag, ArticleView], dbName, driver: PostgreSqlDriver };
 
 describe('row level security session context', () => {
   let orm: MikroORM;
@@ -167,6 +205,19 @@ describe('row level security session context', () => {
     expect(em.getSessionContext()).toBeUndefined();
   });
 
+  test('a context-resolving fork keeps its session context off the ambient EM', async () => {
+    // `useContext: true` forks resolve operations through the request context — the `session`
+    // option must still land on the fork itself, not mutate the ambient EM's security state
+    let ambient!: EntityManager;
+    const fork = await RequestContext.create(orm.em, async () => {
+      ambient = RequestContext.getEntityManager() as EntityManager;
+      return orm.em.fork({ useContext: true, session: { variables: { 'app.tenant_id': 7 } } });
+    });
+
+    expect(ambient.getSessionContext()).toBeUndefined();
+    expect(fork.getSessionContext()?.variables).toEqual({ 'app.tenant_id': 7 });
+  });
+
   test('the session context isolates cached rows per tenant', async () => {
     const emA = orm.em.fork({ session: { role: 'rls_sc_role', variables: { 'app.tenant_id': 1 } } });
     const a = await emA.find(Article, {}, { cache: 5000 });
@@ -197,6 +248,23 @@ describe('row level security session context', () => {
     expect(calls[2]).toMatch('set local role "rls_sc_role"');
     expect(calls[3]).toMatch('select * from "rls_sc_article"');
     expect(calls[4]).toMatch('commit');
+  });
+
+  test('Date session variables are serialized to ISO 8601 so timestamptz casts parse', async () => {
+    const since = new Date('2025-06-15T10:30:00.000Z');
+
+    // transaction strategy (`set_config` on begin)
+    const em = orm.em.fork({ session: { variables: { 'app.since': since } } });
+    const [row] = await em.execute(`select current_setting('app.since')::timestamptz as v`);
+    expect(new Date(row.v).toISOString()).toBe(since.toISOString());
+
+    // connection strategy (`set_config` on connection acquire)
+    const rows = await RequestContext.create(ormConn.em, async () => {
+      const emc = RequestContext.getEntityManager() as typeof ormConn.em;
+      emc.setSessionContext({ variables: { 'app.since': since } });
+      return emc.execute(`select current_setting('app.since')::timestamptz as v`);
+    });
+    expect(new Date(rows[0].v).toISOString()).toBe(since.toISOString());
   });
 
   test('em.execute inside em.transactional reuses the outer transaction context', async () => {
@@ -296,6 +364,24 @@ describe('row level security session context', () => {
     expect(calls.some(q => q.includes('set role "rls_sc_role"'))).toBe(true);
   });
 
+  test("the 'connection' strategy resets variables a new context does not overwrite", async () => {
+    // request 1 sets two session-scoped variables on the pooled connection
+    await RequestContext.create(ormConn.em, async () => {
+      const em = RequestContext.getEntityManager() as EntityManager;
+      em.setSessionContext({ variables: { 'app.tenant_id': 1, 'app.extra': 'stale' } });
+      return em.execute('select 1');
+    });
+
+    // request 2 reuses the connection but only sets one of them — the other must have been reset, not leaked
+    const rows = await RequestContext.create(ormConn.em, async () => {
+      const em = RequestContext.getEntityManager() as EntityManager;
+      em.setSessionContext({ variables: { 'app.tenant_id': 2 } });
+      return em.execute(`select current_setting('app.extra', true) as v`);
+    });
+
+    expect([null, '']).toContain(rows[0].v);
+  });
+
   test("the 'connection' strategy resets the session state when no context is active", async () => {
     const mock = mockLogger(ormConn, ['query']);
     await ormConn.em.fork().find(User, {});
@@ -325,5 +411,144 @@ describe('row level security session context', () => {
     );
 
     await sqlite.close(true);
+  });
+
+  test('a role name containing a dot is quoted as a single identifier', async () => {
+    const conn = orm.em.getConnection();
+    await conn.execute(`do $$ begin
+      if exists (select from pg_roles where rolname = 'rls.sc.dotted') then
+        execute 'drop owned by "rls.sc.dotted"';
+        execute 'drop role "rls.sc.dotted"';
+      end if;
+    end $$`);
+    await conn.execute(`create role "rls.sc.dotted"`);
+    await conn.execute('grant usage on schema public to "rls.sc.dotted"');
+    await conn.execute('grant select on "rls_sc_user_tbl" to "rls.sc.dotted"');
+
+    const em = orm.em.fork({ session: { role: 'rls.sc.dotted' } });
+    const mock = mockLogger(orm, ['query']);
+    const users = await em.find(User, {});
+    expect(users).toHaveLength(1);
+
+    const calls = mock.mock.calls.map(c => c[0]);
+    // a single dotted identifier, not the schema-qualified `"rls"."sc"."dotted"` that quoteIdentifier would produce
+    expect(calls.some(q => q.includes('set local role "rls.sc.dotted"'))).toBe(true);
+
+    await conn.execute('drop owned by "rls.sc.dotted"');
+    await conn.execute(`drop role "rls.sc.dotted"`);
+  });
+
+  test('virtual entities get the implicit session-context wrap and see only tenant rows', async () => {
+    // the role is required for RLS to apply — the default superuser bypasses row level security
+    const em = orm.em.fork({ session: { role: 'rls_sc_role', variables: { 'app.tenant_id': 1 } } });
+    const mock = mockLogger(orm, ['query']);
+    const rows = await em.find(ArticleView, {});
+
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.every(r => r.tenantId === 1)).toBe(true);
+
+    const calls = mock.mock.calls.map(c => c[0]);
+    expect(calls[0]).toMatch('begin');
+    expect(calls[1]).toMatch('select set_config(?, ?, true)');
+    expect(calls.some(q => q.includes('from "rls_sc_article"'))).toBe(true);
+    expect(calls.at(-1)).toMatch('commit');
+  });
+
+  test('setSessionContext inside an active transaction throws (transaction strategy)', async () => {
+    const em = orm.em.fork();
+
+    await expect(
+      em.transactional(async inner => {
+        inner.setSessionContext({ variables: { 'app.tenant_id': 1 } });
+      }),
+    ).rejects.toThrow(/inside an active transaction/);
+  });
+
+  test('a fork with session context still works with em.transactional', async () => {
+    const em = orm.em.fork({ session: { variables: { 'app.tenant_id': 1 } } });
+    const rows = await em.transactional(inner => inner.find(User, {}));
+    expect(rows).toHaveLength(1);
+  });
+});
+
+describe('row level security session context — failure and staging edge cases', () => {
+  test('a failing session-context application on begin rolls back so the connection is not leaked', async () => {
+    // a single pooled connection makes a leak observable: without the rollback the next acquire would deadlock
+    const orm = await MikroORM.init({ ...baseOptions, pool: { min: 0, max: 1 } });
+
+    try {
+      const em = orm.em.fork({ session: { role: 'rls_sc_missing_role' } });
+      const mock = mockLogger(orm, ['query']);
+
+      await expect(em.find(User, {})).rejects.toThrow(/rls_sc_missing_role/);
+
+      const calls = mock.mock.calls.map(c => c[0]);
+      expect(calls.some(q => q.includes('begin'))).toBe(true);
+      expect(calls.some(q => q.includes('rollback'))).toBe(true);
+      expect(calls.some(q => q.includes('commit'))).toBe(false);
+
+      // the connection was released back to the pool — subsequent operations still succeed
+      for (let i = 0; i < 3; i++) {
+        expect(await orm.em.fork().find(User, {})).toHaveLength(1);
+      }
+    } finally {
+      await orm.close(true);
+    }
+  });
+
+  test('setSessionContext with the transaction strategy throws when implicitTransactions is disabled', async () => {
+    const orm = await MikroORM.init({ ...baseOptions, implicitTransactions: false });
+
+    try {
+      expect(() => orm.em.fork().setSessionContext({ variables: { 'app.tenant_id': 1 } })).toThrow(
+        /implicitTransactions/,
+      );
+    } finally {
+      await orm.close(true);
+    }
+  });
+
+  describe('rls filter staging', () => {
+    let orm: MikroORM;
+
+    beforeAll(async () => {
+      orm = await MikroORM.init({ ...baseOptions, entities: [User, FilterArticle] });
+    });
+
+    afterAll(() => orm.close(true));
+
+    test('re-calling setFilterParams drops variables the new params no longer set (default-named)', () => {
+      const em = orm.em.fork();
+      em.setFilterParams('scByTenant', { tenantId: 1, region: 'eu' });
+      expect(em.getSessionContext()?.variables).toEqual({
+        'mikro.scByTenant.tenantId': 1,
+        'mikro.scByTenant.region': 'eu',
+      });
+
+      em.setFilterParams('scByTenant', { tenantId: 2 });
+      expect(em.getSessionContext()?.variables).toEqual({ 'mikro.scByTenant.tenantId': 2 });
+    });
+
+    test('re-calling setFilterParams drops the stale custom `setting` and extra default-named variables', () => {
+      const em = orm.em.fork();
+      em.setFilterParams('scByCustom', { tenant: 'a', extra: 'x' });
+      expect(em.getSessionContext()?.variables).toEqual({
+        'app.sc_custom': 'a',
+        'mikro.scByCustom.extra': 'x',
+      });
+
+      em.setFilterParams('scByCustom', { tenant: 'b' });
+      expect(em.getSessionContext()?.variables).toEqual({ 'app.sc_custom': 'b' });
+    });
+
+    test('setFilterParams on an rls filter inside an active transaction throws', async () => {
+      const em = orm.em.fork();
+
+      await expect(
+        em.transactional(async inner => {
+          inner.setFilterParams('scByTenant', { tenantId: 1 });
+        }),
+      ).rejects.toThrow(/inside an active transaction/);
+    });
   });
 });

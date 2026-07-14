@@ -81,7 +81,7 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
       return '::bigint';
     }
 
-    // MediumIntType extends IntegerType, so it is covered by the first branch
+    // MediumIntType extends IntegerType, so it is covered here too
     if (mappedType instanceof IntegerType || mappedType instanceof SmallIntType || mappedType instanceof TinyIntType) {
       return '::int';
     }

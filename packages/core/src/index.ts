@@ -124,6 +124,8 @@ export type {
   InferEntity,
   CheckConstraint,
   TriggerDef,
+  PolicyDef,
+  PolicyCallback,
   SessionContext,
   RoutineReturns,
   RoutineBodyCallback,
