@@ -236,6 +236,56 @@ describe('row level security metadata', () => {
     expect(new SqlitePlatform().getCurrentSettingCast(new StringType())).toBeNull();
   });
 
+  test('the discovery.onMetadata hook can strip RLS for cross-driver test runs', async () => {
+    const Article = defineEntity({
+      name: 'RlsHookArticle',
+      tableName: 'rls_hook_article',
+      rowLevelSecurity: 'force',
+      properties: {
+        id: p.integer().primary(),
+        tenantId: p.integer(),
+      },
+      policies: [{ name: 'tenant', using: `tenant_id = current_setting('app.tenant')::int` }],
+      filters: {
+        byTenant: { name: 'byTenant', cond: (args: any) => ({ tenantId: args.tenant }), rls: true, default: true },
+      },
+    });
+
+    const orm = await SqliteMikroORM.init({
+      entities: [Article],
+      dbName: ':memory:',
+      discovery: {
+        onMetadata: (meta, platform) => {
+          // documented escape hatch: strip the DB-level declarations on drivers without RLS support,
+          // keeping the filters themselves so the app-level enforcement still applies in tests
+          if (!platform.supportsRowLevelSecurity()) {
+            meta.policies = [];
+            delete meta.rowLevelSecurity;
+            Object.values(meta.filters).forEach(f => delete f.rls);
+          }
+        },
+      },
+    });
+    await orm.schema.refresh();
+
+    const seed = orm.em.fork();
+    seed.create(Article, { id: 1, tenantId: 1 });
+    seed.create(Article, { id: 2, tenantId: 2 });
+    await seed.flush();
+
+    // the stripped filter still enforces at the application level
+    const em = orm.em.fork();
+    em.setFilterParams('byTenant', { tenant: 1 });
+    expect((await em.find(Article, {})).map(r => r.tenantId)).toEqual([1]);
+
+    // the session context API remains postgres-only even with stripped metadata — guard direct usage in tests
+    expect(() => em.setSessionContext({ variables: { 'app.tenant': 1 } })).toThrow(
+      'only supported by the PostgreSQL driver',
+    );
+
+    await orm.close(true);
+  });
+
   test("throws when the 'connection' strategy is used on a driver without the reserve hook", async () => {
     const { MikroORM: PgliteMikroORM } = await import('@mikro-orm/pglite');
 
