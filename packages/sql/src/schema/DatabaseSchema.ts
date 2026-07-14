@@ -5,15 +5,18 @@ import {
   type Dictionary,
   type EntityMetadata,
   type EntityProperty,
+  type FilterDef,
+  MetadataError,
   type Routine,
   type Transaction,
   type Type,
+  Utils,
   isRaw,
 } from '@mikro-orm/core';
 import { DatabaseTable } from './DatabaseTable.js';
 import { normalizeViewDefinition } from './SchemaHelper.js';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
-import type { DatabaseView, SqlRoutineDef } from '../typings.js';
+import type { DatabaseView, SqlPolicyDef, SqlRoutineDef } from '../typings.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import { getTablePartitioning } from './partitioning.js';
 
@@ -381,9 +384,144 @@ export class DatabaseSchema {
           expression: trigger.expression,
         });
       }
+
+      // non-empty policies imply RLS; `rowLevelSecurity: 'force'` enforces it for the table owner too
+      table.rlsEnabled = meta.policies.length > 0 || !!meta.rowLevelSecurity;
+      table.rlsForced = meta.rowLevelSecurity === 'force';
+      const usedPolicyNames = new Set<string>();
+      const resolve = (raw: unknown): string | undefined => {
+        if (raw == null) {
+          return undefined;
+        }
+
+        return isRaw(raw) ? platform.formatQuery(raw.sql, raw.params) : (raw as string);
+      };
+
+      for (const policy of meta.policies) {
+        const command = policy.command ?? 'all';
+        // deterministic default name derived from table + command + collision index, truncated the
+        // same way check names are, so the introspected (engine-truncated) name matches metadata
+        let name = policy.name;
+
+        if (!name) {
+          const base = `${meta.collection}_${command}_policy`;
+          name = base;
+
+          for (let i = 2; usedPolicyNames.has(name); i++) {
+            name = `${base}_${i}`;
+          }
+        }
+
+        name = name.substring(0, platform.getMaxIdentifierLength());
+        usedPolicyNames.add(name);
+
+        table.addPolicy({
+          name,
+          command,
+          type: policy.type ?? 'permissive',
+          roles: policy.roles ?? [],
+          using: resolve(policy.using),
+          check: resolve(policy.check),
+        });
+      }
+
+      // rls-flagged filters materialize as additional permissive policies (app-level WHERE + DB-level policy)
+      const rlsFilters = Object.values(meta.filters).filter(filter => filter.rls);
+
+      if (rlsFilters.length > 0) {
+        table.rlsEnabled = true;
+
+        for (const filter of rlsFilters) {
+          table.addPolicy(this.compileRlsFilterPolicy(meta, filter, table, platform, em));
+        }
+      }
     }
 
     return schema;
+  }
+
+  private static readonly RLS_SENTINEL_PREFIX = '__mikro_rls_arg__';
+  private static readonly RLS_SENTINEL_SUFFIX = '__';
+
+  /** Compiles an `rls`-flagged filter's condition into a resolved policy backed by `current_setting()` lookups. */
+  private static compileRlsFilterPolicy(
+    meta: EntityMetadata,
+    filter: FilterDef,
+    table: DatabaseTable,
+    platform: AbstractSqlPlatform,
+    em: any,
+  ): SqlPolicyDef {
+    const accessed = new Set<string>();
+    const cond = this.resolveRlsFilterCond(filter, accessed);
+    const setting = typeof filter.rls === 'object' ? filter.rls.setting : undefined;
+
+    if (setting && accessed.size > 1) {
+      throw MetadataError.rlsFilterMultiArgSetting(filter.name, [...accessed]);
+    }
+
+    let sql = em.getDriver().renderPartialIndexWhere(meta.class, cond);
+    const prefix = this.RLS_SENTINEL_PREFIX;
+    const suffix = this.RLS_SENTINEL_SUFFIX;
+    // match `"<column>" <op> '<sentinel>'` — the LHS is always a quoted column emitted from this entity's own
+    // where; group 1 keeps the column + operator so only the sentinel literal is swapped for the session lookup
+    const re = new RegExp(`("([^"]+)"\\s*(?:=|<>|>=|<=|>|<)\\s*)'${prefix}(\\w+)${suffix}'`, 'gi');
+
+    sql = sql.replace(re, (_whole: string, lhs: string, column: string, arg: string) => {
+      const col = table.getColumn(column)!;
+      const cast = platform.getCurrentSettingCast(col.mappedType);
+
+      if (cast === null) {
+        throw MetadataError.rlsFilterUncastableType(filter.name, col.type);
+      }
+
+      const name = setting && accessed.size === 1 ? setting : Utils.getRlsSettingName(filter.name, arg);
+
+      return `${lhs}current_setting(${platform.quoteValue(name)})${cast}`;
+    });
+
+    // a leftover sentinel means an argument appeared somewhere other than a direct comparison, which we can't compile
+    if (sql.includes(prefix)) {
+      throw MetadataError.rlsFilterUnsupportedCond(filter.name);
+    }
+
+    return {
+      name: `${meta.collection}_${filter.name}_policy`.substring(0, platform.getMaxIdentifierLength()),
+      command: 'all',
+      type: 'permissive',
+      roles: [],
+      using: sql,
+    };
+  }
+
+  /**
+   * Resolves an `rls` filter's condition to a static `FilterQuery`. Function conditions are called with a proxy `args`
+   * that yields a unique sentinel per accessed argument and throwing proxies for the runtime-only parameters.
+   */
+  private static resolveRlsFilterCond(filter: FilterDef, accessed: Set<string>): Dictionary {
+    if (!(filter.cond instanceof Function)) {
+      return filter.cond as Dictionary;
+    }
+
+    const args = new Proxy({} as Dictionary, {
+      get: (_target, prop) => {
+        // conditions only ever read string argument names off `args`
+        const key = prop as string;
+        accessed.add(key);
+        return `${this.RLS_SENTINEL_PREFIX}${key}${this.RLS_SENTINEL_SUFFIX}`;
+      },
+    });
+    const poison = new Proxy({} as Dictionary, {
+      get: () => {
+        throw MetadataError.rlsFilterDependsOnRuntimeState(filter.name);
+      },
+    });
+    const result = (filter.cond as (...params: any[]) => unknown)(args, poison, poison, poison, poison);
+
+    if (result instanceof Promise) {
+      throw MetadataError.rlsFilterDependsOnRuntimeState(filter.name);
+    }
+
+    return result as Dictionary;
   }
 
   /** Separate from {@link fromMetadata} so the comparator only walks routines when the user defined any. */

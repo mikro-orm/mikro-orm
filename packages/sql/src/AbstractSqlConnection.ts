@@ -14,6 +14,7 @@ import {
   type QueryResult,
   raw,
   type RawQueryFragment,
+  type SessionContext,
   type Transaction,
   type TransactionEventBroadcaster,
   Utils,
@@ -169,6 +170,7 @@ export abstract class AbstractSqlConnection extends Connection {
       ctx?: ControlledTransaction<any>;
       eventBroadcaster?: TransactionEventBroadcaster;
       loggerContext?: LogContext;
+      sessionContext?: SessionContext;
     } = {},
   ): Promise<T> {
     const trx = await this.begin(options);
@@ -200,6 +202,7 @@ export abstract class AbstractSqlConnection extends Connection {
       ctx?: ControlledTransaction<any, any>;
       eventBroadcaster?: TransactionEventBroadcaster;
       loggerContext?: LogContext;
+      sessionContext?: SessionContext;
     } = {},
   ): Promise<ControlledTransaction<any, any>> {
     if (options.ctx) {
@@ -234,9 +237,39 @@ export abstract class AbstractSqlConnection extends Connection {
       this.logQuery(query, options.loggerContext);
     }
 
+    if (options.sessionContext) {
+      await this.applySessionContext(trx, options.sessionContext, options.loggerContext);
+    }
+
     await options.eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, trx);
 
     return trx;
+  }
+
+  /** Applies session variables (`set_config`) and role (`set local role`) for the current transaction. */
+  private async applySessionContext(
+    trx: ControlledTransaction<any, any>,
+    sessionContext: SessionContext,
+    loggerContext?: LogContext,
+  ): Promise<void> {
+    // `variables` is always normalized to an object by `em.setSessionContext()`
+    const variables = Object.entries(sessionContext.variables!);
+
+    if (variables.length > 0) {
+      const parts = variables.map(() => 'set_config(?, ?, true)').join(', ');
+      const params = variables.flatMap(([key, value]) => [key, String(value)]);
+      await this.execute(`select ${parts}`, params, 'run', trx, loggerContext);
+    }
+
+    if (sessionContext.role) {
+      await this.execute(
+        `set local role ${this.platform.quoteIdentifier(sessionContext.role)}`,
+        [],
+        'run',
+        trx,
+        loggerContext,
+      );
+    }
   }
 
   /** Commits the transaction or releases the savepoint. */
