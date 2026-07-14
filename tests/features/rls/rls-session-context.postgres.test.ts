@@ -508,6 +508,33 @@ describe('row level security session context — failure and staging edge cases'
     }
   });
 
+  test('setSessionContext with the transaction strategy throws when transactions are disabled', async () => {
+    // config level — the UoW flush would run untransacted and silently skip the context
+    const orm = await MikroORM.init({ ...baseOptions, disableTransactions: true });
+
+    try {
+      expect(() => orm.em.fork().setSessionContext({ variables: { 'app.tenant_id': 1 } })).toThrow(
+        /disableTransactions/,
+      );
+    } finally {
+      await orm.close(true);
+    }
+
+    // fork level — both the fork option and a later staging attempt must be rejected too
+    const orm2 = await MikroORM.init(baseOptions);
+
+    try {
+      expect(() => orm2.em.fork({ disableTransactions: true, session: { variables: { 'app.tenant_id': 1 } } })).toThrow(
+        /disableTransactions/,
+      );
+      expect(() =>
+        orm2.em.fork({ disableTransactions: true }).setSessionContext({ variables: { 'app.tenant_id': 1 } }),
+      ).toThrow(/disableTransactions/);
+    } finally {
+      await orm2.close(true);
+    }
+  });
+
   describe('rls filter staging', () => {
     let orm: MikroORM;
 
@@ -539,6 +566,22 @@ describe('row level security session context — failure and staging edge cases'
 
       em.setFilterParams('scByCustom', { tenant: 'b' });
       expect(em.getSessionContext()?.variables).toEqual({ 'app.sc_custom': 'b' });
+    });
+
+    test('re-calling setFilterParams with no args drops the emptied session context entirely', () => {
+      const em = orm.em.fork();
+      em.setFilterParams('scByTenant', { tenantId: 1 });
+      expect(em.getSessionContext()).toBeDefined();
+
+      // an empty-but-truthy context would keep forcing the implicit transaction wrap for nothing
+      em.setFilterParams('scByTenant', {});
+      expect(em.getSessionContext()).toBeUndefined();
+
+      // a role (or variables staged outside the filter) must survive the prune
+      const em2 = orm.em.fork({ session: { role: 'rls_sc_role' } });
+      em2.setFilterParams('scByTenant', { tenantId: 1 });
+      em2.setFilterParams('scByTenant', {});
+      expect(em2.getSessionContext()).toEqual({ variables: {}, role: 'rls_sc_role' });
     });
 
     test('setFilterParams on an rls filter inside an active transaction throws', async () => {
