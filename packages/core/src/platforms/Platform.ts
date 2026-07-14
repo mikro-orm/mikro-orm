@@ -948,6 +948,11 @@ export abstract class Platform {
     return false;
   }
 
+  /** Whether the driver can apply the session context on every pooled connection acquire (`sessionContext: 'connection'`). */
+  supportsConnectionSessionContext(): boolean {
+    return false;
+  }
+
   /**
    * SQL cast suffix (e.g. `'::uuid'`, or `''` when none is needed) applied when an RLS filter reads a session
    * variable via `current_setting()` as the given column type, or `null` if the type has no automatic cast.
@@ -973,6 +978,16 @@ export abstract class Platform {
     // STI hierarchies share a single table, so only the root may declare policies
     if (declaresRls && meta.root.inheritanceType === 'sti' && meta.root !== meta) {
       throw MetadataError.rowLevelSecurityOnNonRootStiEntity(meta);
+    }
+
+    if (meta.root?.inheritanceType === 'sti' && meta.root !== meta) {
+      for (const filter of Object.values(meta.filters)) {
+        // inherited root filters share the def object; only defs declared on the child itself are a problem,
+        // as non-root STI metas never reach the schema generator and the policy would silently not exist
+        if (filter.rls && meta.root.filters[filter.name] !== filter) {
+          throw MetadataError.rlsFilterOnNonRootStiEntity(meta, filter.name);
+        }
+      }
     }
 
     if (!this.supportsRowLevelSecurity()) {

@@ -43,18 +43,21 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
   }
 
   private buildConnectionSessionStatements(sessionContext?: SessionContext): { sql: string; params: unknown[] }[] {
-    const statements: { sql: string; params: unknown[] }[] = [];
+    // always reset first — session-scoped `set_config` persists on the physical connection, so variables set by a
+    // previous reservation would otherwise leak into this one when the new context does not overwrite them all
+    const statements: { sql: string; params: unknown[] }[] = [{ sql: 'reset all', params: [] }];
     const variables = Object.entries(sessionContext?.variables ?? {});
 
     if (variables.length > 0) {
       const parts = variables.map((_, i) => `set_config($${i * 2 + 1}, $${i * 2 + 2}, false)`).join(', ');
-      statements.push({ sql: `select ${parts}`, params: variables.flatMap(([key, value]) => [key, String(value)]) });
-    } else {
-      statements.push({ sql: 'reset all', params: [] });
+      statements.push({
+        sql: `select ${parts}`,
+        params: variables.flatMap(([key, value]) => [key, this.stringifySessionVariable(value)]),
+      });
     }
 
     if (sessionContext?.role) {
-      statements.push({ sql: `set role ${this.platform.quoteIdentifier(sessionContext.role)}`, params: [] });
+      statements.push({ sql: `set role ${AbstractSqlConnection.quoteRole(sessionContext.role)}`, params: [] });
     } else {
       statements.push({ sql: 'reset role', params: [] });
     }

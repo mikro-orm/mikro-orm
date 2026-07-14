@@ -221,7 +221,14 @@ export abstract class AbstractSqlConnection extends Connection {
       }
 
       if (options.sessionContext) {
-        await this.applySessionContext(trx, options.sessionContext, options.loggerContext);
+        try {
+          await this.applySessionContext(trx, options.sessionContext, options.loggerContext);
+        } catch (e) {
+          // roll back the freshly opened transaction so the pooled connection is released, not leaked
+          await trx.rollback().execute();
+          this.logQuery(this.platform.getRollbackTransactionSQL(), options.loggerContext);
+          throw e;
+        }
       }
     }
 
@@ -241,19 +248,32 @@ export abstract class AbstractSqlConnection extends Connection {
 
     if (variables.length > 0) {
       const parts = variables.map(() => 'set_config(?, ?, true)').join(', ');
-      const params = variables.flatMap(([key, value]) => [key, String(value)]);
+      const params = variables.flatMap(([key, value]) => [key, this.stringifySessionVariable(value)]);
       await this.execute(`select ${parts}`, params, 'run', trx, loggerContext);
     }
 
     if (sessionContext.role) {
       await this.execute(
-        `set local role ${this.platform.quoteIdentifier(sessionContext.role)}`,
+        `set local role ${AbstractSqlConnection.quoteRole(sessionContext.role)}`,
         [],
         'run',
         trx,
         loggerContext,
       );
     }
+  }
+
+  /**
+   * Quotes a role name as a single PostgreSQL identifier. Unlike `platform.quoteIdentifier`, which treats a dot as a
+   * schema qualifier, a role like `my.role` must be quoted whole (`"my.role"`) with embedded quotes doubled.
+   */
+  protected static quoteRole(role: string): string {
+    return `"${role.replaceAll('"', '""')}"`;
+  }
+
+  /** Serializes a session variable for `set_config()`; `Date` values use ISO 8601 so casts like `::timestamptz` parse. */
+  protected stringifySessionVariable(value: unknown): string {
+    return value instanceof Date ? value.toISOString() : String(value);
   }
 
   /** Commits the transaction or releases the savepoint. */

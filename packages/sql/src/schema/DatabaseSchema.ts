@@ -7,6 +7,7 @@ import {
   type EntityProperty,
   type FilterDef,
   MetadataError,
+  QueryHelper,
   type Routine,
   type Transaction,
   type Type,
@@ -16,6 +17,7 @@ import {
 import { DatabaseTable } from './DatabaseTable.js';
 import { normalizeViewDefinition } from './SchemaHelper.js';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
+import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
 import type { DatabaseView, SqlPolicyDef, SqlRoutineDef } from '../typings.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import { getTablePartitioning } from './partitioning.js';
@@ -401,18 +403,21 @@ export class DatabaseSchema {
         const command = policy.command ?? 'all';
         // deterministic default name derived from table + command + collision index, truncated the
         // same way check names are, so the introspected (engine-truncated) name matches metadata
+        const max = platform.getMaxIdentifierLength();
         let name = policy.name;
 
         if (!name) {
           const base = `${meta.collection}_${command}_policy`;
-          name = base;
+          name = base.substring(0, max);
 
+          // truncate the base first so the collision suffix survives the identifier limit
           for (let i = 2; usedPolicyNames.has(name); i++) {
-            name = `${base}_${i}`;
+            const suffix = `_${i}`;
+            name = base.substring(0, max - suffix.length) + suffix;
           }
         }
 
-        name = name.substring(0, platform.getMaxIdentifierLength());
+        name = name.substring(0, max);
         usedPolicyNames.add(name);
 
         table.addPolicy({
@@ -425,14 +430,18 @@ export class DatabaseSchema {
         });
       }
 
-      // rls-flagged filters materialize as additional permissive policies (app-level WHERE + DB-level policy)
-      const rlsFilters = Object.values(meta.filters).filter(filter => filter.rls);
+      // rls-flagged filters materialize as additional permissive policies (app-level WHERE + DB-level policy);
+      // filters inherited from a TPT parent are skipped — the policy already lives on the parent table, and the
+      // child table may not even have the referenced columns
+      const rlsFilters = Object.values(meta.filters).filter(
+        filter => filter.rls && !(meta.tptParent && Object.values(meta.tptParent.filters).includes(filter)),
+      );
 
       if (rlsFilters.length > 0) {
         table.rlsEnabled = true;
 
         for (const filter of rlsFilters) {
-          table.addPolicy(this.compileRlsFilterPolicy(meta, filter, table, platform, em));
+          table.addPolicy(this.compileRlsFilterPolicy(meta, filter, table, platform, usedPolicyNames));
         }
       }
     }
@@ -440,35 +449,37 @@ export class DatabaseSchema {
     return schema;
   }
 
-  private static readonly RLS_SENTINEL_PREFIX = '__mikro_rls_arg__';
-  private static readonly RLS_SENTINEL_SUFFIX = '__';
-
   /** Compiles an `rls`-flagged filter's condition into a resolved policy backed by `current_setting()` lookups. */
   private static compileRlsFilterPolicy(
     meta: EntityMetadata,
     filter: FilterDef,
     table: DatabaseTable,
     platform: AbstractSqlPlatform,
-    em: any,
+    usedPolicyNames: Set<string>,
   ): SqlPolicyDef {
     const accessed = new Set<string>();
-    const cond = this.resolveRlsFilterCond(filter, accessed);
+    const cond = QueryHelper.resolveRlsFilterCond(filter, accessed);
     const setting = typeof filter.rls === 'object' ? filter.rls.setting : undefined;
 
     if (setting && accessed.size > 1) {
       throw MetadataError.rlsFilterMultiArgSetting(filter.name, [...accessed]);
     }
 
-    let sql = em.getDriver().renderPartialIndexWhere(meta.class, cond);
-    const prefix = this.RLS_SENTINEL_PREFIX;
-    const suffix = this.RLS_SENTINEL_SUFFIX;
+    // the config-bound driver is always an `AbstractSqlDriver` here, like in `DatabaseTable.processIndexWhere`
+    const driver = platform.getConfig().getDriver() as AbstractSqlDriver;
+    let sql = driver.renderPartialIndexWhere(meta.class, cond);
+    const prefix = QueryHelper.RLS_SENTINEL_PREFIX;
+    const suffix = QueryHelper.RLS_SENTINEL_SUFFIX;
     // match `"<column>" <op> '<sentinel>'` — the LHS is always a quoted column emitted from this entity's own
     // where; group 1 keeps the column + operator so only the sentinel literal is swapped for the session lookup
-    const re = new RegExp(`("([^"]+)"\\s*(?:=|<>|>=|<=|>|<)\\s*)'${prefix}(\\w+)${suffix}'`, 'gi');
+    const re = new RegExp(`("([^"]+)"\\s*(?:!=|>=|<=|=|>|<)\\s*)'${prefix}(\\w+)${suffix}'`, 'g');
 
     sql = sql.replace(re, (_whole: string, lhs: string, column: string, arg: string) => {
       const col = table.getColumn(column)!;
-      const cast = platform.getCurrentSettingCast(col.mappedType);
+      // native enum columns compare against the enum type itself, `current_setting()` text won't coerce implicitly
+      const cast = col.nativeEnumName
+        ? `::${platform.quoteIdentifier(col.nativeEnumName)}`
+        : platform.getCurrentSettingCast(col.mappedType);
 
       if (cast === null) {
         throw MetadataError.rlsFilterUncastableType(filter.name, col.type);
@@ -484,44 +495,25 @@ export class DatabaseSchema {
       throw MetadataError.rlsFilterUnsupportedCond(filter.name);
     }
 
+    // filter policies share the collision handling with declared policy names
+    const max = platform.getMaxIdentifierLength();
+    const base = `${meta.collection}_${filter.name}_policy`;
+    let name = base.substring(0, max);
+
+    for (let i = 2; usedPolicyNames.has(name); i++) {
+      const suffix = `_${i}`;
+      name = base.substring(0, max - suffix.length) + suffix;
+    }
+
+    usedPolicyNames.add(name);
+
     return {
-      name: `${meta.collection}_${filter.name}_policy`.substring(0, platform.getMaxIdentifierLength()),
+      name,
       command: 'all',
       type: 'permissive',
       roles: [],
       using: sql,
     };
-  }
-
-  /**
-   * Resolves an `rls` filter's condition to a static `FilterQuery`. Function conditions are called with a proxy `args`
-   * that yields a unique sentinel per accessed argument and throwing proxies for the runtime-only parameters.
-   */
-  private static resolveRlsFilterCond(filter: FilterDef, accessed: Set<string>): Dictionary {
-    if (!(filter.cond instanceof Function)) {
-      return filter.cond as Dictionary;
-    }
-
-    const args = new Proxy({} as Dictionary, {
-      get: (_target, prop) => {
-        // conditions only ever read string argument names off `args`
-        const key = prop as string;
-        accessed.add(key);
-        return `${this.RLS_SENTINEL_PREFIX}${key}${this.RLS_SENTINEL_SUFFIX}`;
-      },
-    });
-    const poison = new Proxy({} as Dictionary, {
-      get: () => {
-        throw MetadataError.rlsFilterDependsOnRuntimeState(filter.name);
-      },
-    });
-    const result = (filter.cond as (...params: any[]) => unknown)(args, poison, poison, poison, poison);
-
-    if (result instanceof Promise) {
-      throw MetadataError.rlsFilterDependsOnRuntimeState(filter.name);
-    }
-
-    return result as Dictionary;
   }
 
   /** Separate from {@link fromMetadata} so the comparator only walks routines when the user defined any. */

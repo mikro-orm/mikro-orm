@@ -343,6 +343,12 @@ describe('row level security end-to-end under a non-owner role [postgres]', () =
     const emB = app.em.fork({ session: { variables: { 'app.tenant': TB } } });
     const b = await emB.find(Author, {}, { cache: 5000 });
     expect(b.map(x => x.tenantId)).toEqual([TB]);
+
+    // the query builder cache path must be keyed by the session context too
+    const qbA = await emA.qb(Author).select('*').cache(5000).getResultList();
+    expect(qbA.map(x => x.tenantId)).toEqual([TA, TA]);
+    const qbB = await emB.qb(Author).select('*').cache(5000).getResultList();
+    expect(qbB.map(x => x.tenantId)).toEqual([TB]);
   });
 
   test('role switching via session context: a read-only role can select but not insert', async () => {
@@ -355,6 +361,16 @@ describe('row level security end-to-end under a non-owner role [postgres]', () =
     // the restricted role lacks INSERT, so a write is rejected with a privilege error (not an RLS violation)
     const writeEm = app.em.fork({ session: { role: 'rls_e2e_restricted', variables: { 'app.tenant': TA } } });
     await expect(writeEm.insert(Author, { tenantId: TA, name: 'nope' })).rejects.toThrow(/permission denied/);
+  });
+
+  test('addFilter rejects an rls filter scoped to an entity with a runtime-registration message', () => {
+    // the entity option does not make it declarable at runtime — the message must not call it a global filter
+    expect(() => app.em.addFilter({ name: 'scoped', entity: Author, cond: () => ({}), rls: true } as any)).toThrow(
+      /cannot be flagged with 'rls' when registered at runtime/,
+    );
+    expect(() => app.em.addFilter({ name: 'scoped', entity: Author, cond: () => ({}), rls: true } as any)).not.toThrow(
+      /global filter/,
+    );
   });
 
   // nested (not sibling) so it runs while the roles created above still exist, before they are dropped;

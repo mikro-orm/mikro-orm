@@ -2472,12 +2472,15 @@ export class QueryBuilder<
     }
 
     const query = this.toQuery();
-    const cached = await this.em?.tryCache<Entity, U>(this.mainAlias.entityName, this.#state.cache, [
-      'qb.execute',
-      query.sql,
-      query.params,
-      method,
-    ]);
+    const cacheKey: unknown[] = ['qb.execute', query.sql, query.params, method];
+    // session context (row level security) scopes cached rows per tenant/role, avoiding cross-context serves
+    const qbSessionContext = this.em?.getSessionContext();
+
+    if (qbSessionContext) {
+      cacheKey.push(qbSessionContext);
+    }
+
+    const cached = await this.em?.tryCache<Entity, U>(this.mainAlias.entityName, this.#state.cache, cacheKey);
 
     if (cached?.data !== undefined) {
       return cached.data as unknown as U;

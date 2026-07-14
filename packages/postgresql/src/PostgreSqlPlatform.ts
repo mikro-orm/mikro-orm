@@ -5,6 +5,10 @@ import { BasePostgreSqlPlatform, Utils } from '@mikro-orm/sql';
 
 /** Platform implementation for PostgreSQL. */
 export class PostgreSqlPlatform extends BasePostgreSqlPlatform {
+  override supportsConnectionSessionContext(): boolean {
+    return true;
+  }
+
   override convertIntervalToJSValue(value: string): unknown {
     return PostgresInterval(value);
   }

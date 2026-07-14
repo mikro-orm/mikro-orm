@@ -762,6 +762,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
+  override getRlsDropSQL(diff: TableDifference): string[] {
+    // a policy expression holds a dependency on the columns it references, so removed policies
+    // must be dropped before the column drops emitted later in the diff
+    return Object.values(diff.removedPolicies).map(policy => this.dropPolicy(diff.toTable, policy));
+  }
+
   override getRlsAlterSQL(diff: TableDifference): string[] {
     const ret: string[] = [];
     const table = diff.toTable;
@@ -777,10 +783,6 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       ret.push(`alter table ${table.getQuotedName()} no force row level security`);
     }
 
-    for (const policy of Object.values(diff.removedPolicies)) {
-      ret.push(this.dropPolicy(table, policy));
-    }
-
     for (const policy of Object.values(diff.changedPolicies)) {
       ret.push(this.alterPolicy(table, policy));
     }
@@ -789,7 +791,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       ret.push(this.createPolicy(table, policy));
     }
 
-    // disable only after its policies are gone
+    // disable only after its policies are gone (removed ones were dropped via `getRlsDropSQL`)
     if (diff.changedRlsEnabled === false) {
       ret.push(`alter table ${table.getQuotedName()} disable row level security`);
     }
@@ -1188,10 +1190,16 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       return value;
     }
 
-    return value
-      .replace(/^\{|\}$/g, '')
-      .split(',')
-      .map(role => role.replace(/^"(.*)"$/, '$1'));
+    // tokenize the array literal instead of splitting on commas — quoted role names can contain
+    // commas, and quoted elements escape `"` and `\` with a backslash
+    const roles: string[] = [];
+    const re = /"((?:[^"\\]|\\.)*)"|[^,]+/g;
+
+    for (const match of value.replace(/^\{|\}$/g, '').matchAll(re)) {
+      roles.push(match[1] != null ? match[1].replace(/\\(.)/g, '$1') : match[0]);
+    }
+
+    return roles;
   }
 
   async getAllForeignKeys(

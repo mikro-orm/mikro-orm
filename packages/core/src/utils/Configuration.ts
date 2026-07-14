@@ -39,7 +39,7 @@ import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import type { EventSubscriber } from '../events/EventSubscriber.js';
 import type { AssignOptions } from '../entity/EntityAssigner.js';
 import type { EntityManagerType, IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
-import { MetadataError, NotFoundError } from '../errors.js';
+import { MetadataError, NotFoundError, ValidationError } from '../errors.js';
 import { RequestContext } from './RequestContext.js';
 import { DataloaderType, FlushMode, LoadStrategy, PopulateHint, type EmbeddedPrefixMode } from '../enums.js';
 import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter.js';
@@ -505,6 +505,11 @@ export class Configuration<
 
     this.#options.schema ??= this.#platform.getDefaultSchemaName();
     this.#options.charset ??= this.#platform.getDefaultCharset();
+
+    // fail closed instead of silently applying no session state on drivers without the reserve hook (e.g. pglite)
+    if (this.#options.sessionContext === 'connection' && !this.#platform.supportsConnectionSessionContext()) {
+      throw ValidationError.connectionSessionContextNotSupported();
+    }
 
     Object.keys(this.#options.filters).forEach(key => {
       // global filters have no entity to attach a policy to, so `rls` is only valid on entity-scoped filters

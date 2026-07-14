@@ -1,5 +1,12 @@
 import { rm } from 'node:fs/promises';
-import { DatabaseTable, EntitySchema, MikroORM, SchemaComparator, type SqlPolicyDef } from '@mikro-orm/postgresql';
+import {
+  DatabaseTable,
+  EntitySchema,
+  MikroORM,
+  type Options,
+  SchemaComparator,
+  type SqlPolicyDef,
+} from '@mikro-orm/postgresql';
 import { Migrator } from '@mikro-orm/migrations';
 
 function idColumn() {
@@ -116,6 +123,83 @@ describe('rls policies [postgres]', () => {
 
     await orm.schema.dropDatabase();
     await orm.close();
+  });
+
+  test('default policy names keep the collision suffix within the identifier limit', async () => {
+    const longTable = `long_${'x'.repeat(70)}`;
+    const Long = new EntitySchema({
+      name: 'RlsLongName',
+      tableName: longTable,
+      properties: {
+        id: idColumn(),
+        val: { type: 'number', name: 'val', fieldName: 'val', columnType: 'int' },
+      },
+      policies: [{ using: 'val > 0' }, { using: 'val < 100' }],
+    });
+    const orm = await MikroORM.init({ entities: [Long], dbName: 'mikro_orm_test_rls_long', connect: false } as Options);
+
+    const names = orm.schema
+      .getTargetSchema()
+      .getTable(longTable)!
+      .getPolicies()
+      .map(p => p.name);
+    // the base name alone exceeds the limit, so the suffix must survive the truncation
+    expect(names[0]).toBe(`${longTable}_all_policy`.substring(0, 63));
+    expect(names[1]).toBe(`${longTable}_all_policy`.substring(0, 61) + '_2');
+    expect(new Set(names).size).toBe(2);
+
+    await orm.close(true);
+  });
+
+  test('parsePgRoles tokenizes quoted role names with commas and escaped quotes', async () => {
+    const orm = await MikroORM.init({
+      entities: [Locked],
+      dbName: 'mikro_orm_test_rls_roles',
+      connect: false,
+    } as Options);
+    const helper = orm.em.getPlatform().getSchemaHelper() as any;
+
+    expect(helper.parsePgRoles(['app_reader'])).toEqual(['app_reader']);
+    expect(helper.parsePgRoles('{public}')).toEqual(['public']);
+    expect(helper.parsePgRoles('{app_reader,app_writer}')).toEqual(['app_reader', 'app_writer']);
+    expect(helper.parsePgRoles('{admin,"role, with comma","esc\\"aped"}')).toEqual([
+      'admin',
+      'role, with comma',
+      'esc"aped',
+    ]);
+
+    await orm.close(true);
+  });
+
+  test('dropping a policy together with the column it references [postgres]', async () => {
+    const dbName = 'mikro_orm_test_rls_drop_col';
+    const V1 = new EntitySchema({
+      name: 'RlsDropCol',
+      tableName: 'rls_drop_col',
+      properties: {
+        id: idColumn(),
+        tenantId: { type: 'string', name: 'tenantId', fieldName: 'tenant_id', columnType: 'uuid' },
+      },
+      policies: [{ name: 'p_tenant', using: `tenant_id = current_setting('app.tenant')::uuid` }],
+    });
+    const orm1 = await MikroORM.init({ entities: [V1], dbName });
+    await orm1.schema.refresh();
+    await orm1.close();
+
+    // v2 removes both the column and the policy referencing it — postgres refuses to drop a column
+    // a policy depends on, so the generated DDL must drop the policy first
+    const V2 = new EntitySchema({
+      name: 'RlsDropCol',
+      tableName: 'rls_drop_col',
+      properties: { id: idColumn() },
+    });
+    const orm2 = await MikroORM.init({ entities: [V2], dbName });
+    const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    await orm2.schema.execute(diff);
+    expect(await orm2.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+
+    await orm2.schema.dropDatabase();
+    await orm2.close();
   });
 
   test('policy round-trips against postgres [postgres]', async () => {

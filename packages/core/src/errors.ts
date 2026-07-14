@@ -165,6 +165,24 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     );
   }
 
+  static sessionContextRequiresImplicitTransactions(): ValidationError {
+    return new ValidationError(
+      "Cannot set a database session context (row level security) with the 'transaction' strategy while 'implicitTransactions' is disabled. The context is applied on transaction begin, but writes would run without a transaction and silently bypass the policies. Enable 'implicitTransactions', wrap the work in 'em.transactional()', or use the 'connection' session context strategy.",
+    );
+  }
+
+  static sessionContextInsideTransaction(): ValidationError {
+    return new ValidationError(
+      "Cannot set a database session context (row level security) inside an active transaction with the 'transaction' strategy. The context is only applied at the top-level transaction begin, so it would never reach this transaction. Set the session context before starting the transaction (e.g. via 'em.fork({ session })'), or use the 'connection' session context strategy.",
+    );
+  }
+
+  static connectionSessionContextNotSupported(): ValidationError {
+    return new ValidationError(
+      "The 'connection' session context strategy requires a driver that supports per-acquire connection hooks (the `postgresql` driver). Use the default 'transaction' strategy instead.",
+    );
+  }
+
   static cannotUseOperatorsInsideEmbeddables(
     entityName: EntityName,
     propName: string,
@@ -486,10 +504,24 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     );
   }
 
+  /** Thrown when a filter flagged with `rls` is declared on a non-root entity of an STI hierarchy. */
+  static rlsFilterOnNonRootStiEntity(meta: EntityMetadata, filterName: string): MetadataError {
+    return new MetadataError(
+      `Filter '${filterName}' on entity ${meta.className} is flagged with 'rls', but the entity is part of a single table inheritance hierarchy. Declare the filter on the root entity ${meta.root.className} instead, as the whole hierarchy shares a single table and the policy would never be created otherwise.`,
+    );
+  }
+
   /** Thrown when a global (config or EM registered) filter is flagged with `rls`; RLS filters must be entity scoped. */
   static rlsFilterMustBeEntityScoped(filterName: string): MetadataError {
     return new MetadataError(
       `Filter '${filterName}' is a global filter and cannot be flagged with 'rls'. RLS filters must be declared on an entity via @Filter() so a policy can be attached to its table.`,
+    );
+  }
+
+  /** Thrown when an entity-scoped `rls` filter is registered at runtime via `em.addFilter()` instead of in metadata. */
+  static rlsFilterCannotBeRegisteredAtRuntime(filterName: string): MetadataError {
+    return new MetadataError(
+      `Filter '${filterName}' cannot be flagged with 'rls' when registered at runtime via 'em.addFilter()'. RLS filters must be declared in entity metadata via the @Filter() decorator (or the entity 'filters' option) so a policy can be attached to the table.`,
     );
   }
 

@@ -17,6 +17,7 @@ import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import { JsonType } from '../types/JsonType.js';
 import { helper } from '../entity/wrap.js';
 import { isRaw, Raw } from './RawQueryFragment.js';
+import { MetadataError } from '../errors.js';
 import type { FilterOptions } from '../drivers/IDatabaseDriver.js';
 
 /** @internal */
@@ -388,6 +389,45 @@ export class QueryHelper {
         filters[f].name = f;
         return filters[f];
       });
+  }
+
+  /** @internal Sentinel wrapping for arguments accessed while statically resolving an `rls` filter condition. */
+  static readonly RLS_SENTINEL_PREFIX = '__mikro_rls_arg__';
+
+  /** @internal */
+  static readonly RLS_SENTINEL_SUFFIX = '__';
+
+  /**
+   * Resolves an `rls` filter's condition to a static `FilterQuery`. Function conditions are called with a proxy `args`
+   * that yields a unique sentinel per accessed argument and throwing proxies for the runtime-only parameters.
+   *
+   * @internal
+   */
+  static resolveRlsFilterCond(filter: FilterDef, accessed: Set<string>): Dictionary {
+    if (!(filter.cond instanceof Function)) {
+      return filter.cond as Dictionary;
+    }
+
+    const args = new Proxy({} as Dictionary, {
+      get: (_target, prop) => {
+        // conditions only ever read string argument names off `args`
+        const key = prop as string;
+        accessed.add(key);
+        return `${this.RLS_SENTINEL_PREFIX}${key}${this.RLS_SENTINEL_SUFFIX}`;
+      },
+    });
+    const poison = new Proxy({} as Dictionary, {
+      get: () => {
+        throw MetadataError.rlsFilterDependsOnRuntimeState(filter.name);
+      },
+    });
+    const result = (filter.cond as (...params: any[]) => unknown)(args, poison, poison, poison, poison);
+
+    if (result instanceof Promise) {
+      throw MetadataError.rlsFilterDependsOnRuntimeState(filter.name);
+    }
+
+    return result as Dictionary;
   }
 
   static mergePropertyFilters(

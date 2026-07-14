@@ -32,7 +32,7 @@ Attach policies to an entity through the `policies` option, and toggle the table
   <TabItem value="decorators">
 
 ```ts title="./entities/Article.ts"
-import { Entity, PrimaryKey, Property } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity({
   rowLevelSecurity: true,
@@ -186,7 +186,7 @@ alter table "..." force row level security;
 
 ### Inheritance
 
-Policies declared on an abstract base entity are passed down to the concrete entities that extend it. For single table inheritance (STI), policies may only be declared on the **root** of the hierarchy (all subclasses share one table) — declaring them on a non-root STI entity throws.
+Policies declared on an abstract base entity are passed down to the concrete entities that extend it, together with the `rowLevelSecurity` flag (a child can override the flag by declaring its own value). For single table inheritance (STI), policies may only be declared on the **root** of the hierarchy (all subclasses share one table) — declaring them on a non-root STI entity throws. For table-per-type (TPT) inheritance, policies stay on the table that declares them — the root's policies protect the root table only, and child tables declare their own.
 
 ## Schema generator and migrations
 
@@ -233,6 +233,8 @@ const ctx = em.getSessionContext();
 ```
 
 `setSessionContext` **merges** the variables into any already set and updates the role when one is provided — use `clearSessionContext()` to drop the whole context (there is no per-key removal). Forks inherit the parent's session context; passing `session` to `fork()` replaces it for that fork.
+
+Session variables are applied as strings (`set_config` only takes text); `Date` values are serialized to ISO 8601 so casts like `::timestamptz` parse them.
 
 ### The two strategies
 
@@ -282,7 +284,7 @@ await em.transactional(async em => {
 
 #### `'connection'`
 
-Applies the context whenever a connection is reserved, using `set_config(..., false)` and `set role "..."` (session-scoped), and issues `reset all` + `reset role` when no context is active so a pooled connection never carries stale state. It resolves the active EM through the request context, which makes it a natural fit for a [RequestContext](./identity-map.md#request-context)/middleware setup. This strategy is **postgresql driver only** and composes with any `onReserveConnection` hook you already have.
+Applies the context whenever a connection is reserved, using `set_config(..., false)` and `set role "..."` (session-scoped), always preceded by `reset all` (plus `reset role` when no role is set) so a pooled connection never carries stale state from a previous reservation. It resolves the active EM through the request context, which makes it a natural fit for a [RequestContext](./identity-map.md#request-context)/middleware setup. This strategy is **postgresql driver only** and composes with any `onReserveConnection` hook you already have.
 
 ```ts
 const orm = await MikroORM.init({
@@ -309,9 +311,16 @@ Prefer `'transaction'` (the default) unless you specifically need session-scoped
 
 :::
 
+Two caveats specific to this strategy:
+
+- It resolves the active EM through `RequestContext` — an explicit `fork()` created outside a request context receives only the connection reset (`reset all` / `reset role`), not your session variables. Set the context on the EM resolved inside `RequestContext` (as in the example above).
+- The `reset all` issued on every acquire also clears any session-level `set`s you made in `onCreateConnection`; re-apply such settings via your own `onReserveConnection` hook (which runs after the ORM's) or per query.
+
+It is only available on the `postgresql` driver — configuring it elsewhere (including `pglite`) throws at init.
+
 ### Fork-per-request middleware
 
-The typical multi-tenant pattern (see [GitHub #6137](https://github.com/mikro-orm/mikro-orm/issues/6137)) is to derive the tenant from the request and fork a scoped EM for the duration of the handler:
+The typical multi-tenant pattern (see [GitHub discussion #6137](https://github.com/mikro-orm/mikro-orm/discussions/6137)) is to derive the tenant from the request and fork a scoped EM for the duration of the handler:
 
 ```ts
 app.use((req, res, next) => {
@@ -337,7 +346,7 @@ A write that a `with check` policy rejects surfaces as a `RowLevelSecurityViolat
 import { RowLevelSecurityViolationException } from '@mikro-orm/postgresql';
 
 const em = orm.em.fork({ session: { role: 'app_user', variables: { 'app.tenant': tenantA } } });
-em.create(Article, { tenantId: tenantB, title: 'cross-tenant' }); // wrong tenant
+em.create(Article, { tenantId: tenantB }); // wrong tenant
 
 try {
   await em.flush();
@@ -408,8 +417,11 @@ Each referenced argument maps to a session variable named `mikro.<filterName>.<a
 | `date` | `::date` |
 | `time` | `::time` |
 | `string` / `text` / `enum` | none (`current_setting()` already returns text) |
+| native enum (`nativeEnumName`) | cast to the enum type itself (e.g. `::"task_status"`) |
 
 Types outside this table (e.g. `decimal`) are uncastable and error at schema build.
+
+Filters inherited from a TPT parent do not compile onto the child tables — the policy lives on the parent table only. Declaring an `rls` filter on a non-root STI entity throws at discovery, since those entities have no table of their own and the policy would silently never be created.
 
 For a **single-argument** filter, override the variable name with `rls: { setting: 'app.current_tenant' }`:
 
@@ -431,7 +443,7 @@ To compile to a static policy, the filter's `cond` must be statically analyzable
 
 - A condition that touches `em`, `type`, or the find options (a policy cannot see runtime state).
 - An `async` condition.
-- An argument used outside a direct equality comparison (e.g. `{ orgId: { $in: [args.o] } }`).
+- An argument used outside a direct comparison (`$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte`) — e.g. `{ orgId: { $in: [args.o] } }`.
 - A compared column whose type has no cast (e.g. `decimal`).
 
 Object conditions (`cond: { status: 'active' }`) and functions over `args` only are fine. Only **entity-scoped** filters can be flagged — a global (config or `addFilter`) filter with `rls` is rejected.
