@@ -1,5 +1,5 @@
 import { defineEntity, EntitySchema, MetadataError, MikroORM, p, type Options } from '@mikro-orm/postgresql';
-import { MikroORM as SqliteMikroORM } from '@mikro-orm/sqlite';
+import { MikroORM as SqliteMikroORM, SqlitePlatform, StringType } from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 const pgOptions = { dbName: 'mikro_orm_test_rls', connect: false } as Options;
@@ -132,6 +132,9 @@ describe('row level security metadata', () => {
         ],
       }),
     ).rejects.toThrow(MetadataError);
+
+    // platforms without RLS support also provide no session variable cast mapping
+    expect(new SqlitePlatform().getCurrentSettingCast(new StringType())).toBeNull();
   });
 
   test('throws when policies are declared on a non-root STI entity', async () => {
