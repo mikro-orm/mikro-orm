@@ -776,7 +776,6 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const ret: string[] = [];
     const table = diff.toTable;
 
-    // enable before creating policies
     if (diff.changedRlsEnabled === true) {
       ret.push(`alter table ${table.getQuotedName()} enable row level security`);
     }

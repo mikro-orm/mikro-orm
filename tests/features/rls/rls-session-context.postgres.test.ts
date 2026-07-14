@@ -478,25 +478,28 @@ describe('row level security session context', () => {
     expect(rows).toHaveLength(1);
   });
 
-  test('em.stream under a session context outside a transaction is not wrapped (transaction strategy)', async () => {
-    // stream never opens the implicit session-context transaction, so the DB never receives the variables or role;
-    // the owning superuser connection then bypasses RLS and streams every tenant's rows, unscoped by the staged context
+  test('em.stream under a session context outside a transaction fails closed (transaction strategy)', async () => {
+    // a stream never opens the implicit session-context transaction, so rather than silently streaming every tenant's
+    // rows unscoped by the staged context, it must fail closed
     const em = orm.em.fork({ session: { role: 'rls_sc_role', variables: { 'app.tenant_id': 1 } } });
-    const mock = mockLogger(orm, ['query']);
 
-    const rows = [];
+    await expect(async () => {
+      for await (const _a of em.stream(Article, {})) {
+        // the throw happens before the first row is produced
+      }
+    }).rejects.toThrow(/Cannot stream under a database session context/);
+  });
 
-    for await (const a of em.stream(Article, {})) {
-      rows.push(a);
-    }
+  test('qb.stream under a session context outside a transaction fails closed (transaction strategy)', async () => {
+    // the QueryBuilder entry point guards independently of em.stream — a directly built stream must fail closed too
+    const em = orm.em.fork({ session: { role: 'rls_sc_role', variables: { 'app.tenant_id': 1 } } });
+    const qb = em.createQueryBuilder(Article).select('*');
 
-    // rows from tenant 2 leak through — the tenant scoping was silently skipped
-    expect(rows.map(r => r.tenantId).sort()).toEqual([1, 1, 2]);
-
-    const calls = mock.mock.calls.map(c => c[0]);
-    expect(calls.some(q => q.includes('begin'))).toBe(false);
-    expect(calls.some(q => q.includes('set_config'))).toBe(false);
-    expect(calls.some(q => q.includes('set local role'))).toBe(false);
+    await expect(async () => {
+      for await (const _a of qb.stream()) {
+        // the throw happens before the first row is produced
+      }
+    }).rejects.toThrow(/Cannot stream under a database session context/);
   });
 
   test('wrapping em.stream in em.transactional carries the session context (rows tenant-scoped)', async () => {
@@ -537,6 +540,16 @@ describe('row level security session context', () => {
     expect(calls.some(q => q.includes('reset all'))).toBe(true);
     expect(calls.some(q => q.includes('reset role'))).toBe(true);
     expect(calls.some(q => q.includes('set_config'))).toBe(false);
+  });
+
+  test("staging a session context inside an active transaction throws under the 'connection' strategy too", async () => {
+    // the pinned connection was reserved with the previous context, so mid-transaction staging is as inert as under
+    // the 'transaction' strategy while getSessionContext() would still claim it — the guard fires regardless of strategy
+    await expect(
+      ormConn.em.fork().transactional(async inner => {
+        inner.setSessionContext({ variables: { 'app.tenant_id': 1 } });
+      }),
+    ).rejects.toThrow(/inside an active transaction/);
   });
 
   test("a user onReserveConnection hook composes after the ORM statements ('connection' strategy)", async () => {
