@@ -133,6 +133,7 @@ const DEFAULTS = {
     ignoreSchema: [],
     ignoreTriggers: false,
     ignoreRoutines: false,
+    ignorePolicies: false,
     skipTables: [],
     skipViews: [],
     skipColumns: {},
@@ -1334,6 +1335,14 @@ export interface Options<
      * @default false
      */
     ignoreRoutines?: boolean;
+    /**
+     * Leave row level security policies unmanaged. Declared policies are still created and RLS is still enabled or
+     * forced based on the entity metadata, but existing policies are never dropped or altered and RLS is never
+     * disabled or unforced — use this to protect hand-written policies from being removed when they are not
+     * mirrored in the entity definitions.
+     * @default false
+     */
+    ignorePolicies?: boolean;
     /**
      * Table names or patterns to skip during schema generation.
      * @default []
