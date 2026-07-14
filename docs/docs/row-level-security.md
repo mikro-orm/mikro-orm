@@ -379,7 +379,7 @@ try {
 
 ### Result cache
 
-The session context is folded into the [result cache](./caching.md) key automatically — including **named** cache keys (`cache: ['articles', 5000]`, stored as `articles|<serialized context>` when a context is set) — so two tenants issuing the same query never share a cached result. One consequence: `em.clearCache('articles')` removes only the unscoped entry; context-scoped entries expire via their TTL.
+The session context is folded into the [result cache](./caching.md) key automatically — including **named** cache keys (`cache: ['articles', 5000]`, stored as `articles|<serialized context>` when a context is set) — so two tenants issuing the same query never share a cached result. One consequence: `em.clearCache('articles')` removes the unscoped entry and the calling EM's context-scoped one; entries scoped to **other** session contexts expire via their TTL.
 
 ## The filter bridge
 
