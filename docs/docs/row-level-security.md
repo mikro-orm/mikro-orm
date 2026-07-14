@@ -531,6 +531,23 @@ Policies run **per row** on every query — a `using` expression is effectively 
 - The `'transaction'` strategy uses transaction-scoped `set_config(..., true)` / `set local role`, which is safe under pgBouncer **transaction** pooling mode.
 - The `'connection'` strategy sets session-scoped state on the reserved connection, so it requires pgBouncer **session** pooling mode (or a direct, non-pooled connection). Using it under transaction mode would leak one request's context onto another.
 
+### Testing without a PostgreSQL server
+
+Swapping sqlite in for tests is a common speed-up, but it cannot work here — RLS metadata **throws at discovery** on any non-PostgreSQL driver by design, because silently skipping security declarations would make your tests pass while enforcing nothing. Use the [`@mikro-orm/pglite`](./usage-with-pglite.md) driver instead: it runs real (WASM) PostgreSQL in memory with no server, and the whole RLS surface behaves identically — policy DDL, the session context under the default `'transaction'` strategy, and actual enforcement. Two things to mind:
+
+- pglite connects as a **superuser**, which bypasses RLS just like on a real server — create a plain role in your test setup and switch to it via `session: { role: ... }`, exactly as the [operational caveats](#the-table-owner-and-superusers-bypass-rls) describe.
+- The `'connection'` session context strategy is not available on pglite (it throws at init) — the default `'transaction'` strategy covers testing.
+
+```ts
+const orm = await MikroORM.init({ driver: PGliteDriver, dbName: 'memory://', entities: [...] });
+await orm.schema.refresh();
+await orm.em.execute(`create role app_user login`);
+await orm.em.execute(`grant select, insert, update, delete on all tables in schema public to app_user`);
+
+const em = orm.em.fork({ session: { role: 'app_user', variables: { 'app.tenant': tenantId } } });
+// policies now actually enforce in your tests
+```
+
 ## Entity generator
 
 Regenerating entities from a database that already has RLS emits explicit `policies` and the `rowLevelSecurity` flag on the generated entities, reflecting exactly what PostgreSQL reports. Note that policies which originated from the [filter bridge](#the-filter-bridge) come back as **plain policies** — the link back to the source filter is not stored in the database and cannot be recovered, so you will get the compiled `using`/`check` expression rather than a `filters: { ..., rls: true }` declaration. If you want to keep the one-declaration-two-layers ergonomics, re-introduce the filter by hand after generating. See the [Entity Generator](./entity-generator.md) guide for the overall workflow.
