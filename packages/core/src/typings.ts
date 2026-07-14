@@ -1159,8 +1159,8 @@ export interface PolicyDef<T = any> {
 
 /** Per-context database session state applied for row level security (session variables and role). */
 export interface SessionContext {
-  /** Session variables set via `set_config`, typically referenced by RLS policies through `current_setting()`. */
-  variables?: Dictionary<string | number | boolean>;
+  /** Session variables set via `set_config`, typically referenced by RLS policies through `current_setting()`. `Date` values are serialized to ISO 8601. */
+  variables?: Dictionary<string | number | boolean | Date>;
   /** Database role to switch to for the duration of the context (`set local role` / `set role`). */
   role?: string;
 }

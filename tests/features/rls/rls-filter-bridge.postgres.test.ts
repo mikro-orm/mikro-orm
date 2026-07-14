@@ -2,6 +2,7 @@ import { rm } from 'node:fs/promises';
 import {
   BigIntType,
   BooleanType,
+  DatabaseSchema,
   DateTimeType,
   DateType,
   DecimalType,
@@ -113,6 +114,14 @@ describe('rls filter bridge (schema) [postgres]', () => {
       'rls_fb_order_byCustom_policy',
     ]);
     expect(table.getPolicies().every(p => p.command === 'all' && p.type === 'permissive')).toBe(true);
+  });
+
+  test('fromMetadata compiles rls filter policies without an EntityManager', () => {
+    // the `em` parameter is optional on this public API — the compilation must not depend on it
+    const metadata = [orm.getMetadata().get(Tenant), orm.getMetadata().get(Order)];
+    const schema = DatabaseSchema.fromMetadata(metadata, orm.em.getPlatform() as any, orm.config);
+
+    expect(schema.getTable('rls_fb_order')!.getPolicies()).toHaveLength(6);
   });
 
   test('the session-variable cast mapping covers each supported column type', () => {
@@ -246,6 +255,20 @@ describe('rls filter bridge (compile errors) [postgres]', () => {
     );
     await orm.close(true);
   });
+
+  test('comparison operators compile ($ne, $gte)', async () => {
+    const orm = await init(
+      { id: p.integer().primary(), status: p.string(), orgId: p.integer() },
+      {
+        f: { name: 'f', cond: (a: any) => ({ status: { $ne: a.s } }), rls: true },
+        g: { name: 'g', cond: (a: any) => ({ orgId: { $gte: a.o } }), rls: true },
+      },
+    );
+    const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
+    expect(sql).toContain(`using ("status" != current_setting('mikro.f.s'))`);
+    expect(sql).toContain(`using ("org_id" >= current_setting('mikro.g.o')::int)`);
+    await orm.close(true);
+  });
 });
 
 describe('rls filter bridge (platform gating)', () => {
@@ -330,7 +353,7 @@ describe('rls filter bridge (runtime) [postgres]', () => {
     orm = await MikroORM.init(baseOptions);
     await orm.schema.refresh();
 
-    // a non-owner, non-superuser role is required to observe the policy — superusers/owners bypass RLS even under force
+    // a non-superuser role is required to observe the policy — superusers bypass RLS even under force
     const conn = orm.em.getConnection();
     await conn.execute('drop role if exists rls_fb_role');
     await conn.execute('create role rls_fb_role');
@@ -357,6 +380,14 @@ describe('rls filter bridge (runtime) [postgres]', () => {
 
     expect(em.getFilterParams('byTenant')).toEqual({ tenant: T1 });
     expect(em.getSessionContext()?.variables).toEqual({ 'mikro.byTenant.tenant': T1 });
+  });
+
+  test('setFilterParams with no args stages no session context', () => {
+    // an empty context would still switch on the implicit transaction wrapping for nothing
+    const em = orm.em.fork();
+    em.setFilterParams('byTenant', {});
+
+    expect(em.getSessionContext()).toBeUndefined();
   });
 
   test('a fork after setFilterParams carries both filter params and session variables', () => {
@@ -432,5 +463,213 @@ describe('rls filter bridge (runtime) [postgres]', () => {
     emB.setSessionContext({ role: 'rls_fb_role' });
     const b = await emB.find(RtOrder, {}, { cache: 5000 });
     expect(b.map(x => x.tenantId)).toEqual([T2]);
+  });
+});
+
+describe('rls filter bridge (staging) [postgres]', () => {
+  test('setFilterParams stages the union across same-named rls filters on multiple entities', async () => {
+    const A = defineEntity({
+      name: 'RlsStA',
+      tableName: 'rls_st_a',
+      properties: { id: p.integer().primary(), tenantId: p.uuid() },
+      filters: {
+        byTenant: { name: 'byTenant', cond: (args: any) => ({ tenantId: args.tenant }), rls: true, default: false },
+      },
+    });
+    const B = defineEntity({
+      name: 'RlsStB',
+      tableName: 'rls_st_b',
+      properties: { id: p.integer().primary(), tenantId: p.uuid() },
+      filters: {
+        byTenant: {
+          name: 'byTenant',
+          cond: (args: any) => ({ tenantId: args.tenant }),
+          rls: { setting: 'app.current_tenant' },
+          default: false,
+        },
+      },
+    });
+    const orm = await MikroORM.init({
+      entities: [A, B],
+      dbName: 'mikro_orm_test_rls_fb_staging',
+      driver: PostgreSqlDriver,
+      connect: false,
+    } as Options);
+
+    // both entities' policies must see their value, regardless of discovery order
+    const em = orm.em.fork();
+    em.setFilterParams('byTenant', { tenant: T1 });
+    expect(em.getSessionContext()?.variables).toEqual({
+      'mikro.byTenant.tenant': T1,
+      'app.current_tenant': T1,
+    });
+
+    await orm.close(true);
+  });
+
+  test('a custom setting binds the argument the condition accesses even with extraneous keys', async () => {
+    const C = defineEntity({
+      name: 'RlsStC',
+      tableName: 'rls_st_c',
+      properties: { id: p.integer().primary(), tenantId: p.uuid() },
+      filters: {
+        byTenant: {
+          name: 'byTenant',
+          cond: (args: any) => ({ tenantId: args.tenant }),
+          rls: { setting: 'app.current_tenant' },
+          default: false,
+        },
+      },
+    });
+    const orm = await MikroORM.init({
+      entities: [C],
+      dbName: 'mikro_orm_test_rls_fb_staging2',
+      driver: PostgreSqlDriver,
+      connect: false,
+    } as Options);
+
+    const em = orm.em.fork();
+    em.setFilterParams('byTenant', { tenant: T1, other: 1 });
+    expect(em.getSessionContext()?.variables).toEqual({
+      'app.current_tenant': T1,
+      'mikro.byTenant.other': 1,
+    });
+
+    await orm.close(true);
+  });
+});
+
+describe('rls filter bridge (edge cases) [postgres]', () => {
+  test('rls filter on a TPT root compiles only on the root table', async () => {
+    const Person = defineEntity({
+      name: 'RlsFbTptPerson',
+      tableName: 'rls_fb_tpt_person',
+      abstract: true,
+      inheritance: 'tpt',
+      properties: {
+        id: p.integer().primary(),
+        tenantId: p.integer(),
+      },
+      filters: {
+        tenant: { name: 'tenant', cond: (args: any) => ({ tenantId: args.tenant }), rls: true, default: false },
+      },
+    });
+    const Employee = defineEntity({
+      name: 'RlsFbTptEmployee',
+      tableName: 'rls_fb_tpt_employee',
+      extends: Person,
+      properties: {
+        salary: p.integer(),
+      },
+    });
+
+    const orm = await MikroORM.init({
+      entities: [Person, Employee],
+      dbName: 'mikro_orm_test_rls_fb_tpt',
+    });
+    await orm.schema.refresh();
+
+    const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
+    expect(sql).toContain(
+      `create policy "rls_fb_tpt_person_tenant_policy" on "rls_fb_tpt_person" using ("tenant_id" = current_setting('mikro.tenant.tenant')::int)`,
+    );
+    // the inherited filter must not compile a policy onto the child table (it may not even have the column)
+    expect(sql).not.toContain(`on "rls_fb_tpt_employee"`);
+
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
+
+  test('filter policies share collision handling with declared policy names', async () => {
+    const Book = defineEntity({
+      name: 'RlsFbCollision',
+      tableName: 'rls_fb_book',
+      properties: {
+        id: p.integer().primary(),
+        tenantId: p.integer(),
+      },
+      policies: [{ name: 'rls_fb_book_tenant_policy', using: 'true' }],
+      filters: {
+        tenant: { name: 'tenant', cond: (args: any) => ({ tenantId: args.tenant }), rls: true, default: false },
+      },
+    });
+
+    const orm = await MikroORM.init({
+      entities: [Book],
+      dbName: 'mikro_orm_test_rls_fb_collision',
+    });
+    await orm.schema.refresh();
+
+    const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
+    expect(sql).toContain(`create policy "rls_fb_book_tenant_policy" on "rls_fb_book" using (true)`);
+    expect(sql).toContain(
+      `create policy "rls_fb_book_tenant_policy_2" on "rls_fb_book" using ("tenant_id" = current_setting('mikro.tenant.tenant')::int)`,
+    );
+
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
+
+  test('native enum columns cast the session lookup to the enum type', async () => {
+    const Task = defineEntity({
+      name: 'RlsFbEnumTask',
+      tableName: 'rls_fb_task',
+      properties: {
+        id: p.integer().primary(),
+        status: p.enum(['open', 'closed']).nativeEnumName('rls_fb_task_status'),
+      },
+      filters: {
+        byStatus: { name: 'byStatus', cond: (args: any) => ({ status: args.status }), rls: true, default: false },
+      },
+    });
+
+    const orm = await MikroORM.init({
+      entities: [Task],
+      dbName: 'mikro_orm_test_rls_fb_enum',
+    });
+    await orm.schema.refresh();
+
+    const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
+    expect(sql).toContain(
+      `create policy "rls_fb_task_byStatus_policy" on "rls_fb_task" using ("status" = current_setting('mikro.byStatus.status')::"rls_fb_task_status")`,
+    );
+
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+    await orm.schema.dropDatabase();
+    await orm.close(true);
+  });
+
+  test('filter names are backfilled from the dictionary key for vanilla definitions', async () => {
+    const Doc = defineEntity({
+      name: 'RlsFbNameless',
+      tableName: 'rls_fb_doc',
+      properties: {
+        id: p.integer().primary(),
+        tenantId: p.integer(),
+      },
+      filters: {
+        // no explicit `name` — must backfill from the key, not bake 'undefined' into DDL/GUC names
+        tenant: { cond: (args: any) => ({ tenantId: args.tenant }), rls: true, default: false } as any,
+      },
+    });
+
+    const orm = await MikroORM.init({
+      entities: [Doc],
+      dbName: 'mikro_orm_test_rls_fb_nameless',
+      connect: false,
+    } as Options);
+
+    const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
+    expect(sql).toContain(
+      `create policy "rls_fb_doc_tenant_policy" on "rls_fb_doc" using ("tenant_id" = current_setting('mikro.tenant.tenant')::int)`,
+    );
+
+    const em = orm.em.fork();
+    em.setFilterParams('tenant', { tenant: 7 });
+    expect(em.getSessionContext()?.variables).toEqual({ 'mikro.tenant.tenant': 7 });
+
+    await orm.close(true);
   });
 });
