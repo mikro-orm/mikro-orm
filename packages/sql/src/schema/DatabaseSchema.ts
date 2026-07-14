@@ -387,8 +387,9 @@ export class DatabaseSchema {
         });
       }
 
-      // non-empty policies imply RLS; `rowLevelSecurity: 'force'` enforces it for the table owner too
-      table.rlsEnabled = meta.policies.length > 0 || !!meta.rowLevelSecurity;
+      // non-empty policies imply RLS; `rowLevelSecurity: 'force'` enforces it for the table owner too, but an
+      // explicit `rowLevelSecurity: false` keeps RLS disabled even when policies are staged (they stay dormant)
+      table.rlsEnabled = meta.rowLevelSecurity !== false && (meta.policies.length > 0 || !!meta.rowLevelSecurity);
       table.rlsForced = meta.rowLevelSecurity === 'force';
       const usedPolicyNames = new Set<string>();
       const resolve = (raw: unknown): string | undefined => {
@@ -407,18 +408,18 @@ export class DatabaseSchema {
         let name = policy.name;
 
         if (!name) {
-          const base = `${meta.collection}_${command}_policy`;
-          name = base.substring(0, max);
+          name = this.uniquePolicyName(`${meta.collection}_${command}_policy`, platform, usedPolicyNames);
+        } else {
+          name = name.substring(0, max);
 
-          // truncate the base first so the collision suffix survives the identifier limit
-          for (let i = 2; usedPolicyNames.has(name); i++) {
-            const suffix = `_${i}`;
-            name = base.substring(0, max - suffix.length) + suffix;
+          // explicit names skip the collision suffixing, so a duplicate would otherwise die with a raw pg error
+          // on create or be silently swallowed by the name-keyed diff dictionaries — reject it up front
+          if (usedPolicyNames.has(name)) {
+            throw MetadataError.duplicatePolicyName(meta, name);
           }
-        }
 
-        name = name.substring(0, max);
-        usedPolicyNames.add(name);
+          usedPolicyNames.add(name);
+        }
 
         table.addPolicy({
           name,
@@ -485,7 +486,8 @@ export class DatabaseSchema {
         throw MetadataError.rlsFilterUncastableType(filter.name, col.type);
       }
 
-      const name = setting && accessed.size === 1 ? setting : Utils.getRlsSettingName(filter.name, arg);
+      // a sentinel implies the arg was accessed, and multi-arg custom settings were already rejected above
+      const name = setting || Utils.getRlsSettingName(filter.name, arg);
 
       return `${lhs}current_setting(${platform.quoteValue(name)})${cast}`;
     });
@@ -495,25 +497,28 @@ export class DatabaseSchema {
       throw MetadataError.rlsFilterUnsupportedCond(filter.name);
     }
 
-    // filter policies share the collision handling with declared policy names
-    const max = platform.getMaxIdentifierLength();
-    const base = `${meta.collection}_${filter.name}_policy`;
-    let name = base.substring(0, max);
-
-    for (let i = 2; usedPolicyNames.has(name); i++) {
-      const suffix = `_${i}`;
-      name = base.substring(0, max - suffix.length) + suffix;
-    }
-
-    usedPolicyNames.add(name);
-
     return {
-      name,
+      name: this.uniquePolicyName(`${meta.collection}_${filter.name}_policy`, platform, usedPolicyNames),
       command: 'all',
       type: 'permissive',
       roles: [],
       using: sql,
     };
+  }
+
+  /** Truncates the base first so the collision suffix survives the identifier limit. */
+  private static uniquePolicyName(base: string, platform: AbstractSqlPlatform, used: Set<string>): string {
+    const max = platform.getMaxIdentifierLength();
+    let name = base.substring(0, max);
+
+    for (let i = 2; used.has(name); i++) {
+      const suffix = `_${i}`;
+      name = base.substring(0, max - suffix.length) + suffix;
+    }
+
+    used.add(name);
+
+    return name;
   }
 
   /** Separate from {@link fromMetadata} so the comparator only walks routines when the user defined any. */

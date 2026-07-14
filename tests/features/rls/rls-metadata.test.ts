@@ -338,15 +338,4 @@ describe('row level security metadata', () => {
 
     await orm.close(true);
   });
-
-  test('rejects invalid policy command at the type level', () => {
-    defineEntity({
-      name: 'RlsTypeCheck',
-      properties: { id: p.integer().primary() },
-      policies: [
-        // @ts-expect-error 'truncate' is not a valid RLS command
-        { command: 'truncate' },
-      ],
-    });
-  });
 });

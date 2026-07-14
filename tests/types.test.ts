@@ -1446,6 +1446,17 @@ describe('check typings', () => {
     assert<IsExact<typeof client.chainAdmin, Client | null | undefined>>(true);
   });
 
+  test('defineEntity rejects invalid RLS policy command at the type level', () => {
+    defineEntity({
+      name: 'RlsTypeCheck',
+      properties: { id: p.integer().primary() },
+      policies: [
+        // @ts-expect-error 'truncate' is not a valid RLS command
+        { command: 'truncate' },
+      ],
+    });
+  });
+
   test('GH #7470 - entity with relation named "owner" should not break populate types', async () => {
     const UserSchema = defineEntity({
       name: 'User7470',

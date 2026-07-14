@@ -2030,7 +2030,7 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   checks: CheckConstraint<Entity>[];
   triggers: TriggerDef<Entity>[];
   policies: PolicyDef<Entity>[];
-  /** Enables row level security on the table. `'force'` also enables it for the table owner. Implied by non-empty `policies`. */
+  /** Enables row level security on the table. `'force'` also enables it for the table owner. Implied by non-empty `policies`, unless set to `false`, which keeps the policies staged but RLS disabled. */
   rowLevelSecurity?: boolean | 'force';
   repositoryClass?: string; // for EntityGenerator
   repository: () => EntityClass<EntityRepository<any>>;
