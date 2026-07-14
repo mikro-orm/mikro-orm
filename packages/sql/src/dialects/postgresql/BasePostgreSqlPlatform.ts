@@ -1,14 +1,26 @@
 import {
   ALIAS_REPLACEMENT,
   ARRAY_OPERATORS,
+  BigIntType,
+  BooleanType,
+  DateTimeType,
+  DateType,
   type Dictionary,
   type EntityProperty,
+  EnumType,
+  IntegerType,
   type IsolationLevel,
   raw,
   RawQueryFragment,
   type SimpleColumnMeta,
+  SmallIntType,
+  StringType,
+  TextType,
+  TimeType,
+  TinyIntType,
   Type,
   Utils,
+  UuidType,
 } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '../../AbstractSqlPlatform.js';
 import type { IndexDef } from '../../typings.js';
@@ -54,6 +66,48 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
 
   override supportsPartitionedTables(): boolean {
     return true;
+  }
+
+  override supportsRowLevelSecurity(): boolean {
+    return true;
+  }
+
+  override getCurrentSettingCast(mappedType: Type<unknown>): string | null {
+    if (mappedType instanceof UuidType) {
+      return '::uuid';
+    }
+
+    if (mappedType instanceof BigIntType) {
+      return '::bigint';
+    }
+
+    // MediumIntType extends IntegerType, so it is covered by the first branch
+    if (mappedType instanceof IntegerType || mappedType instanceof SmallIntType || mappedType instanceof TinyIntType) {
+      return '::int';
+    }
+
+    if (mappedType instanceof BooleanType) {
+      return '::boolean';
+    }
+
+    if (mappedType instanceof DateTimeType) {
+      return '::timestamptz';
+    }
+
+    if (mappedType instanceof DateType) {
+      return '::date';
+    }
+
+    if (mappedType instanceof TimeType) {
+      return '::time';
+    }
+
+    // current_setting() returns text already, so string-compatible types need no cast (CharacterType extends StringType)
+    if (mappedType instanceof StringType || mappedType instanceof TextType || mappedType instanceof EnumType) {
+      return '';
+    }
+
+    return null;
   }
 
   override supportsCustomPrimaryKeyNames(): boolean {

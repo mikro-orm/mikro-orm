@@ -4,6 +4,12 @@ title: Filters
 
 MikroORM has the ability to pre-define filter criteria and attach those filters to given entities. The application can then decide at runtime whether certain filters should be enabled and what their parameter values should be. Filters can be used like database views, but they are parameterized inside the application.
 
+:::info Enforcing filters in the database
+
+Filters are applied inside the application, so a raw query or a forgotten `filters` option can still read past them. On PostgreSQL you can flag an entity filter with `rls: true` to also compile it to a database row level security policy — one declaration enforced at both the application and database layers. See [Row Level Security](./row-level-security.md#the-filter-bridge).
+
+:::
+
 > Filter can be defined at the entity level, dynamically via EM (global filters) or in the ORM configuration.
 
 Filters are applied to those methods of `EntityManager`: `find()`, `findOne()`, `findAndCount()`, `findOneOrFail()`, `count()`, `nativeUpdate()` and `nativeDelete()`.
