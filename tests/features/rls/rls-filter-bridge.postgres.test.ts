@@ -428,7 +428,13 @@ describe('rls filter bridge (runtime) [postgres]', () => {
 
     // a non-superuser role is required to observe the policy — superusers bypass RLS even under force
     const conn = orm.em.getConnection();
-    await conn.execute('drop role if exists rls_fb_role');
+    // a crashed prior run can leave the role behind with lingering grants, which block a plain `drop role`
+    await conn.execute(`do $$ begin
+      if exists (select from pg_roles where rolname = 'rls_fb_role') then
+        execute 'drop owned by rls_fb_role';
+        execute 'drop role rls_fb_role';
+      end if;
+    end $$;`);
     await conn.execute('create role rls_fb_role');
     await conn.execute('grant usage on schema public to rls_fb_role');
     await conn.execute('grant select, insert, update, delete on "rls_fb_rt_order" to rls_fb_role');
@@ -575,6 +581,20 @@ describe('rls filter bridge (runtime) [postgres]', () => {
 
     const mock = mockLogger(orm, ['query']);
     await em.find(RtOrder, {}, { cache: ['rls-fb-plain', 5000] });
+    const selects = mock.mock.calls.map(c => c[0]).filter(q => q.includes('from "rls_fb_rt_order"'));
+    expect(selects).toHaveLength(1);
+  });
+
+  test("clearCache also removes the calling context's scoped named entry", async () => {
+    const em = orm.em.fork();
+    em.setFilterParams('byTenant', { tenant: T1 });
+    em.setSessionContext({ role: 'rls_fb_role' });
+    await em.find(RtOrder, {}, { cache: ['rls-fb-clear', 5000] });
+    // the entry is stored under `rls-fb-clear|<context>` — clearCache(name) must reach it from the same EM
+    await em.clearCache('rls-fb-clear');
+
+    const mock = mockLogger(orm, ['query']);
+    await em.find(RtOrder, {}, { cache: ['rls-fb-clear', 5000] });
     const selects = mock.mock.calls.map(c => c[0]).filter(q => q.includes('from "rls_fb_rt_order"'));
     expect(selects).toHaveLength(1);
   });

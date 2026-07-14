@@ -252,7 +252,13 @@ describe('rls policies [postgres]', () => {
 
     const orm = await MikroORM.init({ entities: [Rls], dbName: `mikro_orm_test_rls_rt` });
     await orm.schema.ensureDatabase();
-    await orm.em.getConnection().execute(`drop role if exists mikro_orm_rls_reader`);
+    // a crashed prior run can leave the role referenced by leftover policies, which block a plain `drop role`
+    await orm.em.getConnection().execute(`do $$ begin
+      if exists (select from pg_roles where rolname = 'mikro_orm_rls_reader') then
+        execute 'drop owned by mikro_orm_rls_reader';
+        execute 'drop role mikro_orm_rls_reader';
+      end if;
+    end $$;`);
     await orm.em.getConnection().execute(`create role mikro_orm_rls_reader`);
 
     const meta = orm.getMetadata(Rls);

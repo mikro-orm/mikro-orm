@@ -47,8 +47,14 @@ describe('EntityGenerator — row level security (PostgreSQL)', () => {
       ensureDatabase: false,
     });
     await orm.schema.ensureDatabase();
-    // policies referencing a role require the role to exist before the schema is built; roles are cluster-global
-    await orm.em.getConnection().execute(`drop role if exists ${APP_ROLE}`);
+    // policies referencing a role require the role to exist before the schema is built; roles are cluster-global —
+    // a crashed prior run can leave the role referenced by leftover policies, which block a plain `drop role`
+    await orm.em.getConnection().execute(`do $$ begin
+      if exists (select from pg_roles where rolname = '${APP_ROLE}') then
+        execute 'drop owned by ${APP_ROLE}';
+        execute 'drop role ${APP_ROLE}';
+      end if;
+    end $$;`);
     await orm.em.getConnection().execute(`create role ${APP_ROLE}`);
     await orm.schema.refresh();
   });

@@ -3491,7 +3491,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * ```
    */
   async clearCache(cacheKey: string) {
-    await this.getContext().#resultCache.remove(cacheKey);
+    const em = this.getContext();
+    await em.#resultCache.remove(cacheKey);
+
+    // named keys are scoped by the session context (see `tryCache`), so clear this context's variant too
+    if (em.#sessionContext) {
+      await em.#resultCache.remove(`${cacheKey}|${JSON.stringify(em.#sessionContext)}`);
+    }
   }
 
   /**

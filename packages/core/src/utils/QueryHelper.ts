@@ -453,8 +453,8 @@ export class QueryHelper {
       return result as Dictionary;
     };
     const read = evaluate('read', name, poison);
-    const update = evaluate('update', `${name} a`, undefined);
-    const del = evaluate('delete', `${name} b`, poison);
+    const update = evaluate('update', `${name}\0a`, undefined);
+    const del = evaluate('delete', `${name}\0b`, poison);
 
     if (JSON.stringify(read) !== JSON.stringify(update) || JSON.stringify(read) !== JSON.stringify(del)) {
       throw MetadataError.rlsFilterDependsOnRuntimeState(filter.name);
