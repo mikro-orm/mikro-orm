@@ -223,6 +223,25 @@ describe('rls filter bridge (compile errors) [postgres]', () => {
     await orm.close(true);
   });
 
+  test('a condition crashing on the undefined options variant fails closed with the descriptive error', async () => {
+    const orm = await init(
+      { id: p.integer().primary(), tenantId: p.uuid() },
+      {
+        f: {
+          name: 'f',
+          // `Object.keys(o)` passes the poison-proxy evaluation but throws a raw TypeError on the
+          // `undefined` variant — that must surface as the runtime-state error, not a bare crash
+          cond: (a: any, t: any, em: any, o: any) => (Object.keys(o).length ? {} : { tenantId: a.t }),
+          rls: true,
+        },
+      },
+    );
+    await expect(orm.schema.getCreateSchemaSQL({ wrap: false })).rejects.toThrow(
+      `Filter 'f' cannot be compiled to an RLS policy because its condition depends on runtime state`,
+    );
+    await orm.close(true);
+  });
+
   test('a condition that branches on the own entityName equality throws at schema generation too', async () => {
     // equality against OTHER entities' names compiles the extensionally correct branch; only a match
     // on the compiled entity's own name makes the result command/name dependent, which must throw
