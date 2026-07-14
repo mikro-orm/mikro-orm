@@ -177,6 +177,38 @@ describe('adopting the ORM on a database with hand-written RLS [postgres]', () =
     await orm.close();
   });
 
+  test('with `ignorePolicies`, a column type change still recreates the hand-written policies verbatim', async () => {
+    const orm = await MikroORM.init({ entities: [Book], dbName, schemaGenerator: { ignorePolicies: true } });
+    await orm.schema.refresh();
+    await createHandWrittenRls(orm);
+
+    // postgres refuses to alter the type of a column a policy references, so the unmanaged policy must be
+    // dropped and recreated from introspection around the alter, preserving the hand-written definition
+    const Wider = defineEntity({
+      name: 'RlsAdoptionWiderBook',
+      tableName: 'rls_adoption_book',
+      properties: {
+        id: p.bigint().primary(),
+        tenantId: p.uuid(),
+      },
+    });
+
+    const altering = await MikroORM.init({ entities: [Wider], dbName, schemaGenerator: { ignorePolicies: true } });
+    const diff = await altering.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain(`drop policy "manual_tenant" on "rls_adoption_book"`);
+    expect(diff).toContain(`create policy "manual_tenant" on "rls_adoption_book"`);
+    await altering.schema.execute(diff);
+
+    const policies = await altering.em.execute(
+      `select policyname from pg_policies where tablename = 'rls_adoption_book'`,
+    );
+    expect(policies.map(r => r.policyname)).toEqual(['manual_tenant']);
+
+    await orm.close(true);
+    await altering.schema.dropDatabase();
+    await altering.close(true);
+  });
+
   test('with `ignorePolicies`, enabling and forcing RLS from metadata is still emitted', async () => {
     const orm = await MikroORM.init({ entities: [Book], dbName, schemaGenerator: { ignorePolicies: true } });
     await orm.schema.refresh();
