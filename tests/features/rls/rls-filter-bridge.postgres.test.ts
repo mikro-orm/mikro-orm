@@ -223,6 +223,26 @@ describe('rls filter bridge (compile errors) [postgres]', () => {
     await orm.close(true);
   });
 
+  test('a condition that branches on the own entityName equality throws at schema generation too', async () => {
+    // equality against OTHER entities' names compiles the extensionally correct branch; only a match
+    // on the compiled entity's own name makes the result command/name dependent, which must throw
+    const orm = await init(
+      { id: p.integer().primary(), tenantId: p.uuid() },
+      {
+        f: {
+          name: 'f',
+          cond: (a: any, t: any, em: any, o: any, entityName: any) =>
+            entityName === 'RlsFbErr' ? {} : { tenantId: a.t },
+          rls: true,
+        },
+      },
+    );
+    await expect(orm.schema.getCreateSchemaSQL({ wrap: false })).rejects.toThrow(
+      `Filter 'f' cannot be compiled to an RLS policy because its condition depends on runtime state`,
+    );
+    await orm.close(true);
+  });
+
   test('a condition that branches on type equality throws instead of compiling one branch', async () => {
     // `type === 'read'` on the poison proxy cannot be trapped as a property access — the compiler
     // evaluates the cond per command and rejects it when the results diverge
@@ -243,6 +263,25 @@ describe('rls filter bridge (compile errors) [postgres]', () => {
     );
     const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
     expect(sql).toContain(`current_setting('mikro.f.t')::uuid`);
+    await orm.close(true);
+  });
+
+  test('a condition that branches on the options parameter throws', async () => {
+    // `options` cannot be resolved statically — the compiler alternates a poison proxy and `undefined` across
+    // evaluations, so a truthiness branch diverges and is rejected instead of compiling one branch silently
+    const orm = await init(
+      { id: p.integer().primary(), tenantId: p.uuid() },
+      {
+        f: {
+          name: 'f',
+          cond: (a: any, type: any, em: any, options: any) => (options ? { tenantId: a.t } : {}),
+          rls: true,
+        },
+      },
+    );
+    await expect(orm.schema.getCreateSchemaSQL({ wrap: false })).rejects.toThrow(
+      `Filter 'f' cannot be compiled to an RLS policy because its condition depends on runtime state`,
+    );
     await orm.close(true);
   });
 
@@ -498,6 +537,71 @@ describe('rls filter bridge (runtime) [postgres]', () => {
     const b = await emB.find(RtOrder, {}, { cache: 5000 });
     expect(b.map(x => x.tenantId)).toEqual([T2]);
   });
+
+  test('a named result cache key is scoped per session context (no cross-tenant serve)', async () => {
+    const emA = orm.em.fork();
+    emA.setFilterParams('byTenant', { tenant: T1 });
+    emA.setSessionContext({ role: 'rls_fb_role' });
+    const a = await emA.find(RtOrder, {}, { cache: ['rls-fb-scoped', 5000] });
+    expect(a.map(x => x.tenantId)).toEqual([T1, T1]);
+
+    const emB = orm.em.fork();
+    emB.setFilterParams('byTenant', { tenant: T2 });
+    emB.setSessionContext({ role: 'rls_fb_role' });
+    // same named key but a different session context — the named entry must not serve tenant 1's cached rows
+    const b = await emB.find(RtOrder, {}, { cache: ['rls-fb-scoped', 5000] });
+    expect(b.map(x => x.tenantId)).toEqual([T2]);
+  });
+
+  test('the same session context reuses the named cache entry (single query)', async () => {
+    const em = orm.em.fork();
+    em.setFilterParams('byTenant', { tenant: T1 });
+    em.setSessionContext({ role: 'rls_fb_role' });
+
+    const mock = mockLogger(orm, ['query']);
+    await em.find(RtOrder, {}, { cache: ['rls-fb-hit', 5000] });
+    await em.find(RtOrder, {}, { cache: ['rls-fb-hit', 5000] });
+
+    // the second read is served from cache — only one select reaches the DB
+    const selects = mock.mock.calls.map(c => c[0]).filter(q => q.includes('from "rls_fb_rt_order"'));
+    expect(selects).toHaveLength(1);
+  });
+
+  test('clearCache removes the unscoped named entry for a context-less read', async () => {
+    const em = orm.em.fork();
+    await em.find(RtOrder, {}, { cache: ['rls-fb-plain', 5000] });
+    // no session context, so the stored key is the bare name — clearCache(name) removes it (documented behavior)
+    await em.clearCache('rls-fb-plain');
+
+    const mock = mockLogger(orm, ['query']);
+    await em.find(RtOrder, {}, { cache: ['rls-fb-plain', 5000] });
+    const selects = mock.mock.calls.map(c => c[0]).filter(q => q.includes('from "rls_fb_rt_order"'));
+    expect(selects).toHaveLength(1);
+  });
+
+  test('fork({ session }) re-stages the copied rls filter variables under the new context', async () => {
+    const parent = orm.em.fork();
+    parent.setFilterParams('byTenant', { tenant: T1 });
+
+    // the session replaces the parent context (adds a role), but the copied filter params keep their variables
+    const child = parent.fork({ session: { role: 'rls_fb_role' } });
+    expect(child.getFilterParams('byTenant')).toEqual({ tenant: T1 });
+    expect(child.getSessionContext()).toEqual({
+      variables: { 'mikro.byTenant.tenant': T1 },
+      role: 'rls_fb_role',
+    });
+
+    // explicit session.variables win over the re-staged filter variables on conflict
+    const child2 = parent.fork({ session: { role: 'rls_fb_role', variables: { 'mikro.byTenant.tenant': T2 } } });
+    expect(child2.getSessionContext()?.variables).toEqual({ 'mikro.byTenant.tenant': T2 });
+  });
+
+  test('repeated setFilterParams calls work against the cached rls-filter lookup', () => {
+    const em = orm.em.fork();
+    em.setFilterParams('byTenant', { tenant: T1 });
+    em.setFilterParams('byTenant', { tenant: T2 });
+    expect(em.getSessionContext()?.variables).toEqual({ 'mikro.byTenant.tenant': T2 });
+  });
 });
 
 describe('rls filter bridge (staging) [postgres]', () => {
@@ -603,6 +707,78 @@ describe('rls filter bridge (staging) [postgres]', () => {
     expect(() => orm.em.fork().setFilterParams('both', { tenant: T1, org: 1 })).toThrow(
       /custom 'setting' but references multiple arguments/,
     );
+
+    await orm.close(true);
+  });
+
+  test('a custom-setting filter whose condition branches on the entity name is rejected at staging', async () => {
+    const Ent = defineEntity({
+      name: 'RlsFbEntName',
+      tableName: 'rls_fb_ent_name',
+      properties: { id: p.integer().primary(), tenantId: p.uuid(), orgId: p.integer() },
+      filters: {
+        byTenant: {
+          name: 'byTenant',
+          // branching on the entity name can't be resolved to a single policy — the compiler passes the real class
+          // name (plus derived-distinct variants), so an `=== '<name>'` check diverges and is rejected
+          cond: (args: any, type: any, em: any, options: any, entityName: string) =>
+            entityName === 'RlsFbEntName' ? { tenantId: args.tenant } : { orgId: args.tenant },
+          rls: { setting: 'app.current_tenant' },
+          default: false,
+        },
+      },
+    });
+    const orm = await MikroORM.init({
+      entities: [Ent],
+      dbName: 'mikro_orm_test_rls_fb_entname',
+      driver: PostgreSqlDriver,
+      connect: false,
+    } as Options);
+
+    expect(() => orm.em.fork().setFilterParams('byTenant', { tenant: T1 })).toThrow(
+      `Filter 'byTenant' cannot be compiled to an RLS policy because its condition depends on runtime state`,
+    );
+
+    await orm.close(true);
+  });
+
+  test('re-staging a filter prunes only its own variables, not a dot-prefixed sibling filter', async () => {
+    const Doc = defineEntity({
+      name: 'RlsFbDotted',
+      tableName: 'rls_fb_dotted',
+      properties: { id: p.integer().primary(), tenantId: p.uuid(), region: p.string() },
+      filters: {
+        tenant: { name: 'tenant', cond: (args: any) => ({ tenantId: args.id }), rls: true, default: false },
+        // a filter whose name starts with `tenant.` — a prefix-based prune of `tenant` would wrongly drop its variables
+        'tenant.region': {
+          name: 'tenant.region',
+          cond: (args: any) => ({ region: args.name }),
+          rls: true,
+          default: false,
+        },
+      },
+    });
+    const orm = await MikroORM.init({
+      entities: [Doc],
+      dbName: 'mikro_orm_test_rls_fb_dotted',
+      driver: PostgreSqlDriver,
+      connect: false,
+    } as Options);
+
+    const em = orm.em.fork();
+    em.setFilterParams('tenant', { id: T1 });
+    em.setFilterParams('tenant.region', { name: 'eu' });
+    expect(em.getSessionContext()?.variables).toEqual({
+      'mikro.tenant.id': T1,
+      'mikro.tenant.region.name': 'eu',
+    });
+
+    // re-staging `tenant` must touch only its own `mikro.tenant.id`, leaving `mikro.tenant.region.name` intact
+    em.setFilterParams('tenant', { id: T2 });
+    expect(em.getSessionContext()?.variables).toEqual({
+      'mikro.tenant.id': T2,
+      'mikro.tenant.region.name': 'eu',
+    });
 
     await orm.close(true);
   });
