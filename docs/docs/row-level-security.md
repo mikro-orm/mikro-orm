@@ -184,6 +184,12 @@ alter table "..." enable row level security;
 alter table "..." force row level security;
 ```
 
+Conversely, `rowLevelSecurity: false` overrides the policies-imply-RLS default: the declared policies are still created, but RLS is left **disabled**, so they stay dormant until you enable it. This lets you stage policies ahead of the cutover and flip the switch later.
+
+```ts
+@Entity({ rowLevelSecurity: false, policies: [/* ... */] }) // policies created, but RLS stays off
+```
+
 ### Inheritance
 
 Policies declared on an abstract base entity are passed down to the concrete entities that extend it, together with the `rowLevelSecurity` flag (a child can override the flag by declaring its own value). For single table inheritance (STI), policies may only be declared on the **root** of the hierarchy (all subclasses share one table) — declaring them on a non-root STI entity throws. For table-per-type (TPT) inheritance, policies stay on the table that declares them — the root's policies protect the root table only, and child tables declare their own.
@@ -277,6 +283,8 @@ select set_config($1, $2, true);
 select ... from "article" ...;
 commit;
 ```
+
+Because `em.execute()` is wrapped too, statements that cannot run inside a transaction block (`vacuum`, `create index concurrently`, ...) will fail while a session context is set — run those via `em.getConnection().execute()` (which never carries the context) or from an EM without one.
 
 Nested transactions (savepoints) do **not** re-emit the context — it is set once on the outermost `begin` and inherited by the savepoints.
 

@@ -107,3 +107,98 @@ describe('EntityGenerator — row level security (PostgreSQL)', () => {
     }
   });
 });
+
+describe('EntityGenerator — RLS disabled with staged policies (PostgreSQL)', () => {
+  const dbName = `mikro_orm_test_rls_gen_disabled_${Math.random().toString(36).slice(2, 8)}`;
+
+  // policies present but RLS disabled — a legal pg state the generator must reproduce faithfully
+  const RlsStagedSchema = defineEntity({
+    name: 'RlsStaged',
+    rowLevelSecurity: false,
+    policies: [{ name: 'staged_sel', using: `id > 0` }],
+    properties: {
+      id: p.integer().primary().autoincrement(),
+      tenantId: p.integer(),
+    },
+  });
+
+  test('emits rowLevelSecurity: false and round-trips to an empty diff', async () => {
+    const orm = await MikroORM.init({
+      dbName,
+      entities: [RlsStagedSchema],
+      extensions: [EntityGenerator],
+      ensureDatabase: false,
+    });
+
+    try {
+      await orm.schema.ensureDatabase();
+      await orm.schema.refresh();
+
+      let generated: EntityMetadata[] = [];
+      const dump = await orm.entityGenerator.generate({
+        entityDefinition: 'decorators',
+        onProcessedMetadata: metadata => {
+          generated = metadata;
+        },
+      });
+
+      // the policies-imply-RLS default would re-enable RLS on reload, so `false` must be emitted explicitly
+      const src = dump.find(f => f.includes('class RlsStaged'))!;
+      expect(src).toContain('rowLevelSecurity: false');
+      expect(src).toContain('staged_sel');
+
+      const platform = orm.em.getPlatform();
+      const target = DatabaseSchema.fromMetadata(generated, platform, orm.config);
+      const actual = await DatabaseSchema.create(orm.em.getConnection(), platform, orm.config);
+      const diff = new SchemaComparator(platform).compare(actual, target);
+
+      expect(diff.newTables['rls_staged']).toBeUndefined();
+      expect(diff.removedTables['rls_staged']).toBeUndefined();
+      const tableDiff = diff.changedTables['rls_staged'];
+
+      if (tableDiff) {
+        expect(tableDiff.changedRlsEnabled).toBeUndefined();
+        expect(tableDiff.addedPolicies).toEqual({});
+        expect(tableDiff.removedPolicies).toEqual({});
+      }
+
+      await orm.schema.dropDatabase();
+    } finally {
+      await orm.close(true);
+    }
+  });
+
+  test('policy expressions containing backslashes survive the emitted source', async () => {
+    const RlsRegexSchema = defineEntity({
+      name: 'RlsRegex',
+      tableName: 'rls_regex',
+      rowLevelSecurity: true,
+      policies: [{ name: 'regex_sel', command: 'select', using: String.raw`name ~ '^\d+'` }],
+      properties: {
+        id: p.integer().primary().autoincrement(),
+        name: p.string(),
+      },
+    });
+
+    const orm = await MikroORM.init({
+      dbName: `${dbName}_regex`,
+      entities: [RlsRegexSchema],
+      extensions: [EntityGenerator],
+      ensureDatabase: false,
+    });
+
+    try {
+      await orm.schema.ensureDatabase();
+      await orm.schema.refresh();
+
+      const dump = await orm.entityGenerator.generate({ entityDefinition: 'decorators' });
+      const src = dump.find(f => f.includes('class RlsRegex'))!;
+      // `\d` must arrive as an escaped backslash, or the generated file silently degrades the predicate to `d`
+      expect(src).toContain(String.raw`~ ''^\\d+''`.replaceAll(`''`, `\\'`));
+
+      await orm.schema.dropDatabase();
+    } finally {
+      await orm.close(true);
+    }
+  });
+});
