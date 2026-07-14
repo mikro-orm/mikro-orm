@@ -1424,10 +1424,24 @@ export class MetadataDiscovery {
           delete prop.default;
 
           if (properties[prop.name] && properties[prop.name].type !== prop.type) {
-            properties[prop.name].type = `${properties[prop.name].type} | ${prop.type}`;
-            properties[prop.name].runtimeType = 'any';
-            properties[prop.name].stiMerged = true;
-            return properties[prop.name];
+            const merged = properties[prop.name];
+            const prevEntity = merged.entity;
+            const nextEntity = prop.entity;
+
+            // merge the `entity`/`target` references too, so the union type survives re-normalization (GH #7983)
+            if (prevEntity && nextEntity) {
+              merged.entity = (() =>
+                Utils.unique([...Utils.asArray(prevEntity()), ...Utils.asArray(nextEntity())])) as never;
+            }
+
+            if (merged.target && prop.target) {
+              merged.target = Utils.unique([...Utils.asArray(merged.target), ...Utils.asArray(prop.target)]) as never;
+            }
+
+            merged.type = `${merged.type} | ${prop.type}`;
+            merged.runtimeType = 'any';
+            merged.stiMerged = true;
+            return merged;
           }
 
           // Deep copy to prevent mutating the original entity's property —
@@ -1740,6 +1754,13 @@ export class MetadataDiscovery {
     Object.values(meta.properties).forEach(prop => {
       const newProp = { ...prop };
       const rootProp = meta.root.properties[prop.name];
+
+      // Same-named embedded props merged from polymorphic embeddable variants keep the merged
+      // union-typed declaration, so nested paths of every variant stay resolvable (GH #7983).
+      if (rootProp?.stiMerged && prop.kind === ReferenceKind.EMBEDDED) {
+        rootProp.nullable = true; // each variant fills only its own columns
+        return;
+      }
 
       // A child that narrows a relation to a subclass of the root's declared
       // target (same STI hierarchy) shares the FK column with the root; treat

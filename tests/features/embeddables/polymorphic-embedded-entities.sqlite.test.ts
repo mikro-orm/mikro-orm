@@ -160,7 +160,7 @@ describe('polymorphic embeddables in sqlite', () => {
     await orm.em.persist([ent1, ent2, ent3]).flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch(
-      'insert into `owner` (`name`, `pet_type`, `pet_name`, `pet_can_meow`, `pet_food_mice`, `pet2`, `pets`, `pet_can_bark`, `pet_food_cats`) values (?, ?, ?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?, ?, ?) returning `id`',
+      'insert into `owner` (`name`, `pet_food_mice`, `pet_type`, `pet_name`, `pet_can_meow`, `pet2`, `pets`, `pet_can_bark`, `pet_food_cats`) values (?, ?, ?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?, ?, ?) returning `id`',
     );
     expect(mock.mock.calls[2][0]).toMatch('commit');
     orm.em.clear();
@@ -213,7 +213,7 @@ describe('polymorphic embeddables in sqlite', () => {
     expect(mock.mock.calls).toHaveLength(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch(
-      'update `owner` set `pet_can_bark` = case when (`id` = ?) then ? when (`id` = ?) then ? else `pet_can_bark` end, `pet_food_cats` = case when (`id` = ?) then ? when (`id` = ?) then ? else `pet_food_cats` end, `pet_type` = case when (`id` = ?) then ? when (`id` = ?) then ? else `pet_type` end, `pet_name` = case when (`id` = ?) then ? when (`id` = ?) then ? when (`id` = ?) then ? else `pet_name` end, `pet_can_meow` = case when (`id` = ?) then ? when (`id` = ?) then ? else `pet_can_meow` end, `pet_food_mice` = case when (`id` = ?) then ? when (`id` = ?) then ? else `pet_food_mice` end, `pets` = case when (`id` = ?) then ? else `pets` end where `id` in (?, ?, ?)',
+      'update `owner` set `pet_can_bark` = case when (`id` = ?) then ? when (`id` = ?) then ? else `pet_can_bark` end, `pet_food_cats` = case when (`id` = ?) then ? when (`id` = ?) then ? else `pet_food_cats` end, `pet_type` = case when (`id` = ?) then ? when (`id` = ?) then ? else `pet_type` end, `pet_food_mice` = case when (`id` = ?) then ? when (`id` = ?) then ? else `pet_food_mice` end, `pet_name` = case when (`id` = ?) then ? when (`id` = ?) then ? when (`id` = ?) then ? else `pet_name` end, `pet_can_meow` = case when (`id` = ?) then ? when (`id` = ?) then ? else `pet_can_meow` end, `pets` = case when (`id` = ?) then ? else `pets` end where `id` in (?, ?, ?)',
     );
     expect(mock.mock.calls[2][0]).toMatch('commit');
     orm.em.clear();
@@ -305,7 +305,7 @@ describe('polymorphic embeddables in sqlite', () => {
     await orm.em.persist(owner).flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch(
-      'insert into `owner` (`name`, `pet_type`, `pet_name`, `pet_can_meow`, `pet_food_mice`, `pet2`, `pets`) values (?, ?, ?, ?, ?, ?, ?) returning `id`',
+      'insert into `owner` (`name`, `pet_food_mice`, `pet_type`, `pet_name`, `pet_can_meow`, `pet2`, `pets`) values (?, ?, ?, ?, ?, ?, ?) returning `id`',
     );
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
