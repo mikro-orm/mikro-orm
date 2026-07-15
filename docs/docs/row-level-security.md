@@ -215,7 +215,7 @@ Tables without any RLS emit no policy or RLS keys into the migration snapshot at
 If your database already has policies you created manually (raw SQL migrations, the patterns from the pre-native-support era), the schema generator now sees them — and since they are not mirrored in your entity metadata, any diff computed from **live introspection** (`schema:update`, or `migration:create` with `snapshot: false`) will propose to **drop them and disable RLS**. Snapshot-based `migration:create` is unaffected — pre-upgrade snapshots contain no policy state, so nothing is diffed. Pick one of two adoption paths before running any schema tooling after the upgrade:
 
 1. **Adopt them into metadata** — declare the existing policies on your entities (`generate-entities` round-trips them into all definition styles, so you can copy the emitted `policies` arrays verbatim). Once declared, the diff is clean and the ORM manages them from here on.
-2. **Leave them unmanaged** — set `schemaGenerator: { ignorePolicies: true }`. This makes RLS create-only: policies you declare in metadata are still created, and enabling/forcing RLS is still emitted, but existing policies are never dropped or altered and RLS is never disabled or unforced. This mirrors the `ignoreTriggers`/`ignoreRoutines` options.
+2. **Leave them unmanaged** — set `schemaGenerator: { ignorePolicies: true }`. This makes RLS create-only: policies you declare in metadata are still created, and enabling/forcing RLS is still emitted, but existing policies are never diffed for drop/alter and RLS is never disabled or unforced. The one exception is a column **type change** — PostgreSQL rejects `alter column ... type` on a column any policy references, so unmanaged policies are dropped and recreated verbatim (from introspection) around the alter. This mirrors the `ignoreTriggers`/`ignoreRoutines` options.
 
 :::caution
 
@@ -287,6 +287,8 @@ commit;
 Because `em.execute()` is wrapped too, statements that cannot run inside a transaction block (`vacuum`, `create index concurrently`, ...) will fail while a session context is set — run those via `em.getConnection().execute()` (which never carries the context) or from an EM without one.
 
 Nested transactions (savepoints) do **not** re-emit the context — it is set once on the outermost `begin` and inherited by the savepoints.
+
+Since the context only ever reaches the database on `begin`, staging one is rejected when transactions cannot happen: setting a session context with `implicitTransactions: false` or with transactions disabled via `disableTransactions` throws (writes would otherwise run untransacted and silently bypass the policies). Use the `'connection'` strategy in those setups.
 
 :::caution streaming requires a transaction
 
@@ -461,7 +463,7 @@ A custom `setting` with more than one referenced argument throws, since there is
 
 To compile to a static policy, the filter's `cond` must be statically analyzable. The following throw a descriptive error at schema build:
 
-- A condition that touches `em`, `type`, or the find options (a policy cannot see runtime state).
+- A condition that touches `em`, `type`, `entityName`, or the find options (a policy cannot see runtime state).
 - An `async` condition.
 - An argument used outside a direct comparison (`$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte`) — e.g. `{ orgId: { $in: [args.o] } }`.
 - A compared column whose type has no cast (e.g. `decimal`).
@@ -539,7 +541,7 @@ Swapping sqlite in for tests is a common speed-up, but it cannot work here — R
 - The `'connection'` session context strategy is not available on pglite (it throws at init) — the default `'transaction'` strategy covers testing.
 
 ```ts
-const orm = await MikroORM.init({ driver: PGliteDriver, dbName: 'memory://', entities: [...] });
+const orm = await MikroORM.init({ driver: PgliteDriver, dbName: 'memory://', entities: [...] });
 await orm.schema.refresh();
 await orm.em.execute(`create role app_user login`);
 await orm.em.execute(`grant select, insert, update, delete on all tables in schema public to app_user`);

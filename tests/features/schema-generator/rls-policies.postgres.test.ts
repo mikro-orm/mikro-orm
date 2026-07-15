@@ -452,6 +452,49 @@ describe('rls policies [postgres]', () => {
     await orm2.close();
   });
 
+  test('a uuid column type change drops its policy before the pre-alter text cast [postgres]', async () => {
+    // uuid type changes emit an extra `alter column ... type text` in the pre-alter phase, so the policy
+    // drop must land before that phase, not just before the regular alter
+    const dbName = 'mikro_orm_test_rls_uuid_change';
+    const V1 = new EntitySchema({
+      name: 'RlsUuidChange',
+      tableName: 'rls_uuid_change',
+      properties: {
+        id: idColumn(),
+        tenantId: { type: 'string', name: 'tenantId', fieldName: 'tenant_id', columnType: 'uuid' },
+      },
+      policies: [{ name: 'p_tenant', using: `tenant_id::text != ''` }],
+    });
+    const orm1 = await MikroORM.init({ entities: [V1], dbName });
+    await orm1.schema.refresh();
+    await orm1.close();
+
+    const V2 = new EntitySchema({
+      name: 'RlsUuidChange',
+      tableName: 'rls_uuid_change',
+      properties: {
+        id: idColumn(),
+        tenantId: { type: 'string', name: 'tenantId', fieldName: 'tenant_id', columnType: 'text' },
+      },
+      policies: [{ name: 'p_tenant', using: `tenant_id::text != ''` }],
+    });
+    const orm2 = await MikroORM.init({ entities: [V2], dbName });
+
+    const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('drop policy "p_tenant"');
+    expect(diff).toContain('create policy "p_tenant"');
+    expect(diff.indexOf('drop policy "p_tenant"')).toBeLessThan(diff.indexOf('alter column'));
+    await orm2.schema.execute(diff);
+
+    const policies = await orm2.em.execute<{ policyname: string }[]>(
+      `select policyname from pg_policies where tablename = 'rls_uuid_change'`,
+    );
+    expect(policies.map(p => p.policyname)).toEqual(['p_tenant']);
+
+    await orm2.schema.dropDatabase();
+    await orm2.close();
+  });
+
   test('multi-schema policy round-trip [postgres]', async () => {
     const Scoped = new EntitySchema({
       name: 'RlsScoped',

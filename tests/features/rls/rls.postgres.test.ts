@@ -6,7 +6,6 @@ import {
   PostgreSqlDriver,
   RequestContext,
   RowLevelSecurityViolationException,
-  type Options,
 } from '@mikro-orm/postgresql';
 
 // realistic multi-tenant fixture: tenants are uuids, matching the `::uuid` cast in the policies

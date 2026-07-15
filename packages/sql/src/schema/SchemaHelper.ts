@@ -544,8 +544,6 @@ export abstract class SchemaHelper {
       ret.push(this.dropTrigger(diff.toTable, trigger));
     }
 
-    this.append(ret, this.getRlsDropSQL(diff, safe));
-
     /* v8 ignore next */
     if (!safe && Object.values(diff.removedColumns).length > 0) {
       ret.push(this.getDropColumnsSQL(tableName, Object.values(diff.removedColumns), schemaName));
@@ -818,7 +816,7 @@ export abstract class SchemaHelper {
     return [];
   }
 
-  /** Drops removed/changed row level security policies; emitted before column drops, which a policy expression can block. Postgres only. */
+  /** Drops removed/changed row level security policies; emitted in the pre-alter phase, before any column drop or type alter a policy expression can block. Postgres only. */
   getRlsDropSQL(diff: TableDifference, safe?: boolean): string[] {
     return [];
   }

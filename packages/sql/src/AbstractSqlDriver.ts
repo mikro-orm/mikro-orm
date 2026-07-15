@@ -349,8 +349,11 @@ export abstract class AbstractSqlDriver<
       return this.wrapVirtualExpressionInSubquery(meta, meta.expression, where, options as FindOptions<T, any>, type);
     }
 
-    const em = this.createEntityManager();
+    // `useContext: false` — the callback EM must not resolve back to the ambient RequestContext EM, or the
+    // transaction/session context set below would be silently ignored (running the callback's queries unscoped)
+    const em = this.createEntityManager(false);
     em.setTransactionContext(options.ctx);
+    em.inheritSessionContext(options.em?.getSessionContext());
 
     const res = meta.expression(em, where, options as FindOptions<T, any, any, any>);
 
@@ -394,8 +397,10 @@ export abstract class AbstractSqlDriver<
       return;
     }
 
-    const em = this.createEntityManager();
+    // `useContext: false` for the same reason as in `findFromVirtual`
+    const em = this.createEntityManager(false);
     em.setTransactionContext(options.ctx);
+    em.inheritSessionContext(options.em?.getSessionContext());
     const res = meta.expression(em, where as any, options as FindOptions<T, any, any, any>, true);
 
     if (typeof res === 'string') {
