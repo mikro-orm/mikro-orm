@@ -1155,6 +1155,10 @@ export class SchemaComparator {
           .replace(/in\s*\((.*?)\)/gi, '= any (array[$1])')
           // MySQL normalizes count(*) to count(0)
           .replace(/\bcount\s*\(\s*0\s*\)/gi, 'count(*)')
+          // Protect dots inside string literals before the quote strip below, or the alias-prefix normalization
+          // would mangle literal contents — `current_setting('app.tenant')` and `current_setting('req.tenant')`
+          // must not both collapse to `current_settingtenant`
+          .replace(/'([^']*)'/g, (_, inner: string) => `'${inner.replaceAll('.', '\u0000')}'`)
           // Remove quotes first so we can process identifiers
           .replace(/['"`]/g, '')
           // MySQL adds table/alias prefixes to columns (e.g., a.name or table_name.column vs just column)
@@ -1252,8 +1256,11 @@ export class SchemaComparator {
     const ignorePolicies = this.#platform.getConfig().get('schemaGenerator').ignorePolicies;
     // postgres rejects `alter column ... type` on a column referenced by any policy, so a type change forces us to
     // drop every still-present policy around the alter (dropped before via `getRlsDropSQL`, recreated after via
-    // `getRlsAlterSQL`) even when the policy itself is otherwise unchanged
-    const hasColumnTypeChange = Object.values(diff.changedColumns).some(c => c.changedProperties.has('type'));
+    // `getRlsAlterSQL`) even when the policy itself is otherwise unchanged; a `generated`-only change is emitted
+    // as a drop + re-add of the same column, which a policy's column dependency blocks the same way
+    const hasColumnTypeChange =
+      Object.values(diff.changedColumns).some(c => c.changedProperties.has('type')) ||
+      Object.keys(diff.removedColumns).some(name => name in diff.addedColumns);
 
     for (const policy of toTable.getPolicies()) {
       if (!fromTable.hasPolicy(policy.name)) {

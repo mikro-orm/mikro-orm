@@ -1492,6 +1492,24 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       // re-enable row level security and recreate the policies (createTable skips them during a rebuild);
       // emitted after the data copy so `force row level security` can't block the owner's insert
       this.append(ret, this.getRlsCreateSQL(table));
+
+      // with `ignorePolicies`, hand-written policies (and the RLS flags they imply) may exist only on the
+      // introspected side — recreate them verbatim, or the rebuild would silently strip them
+      if (this.options.ignorePolicies) {
+        if (diff.fromTable.rlsEnabled && !table.rlsEnabled) {
+          ret.push(`alter table ${table.getQuotedName()} enable row level security`);
+        }
+
+        if (diff.fromTable.rlsForced && !table.rlsForced) {
+          ret.push(`alter table ${table.getQuotedName()} force row level security`);
+        }
+
+        for (const policy of diff.fromTable.getPolicies()) {
+          if (!table.hasPolicy(policy.name)) {
+            ret.push(this.createPolicy(table, policy));
+          }
+        }
+      }
     }
 
     if (safe) {

@@ -286,6 +286,39 @@ describe('row level security metadata', () => {
     await orm.close(true);
   });
 
+  test('discoverEntity refreshes the rls filter lookup used by setFilterParams', async () => {
+    const orm = await MikroORM.init({ ...pgOptions, entities: [Article] });
+
+    // builds and caches the rls filter lookup before the new entity exists
+    const em = orm.em.fork();
+    em.setFilterParams('unrelated', { x: 1 });
+    expect(em.getSessionContext()).toBeUndefined();
+
+    const Discovered = defineEntity({
+      name: 'RlsDiscoveredTenant',
+      tableName: 'rls_discovered_tenant',
+      properties: {
+        id: p.integer().primary(),
+        tenantId: p.integer(),
+      },
+      filters: {
+        discoveredTenant: {
+          name: 'discoveredTenant',
+          cond: (args: any) => ({ tenantId: args.tenant }),
+          rls: true,
+        },
+      },
+    });
+    orm.discoverEntity(Discovered);
+
+    // without the cache invalidation, the stale lookup would treat the new filter as a plain one
+    const em2 = orm.em.fork();
+    em2.setFilterParams('discoveredTenant', { tenant: 1 });
+    expect(em2.getSessionContext()?.variables).toEqual({ 'mikro.discoveredTenant.tenant': 1 });
+
+    await orm.close(true);
+  });
+
   test("throws when the 'connection' strategy is used on a driver without the reserve hook", async () => {
     const { MikroORM: PgliteMikroORM } = await import('@mikro-orm/pglite');
 

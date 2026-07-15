@@ -488,6 +488,14 @@ describe('rls filter bridge (runtime) [postgres]', () => {
     expect(em.getSessionContext()).toBeUndefined();
   });
 
+  test('setFilterParams treats undefined argument values as omitted when staging', () => {
+    // staging them would serialize as the literal string 'undefined' and poison the policy's cast
+    const em = orm.em.fork();
+    em.setFilterParams('byTenant', { tenant: undefined });
+
+    expect(em.getSessionContext()).toBeUndefined();
+  });
+
   test('a fork after setFilterParams carries both filter params and session variables', () => {
     const em = orm.em.fork();
     em.setFilterParams('byTenant', { tenant: T1 });
@@ -523,6 +531,42 @@ describe('rls filter bridge (runtime) [postgres]', () => {
     expect(em.getSessionContext()?.variables).toEqual({ 'app.current_tenant': T1 });
 
     await custom.close(true);
+  });
+
+  test('pruning one filter keeps a shared custom setting staged by another', async () => {
+    const makeSharedEntity = (suffix: string) =>
+      defineEntity({
+        name: `RlsFbShared${suffix}`,
+        tableName: `rls_fb_shared_${suffix.toLowerCase()}`,
+        properties: { id: p.integer().primary(), tenantId: p.uuid() },
+        filters: {
+          [`by${suffix}`]: {
+            name: `by${suffix}`,
+            cond: (args: any) => ({ tenantId: args.tenant }),
+            rls: { setting: 'app.shared_tenant' },
+            default: false,
+          },
+        },
+      });
+    const shared = await MikroORM.init({
+      entities: [makeSharedEntity('A'), makeSharedEntity('B')],
+      dbName: 'mikro_orm_test_rls_fb_shared',
+      driver: PostgreSqlDriver,
+    });
+
+    const em = shared.em.fork();
+    em.setFilterParams('byA', { tenant: T1 });
+    em.setFilterParams('byB', { tenant: T1 });
+
+    // replacing byA's params must not prune the variable byB's params still stage
+    em.setFilterParams('byA', {});
+    expect(em.getSessionContext()?.variables).toEqual({ 'app.shared_tenant': T1 });
+
+    // once byB drops it too, the variable goes away with the whole context
+    em.setFilterParams('byB', {});
+    expect(em.getSessionContext()).toBeUndefined();
+
+    await shared.close(true);
   });
 
   test('the app-level WHERE filters rows when the filter is enabled', async () => {
