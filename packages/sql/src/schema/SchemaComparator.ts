@@ -1162,6 +1162,10 @@ export class SchemaComparator {
             /::\s*(?:character\s+varying|bit\s+varying|double\s+precision|(?:timestamp|time)\b(\s*\(\d+\))?(?:\s+with(?:out)?\s+time\s+zone)?)/gi,
             '$1',
           )
+          // Protect dots inside string literals before the quote strip below, or the alias-prefix normalization
+          // would mangle literal contents — `current_setting('app.tenant')` and `current_setting('req.tenant')`
+          // must not both collapse to `current_settingtenant`
+          .replace(/'([^']*)'/g, (_, inner: string) => `'${inner.replaceAll('.', '\u0000')}'`)
           // Remove quotes first so we can process identifiers
           .replace(/['"`]/g, '')
           // MySQL adds table/alias prefixes to columns (e.g., a.name or table_name.column vs just column)
@@ -1177,13 +1181,6 @@ export class SchemaComparator {
           .replace(/\b(\w+)\s+as\s+\1\b/gi, '$1')
           // Remove AS keyword (optional in SQL, MySQL may add/remove it)
           .replace(/\bas\b/gi, '')
-          // Strip multi-word type casts before the single-word pass below — postgres deparses `::timestamptz`
-          // to `::timestamp with time zone`, `::time` to `::time without time zone`, etc., so a plain `::\w+`
-          // strip would leave a `with time zone` residue and make policy/check diffs churn forever
-          .replace(
-            /::\s*(?:(?:timestamp|time)\s+with(?:out)?\s+time\s+zone|character\s+varying|double\s+precision|bit\s+varying)/gi,
-            '',
-          )
           // Remove remaining special chars, parentheses, type casts, asterisks, and normalize whitespace
           // tabs and CRs included — the schema generator trims every line before executing the DDL,
           // so indentation and CRLF endings can never come back from introspection
@@ -1265,8 +1262,11 @@ export class SchemaComparator {
     const ignorePolicies = this.#platform.getConfig().get('schemaGenerator').ignorePolicies;
     // postgres rejects `alter column ... type` on a column referenced by any policy, so a type change forces us to
     // drop every still-present policy around the alter (dropped before via `getRlsDropSQL`, recreated after via
-    // `getRlsAlterSQL`) even when the policy itself is otherwise unchanged
-    const hasColumnTypeChange = Object.values(diff.changedColumns).some(c => c.changedProperties.has('type'));
+    // `getRlsAlterSQL`) even when the policy itself is otherwise unchanged; a `generated`-only change is emitted
+    // as a drop + re-add of the same column, which a policy's column dependency blocks the same way
+    const hasColumnTypeChange =
+      Object.values(diff.changedColumns).some(c => c.changedProperties.has('type')) ||
+      Object.keys(diff.removedColumns).some(name => name in diff.addedColumns);
 
     for (const policy of toTable.getPolicies()) {
       if (!fromTable.hasPolicy(policy.name)) {

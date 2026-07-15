@@ -485,8 +485,26 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const staged = em.#sessionContext?.variables;
 
     if (staged && previousArgs) {
-      for (const key of Object.keys(em.computeRlsFilterVariables(filters, previousArgs))) {
-        if (!(key in variables)) {
+      const removed = Object.keys(em.computeRlsFilterVariables(filters, previousArgs)).filter(
+        key => !(key in variables),
+      );
+
+      // a custom `setting` name can be shared by differently named filters — a variable another filter's current
+      // params still stage must survive the prune
+      const keptByOthers = new Set<string>();
+
+      for (const otherName of removed.length > 0 ? Object.keys(em.#filterParams) : []) {
+        if (otherName !== name) {
+          for (const key of Object.keys(
+            em.computeRlsFilterVariables(em.findRlsFilterDefs(otherName), em.#filterParams[otherName]),
+          )) {
+            keptByOthers.add(key);
+          }
+        }
+      }
+
+      for (const key of removed) {
+        if (!keptByOthers.has(key)) {
           delete staged[key];
         }
       }
@@ -531,6 +549,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       for (const key of Object.keys(args)) {
+        // treat `undefined` like an omitted arg — staging it would serialize as the literal string 'undefined'
+        if (args[key] === undefined) {
+          continue;
+        }
+
         const settingName = key === settingArg ? setting! : Utils.getRlsSettingName(filter.name, key);
         variables[settingName] = args[key];
       }
@@ -573,6 +596,16 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     return cache.get(name) ?? [];
+  }
+
+  /**
+   * Drops the cached `rls` filter lookup — `MikroORM.discoverEntity()` mutates the shared MetadataStorage,
+   * so a lookup built before the call would miss the newly discovered filters.
+   *
+   * @internal
+   */
+  clearRlsFilterDefsCache(): void {
+    EntityManager.#rlsFilterDefs.delete(this.metadata);
   }
 
   /**
@@ -638,17 +671,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    */
   getSessionContext(): SessionContext | undefined {
     return this.getContext(false).#sessionContext;
-  }
-
-  /**
-   * Copies a session context onto this exact instance, bypassing context resolution and staging validation —
-   * used for the callback EM handed to virtual entity `expression` callbacks, which must inherit the caller's
-   * context so its queries stay scoped (the caller already staged it under validation).
-   *
-   * @internal
-   */
-  inheritSessionContext(context: SessionContext | undefined): void {
-    this.#sessionContext = context ? Utils.copy(context) : undefined;
   }
 
   /**

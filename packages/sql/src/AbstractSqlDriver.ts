@@ -349,11 +349,10 @@ export abstract class AbstractSqlDriver<
       return this.wrapVirtualExpressionInSubquery(meta, meta.expression, where, options as FindOptions<T, any>, type);
     }
 
-    // `useContext: false` — the callback EM must not resolve back to the ambient RequestContext EM, or the
-    // transaction/session context set below would be silently ignored (running the callback's queries unscoped)
-    const em = this.createEntityManager(false);
+    // fork the caller EM so the callback inherits its filters, filter params and session context — a fork never
+    // resolves back to the ambient RequestContext EM, which would ignore the transaction/session context set below
+    const em = (options.em?.fork() ?? this.createEntityManager(false)) as this[typeof EntityManagerType];
     em.setTransactionContext(options.ctx);
-    em.inheritSessionContext(options.em?.getSessionContext());
 
     const res = meta.expression(em, where, options as FindOptions<T, any, any, any>);
 
@@ -397,10 +396,9 @@ export abstract class AbstractSqlDriver<
       return;
     }
 
-    // `useContext: false` for the same reason as in `findFromVirtual`
-    const em = this.createEntityManager(false);
+    // fork the caller EM for the same reason as in `findFromVirtual`
+    const em = (options.em?.fork() ?? this.createEntityManager(false)) as this[typeof EntityManagerType];
     em.setTransactionContext(options.ctx);
-    em.inheritSessionContext(options.em?.getSessionContext());
     const res = meta.expression(em, where as any, options as FindOptions<T, any, any, any>, true);
 
     if (typeof res === 'string') {
