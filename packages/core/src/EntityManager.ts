@@ -625,10 +625,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     this.validateSessionContextStaging();
 
     const current = this.#sessionContext;
-    this.#sessionContext = {
+    const merged: SessionContext = {
       variables: { ...current?.variables, ...context.variables },
       role: context.role ?? current?.role,
     };
+    // normalize an empty context away — it would still force the implicit transaction wrap and a distinct cache key
+    this.#sessionContext = Object.keys(merged.variables!).length > 0 || merged.role ? merged : undefined;
   }
 
   /**
@@ -636,6 +638,17 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    */
   getSessionContext(): SessionContext | undefined {
     return this.getContext(false).#sessionContext;
+  }
+
+  /**
+   * Copies a session context onto this exact instance, bypassing context resolution and staging validation —
+   * used for the callback EM handed to virtual entity `expression` callbacks, which must inherit the caller's
+   * context so its queries stay scoped (the caller already staged it under validation).
+   *
+   * @internal
+   */
+  inheritSessionContext(context: SessionContext | undefined): void {
+    this.#sessionContext = context ? Utils.copy(context) : undefined;
   }
 
   /**

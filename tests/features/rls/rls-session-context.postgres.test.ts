@@ -61,6 +61,21 @@ const ArticleView = defineEntity({
   },
 });
 
+// virtual entity whose expression callback executes queries itself and returns data — the callback EM must
+// inherit the caller's session context, or its queries would run unwrapped (and unscoped) as the base role
+const ArticleCallbackView = defineEntity({
+  name: 'RlsScArticleCbView',
+  expression: async (em: EntityManager) => {
+    const articles = await em.find(Article, {});
+    return articles.map(a => ({ id: a.id, tenantId: a.tenantId, title: a.title }));
+  },
+  properties: {
+    id: p.integer(),
+    tenantId: p.integer(),
+    title: p.string(),
+  },
+});
+
 // entity with `rls` filters (a multi-arg default-named one and a single-arg custom-`setting` one) for staging tests
 const FilterArticle = defineEntity({
   name: 'RlsScFilterArticle',
@@ -88,7 +103,54 @@ const FilterArticle = defineEntity({
 });
 
 const dbName = 'mikro_orm_test_rls_session';
-const baseOptions: Options = { entities: [User, Article, Tag, ArticleView], dbName, driver: PostgreSqlDriver };
+const baseOptions: Options = {
+  entities: [User, Article, Tag, ArticleView, ArticleCallbackView],
+  dbName,
+  driver: PostgreSqlDriver,
+};
+
+// file-level setup so each describe can also run on its own: schema, the shared role and the seed data
+beforeAll(async () => {
+  const orm = await MikroORM.init(baseOptions);
+  await orm.schema.refresh();
+
+  const conn = orm.em.getConnection();
+  // a crashed prior run can leave the role behind with lingering grants, which block a plain `drop role`
+  await conn.execute(`do $$ begin
+    if exists (select from pg_roles where rolname = 'rls_sc_role') then
+      execute 'drop owned by rls_sc_role';
+      execute 'drop role rls_sc_role';
+    end if;
+  end $$;`);
+  await conn.execute('create role rls_sc_role');
+  await conn.execute('grant usage on schema public to rls_sc_role');
+  await conn.execute('grant select, insert, update, delete on "rls_sc_article" to rls_sc_role');
+  await conn.execute('grant select, insert, update, delete on "rls_sc_user_tbl" to rls_sc_role');
+
+  const seedUser = orm.em.fork();
+  seedUser.create(User, { id: 1, name: 'u1' });
+  await seedUser.flush();
+
+  const seed1 = orm.em.fork({ session: { variables: { 'app.tenant_id': 1 } } });
+  seed1.create(Article, { id: 1, tenantId: 1, title: 't1-a' });
+  seed1.create(Article, { id: 2, tenantId: 1, title: 't1-b' });
+  await seed1.flush();
+
+  const seed2 = orm.em.fork({ session: { variables: { 'app.tenant_id': 2 } } });
+  seed2.create(Article, { id: 3, tenantId: 2, title: 't2-a' });
+  await seed2.flush();
+
+  await orm.close(true);
+});
+
+afterAll(async () => {
+  const orm = await MikroORM.init(baseOptions);
+  // remove the shared role's privileges in this db before dropping it, then drop the database itself
+  await orm.em.execute('drop owned by rls_sc_role');
+  await orm.em.execute('drop role if exists rls_sc_role');
+  await orm.schema.dropDatabase();
+  await orm.close(true);
+});
 
 describe('row level security session context', () => {
   let orm: MikroORM;
@@ -96,36 +158,9 @@ describe('row level security session context', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init(baseOptions);
-    await orm.schema.refresh();
-
-    const conn = orm.em.getConnection();
-    // shared by every describe in this file; dropped in the last describe's afterAll — a crashed prior run can
-    // leave it behind with lingering grants, which block a plain `drop role`
-    await conn.execute(`do $$ begin
-      if exists (select from pg_roles where rolname = 'rls_sc_role') then
-        execute 'drop owned by rls_sc_role';
-        execute 'drop role rls_sc_role';
-      end if;
-    end $$;`);
-    await conn.execute('create role rls_sc_role');
-    await conn.execute('grant usage on schema public to rls_sc_role');
-    await conn.execute('grant select, insert, update, delete on "rls_sc_article" to rls_sc_role');
-    await conn.execute('grant select, insert, update, delete on "rls_sc_user_tbl" to rls_sc_role');
-
-    const seedUser = orm.em.fork();
-    seedUser.create(User, { id: 1, name: 'u1' });
-    await seedUser.flush();
-
-    const seed1 = orm.em.fork({ session: { variables: { 'app.tenant_id': 1 } } });
-    seed1.create(Article, { id: 1, tenantId: 1, title: 't1-a' });
-    seed1.create(Article, { id: 2, tenantId: 1, title: 't1-b' });
-    await seed1.flush();
-
-    const seed2 = orm.em.fork({ session: { variables: { 'app.tenant_id': 2 } } });
-    seed2.create(Article, { id: 3, tenantId: 2, title: 't2-a' });
-    await seed2.flush();
-
     ormConn = await MikroORM.init({ ...baseOptions, sessionContext: 'connection' });
+    // warm up the lazy connection so the ensureDatabase check does not land in a test's mocked logger
+    await orm.em.execute('select 1');
   });
 
   afterAll(async () => {
@@ -212,6 +247,11 @@ describe('row level security session context', () => {
 
     em.clearSessionContext();
     expect(em.getSessionContext()).toBeUndefined();
+
+    // an empty context is normalized away, so it does not force the implicit transaction wrap
+    em.setSessionContext({});
+    expect(em.getSessionContext()).toBeUndefined();
+    expect(orm.em.fork({ session: {} }).getSessionContext()).toBeUndefined();
   });
 
   test('a context-resolving fork keeps its session context off the ambient EM', async () => {
@@ -467,6 +507,28 @@ describe('row level security session context', () => {
     expect(calls[1]).toMatch('select set_config(?, ?, true)');
     expect(calls.some(q => q.includes('from "rls_sc_article"'))).toBe(true);
     expect(calls.at(-1)).toMatch('commit');
+  });
+
+  test('a data-returning virtual expression callback inherits the session context', async () => {
+    // the callback receives a fresh EM — without inheriting the caller's session context, its queries would run
+    // unwrapped as the base (owner) role and return every tenant's rows
+    const em = orm.em.fork({ session: { role: 'rls_sc_role', variables: { 'app.tenant_id': 1 } } });
+    const rows = await em.find(ArticleCallbackView, {});
+
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.every(r => r.tenantId === 1)).toBe(true);
+  });
+
+  test('a virtual expression callback stays scoped under an active RequestContext', async () => {
+    // the callback EM must not resolve back to the ambient request EM (which carries no session context) —
+    // that would silently run the inner query unwrapped as the base (owner) role and leak other tenants' rows
+    const rows = await RequestContext.create(orm.em, async () => {
+      const em = orm.em.fork({ session: { role: 'rls_sc_role', variables: { 'app.tenant_id': 1 } } });
+      return em.find(ArticleCallbackView, {});
+    });
+
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.every(r => r.tenantId === 1)).toBe(true);
   });
 
   test('setSessionContext inside an active transaction throws (transaction strategy)', async () => {
@@ -739,9 +801,6 @@ describe('row level security session context — remaining native paths', () => 
 
   afterAll(async () => {
     await orm.em.execute('drop function if exists rls_sc_tenant_count');
-    // remove the shared role's privileges in this db before dropping it (created in the first describe)
-    await orm.em.execute('drop owned by rls_sc_role');
-    await orm.em.execute('drop role if exists rls_sc_role');
     await orm.close(true);
   });
 
