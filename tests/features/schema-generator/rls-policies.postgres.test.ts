@@ -452,6 +452,72 @@ describe('rls policies [postgres]', () => {
     await orm2.close();
   });
 
+  test('changing only the setting name inside a policy expression is detected [postgres]', async () => {
+    const dbName = 'mikro_orm_test_rls_setting_rename';
+    const makeEntity = (setting: string) =>
+      new EntitySchema({
+        name: 'RlsSettingRename',
+        tableName: 'rls_setting_rename',
+        properties: {
+          id: idColumn(),
+          tenantId: { type: 'string', name: 'tenantId', fieldName: 'tenant_id', columnType: 'uuid' },
+        },
+        policies: [{ name: 'p_tenant', using: `tenant_id = current_setting('${setting}')::uuid` }],
+      });
+    const orm1 = await MikroORM.init({ entities: [makeEntity('app.tenant')], dbName });
+    await orm1.schema.refresh();
+    await orm1.close();
+
+    // only the dotted string literal changes — the expression normalization must not collapse both
+    // literals to the same value (the alias-prefix strip once mangled `'app.tenant'` into `tenant`)
+    const orm2 = await MikroORM.init({ entities: [makeEntity('req.tenant')], dbName });
+    const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('drop policy "p_tenant"');
+    expect(diff).toContain('create policy "p_tenant"');
+    await orm2.schema.execute(diff);
+    expect(await orm2.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+
+    await orm2.schema.dropDatabase();
+    await orm2.close();
+  });
+
+  test('converting a column to generated recreates the policies that depend on it [postgres]', async () => {
+    const dbName = 'mikro_orm_test_rls_generated';
+    const makeEntity = (generated?: string) =>
+      new EntitySchema({
+        name: 'RlsGenerated',
+        tableName: 'rls_generated',
+        properties: {
+          id: idColumn(),
+          val: { type: 'number', name: 'val', fieldName: 'val', columnType: 'int' },
+          total: { type: 'number', name: 'total', fieldName: 'total', columnType: 'int', generated },
+        },
+        policies: [{ name: 'p_total', using: 'total > 0' }],
+      });
+    const orm1 = await MikroORM.init({ entities: [makeEntity()], dbName });
+    await orm1.schema.refresh();
+    await orm1.close();
+
+    // a generated-only change is emitted as a drop + re-add of the column, which the unchanged policy's
+    // column dependency blocks just like an in-place type change
+    const orm2 = await MikroORM.init({ entities: [makeEntity('(val * 2) stored')], dbName });
+    const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('drop policy "p_total"');
+    expect(diff).toContain('create policy "p_total"');
+    expect(diff.indexOf('drop policy "p_total"')).toBeLessThan(diff.indexOf('drop column'));
+    expect(diff.indexOf('drop column')).toBeLessThan(diff.indexOf('create policy "p_total"'));
+    await orm2.schema.execute(diff);
+
+    const policies = await orm2.em.execute<{ policyname: string }[]>(
+      `select policyname from pg_policies where tablename = 'rls_generated'`,
+    );
+    expect(policies.map(p => p.policyname)).toEqual(['p_total']);
+    expect(await orm2.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+
+    await orm2.schema.dropDatabase();
+    await orm2.close();
+  });
+
   test('a uuid column type change drops its policy before the pre-alter text cast [postgres]', async () => {
     // uuid type changes emit an extra `alter column ... type text` in the pre-alter phase, so the policy
     // drop must land before that phase, not just before the regular alter
@@ -631,6 +697,55 @@ describe('rls policies [postgres]', () => {
     expect(policies.map(p => p.policyname)).toEqual(['rls_partition_sel']);
 
     // and the schema is stable afterwards
+    expect(await orm2.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+
+    await orm2.schema.dropDatabase();
+    await orm2.close();
+  });
+
+  test('a partitioning rebuild preserves hand-written policies with `ignorePolicies` [postgres]', async () => {
+    const dbName = 'mikro_orm_test_rls_partition_ignore';
+    const makeEntity = (partitionBy?: any) =>
+      new EntitySchema({
+        name: 'RlsPartitionIgnore',
+        tableName: 'rls_partition_ignore',
+        partitionBy,
+        properties: {
+          id: idColumn(),
+          tenantId: { type: 'string', name: 'tenantId', fieldName: 'tenant_id', columnType: 'uuid' },
+        },
+      });
+    const orm1 = await MikroORM.init({ entities: [makeEntity()], dbName, schemaGenerator: { ignorePolicies: true } });
+    await orm1.schema.refresh();
+    await orm1.em.execute(`alter table "rls_partition_ignore" enable row level security`);
+    await orm1.em.execute(
+      `create policy "manual_tenant" on "rls_partition_ignore" using (tenant_id = current_setting('app.tenant')::uuid)`,
+    );
+    await orm1.close();
+
+    // the rebuild recreates the table from metadata, which knows nothing about the hand-written RLS state —
+    // `ignorePolicies` promises it is never dropped, so the rebuild must restore it from introspection
+    const orm2 = await MikroORM.init({
+      entities: [makeEntity({ type: 'hash', expression: ['id'], partitions: 2 })],
+      dbName,
+      schemaGenerator: { ignorePolicies: true },
+    });
+    await orm2.schema.execute('drop schema if exists "mikro_orm_partition_swap" cascade');
+
+    const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toContain('set schema "mikro_orm_partition_swap"');
+    expect(diff).toContain('enable row level security');
+    expect(diff).toContain('create policy "manual_tenant"');
+    await orm2.schema.execute(diff);
+
+    const rls = await orm2.em.execute<{ relrowsecurity: boolean }[]>(
+      `select relrowsecurity from pg_class where relname = 'rls_partition_ignore'`,
+    );
+    expect(rls[0].relrowsecurity).toBe(true);
+    const policies = await orm2.em.execute<{ policyname: string }[]>(
+      `select policyname from pg_policies where tablename = 'rls_partition_ignore'`,
+    );
+    expect(policies.map(p => p.policyname)).toEqual(['manual_tenant']);
     expect(await orm2.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
 
     await orm2.schema.dropDatabase();
