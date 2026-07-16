@@ -161,14 +161,22 @@ describe('row level security end-to-end under a non-owner role [postgres]', () =
   });
 
   afterAll(async () => {
-    await app.close(true);
-    await appConn.close(true);
+    // optional chaining + the guarded drop below keep a beforeAll failure from cascading into teardown errors
+    await app?.close(true);
+    await appConn?.close(true);
 
     // remove the roles' privileges in this db before dropping them, then drop the database as the owner
     const conn = admin.em.getConnection();
-    await conn.execute('drop owned by rls_e2e_app, rls_e2e_restricted');
-    await conn.execute('drop role if exists rls_e2e_restricted');
-    await conn.execute('drop role if exists rls_e2e_app');
+    await conn.execute(`do $$ begin
+      if exists (select from pg_roles where rolname = 'rls_e2e_app') then
+        execute 'drop owned by rls_e2e_app';
+        execute 'drop role rls_e2e_app';
+      end if;
+      if exists (select from pg_roles where rolname = 'rls_e2e_restricted') then
+        execute 'drop owned by rls_e2e_restricted';
+        execute 'drop role rls_e2e_restricted';
+      end if;
+    end $$;`);
     await admin.schema.dropDatabase();
     await admin.close();
   });

@@ -145,9 +145,14 @@ beforeAll(async () => {
 
 afterAll(async () => {
   const orm = await MikroORM.init(baseOptions);
-  // remove the shared role's privileges in this db before dropping it, then drop the database itself
-  await orm.em.execute('drop owned by rls_sc_role');
-  await orm.em.execute('drop role if exists rls_sc_role');
+  // remove the shared role's privileges in this db before dropping it, then drop the database itself;
+  // guarded so a beforeAll failure before the role exists does not cascade into a teardown error here
+  await orm.em.execute(`do $$ begin
+    if exists (select from pg_roles where rolname = 'rls_sc_role') then
+      execute 'drop owned by rls_sc_role';
+      execute 'drop role rls_sc_role';
+    end if;
+  end $$;`);
   await orm.schema.dropDatabase();
   await orm.close(true);
 });
