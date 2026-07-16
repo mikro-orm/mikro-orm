@@ -617,7 +617,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
   /**
    * Sets the database session context (row level security) for this entity manager. Session variables are merged
-   * with any previously set ones, while the role is replaced. The variables are applied via `set_config()` and are
+   * with any previously set ones, while the role is replaced when one is provided. The variables are applied via `set_config()` and are
    * typically referenced by RLS policies through `current_setting()`.
    */
   setSessionContext(context: SessionContext): void {
