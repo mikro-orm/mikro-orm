@@ -247,7 +247,7 @@ Notes:
 
 ## PostgreSQL row level security
 
-Table-level row level security policies declared via `@Entity({ policies, rowLevelSecurity })` (and the equivalent `EntitySchema` / `defineEntity` options) are managed by the schema generator just like check constraints and indexes: `schema:create`, `schema:update`, and `migration:create` create, alter, and drop policies, and existing policies are introspected back so the diff stays clean. See the [Row Level Security](./row-level-security.md) guide for details.
+Table-level row level security policies declared via `@Entity({ policies, rowLevelSecurity })` (and the equivalent `EntitySchema` / `defineEntity` options) are managed by the schema generator just like check constraints and indexes: `schema:create`, `schema:update`, and `migration:create` create, recreate, and drop policies, and existing policies are introspected back so the diff stays clean. See the [Row Level Security](./row-level-security.md) guide for details.
 
 ## Ignoring specific column changes
 

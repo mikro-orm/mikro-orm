@@ -250,7 +250,7 @@ const ctx = em.getSessionContext();
 // { variables: { 'app.tenant': tenantId }, role: 'app_user' }
 ```
 
-`setSessionContext` **merges** the variables into any already set and updates the role when one is provided — use `clearSessionContext()` to drop the whole context (there is no per-key removal). Neither can be called while a transaction is active (under either strategy) — the running transaction would never see the change, so the ORM fails closed. Forks inherit the parent's session context; passing `session` to `fork()` replaces it for that fork, except that variables staged by `setFilterParams` for [rls filters](#the-filter-bridge) are re-staged from the copied filter params (explicit `session.variables` win on conflict), so the app-level filters and the DB policies stay consistent.
+`setSessionContext` **merges** the variables into any already set and updates the role when one is provided — use `clearSessionContext()` to drop the whole context (there is no per-key removal). Neither can change the context while a transaction is active (under either strategy) — the running transaction would never see the change, so the ORM fails closed. Forks inherit the parent's session context; passing `session` to `fork()` replaces it for that fork, except that variables staged by `setFilterParams` for [rls filters](#the-filter-bridge) are re-staged from the copied filter params (explicit `session.variables` win on conflict), so the app-level filters and the DB policies stay consistent.
 
 Session variables are applied as strings (`set_config` only takes text); `Date` values are serialized to ISO 8601 so casts like `::timestamptz` parse them.
 
