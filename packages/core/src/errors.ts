@@ -177,9 +177,20 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     );
   }
 
-  static sessionContextInsideTransaction(): ValidationError {
+  static sessionContextInsideTransaction(action: 'set' | 'clear' = 'set'): ValidationError {
+    const advice =
+      action === 'set'
+        ? "Set the session context before starting the transaction (e.g. via 'em.fork({ session })')."
+        : 'Clear the session context outside the transaction.';
+
     return new ValidationError(
-      "Cannot set a database session context (row level security) inside an active transaction. The context is applied when the transaction begins or the connection is reserved, so it would never reach an already-open transaction (with the 'connection' strategy the pinned connection was reserved with the previous context). Set the session context before starting the transaction (e.g. via 'em.fork({ session })').",
+      `Cannot ${action} a database session context (row level security) inside an active transaction. The context is applied when the transaction begins or the connection is reserved, so the change would never reach an already-open transaction (with the 'connection' strategy the pinned connection was reserved with the previous context). ${advice}`,
+    );
+  }
+
+  static cannotStageNonScalarSessionVariable(filterName: string, argName: string): ValidationError {
+    return new ValidationError(
+      `Cannot stage the '${argName}' argument of filter '${filterName}' as a session variable (row level security) — only scalar values (string, number, boolean, Date) can be mirrored to the database policy backing the filter.`,
     );
   }
 
@@ -569,6 +580,13 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
   static rlsFilterUnsupportedCond(filterName: string): MetadataError {
     return new MetadataError(
       `Filter '${filterName}' cannot be compiled to an RLS policy because it references an argument outside of a direct comparison (only expressions like { prop: args.x } are supported). Declare an explicit policy instead.`,
+    );
+  }
+
+  /** Thrown when an `rls` filter compares against a column the schema generator does not manage. */
+  static rlsFilterUnmanagedColumn(filterName: string, column: string): MetadataError {
+    return new MetadataError(
+      `Filter '${filterName}' cannot be compiled to an RLS policy because column '${column}' is not part of the managed schema (e.g. the property is marked 'persist: false' or the column is excluded via 'skipColumns'). Declare an explicit policy instead.`,
     );
   }
 

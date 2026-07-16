@@ -1,13 +1,7 @@
 import { rm } from 'node:fs/promises';
-import {
-  DatabaseTable,
-  EntitySchema,
-  MikroORM,
-  type Options,
-  SchemaComparator,
-  type SqlPolicyDef,
-} from '@mikro-orm/postgresql';
+import { DatabaseTable, EntitySchema, MikroORM, SchemaComparator, type SqlPolicyDef } from '@mikro-orm/postgresql';
 import { Migrator } from '@mikro-orm/migrations';
+import { TEMP_DIR } from '../../helpers.js';
 
 function idColumn() {
   return { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' } as const;
@@ -136,7 +130,7 @@ describe('rls policies [postgres]', () => {
       },
       policies: [{ using: 'val > 0' }, { using: 'val < 100' }],
     });
-    const orm = await MikroORM.init({ entities: [Long], dbName: 'mikro_orm_test_rls_long', connect: false } as Options);
+    const orm = await MikroORM.init({ entities: [Long], dbName: 'mikro_orm_test_rls_long' });
 
     const names = orm.schema
       .getTargetSchema()
@@ -155,8 +149,7 @@ describe('rls policies [postgres]', () => {
     const orm = await MikroORM.init({
       entities: [Locked],
       dbName: 'mikro_orm_test_rls_roles',
-      connect: false,
-    } as Options);
+    });
     const helper = orm.em.getPlatform().getSchemaHelper() as any;
 
     expect(helper.parsePgRoles(['app_reader'])).toEqual(['app_reader']);
@@ -899,8 +892,7 @@ describe('rls policies [postgres]', () => {
     const orm = await MikroORM.init({
       entities: [Dup],
       dbName: 'mikro_orm_test_rls_dup',
-      connect: false,
-    } as Options);
+    });
 
     await expect(orm.schema.getCreateSchemaSQL({ wrap: false })).rejects.toThrow(
       `Entity RlsDup declares multiple row level security policies named 'same'. Policy names must be unique per table; rename one of them or omit the name to use an auto-generated one.`,
@@ -910,7 +902,7 @@ describe('rls policies [postgres]', () => {
   });
 
   test('migration snapshot reload produces no drift [postgres]', async () => {
-    const path = process.cwd() + '/temp/rls-migrations';
+    const path = TEMP_DIR + '/rls-migrations';
     await rm(path, { recursive: true, force: true });
 
     const orm = await MikroORM.init({

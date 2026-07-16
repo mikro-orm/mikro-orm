@@ -378,8 +378,10 @@ export class SourceFile {
     const backtick = val.startsWith(`'`) || val.includes('\n');
     // backslashes must be escaped first, or SQL like `name ~ '^\d+'` silently degrades (`\d` -> `d`) in the emitted source
     const escaped = val.replaceAll('\\', '\\\\');
-    /* v8 ignore next */
-    return backtick ? `\`${escaped.replaceAll('`', '\\`')}\`` : `'${escaped.replaceAll(`'`, `\\'`)}'`;
+    /* v8 ignore next 3 */
+    return backtick
+      ? `\`${escaped.replaceAll('`', '\\`').replaceAll('${', '\\${')}\``
+      : `'${escaped.replaceAll(`'`, `\\'`)}'`;
   }
 
   protected getPropertyDefinition(prop: EntityProperty, padLeft: number): string {

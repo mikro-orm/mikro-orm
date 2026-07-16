@@ -22,7 +22,7 @@ import {
 } from '@mikro-orm/postgresql';
 import { MikroORM as SqliteMikroORM } from '@mikro-orm/sqlite';
 import { Migrator } from '@mikro-orm/migrations';
-import { mockLogger } from '../../helpers.js';
+import { mockLogger, TEMP_DIR } from '../../helpers.js';
 
 const T1 = '11111111-1111-1111-1111-111111111111';
 const T2 = '22222222-2222-2222-2222-222222222222';
@@ -157,7 +157,7 @@ describe('rls filter bridge (live round-trip) [postgres]', () => {
   });
 
   test('migration snapshot includes the compiled policy and reloads without drift', async () => {
-    const path = process.cwd() + '/temp/rls-fb-migrations';
+    const path = TEMP_DIR + '/rls-fb-migrations';
     await rm(path, { recursive: true, force: true });
 
     const orm = await MikroORM.init({
@@ -197,6 +197,17 @@ describe('rls filter bridge (compile errors) [postgres]', () => {
     );
     await expect(orm.schema.getCreateSchemaSQL({ wrap: false })).rejects.toThrow(
       `Filter 'f' sets a custom 'setting' but references multiple arguments (t, o).`,
+    );
+    await orm.close(true);
+  });
+
+  test('a condition referencing a property without a managed column throws', async () => {
+    const orm = await init(
+      { id: p.integer().primary(), tenantId: p.uuid().persist(false) },
+      { f: { name: 'f', cond: (a: any) => ({ tenantId: a.t }), rls: true } },
+    );
+    await expect(orm.schema.getCreateSchemaSQL({ wrap: false })).rejects.toThrow(
+      `Filter 'f' cannot be compiled to an RLS policy because column 'tenant_id' is not part of the managed schema`,
     );
     await orm.close(true);
   });
@@ -714,8 +725,7 @@ describe('rls filter bridge (staging) [postgres]', () => {
       entities: [A, B],
       dbName: 'mikro_orm_test_rls_fb_staging',
       driver: PostgreSqlDriver,
-      connect: false,
-    } as Options);
+    });
 
     // both entities' policies must see their value, regardless of discovery order
     const em = orm.em.fork();
@@ -724,6 +734,30 @@ describe('rls filter bridge (staging) [postgres]', () => {
       'mikro.byTenant.tenant': T1,
       'app.current_tenant': T1,
     });
+
+    await orm.close(true);
+  });
+
+  test('staging a non-scalar argument for an rls filter throws', async () => {
+    const Ent = defineEntity({
+      name: 'RlsStScalar',
+      tableName: 'rls_st_scalar',
+      properties: { id: p.integer().primary(), tenantId: p.uuid() },
+      filters: {
+        byTenant: { name: 'byTenant', cond: (args: any) => ({ tenantId: args.tenant }), rls: true, default: false },
+      },
+    });
+    const orm = await MikroORM.init({
+      entities: [Ent],
+      dbName: 'mikro_orm_test_rls_fb_scalar',
+      driver: PostgreSqlDriver,
+    });
+
+    // the app-level filter would apply `$in` semantics while the compiled policy compares against `String(value)`
+    // ('uuid1,uuid2'), silently matching nothing — fail loudly at staging instead
+    expect(() => orm.em.fork().setFilterParams('byTenant', { tenant: [T1] })).toThrow(
+      `Cannot stage the 'tenant' argument of filter 'byTenant' as a session variable (row level security)`,
+    );
 
     await orm.close(true);
   });
@@ -746,8 +780,7 @@ describe('rls filter bridge (staging) [postgres]', () => {
       entities: [C],
       dbName: 'mikro_orm_test_rls_fb_staging2',
       driver: PostgreSqlDriver,
-      connect: false,
-    } as Options);
+    });
 
     const em = orm.em.fork();
     em.setFilterParams('byTenant', { tenant: T1, other: 1 });
@@ -782,8 +815,7 @@ describe('rls filter bridge (staging) [postgres]', () => {
       entities: [C],
       dbName: 'mikro_orm_test_rls_fb_staging3',
       driver: PostgreSqlDriver,
-      connect: false,
-    } as Options);
+    });
 
     // the schema-time compiler has the same guard, but an app that never builds the schema still must not
     // stage ambiguous variables at runtime
@@ -815,8 +847,7 @@ describe('rls filter bridge (staging) [postgres]', () => {
       entities: [Ent],
       dbName: 'mikro_orm_test_rls_fb_entname',
       driver: PostgreSqlDriver,
-      connect: false,
-    } as Options);
+    });
 
     expect(() => orm.em.fork().setFilterParams('byTenant', { tenant: T1 })).toThrow(
       `Filter 'byTenant' cannot be compiled to an RLS policy because its condition depends on runtime state`,
@@ -845,8 +876,7 @@ describe('rls filter bridge (staging) [postgres]', () => {
       entities: [Doc],
       dbName: 'mikro_orm_test_rls_fb_dotted',
       driver: PostgreSqlDriver,
-      connect: false,
-    } as Options);
+    });
 
     const em = orm.em.fork();
     em.setFilterParams('tenant', { id: T1 });
@@ -986,8 +1016,7 @@ describe('rls filter bridge (edge cases) [postgres]', () => {
     const orm = await MikroORM.init({
       entities: [Doc],
       dbName: 'mikro_orm_test_rls_fb_nameless',
-      connect: false,
-    } as Options);
+    });
 
     const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
     expect(sql).toContain(

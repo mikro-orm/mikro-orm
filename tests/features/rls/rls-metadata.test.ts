@@ -1,8 +1,8 @@
-import { defineEntity, EntitySchema, MetadataError, MikroORM, p, type Options } from '@mikro-orm/postgresql';
+import { defineEntity, EntitySchema, MetadataError, MikroORM, p } from '@mikro-orm/postgresql';
 import { MikroORM as SqliteMikroORM, SqlitePlatform, StringType } from '@mikro-orm/sqlite';
 import { Entity, Filter, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
-const pgOptions = { dbName: 'mikro_orm_test_rls', connect: false } as Options;
+const pgOptions = { dbName: 'mikro_orm_test_rls' };
 
 @Entity({
   tableName: 'rls_article',

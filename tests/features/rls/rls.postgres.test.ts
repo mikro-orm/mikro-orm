@@ -165,6 +165,10 @@ describe('row level security end-to-end under a non-owner role [postgres]', () =
     await app?.close(true);
     await appConn?.close(true);
 
+    if (!admin) {
+      return;
+    }
+
     // remove the roles' privileges in this db before dropping them, then drop the database as the owner
     const conn = admin.em.getConnection();
     await conn.execute(`do $$ begin
@@ -409,7 +413,12 @@ describe('row level security end-to-end under a non-owner role [postgres]', () =
     });
 
     afterAll(async () => {
-      await clearApp.close(true);
+      await clearApp?.close(true);
+
+      if (!clearAdmin) {
+        return;
+      }
+
       // release the app role's privileges in this db (the roles themselves are dropped by the parent suite)
       await clearAdmin.em.getConnection().execute('drop owned by rls_e2e_app');
       await clearAdmin.schema.dropDatabase();

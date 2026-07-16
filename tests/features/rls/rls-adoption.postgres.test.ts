@@ -21,7 +21,13 @@ const ManagedBook = defineEntity({
   policies: [{ name: 'declared_tenant', using: `tenant_id = current_setting('app.tenant')::uuid` }],
 });
 
-const dbName = 'mikro_orm_test_rls_adoption';
+// per-test database so a mid-test failure cannot leak tables/policies into a sibling's whole-db diff assertions
+let seq = 0;
+let dbName: string;
+
+beforeEach(() => {
+  dbName = `mikro_orm_test_rls_adoption_${++seq}`;
+});
 
 async function createHandWrittenRls(orm: MikroORM) {
   await orm.em.execute(`alter table "rls_adoption_book" enable row level security`);
