@@ -174,12 +174,14 @@ describe('EntityGenerator — RLS disabled with staged policies (PostgreSQL)', (
     }
   });
 
-  test('policy expressions containing backslashes survive the emitted source', async () => {
+  test('backslashes and template-literal interpolation survive the emitted source', async () => {
     const RlsRegexSchema = defineEntity({
       name: 'RlsRegex',
       tableName: 'rls_regex',
       rowLevelSecurity: true,
       policies: [{ name: 'regex_sel', command: 'select', using: String.raw`name ~ '^\d+'` }],
+      // the newline forces the backtick quoting path, where an unescaped `${` would interpolate on import
+      comment: 'multi\nline ${should not interpolate}',
       properties: {
         id: p.integer().primary().autoincrement(),
         name: p.string(),
@@ -201,6 +203,8 @@ describe('EntityGenerator — RLS disabled with staged policies (PostgreSQL)', (
       const src = dump.find(f => f.includes('class RlsRegex'))!;
       // `\d` must arrive as an escaped backslash, or the generated file silently degrades the predicate to `d`
       expect(src).toContain(String.raw`~ ''^\\d+''`.replaceAll(`''`, `\\'`));
+      // the comment's `${` must be escaped in the emitted template literal, or importing the file would evaluate it
+      expect(src).toContain('comment: `multi\nline \\${should not interpolate}`');
 
       await orm.schema.dropDatabase();
     } finally {

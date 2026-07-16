@@ -356,7 +356,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     // a stream never opens the implicit session-context transaction, so under the 'transaction' strategy the staged
     // context would silently never apply outside an ambient transaction and other tenants' rows would leak — fail closed
-    if (!em.#transactionContext && em.getTransactionSessionContext()) {
+    if (!options.ctx && !em.#transactionContext && em.getTransactionSessionContext()) {
       throw ValidationError.sessionContextStreamRequiresTransaction();
     }
 
@@ -549,13 +549,21 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       for (const key of Object.keys(args)) {
+        const value = args[key];
+
         // treat `undefined` like an omitted arg — staging it would serialize as the literal string 'undefined'
-        if (args[key] === undefined) {
+        if (value === undefined) {
           continue;
         }
 
+        // a non-scalar arg has no equivalent in the compiled `= current_setting(...)` comparison — the app-level
+        // filter would apply `$in`/`is null` semantics while the policy compares against `String(value)`
+        if (value === null || (typeof value === 'object' && !(value instanceof Date))) {
+          throw ValidationError.cannotStageNonScalarSessionVariable(filter.name, key);
+        }
+
         const settingName = key === settingArg ? setting! : Utils.getRlsSettingName(filter.name, key);
-        variables[settingName] = args[key];
+        variables[settingName] = value;
       }
     }
 
@@ -682,7 +690,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     // clearing inside an open transaction would be as inert (and cache-poisoning) as staging there — fail closed too,
     // under both strategies (the 'connection' pinned connection was already reserved with the previous context)
     if (em.#sessionContext && em.#transactionContext) {
-      throw ValidationError.sessionContextInsideTransaction();
+      throw ValidationError.sessionContextInsideTransaction('clear');
     }
 
     em.#sessionContext = undefined;
