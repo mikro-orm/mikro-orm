@@ -173,6 +173,12 @@ describe('row level security session context', () => {
     await orm.close(true);
   });
 
+  afterEach(async () => {
+    // drop any rows a test added beyond the seed (ids 1-3) even when its assertions failed, so a failure
+    // cannot cascade into later tests asserting the seeded state
+    await orm.em.fork().nativeDelete(Article, { id: { $gt: 3 } });
+  });
+
   test('fork with session variables wraps queries in a transaction that sets them', async () => {
     const em = orm.em.fork({ session: { variables: { 'app.tenant_id': 5 } } });
     const mock = mockLogger(orm, ['query']);
@@ -372,8 +378,6 @@ describe('row level security session context', () => {
     calls = mock.mock.calls.map(c => c[0]);
     expect(calls.filter(q => q.includes('begin'))).toHaveLength(2);
     expect(calls.filter(q => q.includes('set_config'))).toHaveLength(2);
-
-    await em.nativeDelete(Article, {});
   });
 
   test('m2m pivot table loads outside a transaction get the implicit wrap', async () => {
@@ -600,6 +604,23 @@ describe('row level security session context', () => {
     expect(calls.at(-1)).toMatch('commit');
   });
 
+  test('em.stream with an explicit transaction context bypasses the fail-closed guard', async () => {
+    const em = orm.em.fork({ session: { role: 'rls_sc_role', variables: { 'app.tenant_id': 1 } } });
+
+    // the context was applied when the passed transaction began, so streaming inside it is safe
+    const tenants = await em.transactional(async tem => {
+      const out = [];
+
+      for await (const a of em.stream(Article, { ctx: tem.getTransactionContext() })) {
+        out.push(a.tenantId);
+      }
+
+      return out;
+    });
+
+    expect(tenants).toEqual([1, 1]);
+  });
+
   test("the 'connection' strategy silently ignores a fork's session context used outside RequestContext", async () => {
     // a fork used directly (not resolved through RequestContext) is never the ambient EM the compose hook reads,
     // so its variables are staged but never applied — the acquire only issues `reset all`/`reset role`
@@ -809,6 +830,12 @@ describe('row level security session context — remaining native paths', () => 
     await orm.close(true);
   });
 
+  afterEach(async () => {
+    // drop any rows a test added beyond the seed (ids 1-3) even when its assertions failed, so a failure
+    // cannot cascade into later tests asserting the seeded state
+    await orm.em.fork().nativeDelete(Article, { id: { $gt: 3 } });
+  });
+
   test('em.clone gets the implicit session-context wrap', async () => {
     const em = orm.em.fork({ session: { role: 'rls_sc_role', variables: { 'app.tenant_id': 1 } } });
     const mock = mockLogger(orm, ['query']);
@@ -819,8 +846,6 @@ describe('row level security session context — remaining native paths', () => 
     expect(calls[0]).toMatch('begin');
     expect(calls[1]).toMatch('select set_config(?, ?, true)');
     expect(calls[2]).toMatch('set local role "rls_sc_role"');
-
-    await orm.em.fork().nativeDelete(Article, { title: 'cloned' });
   });
 
   test('entity-instance em.insert and em.insertMany get the implicit wrap', async () => {
@@ -840,8 +865,6 @@ describe('row level security session context — remaining native paths', () => 
 
     // the with-check policy accepted the writes because the session variables were applied
     expect(await em.count(Article, { id: { $gte: 201 } })).toBe(3);
-
-    await orm.em.fork().nativeDelete(Article, { id: { $gte: 201 } });
   });
 
   test('em.callRoutine gets the implicit wrap and sees only tenant rows', async () => {
@@ -863,7 +886,7 @@ describe('row level security session context — remaining native paths', () => 
       em.transactional(async inner => {
         inner.clearSessionContext();
       }),
-    ).rejects.toThrow(/inside an active transaction/);
+    ).rejects.toThrow('Cannot clear a database session context (row level security) inside an active transaction');
 
     // clearing a fork that never staged anything is a no-op even inside a transaction
     await orm.em.fork().transactional(async inner => {

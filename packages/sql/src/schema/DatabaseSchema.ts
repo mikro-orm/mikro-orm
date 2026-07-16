@@ -477,7 +477,13 @@ export class DatabaseSchema {
     const re = new RegExp(`("([^"]+)"\\s*(?:!=|>=|<=|=|>|<)\\s*)'${prefix}(\\w+)${suffix}'`, 'g');
 
     sql = sql.replace(re, (_whole: string, lhs: string, column: string, arg: string) => {
-      const col = table.getColumn(column)!;
+      const col = table.getColumn(column);
+
+      // the condition can reference a property that renders a field name without a managed column
+      // (`persist: false`, `skipColumns`) — fail with a descriptive error instead of a crash
+      if (!col) {
+        throw MetadataError.rlsFilterUnmanagedColumn(filter.name, column);
+      }
       // native enum columns compare against the enum type itself, `current_setting()` text won't coerce implicitly
       const cast = col.nativeEnumName
         ? `::${platform.quoteIdentifier(col.nativeEnumName)}`
