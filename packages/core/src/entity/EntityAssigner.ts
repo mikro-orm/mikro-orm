@@ -25,6 +25,9 @@ import { EntityHelper } from './EntityHelper';
 
 const validator = new EntityValidator(false);
 
+/** Keys that are never valid entity properties, as they resolve to inherited object accessors. */
+const UNSAFE_PROPERTY_NAMES: string[] = ['__proto__', 'constructor', 'prototype'];
+
 export class EntityAssigner {
 
   static assign<
@@ -63,6 +66,11 @@ export class EntityAssigner {
   }
 
   private static assignProperty<T extends object, C extends boolean>(entity: T, propName: string, props: Dictionary<EntityProperty<T>>, data: Dictionary, options: InternalAssignOptions<C>) {
+    // needs to happen before the `props` lookup, as those keys resolve to inherited accessors
+    if (UNSAFE_PROPERTY_NAMES.includes(propName)) {
+      return;
+    }
+
     let value = data[propName];
 
     const onlyProperties = options.onlyProperties && !(propName in props);
