@@ -1235,15 +1235,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/cli@workspace:packages/cli"
   dependencies:
-    "@mikro-orm/core": "npm:^7.1.7"
-    mikro-orm: "npm:^7.1.7"
+    "@mikro-orm/core": "npm:7.1.7"
+    mikro-orm: "npm:7.1.7"
     yargs: "npm:17.7.2"
   bin:
     mikro-orm: ./dist/cli.js
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/core@npm:^7.1.7, @mikro-orm/core@workspace:*, @mikro-orm/core@workspace:packages/core":
+"@mikro-orm/core@npm:7.1.7, @mikro-orm/core@npm:^7.1.7, @mikro-orm/core@workspace:*, @mikro-orm/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/core@workspace:packages/core"
   peerDependencies:
@@ -1260,7 +1260,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.1.7"
   peerDependencies:
-    "@mikro-orm/core": 7.1.6
+    "@mikro-orm/core": 7.1.7
     reflect-metadata: ^0.1.0 || ^0.2.0
   peerDependenciesMeta:
     reflect-metadata:
@@ -1273,9 +1273,9 @@ __metadata:
   resolution: "@mikro-orm/entity-generator@workspace:packages/entity-generator"
   dependencies:
     "@mikro-orm/core": "npm:^7.1.7"
-    "@mikro-orm/sql": "npm:^7.1.7"
+    "@mikro-orm/sql": "npm:7.1.7"
   peerDependencies:
-    "@mikro-orm/core": 7.1.6
+    "@mikro-orm/core": 7.1.7
   languageName: unknown
   linkType: soft
 
@@ -1285,7 +1285,7 @@ __metadata:
   dependencies:
     "@mikro-orm/sql": "npm:^7.1.7"
   peerDependencies:
-    "@mikro-orm/sql": 7.1.6
+    "@mikro-orm/sql": 7.1.7
     knex: ^3.0.0
   languageName: unknown
   linkType: soft
@@ -1295,11 +1295,11 @@ __metadata:
   resolution: "@mikro-orm/libsql@workspace:packages/libsql"
   dependencies:
     "@mikro-orm/core": "npm:^7.1.7"
-    "@mikro-orm/sql": "npm:^7.1.7"
+    "@mikro-orm/sql": "npm:7.1.7"
     kysely: "npm:0.29.3"
     libsql: "npm:0.5.29"
   peerDependencies:
-    "@mikro-orm/core": 7.1.6
+    "@mikro-orm/core": 7.1.7
   languageName: unknown
   linkType: soft
 
@@ -1308,10 +1308,10 @@ __metadata:
   resolution: "@mikro-orm/mariadb@workspace:packages/mariadb"
   dependencies:
     "@mikro-orm/core": "npm:^7.1.7"
-    "@mikro-orm/mysql": "npm:^7.1.7"
+    "@mikro-orm/mysql": "npm:7.1.7"
     kysely: "npm:0.29.3"
   peerDependencies:
-    "@mikro-orm/core": 7.1.6
+    "@mikro-orm/core": 7.1.7
   languageName: unknown
   linkType: soft
 
@@ -1320,10 +1320,10 @@ __metadata:
   resolution: "@mikro-orm/migrations-mongodb@workspace:packages/migrations-mongodb"
   dependencies:
     "@mikro-orm/core": "npm:^7.1.7"
-    "@mikro-orm/mongodb": "npm:^7.1.7"
+    "@mikro-orm/mongodb": "npm:7.1.7"
     mongodb: "npm:7.5.0"
   peerDependencies:
-    "@mikro-orm/core": 7.1.6
+    "@mikro-orm/core": 7.1.7
   languageName: unknown
   linkType: soft
 
@@ -1332,9 +1332,9 @@ __metadata:
   resolution: "@mikro-orm/migrations@workspace:packages/migrations"
   dependencies:
     "@mikro-orm/core": "npm:^7.1.7"
-    "@mikro-orm/sql": "npm:^7.1.7"
+    "@mikro-orm/sql": "npm:7.1.7"
   peerDependencies:
-    "@mikro-orm/core": 7.1.6
+    "@mikro-orm/core": 7.1.7
   languageName: unknown
   linkType: soft
 
@@ -1347,14 +1347,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/mongodb@npm:^7.1.7, @mikro-orm/mongodb@workspace:packages/mongodb":
+"@mikro-orm/mongodb@npm:7.1.7, @mikro-orm/mongodb@workspace:packages/mongodb":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/mongodb@workspace:packages/mongodb"
   dependencies:
     "@mikro-orm/core": "npm:^7.1.7"
     mongodb: "npm:7.5.0"
   peerDependencies:
-    "@mikro-orm/core": 7.1.6
+    "@mikro-orm/core": 7.1.7
   languageName: unknown
   linkType: soft
 
@@ -1363,27 +1363,27 @@ __metadata:
   resolution: "@mikro-orm/mssql@workspace:packages/mssql"
   dependencies:
     "@mikro-orm/core": "npm:^7.1.7"
-    "@mikro-orm/sql": "npm:^7.1.7"
+    "@mikro-orm/sql": "npm:7.1.7"
     kysely: "npm:0.29.3"
     tarn: "npm:3.1.2"
     tedious: "npm:20.0.0"
     tsqlstring: "npm:1.0.1"
   peerDependencies:
-    "@mikro-orm/core": 7.1.6
+    "@mikro-orm/core": 7.1.7
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/mysql@npm:^7.1.7, @mikro-orm/mysql@workspace:packages/mysql":
+"@mikro-orm/mysql@npm:7.1.7, @mikro-orm/mysql@workspace:packages/mysql":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/mysql@workspace:packages/mysql"
   dependencies:
     "@mikro-orm/core": "npm:^7.1.7"
-    "@mikro-orm/sql": "npm:^7.1.7"
+    "@mikro-orm/sql": "npm:7.1.7"
     kysely: "npm:0.29.3"
     mysql2: "npm:3.23.0"
     sqlstring: "npm:2.3.3"
   peerDependencies:
-    "@mikro-orm/core": 7.1.6
+    "@mikro-orm/core": 7.1.7
   languageName: unknown
   linkType: soft
 
@@ -1392,11 +1392,11 @@ __metadata:
   resolution: "@mikro-orm/oracledb@workspace:packages/oracledb"
   dependencies:
     "@mikro-orm/core": "npm:^7.1.7"
-    "@mikro-orm/sql": "npm:^7.1.7"
+    "@mikro-orm/sql": "npm:7.1.7"
     kysely: "npm:0.29.3"
     oracledb: "npm:7.0.1"
   peerDependencies:
-    "@mikro-orm/core": 7.1.6
+    "@mikro-orm/core": 7.1.7
   languageName: unknown
   linkType: soft
 
@@ -1406,13 +1406,13 @@ __metadata:
   dependencies:
     "@electric-sql/pglite": "npm:0.5.4"
     "@mikro-orm/core": "npm:^7.1.7"
-    "@mikro-orm/sql": "npm:^7.1.7"
+    "@mikro-orm/sql": "npm:7.1.7"
     kysely: "npm:0.29.3"
     postgres-array: "npm:3.0.4"
     postgres-date: "npm:2.1.0"
     postgres-interval: "npm:4.1.0"
   peerDependencies:
-    "@mikro-orm/core": 7.1.6
+    "@mikro-orm/core": 7.1.7
   languageName: unknown
   linkType: soft
 
@@ -1421,7 +1421,7 @@ __metadata:
   resolution: "@mikro-orm/postgresql@workspace:packages/postgresql"
   dependencies:
     "@mikro-orm/core": "npm:^7.1.7"
-    "@mikro-orm/sql": "npm:^7.1.7"
+    "@mikro-orm/sql": "npm:7.1.7"
     kysely: "npm:0.29.3"
     pg: "npm:8.22.0"
     pg-cursor: "npm:2.21.0"
@@ -1429,7 +1429,7 @@ __metadata:
     postgres-date: "npm:2.1.0"
     postgres-interval: "npm:4.1.0"
   peerDependencies:
-    "@mikro-orm/core": 7.1.6
+    "@mikro-orm/core": 7.1.7
   languageName: unknown
   linkType: soft
 
@@ -1440,7 +1440,7 @@ __metadata:
     "@mikro-orm/core": "npm:^7.1.7"
     ts-morph: "npm:28.0.0"
   peerDependencies:
-    "@mikro-orm/core": 7.1.6
+    "@mikro-orm/core": 7.1.7
   languageName: unknown
   linkType: soft
 
@@ -1506,7 +1506,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.1.7"
   peerDependencies:
-    "@mikro-orm/core": 7.1.6
+    "@mikro-orm/core": 7.1.7
   languageName: unknown
   linkType: soft
 
@@ -1519,14 +1519,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/sql@npm:^7.1.7, @mikro-orm/sql@workspace:*, @mikro-orm/sql@workspace:packages/sql":
+"@mikro-orm/sql@npm:7.1.7, @mikro-orm/sql@npm:^7.1.7, @mikro-orm/sql@workspace:*, @mikro-orm/sql@workspace:packages/sql":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/sql@workspace:packages/sql"
   dependencies:
     "@mikro-orm/core": "npm:^7.1.7"
     kysely: "npm:0.29.3"
   peerDependencies:
-    "@mikro-orm/core": 7.1.6
+    "@mikro-orm/core": 7.1.7
   languageName: unknown
   linkType: soft
 
@@ -1535,11 +1535,11 @@ __metadata:
   resolution: "@mikro-orm/sqlite@workspace:packages/sqlite"
   dependencies:
     "@mikro-orm/core": "npm:^7.1.7"
-    "@mikro-orm/sql": "npm:^7.1.7"
+    "@mikro-orm/sql": "npm:7.1.7"
     better-sqlite3: "npm:12.11.1"
     kysely: "npm:0.29.3"
   peerDependencies:
-    "@mikro-orm/core": 7.1.6
+    "@mikro-orm/core": 7.1.7
   languageName: unknown
   linkType: soft
 
@@ -7463,7 +7463,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mikro-orm@npm:^7.1.7, mikro-orm@workspace:packages/mikro-orm":
+"mikro-orm@npm:7.1.7, mikro-orm@workspace:packages/mikro-orm":
   version: 0.0.0-use.local
   resolution: "mikro-orm@workspace:packages/mikro-orm"
   languageName: unknown

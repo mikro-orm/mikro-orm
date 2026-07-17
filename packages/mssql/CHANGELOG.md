@@ -5,16 +5,11 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
 
-
 ### Bug Fixes
 
-* **mssql:** map FK, CHECK, PK/unique, deadlock and lock-timeout errors to driver exceptions ([#7959](https://github.com/mikro-orm/mikro-orm/issues/7959)) ([adc52fc](https://github.com/mikro-orm/mikro-orm/commit/adc52fced854c89b6f6496b4c356f1910379d0c3))
-* **mssql:** retry create database when the model database is locked ([#7985](https://github.com/mikro-orm/mikro-orm/issues/7985)) ([f528107](https://github.com/mikro-orm/mikro-orm/commit/f52810710c9fdea1d3e10cfcc80f9c12257edeb0))
-* **sql:** validate order by direction against known values ([#7996](https://github.com/mikro-orm/mikro-orm/issues/7996)) ([3aba926](https://github.com/mikro-orm/mikro-orm/commit/3aba926fd07156f5e1ebf06294fd77ee1215bad5))
-
-
-
-
+- **mssql:** map FK, CHECK, PK/unique, deadlock and lock-timeout errors to driver exceptions ([#7959](https://github.com/mikro-orm/mikro-orm/issues/7959)) ([adc52fc](https://github.com/mikro-orm/mikro-orm/commit/adc52fced854c89b6f6496b4c356f1910379d0c3))
+- **mssql:** retry create database when the model database is locked ([#7985](https://github.com/mikro-orm/mikro-orm/issues/7985)) ([f528107](https://github.com/mikro-orm/mikro-orm/commit/f52810710c9fdea1d3e10cfcc80f9c12257edeb0))
+- **sql:** validate order by direction against known values ([#7996](https://github.com/mikro-orm/mikro-orm/issues/7996)) ([3aba926](https://github.com/mikro-orm/mikro-orm/commit/3aba926fd07156f5e1ebf06294fd77ee1215bad5))
 
 ## [7.1.6](https://github.com/mikro-orm/mikro-orm/compare/v7.1.5...v7.1.6) (2026-07-13)
 

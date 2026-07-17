@@ -5,15 +5,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
 
-
 ### Bug Fixes
 
-* **core:** ignore special object keys in `assign()` ([#7998](https://github.com/mikro-orm/mikro-orm/issues/7998)) ([6c65ffb](https://github.com/mikro-orm/mikro-orm/commit/6c65ffb10ef2387adaa202121dd0ba1ca644c018))
-* **core:** support same-named nested embeddables with different props in polymorphic embeddables ([#7986](https://github.com/mikro-orm/mikro-orm/issues/7986)) ([c926fd8](https://github.com/mikro-orm/mikro-orm/commit/c926fd86f7dd93f060e8a77ebcdf40d889009dcd)), closes [#7983](https://github.com/mikro-orm/mikro-orm/issues/7983)
-
-
-
-
+- **core:** ignore special object keys in `assign()` ([#7998](https://github.com/mikro-orm/mikro-orm/issues/7998)) ([6c65ffb](https://github.com/mikro-orm/mikro-orm/commit/6c65ffb10ef2387adaa202121dd0ba1ca644c018))
+- **core:** support same-named nested embeddables with different props in polymorphic embeddables ([#7986](https://github.com/mikro-orm/mikro-orm/issues/7986)) ([c926fd8](https://github.com/mikro-orm/mikro-orm/commit/c926fd86f7dd93f060e8a77ebcdf40d889009dcd)), closes [#7983](https://github.com/mikro-orm/mikro-orm/issues/7983)
 
 ## [7.1.6](https://github.com/mikro-orm/mikro-orm/compare/v7.1.5...v7.1.6) (2026-07-13)
 
