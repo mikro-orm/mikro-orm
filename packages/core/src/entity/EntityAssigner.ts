@@ -16,7 +16,7 @@ import type {
   Primary,
   RequiredEntityData,
 } from '../typings';
-import { Utils } from '../utils/Utils';
+import { DANGEROUS_PROPERTY_NAMES, Utils } from '../utils/Utils';
 import { Reference } from './Reference';
 import { ReferenceKind, SCALAR_TYPES } from '../enums';
 import { EntityValidator } from './EntityValidator';
@@ -63,6 +63,11 @@ export class EntityAssigner {
   }
 
   private static assignProperty<T extends object, C extends boolean>(entity: T, propName: string, props: Dictionary<EntityProperty<T>>, data: Dictionary, options: InternalAssignOptions<C>) {
+    // needs to happen before the `props` lookup, as those keys resolve to inherited accessors
+    if (DANGEROUS_PROPERTY_NAMES.includes(propName)) {
+      return;
+    }
+
     let value = data[propName];
 
     const onlyProperties = options.onlyProperties && !(propName in props);
