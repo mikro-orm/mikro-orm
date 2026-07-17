@@ -2472,19 +2472,30 @@ export class QueryBuilder<
     }
 
     const query = this.toQuery();
-    const cached = await this.em?.tryCache<Entity, U>(this.mainAlias.entityName, this.#state.cache, [
-      'qb.execute',
-      query.sql,
-      query.params,
-      method,
-    ]);
+    const cacheKey: unknown[] = ['qb.execute', query.sql, query.params, method];
+    // session context (row level security) scopes cached rows per tenant/role, avoiding cross-context serves
+    const qbSessionContext = this.em?.getSessionContext();
+
+    if (qbSessionContext) {
+      cacheKey.push(qbSessionContext);
+    }
+
+    const cached = await this.em?.tryCache<Entity, U>(this.mainAlias.entityName, this.#state.cache, cacheKey);
 
     if (cached?.data !== undefined) {
       return cached.data as unknown as U;
     }
 
     const loggerContext = { id: this.em?.id, ...this.loggerContext, ...this.#abortOptions };
-    const res = await this.getConnection().execute(query.sql, query.params, method, this.context, loggerContext);
+    const conn = this.getConnection();
+    // outside a transaction, wrap in a short implicit one so RLS `set local` session context applies (no-op when unset)
+    const sessionContext = this.context ? undefined : this.em?.getTransactionSessionContext();
+    const res = await (sessionContext
+      ? conn.transactional(trx => conn.execute(query.sql, query.params, method, trx, loggerContext), {
+          sessionContext,
+          loggerContext,
+        })
+      : conn.execute(query.sql, query.params, method, this.context, loggerContext));
     const meta = this.mainAlias.meta;
 
     if (!options.mapResults || !meta) {
@@ -2543,6 +2554,12 @@ export class QueryBuilder<
    * ```
    */
   async *stream(options?: QBStreamOptions): AsyncIterableIterator<Loaded<Entity, Hint, Fields>> {
+    // mirror EntityManager.stream — a stream can't open the implicit session-context transaction, so under the
+    // 'transaction' strategy fail closed instead of silently running the cursor without the staged context
+    if (!this.context && this.em?.getTransactionSessionContext()) {
+      throw ValidationError.sessionContextStreamRequiresTransaction();
+    }
+
     options ??= {};
     options.mergeResults ??= true;
     options.mapResults ??= true;

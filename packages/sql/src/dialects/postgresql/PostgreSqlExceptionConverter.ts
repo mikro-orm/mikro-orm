@@ -5,6 +5,7 @@ import {
   InvalidFieldNameException,
   NonUniqueFieldNameException,
   NotNullConstraintViolationException,
+  RowLevelSecurityViolationException,
   SyntaxErrorException,
   TableExistsException,
   TableNotFoundException,
@@ -49,6 +50,13 @@ export class PostgreSqlExceptionConverter extends ExceptionConverter {
         return new UniqueConstraintViolationException(exception);
       case '23514':
         return new CheckConstraintViolationException(exception);
+      case '42501':
+        // 42501 is generic insufficient_privilege; only RLS write violations carry this message
+        if (exception.message.includes('row-level security policy')) {
+          return new RowLevelSecurityViolationException(exception);
+        }
+
+        break;
       case '42601':
         return new SyntaxErrorException(exception);
       case '42702':

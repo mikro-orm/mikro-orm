@@ -97,6 +97,7 @@ module.exports = {
         'view-entities',
         'materialized-views',
         'stored-routines',
+        'row-level-security',
       ],
     },
     {

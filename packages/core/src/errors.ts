@@ -159,6 +159,53 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     );
   }
 
+  static sessionContextNotSupported(): ValidationError {
+    return new ValidationError(
+      'Database session context (row level security) is only supported by the PostgreSQL driver. To test a PostgreSQL app without a server, use the `@mikro-orm/pglite` driver instead of sqlite.',
+    );
+  }
+
+  static sessionContextRequiresImplicitTransactions(): ValidationError {
+    return new ValidationError(
+      "Cannot set a database session context (row level security) with the 'transaction' strategy while 'implicitTransactions' is disabled. The context is applied on transaction begin, but writes would run without a transaction and silently bypass the policies. Enable 'implicitTransactions', wrap the work in 'em.transactional()', or use the 'connection' session context strategy.",
+    );
+  }
+
+  static sessionContextWithDisabledTransactions(): ValidationError {
+    return new ValidationError(
+      "Cannot set a database session context (row level security) with the 'transaction' strategy while transactions are disabled via 'disableTransactions'. The context is applied on transaction begin, so flushes would run without it and silently bypass the policies. Enable transactions, or use the 'connection' session context strategy.",
+    );
+  }
+
+  static sessionContextInsideTransaction(action: 'set' | 'clear' = 'set'): ValidationError {
+    const advice =
+      action === 'set'
+        ? "Set the session context before starting the transaction (e.g. via 'em.fork({ session })')."
+        : 'Clear the session context outside the transaction.';
+
+    return new ValidationError(
+      `Cannot ${action} a database session context (row level security) inside an active transaction. The context is applied when the transaction begins or the connection is reserved, so the change would never reach an already-open transaction (with the 'connection' strategy the pinned connection was reserved with the previous context). ${advice}`,
+    );
+  }
+
+  static cannotStageNonScalarSessionVariable(filterName: string, argName: string): ValidationError {
+    return new ValidationError(
+      `Cannot stage the '${argName}' argument of filter '${filterName}' as a session variable (row level security) — only scalar values (string, number, boolean, Date) can be mirrored to the database policy backing the filter.`,
+    );
+  }
+
+  static sessionContextStreamRequiresTransaction(): ValidationError {
+    return new ValidationError(
+      "Cannot stream under a database session context (row level security) with the 'transaction' strategy outside a transaction. Streaming never opens the implicit transaction that applies the context, so the streamed rows would not be scoped by it (other tenants' rows would leak). Wrap the stream in 'em.transactional()', or use the 'connection' session context strategy.",
+    );
+  }
+
+  static connectionSessionContextNotSupported(): ValidationError {
+    return new ValidationError(
+      "The 'connection' session context strategy requires a driver that supports per-acquire connection hooks (the `postgresql` driver). Use the default 'transaction' strategy instead.",
+    );
+  }
+
   static cannotUseOperatorsInsideEmbeddables(
     entityName: EntityName,
     propName: string,
@@ -456,6 +503,90 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
   static triggersNotSupportedByDriver(meta: EntityMetadata): MetadataError {
     return new MetadataError(
       `Entity ${meta.className} defines database triggers which are not supported by the current driver. Triggers are only available with SQL drivers.`,
+    );
+  }
+
+  /** Thrown when row level security is declared on an entity using a driver that does not support it. */
+  static rowLevelSecurityNotSupportedByDriver(meta: EntityMetadata): MetadataError {
+    return new MetadataError(
+      `Entity ${meta.className} declares row level security which is not supported by the current driver. Row level security is only available with the PostgreSQL driver. To test a PostgreSQL app without a server, use the \`@mikro-orm/pglite\` driver instead of sqlite.`,
+    );
+  }
+
+  /** Thrown when row level security is declared on a non-root entity of an STI hierarchy. */
+  static rowLevelSecurityOnNonRootStiEntity(meta: EntityMetadata): MetadataError {
+    return new MetadataError(
+      `Entity ${meta.className} declares row level security, but it is part of a single table inheritance hierarchy. Declare policies on the root entity ${meta.root.className} instead, as the whole hierarchy shares a single table.`,
+    );
+  }
+
+  /** Thrown when two policies on the same entity are given the same explicit name. */
+  static duplicatePolicyName(meta: EntityMetadata, name: string): MetadataError {
+    return new MetadataError(
+      `Entity ${meta.className} declares multiple row level security policies named '${name}'. Policy names must be unique per table; rename one of them or omit the name to use an auto-generated one.`,
+    );
+  }
+
+  /** Thrown when a filter flagged with `rls` is declared on a driver that does not support row level security. */
+  static rlsFilterNotSupportedByDriver(meta: EntityMetadata, filterName: string): MetadataError {
+    return new MetadataError(
+      `Filter '${filterName}' on entity ${meta.className} is flagged with 'rls', which is only supported by the PostgreSQL driver. To test a PostgreSQL app without a server, use the \`@mikro-orm/pglite\` driver instead of sqlite.`,
+    );
+  }
+
+  /** Thrown when a filter flagged with `rls` is declared on a non-root entity of an STI hierarchy. */
+  static rlsFilterOnNonRootStiEntity(meta: EntityMetadata, filterName: string): MetadataError {
+    return new MetadataError(
+      `Filter '${filterName}' on entity ${meta.className} is flagged with 'rls', but the entity is part of a single table inheritance hierarchy. Declare the filter on the root entity ${meta.root.className} instead, as the whole hierarchy shares a single table and the policy would never be created otherwise.`,
+    );
+  }
+
+  /** Thrown when a global (config or EM registered) filter is flagged with `rls`; RLS filters must be entity scoped. */
+  static rlsFilterMustBeEntityScoped(filterName: string): MetadataError {
+    return new MetadataError(
+      `Filter '${filterName}' is a global filter and cannot be flagged with 'rls'. RLS filters must be declared on an entity via @Filter() so a policy can be attached to its table.`,
+    );
+  }
+
+  /** Thrown when an entity-scoped `rls` filter is registered at runtime via `em.addFilter()` instead of in metadata. */
+  static rlsFilterCannotBeRegisteredAtRuntime(filterName: string): MetadataError {
+    return new MetadataError(
+      `Filter '${filterName}' cannot be flagged with 'rls' when registered at runtime via 'em.addFilter()'. RLS filters must be declared in entity metadata via the @Filter() decorator (or the entity 'filters' option) so a policy can be attached to the table.`,
+    );
+  }
+
+  /** Thrown when a filter's custom `setting` is used with more than one argument. */
+  static rlsFilterMultiArgSetting(filterName: string, args: string[]): MetadataError {
+    return new MetadataError(
+      `Filter '${filterName}' sets a custom 'setting' but references multiple arguments (${args.join(', ')}). A custom 'setting' is only allowed for single-argument RLS filters; remove it to use the default 'mikro.${filterName}.<arg>' names.`,
+    );
+  }
+
+  /** Thrown when an `rls` filter's condition depends on runtime state and cannot be compiled to a static policy. */
+  static rlsFilterDependsOnRuntimeState(filterName: string): MetadataError {
+    return new MetadataError(
+      `Filter '${filterName}' cannot be compiled to an RLS policy because its condition depends on runtime state (it accesses 'em', 'type', 'options' or 'entityName', or resolves asynchronously). Declare an explicit policy instead.`,
+    );
+  }
+
+  /** Thrown when an `rls` filter compares against a column whose type has no automatic session-variable cast. */
+  static rlsFilterUncastableType(filterName: string, columnType: string): MetadataError {
+    return new MetadataError(
+      `Filter '${filterName}' cannot be compiled to an RLS policy because the column type '${columnType}' has no automatic session-variable cast. Declare an explicit policy instead.`,
+    );
+  }
+
+  /** Thrown when an `rls` filter references an argument outside of a direct comparison, which cannot be compiled. */
+  static rlsFilterUnsupportedCond(filterName: string): MetadataError {
+    return new MetadataError(
+      `Filter '${filterName}' cannot be compiled to an RLS policy because it references an argument outside of a direct comparison (only expressions like { prop: args.x } are supported). Declare an explicit policy instead.`,
+    );
+  }
+
+  /** Thrown when an `rls` filter compares against a column the schema generator does not manage. */
+  static rlsFilterUnmanagedColumn(filterName: string, column: string): MetadataError {
+    return new MetadataError(
+      `Filter '${filterName}' cannot be compiled to an RLS policy because column '${column}' is not part of the managed schema (e.g. the property is marked 'persist: false' or the column is excluded via 'skipColumns'). Declare an explicit policy instead.`,
     );
   }
 

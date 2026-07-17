@@ -333,6 +333,14 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
         table.setTriggers(tbl.triggers);
       }
 
+      if (tbl.policies) {
+        // snapshot omits default roles; restore the array so the comparator can normalize them
+        table.setPolicies(tbl.policies.map((p: Dictionary) => ({ ...p, roles: p.roles ?? [] })));
+      }
+
+      table.rlsEnabled = !!tbl.rlsEnabled;
+      table.rlsForced = !!tbl.rlsForced;
+
       const cols = tbl.columns;
       Object.keys(cols).forEach(col => {
         const column = { ...cols[col] };

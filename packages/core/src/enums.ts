@@ -1,4 +1,4 @@
-import type { EntityKey, ExpandProperty } from './typings.js';
+import type { EntityKey, ExpandProperty, SessionContext } from './typings.js';
 import type { InflightQueryAbortStrategy, Transaction } from './connections/Connection.js';
 import type { LogContext } from './logging/Logger.js';
 
@@ -354,6 +354,8 @@ export interface TransactionOptions {
   flushMode?: FlushMode | `${FlushMode}`;
   ignoreNestedTransactions?: boolean;
   loggerContext?: LogContext;
+  /** @internal database session context applied on `begin()` (set via `em.setSessionContext()`). */
+  sessionContext?: SessionContext;
   /**
    * `AbortSignal` cancelling every query within the transaction (including the implicit flush).
    * Cancelling mid-transaction triggers a rollback once the in-flight query settles.

@@ -279,7 +279,13 @@ MikroORM.init({
 
 ### Connection reserve hook
 
-`onReserveConnection` is awaited every time a connection is acquired from the pool, before any query runs on it. It can be combined with `AsyncLocalStorage` to set request-scoped session variables before each query, for example when using row-level security policies.
+`onReserveConnection` is awaited every time a connection is acquired from the pool, before any query runs on it. It can be combined with `AsyncLocalStorage` to set request-scoped session variables before each query.
+
+:::info
+
+For PostgreSQL row level security you no longer need to hand-roll this — the ORM manages session variables natively via `em.fork({ session })` and the `sessionContext` option, see the [Row Level Security](./row-level-security.md) guide.
+
+:::
 
 It is supported by the PostgreSQL, MySQL/MariaDB, and MSSQL drivers; other drivers (SQLite, libSQL, Oracle) ignore it. For PostgreSQL and MySQL/MariaDB it is forwarded to Kysely's dialect; for MSSQL the hook runs on every checkout from the `tedious` pool. The example below uses PostgreSQL syntax — adapt the statement to your driver (e.g. `sp_set_session_context` on MSSQL).
 
@@ -573,6 +579,7 @@ MikroORM.init({
     ignoreSchema: [], // allows ignoring some schemas when diffing
     ignoreTriggers: false, // leave triggers unmanaged (never drop or alter existing ones)
     ignoreRoutines: false, // leave stored routines unmanaged (never drop or alter existing ones)
+    ignorePolicies: false, // leave row level security policies unmanaged (never drop or alter existing ones)
     skipTables: [], // ignore some database tables during schema generation
     skipColumns: {}, // ignore some database table columns during schema generation
   },
@@ -790,6 +797,7 @@ Full list of supported options:
 | `MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS` | `migrations.createForeignKeyConstraints`       |
 | `MIKRO_ORM_SCHEMA_GENERATOR_IGNORE_TRIGGERS`               | `schemaGenerator.ignoreTriggers`               |
 | `MIKRO_ORM_SCHEMA_GENERATOR_IGNORE_ROUTINES`               | `schemaGenerator.ignoreRoutines`               |
+| `MIKRO_ORM_SCHEMA_GENERATOR_IGNORE_POLICIES`               | `schemaGenerator.ignorePolicies`               |
 | `MIKRO_ORM_SEEDER_PATH`                                     | `seeder.path`                                  |
 | `MIKRO_ORM_SEEDER_PATH_TS`                                  | `seeder.pathTs`                                |
 | `MIKRO_ORM_SEEDER_GLOB`                                     | `seeder.glob`                                  |

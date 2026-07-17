@@ -639,6 +639,8 @@ export abstract class SchemaHelper {
       ret.push(this.alterTableComment(diff.toTable, diff.changedComment));
     }
 
+    this.append(ret, this.getRlsAlterSQL(diff, safe));
+
     return ret;
   }
 
@@ -807,6 +809,21 @@ export abstract class SchemaHelper {
 
   getChangeColumnCommentSQL(tableName: string, to: Column, schemaName?: string): string {
     return '';
+  }
+
+  /** Row level security DDL for a freshly created table (enable/force + create policies). Postgres only. */
+  getRlsCreateSQL(table: DatabaseTable): string[] {
+    return [];
+  }
+
+  /** Drops removed/changed row level security policies; emitted in the pre-alter phase, before any column drop or type alter a policy expression can block. Postgres only. */
+  getRlsDropSQL(diff: TableDifference, safe?: boolean): string[] {
+    return [];
+  }
+
+  /** Row level security DDL for a table difference (enable/disable/force transitions + policy creation). Postgres only. */
+  getRlsAlterSQL(diff: TableDifference, safe?: boolean): string[] {
+    return [];
   }
 
   async getNamespaces(connection: AbstractSqlConnection, ctx?: Transaction): Promise<string[]> {
@@ -1009,6 +1026,9 @@ export abstract class SchemaHelper {
       for (const trigger of table.getTriggers()) {
         this.append(ret, this.createTrigger(table, trigger));
       }
+
+      // RLS policies can reference other tables, so they are deferred until every table exists (see the
+      // callers of getRlsCreateSQL in SqlSchemaGenerator) rather than emitted inline here
     }
 
     return ret;

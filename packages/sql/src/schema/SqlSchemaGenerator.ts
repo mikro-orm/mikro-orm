@@ -148,6 +148,11 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       }
     }
 
+    // RLS policies are deferred until every table exists, so a policy expression can reference another table
+    for (const table of toSchema.getTables()) {
+      this.append(ret, this.helper.getRlsCreateSQL(table));
+    }
+
     const sortedViews = this.sortViewsByDependencies(toSchema.getViews());
     for (const view of sortedViews) {
       this.appendViewCreation(ret, view);
@@ -451,6 +456,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
           this.append(sql, this.helper.createTrigger(newTable, trigger));
         }
 
+        this.append(sql, this.helper.getRlsCreateSQL(newTable));
+
         this.append(ret, sql, true);
       }
     }
@@ -563,6 +570,9 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
   private preAlterTable(diff: TableDifference, safe: boolean): string[] {
     const ret: string[] = [];
+    // removed/changed policies must be dropped before any column type alter, including the pre-alter
+    // uuid-to-text cast on postgres — a policy expression blocks type changes on the columns it references
+    this.append(ret, this.helper.getRlsDropSQL(diff, safe));
     this.append(ret, this.helper.getPreAlterTable(diff, safe));
 
     for (const foreignKey of Object.values(diff.removedForeignKeys)) {

@@ -1,0 +1,157 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`EntityGenerator — row level security (PostgreSQL) > decorators mode re-declares policies and forced RLS > document-decorators 1`] = `
+"import { type Opt } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+
+@Entity({ rowLevelSecurity: 'force', policies: [{ name: 'doc_admin_all', command: 'update', roles: ['rls_generator_role'], using: 'true', check: 'true' }, { name: 'doc_hide_deleted', type: 'restrictive', using: '(deleted = false)' }, { name: 'doc_insert_own', command: 'insert', check: '(owner_id = (current_setting(\\'app.user_id\\'::text))::integer)' }, { name: 'doc_select_own', command: 'select', using: '(owner_id = (current_setting(\\'app.user_id\\'::text))::integer)' }] })
+export class RlsDocument {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  ownerId!: number;
+
+  @Property({ type: 'boolean' })
+  deleted: boolean & Opt = false;
+
+}
+"
+`;
+
+exports[`EntityGenerator — row level security (PostgreSQL) > decorators mode re-declares policies and forced RLS > secret-decorators 1`] = `
+"import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+
+@Entity({ rowLevelSecurity: true })
+export class RlsSecret {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  value!: string;
+
+}
+"
+`;
+
+exports[`EntityGenerator — row level security (PostgreSQL) > defineEntity mode re-declares policies and forced RLS > document-defineEntity 1`] = `
+"import { type Opt, defineEntity, p } from '@mikro-orm/core';
+
+export class RlsDocument {
+  id!: number;
+  ownerId!: number;
+  deleted: boolean & Opt = false;
+}
+
+export const RlsDocumentSchema = defineEntity({
+  class: RlsDocument,
+  rowLevelSecurity: 'force',
+  policies: [
+    {
+      name: 'doc_admin_all',
+      command: 'update',
+      roles: ['rls_generator_role'],
+      using: 'true',
+      check: 'true',
+    },
+    { name: 'doc_hide_deleted', type: 'restrictive', using: '(deleted = false)' },
+    {
+      name: 'doc_insert_own',
+      command: 'insert',
+      check: '(owner_id = (current_setting(\\'app.user_id\\'::text))::integer)',
+    },
+    {
+      name: 'doc_select_own',
+      command: 'select',
+      using: '(owner_id = (current_setting(\\'app.user_id\\'::text))::integer)',
+    },
+  ],
+  properties: {
+    id: p.integer().primary(),
+    ownerId: p.integer(),
+    deleted: p.boolean(),
+  },
+});
+"
+`;
+
+exports[`EntityGenerator — row level security (PostgreSQL) > defineEntity mode re-declares policies and forced RLS > secret-defineEntity 1`] = `
+"import { defineEntity, p } from '@mikro-orm/core';
+
+export class RlsSecret {
+  id!: number;
+  value!: string;
+}
+
+export const RlsSecretSchema = defineEntity({
+  class: RlsSecret,
+  rowLevelSecurity: true,
+  properties: {
+    id: p.integer().primary(),
+    value: p.string(),
+  },
+});
+"
+`;
+
+exports[`EntityGenerator — row level security (PostgreSQL) > entitySchema mode re-declares policies and forced RLS > document-entitySchema 1`] = `
+"import { EntitySchema, type Opt } from '@mikro-orm/core';
+
+export class RlsDocument {
+  id!: number;
+  ownerId!: number;
+  deleted: boolean & Opt = false;
+}
+
+export const RlsDocumentSchema = new EntitySchema({
+  class: RlsDocument,
+  rowLevelSecurity: 'force',
+  policies: [
+    {
+      name: 'doc_admin_all',
+      command: 'update',
+      roles: ['rls_generator_role'],
+      using: 'true',
+      check: 'true',
+    },
+    { name: 'doc_hide_deleted', type: 'restrictive', using: '(deleted = false)' },
+    {
+      name: 'doc_insert_own',
+      command: 'insert',
+      check: '(owner_id = (current_setting(\\'app.user_id\\'::text))::integer)',
+    },
+    {
+      name: 'doc_select_own',
+      command: 'select',
+      using: '(owner_id = (current_setting(\\'app.user_id\\'::text))::integer)',
+    },
+  ],
+  properties: {
+    id: { primary: true, type: 'integer' },
+    ownerId: { type: 'integer' },
+    deleted: { type: 'boolean' },
+  },
+});
+"
+`;
+
+exports[`EntityGenerator — row level security (PostgreSQL) > entitySchema mode re-declares policies and forced RLS > secret-entitySchema 1`] = `
+"import { EntitySchema } from '@mikro-orm/core';
+
+export class RlsSecret {
+  id!: number;
+  value!: string;
+}
+
+export const RlsSecretSchema = new EntitySchema({
+  class: RlsSecret,
+  rowLevelSecurity: true,
+  properties: {
+    id: { primary: true, type: 'integer' },
+    value: { type: 'string' },
+  },
+});
+"
+`;

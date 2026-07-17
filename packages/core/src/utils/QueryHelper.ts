@@ -17,6 +17,7 @@ import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import { JsonType } from '../types/JsonType.js';
 import { helper } from '../entity/wrap.js';
 import { isRaw, Raw } from './RawQueryFragment.js';
+import { MetadataError } from '../errors.js';
 import type { FilterOptions } from '../drivers/IDatabaseDriver.js';
 
 /** @internal */
@@ -388,6 +389,78 @@ export class QueryHelper {
         filters[f].name = f;
         return filters[f];
       });
+  }
+
+  /** @internal Sentinel wrapping for arguments accessed while statically resolving an `rls` filter condition. */
+  static readonly RLS_SENTINEL_PREFIX = '__mikro_rls_arg__';
+
+  /** @internal */
+  static readonly RLS_SENTINEL_SUFFIX = '__';
+
+  /**
+   * Resolves an `rls` filter's condition to a static `FilterQuery`. Function conditions are called with a proxy `args`
+   * that yields a unique sentinel per accessed argument, real `type`/`entityName` strings (validated to not affect the
+   * result), and a poison proxy or `undefined` for the remaining runtime-only parameters.
+   *
+   * @internal
+   */
+  static resolveRlsFilterCond(filter: FilterDef, accessed: Set<string>, entityName?: string): Dictionary {
+    if (!(filter.cond instanceof Function)) {
+      return filter.cond as Dictionary;
+    }
+
+    const args = new Proxy({} as Dictionary, {
+      get: (_target, prop) => {
+        if (typeof prop === 'symbol') {
+          // e.g. coercing `args` itself in a template literal triggers a `Symbol.toPrimitive` lookup
+          throw MetadataError.rlsFilterUnsupportedCond(filter.name);
+        }
+
+        accessed.add(prop);
+        return `${this.RLS_SENTINEL_PREFIX}${prop}${this.RLS_SENTINEL_SUFFIX}`;
+      },
+    });
+    const poison = new Proxy({} as Dictionary, {
+      get: () => {
+        throw MetadataError.rlsFilterDependsOnRuntimeState(filter.name);
+      },
+    });
+    // property access on the poison proxies throws, but equality/truthiness checks (`type === 'read'`,
+    // `entityName === 'X'`, `options ? a : b`) cannot be trapped — vary all three across the evaluations and require
+    // identical results, so a command-, entity-, or options-dependent condition cannot silently compile one branch.
+    // `entityName` uses the real class name (plus two derived-distinct variants) so an `=== '<name>'` check diverges;
+    // `options` alternates the poison proxy and `undefined` so a truthiness check flips. `em` stays poison throughout.
+    const name = entityName ?? `${this.RLS_SENTINEL_PREFIX}entity${this.RLS_SENTINEL_SUFFIX}`;
+    const evaluate = (type: string, entity: string, options: Dictionary | undefined) => {
+      let result: unknown;
+
+      try {
+        result = (filter.cond as (...params: any[]) => unknown)(args, type, poison, options, entity);
+      } catch (e) {
+        // a raw TypeError from touching the `undefined` options/em must fail closed like the poison proxy does,
+        // but the descriptive MetadataErrors thrown above are already correct — let them surface unchanged
+        if (e instanceof MetadataError) {
+          throw e;
+        }
+
+        throw MetadataError.rlsFilterDependsOnRuntimeState(filter.name);
+      }
+
+      if (result instanceof Promise) {
+        throw MetadataError.rlsFilterDependsOnRuntimeState(filter.name);
+      }
+
+      return result as Dictionary;
+    };
+    const read = evaluate('read', name, poison);
+    const update = evaluate('update', `${name}\0a`, undefined);
+    const del = evaluate('delete', `${name}\0b`, poison);
+
+    if (JSON.stringify(read) !== JSON.stringify(update) || JSON.stringify(read) !== JSON.stringify(del)) {
+      throw MetadataError.rlsFilterDependsOnRuntimeState(filter.name);
+    }
+
+    return read;
   }
 
   static mergePropertyFilters(

@@ -39,7 +39,7 @@ import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import type { EventSubscriber } from '../events/EventSubscriber.js';
 import type { AssignOptions } from '../entity/EntityAssigner.js';
 import type { EntityManagerType, IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
-import { NotFoundError } from '../errors.js';
+import { MetadataError, NotFoundError, ValidationError } from '../errors.js';
 import { RequestContext } from './RequestContext.js';
 import { DataloaderType, FlushMode, LoadStrategy, PopulateHint, type EmbeddedPrefixMode } from '../enums.js';
 import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter.js';
@@ -108,6 +108,7 @@ const DEFAULTS = {
   ensureDatabase: true,
   ensureIndexes: false,
   batchSize: 300,
+  sessionContext: 'transaction',
   debug: false,
   ignoreDeprecations: false,
   verbose: false,
@@ -129,6 +130,7 @@ const DEFAULTS = {
     ignoreSchema: [],
     ignoreTriggers: false,
     ignoreRoutines: false,
+    ignorePolicies: false,
     skipTables: [],
     skipViews: [],
     skipColumns: {},
@@ -505,7 +507,17 @@ export class Configuration<
     this.#options.schema ??= this.#platform.getDefaultSchemaName();
     this.#options.charset ??= this.#platform.getDefaultCharset();
 
+    // fail closed instead of silently applying no session state on drivers without the reserve hook (e.g. pglite)
+    if (this.#options.sessionContext === 'connection' && !this.#platform.supportsConnectionSessionContext()) {
+      throw ValidationError.connectionSessionContextNotSupported();
+    }
+
     Object.keys(this.#options.filters).forEach(key => {
+      // global filters have no entity to attach a policy to, so `rls` is only valid on entity-scoped filters
+      if ((this.#options.filters[key] as { rls?: unknown }).rls) {
+        throw MetadataError.rlsFilterMustBeEntityScoped(key);
+      }
+
       this.#options.filters[key].default ??= true;
     });
 
@@ -911,7 +923,7 @@ export interface Options<
    * Filters are applied by default unless explicitly disabled.
    * @see https://mikro-orm.io/docs/filters
    */
-  filters: Dictionary<{ name?: string } & Omit<FilterDef, 'name'>>;
+  filters: Dictionary<{ name?: string } & Omit<FilterDef, 'name' | 'rls'>>;
   /**
    * Metadata discovery configuration options.
    * Controls how entities are discovered and validated.
@@ -948,6 +960,12 @@ export interface Options<
    * @default false
    */
   disableTransactions?: boolean;
+  /**
+   * How `em.setSessionContext()` session variables/role are applied for row level security.
+   * `'transaction'` (default) emits `set_config(..., true)` inside each transaction; `'connection'` applies them on every pooled connection acquire (PostgreSQL only).
+   * @default 'transaction'
+   */
+  sessionContext?: 'transaction' | 'connection';
   /**
    * Enable verbose logging of internal operations.
    * @default false
@@ -1308,6 +1326,14 @@ export interface Options<
      * @default false
      */
     ignoreRoutines?: boolean;
+    /**
+     * Leave row level security policies unmanaged. Declared policies are still created and RLS is still enabled or
+     * forced based on the entity metadata, but existing policies are never dropped or altered and RLS is never
+     * disabled or unforced — use this to protect hand-written policies from being removed when they are not
+     * mirrored in the entity definitions.
+     * @default false
+     */
+    ignorePolicies?: boolean;
     /**
      * Table names or patterns to skip during schema generation.
      * @default []

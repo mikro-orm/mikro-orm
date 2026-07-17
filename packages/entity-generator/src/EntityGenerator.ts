@@ -15,6 +15,7 @@ import {
   type AbstractSqlPlatform,
   type Configuration,
   DatabaseSchema,
+  type DatabaseTable,
   type EntityManager,
   type SchemaHelper,
 } from '@mikro-orm/sql';
@@ -140,7 +141,13 @@ export class EntityGenerator {
           }
         }
 
-        return table.getEntityDeclaration(this.#namingStrategy, this.#helper, options.scalarPropertiesForRelations!);
+        const meta = table.getEntityDeclaration(
+          this.#namingStrategy,
+          this.#helper,
+          options.scalarPropertiesForRelations!,
+        );
+        this.applyRowLevelSecurity(meta, table);
+        return meta;
       });
 
     for (const meta of metadata) {
@@ -226,6 +233,28 @@ export class EntityGenerator {
     await options.onProcessedMetadata?.(metadata, this.#platform);
 
     return metadata;
+  }
+
+  /** Carries introspected RLS state (policies + enablement) from the table onto the entity metadata. */
+  private applyRowLevelSecurity(meta: EntityMetadata, table: DatabaseTable): void {
+    meta.policies = table.getPolicies().map(policy => ({
+      name: policy.name,
+      command: policy.command,
+      type: policy.type,
+      roles: policy.roles,
+      ...(policy.using != null ? { using: policy.using } : {}),
+      ...(policy.check != null ? { check: policy.check } : {}),
+    }));
+
+    if (table.rlsForced) {
+      meta.rowLevelSecurity = 'force';
+    } else if (table.rlsEnabled) {
+      meta.rowLevelSecurity = true;
+    } else if (meta.policies.length > 0) {
+      // policies staged but RLS disabled — record it explicitly so a reload does not re-enable RLS via the
+      // policies-imply-RLS default
+      meta.rowLevelSecurity = false;
+    }
   }
 
   private cleanUpReferentialIntegrityRules<Entity>(metadata: EntityMetadata<Entity>[]) {

@@ -13,6 +13,7 @@ import {
   type MaybePromise,
   type QueryResult,
   type RawQueryFragment,
+  type SessionContext,
   type Transaction,
   type TransactionEventBroadcaster,
   Utils,
@@ -152,6 +153,7 @@ export abstract class AbstractSqlConnection extends Connection {
       ctx?: ControlledTransaction<any>;
       eventBroadcaster?: TransactionEventBroadcaster;
       loggerContext?: LogContext;
+      sessionContext?: SessionContext;
     } = {},
   ): Promise<T> {
     const trx = await this.begin(options);
@@ -175,6 +177,7 @@ export abstract class AbstractSqlConnection extends Connection {
       ctx?: ControlledTransaction<any, any>;
       eventBroadcaster?: TransactionEventBroadcaster;
       loggerContext?: LogContext;
+      sessionContext?: SessionContext;
     } = {},
   ): Promise<ControlledTransaction<any, any>> {
     if (options.ctx) {
@@ -216,11 +219,60 @@ export abstract class AbstractSqlConnection extends Connection {
       for (const query of this.platform.getBeginTransactionSQL(options)) {
         this.logQuery(query, options.loggerContext);
       }
+
+      if (options.sessionContext) {
+        try {
+          await this.applySessionContext(trx, options.sessionContext, options.loggerContext);
+        } catch (e) {
+          // roll back the freshly opened transaction so the pooled connection is released, not leaked
+          await trx.rollback().execute();
+          this.logQuery(this.platform.getRollbackTransactionSQL(), options.loggerContext);
+          throw e;
+        }
+      }
     }
 
     await options.eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, trx);
 
     return trx;
+  }
+
+  /** Applies session variables (`set_config`) and role (`set local role`) for the current transaction. */
+  private async applySessionContext(
+    trx: ControlledTransaction<any, any>,
+    sessionContext: SessionContext,
+    loggerContext?: LogContext,
+  ): Promise<void> {
+    const variables = Object.entries(sessionContext.variables ?? {});
+
+    if (variables.length > 0) {
+      const parts = variables.map(() => 'set_config(?, ?, true)').join(', ');
+      const params = variables.flatMap(([key, value]) => [key, this.stringifySessionVariable(value)]);
+      await this.execute(`select ${parts}`, params, 'run', trx, loggerContext);
+    }
+
+    if (sessionContext.role) {
+      await this.execute(
+        `set local role ${AbstractSqlConnection.quoteRole(sessionContext.role)}`,
+        [],
+        'run',
+        trx,
+        loggerContext,
+      );
+    }
+  }
+
+  /**
+   * Quotes a role name as a single PostgreSQL identifier. Unlike `platform.quoteIdentifier`, which treats a dot as a
+   * schema qualifier, a role like `my.role` must be quoted whole (`"my.role"`) with embedded quotes doubled.
+   */
+  protected static quoteRole(role: string): string {
+    return `"${role.replaceAll('"', '""')}"`;
+  }
+
+  /** Serializes a session variable for `set_config()`; `Date` values use ISO 8601 so casts like `::timestamptz` parse. */
+  protected stringifySessionVariable(value: unknown): string {
+    return value instanceof Date ? value.toISOString() : String(value);
   }
 
   /** Commits the transaction or releases the savepoint. */

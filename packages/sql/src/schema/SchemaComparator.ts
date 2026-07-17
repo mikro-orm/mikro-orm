@@ -17,6 +17,7 @@ import type {
   IndexDef,
   SchemaDifference,
   TableDifference,
+  SqlPolicyDef,
   SqlTriggerDef,
   SqlRoutineDef,
 } from '../typings.js';
@@ -436,6 +437,7 @@ export class SchemaComparator {
       addedIndexes: {},
       addedChecks: {},
       addedTriggers: {},
+      addedPolicies: {},
       changedColumns: {},
       changedForeignKeys: {},
       changedIndexes: {},
@@ -446,6 +448,7 @@ export class SchemaComparator {
       removedIndexes: {},
       removedChecks: {},
       removedTriggers: {},
+      removedPolicies: {},
       renamedColumns: {},
       renamedIndexes: {},
       fromTable,
@@ -661,6 +664,10 @@ export class SchemaComparator {
           changes++;
         }
       }
+    }
+
+    if (this.#platform.supportsRowLevelSecurity()) {
+      changes += this.diffPolicies(fromTable, toTable, tableDifferences);
     }
 
     const fromForeignKeys = { ...fromTable.getForeignKeys() };
@@ -1148,6 +1155,10 @@ export class SchemaComparator {
           .replace(/in\s*\((.*?)\)/gi, '= any (array[$1])')
           // MySQL normalizes count(*) to count(0)
           .replace(/\bcount\s*\(\s*0\s*\)/gi, 'count(*)')
+          // Protect dots inside string literals before the quote strip below, or the alias-prefix normalization
+          // would mangle literal contents — `current_setting('app.tenant')` and `current_setting('req.tenant')`
+          // must not both collapse to `current_settingtenant`
+          .replace(/'([^']*)'/g, (_, inner: string) => `'${inner.replaceAll('.', '\u0000')}'`)
           // Remove quotes first so we can process identifiers
           .replace(/['"`]/g, '')
           // MySQL adds table/alias prefixes to columns (e.g., a.name or table_name.column vs just column)
@@ -1159,6 +1170,13 @@ export class SchemaComparator {
           .replace(/\b(\w+)\s+as\s+\1\b/gi, '$1')
           // Remove AS keyword (optional in SQL, MySQL may add/remove it)
           .replace(/\bas\b/gi, '')
+          // Strip multi-word type casts before the single-word pass below — postgres deparses `::timestamptz`
+          // to `::timestamp with time zone`, `::time` to `::time without time zone`, etc., so a plain `::\w+`
+          // strip would leave a `with time zone` residue and make policy/check diffs churn forever
+          .replace(
+            /::\s*(?:(?:timestamp|time)\s+with(?:out)?\s+time\s+zone|character\s+varying|double\s+precision|bit\s+varying)/gi,
+            '',
+          )
           // Remove remaining special chars, parentheses, type casts, asterisks, and normalize whitespace
           .replace(/[()\n[\]*]|::\w+| +/g, '')
           .replace(/anyarray\[(.*)]/gi, '$1')
@@ -1228,6 +1246,105 @@ export class SchemaComparator {
     }
 
     return this.diffExpression(from.body, to.body);
+  }
+
+  private diffPolicies(fromTable: DatabaseTable, toTable: DatabaseTable, diff: TableDifference): number {
+    let changes = 0;
+    // `ignorePolicies` makes RLS create-only: declared policies are still added and RLS is still enabled/forced,
+    // but existing policies are never diffed for drop/alter and RLS is never disabled or unforced — this protects
+    // hand-written policies on databases that adopted RLS before the ORM managed it
+    const ignorePolicies = this.#platform.getConfig().get('schemaGenerator').ignorePolicies;
+    // postgres rejects `alter column ... type` on a column referenced by any policy, so a type change forces us to
+    // drop every still-present policy around the alter (dropped before via `getRlsDropSQL`, recreated after via
+    // `getRlsAlterSQL`) even when the policy itself is otherwise unchanged; a `generated`-only change is emitted
+    // as a drop + re-add of the same column, which a policy's column dependency blocks the same way
+    const hasColumnTypeChange =
+      Object.values(diff.changedColumns).some(c => c.changedProperties.has('type')) ||
+      Object.keys(diff.removedColumns).some(name => name in diff.addedColumns);
+
+    for (const policy of toTable.getPolicies()) {
+      if (!fromTable.hasPolicy(policy.name)) {
+        diff.addedPolicies[policy.name] = policy;
+        this.log(`policy ${policy.name} added to table ${diff.name}`, { policy });
+        changes++;
+      }
+    }
+
+    if (fromTable.rlsEnabled !== toTable.rlsEnabled && (!ignorePolicies || toTable.rlsEnabled)) {
+      diff.changedRlsEnabled = toTable.rlsEnabled;
+      changes++;
+    }
+
+    if (fromTable.rlsForced !== toTable.rlsForced && (!ignorePolicies || toTable.rlsForced)) {
+      diff.changedRlsForced = toTable.rlsForced;
+      changes++;
+    }
+
+    if (ignorePolicies) {
+      // existing policies are unmanaged here, but a type change still needs them dropped and recreated for the
+      // alter to succeed — recreate each verbatim from introspection so the hand-written definition is preserved
+      if (hasColumnTypeChange) {
+        for (const policy of fromTable.getPolicies()) {
+          diff.removedPolicies[policy.name] = policy;
+          diff.addedPolicies[policy.name] = policy;
+          changes += 2;
+        }
+      }
+
+      return changes;
+    }
+
+    for (const policy of fromTable.getPolicies()) {
+      const toPolicy = toTable.getPolicy(policy.name);
+
+      if (!toPolicy) {
+        diff.removedPolicies[policy.name] = policy;
+        this.log(`policy ${policy.name} removed from table ${diff.name}`);
+        changes++;
+        continue;
+      }
+
+      // changed policies are always dropped (before column drops, which the old expression can block via its
+      // column dependencies) and recreated (after column adds) — postgres could alter some of the changes in
+      // place, but not a policy's command or type, nor unset an expression
+      if (this.diffPolicy(policy, toPolicy)) {
+        diff.removedPolicies[policy.name] = policy;
+        diff.addedPolicies[policy.name] = toPolicy;
+        this.log(`policy ${policy.name} recreated in table ${diff.name}`, { from: policy, to: toPolicy });
+        changes += 2;
+        continue;
+      }
+
+      // an unchanged policy still blocks a type change on any column, so drop + recreate it around the alter
+      if (hasColumnTypeChange) {
+        diff.removedPolicies[policy.name] = policy;
+        diff.addedPolicies[policy.name] = toPolicy;
+        this.log(`policy ${policy.name} recreated around a column type change in table ${diff.name}`);
+        changes += 2;
+      }
+    }
+
+    return changes;
+  }
+
+  private diffPolicy(from: SqlPolicyDef, to: SqlPolicyDef): boolean {
+    // normalize so an omitted `roles` matches introspected `{public}`
+    const normalizeRoles = (roles: string[]) =>
+      DatabaseTable.isDefaultPolicyRoles(roles) ? '' : [...roles].sort().join(',');
+
+    if (from.command !== to.command || from.type !== to.type) {
+      return true;
+    }
+
+    if (normalizeRoles(from.roles) !== normalizeRoles(to.roles)) {
+      return true;
+    }
+
+    if (this.diffExpression(from.using ?? '', to.using ?? '')) {
+      return true;
+    }
+
+    return this.diffExpression(from.check ?? '', to.check ?? '');
   }
 
   parseJsonDefault(defaultValue?: string | null): Dictionary | string | null {

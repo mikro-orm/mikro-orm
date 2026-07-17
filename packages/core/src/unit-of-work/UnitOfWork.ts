@@ -649,6 +649,7 @@ export class UnitOfWork {
         );
         await this.#em.getConnection('write').transactional(trx => this.persistToDatabase(groups, trx), {
           ctx: oldTx,
+          sessionContext: this.#em.getTransactionSessionContext(),
           eventBroadcaster: new TransactionEventBroadcaster(this.#em),
           loggerContext,
         });

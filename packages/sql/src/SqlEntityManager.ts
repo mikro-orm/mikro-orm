@@ -166,12 +166,8 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
       merged.signal = opts.signal ?? fork?.signal;
       merged.inflightQueryAbortStrategy = opts.inflightQueryAbortStrategy ?? fork?.inflightQueryAbortStrategy;
     }
-    return this.getDriver().execute(
-      query,
-      params,
-      opts.method ?? 'all',
-      context.getTransactionContext(),
-      merged,
+    return context.withSessionContext(context.getTransactionContext(), ctx =>
+      this.getDriver().execute(query, params, opts.method ?? 'all', ctx, merged),
     ) as Promise<T>;
   }
 

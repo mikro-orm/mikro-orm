@@ -100,6 +100,7 @@ export function loadEnvironmentVars(): Partial<Options> {
   read3('createForeignKeyConstraints', bool);
   read3('ignoreTriggers', bool);
   read3('ignoreRoutines', bool);
+  read3('ignorePolicies', bool);
   cleanup(ret, 'schemaGenerator');
 
   ret.seeder = {};

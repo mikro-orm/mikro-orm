@@ -218,6 +218,9 @@ export class MetadataDiscovery {
     filtered.forEach(meta => this.initAutoincrement(meta)); // once again after we init custom types
     filtered.forEach(meta => this.initCheckConstraints(meta));
     filtered.forEach(meta => this.initTriggers(meta));
+    // filter names are load-bearing for RLS (policy and session variable names), backfill from the dictionary key
+    filtered.forEach(meta => Object.entries(meta.filters).forEach(([key, filter]) => (filter.name ??= key)));
+    filtered.forEach(meta => this.initPolicies(meta));
 
     forEachProp((_m, p) => {
       this.initDefaultValue(p);
@@ -1380,6 +1383,13 @@ export class MetadataDiscovery {
       meta.checks = Utils.unique([...base.checks, ...meta.checks]);
       meta.triggers = Utils.unique([...base.triggers, ...meta.triggers]);
     }
+
+    // Policies pass down only from inlined abstract bases; STI children share the root table
+    // and TPT children own their tables, so both declare policies directly on the root/child.
+    if (base.abstract && base.inheritanceType !== 'sti' && (meta.inheritanceType !== 'tpt' || !meta.tptParent)) {
+      meta.policies = Utils.unique([...base.policies, ...meta.policies]);
+      meta.rowLevelSecurity ??= base.rowLevelSecurity;
+    }
     const pks = Object.values(meta.properties)
       .filter(p => p.primary)
       .map(p => p.name);
@@ -2193,6 +2203,35 @@ export class MetadataDiscovery {
     }
 
     meta.hasTriggers = true;
+  }
+
+  private initPolicies(meta: EntityMetadata): void {
+    if (meta.policies.length === 0) {
+      return;
+    }
+
+    const columns = meta.createSchemaColumnMappingObject();
+    const table = this.createSchemaTable(meta);
+
+    // resolve callbacks into a copy — the defs can be shared with siblings via an inlined abstract base,
+    // and resolving in place would bake the first child's table into every other child's policy
+    meta.policies = meta.policies.map(policy => {
+      if (!(policy.using instanceof Function) && !(policy.check instanceof Function)) {
+        return policy;
+      }
+
+      const resolved = { ...policy };
+
+      if (resolved.using instanceof Function) {
+        resolved.using = resolved.using(columns, table);
+      }
+
+      if (resolved.check instanceof Function) {
+        resolved.check = resolved.check(columns, table);
+      }
+
+      return resolved;
+    });
   }
 
   private initGeneratedColumn(meta: EntityMetadata, prop: EntityProperty): void {

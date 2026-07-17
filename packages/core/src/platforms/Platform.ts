@@ -943,12 +943,60 @@ export abstract class Platform {
     return true;
   }
 
+  /** Whether the platform supports row level security (PostgreSQL). */
+  supportsRowLevelSecurity(): boolean {
+    return false;
+  }
+
+  /** Whether the driver can apply the session context on every pooled connection acquire (`sessionContext: 'connection'`). */
+  supportsConnectionSessionContext(): boolean {
+    return false;
+  }
+
+  /**
+   * SQL cast suffix (e.g. `'::uuid'`, or `''` when none is needed) applied when an RLS filter reads a session
+   * variable via `current_setting()` as the given column type, or `null` if the type has no automatic cast.
+   */
+  getCurrentSettingCast(mappedType: Type<unknown>): string | null {
+    return null;
+  }
+
   /** Platform-specific validation of entity metadata. */
   validateMetadata(meta: EntityMetadata): void {
     if (meta.partitionBy && !this.supportsPartitionedTables()) {
       throw new MetadataError(
         `Entity ${meta.className} uses partitionBy, but ${this.constructor.name} does not support partitioned tables`,
       );
+    }
+
+    const declaresRls = meta.policies.length > 0 || !!meta.rowLevelSecurity;
+
+    if (declaresRls && !this.supportsRowLevelSecurity()) {
+      throw MetadataError.rowLevelSecurityNotSupportedByDriver(meta);
+    }
+
+    // STI hierarchies share a single table, so only the root may declare policies; `root` is optional-chained
+    // as `validateMetadata` is public API and tolerates partially populated metadata
+    if (declaresRls && meta.root?.inheritanceType === 'sti' && meta.root !== meta) {
+      throw MetadataError.rowLevelSecurityOnNonRootStiEntity(meta);
+    }
+
+    if (meta.root?.inheritanceType === 'sti' && meta.root !== meta) {
+      for (const filter of Object.values(meta.filters)) {
+        // inherited root filters share the def object; only defs declared on the child itself are a problem,
+        // as non-root STI metas never reach the schema generator and the policy would silently not exist
+        if (filter.rls && meta.root.filters[filter.name] !== filter) {
+          throw MetadataError.rlsFilterOnNonRootStiEntity(meta, filter.name);
+        }
+      }
+    }
+
+    if (!this.supportsRowLevelSecurity()) {
+      for (const filter of Object.values(meta.filters)) {
+        if (filter.rls) {
+          throw MetadataError.rlsFilterNotSupportedByDriver(meta, filter.name);
+        }
+      }
     }
   }
 

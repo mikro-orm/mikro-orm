@@ -1121,6 +1121,9 @@ export type FormulaCallback<T> = (columns: FormulaColumns<T>, table: FormulaTabl
 /** Callback for CHECK constraint expressions. Receives column mappings and table info. */
 export type CheckCallback<T> = (columns: SchemaColumns<T>, table: SchemaTable) => string | Raw;
 
+/** Callback for row level security policy expressions. Receives column mappings and table info. */
+export type PolicyCallback<T> = (columns: SchemaColumns<T>, table: SchemaTable) => string | Raw;
+
 /** Callback for trigger body expressions. Receives column mappings and table info. */
 export type TriggerCallback<T> = (columns: Record<PropertyName<T>, string>, table: SchemaTable) => string | Raw;
 
@@ -1136,6 +1139,30 @@ export interface CheckConstraint<T = any> {
   name?: string;
   property?: string;
   expression: string | Raw | CheckCallback<T>;
+}
+
+/** Definition of a PostgreSQL row level security policy on a table. */
+export interface PolicyDef<T = any> {
+  /** Policy name. Auto-generated if omitted. */
+  name?: string;
+  /** DML command the policy applies to. Defaults to `'all'`. */
+  command?: 'select' | 'insert' | 'update' | 'delete' | 'all';
+  /** Whether the policy is permissive (OR-combined) or restrictive (AND-combined). Defaults to `'permissive'`. */
+  type?: 'permissive' | 'restrictive';
+  /** Database roles the policy applies to. Defaults to `PUBLIC`. */
+  roles?: string[];
+  /** `USING` expression filtering visible rows. Can be a string, Raw query, or callback receiving column name mappings. */
+  using?: string | Raw | PolicyCallback<T>;
+  /** `WITH CHECK` expression validating written rows. Can be a string, Raw query, or callback receiving column name mappings. */
+  check?: string | Raw | PolicyCallback<T>;
+}
+
+/** Per-context database session state applied for row level security (session variables and role). */
+export interface SessionContext {
+  /** Session variables set via `set_config`, typically referenced by RLS policies through `current_setting()`. `Date` values are serialized to ISO 8601. */
+  variables?: Dictionary<string | number | boolean | Date>;
+  /** Database role to switch to for the duration of the context (`set local role` / `set role`). */
+  role?: string;
 }
 
 /** Definition of a database trigger on a table. */
@@ -1567,6 +1594,7 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
     this.uniques = [];
     this.checks = [];
     this.triggers = [];
+    this.policies = [];
     this.referencingProperties = [];
     this.concurrencyCheckKeys = new Set();
     Object.assign(this, meta);
@@ -2001,6 +2029,9 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   }[];
   checks: CheckConstraint<Entity>[];
   triggers: TriggerDef<Entity>[];
+  policies: PolicyDef<Entity>[];
+  /** Enables row level security on the table. `'force'` also enables it for the table owner. Implied by non-empty `policies`, unless set to `false`, which keeps the policies staged but RLS disabled. */
+  rowLevelSecurity?: boolean | 'force';
   repositoryClass?: string; // for EntityGenerator
   repository: () => EntityClass<EntityRepository<any>>;
   hooks: { [K in EventType]?: (keyof Entity | EventSubscriber<Entity>[EventType])[] };
@@ -2349,6 +2380,13 @@ type FilterDefResolved<T extends object = any> = {
   entity?: EntityName<T> | EntityName<T>[];
   args?: boolean;
   strict?: boolean;
+  /**
+   * Also materializes this filter as a PostgreSQL row level security policy on the entity's table, and stages the
+   * matching session variables when its params are enabled via `em.setFilterParams()`. The `cond` must be compilable
+   * to a static expression (no access to `em`/`type`/`options`, not async). Each referenced argument maps to a session
+   * variable named `mikro.<filterName>.<argName>`; pass `{ setting }` to override that name for a single-argument filter.
+   */
+  rls?: boolean | { setting?: string };
 };
 
 /** Definition of a query filter that can be registered globally or per-entity via `@Filter()`. */
