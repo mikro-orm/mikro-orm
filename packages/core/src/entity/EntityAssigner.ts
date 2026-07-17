@@ -23,6 +23,9 @@ import { helper, wrap } from './wrap.js';
 import { EntityHelper } from './EntityHelper.js';
 import { ValidationError } from '../errors.js';
 
+/** Keys that are never valid entity properties, as they resolve to inherited object accessors. */
+const UNSAFE_PROPERTY_NAMES: string[] = ['__proto__', 'constructor', 'prototype'];
+
 /** Handles assigning data to entities, resolving relations, and propagating changes. */
 export class EntityAssigner {
   /** Assigns the given data to the entity, resolving relations and handling custom types. */
@@ -74,6 +77,11 @@ export class EntityAssigner {
     data: Dictionary,
     options: InternalAssignOptions<C>,
   ) {
+    // needs to happen before the `props` lookup, as those keys resolve to inherited accessors
+    if (UNSAFE_PROPERTY_NAMES.includes(propName)) {
+      return;
+    }
+
     let value = data[propName];
 
     const onlyProperties = options.onlyProperties && !(propName in props);
