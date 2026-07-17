@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.16](https://github.com/mikro-orm/mikro-orm/compare/v6.6.15...v6.6.16) (2026-07-17)
+
+
+### Bug Fixes
+
+* **core:** avoid evaluating getters when snapshotting unhydrated references ([#7921](https://github.com/mikro-orm/mikro-orm/issues/7921)) ([ed56677](https://github.com/mikro-orm/mikro-orm/commit/ed56677a531f7daddda9e4f3282ee5c5f0f43ac6)), closes [#7919](https://github.com/mikro-orm/mikro-orm/issues/7919) [#7918](https://github.com/mikro-orm/mikro-orm/issues/7918)
+* **core:** ignore special object keys in `assign()` ([#7999](https://github.com/mikro-orm/mikro-orm/issues/7999)) ([1fe24fe](https://github.com/mikro-orm/mikro-orm/commit/1fe24fe3c65d8285c0b05f7ba1f157c7ea236476)), closes [#7998](https://github.com/mikro-orm/mikro-orm/issues/7998)
+
+
+
+
+
 ## [6.6.15](https://github.com/mikro-orm/mikro-orm/compare/v6.6.14...v6.6.15) (2026-06-17)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.16](https://github.com/mikro-orm/mikro-orm/compare/v6.6.15...v6.6.16) (2026-07-17)
+
+
+### Bug Fixes
+
+* **sql:** validate order by direction against known values ([#7997](https://github.com/mikro-orm/mikro-orm/issues/7997)) ([89e5546](https://github.com/mikro-orm/mikro-orm/commit/89e5546bf8e10f8465682016a3bdf622ff55d8c5)), closes [#7996](https://github.com/mikro-orm/mikro-orm/issues/7996)
+
+
+
+
+
 ## [6.6.15](https://github.com/mikro-orm/mikro-orm/compare/v6.6.14...v6.6.15) (2026-06-17)
 
 
