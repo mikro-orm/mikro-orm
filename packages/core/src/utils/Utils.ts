@@ -18,6 +18,19 @@ import { Collection } from '../entity/Collection.js';
 import { EntityHelper } from '../entity/EntityHelper.js';
 import { Raw, isRaw, type RawQueryFragmentSymbol } from './RawQueryFragment.js';
 
+/**
+ * List of property names that could lead to prototype pollution vulnerabilities.
+ * These names should never be used as entity property names because they could
+ * allow malicious code to modify object prototypes when property values are assigned.
+ *
+ * - `__proto__`: Could modify the prototype chain
+ * - `constructor`: Could modify the constructor property
+ * - `prototype`: Could modify the prototype object
+ *
+ * @internal
+ */
+export const DANGEROUS_PROPERTY_NAMES: readonly string[] = ['__proto__', 'constructor', 'prototype'];
+
 function compareConstructors(a: any, b: any) {
   if (a.constructor === b.constructor) {
     return true;
@@ -300,7 +313,7 @@ export class Utils {
 
     if (Utils.isObject(target) && Utils.isPlainObject(source)) {
       for (const [key, value] of Object.entries(source)) {
-        if (['__proto__', 'constructor', 'prototype'].includes(key)) {
+        if (DANGEROUS_PROPERTY_NAMES.includes(key)) {
           continue;
         }
 
