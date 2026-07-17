@@ -21,6 +21,14 @@ import { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
 /** Base class for SQL database platforms, providing SQL generation and quoting utilities. */
 export abstract class AbstractSqlPlatform extends Platform {
   static readonly #JSON_PROPERTY_NAME_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+  private static readonly ORDER_BY_DIRECTIONS = new Set([
+    'asc',
+    'desc',
+    'asc nulls first',
+    'asc nulls last',
+    'desc nulls first',
+    'desc nulls last',
+  ]);
 
   protected readonly schemaHelper?: SchemaHelper;
 
@@ -167,11 +175,28 @@ export abstract class AbstractSqlPlatform extends Platform {
    * @internal
    */
   getOrderByExpression(column: string, direction: string, collation?: string): string[] {
+    const dir = this.validateOrderByDirection(direction);
+
     if (collation) {
-      return [`${column} collate ${this.quoteCollation(collation)} ${direction.toLowerCase()}`];
+      return [`${column} collate ${this.quoteCollation(collation)} ${dir}`];
     }
 
-    return [`${column} ${direction.toLowerCase()}`];
+    return [`${column} ${dir}`];
+  }
+
+  /**
+   * `toLowerCase()` folds every `QueryOrder` enum member (and the normalized `QueryOrderNumeric`
+   * values) onto the six allow-listed directions, so only unknown values are rejected.
+   * @internal
+   */
+  validateOrderByDirection(direction: string): string {
+    const dir = ('' + direction).toLowerCase().trim();
+
+    if (!AbstractSqlPlatform.ORDER_BY_DIRECTIONS.has(dir)) {
+      throw new Error(`Invalid order direction: '${direction}'`);
+    }
+
+    return dir;
   }
 
   /**
