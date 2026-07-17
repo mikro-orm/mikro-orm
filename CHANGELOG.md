@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
+
+
+### Bug Fixes
+
+* **core:** ignore special object keys in `assign()` ([#7998](https://github.com/mikro-orm/mikro-orm/issues/7998)) ([6c65ffb](https://github.com/mikro-orm/mikro-orm/commit/6c65ffb10ef2387adaa202121dd0ba1ca644c018))
+* **core:** support same-named nested embeddables with different props in polymorphic embeddables ([#7986](https://github.com/mikro-orm/mikro-orm/issues/7986)) ([c926fd8](https://github.com/mikro-orm/mikro-orm/commit/c926fd86f7dd93f060e8a77ebcdf40d889009dcd)), closes [#7983](https://github.com/mikro-orm/mikro-orm/issues/7983)
+* **mariadb:** keep JSON columns as strings on mysql2 3.23+ ([#7994](https://github.com/mikro-orm/mikro-orm/issues/7994)) ([0154130](https://github.com/mikro-orm/mikro-orm/commit/015413015b465b7d3f4a65d1b7a58f33f1da0f5b)), closes [#7981](https://github.com/mikro-orm/mikro-orm/issues/7981)
+* **mssql:** map FK, CHECK, PK/unique, deadlock and lock-timeout errors to driver exceptions ([#7959](https://github.com/mikro-orm/mikro-orm/issues/7959)) ([adc52fc](https://github.com/mikro-orm/mikro-orm/commit/adc52fced854c89b6f6496b4c356f1910379d0c3))
+* **mssql:** retry create database when the model database is locked ([#7985](https://github.com/mikro-orm/mikro-orm/issues/7985)) ([f528107](https://github.com/mikro-orm/mikro-orm/commit/f52810710c9fdea1d3e10cfcc80f9c12257edeb0))
+* **postgres:** make check introspection columnName deterministic ([#7992](https://github.com/mikro-orm/mikro-orm/issues/7992)) ([ab14f97](https://github.com/mikro-orm/mikro-orm/commit/ab14f9767a6bd1fe9347d5722f51515c997855e8)), closes [#7991](https://github.com/mikro-orm/mikro-orm/issues/7991)
+* **sql:** validate order by direction against known values ([#7996](https://github.com/mikro-orm/mikro-orm/issues/7996)) ([3aba926](https://github.com/mikro-orm/mikro-orm/commit/3aba926fd07156f5e1ebf06294fd77ee1215bad5))
+
+
+
+
+
 ## [7.1.6](https://github.com/mikro-orm/mikro-orm/compare/v7.1.5...v7.1.6) (2026-07-13)
 
 

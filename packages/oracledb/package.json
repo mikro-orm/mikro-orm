@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/oracledb",
-  "version": "7.1.6",
+  "version": "7.1.7",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, MariaDB, PostgreSQL, SQLite, MSSQL and Oracle databases.",
   "keywords": [
     "data-mapper",
@@ -42,12 +42,12 @@
     "copy": "node ../../scripts/copy.mjs"
   },
   "dependencies": {
-    "@mikro-orm/sql": "7.1.6",
+    "@mikro-orm/sql": "^7.1.7",
     "kysely": "0.29.3",
     "oracledb": "7.0.1"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^7.1.6"
+    "@mikro-orm/core": "^7.1.7"
   },
   "peerDependencies": {
     "@mikro-orm/core": "7.1.6"

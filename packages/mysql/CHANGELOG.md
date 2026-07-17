@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
+
+
+### Bug Fixes
+
+* **mariadb:** keep JSON columns as strings on mysql2 3.23+ ([#7994](https://github.com/mikro-orm/mikro-orm/issues/7994)) ([0154130](https://github.com/mikro-orm/mikro-orm/commit/015413015b465b7d3f4a65d1b7a58f33f1da0f5b)), closes [#7981](https://github.com/mikro-orm/mikro-orm/issues/7981)
+
+
+
+
+
 ## [7.1.6](https://github.com/mikro-orm/mikro-orm/compare/v7.1.5...v7.1.6) (2026-07-13)
 
 **Note:** Version bump only for package @mikro-orm/mysql

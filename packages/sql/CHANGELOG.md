@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
+
+
+### Bug Fixes
+
+* **postgres:** make check introspection columnName deterministic ([#7992](https://github.com/mikro-orm/mikro-orm/issues/7992)) ([ab14f97](https://github.com/mikro-orm/mikro-orm/commit/ab14f9767a6bd1fe9347d5722f51515c997855e8)), closes [#7991](https://github.com/mikro-orm/mikro-orm/issues/7991)
+* **sql:** validate order by direction against known values ([#7996](https://github.com/mikro-orm/mikro-orm/issues/7996)) ([3aba926](https://github.com/mikro-orm/mikro-orm/commit/3aba926fd07156f5e1ebf06294fd77ee1215bad5))
+
+
+
+
+
 ## [7.1.6](https://github.com/mikro-orm/mikro-orm/compare/v7.1.5...v7.1.6) (2026-07-13)
 
 ### Bug Fixes
