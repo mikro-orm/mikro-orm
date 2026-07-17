@@ -24,6 +24,28 @@ class FooEntity extends Base {
   email!: string;
 }
 
+@Entity()
+@Check({ name: 'bounds_sample_bounds_check', expression: 'col_a + col_b + col_c + col_d + col_e > 0' })
+class BoundsSample {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  colA!: number;
+
+  @Property()
+  colB!: number;
+
+  @Property()
+  colC!: number;
+
+  @Property()
+  colD!: number;
+
+  @Property()
+  colE!: number;
+}
+
 describe('check constraint [postgres]', () => {
   test('check constraint is generated for decorator [postgres]', async () => {
     const orm = await MikroORM.init({
@@ -329,6 +351,29 @@ describe('check constraint [postgres]', () => {
     // CASE expression must be parsed correctly and not appear as changed
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
+  test('multi-column check introspection has deterministic columnName [postgres]', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [BoundsSample],
+      dbName: 'mikro_orm_test_check_7991',
+      pool: { min: 1, max: 1 },
+    });
+    await orm.schema.refresh();
+
+    // `constraint_column_usage` yields one row per referenced column and only the first one is kept —
+    // `enable_sort = off` makes the view's DISTINCT hash-based, so ties stop being alphabetical by accident.
+    await orm.em.getConnection().execute('set enable_sort = off');
+    const schema = await DatabaseSchema.create(orm.em.getConnection(), orm.em.getPlatform(), orm.config);
+    const check = schema
+      .getTable('bounds_sample')!
+      .getChecks()
+      .find(c => c.name === 'bounds_sample_bounds_check');
+    expect(check?.columnName).toBe('col_a');
 
     await orm.schema.dropDatabase();
     await orm.close();
