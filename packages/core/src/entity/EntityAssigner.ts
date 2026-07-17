@@ -16,7 +16,7 @@ import type {
   Primary,
   RequiredEntityData,
 } from '../typings';
-import { Utils } from '../utils/Utils';
+import { DANGEROUS_PROPERTY_NAMES, Utils } from '../utils/Utils';
 import { Reference } from './Reference';
 import { ReferenceKind, SCALAR_TYPES } from '../enums';
 import { EntityValidator } from './EntityValidator';
@@ -24,9 +24,6 @@ import { helper, wrap } from './wrap';
 import { EntityHelper } from './EntityHelper';
 
 const validator = new EntityValidator(false);
-
-/** Keys that are never valid entity properties, as they resolve to inherited object accessors. */
-const UNSAFE_PROPERTY_NAMES: string[] = ['__proto__', 'constructor', 'prototype'];
 
 export class EntityAssigner {
 
@@ -67,7 +64,7 @@ export class EntityAssigner {
 
   private static assignProperty<T extends object, C extends boolean>(entity: T, propName: string, props: Dictionary<EntityProperty<T>>, data: Dictionary, options: InternalAssignOptions<C>) {
     // needs to happen before the `props` lookup, as those keys resolve to inherited accessors
-    if (UNSAFE_PROPERTY_NAMES.includes(propName)) {
+    if (DANGEROUS_PROPERTY_NAMES.includes(propName)) {
       return;
     }
 
