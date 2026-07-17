@@ -93,12 +93,6 @@
         "groupSlug": "all-non-major",
         "automerge": true,
         "automergeType": "branch"
-      },
-      {
-        "matchPackageNames": [
-          "mysql2"
-        ],
-        "allowedVersions": "<3.23.0"
       }
     ],
     "schedule": [

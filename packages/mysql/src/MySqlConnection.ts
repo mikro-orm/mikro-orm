@@ -88,6 +88,9 @@ export class MySqlConnection extends AbstractSqlConnection {
 
     ret.supportBigNumbers = true;
     ret.dateStrings = true;
+    // mysql2 3.23+ parses mariadb JSON columns via extended metadata, but the mariadb
+    // platform converts them on its own, so keep them as strings there.
+    ret.jsonStrings = !this.platform.convertsJsonAutomatically();
 
     return Utils.mergeConfig(ret, overrides);
   }
