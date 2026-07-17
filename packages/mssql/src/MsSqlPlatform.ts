@@ -320,19 +320,20 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getOrderByExpression(column: string, direction: QueryOrder, collation?: string): string[] {
+    const dir = this.validateOrderByDirection(direction);
     const col = collation ? `${column} collate ${this.quoteCollation(collation)}` : column;
 
-    switch (direction.toUpperCase()) {
-      case QueryOrder.ASC_NULLS_FIRST:
+    switch (dir) {
+      case QueryOrder.asc_nulls_first:
         return [`case when ${column} is null then 0 else 1 end, ${col} asc`];
-      case QueryOrder.ASC_NULLS_LAST:
+      case QueryOrder.asc_nulls_last:
         return [`case when ${column} is null then 1 else 0 end, ${col} asc`];
-      case QueryOrder.DESC_NULLS_FIRST:
+      case QueryOrder.desc_nulls_first:
         return [`case when ${column} is null then 0 else 1 end, ${col} desc`];
-      case QueryOrder.DESC_NULLS_LAST:
+      case QueryOrder.desc_nulls_last:
         return [`case when ${column} is null then 1 else 0 end, ${col} desc`];
       default:
-        return [`${col} ${direction.toLowerCase()}`];
+        return [`${col} ${dir}`];
     }
   }
 
