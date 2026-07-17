@@ -1604,7 +1604,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       join pg_namespace nsp on nsp.oid = pgc.connamespace
       join pg_class cls on pgc.conrelid = cls.oid
       where pgc.contype = 'x' and (${excludeFilter})
-      order by name`;
+      order by schema_name, table_name, name, column_name`;
   }
 
   override inferLengthFromColumnType(type: string): number | undefined {
