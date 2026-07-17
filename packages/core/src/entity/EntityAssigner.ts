@@ -15,16 +15,13 @@ import type {
   Primary,
   RequiredEntityData,
 } from '../typings.js';
-import { Utils } from '../utils/Utils.js';
+import { DANGEROUS_PROPERTY_NAMES, Utils } from '../utils/Utils.js';
 import { Reference } from './Reference.js';
 import { ReferenceKind, SCALAR_TYPES } from '../enums.js';
 import { validateProperty } from './validators.js';
 import { helper, wrap } from './wrap.js';
 import { EntityHelper } from './EntityHelper.js';
 import { ValidationError } from '../errors.js';
-
-/** Keys that are never valid entity properties, as they resolve to inherited object accessors. */
-const UNSAFE_PROPERTY_NAMES: string[] = ['__proto__', 'constructor', 'prototype'];
 
 /** Handles assigning data to entities, resolving relations, and propagating changes. */
 export class EntityAssigner {
@@ -78,7 +75,7 @@ export class EntityAssigner {
     options: InternalAssignOptions<C>,
   ) {
     // needs to happen before the `props` lookup, as those keys resolve to inherited accessors
-    if (UNSAFE_PROPERTY_NAMES.includes(propName)) {
+    if (DANGEROUS_PROPERTY_NAMES.includes(propName)) {
       return;
     }
 
