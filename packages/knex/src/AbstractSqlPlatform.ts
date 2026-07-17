@@ -4,6 +4,15 @@ import { SqlEntityRepository } from './SqlEntityRepository';
 import { SqlSchemaGenerator, type SchemaHelper } from './schema';
 import type { IndexDef } from './typings';
 
+const ORDER_BY_DIRECTIONS = new Set([
+  'asc',
+  'desc',
+  'asc nulls first',
+  'asc nulls last',
+  'desc nulls first',
+  'desc nulls last',
+]);
+
 export abstract class AbstractSqlPlatform extends Platform {
 
   protected readonly schemaHelper?: SchemaHelper;
@@ -133,7 +142,22 @@ export abstract class AbstractSqlPlatform extends Platform {
    * @internal
    */
   getOrderByExpression(column: string, direction: string): string[] {
-    return [ `${column} ${direction.toLowerCase()}` ];
+    return [ `${column} ${this.validateOrderByDirection(direction)}` ];
+  }
+
+  /**
+   * `toLowerCase()` folds every `QueryOrder` enum member (and the normalized `QueryOrderNumeric`
+   * values) onto the six allow-listed directions, so only unknown values are rejected.
+   * @internal
+   */
+  validateOrderByDirection(direction: string): string {
+    const dir = ('' + direction).toLowerCase().trim();
+
+    if (!ORDER_BY_DIRECTIONS.has(dir)) {
+      throw new Error(`Invalid order direction: '${direction}'`);
+    }
+
+    return dir;
   }
 
 }
