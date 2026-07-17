@@ -151,13 +151,19 @@ const initialMetadataProcessor: MetadataProcessor = (metadata, platform) => {
     expression: (em: typeof orm.em) => em.createQueryBuilder(Author2).select(['name', 'email']),
     comment: 'test',
   });
-  const nameProp2 = Object.assign({}, virtualEntityBase.props.find(prop => prop.name === 'name')!);
+  const nameProp2 = Object.assign(
+    {},
+    virtualEntityBase.props.find(prop => prop.name === 'name')!,
+  );
   nameProp2.comment = 'author name also';
   nameProp2.onUpdate = owner => {
     owner.name += ' also';
   };
   virtualEntityMeta2.addProperty(nameProp2);
-  const emailProp2 = Object.assign({}, virtualEntityBase.props.find(prop => prop.name === 'email')!);
+  const emailProp2 = Object.assign(
+    {},
+    virtualEntityBase.props.find(prop => prop.name === 'email')!,
+  );
   emailProp2.serializer = (email: string) => {
     const [localPart, hostnamePart] = email.split('@', 2);
     return `${localPart[0]}${'*'.repeat(localPart.length - 2)}${localPart[localPart.length - 1]}@${hostnamePart}`;
