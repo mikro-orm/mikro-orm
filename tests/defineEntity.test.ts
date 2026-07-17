@@ -42,6 +42,7 @@ enum Status7446 {
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 namespace Status7446 {
+  // eslint-disable-next-line no-inner-declarations
   export function isComplete(status: Status7446): boolean {
     return status === Status7446.Success || status === Status7446.Error;
   }
