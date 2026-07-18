@@ -185,7 +185,8 @@ export class ChangeSetComputer {
   }
 
   private processProperty<T extends object>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, target?: unknown): void {
-    if (!target) {
+    // check for `null`/`undefined` explicitly, the target can be a falsy raw PK value like `0` (e.g. with `mapToPk`)
+    if (target == null) {
       const targets = Utils.unwrapProperty(changeSet.entity, changeSet.meta, prop);
       targets.forEach(([t]) => this.processProperty(changeSet, prop, t));
 
