@@ -500,7 +500,8 @@ export class EntityLoader {
     for (const child of children) {
       const fk = child.__helper.__data[prop.mappedBy] ?? child[prop.mappedBy];
 
-      if (fk) {
+      // check for `null`/`undefined` explicitly, the FK can be a falsy raw PK value like `0` (e.g. with `mapToPk`)
+      if (fk != null) {
         let key: string;
 
         if (targetKey) {
