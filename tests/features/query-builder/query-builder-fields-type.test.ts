@@ -294,6 +294,20 @@ describe('QueryBuilder Fields type tracking', () => {
     });
   });
 
+  describe('from() method return type', () => {
+    test('from() should preserve fields', async () => {
+      const sub = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select(['a.id', 'a.name'])
+        .where({ age: { $gte: 50 } });
+      const qb = orm.em.createQueryBuilder(Author2).with('older', sub).select('id').from('older', 'o');
+      const result = await qb.getResultList();
+      type Element = (typeof result)[number];
+      expectTypeOf<Element>().toHaveProperty('id');
+      expectTypeOf<Element>().not.toHaveProperty('name');
+    });
+  });
+
   describe('getResult and getSingleResult return types', () => {
     test('getResult should return Loaded with Fields', async () => {
       const qb = orm.em.createQueryBuilder(Author2, 'a').select(['a.id', 'a.email']);
