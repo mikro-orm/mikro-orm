@@ -21,6 +21,7 @@ import { searchConfiguration } from './searchConfiguration.js';
  * @internal
  */
 export class CLIHelper {
+  static quiet = false;
   /**
    * Gets a named configuration
    *
@@ -126,6 +127,15 @@ export class CLIHelper {
     } catch {
       return [];
     }
+  }
+
+  static info(text: string): void {
+    if (CLIHelper.quiet) {
+      return;
+    }
+
+    // eslint-disable-next-line no-console
+    console.log(text);
   }
 
   static dump(text: string, config?: Configuration): void {

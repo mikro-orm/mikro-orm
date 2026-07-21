@@ -24,6 +24,7 @@ export class GenerateCacheCommand implements BaseCommand<CacheArgs> {
    * @inheritDoc
    */
   async handler(args: ArgumentsCamelCase<CacheArgs>) {
+    CLIHelper.quiet = args.quiet;
     const options = args.combined ? { combined: './metadata.json' } : {};
     const config = await CLIHelper.getConfiguration(args.contextName, args.config, {
       metadataCache: { enabled: true, adapter: FileCacheAdapter, options },
@@ -36,7 +37,7 @@ export class GenerateCacheCommand implements BaseCommand<CacheArgs> {
     await discovery.discover(args.ts ?? false);
 
     const combined = args.combined && config.get('metadataCache').combined;
-    CLIHelper.dump(
+    CLIHelper.info(
       colors.green(
         `${combined ? 'Combined ' : ''}${args.ts ? 'TS' : 'JS'} metadata cache was successfully generated${combined ? ' to ' + combined : ''}`,
       ),

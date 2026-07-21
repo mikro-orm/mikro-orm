@@ -35,6 +35,7 @@ describe('DiscoveryExportCommand', () => {
   let dynamicImportMock: MockInstance;
   let getPackageConfigMock: MockInstance;
   let dumpSpy: MockInstance;
+  let infoSpy: MockInstance;
   let globMock: MockInstance;
   let isKnownEntityMock: MockInstance;
 
@@ -54,6 +55,8 @@ describe('DiscoveryExportCommand', () => {
     getPackageConfigMock = vi.spyOn(fs, 'getPackageConfig').mockImplementation(() => pkg);
     // oxlint-disable-next-line no-empty-function
     dumpSpy = vi.spyOn(CLIHelper, 'dump').mockImplementation(() => {});
+    // oxlint-disable-next-line no-empty-function
+    infoSpy = vi.spyOn(CLIHelper, 'info').mockImplementation(() => {});
     globMock = vi.spyOn(fs, 'glob');
     isKnownEntityMock = vi.spyOn(MetadataStorage, 'isKnownEntity');
     vi.spyOn(fs, 'readJSONSync').mockImplementation(() => pkg);
@@ -334,7 +337,40 @@ describe('DiscoveryExportCommand', () => {
     unlinkSync(outPath);
 
     // Should print success message
-    expect(dumpSpy).toHaveBeenCalledWith(expect.stringContaining('Entity exports generated'));
+    expect(infoSpy).toHaveBeenCalledWith(expect.stringContaining('Entity exports generated'));
+  });
+
+  test('does not print success message when --quiet is passed', async () => {
+    const outPath = resolve(process.cwd(), '.mikro-orm-test-entities.generated.ts');
+    pathExistsMock.mockImplementation((path: string) => path.includes('mikro-orm.config'));
+    dynamicImportMock.mockImplementation((path: string) => {
+      if (path.includes('mikro-orm.config')) {
+        return config;
+      }
+
+      return { Author };
+    });
+    globMock.mockReturnValue(['Author.ts']);
+    isKnownEntityMock.mockImplementation((name: string) => name === 'Author');
+
+    await command.handler({
+      _: ['discovery:export'],
+      $0: 'mikro-orm',
+      contextName: 'default',
+      config: undefined,
+      path: ['./src/entities'],
+      dump: false,
+      out: outPath,
+      quiet: true,
+    });
+
+    expect(existsSync(outPath)).toBe(true);
+    const content = readFileSync(outPath, 'utf-8');
+    expect(content).toMatchSnapshot();
+    unlinkSync(outPath);
+
+    // Should print success message
+    expect(infoSpy).not.toHaveBeenCalled();
   });
 
   test('shows warning when no entities found', async () => {
@@ -683,7 +719,7 @@ describe('DiscoveryExportCommand', () => {
 
     expect(existsSync(outPath)).toBe(true);
     unlinkSync(outPath);
-    expect(dumpSpy).toHaveBeenCalledWith(expect.stringContaining('Entity exports generated'));
+    expect(infoSpy).toHaveBeenCalledWith(expect.stringContaining('Entity exports generated'));
   });
 
   test('falls back to cwd for output path when no config found', async () => {
@@ -912,7 +948,7 @@ describe('DiscoveryExportCommand', () => {
 
     expect(existsSync(outPath)).toBe(true);
     rmSync(outDir, { recursive: true });
-    expect(dumpSpy).toHaveBeenCalledWith(expect.stringContaining('Entity exports generated'));
+    expect(infoSpy).toHaveBeenCalledWith(expect.stringContaining('Entity exports generated'));
   });
 
   test('emits typed EntityManager alias for MongoDB driver', async () => {

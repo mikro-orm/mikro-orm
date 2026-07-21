@@ -96,6 +96,7 @@ export class SchemaCommandFactory {
     method: SchemaMethod,
     successMessage: string,
   ): Promise<void> {
+    CLIHelper.quiet = args.quiet;
     if (!args.run && !args.dump) {
       return CLIHelper.showHelp();
     }
@@ -127,7 +128,7 @@ export class SchemaCommandFactory {
       await orm.seeder.seedString(args.seed || orm.config.get('seeder').defaultSeeder!);
     }
 
-    CLIHelper.dump(colors.green(successMessage));
+    CLIHelper.info(colors.green(successMessage));
     await orm.close(true);
   }
 }

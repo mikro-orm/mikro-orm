@@ -29,8 +29,8 @@ describe('CreateMigrationCommand', () => {
     vi.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
     const createMigrationMock = vi.spyOn(Migrator.prototype, 'create');
     createMigrationMock.mockResolvedValue({ fileName: '1', code: '2', diff: { up: ['3'], down: [] } });
-    const dumpMock = vi.spyOn(CLIHelper, 'dump');
-    dumpMock.mockImplementation(() => void 0);
+    const infoMock = vi.spyOn(CLIHelper, 'info');
+    infoMock.mockImplementation(() => void 0);
 
     const cmd = MigrationCommandFactory.create('create');
 
@@ -41,12 +41,12 @@ describe('CreateMigrationCommand', () => {
     await expect(cmd.handler({ blank: true, dump: true } as any)).resolves.toBeUndefined();
     expect(createMigrationMock.mock.calls.length).toBe(2);
     expect(closeSpy).toHaveBeenCalledTimes(2);
-    expect(dumpMock).toHaveBeenLastCalledWith('1 successfully created');
+    expect(infoMock).toHaveBeenLastCalledWith('1 successfully created');
 
     createMigrationMock.mockImplementationOnce(async () => ({ fileName: '', code: '', diff: { up: [], down: [] } }));
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(createMigrationMock.mock.calls.length).toBe(3);
     expect(closeSpy).toHaveBeenCalledTimes(3);
-    expect(dumpMock).toHaveBeenLastCalledWith('No changes required, schema is up-to-date');
+    expect(infoMock).toHaveBeenLastCalledWith('No changes required, schema is up-to-date');
   });
 });
