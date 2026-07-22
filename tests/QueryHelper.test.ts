@@ -90,6 +90,14 @@ describe('QueryHelper', () => {
     ).toEqual({
       $or: [{ author: { $in: [1, 2, 3] } }, { author: { $in: [7, 8, 9] } }],
     });
+    expect(
+      QueryHelper.processWhere({
+        where: { favouriteBook: { $all: ['1', '2'] } },
+        entityName: Author2,
+        metadata: orm.getMetadata(),
+        platform: orm.em.getDriver().getPlatform(),
+      }),
+    ).toEqual({ favouriteBook: { $all: ['1', '2'] } });
   });
 
   test('mergePropertyFilters', async () => {
