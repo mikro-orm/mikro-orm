@@ -25,7 +25,7 @@
     "@mdx-js/react": "3.1.1",
     "@signalwire/docusaurus-plugin-llms-txt": "^1.2.2",
     "classnames": "^2.5.1",
-    "marked": "18.0.6",
+    "marked": "18.0.7",
     "prism-react-renderer": "^2.4.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
