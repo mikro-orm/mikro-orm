@@ -1473,7 +1473,7 @@ __metadata:
     jsr: "npm:0.14.3"
     knex: "npm:3.3.0"
     lerna: "npm:9.0.7"
-    lint-staged: "npm:17.1.0"
+    lint-staged: "npm:17.1.1"
     mongodb-memory-server-core: "npm:11.2.0"
     oxfmt: "npm:0.60.0"
     oxlint: "npm:1.75.0"
@@ -6975,9 +6975,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:17.1.0":
-  version: 17.1.0
-  resolution: "lint-staged@npm:17.1.0"
+"lint-staged@npm:17.1.1":
+  version: 17.1.1
+  resolution: "lint-staged@npm:17.1.1"
   dependencies:
     picomatch: "npm:^4.0.5"
     string-argv: "npm:^0.3.2"
@@ -6988,7 +6988,7 @@ __metadata:
       optional: true
   bin:
     lint-staged: bin/lint-staged.js
-  checksum: 10/050d8ce1f6c2cf218ebc0b693de6d1754b333f04e263ecbee230b1aa742fd684667d0f42beee48c3bb11cbcc4e50c4995289c82c36bb08f6bd0f8157816514e1
+  checksum: 10/a54e063a579c093cecd4fc210f78c424fa0aa1dbe8196cf57160fad05acbfe4cb60ddd50751c799277094a0b7949de0ea3b61392b90e137f5c5bdf8473826e72
   languageName: node
   linkType: hard
 

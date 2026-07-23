@@ -152,7 +152,7 @@
     "jsr": "0.14.3",
     "knex": "3.3.0",
     "lerna": "9.0.7",
-    "lint-staged": "17.1.0",
+    "lint-staged": "17.1.1",
     "mongodb-memory-server-core": "11.2.0",
     "oxfmt": "0.60.0",
     "oxlint": "1.75.0",
