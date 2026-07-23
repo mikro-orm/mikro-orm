@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@mikro-orm/sql": "7.1.7",
-    "better-sqlite3": "12.11.1",
+    "better-sqlite3": "13.0.1",
     "kysely": "0.29.4"
   },
   "devDependencies": {
