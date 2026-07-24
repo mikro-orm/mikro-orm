@@ -121,6 +121,13 @@ type IsNever<T, True = true, False = false> = [T] extends [never] ? True : False
 type GetAlias<T extends string> = T extends `${infer A}.${string}` ? A : never;
 type GetPropName<T extends string> = T extends `${string}.${infer P}` ? P : T;
 type AppendToHint<Parent extends string, Child extends string> = `${Parent}.${Child}`;
+/**
+ * Extracts the entity type from a query builder via its main alias. Matching against
+ * `QueryBuilder<infer T>` is unreliable once another generic, such as selected fields,
+ * differs from its default.
+ */
+type QueryBuilderEntity<Q extends QueryBuilder<any>> =
+  Q['mainAlias'] extends Alias<infer T extends object> ? T : object;
 
 /**
  * Context tuple format: [Path, Alias, Type, Select]
@@ -1019,7 +1026,7 @@ export class QueryBuilder<
     ModifyHint<RootAlias, Context, Hint, Field> & {},
     ModifyContext<Entity, Context, Field, Alias>,
     RawAliases,
-    '*',
+    Fields,
     CTEs
   >;
 
@@ -1033,7 +1040,15 @@ export class QueryBuilder<
     type?: JoinType,
     path?: string,
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, Hint, ModifyContext<Entity, Context, string, Alias>, RawAliases, '*', CTEs>;
+  ): SelectQueryBuilder<
+    Entity,
+    RootAlias,
+    Hint,
+    ModifyContext<Entity, Context, string, Alias>,
+    RawAliases,
+    Fields,
+    CTEs
+  >;
 
   join<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
     field: Field | RawQueryFragment | QueryBuilder<any>,
@@ -1048,7 +1063,7 @@ export class QueryBuilder<
     ModifyHint<RootAlias, Context, Hint, Field> & {},
     ModifyContext<Entity, Context, Field, Alias>,
     RawAliases,
-    '*',
+    Fields,
     CTEs
   > {
     this.joinReference(field, alias, cond, type, path, schema);
@@ -1069,7 +1084,7 @@ export class QueryBuilder<
     ModifyHint<RootAlias, Context, Hint, Field> & {},
     ModifyContext<Entity, Context, Field, Alias>,
     RawAliases,
-    '*',
+    Fields,
     CTEs
   >;
 
@@ -1081,7 +1096,15 @@ export class QueryBuilder<
     alias: Alias,
     cond?: RawJoinCondition,
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, Hint, ModifyContext<Entity, Context, string, Alias>, RawAliases, '*', CTEs>;
+  ): SelectQueryBuilder<
+    Entity,
+    RootAlias,
+    Hint,
+    ModifyContext<Entity, Context, string, Alias>,
+    RawAliases,
+    Fields,
+    CTEs
+  >;
 
   innerJoin<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
     field: Field | RawQueryFragment | QueryBuilder<any>,
@@ -1094,7 +1117,7 @@ export class QueryBuilder<
     ModifyHint<RootAlias, Context, Hint, Field> & {},
     ModifyContext<Entity, Context, Field, Alias>,
     RawAliases,
-    '*',
+    Fields,
     CTEs
   > {
     this.join(field as any, alias, cond as any, JoinType.innerJoin, undefined, schema);
@@ -1106,7 +1129,15 @@ export class QueryBuilder<
     alias: Alias,
     cond: RawJoinCondition = {},
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, Hint, ModifyContext<Entity, Context, string, Alias>, RawAliases, '*', CTEs> {
+  ): SelectQueryBuilder<
+    Entity,
+    RootAlias,
+    Hint,
+    ModifyContext<Entity, Context, string, Alias>,
+    RawAliases,
+    Fields,
+    CTEs
+  > {
     return this.join(field, alias, cond as any, JoinType.innerJoinLateral, undefined, schema) as any;
   }
 
@@ -1124,7 +1155,7 @@ export class QueryBuilder<
     ModifyHint<RootAlias, Context, Hint, Field> & {},
     ModifyContext<Entity, Context, Field, Alias>,
     RawAliases,
-    '*',
+    Fields,
     CTEs
   >;
 
@@ -1136,7 +1167,15 @@ export class QueryBuilder<
     alias: Alias,
     cond?: RawJoinCondition,
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, Hint, ModifyContext<Entity, Context, string, Alias>, RawAliases, '*', CTEs>;
+  ): SelectQueryBuilder<
+    Entity,
+    RootAlias,
+    Hint,
+    ModifyContext<Entity, Context, string, Alias>,
+    RawAliases,
+    Fields,
+    CTEs
+  >;
 
   leftJoin<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
     field: Field | RawQueryFragment | QueryBuilder<any>,
@@ -1149,7 +1188,7 @@ export class QueryBuilder<
     ModifyHint<RootAlias, Context, Hint, Field> & {},
     ModifyContext<Entity, Context, Field, Alias>,
     RawAliases,
-    '*',
+    Fields,
     CTEs
   > {
     return this.join(field as any, alias, cond as any, JoinType.leftJoin, undefined, schema);
@@ -1160,7 +1199,15 @@ export class QueryBuilder<
     alias: Alias,
     cond: RawJoinCondition = {},
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, Hint, ModifyContext<Entity, Context, string, Alias>, RawAliases, '*', CTEs> {
+  ): SelectQueryBuilder<
+    Entity,
+    RootAlias,
+    Hint,
+    ModifyContext<Entity, Context, string, Alias>,
+    RawAliases,
+    Fields,
+    CTEs
+  > {
     return this.join(field, alias, cond as any, JoinType.leftJoinLateral, undefined, schema) as any;
   }
 
@@ -2134,7 +2181,7 @@ export class QueryBuilder<
   from<Name extends string & keyof CTEs, Alias extends string = Name>(
     target: Name,
     aliasName?: Alias,
-  ): SelectQueryBuilder<CTEs[Name], Alias, never, never, never, '*', CTEs>;
+  ): SelectQueryBuilder<CTEs[Name], Alias, never, never, never, Fields, CTEs>;
   from(target: EntityName<any> | QueryBuilder<any> | string, aliasName?: string): any {
     this.ensureNotFinalized();
 
@@ -2811,15 +2858,7 @@ export class QueryBuilder<
     name: Name,
     query: Q,
     options?: CteOptions,
-  ): QueryBuilder<
-    Entity,
-    RootAlias,
-    Hint,
-    Context,
-    RawAliases,
-    Fields,
-    CTEs & Record<Name, Q extends QueryBuilder<infer T> ? T : object>
-  >;
+  ): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs & Record<Name, QueryBuilderEntity<Q>>>;
   /**
    * Adds a Common Table Expression (CTE) to the query using a `NativeQueryBuilder` or raw SQL fragment.
    * The CTE name is tracked but without entity type inference — use `from()` to query from it.
@@ -2852,15 +2891,7 @@ export class QueryBuilder<
     name: Name,
     query: Q,
     options?: CteOptions,
-  ): QueryBuilder<
-    Entity,
-    RootAlias,
-    Hint,
-    Context,
-    RawAliases,
-    Fields,
-    CTEs & Record<Name, Q extends QueryBuilder<infer T> ? T : object>
-  >;
+  ): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs & Record<Name, QueryBuilderEntity<Q>>>;
   /**
    * Adds a recursive Common Table Expression (CTE) to the query using a `NativeQueryBuilder` or raw SQL fragment.
    * The CTE name is tracked but without entity type inference — use `from()` to query from it.
