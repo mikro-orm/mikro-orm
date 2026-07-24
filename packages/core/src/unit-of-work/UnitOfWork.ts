@@ -326,6 +326,7 @@ export class UnitOfWork {
     where: FilterQuery<T>,
     schema?: string,
     strict = true,
+    convertCustomTypes?: boolean,
   ): T | null {
     const pk = Utils.extractPK(where, this.#metadata.find<T>(entityName), strict);
 
@@ -333,7 +334,7 @@ export class UnitOfWork {
       return null;
     }
 
-    return this.getById<T>(entityName, pk as Primary<T>, schema)!;
+    return this.getById<T>(entityName, pk as Primary<T>, schema, convertCustomTypes)!;
   }
 
   /**
