@@ -272,6 +272,35 @@ describe('Migrator (sqlite)', () => {
     }
   });
 
+  test('snapshot from create lands in the auto-detected migrations folder (GH #8024)', async () => {
+    const { mkdtempSync, mkdirSync, existsSync } = await import('node:fs');
+    mkdirSync(TEMP_DIR, { recursive: true });
+    const baseDir = mkdtempSync(TEMP_DIR + '/gh8024-');
+    mkdirSync(baseDir + '/src');
+
+    const orm2 = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      driver: SqliteDriver,
+      entities: [FooBar4, FooBaz4, BaseEntity5],
+      dbName: ':memory:',
+      baseDir,
+      extensions: [Migrator],
+      migrations: { snapshot: true },
+    });
+
+    try {
+      await orm2.migrator.create(undefined, true);
+
+      // `migration:create` must store the snapshot in the detected `src/migrations` folder,
+      // the same place `migration:up` uses, not in the project root
+      expect(existsSync(baseDir + '/src/migrations/.snapshot-memory.json')).toBe(true);
+      expect(existsSync(baseDir + '/.snapshot-memory.json')).toBe(false);
+    } finally {
+      await orm2.close();
+      await rm(baseDir, { recursive: true, force: true });
+    }
+  });
+
   test('checkSchema works without database connection when snapshot exists', async () => {
     const migrations = orm.config.get('migrations');
     migrations.snapshot = true;
