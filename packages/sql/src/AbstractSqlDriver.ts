@@ -3105,7 +3105,7 @@ export abstract class AbstractSqlDriver<
   protected buildPopulateWhere<T extends object>(
     meta: EntityMetadata<T>,
     joinedProps: PopulateOptions<T>[],
-    options: Pick<FindOptions<any>, 'populateWhere'>,
+    options: Pick<FindOptions<any>, 'populateWhere' | 'strategy'>,
   ): ObjectQuery<T> {
     const where = {} as ObjectQuery<T>;
 
@@ -3120,7 +3120,14 @@ export abstract class AbstractSqlDriver<
       if (hint.children) {
         const targetMeta = prop.targetMeta;
         if (targetMeta) {
-          const inner = this.buildPopulateWhere(targetMeta, hint.children as any, {});
+          // Only recurse into children that actually end up in the joined-load tree at
+          // this nesting level. A child resolved via a separate SELECT_IN query already
+          // applies its own `where` filter there, so folding its condition in here would
+          // attach it to the wrong (unrelated) join, or force an extra join to be created
+          // just to express it (see GHx60 for a case where that extra join ends up
+          // referencing a TPT parent alias that is out of scope).
+          const childJoinedProps = this.joinedProps(targetMeta, hint.children as any, options);
+          const inner = this.buildPopulateWhere(targetMeta, childJoinedProps, { strategy: options.strategy });
 
           if (!Utils.isEmpty(inner) || RawQueryFragment.hasObjectFragments(inner)) {
             where[prop.name] ??= {} as any;
