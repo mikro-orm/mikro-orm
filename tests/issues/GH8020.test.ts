@@ -30,10 +30,21 @@ class RemappingType extends Type<string | null | undefined> {
   }
 }
 
+const TagSchema = defineEntity({
+  name: 'Tag',
+  properties: {
+    id: p.type(RemappingType).primary(),
+  },
+});
+
+class Tag extends TagSchema.class {}
+TagSchema.setClass(Tag);
+
 const AuthorSchema = defineEntity({
   name: 'Author',
   properties: {
     id: p.type(RemappingType).primary(),
+    tags: () => p.manyToMany(Tag),
   },
 });
 
@@ -44,7 +55,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [Author],
+    entities: [Author, Tag],
     dbName: ':memory:',
   });
   await orm.schema.create();
@@ -61,4 +72,13 @@ test('GH #8020: em.map does not convert database-form custom primary key again',
 
   expect(author.id).toBe('js-1');
   expect(authorAgain).toBe(author);
+});
+
+test('GH #8020: em.assign does not convert database-form custom primary key again', () => {
+  const em = orm.em.fork();
+  const tag = em.map(Tag, { id: 'db-1' });
+  const author = em.create(Author, { id: 'js-1' });
+  em.assign(author, { tags: [{ id: 'db-1' }] }, { convertCustomTypes: true });
+
+  expect(author.tags[0]).toBe(tag);
 });
