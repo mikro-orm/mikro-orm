@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@mikro-orm/sql": "7.1.7",
-    "kysely": "0.29.3",
+    "kysely": "0.29.4",
     "libsql": "0.5.29"
   },
   "devDependencies": {

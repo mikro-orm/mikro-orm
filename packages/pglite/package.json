@@ -50,7 +50,7 @@
   "dependencies": {
     "@electric-sql/pglite": "0.5.4",
     "@mikro-orm/sql": "7.1.7",
-    "kysely": "0.29.3",
+    "kysely": "0.29.4",
     "postgres-array": "3.0.4",
     "postgres-date": "2.1.0",
     "postgres-interval": "4.1.0"
