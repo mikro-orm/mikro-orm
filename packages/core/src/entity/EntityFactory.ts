@@ -645,7 +645,12 @@ export class EntityFactory {
 
       if (prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && value) {
         const pk = Reference.unwrapReference<any>(value);
-        const entity = this.unitOfWork.getById(prop.targetMeta!.class, pk, options.schema, true) as T[keyof T];
+        const entity = this.unitOfWork.getById(
+          prop.targetMeta!.class,
+          pk,
+          options.schema,
+          options.convertCustomTypes,
+        ) as T[keyof T];
 
         if (entity) {
           return entity;
