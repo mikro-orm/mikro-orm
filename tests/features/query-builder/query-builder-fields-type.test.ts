@@ -277,7 +277,10 @@ describe('QueryBuilder Fields type tracking', () => {
 
     test('leftJoinLateral should preserve fields', async () => {
       const qb1 = orm.em.createQueryBuilder(Book2, 'b').limit(1).orderBy({ title: 1 });
-      const qb2 = orm.em.createQueryBuilder(Author2, 'a').select('a.id').leftJoinLateral(qb1, 'sub');
+      const qb2 = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select('a.id')
+        .leftJoinLateral(qb1, 'sub', { author_id: sql.ref('a.id') });
       const result = await qb2.getResultList();
       type Element = (typeof result)[number];
       expectTypeOf<Element>().toHaveProperty('id');
@@ -286,7 +289,10 @@ describe('QueryBuilder Fields type tracking', () => {
 
     test('innerJoinLateral should preserve fields', async () => {
       const qb1 = orm.em.createQueryBuilder(Book2, 'b').limit(1).orderBy({ title: 1 });
-      const qb2 = orm.em.createQueryBuilder(Author2, 'a').select('a.id').innerJoinLateral(qb1, 'sub');
+      const qb2 = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select('a.id')
+        .innerJoinLateral(qb1, 'sub', { author_id: sql.ref('a.id') });
       const result = await qb2.getResultList();
       type Element = (typeof result)[number];
       expectTypeOf<Element>().toHaveProperty('id');
