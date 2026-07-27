@@ -3105,7 +3105,7 @@ export abstract class AbstractSqlDriver<
   protected buildPopulateWhere<T extends object>(
     meta: EntityMetadata<T>,
     joinedProps: PopulateOptions<T>[],
-    options: Pick<FindOptions<any>, 'populateWhere'>,
+    options: Pick<FindOptions<any>, 'populateWhere' | 'strategy'>,
   ): ObjectQuery<T> {
     const where = {} as ObjectQuery<T>;
 
@@ -3120,7 +3120,9 @@ export abstract class AbstractSqlDriver<
       if (hint.children) {
         const targetMeta = prop.targetMeta;
         if (targetMeta) {
-          const inner = this.buildPopulateWhere(targetMeta, hint.children as any, {});
+          // only joined children contribute to the ON conditions, the rest is handled by the entity loader
+          const children = this.joinedProps(targetMeta, hint.children as any, options);
+          const inner = this.buildPopulateWhere(targetMeta, children, { strategy: options.strategy });
 
           if (!Utils.isEmpty(inner) || RawQueryFragment.hasObjectFragments(inner)) {
             where[prop.name] ??= {} as any;
