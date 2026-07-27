@@ -329,7 +329,7 @@ export type Field<Entity, RootAlias extends string = never, Context = never> =
   | (IsNever<RootAlias> extends true ? never : WithAlias<`${RootAlias}.${EntityKey<Entity>}`> | `${RootAlias}.*`)
   | ([Context] extends [never] ? never : WithAlias<ContextFieldKeys<Context>> | `${AliasNames<Context>}.*`)
   | '*'
-  | QueryBuilder<any>
+  | AnyQueryBuilder
   | NativeQueryBuilder
   | RawQueryFragment<any>
   | (RawQueryFragment & symbol);
@@ -2163,10 +2163,10 @@ export class QueryBuilder<
    * Specifies FROM which entity's table select/update/delete will be executed, removing all previously set FROM-s.
    * Allows setting a main string alias of the selection data.
    */
-  from<Entity extends object>(
-    target: QueryBuilder<Entity>,
+  from<Q extends QueryBuilder<any>>(
+    target: Q,
     aliasName?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs>;
+  ): SelectQueryBuilder<QueryBuilderEntity<Q>, RootAlias, Hint, Context, RawAliases, Fields, CTEs>;
   /**
    * Specifies FROM which entity's table select/update/delete will be executed, removing all previously set FROM-s.
    * Allows setting a main string alias of the selection data.
@@ -2800,7 +2800,9 @@ export class QueryBuilder<
    * const results = await em.find(Employee, { id: { $in: subquery } });
    * ```
    */
-  unionAll(...others: (QueryBuilder<any> | NativeQueryBuilder)[]): QueryBuilder<Entity> {
+  unionAll(
+    ...others: (QueryBuilder<any> | NativeQueryBuilder)[]
+  ): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs> {
     return this.buildUnionQuery('union all', others);
   }
 
@@ -2818,14 +2820,16 @@ export class QueryBuilder<
    * const results = await em.find(Employee, { id: { $in: subquery } });
    * ```
    */
-  union(...others: (QueryBuilder<any> | NativeQueryBuilder)[]): QueryBuilder<Entity> {
+  union(
+    ...others: (QueryBuilder<any> | NativeQueryBuilder)[]
+  ): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs> {
     return this.buildUnionQuery('union', others);
   }
 
   private buildUnionQuery(
     separator: 'union' | 'union all',
     others: (QueryBuilder<any> | NativeQueryBuilder)[],
-  ): QueryBuilder<Entity> {
+  ): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs> {
     const all = [this as unknown as QueryBuilder<any>, ...others];
     const parts: string[] = [];
     const params: unknown[] = [];
@@ -2836,7 +2840,7 @@ export class QueryBuilder<
       params.push(...compiled.params);
     }
 
-    const result = this.clone(true) as unknown as QueryBuilder<Entity>;
+    const result = this.clone(true);
     result.#state.unionQuery = { sql: parts.join(` ${separator} `), params };
     return result;
   }

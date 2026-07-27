@@ -314,6 +314,38 @@ describe('QueryBuilder Fields type tracking', () => {
     });
   });
 
+  describe('union methods return type', () => {
+    test('union should preserve fields', async () => {
+      const qb1 = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select('a.id')
+        .where({ age: { $gte: 50 } });
+      const qb2 = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select('a.id')
+        .where({ age: { $lt: 20 } });
+      const result = await qb1.union(qb2).getResultList();
+      type Element = (typeof result)[number];
+      expectTypeOf<Element>().toHaveProperty('id');
+      expectTypeOf<Element>().not.toHaveProperty('name');
+    });
+
+    test('unionAll should preserve fields', async () => {
+      const qb1 = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select('a.id')
+        .where({ age: { $gte: 50 } });
+      const qb2 = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select('a.id')
+        .where({ age: { $lt: 20 } });
+      const result = await qb1.unionAll(qb2).getResultList();
+      type Element = (typeof result)[number];
+      expectTypeOf<Element>().toHaveProperty('id');
+      expectTypeOf<Element>().not.toHaveProperty('name');
+    });
+  });
+
   describe('getResult and getSingleResult return types', () => {
     test('getResult should return Loaded with Fields', async () => {
       const qb = orm.em.createQueryBuilder(Author2, 'a').select(['a.id', 'a.email']);
