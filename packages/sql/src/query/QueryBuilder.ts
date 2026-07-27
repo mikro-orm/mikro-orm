@@ -2163,10 +2163,10 @@ export class QueryBuilder<
    * Specifies FROM which entity's table select/update/delete will be executed, removing all previously set FROM-s.
    * Allows setting a main string alias of the selection data.
    */
-  from<Q extends QueryBuilder<any>>(
-    target: Q,
+  from<Entity extends object>(
+    target: Subquery & { readonly mainAlias: Alias<Entity> },
     aliasName?: string,
-  ): SelectQueryBuilder<QueryBuilderEntity<Q>, RootAlias, Hint, Context, RawAliases, Fields, CTEs>;
+  ): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs>;
   /**
    * Specifies FROM which entity's table select/update/delete will be executed, removing all previously set FROM-s.
    * Allows setting a main string alias of the selection data.
@@ -2182,7 +2182,7 @@ export class QueryBuilder<
     target: Name,
     aliasName?: Alias,
   ): SelectQueryBuilder<CTEs[Name], Alias, never, never, never, Fields, CTEs>;
-  from(target: EntityName<any> | QueryBuilder<any> | string, aliasName?: string): any {
+  from(target: EntityName<any> | Subquery | string, aliasName?: string): any {
     this.ensureNotFinalized();
 
     if (target instanceof QueryBuilder) {
@@ -2190,7 +2190,11 @@ export class QueryBuilder<
     } else if (typeof target === 'string' && !this.metadata.find(target as any)) {
       this.fromRawTable(target, aliasName);
     } else {
-      if (aliasName && this.#state.mainAlias && Utils.className(target) !== this.#state.mainAlias.aliasName) {
+      if (
+        aliasName &&
+        this.#state.mainAlias &&
+        Utils.className(target as EntityName<any>) !== this.#state.mainAlias.aliasName
+      ) {
         throw new Error(
           `Cannot override the alias to '${aliasName}' since a query already contains references to '${this.#state.mainAlias.aliasName}'`,
         );
