@@ -51,11 +51,28 @@ const AuthorSchema = defineEntity({
 class Author extends AuthorSchema.class {}
 AuthorSchema.setClass(Author);
 
+const ItemSchema = defineEntity({
+  name: 'Item',
+  properties: {
+    id: p.integer().primary(),
+    tag: () => p.manyToOne(Tag),
+    label: p.string().nullable(),
+  },
+});
+
+class Item extends ItemSchema.class {
+  constructor(tag: Tag) {
+    super();
+    this.tag = tag;
+  }
+}
+ItemSchema.setClass(Item);
+
 let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [Author, Tag],
+    entities: [Author, Tag, Item],
     dbName: ':memory:',
   });
   await orm.schema.create();
@@ -81,4 +98,31 @@ test('GH #8020: em.assign does not convert database-form custom primary key agai
   em.assign(author, { tags: [{ id: 'db-1' }] }, { convertCustomTypes: true });
 
   expect(author.tags[0]).toBe(tag);
+});
+
+test('GH #8020: entity constructor params reuse the managed relation target', () => {
+  const em = orm.em.fork();
+  const tag = em.map(Tag, { id: 'db-2' });
+  const item = em.create(Item, { id: 2, tag: 'js-2' });
+
+  expect(item.tag).toBe(tag);
+});
+
+test('GH #8020: merging a transactional fork back matches entities by their database-form key', async () => {
+  const setup = orm.em.fork();
+  setup.create(Item, { id: 3, tag: setup.create(Tag, { id: 'js-3' }), label: 'foo' });
+  await setup.flush();
+
+  const em = orm.em.fork();
+  const loaded = await em.findOneOrFail(Tag, 'js-3');
+
+  await em.transactional(async fork => {
+    // after clearing, hydrating the item yields a *managed but uninitialized* tag reference in the fork
+    fork.clear();
+    const item = await fork.findOneOrFail(Item, 3);
+    expect(item.tag).not.toBe(loaded);
+  });
+
+  // the uninitialized fork reference must not replace the loaded entity in the parent context
+  expect(em.map(Tag, { id: 'db-3' })).toBe(loaded);
 });
