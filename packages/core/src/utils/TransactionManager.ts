@@ -212,8 +212,7 @@ export class TransactionManager {
     for (const entity of fork.getUnitOfWork(false).getIdentityMap()) {
       const wrapped = helper(entity);
       const meta = wrapped.__meta;
-      // the identity map is keyed by the database form, so the lookup has to use it too
-      const parentEntity = parentUoW.getById(meta.class, wrapped.getPrimaryKey(true), parent.schema, true);
+      const parentEntity = parentUoW.getIdentityMap().getByEntity(entity);
 
       if (parentEntity && parentEntity !== entity) {
         const parentWrapped = helper(parentEntity);
