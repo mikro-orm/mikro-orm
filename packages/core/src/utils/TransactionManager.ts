@@ -228,35 +228,18 @@ export class TransactionManager {
 
         for (const prop of meta.hydrateProps) {
           const tracked = this.getTrackedValues(prop, entity[prop.name]);
-          let loaded = true;
-          let known = true;
-
-          for (const [key, value] of tracked) {
-            const has = wrapped.__loadedProperties.has(key);
-            loaded &&= has;
-            known &&= has || value !== undefined;
-          }
 
           // the fork entity can be partially loaded, and propagating a property it does not know about
           // would clobber the parent state, so we restore both its value and its snapshot entries
-          if (!known) {
+          if (!tracked.every(([key, value]) => value !== undefined || wrapped.__loadedProperties.has(key))) {
             this.restore(parentWrapped.__data, parentData, prop.name);
-
-            for (const [key] of tracked) {
-              this.restore(originalEntityData, parentSnapshot, key);
-            }
+            tracked.forEach(([key]) => this.restore(originalEntityData, parentSnapshot, key));
 
             continue;
           }
 
           if (prop.kind === ReferenceKind.SCALAR) {
             (parentEntity as Dictionary)[prop.name] = entity[prop.name];
-          }
-
-          if (loaded) {
-            for (const [key] of tracked) {
-              parentWrapped.__loadedProperties.add(key);
-            }
           }
         }
 
