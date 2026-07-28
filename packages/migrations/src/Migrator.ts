@@ -204,7 +204,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
   ): Promise<MigrationInfo[]> {
     const result = await super.runMigrations(method, options);
 
-    if (result.length > 0 && this.options.snapshot) {
+    if (result.length > 0 && this.options.snapshot && this.options.snapshotOnMigrate) {
       const ctx = Utils.isObject<MigrateOptions>(options) ? options.transaction : undefined;
       const { skipTables, skipViews } = this.config.get('schemaGenerator');
       const schema = await DatabaseSchema.create(
