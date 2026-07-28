@@ -50,5 +50,8 @@
     "@types/react-dom": "^19.1.5",
     "prettier": "^3.5.3"
   },
+  "resolutions": {
+    "node-gyp": "12.2.0"
+  },
   "packageManager": "yarn@4.17.1"
 }
