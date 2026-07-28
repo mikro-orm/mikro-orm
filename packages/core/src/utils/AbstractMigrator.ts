@@ -48,6 +48,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
   protected readonly options: MigrationsOptions;
   protected absolutePath!: string;
   protected initialized = false;
+  #pathsEnsured = false;
   readonly #listeners = new Map<string, Set<(event: MigrationInfo) => MaybePromise<void>>>();
 
   constructor(protected readonly em: D[typeof EntityManagerType]) {
@@ -419,7 +420,8 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     await this.initPaths();
   }
 
-  protected async initPaths(): Promise<void> {
+  /** Resolves the migrations path (including source folder auto-detection) without touching the filesystem. */
+  protected async resolvePaths(): Promise<void> {
     if (this.absolutePath || this.options.migrationsList) {
       return;
     }
@@ -430,6 +432,17 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     /* v8 ignore next */
     const key = this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs ? 'pathTs' : 'path';
     this.absolutePath = fs.absolutePath(this.options[key]!, this.config.get('baseDir'));
+  }
+
+  protected async initPaths(): Promise<void> {
+    await this.resolvePaths();
+
+    if (this.#pathsEnsured || this.options.migrationsList) {
+      return;
+    }
+
+    this.#pathsEnsured = true;
+    const { fs } = await import('@mikro-orm/core/fs-utils');
 
     try {
       fs.ensureDir(this.absolutePath);
