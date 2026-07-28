@@ -167,7 +167,7 @@
     "vitest": "4.1.10"
   },
   "resolutions": {
-    "lerna/js-yaml": "4.3.0",
+    "lerna/js-yaml": "5.2.2",
     "lerna/tar": "7.5.22"
   },
   "packageManager": "yarn@4.17.1"
