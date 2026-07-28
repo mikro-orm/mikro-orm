@@ -798,6 +798,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         )
         -- exclude trigger-helper functions; they're managed alongside their owning trigger.
         and p.prorettype <> 'trigger'::regtype
+      order by n.nspname, p.proname
     `;
     const rows = await connection.execute<
       {
@@ -1071,7 +1072,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         left join pg_enum e on t.oid = e.enumtypid
         join pg_catalog.pg_namespace n on n.oid = t.typnamespace
         where t.typtype = 'e' and n.nspname in (${Array(uniqueSchemas.length).fill('?').join(', ')})
-        group by t.typname, n.nspname`,
+        group by t.typname, n.nspname
+        order by n.nspname, t.typname`,
       uniqueSchemas,
       'all',
       ctx,

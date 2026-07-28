@@ -240,6 +240,9 @@ export class EntityComparator {
           lines.push(
             `    (entity${this.wrap(pk)} != null && isEntityOrRef(entity${this.wrap(pk)})) ? entity${this.wrap(pk)}.__helper.getSerializedPrimaryKey() : entity${this.wrap(pk)},`,
           );
+        } else if (meta.properties[pk].customType) {
+          const convertorKey = this.registerCustomType(meta.properties[pk], context);
+          lines.push(`    convertToDatabaseValue_${convertorKey}(entity${this.wrap(pk)}),`);
         } else {
           lines.push(`    entity${this.wrap(pk)},`);
         }

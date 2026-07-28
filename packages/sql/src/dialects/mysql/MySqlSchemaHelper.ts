@@ -94,11 +94,11 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   override getListTablesSQL(): string {
-    return `select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment, table_collation as table_collation from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()`;
+    return `select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment, table_collation as table_collation from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() order by table_name`;
   }
 
   override getListViewsSQL(): string {
-    return `select table_name as view_name, nullif(table_schema, schema()) as schema_name, view_definition from information_schema.views where table_schema = schema()`;
+    return `select table_name as view_name, nullif(table_schema, schema()) as schema_name, view_definition from information_schema.views where table_schema = schema() order by table_name`;
   }
 
   override async loadViews(
@@ -507,6 +507,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
       from information_schema.routines r
       where r.routine_schema = database()
         and r.routine_type in ('PROCEDURE', 'FUNCTION')
+      order by r.routine_name
     `;
 
     const [rows, params] = await Promise.all([

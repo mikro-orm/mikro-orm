@@ -212,7 +212,7 @@ export class TransactionManager {
     for (const entity of fork.getUnitOfWork(false).getIdentityMap()) {
       const wrapped = helper(entity);
       const meta = wrapped.__meta;
-      const parentEntity = parentUoW.getById(meta.class, wrapped.getPrimaryKey(), parent.schema, true);
+      const parentEntity = parentUoW.getIdentityMap().getByEntity(entity);
 
       if (parentEntity && parentEntity !== entity) {
         const parentWrapped = helper(parentEntity);
