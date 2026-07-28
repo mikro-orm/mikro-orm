@@ -101,6 +101,8 @@ Both paths produce the same serialized shape for a given schema, so running migr
 
 Snapshotting can be disabled via `migrations.snapshot: false` in the ORM config.
 
+If you want the snapshot to only ever describe your entity metadata, use `migrations.snapshotOnMigrate: false` to skip the introspection-based rewrite in `migration:up` and `migration:down`. Note that with this option disabled, the snapshot no longer follows the database, so `migration:create` after a `migration:down` still diffs against the state from before the revert — the reverted changes will be missing from the new migration (often an empty diff). Re-apply the existing migration with `migration:up` instead of regenerating it.
+
 ## Configuration
 
 > The `pattern` option has been replaced with `glob`.
@@ -122,6 +124,7 @@ await MikroORM.init({
     dropTables: true,
     safe: false,
     snapshot: true,
+    snapshotOnMigrate: true,
     emit: 'ts',
     generator: TSMigrationGenerator,
     fileName: (timestamp: string, name?: string) => `Migration${timestamp}${name ? '_' + name : ''}`,
@@ -144,6 +147,7 @@ await MikroORM.init({
 | `dropTables: boolean`                                        | Whether to allow dropping tables during migrations. Defaults to `true`. When `false`, table drop operations are skipped.                                                             |
 | `safe: boolean`                                              | Whether to run migrations in safe mode. Defaults to `false`. When `true`, disables both table dropping and column dropping for safety.                                               |
 | `snapshot: boolean`                                          | Whether to save schema snapshots when creating new migrations. Defaults to `true`. Snapshots help with migration diffing and should be versioned alongside migration files.          |
+| `snapshotOnMigrate: boolean`                                 | Whether to update the snapshot from the database schema when running migrations. Defaults to `true`. Set to `false` to keep the snapshot managed only by `migration:create`.         |
 | `snapshotName: string`                                       | Custom name for schema snapshot files. By default, uses a generated name based on the migration timestamp.                                                                           |
 | `emit: 'js' \| 'ts' \| 'cjs'`                                | Format for generated migration files. Defaults to `'ts'`. Use `'js'` for plain JavaScript, `'cjs'` for CommonJS format.                                                              |
 | `generator: Constructor<IMigrationGenerator>`                | Migration generator class to use for creating migration file contents. Defaults to `TSMigrationGenerator` for TypeScript files. Can be customized to change formatting or structure. |
@@ -188,6 +192,7 @@ You can also override those options using the [environment variables](./configur
 - `MIKRO_ORM_MIGRATIONS_SILENT`
 - `MIKRO_ORM_MIGRATIONS_EMIT`
 - `MIKRO_ORM_MIGRATIONS_SNAPSHOT`
+- `MIKRO_ORM_MIGRATIONS_SNAPSHOT_ON_MIGRATE`
 - `MIKRO_ORM_MIGRATIONS_SNAPSHOT_NAME`
 
 ## Running migrations in production

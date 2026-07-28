@@ -91,6 +91,7 @@ export function loadEnvironmentVars(): Partial<Options> {
   read2('silent', bool);
   read2('emit');
   read2('snapshot', bool);
+  read2('snapshotOnMigrate', bool);
   read2('snapshotName');
   cleanup(ret, 'migrations');
 
