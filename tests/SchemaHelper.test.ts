@@ -1,6 +1,9 @@
 import { Configuration, Dictionary } from '@mikro-orm/core';
-import { SchemaHelper, SqlitePlatform } from '@mikro-orm/sqlite';
-import { MySqlPlatform } from '@mikro-orm/mysql';
+import { SchemaHelper, SqliteDriver, SqlitePlatform } from '@mikro-orm/sqlite';
+import { MySqlDriver, MySqlPlatform } from '@mikro-orm/mysql';
+import { MariaDbDriver } from '@mikro-orm/mariadb';
+import { MsSqlDriver } from '@mikro-orm/mssql';
+import { OracleDriver } from '@mikro-orm/oracledb';
 import { DatabaseTable } from '@mikro-orm/sql';
 import type { AbstractSqlConnection, Column, DatabaseSchema, Table } from '@mikro-orm/sqlite';
 import {
@@ -171,6 +174,20 @@ describe('SchemaHelper', () => {
       { name: 'col1', sort: 'DESC' },
       { name: 'col2', sort: 'ASC' },
     ]);
+  });
+
+  // the introspected table order drives the order of statements in schema diffs, so an
+  // unordered listing makes the generated SQL (and snapshots based on it) flaky
+  test('table and view listings are explicitly ordered', () => {
+    const drivers = [MySqlDriver, MariaDbDriver, PostgreSqlDriver, SqliteDriver, MsSqlDriver, OracleDriver];
+
+    for (const driver of drivers) {
+      const helper = new Configuration({ driver, dbName: 'test' }, false)
+        .getPlatform()
+        .getSchemaHelper() as SchemaHelper;
+      expect(helper.getListTablesSQL()).toMatch(/order by/);
+      expect(helper.getListViewsSQL()).toMatch(/order by/);
+    }
   });
 
   test('mysql schema helper', async () => {

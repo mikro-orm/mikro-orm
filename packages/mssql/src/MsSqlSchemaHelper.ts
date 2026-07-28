@@ -528,6 +528,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
         on ep.major_id = o.object_id and ep.minor_id = 0 and ep.name = 'MS_Description'
       where o.type in ('P', 'FN', 'IF', 'TF')
         and o.is_ms_shipped = 0
+      order by s.name, o.name
     `;
 
     const [rows, paramsAndReturns] = await Promise.all([

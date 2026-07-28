@@ -86,7 +86,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
       const prefix = this.getSchemaPrefix(dbName);
       const tables = await connection.execute<{ name: string }[]>(
         `select name from ${prefix}sqlite_master where type = 'table' ` +
-          `and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys'`,
+          `and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' order by name`,
         [],
         'all',
         ctx,
