@@ -121,6 +121,7 @@ const DEFAULTS = {
     dropTables: true,
     safe: false,
     snapshot: true,
+    snapshotOnMigrate: true,
     emit: 'ts',
     fileName: (timestamp: string, name?: string) => `Migration${timestamp}${name ? '_' + name : ''}`,
   },
@@ -702,6 +703,12 @@ export type MigrationsOptions = {
    * @default true
    */
   snapshot?: boolean;
+  /**
+   * Update the snapshot from the database schema when running migrations up or down.
+   * Disable to keep the snapshot managed solely by `migration:create`.
+   * @default true
+   */
+  snapshotOnMigrate?: boolean;
   /** Custom name for the snapshot file. */
   snapshotName?: string;
   /**
