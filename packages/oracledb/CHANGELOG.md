@@ -5,14 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
 
-
 ### Bug Fixes
 
-* **sql:** order introspection queries so generated schema diffs are stable ([#8031](https://github.com/mikro-orm/mikro-orm/issues/8031)) ([25d956b](https://github.com/mikro-orm/mikro-orm/commit/25d956b3284ff40e3d7c5fd2bf527f5521f5d2ae))
-
-
-
-
+- **sql:** order introspection queries so generated schema diffs are stable ([#8031](https://github.com/mikro-orm/mikro-orm/issues/8031)) ([25d956b](https://github.com/mikro-orm/mikro-orm/commit/25d956b3284ff40e3d7c5fd2bf527f5521f5d2ae))
 
 ## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
 

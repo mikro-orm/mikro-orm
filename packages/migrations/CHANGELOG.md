@@ -5,15 +5,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
 
-
 ### Bug Fixes
 
-* **migrations:** respect `skipTables`/`skipViews` when rewriting the snapshot ([#8038](https://github.com/mikro-orm/mikro-orm/issues/8038)) ([08e5801](https://github.com/mikro-orm/mikro-orm/commit/08e580114bdb61bc57cb8d8517110b06f83eabd5)), closes [#8037](https://github.com/mikro-orm/mikro-orm/issues/8037)
-* **migrations:** store the create snapshot in the resolved migrations folder ([#8027](https://github.com/mikro-orm/mikro-orm/issues/8027)) ([d7a9ea8](https://github.com/mikro-orm/mikro-orm/commit/d7a9ea81a6be5a650201cd80774b4d1489508fae)), closes [#8024](https://github.com/mikro-orm/mikro-orm/issues/8024)
-
-
-
-
+- **migrations:** respect `skipTables`/`skipViews` when rewriting the snapshot ([#8038](https://github.com/mikro-orm/mikro-orm/issues/8038)) ([08e5801](https://github.com/mikro-orm/mikro-orm/commit/08e580114bdb61bc57cb8d8517110b06f83eabd5)), closes [#8037](https://github.com/mikro-orm/mikro-orm/issues/8037)
+- **migrations:** store the create snapshot in the resolved migrations folder ([#8027](https://github.com/mikro-orm/mikro-orm/issues/8027)) ([d7a9ea8](https://github.com/mikro-orm/mikro-orm/commit/d7a9ea81a6be5a650201cd80774b4d1489508fae)), closes [#8024](https://github.com/mikro-orm/mikro-orm/issues/8024)
 
 ## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
 

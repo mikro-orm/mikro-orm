@@ -7,10 +7,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package @mikro-orm/mysql
 
-
-
-
-
 ## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
 
 ### Bug Fixes
