@@ -206,6 +206,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
 
     if (result.length > 0 && this.options.snapshot) {
       const ctx = Utils.isObject<MigrateOptions>(options) ? options.transaction : undefined;
+      const { skipTables, skipViews } = this.config.get('schemaGenerator');
       const schema = await DatabaseSchema.create(
         this.em.getConnection(),
         this.em.getPlatform(),
@@ -213,8 +214,8 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
         undefined,
         undefined,
         undefined,
-        undefined,
-        undefined,
+        skipTables,
+        skipViews,
         ctx,
       );
 
