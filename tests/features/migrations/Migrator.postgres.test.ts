@@ -228,6 +228,44 @@ describe('Migrator (postgres)', () => {
     }
   });
 
+  test('migration:up and migration:down keep the snapshot intact with snapshotOnMigrate: false', async () => {
+    const migrations = orm.config.get('migrations');
+    migrations.snapshot = true;
+    migrations.snapshotOnMigrate = false;
+
+    const { readFileSync } = await import('node:fs');
+    const path = process.cwd() + '/temp/migrations-456';
+    const snapshotPath = path + '/.snapshot-mikro_orm_test_migrations.json';
+
+    await rm(snapshotPath, { force: true });
+
+    const migration1 = await orm.migrator.create();
+    expect(migration1.diff.up.length).toBeGreaterThan(0);
+    const snapshotAfterCreate = readFileSync(snapshotPath, 'utf8');
+
+    const executeMock = vi.spyOn(Migrator.prototype as any, 'executeMigrations');
+    executeMock.mockResolvedValueOnce([{ name: migration1.fileName }]); // up
+    executeMock.mockResolvedValueOnce([{ name: migration1.fileName }]); // down
+
+    try {
+      await orm.migrator.up(migration1.fileName);
+      expect(readFileSync(snapshotPath, 'utf8')).toEqual(snapshotAfterCreate);
+
+      await orm.migrator.down(migration1.fileName);
+      expect(readFileSync(snapshotPath, 'utf8')).toEqual(snapshotAfterCreate);
+
+      // the snapshot still describes the entities, so creating again yields an empty diff
+      const migration2 = await orm.migrator.create();
+      expect(migration2.diff).toEqual({ down: [], up: [] });
+    } finally {
+      await rm(path + '/' + migration1.fileName, { force: true });
+      await rm(snapshotPath, { force: true });
+      executeMock.mockRestore();
+      migrations.snapshot = false;
+      migrations.snapshotOnMigrate = true;
+    }
+  });
+
   test('migrator.up with external transaction and snapshot: true does not deadlock (GH #7424)', async () => {
     const migrations = orm.config.get('migrations');
     migrations.snapshot = true;
