@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
+
+
+### Bug Fixes
+
+* **core:** convert custom types when querying composite PK via array form ([#8035](https://github.com/mikro-orm/mikro-orm/issues/8035)) ([ba0c4c2](https://github.com/mikro-orm/mikro-orm/commit/ba0c4c23e9eed5ada3aa51687425543198862704))
+* **core:** don't let a partially loaded fork entity clobber the parent context ([#8036](https://github.com/mikro-orm/mikro-orm/issues/8036)) ([d3e9f1c](https://github.com/mikro-orm/mikro-orm/commit/d3e9f1c7d0e2ee6550c77683effba50d11aba913))
+* **core:** fix infinite recursion when flushing a `mapToPk` FK with value `0` ([#8004](https://github.com/mikro-orm/mikro-orm/issues/8004)) ([f01fd6f](https://github.com/mikro-orm/mikro-orm/commit/f01fd6faf7cbd7a9e6810015b605f9a29bdc04da)), closes [#8003](https://github.com/mikro-orm/mikro-orm/issues/8003)
+* **core:** key composite primary keys with custom types by their database form ([#8029](https://github.com/mikro-orm/mikro-orm/issues/8029)) ([5d582ec](https://github.com/mikro-orm/mikro-orm/commit/5d582ec19b44a25f5c311769817cb9978ef12c34)), closes [#8021](https://github.com/mikro-orm/mikro-orm/issues/8021)
+* **core:** populate 1:m collections of parents with falsy PK values ([#8002](https://github.com/mikro-orm/mikro-orm/issues/8002)) ([eaa25d4](https://github.com/mikro-orm/mikro-orm/commit/eaa25d49536422e591d3a5ce1fe5a50b71fa4dba)), closes [#8000](https://github.com/mikro-orm/mikro-orm/issues/8000)
+* **core:** respect custom type conversion in identity map lookups ([#8021](https://github.com/mikro-orm/mikro-orm/issues/8021)) ([44d470d](https://github.com/mikro-orm/mikro-orm/commit/44d470d4333c57720b2ffdfda62eeab1eed2fbe8)), closes [#8020](https://github.com/mikro-orm/mikro-orm/issues/8020)
+* **migrations:** store the create snapshot in the resolved migrations folder ([#8027](https://github.com/mikro-orm/mikro-orm/issues/8027)) ([d7a9ea8](https://github.com/mikro-orm/mikro-orm/commit/d7a9ea81a6be5a650201cd80774b4d1489508fae)), closes [#8024](https://github.com/mikro-orm/mikro-orm/issues/8024)
+
+
+
+
+
 ## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
 
 ### Bug Fixes

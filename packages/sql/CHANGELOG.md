@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
+
+
+### Bug Fixes
+
+* **sql:** do not apply collection `where` of non-joined nested relations ([#8030](https://github.com/mikro-orm/mikro-orm/issues/8030)) ([f3d48d8](https://github.com/mikro-orm/mikro-orm/commit/f3d48d89ccb50da48039e37c2865586e830fae60)), closes [#8022](https://github.com/mikro-orm/mikro-orm/issues/8022)
+* **sql:** order introspection queries so generated schema diffs are stable ([#8031](https://github.com/mikro-orm/mikro-orm/issues/8031)) ([25d956b](https://github.com/mikro-orm/mikro-orm/commit/25d956b3284ff40e3d7c5fd2bf527f5521f5d2ae))
+* **sql:** preserve query builder field types across joins and CTEs ([#8005](https://github.com/mikro-orm/mikro-orm/issues/8005)) ([b8a5bea](https://github.com/mikro-orm/mikro-orm/commit/b8a5bea56b5786917d83eab6f31304d243283515))
+
+
+
+
+
 ## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
 
 ### Bug Fixes
