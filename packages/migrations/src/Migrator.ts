@@ -58,9 +58,9 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
 
   private async getSnapshotPath(): Promise<string> {
     if (!this.#snapshotPath) {
-      // resolve the migrations path first (source-folder auto-detection), otherwise `migration:create`
-      // probes the snapshot before init and derives it from an unresolved path, landing it in `baseDir`
-      await this.initPaths();
+      // the snapshot is probed before `init()`, so the source folder auto-detection has to run first,
+      // otherwise the path stays unresolved and the snapshot is looked up in `baseDir`
+      await this.resolvePaths();
       const { fs } = await import('@mikro-orm/core/fs-utils');
       // for snapshots, we always want to use the path based on `emit` option, regardless of whether we run in TS context
       /* v8 ignore next */

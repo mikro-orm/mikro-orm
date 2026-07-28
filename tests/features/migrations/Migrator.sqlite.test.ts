@@ -278,7 +278,8 @@ describe('Migrator (sqlite)', () => {
     const baseDir = mkdtempSync(TEMP_DIR + '/gh8024-');
     mkdirSync(baseDir + '/src');
 
-    const orm2 = await MikroORM.init({
+    // a fresh options object per ORM, the migrations options are mutated by the source folder detection
+    const createOptions = () => ({
       metadataProvider: ReflectMetadataProvider,
       driver: SqliteDriver,
       entities: [FooBar4, FooBaz4, BaseEntity5],
@@ -287,6 +288,8 @@ describe('Migrator (sqlite)', () => {
       extensions: [Migrator],
       migrations: { snapshot: true },
     });
+
+    const orm2 = await MikroORM.init(createOptions());
 
     try {
       await orm2.migrator.create(undefined, true);
@@ -297,6 +300,25 @@ describe('Migrator (sqlite)', () => {
       expect(existsSync(baseDir + '/.snapshot-memory.json')).toBe(false);
     } finally {
       await orm2.close();
+    }
+
+    // the path resolution has to happen in `getSnapshotPath()`, not just in `create()` — a later
+    // `migration:check` process probes the snapshot before `init()` too, and has to find it without a database
+    const orm3 = await MikroORM.init(createOptions());
+    const ensureDbMock = vi.spyOn(orm3.schema, 'ensureDatabase');
+    ensureDbMock.mockRejectedValue(new Error('should not connect to database'));
+    const { fs } = await import('@mikro-orm/core/fs-utils');
+    const ensureDirMock = vi.spyOn(fs, 'ensureDir');
+
+    try {
+      await expect(orm3.migrator.checkSchema()).resolves.toBe(false);
+
+      // `migration:check` is a read-only command, resolving the snapshot path must not create anything
+      expect(ensureDirMock).not.toHaveBeenCalled();
+    } finally {
+      ensureDbMock.mockRestore();
+      ensureDirMock.mockRestore();
+      await orm3.close();
       await rm(baseDir, { recursive: true, force: true });
     }
   });
