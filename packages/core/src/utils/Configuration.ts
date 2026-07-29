@@ -122,7 +122,9 @@ const DEFAULTS = {
     safe: false,
     snapshot: true,
     emit: 'ts',
-    fileName: (timestamp: string, name?: string) => `Migration${timestamp}${name ? '_' + name : ''}`,
+    // mirrors `NamingStrategy.classToMigrationName`, so the file name matches the class it declares
+    fileName: (timestamp: string, name?: string) =>
+      `Migration${timestamp}${name ? '_' + name.replace(/[^$\p{ID_Continue}]+/gu, '_') : ''}`,
   },
   schemaGenerator: {
     createForeignKeyConstraints: true,
