@@ -364,9 +364,10 @@ export class ChangeSetPersister {
 
     const res = await this.#driver.nativeUpdateMany(meta.class, cond, payload, options);
     const map = new Map<string, Dictionary>();
-    res.rows?.forEach(item =>
-      map.set(Utils.getCompositeKeyHash(item as EntityData<T>, meta, true, this.#platform, true), item),
-    );
+    // returning rows are not mapped yet, so they are keyed by field names - we need to build the hash
+    // from those to be able to match them with `getSerializedPrimaryKey()` of the entity
+    const pkFields = meta.getPrimaryProps().flatMap(prop => prop.fieldNames);
+    res.rows?.forEach(item => map.set(Utils.getPrimaryKeyHash(pkFields.map(field => item[field])), item));
 
     for (const changeSet of changeSets) {
       if (res.rows) {
