@@ -19,7 +19,7 @@ import {
   type SchemaHelper,
 } from '@mikro-orm/sql';
 import { fs } from '@mikro-orm/core/fs-utils';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { writeFile } from 'node:fs/promises';
 import { DefineEntitySourceFile } from './DefineEntitySourceFile.js';
 import { EntitySchemaSourceFile } from './EntitySchemaSourceFile.js';
@@ -102,6 +102,18 @@ export class EntityGenerator {
     const files = this.#sources.map(file => [file.getBaseName(), file.generate()]);
 
     if (options.save) {
+      // generated files may only land in the project folder, or under the configured path when
+      // that points elsewhere, so a file name can never reach an arbitrary filesystem location
+      const allowedRoots = [resolve(this.#config.get('baseDir')), resolve(baseDir)];
+
+      for (const [fileName] of files) {
+        const target = resolve(baseDir, fileName);
+
+        if (!allowedRoots.some(root => !relative(root, target).startsWith('..'))) {
+          throw new Error(`Cannot generate '${fileName}', it resolves outside of the project folder`);
+        }
+      }
+
       fs.ensureDir(baseDir);
       const promises = [];
 
