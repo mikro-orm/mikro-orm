@@ -69,6 +69,7 @@ export class OracleConnection extends AbstractSqlConnection {
                 if (setSchemaSql) {
                   // ORA-01435: the schema might not exist yet, `ensureDatabase()` creates it later on
                   await conn.execute(setSchemaSql).catch((e: any) => {
+                    /* v8 ignore next 3: other failures of `alter session` are not reproducible in tests */
                     if (e.errorNum !== 1435) {
                       throw e;
                     }
