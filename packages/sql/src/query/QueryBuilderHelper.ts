@@ -1132,6 +1132,11 @@ export class QueryBuilderHelper {
     const parts: string[] = [];
     const params: unknown[] = [];
 
+    // an empty disjunction is false, same as `$in: []`, while an empty conjunction is vacuously true
+    if (operator === '$or' && subCondition.length === 0) {
+      return { sql: '1 = 0', params };
+    }
+
     // single sub-condition can be ignored to reduce nesting of parens
     if (subCondition.length === 1 || operator === '$and') {
       for (const sub of subCondition) {
