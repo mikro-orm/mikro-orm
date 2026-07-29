@@ -476,10 +476,12 @@ describe('ATTACH DATABASE - libSQL connection lifetime', () => {
 
   test('the connection setup SQL covers the pragmas and the attached databases', async () => {
     const connection = orm.em.getConnection() as any;
+    // the paths are normalized to forward slashes, so compare them that way to stay portable
+    const setupSql = ((await connection.getConnectionSetupSql()) as string[]).map(sql => sql.replaceAll('\\', '/'));
 
-    await expect(connection.getConnectionSetupSql()).resolves.toEqual([
+    expect(setupSql).toEqual([
       'pragma foreign_keys = on',
-      `attach database '${join(tempDir, 'lifetime.db')}' as \`lifetime_db\``,
+      `attach database '${join(tempDir, 'lifetime.db').replaceAll('\\', '/')}' as \`lifetime_db\``,
     ]);
   });
 });
