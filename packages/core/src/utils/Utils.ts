@@ -602,7 +602,9 @@ export class Utils {
 
   static getPrimaryKeyCond<T>(entity: T, primaryKeys: EntityKey<T>[]): Record<string, Primary<T>> | null {
     const cond = primaryKeys.reduce((o, pk) => {
-      o[pk] = Utils.extractPK(entity[pk]);
+      const value = entity[pk];
+      // FKs pointing to a composite PK are arrays, which `extractPK` rejects
+      o[pk] = Utils.isPrimaryKey(value, true) ? value : Utils.extractPK(value);
       return o;
     }, {} as any);
 
