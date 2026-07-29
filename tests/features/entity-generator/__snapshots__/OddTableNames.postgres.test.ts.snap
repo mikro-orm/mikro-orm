@@ -127,7 +127,7 @@ export class Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this {
   '!cool'!: Ref<E_$42misc>;
 
   @Property({ length: 45, nullable: true })
-  \`'derive\`?: string;
+  '\\'derive'?: string;
 
   @OneToMany({ entity: () => E123TableName, mappedBy: 'prototype' })
   e123TableNameCollection = new Collection<E123TableName>(this);
@@ -311,7 +311,7 @@ import { E_$42misc } from './E_$42misc';
 export class Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32this {
   [PrimaryKeyProp]?: '!cool';
   '!cool'!: Ref<E_$42misc>;
-  \`'derive\`?: string;
+  '\\'derive'?: string;
   e123TableNameCollection = new Collection<E123TableName>(this);
 }
 
@@ -329,7 +329,7 @@ export const Table$39s$32name$32has$32apostrophe$44$32Also$32$96$96$32thisSchema
       updateRule: 'no action',
       deleteRule: 'no action',
     },
-    \`'derive\`: {
+    '\\'derive': {
       type: 'string',
       length: 45,
       nullable: true,
