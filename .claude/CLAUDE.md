@@ -1,15 +1,8 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## General Rules
 
 Keep changes minimal and scoped. Do not fix unrelated issues, touch unrelated files, or 'clean up' code outside the scope of the current task unless explicitly asked.
-
-## Overview
-
-MikroORM is a TypeScript ORM for Node.js based on Data Mapper, Unit of Work, and Identity Map patterns. Supports
-MongoDB, MySQL, MariaDB, PostgreSQL, SQLite, libSQL, MSSQL, and Oracle databases.
 
 ## Essential Commands
 
@@ -58,39 +51,7 @@ Always run these before committing (run this from project root):
 3. `yarn lint` - always (covers oxlint rules, type-aware rules, and tsgo type diagnostics via `--type-check`)
 4. `yarn test` - always run the **full** test suite before declaring work done; do not rely solely on targeted test runs
 
-## Project Structure
-
-**Monorepo with 19 packages** in `packages/`:
-
-- **Core**: `core` (main ORM), `decorators`, `reflection`, `migrations`, `migrations-mongodb`, `entity-generator`,
-  `seeder`
-- **Drivers**: `postgresql`, `mysql`, `mariadb`, `sqlite`, `libsql`, `mssql`, `mongodb`
-- **Support**: `knex-compat` (`raw` helper supporting knex), `cli`, `sql` (shared SQL driver base, built on top of
-  `kysely`)
-
-### Key Source Locations
-
-- `packages/core/src/EntityManager.ts` - Main ORM interface
-- `packages/core/src/unit-of-work/` - Change tracking and persistence
-- `packages/core/src/metadata/` - Entity metadata and discovery
-- `packages/core/src/entity/` - Entity utilities including `defineEntity` helper
-- `packages/core/src/typings.ts` - Core type definitions
-
-### Test Entity Sets
-
-- `tests/entities/` - Main test entities
-- `tests/entities-sql/` - SQL-specific entities
-- `tests/entities-schema/` - EntitySchema examples (no decorators)
-- `tests/features/` - Feature-specific integration tests
-- `tests/issues/` - Regression tests for GitHub issues
-
 ## Architecture
-
-### Core Patterns
-
-- **Unit of Work**: Tracks entity changes, batches database operations in transactions
-- **Identity Map**: Ensures each entity loaded once per EntityManager context
-- **Data Mapper**: Separates domain objects from database persistence logic
 
 ### Entity Definition Options
 
@@ -100,12 +61,7 @@ Always run these before committing (run this from project root):
 
 ### Type System
 
-Heavy use of TypeScript generics. Key types in `packages/core/src/typings.ts`:
-
-- `EntityName<T>` - Entity class, constructor, or schema reference
-- `EntityData<T>` - Data for creating/updating entities
-- `InferEntity<Schema>` - Extracts entity type from EntitySchema
-- `Loaded<T, P>` - Entity with specific relations populated
+Heavy use of TypeScript generics. Key types in `packages/core/src/typings.ts`.
 
 ## Git Conventions
 
@@ -132,8 +88,6 @@ When opening PRs, write concise descriptions focused on what changed and why. Av
 
 ## Code Style
 
-- 2-space indentation, semicolons, single quotes
 - No `public` keyword (except constructors)
 - Use native private fields (`#field`) for variables, but regular `private` for methods
-- Prefer `const` over `let`, no `var`
 - Conventional commits: `feat(core):`, `fix(mysql):`, `refactor:`, etc.
