@@ -1038,7 +1038,7 @@ exports[`Migrator > snapshot should not be updated when custom migration fileNam
 {
   "code": "import { Migration } from '@mikro-orm/migrations';
 
-export class Migration20191013214813_with-custom-name extends Migration {
+export class Migration20191013214813_with_custom_name extends Migration {
 
   override up(): void | Promise<void> {
     this.addSql(\`alter table \\\`foo_param2\\\` drop foreign key \\\`foo_param2_bar_id_foreign\\\`;\`);
