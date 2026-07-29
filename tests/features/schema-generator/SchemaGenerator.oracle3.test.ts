@@ -833,4 +833,77 @@ describe('SchemaGenerator3 [oracle]', () => {
     const result2 = await connection.execute(qb as any);
     expect(result2).toBeDefined();
   });
+
+  test('dropDatabase reconnects as the original user when dropping a different one', async () => {
+    const gen = orm.schema as OracleSchemaGenerator;
+    const dbName = orm.config.get('dbName')!;
+    orm.config.set('user', dbName);
+    // the user the pool would log in as, captured on every reconnect
+    const connectedAs: (string | undefined)[] = [];
+    const reconnectSpy = vi.spyOn((gen as any).driver, 'reconnect').mockImplementation((() => {
+      connectedAs.push(orm.config.get('user'));
+      return Promise.resolve();
+    }) as any);
+    const executeSpy = vi.spyOn(gen, 'execute' as any).mockResolvedValue(undefined);
+
+    await gen.dropDatabase('some_other_user');
+
+    expect(executeSpy).toHaveBeenCalledWith('drop user "some_other_user" cascade');
+    expect(connectedAs).toEqual(['system', dbName]);
+    expect(orm.config.get('user')).toBe(dbName);
+    expect(reconnectSpy).toHaveBeenCalledWith({ skipOnConnect: true });
+    executeSpy.mockRestore();
+    reconnectSpy.mockRestore();
+  });
+
+  test('dropDatabase stays connected as the management user when dropping itself', async () => {
+    const gen = orm.schema as OracleSchemaGenerator;
+    const dbName = orm.config.get('dbName')!;
+    orm.config.set('user', dbName);
+    (gen as any).lastEnsuredDatabase = dbName;
+    const connectedAs: (string | undefined)[] = [];
+    const reconnectSpy = vi.spyOn((gen as any).driver, 'reconnect').mockImplementation((() => {
+      connectedAs.push(orm.config.get('user'));
+      return Promise.resolve();
+    }) as any);
+    const executeSpy = vi.spyOn(gen, 'execute' as any).mockResolvedValue(undefined);
+
+    await gen.dropDatabase();
+
+    // the dropped user can no longer authenticate, so the config must not claim it
+    expect(connectedAs).toEqual(['system']);
+    expect(orm.config.get('user')).toBe('system');
+    expect((gen as any).lastEnsuredDatabase).toBeUndefined();
+    executeSpy.mockRestore();
+    reconnectSpy.mockRestore();
+    orm.config.set('user', dbName);
+  });
+
+  test('internal reconnects skip the onConnect hook', async () => {
+    const gen = orm.schema as any;
+    const reconnectSpy = vi.spyOn(gen.driver, 'reconnect').mockResolvedValue(undefined);
+    const executeSpy = vi.spyOn(gen, 'execute').mockResolvedValue(undefined);
+    const connExecuteSpy = vi.spyOn(gen.connection, 'execute').mockResolvedValue([]);
+    const helperSpy = vi.spyOn(gen.helper, 'databaseExists').mockResolvedValue(false);
+    const createDbSpy = vi.spyOn(gen, 'createDatabase').mockResolvedValue(undefined);
+    gen.lastEnsuredDatabase = undefined;
+    gen.hasDbaGrant = false;
+
+    await gen.ensureDatabase();
+    await gen.createNamespace('test_schema');
+
+    expect(reconnectSpy).toHaveBeenCalled();
+    expect(createDbSpy).toHaveBeenCalledWith(orm.config.get('dbName'), { skipOnConnect: true });
+    // onConnect() would re-enter ensureDatabase() on every internal reconnect, recreating a just-dropped user
+    for (const call of reconnectSpy.mock.calls) {
+      expect(call[0]).toEqual({ skipOnConnect: true });
+    }
+
+    createDbSpy.mockRestore();
+    helperSpy.mockRestore();
+    connExecuteSpy.mockRestore();
+    executeSpy.mockRestore();
+    reconnectSpy.mockRestore();
+    orm.config.set('user', orm.config.get('dbName'));
+  });
 });
