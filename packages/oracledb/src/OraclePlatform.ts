@@ -187,7 +187,7 @@ export class OraclePlatform extends AbstractSqlPlatform {
   }
 
   override getDefaultSchemaName(): string | undefined {
-    return this.config.get('dbName');
+    return this.config.get('user', this.config.get('dbName'));
   }
 
   override getVarcharTypeDeclarationSQL(column: { length?: number }): string {
