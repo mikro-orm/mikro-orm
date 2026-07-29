@@ -292,6 +292,19 @@ exports[`SchemaGenerator > update schema [mssql] > mssql-update-schema-drop-uniq
 "
 `;
 
+exports[`SchemaGenerator > update schema enums [mssql] > mssql-update-schema-drop-column 1`] = `
+"alter table [author2] drop constraint [author2_favourite_book_uuid_pk_foreign];
+
+alter table [new_table] drop constraint [PK__new_tabl__123];
+declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'new_table' and all_columns.name = 'id') if @constraint0 is not null exec('alter table [new_table] drop constraint ' + @constraint0);
+alter table [new_table] drop constraint [new_table_updated_at_default];
+alter table [new_table] drop column [id], [updated_at];
+
+declare @constraint1 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'author2' and all_columns.name = 'favourite_book_uuid_pk') if @constraint1 is not null exec('alter table [author2] drop constraint ' + @constraint1);
+alter table [author2] drop column [favourite_book_uuid_pk];
+"
+`;
+
 exports[`SchemaGenerator > update schema enums [mssql] > mssql-update-schema-enums-1 1`] = `
 "create table [new_table] ([id] int identity(1,1) not null primary key, [enum_test] nvarchar(100) not null);
 "

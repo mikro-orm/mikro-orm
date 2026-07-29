@@ -1632,7 +1632,9 @@ export abstract class AbstractSqlDriver<
     }
 
     if (this.platform.usesReturningStatement() && returning.size > 0) {
-      const returningFields = Utils.flatten([...returning].map(prop => meta.properties[prop].fieldNames));
+      const returningFields = Utils.flatten(
+        [...returning].map(prop => (meta.properties[prop] ?? meta.root.properties[prop]).fieldNames),
+      );
       /* v8 ignore next */
       sql +=
         returningFields.length > 0

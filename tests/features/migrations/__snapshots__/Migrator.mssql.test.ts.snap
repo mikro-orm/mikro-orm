@@ -712,6 +712,25 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
+exports[`Migrator (mssql) > migration is skipped when no diff > initial-migration-dump 1`] = `
+{
+  "code": "import { Migration } from '@mikro-orm/migrations';
+
+export class Migration20191013214813 extends Migration {
+
+  override up(): void | Promise<void> {
+  }
+
+}
+",
+  "diff": {
+    "down": [],
+    "up": [],
+  },
+  "fileName": "Migration20191013214813.ts",
+}
+`;
+
 exports[`Migrator (mssql) > up/down params [all or nothing disabled] > all-or-nothing-disabled 1`] = `
 [
   "select [m0].* from [custom].[mikro_orm_migrations] as [m0] order by [m0].[id] asc",
