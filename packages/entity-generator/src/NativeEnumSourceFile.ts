@@ -60,6 +60,10 @@ export class NativeEnumSourceFile extends SourceFile {
   }
 
   override getBaseName(extension = '.ts') {
-    return `${this.options.fileName!(this.nativeEnum.name)}${extension}`;
+    // the enum name comes from the database and ends up in a path, so path separators
+    // (and anything else that cannot appear in a file name) collapse to `_`
+    const name = this.nativeEnum.name.replaceAll(/[^\p{L}\p{N}$_-]+/gu, '_');
+
+    return `${this.options.fileName!(name)}${extension}`;
   }
 }
