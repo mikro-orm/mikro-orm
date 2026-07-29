@@ -23,13 +23,15 @@ export class LibSqlConnection extends BaseSqliteConnection {
       },
       onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
       recycleConnection: !!options.syncUrl || REMOTE_URL.test(dbName),
-      // the replacement connection starts blank, so run the setup straight on it, bypassing the held mutex
-      onRecycleConnection: async () => {
-        for (const sql of await this.getConnectionSetupSql()) {
-          this.database.exec(sql);
-        }
-      },
+      onRecycleConnection: this.replayConnectionSetup.bind(this),
     });
+  }
+
+  /** Restores the state a recycled connection was replaced with, run on the raw handle to skip the held mutex. */
+  protected async replayConnectionSetup(): Promise<void> {
+    for (const sql of await this.getConnectionSetupSql()) {
+      this.database.exec(sql);
+    }
   }
 
   /** libsql's `Database.function()` is declared but throws "not implemented"; better-sqlite3 has the UDF bridge. */

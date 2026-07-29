@@ -484,6 +484,21 @@ describe('ATTACH DATABASE - libSQL connection lifetime', () => {
       `attach database '${join(tempDir, 'lifetime.db').replaceAll('\\', '/')}' as \`lifetime_db\``,
     ]);
   });
+
+  test('replaying the setup restores the state a recycled connection lost', async () => {
+    const connection = orm.em.getConnection();
+    // a recycled connection comes back blank, which detaching reproduces without a Turso endpoint
+    await connection.execute('detach database lifetime_db');
+    await connection.execute('pragma foreign_keys = off');
+
+    await (connection as any).replayConnectionSetup();
+
+    expect((await connection.execute<{ name: string }[]>('pragma database_list')).map(d => d.name)).toContain(
+      'lifetime_db',
+    );
+    expect(await connection.execute<{ foreign_keys: number }[]>('pragma foreign_keys')).toEqual([{ foreign_keys: 1 }]);
+    await expect(orm.em.fork().count(LifetimeTestEntity)).resolves.toBeGreaterThanOrEqual(0);
+  });
 });
 
 describe('ATTACH DATABASE - libSQL remote validation', () => {
