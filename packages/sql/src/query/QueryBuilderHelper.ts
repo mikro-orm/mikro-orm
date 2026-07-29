@@ -617,7 +617,8 @@ export class QueryBuilderHelper {
 
       if (k === '$not') {
         const res = this._appendQueryCondition(type, cond[k]);
-        parts.push(`not (${res.sql})`);
+        // negating a vacuously true condition (e.g. an empty `$and`) matches nothing
+        parts.push(res.sql ? `not (${res.sql})` : '1 = 0');
         res.params.forEach(p => params.push(p));
         continue;
       }
