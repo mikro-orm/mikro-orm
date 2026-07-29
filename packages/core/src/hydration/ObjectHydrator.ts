@@ -525,6 +525,9 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`    data${dataKey}.forEach((_, idx_${idx}) => {`);
       ret.push(...hydrateEmbedded(prop, [...path, `[idx_${idx}]`], `${dataKey}[idx_${idx}]`).map(l => '    ' + l));
       ret.push(`    });`);
+      ret.push(`  } else if (data${dataKey} === null) {`);
+      /* v8 ignore next */
+      ret.push(`    entity${entityKey} = ${this.config.get('forceUndefined') ? 'undefined' : 'null'};`);
       ret.push(`  }`);
 
       return ret;
