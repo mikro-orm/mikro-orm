@@ -219,6 +219,20 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
         ctx,
       );
 
+      // triggers created by the migrations themselves are absent from entity metadata, so
+      // snapshotting them would make `checkSchema()` ask for a migration that drops them again
+      const tablesWithTriggers = schema.getTables().filter(table => table.getTriggers().length > 0);
+
+      if (tablesWithTriggers.length > 0) {
+        // wildcard-schema entities declare their triggers in metadata too, so they need to be part of the target
+        const target = this.#schemaGenerator.getTargetSchema(undefined, true);
+
+        for (const table of tablesWithTriggers) {
+          const declared = target.getTable(table.getShortestName(false));
+          table.setTriggers(table.getTriggers().filter(trigger => declared?.hasTrigger(trigger.name)));
+        }
+      }
+
       // keep the snapshot authored by `migration:create` when the migrated DB still matches it
       // semantically — rewriting it from introspection only churns cosmetic serialization noise
       // (expression casing/reformatting, native-enum mapped type, index method, ...) into the diff
