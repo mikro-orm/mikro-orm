@@ -606,6 +606,7 @@ export class EntityComparator {
     const padding = ' '.repeat(level * 2);
     const idx = this.#tmpIndex++;
 
+    ret.push(`${padding}if (entity${entityKey} === null) ret${dataKey} = null;`);
     ret.push(`${padding}if (Array.isArray(entity${entityKey})) {`);
     ret.push(`${padding}  ret${dataKey} = [];`);
     ret.push(`${padding}  entity${entityKey}.forEach((_, idx_${idx}) => {`);
