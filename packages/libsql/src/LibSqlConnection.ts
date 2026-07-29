@@ -3,6 +3,8 @@ import Database, { type Options } from 'libsql';
 import type { Routine, Transaction } from '@mikro-orm/core';
 import { LibSqlDialect } from './LibSqlDialect.js';
 
+const REMOTE_URL = /^(https?|libsql):\/\//;
+
 /** libSQL database connection supporting both local and remote databases. */
 export class LibSqlConnection extends BaseSqliteConnection {
   private database!: Database.Database;
@@ -20,6 +22,13 @@ export class LibSqlConnection extends BaseSqliteConnection {
         return (this.database = new Database(dbName, options));
       },
       onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
+      recycleConnection: !!options.syncUrl || REMOTE_URL.test(dbName),
+      // the replacement connection starts blank, so run the setup straight on it, bypassing the held mutex
+      onRecycleConnection: async () => {
+        for (const sql of await this.getConnectionSetupSql()) {
+          this.database.exec(sql);
+        }
+      },
     });
   }
 
@@ -42,7 +51,7 @@ export class LibSqlConnection extends BaseSqliteConnection {
       return;
     }
     const dbName = this.config.get('dbName') as string;
-    if (/^(https?|libsql):\/\//.exec(dbName)) {
+    if (REMOTE_URL.test(dbName)) {
       throw new Error(
         'ATTACH DATABASE is not supported for remote libSQL connections. ' + 'Use local file-based databases only.',
       );
