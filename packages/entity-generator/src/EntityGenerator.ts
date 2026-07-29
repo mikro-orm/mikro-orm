@@ -19,7 +19,7 @@ import {
   type SchemaHelper,
 } from '@mikro-orm/sql';
 import { fs } from '@mikro-orm/core/fs-utils';
-import { dirname, join } from 'node:path';
+import { dirname, isAbsolute, join, relative } from 'node:path';
 import { writeFile } from 'node:fs/promises';
 import { DefineEntitySourceFile } from './DefineEntitySourceFile.js';
 import { EntitySchemaSourceFile } from './EntitySchemaSourceFile.js';
@@ -102,6 +102,16 @@ export class EntityGenerator {
     const files = this.#sources.map(file => [file.getBaseName(), file.generate()]);
 
     if (options.save) {
+      // file names can be derived from database metadata (native enum and routine names), so they
+      // are validated before anything is written, nested names are still allowed
+      for (const [fileName] of files) {
+        const relativePath = relative(baseDir, join(baseDir, fileName));
+
+        if (relativePath.startsWith('..') || isAbsolute(relativePath)) {
+          throw new Error(`Cannot generate '${fileName}', it resolves outside of the configured path`);
+        }
+      }
+
       fs.ensureDir(baseDir);
       const promises = [];
 
