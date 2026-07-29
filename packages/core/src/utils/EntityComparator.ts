@@ -626,6 +626,8 @@ export class EntityComparator {
       ret.push(`${padding}  ret${dataKey} = cloneEmbeddable(ret${dataKey});`);
     }
 
+    ret.push(`${padding}} else if (entity${entityKey} === null) {`);
+    ret.push(`${padding}  ret${dataKey} = null;`);
     ret.push(`${padding}}`);
 
     return ret.join('\n');

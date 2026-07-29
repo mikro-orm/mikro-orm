@@ -670,6 +670,8 @@ exports[`polymorphic embeddables in sqlite > diffing 2`] = `
       }
     });
     ret.pets = cloneEmbeddable(ret.pets);
+  } else if (entity.pets === null) {
+    ret.pets = null;
   }
 
   return ret;
