@@ -40,9 +40,9 @@ export class NativeEnumSourceFile extends SourceFile {
       );
 
       if (enumMode === 'dictionary') {
-        ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quote(enumName)}: ${this.quote(enumValue)},\n`;
+        ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quoteKey(enumName)}: ${this.quote(enumValue)},\n`;
       } else {
-        ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quote(enumName)} = ${this.quote(enumValue)},\n`;
+        ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quoteKey(enumName)} = ${this.quote(enumValue)},\n`;
       }
     }
 
