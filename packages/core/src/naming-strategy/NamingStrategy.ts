@@ -12,7 +12,8 @@ export interface NamingStrategy {
   classToTableName(entityName: string, tableName?: string): string;
 
   /**
-   * Return a migration name. This name should allow ordering.
+   * Return a migration name. This name should allow ordering, and has to be a valid class identifier,
+   * as it is used as the class name in the generated migration file.
    */
   classToMigrationName(timestamp: string, customMigrationName?: string): string;
 
