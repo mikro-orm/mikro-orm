@@ -22,9 +22,19 @@ import type {
 import type { DatabaseSchema } from './DatabaseSchema.js';
 import type { DatabaseTable } from './DatabaseTable.js';
 
-/** Flattens `;\n` boundaries so the schema-generator's statement splitter doesn't break the routine DDL apart. Other whitespace is preserved. */
+/**
+ * Flattens `;\n` boundaries and drops blank lines so the schema-generator's statement splitter
+ * doesn't break the routine or trigger DDL apart — it treats both as statement/group separators.
+ * Blank lines go first, otherwise a `;` followed by one would keep its newline. Like
+ * `normalizeViewDefinition`, this is not string-literal aware, so a blank line inside a multi-line
+ * literal is dropped too. Other whitespace is preserved.
+ */
 export function stripStatementNewlines(body: string): string {
-  return body.replace(/;[\t ]*\r?\n/g, '; ');
+  return body
+    .split('\n')
+    .filter(line => line.trim() !== '')
+    .join('\n')
+    .replace(/;[\t ]*\r?\n/g, '; ');
 }
 
 /**
