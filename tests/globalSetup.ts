@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { MongoMemoryReplSet } from 'mongodb-memory-server-core';
 import { Client as PgClient } from 'pg';
 import mysql from 'mysql2/promise';
@@ -18,6 +21,69 @@ const SQL_TARGETS: SqlTarget[] = [
 ];
 
 const BASELINE_KEY = '__DB_BASELINE__';
+const SETUP_DONE_KEY = '__DB_SETUP_DONE__';
+
+// Both cleanup passes below are destructive across the *whole* database server, which is shared
+// by every checkout/worktree on this machine. A concurrent run would have its in-flight databases
+// dropped from under it (`DROP DATABASE ... WITH (FORCE)` even kills the open connections), so we
+// register each run in a machine-wide directory and only clean up when we are the only run alive.
+const RUN_REGISTRY_DIR = path.join(os.tmpdir(), 'mikro-orm-test-runs');
+
+// A pid file left behind by a `kill -9`d run is only trusted for this long — pids get recycled, so
+// without a cutoff one unlucky recycled pid could disable cleanup forever.
+const RUN_REGISTRY_TTL = 6 * 60 * 60 * 1000;
+
+function isRunning(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (e: any) {
+    // EPERM means the pid exists but belongs to another user, so it still counts as alive.
+    return e.code === 'EPERM';
+  }
+}
+
+/** Registers this run and returns the number of other live runs, dropping entries of dead ones. */
+function registerRun(): number {
+  fs.mkdirSync(RUN_REGISTRY_DIR, { recursive: true });
+  fs.writeFileSync(path.join(RUN_REGISTRY_DIR, `${process.pid}`), '');
+
+  return countOtherRuns();
+}
+
+function countOtherRuns(): number {
+  let others = 0;
+
+  for (const name of fs.readdirSync(RUN_REGISTRY_DIR)) {
+    const pid = Number(name);
+
+    if (pid === process.pid) {
+      continue;
+    }
+
+    const file = path.join(RUN_REGISTRY_DIR, name);
+
+    try {
+      if (Number.isInteger(pid) && isRunning(pid) && Date.now() - fs.statSync(file).mtimeMs < RUN_REGISTRY_TTL) {
+        others++;
+      } else {
+        fs.unlinkSync(file);
+      }
+    } catch {
+      /* another run got there first */
+    }
+  }
+
+  return others;
+}
+
+function unregisterRun(): void {
+  try {
+    fs.unlinkSync(path.join(RUN_REGISTRY_DIR, `${process.pid}`));
+  } catch {
+    /* already gone */
+  }
+}
 
 async function withPg<T>(port: number, fn: (c: PgClient) => Promise<T>): Promise<T> {
   const client = new PgClient({
@@ -237,6 +303,15 @@ async function cleanupMssqlOrphanFiles(t: SqlTarget): Promise<number> {
 }
 
 export async function setup() {
+  // Every project in `vitest.config.ts` uses `extends: true`, so it inherits `globalSetup` and
+  // vitest calls this once per project on top of the root config. Everything here is process-wide,
+  // so run it only for the first call.
+  if ((globalThis as any)[SETUP_DONE_KEY]) {
+    return;
+  }
+
+  (globalThis as any)[SETUP_DONE_KEY] = true;
+
   // Narrow-scope test scripts (currently only `test:sqlite`, used by the Windows CI matrix) don't
   // touch MongoDB, so skip the ~781MB binary download and 3-process replica-set spawn entirely.
   // It's wasted work on every run and a flake source on Windows where worker startup occasionally
@@ -257,6 +332,14 @@ export async function setup() {
       // eslint-disable-next-line no-console
       console.warn('Failed to start MongoDB memory server');
     }
+  }
+
+  // Registering before counting is deliberate: if two runs start at the same instant they both see
+  // each other and both skip cleanup, which is the safe direction to lose the race in.
+  if (registerRun() > 0) {
+    // eslint-disable-next-line no-console
+    console.log('[globalSetup] another test run is in progress, skipping test database cleanup');
+    return;
   }
 
   // Drop test DBs leftover from prior crashed runs. MSSQL in particular spends idle CPU on
@@ -301,10 +384,27 @@ export async function setup() {
 }
 
 export async function teardown() {
+  // Mirrors the per-project guard in `setup()` — vitest calls this once per project too.
+  if (!(globalThis as any)[SETUP_DONE_KEY]) {
+    return;
+  }
+
+  delete (globalThis as any)[SETUP_DONE_KEY];
+
   const instance: MongoMemoryReplSet | undefined = (globalThis as any).__MONGOINSTANCE;
 
   if (instance) {
     await instance.stop({ force: true, doCleanup: true });
+  }
+
+  unregisterRun();
+
+  // Everything created since our baseline is assumed to be ours, which only holds while we are the
+  // only run — a run that started after us owns databases we never saw.
+  if (countOtherRuns() > 0) {
+    // eslint-disable-next-line no-console
+    console.log('[globalTeardown] another test run is in progress, skipping leftover DB cleanup');
+    return;
   }
 
   const baseline: Record<string, string[]> = (globalThis as any)[BASELINE_KEY] ?? {};
