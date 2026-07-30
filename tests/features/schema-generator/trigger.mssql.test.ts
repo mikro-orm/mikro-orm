@@ -44,6 +44,49 @@ describe('trigger [mssql]', () => {
     await orm.close();
   });
 
+  test('triggers are executed in their own batch [mssql]', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [TriggerEntity],
+      dbName: `mikro_orm_test_trigger_mssql_refresh`,
+      password: 'Root.Root',
+    });
+    const meta = orm.getMetadata();
+    await orm.schema.ensureDatabase();
+
+    const alteredMeta = new EntitySchema({
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+      },
+      name: 'AlterTrg',
+      tableName: 'alter_trg',
+    }).init().meta;
+    meta.set(alteredMeta.class, alteredMeta);
+
+    // `create trigger` has to be the first statement in a query batch
+    await orm.schema.refresh();
+
+    const { DatabaseSchema } = await import('@mikro-orm/mssql');
+    const connection = orm.em.getConnection();
+    let dbSchema = await DatabaseSchema.create(connection, orm.em.getPlatform(), orm.config);
+    const triggers = dbSchema.getTable('trigger_entity')!.getTriggers();
+    expect(triggers).toHaveLength(1);
+    expect(triggers[0].name).toBe('trg_price');
+
+    // adding triggers to an existing table goes through the alter path
+    alteredMeta.triggers = [
+      { name: 'trg_alter_ins', timing: 'after', events: ['insert'], body: `PRINT 'inserted'` },
+      { name: 'trg_alter_upd', timing: 'after', events: ['update'], body: `PRINT 'updated'` },
+    ];
+    await orm.schema.update();
+
+    dbSchema = await DatabaseSchema.create(connection, orm.em.getPlatform(), orm.config);
+    expect(dbSchema.getTable('alter_trg')!.getTriggers()).toHaveLength(2);
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
   test('trigger diff [mssql]', async () => {
     const orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
