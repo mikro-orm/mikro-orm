@@ -1,13 +1,4 @@
-import {
-  type AbortableOperationOptions,
-  CompiledQuery,
-  type ControlConnectionProvider,
-  type ControlledTransaction,
-  type DatabaseConnection,
-  type Dialect,
-  type Driver,
-  Kysely,
-} from 'kysely';
+import { CompiledQuery, type ControlledTransaction, type Dialect, Kysely } from 'kysely';
 import {
   type AbortQueryOptions,
   type AnyEntity,
@@ -50,82 +41,6 @@ function extractAbortOptions(loggerContext?: LoggingOptions): {
   };
 }
 
-const POOLED_CANCELLATION = Symbol('mikro-orm/pooled-cancellation');
-
-type PatchedConnection = DatabaseConnection & { [POOLED_CANCELLATION]?: true };
-
-/**
- * Overrides single methods of a Kysely object we don't own. A proxy rather than an explicit wrapper
- * so methods added by future Kysely versions keep working; calls are forwarded to the target itself
- * rather than to the proxy, as the originals read private fields.
- */
-function proxyWithOverrides<T extends object>(target: T, overrides: Partial<T>): T {
-  const cache = new Map<string | symbol, unknown>();
-
-  return new Proxy(target, {
-    get(_, prop) {
-      if (prop in overrides) {
-        return overrides[prop as keyof T];
-      }
-
-      if (!cache.has(prop)) {
-        const value = Reflect.get(target, prop, target);
-        cache.set(prop, typeof value === 'function' ? value.bind(target) : value);
-      }
-
-      return cache.get(prop);
-    },
-  });
-}
-
-function wrapDriver(driver: Driver): Driver {
-  const controlConnectionProvider: ControlConnectionProvider = async consumer => {
-    const connection = await driver.acquireConnection();
-
-    try {
-      await consumer(connection);
-    } finally {
-      await driver.releaseConnection(connection);
-    }
-  };
-
-  // Patching in place keeps the connection identity Kysely hands back to `beginTransaction()` and
-  // `releaseConnection()`; the marker keeps it idempotent as the pool hands the same one out again.
-  const patch = (connection: PatchedConnection): DatabaseConnection => {
-    if (connection[POOLED_CANCELLATION]) {
-      return connection;
-    }
-
-    connection[POOLED_CANCELLATION] = true;
-
-    for (const method of ['cancelQuery', 'killSession'] as const) {
-      const original = connection[method];
-
-      if (original) {
-        connection[method] = () => original.call(connection, controlConnectionProvider);
-      }
-    }
-
-    return connection;
-  };
-
-  const acquireConnection = async (options?: AbortableOperationOptions) => {
-    return patch(await driver.acquireConnection(options));
-  };
-
-  return proxyWithOverrides(driver, { acquireConnection });
-}
-
-/**
- * Makes the `'cancel query'`/`'kill session'` control statement travel over a pooled connection.
- * Kysely otherwise asks the executor that ran the aborted query for the control connection, and
- * inside a transaction that executor is pinned to the single connection the aborted query is still
- * occupying — so the control statement waits for the very query it is meant to abort.
- */
-function withPooledQueryCancellation(dialect: Dialect): Dialect {
-  return proxyWithOverrides(dialect, { createDriver: () => wrapDriver(dialect.createDriver()) });
-}
-
 /** Base class for SQL database connections, built on top of Kysely. */
 export abstract class AbstractSqlConnection extends Connection {
   declare protected platform: AbstractSqlPlatform;
@@ -157,17 +72,17 @@ export abstract class AbstractSqlConnection extends Connection {
       this.#client = driverOptions;
     } else if ('createDriver' in driverOptions) {
       this.logger.log('info', 'Reusing Kysely dialect provided via `driverOptions`');
-      this.#client = new Kysely<any>({ dialect: withPooledQueryCancellation(driverOptions as Dialect) });
+      this.#client = new Kysely<any>({ dialect: driverOptions as Dialect });
     } else {
       const dialect = this.createKyselyDialect(driverOptions);
 
       if (dialect instanceof Promise) {
         return dialect.then(d => {
-          this.#client = new Kysely<any>({ dialect: withPooledQueryCancellation(d) });
+          this.#client = new Kysely<any>({ dialect: d });
         });
       }
 
-      this.#client = new Kysely<any>({ dialect: withPooledQueryCancellation(dialect) });
+      this.#client = new Kysely<any>({ dialect });
     }
   }
 
