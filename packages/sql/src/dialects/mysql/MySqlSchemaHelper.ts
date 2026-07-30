@@ -731,6 +731,10 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return [`alter table ${tableName} rename index ${oldIndexName} to ${keyName}`];
   }
 
+  protected override hasInlineColumnComment(): boolean {
+    return true;
+  }
+
   override getChangeColumnCommentSQL(tableName: string, to: Column, schemaName?: string): string {
     tableName = this.quote(tableName);
     const columnName = this.quote(to.name);

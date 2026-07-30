@@ -590,6 +590,7 @@ export abstract class SchemaHelper {
       diff.changedProperties.has('comment'),
     )) {
       if (
+        this.hasInlineColumnComment() &&
         ['type', 'nullable', 'autoincrement', 'unsigned', 'default', 'enumItems', 'collation'].some(t =>
           changedProperties.has(t),
         )
@@ -660,7 +661,15 @@ export abstract class SchemaHelper {
       })
       .join(', ');
 
-    return [`alter table ${table.getQuotedName()} ${adds}`];
+    const ret = [`alter table ${table.getQuotedName()} ${adds}`];
+
+    if (!this.hasInlineColumnComment()) {
+      for (const column of columns.filter(column => column.comment)) {
+        ret.push(this.getChangeColumnCommentSQL(table.name, column, table.schema));
+      }
+    }
+
+    return ret;
   }
 
   getDropColumnsSQL(tableName: string, columns: Column[], schemaName?: string): string {
@@ -817,6 +826,11 @@ export abstract class SchemaHelper {
 
   getChangeColumnCommentSQL(tableName: string, to: Column, schemaName?: string): string {
     return '';
+  }
+
+  /** Whether the column comment is part of the column declaration, as opposed to a separate statement. */
+  protected hasInlineColumnComment(): boolean {
+    return false;
   }
 
   async getNamespaces(connection: AbstractSqlConnection, ctx?: Transaction): Promise<string[]> {
