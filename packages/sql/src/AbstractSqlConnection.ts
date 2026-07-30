@@ -213,17 +213,8 @@ export abstract class AbstractSqlConnection extends Connection {
 
     const trx = await trxBuilder.execute();
 
-    if (options.ctx) {
-      const ctx = options.ctx as Dictionary;
-      ctx.index ??= 0;
-      const savepointName = `trx${ctx.index + 1}`;
-      Reflect.defineProperty(trx, 'index', { value: ctx.index + 1 });
-      Reflect.defineProperty(trx, 'savepointName', { value: savepointName });
-      this.logQuery(this.platform.getSavepointSQL(savepointName), options.loggerContext);
-    } else {
-      for (const query of this.platform.getBeginTransactionSQL(options)) {
-        this.logQuery(query, options.loggerContext);
-      }
+    for (const query of this.platform.getBeginTransactionSQL(options)) {
+      this.logQuery(query, options.loggerContext);
     }
 
     await options.eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, trx);
