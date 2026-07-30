@@ -84,7 +84,7 @@ describe('GH #7798 — snapshot flip-flop between migration:create and migration
       entities: [Account7798b, Order7798b],
       dbName: DB,
       port: 5433,
-      migrations: { path: PATH, snapshot: true },
+      migrations: { path: PATH, snapshot: true, silent: true },
       extensions: [Migrator],
     });
     await rm(PATH, { recursive: true, force: true });

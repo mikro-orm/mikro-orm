@@ -154,7 +154,6 @@ test('create schema dump with serial property', async () => {
     entities: [Something1],
     dbName: `mikro_orm_test_serial`,
     schemaGenerator: { disableForeignKeys: false },
-    debug: ['schema'],
   });
 
   await orm.schema.refresh();
