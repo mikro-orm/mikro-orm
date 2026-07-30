@@ -466,7 +466,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     const timing = trigger.timing.toUpperCase();
     const events = trigger.events.map(e => e.toUpperCase()).join(', ');
     const qualifiedName = this.getSchemaQualifiedName(table, trigger.name);
-    return `create trigger ${qualifiedName} on ${table.getQuotedName()} ${timing} ${events} as begin ${trigger.body}; end`;
+    return `create trigger ${qualifiedName} on ${table.getQuotedName()} ${timing} ${events} as begin ${this.normalizeTriggerBody(trigger.body)} end`;
   }
 
   /** Generates SQL to drop an MSSQL trigger. */

@@ -1136,7 +1136,7 @@ export abstract class SchemaHelper {
     const events = trigger.events.map(e => e.toUpperCase()).join(' OR ');
     const forEach = trigger.forEach === 'statement' ? 'STATEMENT' : 'ROW';
     const when = trigger.when ? ` when (${trigger.when})` : '';
-    return `create trigger ${this.quote(trigger.name)} ${timing} ${events} on ${table.getQuotedName()} for each ${forEach}${when} begin ${trigger.body}; end`;
+    return `create trigger ${this.quote(trigger.name)} ${timing} ${events} on ${table.getQuotedName()} for each ${forEach}${when} begin ${this.normalizeTriggerBody(trigger.body)} end`;
   }
 
   /**
@@ -1164,6 +1164,12 @@ export abstract class SchemaHelper {
 
   async getAllRoutines(_connection: AbstractSqlConnection, _schemas: string[] = []): Promise<SqlRoutineDef[]> {
     return [];
+  }
+
+  /** Flattens internal `;\n` so the statement splitter doesn't tear the DDL, and ensures exactly one trailing `;` for the enclosing `begin ... end` block. */
+  protected normalizeTriggerBody(body: string): string {
+    const trimmed = stripStatementNewlines(body).trim();
+    return /;\s*$/.test(trimmed) ? trimmed : `${trimmed};`;
   }
 
   /** Wraps the body in `BEGIN ... END` if not already, and flattens internal `;\n` so the schema-generator's statement splitter doesn't tear the DDL. */

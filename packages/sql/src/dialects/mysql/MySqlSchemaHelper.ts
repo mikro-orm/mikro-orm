@@ -447,7 +447,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
     for (const event of trigger.events) {
       const name = trigger.events.length > 1 ? `${trigger.name}_${event}` : trigger.name;
       ret.push(
-        `create trigger ${this.quote(name)} ${timing} ${event.toUpperCase()} on ${table.getQuotedName()} for each ROW begin ${trigger.body}; end`,
+        `create trigger ${this.quote(name)} ${timing} ${event.toUpperCase()} on ${table.getQuotedName()} for each ROW begin ${this.normalizeTriggerBody(trigger.body)} end`,
       );
     }
 
