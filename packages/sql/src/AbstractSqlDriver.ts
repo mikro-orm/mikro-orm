@@ -952,7 +952,7 @@ export abstract class AbstractSqlDriver<
 
     if (meta.primaryKeys.length > 1) {
       // owner has composite pk
-      pk = Utils.getPrimaryKeyCond(data as T, meta.primaryKeys);
+      pk = Utils.getOrderedPrimaryKeys(data as Record<string, Primary<T>>, meta);
     } else {
       /* v8 ignore next */
       res.insertId = data[meta.primaryKeys[0]] ?? res.insertId ?? res.row[meta.primaryKeys[0]];
@@ -1351,10 +1351,9 @@ export abstract class AbstractSqlDriver<
     );
     let pk: any[];
 
-    /* v8 ignore next */
     if (pks.length > 1) {
       // owner has composite pk
-      pk = data.map(d => Utils.getPrimaryKeyCond(d as T, pks as EntityKey<T>[]));
+      pk = data.map(d => Utils.getOrderedPrimaryKeys(d as Record<string, Primary<T>>, meta));
     } else {
       res.row ??= {};
       res.rows ??= [];
@@ -1437,8 +1436,7 @@ export abstract class AbstractSqlDriver<
       res = await this.rethrow(qb.execute('run', false));
     }
 
-    /* v8 ignore next */
-    const pk = pks.map(pk => Utils.extractPK<T>(data[pk] || where, meta)!) as Primary<T>[];
+    const pk = Utils.getOrderedPrimaryKeys({ ...(where as Dictionary), ...data } as Record<string, Primary<T>>, meta);
     await this.processManyToMany<T>(meta, pk, collections, true, options);
 
     return res;
@@ -1652,7 +1650,8 @@ export abstract class AbstractSqlDriver<
     );
 
     for (let i = 0; i < collections.length; i++) {
-      await this.processManyToMany<T>(meta, where[i] as Primary<T>[], collections[i], false, options);
+      const pk = Utils.getOrderedPrimaryKeys(where[i] as Record<string, Primary<T>>, meta);
+      await this.processManyToMany<T>(meta, pk, collections[i], false, options);
     }
 
     return res;

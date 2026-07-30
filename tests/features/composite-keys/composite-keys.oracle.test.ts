@@ -1,5 +1,12 @@
-import { MikroORM, PrimaryKeyProp } from '@mikro-orm/oracledb';
-import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Collection, MikroORM, PrimaryKeyProp } from '@mikro-orm/oracledb';
+import {
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Owner {
@@ -11,6 +18,9 @@ class Owner {
 
   @Property()
   name!: string;
+
+  @ManyToMany(() => Tag)
+  tags = new Collection<Tag>(this);
 
   [PrimaryKeyProp]?: ['id1', 'id2'];
 }
@@ -85,6 +95,20 @@ async function createPairs() {
   await orm.em.flush();
   orm.em.clear();
 }
+
+test('batch insert with a composite PK owner and non-empty M:N collection', async () => {
+  await orm.em.insertMany(Tag, [
+    { id: 1, label: 't1' },
+    { id: 2, label: 't2' },
+  ]);
+  await orm.em.insertMany(Owner, [
+    { id1: 1, id2: 10, name: 'o1', tags: [1] },
+    { id1: 2, id2: 20, name: 'o2', tags: [1, 2] },
+  ]);
+
+  const owners = await orm.em.findAll(Owner, { populate: ['tags'], orderBy: { id1: 'asc' } });
+  expect(owners.map(o => o.tags.getIdentifiers())).toEqual([[1], [1, 2]]);
+});
 
 // a primary relation to an entity with a composite PK spans several columns, so the
 // `returning ... into` clause needs one OUT bind per column, not one per property
