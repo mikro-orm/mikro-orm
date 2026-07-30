@@ -2419,7 +2419,10 @@ export abstract class AbstractSqlDriver<
 
     // with `fixedOrder` the pivot PK is the order column, which is not guaranteed to be unique when the
     // pivot table is managed externally, so we disambiguate the rows by their FKs on top of the PK
-    const pivotRelations = meta.pivotTable && !meta.compositePK ? meta.relations.filter(p => p.persist !== false) : [];
+    const pivotRelations =
+      meta.pivotTable && !meta.compositePK
+        ? meta.relations.filter(p => p.kind === ReferenceKind.MANY_TO_ONE && p.persist !== false)
+        : [];
 
     for (const item of rawResults) {
       let pk = Utils.getCompositeKeyHash(item, meta);

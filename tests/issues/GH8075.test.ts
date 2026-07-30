@@ -70,6 +70,15 @@ const Tag = defineEntity({
   },
 });
 
+const Comment = defineEntity({
+  name: 'Comment',
+  properties: {
+    id: p.integer().primary(),
+    text: p.string(),
+    postTag: () => p.manyToOne(PostTag),
+  },
+});
+
 const PostTag = defineEntity({
   name: 'PostTag',
   properties: {
@@ -77,6 +86,7 @@ const PostTag = defineEntity({
     post: () => p.manyToOne(Post),
     tag: () => p.manyToOne(Tag).nullable(),
     note: p.string(),
+    comments: () => p.oneToMany(Comment).mappedBy('postTag'),
   },
 });
 
@@ -98,7 +108,7 @@ describe('pivot entity with a surrogate primary key', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Post, Tag, PostTag],
+      entities: [Post, Tag, PostTag, Comment],
       dbName: ':memory:',
     });
 
@@ -110,6 +120,7 @@ describe('pivot entity with a surrogate primary key', () => {
     await conn.execute(
       `insert into post_tag (id, post_id, tag_id, note) values (1, 1, 1, 'a'), (2, 1, 1, 'b'), (3, 1, 2, 'c'), (4, 1, null, 'd'), (5, 2, null, 'e')`,
     );
+    await conn.execute(`insert into comment (id, text, post_tag_id) values (1, 'c1', 1), (2, 'c2', 1), (3, 'c3', 3)`);
   });
 
   afterAll(async () => {
@@ -128,6 +139,13 @@ describe('pivot entity with a surrogate primary key', () => {
       .find(PostTag, {}, { populate: ['tag'], fields: ['note', 'tag.name'], orderBy: { id: 'asc' } });
 
     expect(rows.map(r => r.note)).toEqual(['a', 'b', 'c', 'd', 'e']);
+  });
+
+  test('rows are still merged when a to-many relation is joined', async () => {
+    const rows = await orm.em.fork().find(PostTag, {}, { populate: ['comments'], orderBy: { id: 'asc' } });
+
+    expect(rows.map(r => r.note)).toEqual(['a', 'b', 'c', 'd', 'e']);
+    expect(rows.map(r => r.comments.getItems().map(c => c.text))).toEqual([['c1', 'c2'], [], ['c3'], [], []]);
   });
 
   test('rows are not merged when a joined FK is null', async () => {
