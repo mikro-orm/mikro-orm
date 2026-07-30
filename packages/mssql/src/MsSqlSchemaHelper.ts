@@ -1069,34 +1069,65 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       })
       .join(', ');
 
-    return [`alter table ${table.getQuotedName()} add ${adds}`];
-  }
+    const sql = [`alter table ${table.getQuotedName()} add ${adds}`];
 
-  override appendComments(table: DatabaseTable): string[] {
-    const sql: string[] = [];
-    const schema = this.platform.quoteValue(table.schema);
-    const tableName = this.platform.quoteValue(table.name);
-
-    if (table.comment) {
-      const comment = this.platform.quoteValue(table.comment);
-      sql.push(`if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N${schema}, N'Table', N${tableName}, null, null))
-  exec sys.sp_updateextendedproperty N'MS_Description', N${comment}, N'Schema', N${schema}, N'Table', N${tableName}
-else
-  exec sys.sp_addextendedproperty N'MS_Description', N${comment}, N'Schema', N${schema}, N'Table', N${tableName}`);
-    }
-
-    for (const column of table.getColumns()) {
+    for (const column of columns) {
       if (column.comment) {
-        const comment = this.platform.quoteValue(column.comment);
-        const columnName = this.platform.quoteValue(column.name);
-        sql.push(`if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N${schema}, N'Table', N${tableName}, N'Column', N${columnName}))
-  exec sys.sp_updateextendedproperty N'MS_Description', N${comment}, N'Schema', N${schema}, N'Table', N${tableName}, N'Column', N${columnName}
-else
-  exec sys.sp_addextendedproperty N'MS_Description', N${comment}, N'Schema', N${schema}, N'Table', N${tableName}, N'Column', N${columnName}`);
+        sql.push(this.getCommentSQL(table.schema, table.name, column.comment, column.name));
       }
     }
 
     return sql;
+  }
+
+  override appendComments(table: DatabaseTable): string[] {
+    const sql: string[] = [];
+
+    if (table.comment) {
+      sql.push(this.getCommentSQL(table.schema, table.name, table.comment));
+    }
+
+    for (const column of table.getColumns()) {
+      if (column.comment) {
+        sql.push(this.getCommentSQL(table.schema, table.name, column.comment, column.name));
+      }
+    }
+
+    return sql;
+  }
+
+  override alterTableComment(table: DatabaseTable, comment?: string): string {
+    return this.getCommentSQL(table.schema, table.name, comment);
+  }
+
+  override getChangeColumnCommentSQL(tableName: string, to: Column, schemaName?: string): string {
+    return this.getCommentSQL(schemaName, tableName, to.comment, to.name);
+  }
+
+  /** Comments are stored as `MS_Description` extended properties, which have separate add/update/drop procedures. */
+  private getCommentSQL(
+    schemaName: string | undefined,
+    tableName: string,
+    comment?: string,
+    columnName?: string,
+  ): string {
+    const schema = this.platform.quoteValue(schemaName ?? this.platform.getDefaultSchemaName());
+    const table = this.platform.quoteValue(tableName);
+    const level1 = `N'Schema', N${schema}, N'Table', N${table}`;
+    const level2 = columnName ? `N'Column', N${this.platform.quoteValue(columnName)}` : '';
+    const exists = `if exists(select * from sys.fn_listextendedproperty(N'MS_Description', ${level1}, ${level2 || 'null, null'}))`;
+    const target = level2 ? `${level1}, ${level2}` : level1;
+
+    if (!comment) {
+      return `${exists}\n  exec sys.sp_dropextendedproperty N'MS_Description', ${target}`;
+    }
+
+    const value = this.platform.quoteValue(comment);
+
+    return `${exists}
+  exec sys.sp_updateextendedproperty N'MS_Description', N${value}, ${target}
+else
+  exec sys.sp_addextendedproperty N'MS_Description', N${value}, ${target}`;
   }
 
   override inferLengthFromColumnType(type: string): number | undefined {
