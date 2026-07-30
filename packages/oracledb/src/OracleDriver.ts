@@ -7,12 +7,14 @@ import {
   type EntityDictionary,
   type EntityKey,
   type EntityName,
+  type EntityProperty,
   type FilterQuery,
   isRaw,
   type LoggingOptions,
   type NativeInsertUpdateManyOptions,
   QueryFlag,
   type QueryResult,
+  ReferenceKind,
   type RequiredEntityData,
   type Transaction,
   type UpsertManyOptions,
@@ -120,8 +122,13 @@ export class OracleDriver extends AbstractSqlDriver<OracleConnection, OraclePlat
 
     for (const propName of returning) {
       const prop = meta.properties[propName];
-      into.push(`:out_${prop.fieldNames[0]}`);
-      outBindingsMap[`out_${prop.fieldNames[0]}`] = prop.runtimeType;
+      // the parent builds the `returning` list from all field names, so every column needs its own OUT bind
+      const runtimeTypes = this.getOutBindTypes(prop);
+
+      prop.fieldNames.forEach((fieldName, idx) => {
+        into.push(`:out_${fieldName}`);
+        outBindingsMap[`out_${fieldName}`] = runtimeTypes[idx];
+      });
     }
 
     const outBindings = this.platform.createOutBindings(outBindingsMap);
@@ -136,6 +143,22 @@ export class OracleDriver extends AbstractSqlDriver<OracleConnection, OraclePlat
 
       return `${sql} into ${into.join(', ')}`;
     });
+  }
+
+  /**
+   * Resolves the runtime type of every column a property maps to, aligned with its `fieldNames`.
+   * A relation covers one column per target PK column, and a target PK can be a relation itself,
+   * so we recurse down to the scalar leaves - `prop.runtimeType` is `unknown` for relations.
+   */
+  private getOutBindTypes(prop: EntityProperty): string[] {
+    if (!prop.targetMeta || ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
+      return prop.fieldNames.map(() => prop.runtimeType);
+    }
+
+    const types = prop.referencedPKs.flatMap(pk => this.getOutBindTypes(prop.targetMeta!.properties[pk]));
+
+    // `fieldNames` of a polymorphic relation start with the discriminator column
+    return prop.polymorphic ? ['string', ...types] : types;
   }
 
   /** @inheritDoc */
