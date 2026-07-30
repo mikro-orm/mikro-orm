@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
+
+
+### Bug Fixes
+
+* **core:** fix batch updates when the whole primary key is one relation ([#8065](https://github.com/mikro-orm/mikro-orm/issues/8065)) ([aeefa5e](https://github.com/mikro-orm/mikro-orm/commit/aeefa5e90577fa24081a64f9f8ef55d1edbf8bd2))
+* **core:** keep `null` value of embedded arrays in snapshots and hydration ([#8046](https://github.com/mikro-orm/mikro-orm/issues/8046)) ([93d62bf](https://github.com/mikro-orm/mikro-orm/commit/93d62bf278b21169ade73b6448daab846634d5d0)), closes [#8045](https://github.com/mikro-orm/mikro-orm/issues/8045)
+* **core:** keep the fixed order column as the sole pivot PK for polymorphic M:N ([#8083](https://github.com/mikro-orm/mikro-orm/issues/8083)) ([3ac8b73](https://github.com/mikro-orm/mikro-orm/commit/3ac8b73ebd90dc85a414ae8f36ffddb185c71fd1))
+* **core:** map returning values back to entities after batch update ([#8056](https://github.com/mikro-orm/mikro-orm/issues/8056)) ([5895309](https://github.com/mikro-orm/mikro-orm/commit/589530926386ae962aa551465094e61307527e8b))
+* **core:** support mixed STI child types in batch updates ([#8057](https://github.com/mikro-orm/mikro-orm/issues/8057)) ([f6e5fd4](https://github.com/mikro-orm/mikro-orm/commit/f6e5fd4fac3c5b62d75ea74838c2108b1b7f126f))
+* **core:** support version and optimistic locking on nested composite keys ([#8064](https://github.com/mikro-orm/mikro-orm/issues/8064)) ([d533e76](https://github.com/mikro-orm/mikro-orm/commit/d533e76fe441ed3f06b5efcbb45407d82eb63ab8))
+* **migrations:** sanitize custom migration names into valid class identifiers ([#8053](https://github.com/mikro-orm/mikro-orm/issues/8053)) ([20a3ae2](https://github.com/mikro-orm/mikro-orm/commit/20a3ae258b2592176bc6207204aeb4f9c95b142e))
+
+
+
+
+
 ## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
 
 ### Bug Fixes
