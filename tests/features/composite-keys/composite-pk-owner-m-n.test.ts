@@ -130,12 +130,23 @@ test('batch update with composite PK owner and non-empty M:N collection', async 
 
 test('insert with nested composite PK owner and non-empty M:N collection', async () => {
   const em = orm.em.fork();
-  await em.insert(Tag, { id: 40, name: 't6' });
+  await em.insertMany(Tag, [
+    { id: 40, name: 't6' },
+    { id: 41, name: 't9' },
+  ]);
   await em.insert(Param, { bar: 9, baz: 10 });
   await em.insert(NestedParam, { param: [9, 10], qux: 11, tags: [40] });
+  await em.insert(NestedParam, { param: [9, 10], qux: 12, tags: [41] });
 
-  // asserting on the pivot row rather than via `populate`, which does not yet load M:N collections
-  // of an owner whose composite PK contains a relation
-  const rows = await em.getConnection().execute('select * from nested_param_tags');
-  expect(rows).toEqual([{ nested_param_param_bar: 9, nested_param_param_baz: 10, nested_param_qux: 11, tag_id: 40 }]);
+  const rows = await em.getConnection().execute('select * from nested_param_tags order by nested_param_qux');
+  expect(rows).toEqual([
+    { nested_param_param_bar: 9, nested_param_param_baz: 10, nested_param_qux: 11, tag_id: 40 },
+    { nested_param_param_bar: 9, nested_param_param_baz: 10, nested_param_qux: 12, tag_id: 41 },
+  ]);
+
+  const np = await em.fork().findOneOrFail(NestedParam, { param: [9, 10], qux: 11 }, { populate: ['tags'] });
+  expect(np.tags.getIdentifiers()).toEqual([40]);
+
+  const nps = await em.fork().find(NestedParam, { param: [9, 10] }, { populate: ['tags'], orderBy: { qux: 'asc' } });
+  expect(nps.map(n => n.tags.getIdentifiers())).toEqual([[40], [41]]);
 });
