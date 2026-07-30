@@ -5,16 +5,11 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
 
-
 ### Bug Fixes
 
-* **mssql:** execute `create trigger` in its own query batch ([#8072](https://github.com/mikro-orm/mikro-orm/issues/8072)) ([5d0420e](https://github.com/mikro-orm/mikro-orm/commit/5d0420edebc27454c09bba22ea7baf637d7c70e0))
-* **mssql:** manage table and column comments via extended properties ([#8076](https://github.com/mikro-orm/mikro-orm/issues/8076)) ([d579f04](https://github.com/mikro-orm/mikro-orm/commit/d579f04aaf969c876d4630aab1369e369ad1807e))
-* **sql:** normalize trigger bodies when generating DDL ([#8063](https://github.com/mikro-orm/mikro-orm/issues/8063)) ([32da92f](https://github.com/mikro-orm/mikro-orm/commit/32da92ff4f0d1af47db62a30e82cc4a0d6117839)), closes [#8061](https://github.com/mikro-orm/mikro-orm/issues/8061)
-
-
-
-
+- **mssql:** execute `create trigger` in its own query batch ([#8072](https://github.com/mikro-orm/mikro-orm/issues/8072)) ([5d0420e](https://github.com/mikro-orm/mikro-orm/commit/5d0420edebc27454c09bba22ea7baf637d7c70e0))
+- **mssql:** manage table and column comments via extended properties ([#8076](https://github.com/mikro-orm/mikro-orm/issues/8076)) ([d579f04](https://github.com/mikro-orm/mikro-orm/commit/d579f04aaf969c876d4630aab1369e369ad1807e))
+- **sql:** normalize trigger bodies when generating DDL ([#8063](https://github.com/mikro-orm/mikro-orm/issues/8063)) ([32da92f](https://github.com/mikro-orm/mikro-orm/commit/32da92ff4f0d1af47db62a30e82cc4a0d6117839)), closes [#8061](https://github.com/mikro-orm/mikro-orm/issues/8061)
 
 ## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
 

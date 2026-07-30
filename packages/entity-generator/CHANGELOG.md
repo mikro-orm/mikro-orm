@@ -5,15 +5,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
 
-
 ### Bug Fixes
 
-* **entity-generator:** correctly escape generated string literals and keys ([#8048](https://github.com/mikro-orm/mikro-orm/issues/8048)) ([adf2b84](https://github.com/mikro-orm/mikro-orm/commit/adf2b84c069bae7d91ae2e66126db4241d45cf89))
-* **entity-generator:** sanitize file names taken from database metadata ([#8052](https://github.com/mikro-orm/mikro-orm/issues/8052)) ([4efac39](https://github.com/mikro-orm/mikro-orm/commit/4efac398acb84014a3d0414b2c09fef06bc82afa))
-
-
-
-
+- **entity-generator:** correctly escape generated string literals and keys ([#8048](https://github.com/mikro-orm/mikro-orm/issues/8048)) ([adf2b84](https://github.com/mikro-orm/mikro-orm/commit/adf2b84c069bae7d91ae2e66126db4241d45cf89))
+- **entity-generator:** sanitize file names taken from database metadata ([#8052](https://github.com/mikro-orm/mikro-orm/issues/8052)) ([4efac39](https://github.com/mikro-orm/mikro-orm/commit/4efac398acb84014a3d0414b2c09fef06bc82afa))
 
 ## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
 

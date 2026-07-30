@@ -5,14 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
 
-
 ### Bug Fixes
 
-* **sql:** apply query cancellation strategies inside transactions ([#8067](https://github.com/mikro-orm/mikro-orm/issues/8067)) ([11525e3](https://github.com/mikro-orm/mikro-orm/commit/11525e36bb0d3f13921059d64fe1c5ffe4125c36))
-
-
-
-
+- **sql:** apply query cancellation strategies inside transactions ([#8067](https://github.com/mikro-orm/mikro-orm/issues/8067)) ([11525e3](https://github.com/mikro-orm/mikro-orm/commit/11525e36bb0d3f13921059d64fe1c5ffe4125c36))
 
 ## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
 
