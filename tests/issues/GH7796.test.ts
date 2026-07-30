@@ -55,7 +55,7 @@ describe('GH #7796 — snapshot flip-flop between migration:create and migration
       dbName: DB,
       port: 3308,
       user: 'root',
-      migrations: { path: PATH, snapshot: true },
+      migrations: { path: PATH, snapshot: true, silent: true },
       extensions: [Migrator],
     });
     await rm(PATH, { recursive: true, force: true });
