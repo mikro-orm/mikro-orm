@@ -43,6 +43,10 @@ test('a backend terminated mid-query rejects that query without crashing the pro
     // the marker and the database filter keep us from terminating a backend of some other test file
     // running concurrently against the same server — several of them also sleep on purpose
     const victim = orm.em.fork().execute(`select pg_sleep(30) /* terminated_connection_probe */`);
+    // assert up front so the rejection always has a handler. Attaching one only after the kill below
+    // leaves a window where the query can reject unobserved, which vitest reports as an unhandled
+    // rejection and a failed run even though every assertion here passes.
+    const victimRejected = expect(victim).rejects.toThrow();
     // give the query time to reach the server so it holds a checked-out connection
     await new Promise(resolve => setTimeout(resolve, 300));
 
@@ -54,7 +58,7 @@ test('a backend terminated mid-query rejects that query without crashing the pro
     expect(backends).toHaveLength(1);
     await killer.execute(`select pg_terminate_backend(${backends[0].pid})`);
 
-    await expect(victim).rejects.toThrow();
+    await victimRejected;
 
     // the socket only closes after the query rejects, so the 'error' event lands here
     await new Promise(resolve => setTimeout(resolve, 500));
