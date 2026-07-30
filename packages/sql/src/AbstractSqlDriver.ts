@@ -1992,9 +1992,12 @@ export abstract class AbstractSqlDriver<
     const childExclude = !Utils.isEmpty(options?.exclude)
       ? options!.exclude!.map(f => `${inverseProp!.name}.${f}`)
       : [];
-    // the owner relation is virtual, so the FK columns have to be selected via the per-column pivot
-    // props a composite owner PK gets; a single column owner PK is covered by the flat prop itself
-    const ownerFields = ownerMeta.compositePK ? prop.joinColumns : [prop.discriminator!];
+    // the owner relation is virtual, so its FK columns have to be selected via the pivot props that
+    // cover them; only the first owner of a shared pivot gets the flat prop named after the
+    // discriminator, and it keeps that owner's columns, so later owners get per-column props instead
+    const ownerFields = Utils.unique(
+      prop.joinColumns.map(col => (pivotMeta.properties[col] ? col : prop.discriminator!)),
+    );
     const fields = pivotJoin
       ? ([inverseProp!.name, ...ownerFields, prop.discriminatorColumn!] as any[])
       : [inverseProp!.name, ...ownerFields, prop.discriminatorColumn!, ...childFields];
