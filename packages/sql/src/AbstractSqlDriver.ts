@@ -3064,7 +3064,24 @@ export abstract class AbstractSqlDriver<
 
     for (const prop of meta.relations) {
       if (prop.kind === ReferenceKind.MANY_TO_MANY && data[prop.name]) {
-        ret[prop.name] = data[prop.name].map((item: Primary<T>) => Utils.asArray(item));
+        // union targets are validated to have a single PK column, so a pivot row is always keyed
+        // by exactly `[discriminator, pk]` - anything else cannot address a target table
+        const discriminators = QueryHelper.isUnionTargetPolymorphic(prop)
+          ? Object.keys(prop.discriminatorMap!)
+          : undefined;
+        ret[prop.name] = data[prop.name].map((item: Primary<T>) => {
+          const values = Utils.asArray(item);
+
+          if (discriminators && !(values.length === 2 && discriminators.includes('' + values[0]))) {
+            throw new Error(
+              `Cannot resolve the discriminator value of ${meta.className}.${prop.name} from '${values.join(', ')}', ` +
+                `as the same primary key can exist in any of the target tables. ` +
+                `Pass the target as a [discriminator, ...primaryKey] tuple, e.g. ${JSON.stringify([discriminators[0], ...values])}.`,
+            );
+          }
+
+          return values;
+        });
         delete data[prop.name];
       }
     }

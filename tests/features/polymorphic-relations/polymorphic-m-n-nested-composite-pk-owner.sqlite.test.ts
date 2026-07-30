@@ -19,8 +19,7 @@ class Param {
   baz!: number;
 }
 
-// the owner's composite PK contains a relation to another composite PK entity, so the pivot
-// FK is nested while the owner PKs are flat - the two only line up when both get flattened
+// the composite PK contains a relation to another composite PK entity, so the pivot FK is nested
 @Entity()
 class NestedTag {
   [PrimaryKeyProp]?: ['param', 'qux'];
@@ -120,16 +119,8 @@ test('union target polymorphic M:N with nested composite PK owner', async () => 
   await em.insert(Param, { bar: 5, baz: 6 });
   await em.insert(Image, { id: 20, url: 'i1' });
   await em.insert(Clip, { id: 21, src: 'c1' });
-  await em.insert(NestedPost, { param: [5, 6], qux: 7 });
-  await em.insert(NestedPost, { param: [5, 6], qux: 8 });
-  // written directly, as persisting a union target pivot from a nested composite PK owner
-  // drops the trailing PK columns - a separate bug on the write path
-  await em
-    .getConnection()
-    .execute(
-      'insert into attachables (nested_post_param_bar, nested_post_param_baz, nested_post_qux, attachable_type, attachable_id) values (5, 6, 7, ?, 20), (5, 6, 8, ?, 21)',
-      ['image', 'clip'],
-    );
+  await em.insert(NestedPost, { param: [5, 6], qux: 7, attachments: [['image', 20]] as never });
+  await em.insert(NestedPost, { param: [5, 6], qux: 8, attachments: [['clip', 21]] as never });
 
   const posts = await em
     .fork()
