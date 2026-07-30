@@ -606,7 +606,9 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     let i = 0;
 
     for (const line of lines) {
-      if (line.trim() === '') {
+      const stmt = line.trim();
+
+      if (stmt === '') {
         if (groups[i]?.length > 0) {
           i++;
         }
@@ -614,8 +616,13 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         continue;
       }
 
+      // same boundary an empty line creates, for statements that have to start their own batch
+      if (groups[i]?.length > 0 && this.startsBatch(stmt)) {
+        i++;
+      }
+
       groups[i] ??= [];
-      groups[i].push(line.trim());
+      groups[i].push(stmt);
     }
 
     if (groups.length === 0) {
@@ -639,6 +646,11 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         .filter(s => s);
     });
     await Utils.runSerial(statements, stmt => this.driver.execute(stmt));
+  }
+
+  /** Whether the statement has to be the first one in a query batch, e.g. `create trigger` on MSSQL. */
+  protected startsBatch(_statement: string): boolean {
+    return false;
   }
 
   async dropTableIfExists(name: string, schema?: string): Promise<void> {
