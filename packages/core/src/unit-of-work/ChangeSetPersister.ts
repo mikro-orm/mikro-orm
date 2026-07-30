@@ -20,7 +20,7 @@ import { helper } from '../entity/wrap.js';
 import { ChangeSetType, type ChangeSet } from './ChangeSet.js';
 import type { QueryResult } from '../connections/Connection.js';
 import { isRaw } from '../utils/RawQueryFragment.js';
-import { Utils } from '../utils/Utils.js';
+import { equals, Utils } from '../utils/Utils.js';
 import { type Configuration } from '../utils/Configuration.js';
 import { type EntityComparator } from '../utils/EntityComparator.js';
 import type { DriverMethodOptions, IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
@@ -519,7 +519,8 @@ export class ChangeSetPersister {
     const res = await this.#driver.find<T>(meta.root.class, { $or } as FilterQuery<T>, options);
 
     if (res.length !== changeSets.length) {
-      const compare = (a: Dictionary, b: Dictionary, keys: string[]) => keys.every(k => a[k] === b[k]);
+      // a FK pointing to a composite PK is an array, so the values need to be compared deeply
+      const compare = (a: Dictionary, b: Dictionary, keys: string[]) => keys.every(k => equals(a[k], b[k]));
       const entity = changeSets.find(cs => {
         return !res.some(row => compare(Utils.getPrimaryKeyCond(cs.entity, primaryKeys)!, row, primaryKeys));
       })!.entity;
