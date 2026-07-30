@@ -379,16 +379,54 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     // Split SQL by statement boundaries (semicolons followed by newline) rather than
     // just newlines, to preserve multiline statements like view definitions.
     // Blank lines (from double newlines) are preserved as empty strings for grouping.
-    // Splits inside single-quoted string literals are re-merged (GH #7185).
+    // Splits inside single-quoted string literals (GH #7185) or dollar-quoted blocks
+    // like PL/pgSQL function bodies (GH #8061) are re-merged.
     const splitStatements = (sql: string) => {
       const result: string[] = [];
       let buf = '';
 
+      // an unterminated single-quoted string or dollar-quoted block ($$ or $tag$) means the boundary is inside a literal
+      const insideLiteral = (s: string) => {
+        let inString = false;
+        let dollarTag: string | null = null;
+
+        for (let i = 0; i < s.length; i++) {
+          if (dollarTag) {
+            if (s.startsWith(dollarTag, i)) {
+              i += dollarTag.length - 1;
+              dollarTag = null;
+            }
+
+            continue;
+          }
+
+          if (inString) {
+            inString = s[i] !== `'`;
+            continue;
+          }
+
+          if (s[i] === `'`) {
+            inString = true;
+            continue;
+          }
+
+          if (s[i] === '$') {
+            const match = /^\$(?:[a-z_]\w*)?\$/i.exec(s.slice(i));
+
+            if (match) {
+              dollarTag = match[0];
+              i += dollarTag.length - 1;
+            }
+          }
+        }
+
+        return inString || dollarTag !== null;
+      };
+
       for (const chunk of sql.split(/;\n/)) {
         buf += (buf ? ';\n' : '') + chunk;
 
-        // odd number of single quotes means we're inside a string literal
-        if (buf.split(`'`).length % 2 === 0) {
+        if (insideLiteral(buf)) {
           continue;
         }
 
