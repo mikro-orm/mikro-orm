@@ -62,6 +62,62 @@ describe('non-unique fixed order column', () => {
   });
 });
 
+const Tenant = defineEntity({
+  name: 'Tenant',
+  properties: {
+    tenant: p.integer().primary(),
+    id: p.integer().primary(),
+    name: p.string(),
+    books: () =>
+      p
+        .manyToMany(Book)
+        .pivotTable('tenant_books')
+        .fixedOrderColumn('sort_order')
+        .joinColumns('tenant_tenant', 'tenant_id')
+        .inverseJoinColumns('book_id'),
+  },
+});
+
+describe('non-unique fixed order column with a composite key owner', () => {
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      entities: [Tenant, Book],
+      dbName: ':memory:',
+    });
+
+    await orm.schema.execute(`
+      create table book (id integer primary key, title text not null);
+      create table tenant (tenant integer not null, id integer not null, name text not null, primary key (tenant, id));
+      create table tenant_books (
+        tenant_tenant integer not null,
+        tenant_id integer not null,
+        book_id integer not null,
+        sort_order integer not null,
+        primary key (tenant_tenant, tenant_id, book_id)
+      );
+      insert into book (id, title) values (1, 'Shared'), (2, 'B2'), (3, 'B3');
+      insert into tenant (tenant, id, name) values (1, 1, 'T1'), (1, 2, 'T2');
+      insert into tenant_books (tenant_tenant, tenant_id, book_id, sort_order)
+        values (1, 1, 1, 10), (1, 1, 2, 11), (1, 2, 1, 10), (1, 2, 3, 12);
+    `);
+  });
+
+  afterAll(async () => {
+    await orm.close(true);
+  });
+
+  test('populating m:n keeps shared items on every owner', async () => {
+    const tenants = await orm.em.fork().find(Tenant, {}, { populate: ['books'], orderBy: { id: 'asc' } });
+
+    expect(tenants.map(t => t.books.getItems().map(b => b.id))).toEqual([
+      [1, 2],
+      [1, 3],
+    ]);
+  });
+});
+
 const Tag = defineEntity({
   name: 'Tag',
   properties: {

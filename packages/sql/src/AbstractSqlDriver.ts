@@ -2435,7 +2435,11 @@ export abstract class AbstractSqlDriver<
       if (pivotRelations.length > 0) {
         pk = Utils.getPrimaryKeyHash([
           pk,
-          ...pivotRelations.map(p => Utils.extractPK(item[p.name as EntityKey<T>], p.targetMeta) as string),
+          ...pivotRelations.flatMap(p => {
+            const value = item[p.name as EntityKey<T>];
+            // composite FKs are mapped to an array of values, which `extractPK` does not accept
+            return (Array.isArray(value) ? value : Utils.extractPK(value, p.targetMeta)) as string | string[];
+          }),
         ]);
       }
 
