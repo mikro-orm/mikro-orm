@@ -1171,7 +1171,9 @@ export class SchemaComparator {
           // Remove AS keyword (optional in SQL, MySQL may add/remove it)
           .replace(/\bas\b/gi, '')
           // Remove remaining special chars, parentheses, type casts, asterisks, and normalize whitespace
-          .replace(/[()\n[\]*]|::\w+| +/g, '')
+          // tabs and CRs included — the schema generator trims every line before executing the DDL,
+          // so indentation and CRLF endings can never come back from introspection
+          .replace(/[()\n\r\t[\]*]|::\w+| +/g, '')
           .replace(/anyarray\[(.*)]/gi, '$1')
           .toLowerCase()
           // PostgreSQL adds default aliases to aggregate functions (e.g., count(*) AS count)
