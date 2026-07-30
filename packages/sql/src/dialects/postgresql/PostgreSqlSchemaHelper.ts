@@ -721,7 +721,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const fnName = this.getSchemaQualifiedTriggerFnName(table, trigger);
     const triggerName = this.platform.quoteIdentifier(trigger.name);
 
-    const fnSql = `create or replace function ${fnName}() returns trigger as $$ begin ${trigger.body}; end; $$ language plpgsql`;
+    const fnSql = `create or replace function ${fnName}() returns trigger as $$ begin ${this.normalizeTriggerBody(trigger.body)} end; $$ language plpgsql`;
     const triggerSql = `create trigger ${triggerName} ${timing} ${events} on ${table.getQuotedName()} for each ${forEach}${when} execute function ${fnName}()`;
 
     return `${fnSql};\n${triggerSql}`;

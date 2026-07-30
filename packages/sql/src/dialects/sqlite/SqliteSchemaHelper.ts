@@ -787,7 +787,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
       const name = trigger.events.length > 1 ? `${trigger.name}_${event}` : trigger.name;
       const when = trigger.when ? `\n  when ${trigger.when}` : '';
       ret.push(
-        `create trigger ${this.quote(name)} ${timing} ${event.toUpperCase()} on ${table.getQuotedName()} for each ${forEach}${when} begin ${trigger.body}; end`,
+        `create trigger ${this.quote(name)} ${timing} ${event.toUpperCase()} on ${table.getQuotedName()} for each ${forEach}${when} begin ${this.normalizeTriggerBody(trigger.body)} end`,
       );
     }
 
