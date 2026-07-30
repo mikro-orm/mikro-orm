@@ -252,6 +252,8 @@ export abstract class AbstractSqlConnection extends Connection {
     loggerContext?: LogContext,
   ): Promise<void> {
     await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionRollback, ctx);
+    await this.waitForIdleTransaction(ctx);
+
     if ('savepointName' in ctx) {
       await ctx.rollbackToSavepoint(ctx.savepointName).execute();
       this.logQuery(this.platform.getRollbackToSavepointSQL(ctx.savepointName as string), loggerContext);
@@ -261,6 +263,18 @@ export abstract class AbstractSqlConnection extends Connection {
     }
 
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
+  }
+
+  /**
+   * Waits until the transaction's connection has no query in flight. Kysely runs `rollback` straight
+   * on that connection instead of going through its connection provider, so a rollback caused by an
+   * aborted query would otherwise be sent while the aborted query is still running. That not only
+   * queues the rollback behind it on the server, it also overwrites the query id Kysely compares
+   * against before firing the `'cancel query'`/`'kill session'` control statement — the control
+   * statement is then discarded as stale and the abort never reaches the database.
+   */
+  private async waitForIdleTransaction(ctx: ControlledTransaction<any, any>): Promise<void> {
+    await ctx.getExecutor().provideConnection(async () => undefined);
   }
 
   private prepareQuery(
