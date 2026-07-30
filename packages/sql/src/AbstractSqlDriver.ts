@@ -1601,7 +1601,8 @@ export abstract class AbstractSqlDriver<
       : `(${pks.map(pk => `${this.platform.quoteIdentifier(pk)} = ?`).join(' and ')})`;
 
     const conds = where.map(cond => {
-      if (Utils.isPlainObject(cond) && Utils.getObjectKeysSize(cond) === 1) {
+      // with multiple PK columns the condition is looked up by property name, so it needs to stay an object
+      if (pks.length === 1 && Utils.isPlainObject(cond) && Utils.getObjectKeysSize(cond) === 1) {
         cond = Object.values(cond)[0] as object;
       }
 

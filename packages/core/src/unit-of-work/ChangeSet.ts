@@ -1,4 +1,4 @@
-import type { EntityData, EntityMetadata, EntityDictionary, Primary, Dictionary, EntityKey } from '../typings.js';
+import type { EntityData, EntityMetadata, EntityDictionary, Primary, Dictionary } from '../typings.js';
 import { helper } from '../entity/wrap.js';
 import { Utils } from '../utils/Utils.js';
 import { inspect } from '../logging/inspect.js';
@@ -29,18 +29,21 @@ export class ChangeSet<T extends object> {
       this.primaryKey = (this.originalEntity as T)[this.meta.primaryKeys[0]] as Primary<T>;
     }
 
-    if (
-      !this.meta.compositePK &&
-      this.meta.getPrimaryProp().targetMeta?.compositePK &&
-      typeof this.primaryKey === 'object' &&
-      this.primaryKey !== null
-    ) {
-      this.primaryKey = this.meta.getPrimaryProp().targetMeta!.primaryKeys.map(childPK => {
-        return this.primaryKey![childPK as EntityKey];
-      }) as Primary<T>;
+    const primaryProp = this.meta.getPrimaryProp();
+    const relationPK = !this.meta.compositePK && !!primaryProp.targetMeta?.compositePK;
+
+    // arrays are already the ordered tuple of the target's primary keys
+    if (relationPK && Utils.isPlainObject(this.primaryKey)) {
+      const pk = this.primaryKey as Dictionary;
+      this.primaryKey = primaryProp.targetMeta!.primaryKeys.map(childPK => pk[childPK]) as Primary<T>;
     }
 
     if (object && this.primaryKey != null) {
+      // the whole tuple belongs to the single relation PK, it must not be spread over the (single) PK prop
+      if (relationPK) {
+        return { [primaryProp.name]: this.primaryKey } as any;
+      }
+
       return Utils.primaryKeyToObject(this.meta, this.primaryKey) as any;
     }
 
