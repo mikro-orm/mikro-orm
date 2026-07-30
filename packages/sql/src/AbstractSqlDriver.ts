@@ -1966,11 +1966,16 @@ export abstract class AbstractSqlDriver<
   ): Promise<Dictionary<T[]>> {
     const pivotMeta = this.metadata.get(prop.pivotEntity);
     const targetMeta = prop.targetMeta!;
+    // `prop.discriminator` spans all owner FK columns but carries no target metadata, so a composite
+    // owner PK neither expands to a tuple condition nor gets mapped back; the virtual M:1 relation
+    // to this discriminator's owner describes the same columns as an actual relation
+    const ownerMeta = this.metadata.get<O>(pivotMeta.polymorphicDiscriminatorMap![prop.discriminatorValue!]);
+    const ownerProp = pivotMeta.properties[`${prop.discriminator}_${ownerMeta.tableName}`];
 
-    // Build condition: discriminator = 'post' AND {discriminator} IN (...)
+    // Build condition: discriminator = 'post' AND {owner} IN (...)
     const cond: Dictionary = {
       [prop.discriminatorColumn!]: prop.discriminatorValue,
-      [prop.discriminator!]: { $in: owners.length === 1 && owners[0].length === 1 ? owners.map(o => o[0]) : owners },
+      [ownerProp.name]: { $in: owners.length === 1 && owners[0].length === 1 ? owners.map(o => o[0]) : owners },
     };
 
     if (!Utils.isEmpty(where)) {
@@ -1987,9 +1992,12 @@ export abstract class AbstractSqlDriver<
     const childExclude = !Utils.isEmpty(options?.exclude)
       ? options!.exclude!.map(f => `${inverseProp!.name}.${f}`)
       : [];
+    // the owner relation is virtual, so the FK columns have to be selected via the per-column pivot
+    // props a composite owner PK gets; a single column owner PK is covered by the flat prop itself
+    const ownerFields = ownerMeta.compositePK ? prop.joinColumns : [prop.discriminator!];
     const fields = pivotJoin
-      ? ([inverseProp!.name, prop.discriminator!, prop.discriminatorColumn!] as any[])
-      : [inverseProp!.name, prop.discriminator!, prop.discriminatorColumn!, ...childFields];
+      ? ([inverseProp!.name, ...ownerFields, prop.discriminatorColumn!] as any[])
+      : [inverseProp!.name, ...ownerFields, prop.discriminatorColumn!, ...childFields];
 
     const res = await this.find(pivotMeta.class, cond as FilterQuery<any>, {
       ctx,
@@ -2012,7 +2020,7 @@ export abstract class AbstractSqlDriver<
       populateFilter: this.wrapPopulateFilter(options, inverseProp!.name),
     });
 
-    return this.buildPivotResultMap(owners, res, prop.discriminator!, inverseProp!.name);
+    return this.buildPivotResultMap(owners, res, ownerProp.name, inverseProp!.name, ownerMeta);
   }
 
   /**
