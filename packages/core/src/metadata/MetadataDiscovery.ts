@@ -1090,7 +1090,7 @@ export class MetadataDiscovery {
       discriminatorColumn,
       [this.#platform.getVarcharTypeDeclarationSQL(prop)],
       [discriminatorColumn],
-      { type: 'string', primary: !isCompositePK, nullable: false },
+      { type: 'string', primary: !prop.fixedOrder, nullable: false },
     );
     this.initFieldName(discriminatorProp);
     pivotMeta.properties[discriminatorColumn] = discriminatorProp;
@@ -1116,7 +1116,7 @@ export class MetadataDiscovery {
         prop.discriminator!,
         columnTypes,
         [...prop.joinColumns],
-        { type: meta.className, primary: true, nullable: false },
+        { type: meta.className, primary: !prop.fixedOrder, nullable: false },
       );
     }
 
@@ -1167,7 +1167,7 @@ export class MetadataDiscovery {
       discriminatorColumn,
       [this.#platform.getVarcharTypeDeclarationSQL(prop)],
       [discriminatorColumn],
-      { type: 'string', primary: true, nullable: false },
+      { type: 'string', primary: !prop.fixedOrder, nullable: false },
     );
     this.initFieldName(discriminatorProp);
     pivotMeta.properties[discriminatorColumn] = discriminatorProp;
@@ -1177,7 +1177,7 @@ export class MetadataDiscovery {
       prop.discriminator!,
       firstTargetColumnTypes,
       [...prop.inverseJoinColumns],
-      { type: targets[0].className, primary: true, nullable: false },
+      { type: targets[0].className, primary: !prop.fixedOrder, nullable: false },
     );
 
     pivotMeta.polymorphicDiscriminatorMap ??= {};
