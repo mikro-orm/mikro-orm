@@ -12,6 +12,7 @@ import {
   isRaw,
   type LoggingOptions,
   type NativeInsertUpdateManyOptions,
+  type Primary,
   QueryFlag,
   type QueryResult,
   ReferenceKind,
@@ -83,7 +84,7 @@ export class OracleDriver extends AbstractSqlDriver<OracleConnection, OraclePlat
 
     if (pks.length > 1) {
       // owner has composite pk
-      pk = data.map(d => Utils.getPrimaryKeyCond(d as T, pks));
+      pk = data.map(d => Utils.getOrderedPrimaryKeys(d as Record<string, Primary<T>>, meta));
     } else {
       res.row ??= {};
       res.rows ??= [];
