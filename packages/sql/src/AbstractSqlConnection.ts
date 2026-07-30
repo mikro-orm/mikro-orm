@@ -162,7 +162,15 @@ export abstract class AbstractSqlConnection extends Connection {
 
       return ret;
     } catch (error) {
-      await this.rollback(trx, options.eventBroadcaster, options.loggerContext);
+      // A failing rollback must not mask why the transaction failed in the first place — the
+      // `'kill session'` abort strategy tears the connection down, so the rollback that follows can
+      // only ever report the dead connection.
+      try {
+        await this.rollback(trx, options.eventBroadcaster, options.loggerContext);
+      } catch (rollbackError: any) {
+        this.logger.warn('query', `Failed to roll back transaction: ${rollbackError.message}`);
+      }
+
       throw error;
     }
   }

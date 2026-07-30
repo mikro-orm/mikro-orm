@@ -655,4 +655,20 @@ describe('Transaction Propagation - SQLite', () => {
     const count = await orm.em.count(TestEntity);
     expect(count).toBe(1); // Only outer entity should exist
   });
+
+  test('a failing rollback does not mask the error that caused it', async () => {
+    const em = orm.em.fork();
+    const rollback = vi
+      .spyOn(em.getConnection(), 'rollback')
+      .mockRejectedValue(new Error('Connection terminated unexpectedly'));
+
+    await expect(
+      em.transactional(async () => {
+        throw new Error('why the transaction failed');
+      }),
+    ).rejects.toThrow('why the transaction failed');
+
+    expect(rollback).toHaveBeenCalled();
+    rollback.mockRestore();
+  });
 });
