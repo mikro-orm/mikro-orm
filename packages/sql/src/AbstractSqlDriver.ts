@@ -2417,8 +2417,19 @@ export abstract class AbstractSqlDriver<
       return { propName, ref, children: hint.children };
     });
 
+    // with `fixedOrder` the pivot PK is the order column, which is not guaranteed to be unique when the
+    // pivot table is managed externally, so we disambiguate the rows by their FKs on top of the PK
+    const pivotRelations = meta.pivotTable && !meta.compositePK ? meta.relations.filter(p => p.persist !== false) : [];
+
     for (const item of rawResults) {
-      const pk = Utils.getCompositeKeyHash(item, meta);
+      let pk = Utils.getCompositeKeyHash(item, meta);
+
+      if (pivotRelations.length > 0) {
+        pk = Utils.getPrimaryKeyHash([
+          pk,
+          ...pivotRelations.map(p => Utils.extractPK(item[p.name as EntityKey<T>], p.targetMeta) as string),
+        ]);
+      }
 
       if (map[pk]) {
         for (const { propName } of hints) {
