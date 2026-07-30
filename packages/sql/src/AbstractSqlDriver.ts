@@ -1922,7 +1922,7 @@ export abstract class AbstractSqlDriver<
       }
     }
 
-    return this.buildPivotResultMap(owners, res, pivotProp2.name, pivotProp1.name);
+    return this.buildPivotResultMap(owners, res, pivotProp2.name, pivotProp1.name, ownerMeta);
   }
 
   /**
@@ -2080,7 +2080,7 @@ export abstract class AbstractSqlDriver<
       populateFilter: this.wrapPopulateFilter(options, ownerRelationName),
     });
 
-    return this.buildPivotResultMap(owners, res, tagProp.name, ownerRelationName);
+    return this.buildPivotResultMap(owners, res, tagProp.name, ownerRelationName, tagProp.targetMeta);
   }
 
   /**
@@ -2203,7 +2203,7 @@ export abstract class AbstractSqlDriver<
     }
 
     const result = orphanedRows.size > 0 ? pivotRows.filter(r => !orphanedRows.has(r)) : pivotRows;
-    return this.buildPivotResultMap<T, O>(owners, result, ownerProp.name, prop.discriminator!);
+    return this.buildPivotResultMap<T, O>(owners, result, ownerProp.name, prop.discriminator!, ownerMeta);
   }
 
   /**
@@ -2214,6 +2214,7 @@ export abstract class AbstractSqlDriver<
     results: object[],
     keyProp: string,
     valueProp: string,
+    ownerMeta?: EntityMetadata<O>,
   ): Dictionary<T[]> {
     const map: Dictionary<T[]> = {};
 
@@ -2223,7 +2224,11 @@ export abstract class AbstractSqlDriver<
     }
 
     for (const item of results) {
-      const key = Utils.getPrimaryKeyHash(Utils.asArray((item as any)[keyProp]));
+      const fk = (item as any)[keyProp];
+      // the owner PKs are always flat, while the pivot FK follows the owner PK structure,
+      // so a PK built from a relation to another composite PK entity needs flattening too
+      const pks = ownerMeta && fk != null ? Utils.getOrderedPrimaryKeys(fk, ownerMeta) : Utils.asArray(fk);
+      const key = Utils.getPrimaryKeyHash(pks as string[]);
       const entity = (item as any)[valueProp] as T;
 
       if (map[key]) {
