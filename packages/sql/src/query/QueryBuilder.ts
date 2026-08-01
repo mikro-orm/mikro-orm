@@ -2638,7 +2638,10 @@ export class QueryBuilder<
 
     if (stack.length > 0) {
       const merged = this.driver.mergeJoinedResult(stack, this.mainAlias.meta, joinedProps);
-      yield this.mapResult(merged[0], options.mapResults);
+
+      for (const row of merged) {
+        yield this.mapResult(row, options.mapResults);
+      }
     }
   }
 
