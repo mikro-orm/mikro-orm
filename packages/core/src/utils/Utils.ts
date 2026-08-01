@@ -522,7 +522,8 @@ export class Utils {
     let pks = this.getCompositeKeyValue(data, meta, convertCustomTypes, platform);
 
     if (flat) {
-      pks = Utils.flatten(pks as unknown[][]) as Primary<T>;
+      // deep flatten, nested composite PKs produce nested arrays that would be comma-joined by the hash
+      pks = Utils.flatten(pks as unknown[][], true) as Primary<T>;
     }
 
     return Utils.getPrimaryKeyHash(pks as string[]);

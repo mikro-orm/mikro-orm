@@ -2440,7 +2440,8 @@ export abstract class AbstractSqlDriver<
       meta.pivotTable && !meta.compositePK ? meta.relations.filter(p => p.kind === ReferenceKind.MANY_TO_ONE) : [];
 
     for (const item of rawResults) {
-      let pk = Utils.getCompositeKeyHash(item, meta);
+      // flat hash, so nested composite PK values keep their own separators and cannot collide
+      let pk = Utils.getCompositeKeyHash(item, meta, false, undefined, true);
 
       if (pivotRelations.length > 0) {
         pk = Utils.getPrimaryKeyHash([
@@ -2448,7 +2449,9 @@ export abstract class AbstractSqlDriver<
           ...pivotRelations.flatMap(p => {
             const value = item[p.name as EntityKey<T>];
             // composite FKs are mapped to an array of values, which `extractPK` does not accept
-            return (Array.isArray(value) ? value : Utils.extractPK(value, p.targetMeta)) as string | string[];
+            return (Array.isArray(value) ? Utils.flatten(value, true) : Utils.extractPK(value, p.targetMeta)) as
+              | string
+              | string[];
           }),
         ]);
       }
