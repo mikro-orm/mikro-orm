@@ -121,6 +121,13 @@ type IsNever<T, True = true, False = false> = [T] extends [never] ? True : False
 type GetAlias<T extends string> = T extends `${infer A}.${string}` ? A : never;
 type GetPropName<T extends string> = T extends `${string}.${infer P}` ? P : T;
 type AppendToHint<Parent extends string, Child extends string> = `${Parent}.${Child}`;
+/**
+ * Extracts the entity type from a query builder via its main alias. Matching against
+ * `QueryBuilder<infer T>` is unreliable once another generic, such as selected fields,
+ * differs from its default.
+ */
+type QueryBuilderEntity<Q extends QueryBuilder<any>> =
+  Q['mainAlias'] extends Alias<infer T extends object> ? T : object;
 
 /**
  * Context tuple format: [Path, Alias, Type, Select]
@@ -322,7 +329,7 @@ export type Field<Entity, RootAlias extends string = never, Context = never> =
   | (IsNever<RootAlias> extends true ? never : WithAlias<`${RootAlias}.${EntityKey<Entity>}`> | `${RootAlias}.*`)
   | ([Context] extends [never] ? never : WithAlias<ContextFieldKeys<Context>> | `${AliasNames<Context>}.*`)
   | '*'
-  | QueryBuilder<any>
+  | AnyQueryBuilder
   | NativeQueryBuilder
   | RawQueryFragment<any>
   | (RawQueryFragment & symbol);
@@ -1019,7 +1026,7 @@ export class QueryBuilder<
     ModifyHint<RootAlias, Context, Hint, Field> & {},
     ModifyContext<Entity, Context, Field, Alias>,
     RawAliases,
-    '*',
+    Fields,
     CTEs
   >;
 
@@ -1033,7 +1040,15 @@ export class QueryBuilder<
     type?: JoinType,
     path?: string,
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, Hint, ModifyContext<Entity, Context, string, Alias>, RawAliases, '*', CTEs>;
+  ): SelectQueryBuilder<
+    Entity,
+    RootAlias,
+    Hint,
+    ModifyContext<Entity, Context, string, Alias>,
+    RawAliases,
+    Fields,
+    CTEs
+  >;
 
   join<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
     field: Field | RawQueryFragment | QueryBuilder<any>,
@@ -1048,7 +1063,7 @@ export class QueryBuilder<
     ModifyHint<RootAlias, Context, Hint, Field> & {},
     ModifyContext<Entity, Context, Field, Alias>,
     RawAliases,
-    '*',
+    Fields,
     CTEs
   > {
     this.joinReference(field, alias, cond, type, path, schema);
@@ -1069,7 +1084,7 @@ export class QueryBuilder<
     ModifyHint<RootAlias, Context, Hint, Field> & {},
     ModifyContext<Entity, Context, Field, Alias>,
     RawAliases,
-    '*',
+    Fields,
     CTEs
   >;
 
@@ -1081,7 +1096,15 @@ export class QueryBuilder<
     alias: Alias,
     cond?: RawJoinCondition,
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, Hint, ModifyContext<Entity, Context, string, Alias>, RawAliases, '*', CTEs>;
+  ): SelectQueryBuilder<
+    Entity,
+    RootAlias,
+    Hint,
+    ModifyContext<Entity, Context, string, Alias>,
+    RawAliases,
+    Fields,
+    CTEs
+  >;
 
   innerJoin<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
     field: Field | RawQueryFragment | QueryBuilder<any>,
@@ -1094,7 +1117,7 @@ export class QueryBuilder<
     ModifyHint<RootAlias, Context, Hint, Field> & {},
     ModifyContext<Entity, Context, Field, Alias>,
     RawAliases,
-    '*',
+    Fields,
     CTEs
   > {
     this.join(field as any, alias, cond as any, JoinType.innerJoin, undefined, schema);
@@ -1106,7 +1129,15 @@ export class QueryBuilder<
     alias: Alias,
     cond: RawJoinCondition = {},
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, Hint, ModifyContext<Entity, Context, string, Alias>, RawAliases, '*', CTEs> {
+  ): SelectQueryBuilder<
+    Entity,
+    RootAlias,
+    Hint,
+    ModifyContext<Entity, Context, string, Alias>,
+    RawAliases,
+    Fields,
+    CTEs
+  > {
     return this.join(field, alias, cond as any, JoinType.innerJoinLateral, undefined, schema) as any;
   }
 
@@ -1124,7 +1155,7 @@ export class QueryBuilder<
     ModifyHint<RootAlias, Context, Hint, Field> & {},
     ModifyContext<Entity, Context, Field, Alias>,
     RawAliases,
-    '*',
+    Fields,
     CTEs
   >;
 
@@ -1136,7 +1167,15 @@ export class QueryBuilder<
     alias: Alias,
     cond?: RawJoinCondition,
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, Hint, ModifyContext<Entity, Context, string, Alias>, RawAliases, '*', CTEs>;
+  ): SelectQueryBuilder<
+    Entity,
+    RootAlias,
+    Hint,
+    ModifyContext<Entity, Context, string, Alias>,
+    RawAliases,
+    Fields,
+    CTEs
+  >;
 
   leftJoin<Field extends QBField<Entity, RootAlias, Context>, Alias extends string>(
     field: Field | RawQueryFragment | QueryBuilder<any>,
@@ -1149,7 +1188,7 @@ export class QueryBuilder<
     ModifyHint<RootAlias, Context, Hint, Field> & {},
     ModifyContext<Entity, Context, Field, Alias>,
     RawAliases,
-    '*',
+    Fields,
     CTEs
   > {
     return this.join(field as any, alias, cond as any, JoinType.leftJoin, undefined, schema);
@@ -1160,7 +1199,15 @@ export class QueryBuilder<
     alias: Alias,
     cond: RawJoinCondition = {},
     schema?: string,
-  ): SelectQueryBuilder<Entity, RootAlias, Hint, ModifyContext<Entity, Context, string, Alias>, RawAliases, '*', CTEs> {
+  ): SelectQueryBuilder<
+    Entity,
+    RootAlias,
+    Hint,
+    ModifyContext<Entity, Context, string, Alias>,
+    RawAliases,
+    Fields,
+    CTEs
+  > {
     return this.join(field, alias, cond as any, JoinType.leftJoinLateral, undefined, schema) as any;
   }
 
@@ -1453,6 +1500,7 @@ export class QueryBuilder<
       filterOptions = QueryHelper.mergePropertyFilters(join.prop.filters, filterOptions);
       let cond = await em.applyFilters(join.prop.targetMeta!.class, join.cond, filterOptions, 'read');
       const criteriaNode = CriteriaNodeFactory.createNode<Entity>(this.metadata, join.prop.targetMeta!.class, cond);
+      const joinCountBefore = Object.keys(this.#state.joins).length;
       cond = criteriaNode.process(this as IQueryBuilder<Entity>, {
         matchPopulateJoins: true,
         filter: true,
@@ -1460,6 +1508,7 @@ export class QueryBuilder<
         ignoreBranching: true,
         parentPath: join.path,
       });
+      this.nestNewJoins(join, joinCountBefore);
 
       if (Utils.hasObjectKeys(cond) || RawQueryFragment.hasObjectFragments(cond)) {
         // remove nested filters, we only care about scalars here, nesting would require another join branch
@@ -1508,6 +1557,32 @@ export class QueryBuilder<
           }
         }
       }
+    }
+  }
+
+  /**
+   * Auto-joins added while processing a condition of `condJoin` would render after it and produce a
+   * forward alias reference in its `on` clause. Fold them into `condJoin`, so they render as a single
+   * parenthesized join group and share the scope of the outer `on` clause (issue #7681).
+   */
+  private nestNewJoins(condJoin: JoinOptions | undefined, joinCountBefore: number): void {
+    // m:n pivot joins might not have the target join entry created
+    if (!condJoin) {
+      return;
+    }
+
+    const joinKeys = Object.keys(this.#state.joins);
+
+    for (let i = joinCountBefore; i < joinKeys.length; i++) {
+      const j = this.#state.joins[joinKeys[i]];
+
+      if (j === condJoin || j.ownerAlias !== condJoin.alias) {
+        continue;
+      }
+
+      const nested = (condJoin.nested ??= new Set());
+      j.type = j.type === JoinType.innerJoin ? JoinType.nestedInnerJoin : JoinType.nestedLeftJoin;
+      nested.add(j);
     }
   }
 
@@ -2117,7 +2192,7 @@ export class QueryBuilder<
    * Allows setting a main string alias of the selection data.
    */
   from<Entity extends object>(
-    target: QueryBuilder<Entity>,
+    target: Subquery & { readonly mainAlias: Alias<Entity> },
     aliasName?: string,
   ): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs>;
   /**
@@ -2134,8 +2209,8 @@ export class QueryBuilder<
   from<Name extends string & keyof CTEs, Alias extends string = Name>(
     target: Name,
     aliasName?: Alias,
-  ): SelectQueryBuilder<CTEs[Name], Alias, never, never, never, '*', CTEs>;
-  from(target: EntityName<any> | QueryBuilder<any> | string, aliasName?: string): any {
+  ): SelectQueryBuilder<CTEs[Name], Alias, never, never, never, Fields, CTEs>;
+  from(target: EntityName<any> | Subquery | string, aliasName?: string): any {
     this.ensureNotFinalized();
 
     if (target instanceof QueryBuilder) {
@@ -2143,7 +2218,11 @@ export class QueryBuilder<
     } else if (typeof target === 'string' && !this.metadata.find(target as any)) {
       this.fromRawTable(target, aliasName);
     } else {
-      if (aliasName && this.#state.mainAlias && Utils.className(target) !== this.#state.mainAlias.aliasName) {
+      if (
+        aliasName &&
+        this.#state.mainAlias &&
+        Utils.className(target as EntityName<any>) !== this.#state.mainAlias.aliasName
+      ) {
         throw new Error(
           `Cannot override the alias to '${aliasName}' since a query already contains references to '${this.#state.mainAlias.aliasName}'`,
         );
@@ -2587,7 +2666,10 @@ export class QueryBuilder<
 
     if (stack.length > 0) {
       const merged = this.driver.mergeJoinedResult(stack, this.mainAlias.meta, joinedProps);
-      yield this.mapResult(merged[0], options.mapResults);
+
+      for (const row of merged) {
+        yield this.mapResult(row, options.mapResults);
+      }
     }
   }
 
@@ -2753,7 +2835,9 @@ export class QueryBuilder<
    * const results = await em.find(Employee, { id: { $in: subquery } });
    * ```
    */
-  unionAll(...others: (QueryBuilder<any> | NativeQueryBuilder)[]): QueryBuilder<Entity> {
+  unionAll(
+    ...others: (QueryBuilder<any> | NativeQueryBuilder)[]
+  ): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs> {
     return this.buildUnionQuery('union all', others);
   }
 
@@ -2771,14 +2855,16 @@ export class QueryBuilder<
    * const results = await em.find(Employee, { id: { $in: subquery } });
    * ```
    */
-  union(...others: (QueryBuilder<any> | NativeQueryBuilder)[]): QueryBuilder<Entity> {
+  union(
+    ...others: (QueryBuilder<any> | NativeQueryBuilder)[]
+  ): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs> {
     return this.buildUnionQuery('union', others);
   }
 
   private buildUnionQuery(
     separator: 'union' | 'union all',
     others: (QueryBuilder<any> | NativeQueryBuilder)[],
-  ): QueryBuilder<Entity> {
+  ): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs> {
     const all = [this as unknown as QueryBuilder<any>, ...others];
     const parts: string[] = [];
     const params: unknown[] = [];
@@ -2789,7 +2875,7 @@ export class QueryBuilder<
       params.push(...compiled.params);
     }
 
-    const result = this.clone(true) as unknown as QueryBuilder<Entity>;
+    const result = this.clone(true);
     result.#state.unionQuery = { sql: parts.join(` ${separator} `), params };
     return result;
   }
@@ -2811,15 +2897,7 @@ export class QueryBuilder<
     name: Name,
     query: Q,
     options?: CteOptions,
-  ): QueryBuilder<
-    Entity,
-    RootAlias,
-    Hint,
-    Context,
-    RawAliases,
-    Fields,
-    CTEs & Record<Name, Q extends QueryBuilder<infer T> ? T : object>
-  >;
+  ): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs & Record<Name, QueryBuilderEntity<Q>>>;
   /**
    * Adds a Common Table Expression (CTE) to the query using a `NativeQueryBuilder` or raw SQL fragment.
    * The CTE name is tracked but without entity type inference — use `from()` to query from it.
@@ -2852,15 +2930,7 @@ export class QueryBuilder<
     name: Name,
     query: Q,
     options?: CteOptions,
-  ): QueryBuilder<
-    Entity,
-    RootAlias,
-    Hint,
-    Context,
-    RawAliases,
-    Fields,
-    CTEs & Record<Name, Q extends QueryBuilder<infer T> ? T : object>
-  >;
+  ): QueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs & Record<Name, QueryBuilderEntity<Q>>>;
   /**
    * Adds a recursive Common Table Expression (CTE) to the query using a `NativeQueryBuilder` or raw SQL fragment.
    * The CTE name is tracked but without entity type inference — use `from()` to query from it.
@@ -3126,23 +3196,7 @@ export class QueryBuilder<
       this.#state.joins[aliasedName].path ??= path;
     }
 
-    // auto-joins added by cond processing that depend on the new alias would otherwise produce a
-    // forward reference (the auto-join's ON refers to alias, while alias's ON refers back to it);
-    // fold them into the new join so both aliases share scope in the outer ON clause (issue #7681)
-    const condJoin = this.#state.joins[aliasedName];
-    const joinKeys = Object.keys(this.#state.joins);
-
-    for (let i = joinCountBefore; i < joinKeys.length; i++) {
-      const j = this.#state.joins[joinKeys[i]];
-
-      if (j === condJoin || j.ownerAlias !== alias) {
-        continue;
-      }
-
-      const nested = (condJoin.nested ??= new Set());
-      j.type = j.type === JoinType.innerJoin ? JoinType.nestedInnerJoin : JoinType.nestedLeftJoin;
-      nested.add(j);
-    }
+    this.nestNewJoins(this.#state.joins[aliasedName], joinCountBefore);
 
     return { prop, key: aliasedName };
   }

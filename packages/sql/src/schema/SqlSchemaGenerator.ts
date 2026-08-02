@@ -601,12 +601,14 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
   override async execute(sql: string, options: { wrap?: boolean; ctx?: Transaction } = {}) {
     options.wrap ??= false;
-    const lines = this.wrapSchema(sql, options).split('\n');
+    const lines = this.splitOutsideLiterals(this.wrapSchema(sql, options), '\n');
     const groups: string[][] = [];
     let i = 0;
 
     for (const line of lines) {
-      if (line.trim() === '') {
+      const stmt = line.trim();
+
+      if (stmt === '') {
         if (groups[i]?.length > 0) {
           i++;
         }
@@ -614,8 +616,13 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
         continue;
       }
 
+      // same boundary an empty line creates, for statements that have to start their own batch
+      if (groups[i]?.length > 0 && this.startsBatch(stmt)) {
+        i++;
+      }
+
       groups[i] ??= [];
-      groups[i].push(line.trim());
+      groups[i].push(stmt);
     }
 
     if (groups.length === 0) {
@@ -632,13 +639,40 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     const statements = groups.flatMap(group => {
-      return group
-        .join('\n')
-        .split(';\n')
+      return this.splitOutsideLiterals(group.join('\n'), ';\n')
         .map(s => s.trim())
         .filter(s => s);
     });
     await Utils.runSerial(statements, stmt => this.driver.execute(stmt));
+  }
+
+  /** Splits the SQL on the separator, keeping the separators that fall inside a string literal. */
+  private splitOutsideLiterals(sql: string, separator: string): string[] {
+    const [idOpen, idClose] = this.platform.quoteIdentifier('');
+    // mysql escapes quotes as `\'`, the other dialects double them, which pairs up on its own
+    const esc = this.platform.quoteValue(`'`).includes(`\\'`) ? '\\\\.|' : '';
+    // complete literals, quoted identifiers and `--` comments, so that an apostrophe inside an
+    // identifier or a comment is not mistaken for one opening a literal
+    const tokens = new RegExp(`'(?:${esc}[^'])*'|\\${idOpen}[^\\${idClose}]*\\${idClose}|--[^\n]*`, 'g');
+    const parts: string[] = [];
+
+    for (const chunk of sql.split(separator)) {
+      const prev = parts.at(-1);
+
+      // whatever quote is left once the complete tokens are gone opened a literal we are still inside of
+      if (prev?.replace(tokens, '').includes(`'`)) {
+        parts[parts.length - 1] = prev + separator + chunk;
+      } else {
+        parts.push(chunk);
+      }
+    }
+
+    return parts;
+  }
+
+  /** Whether the statement has to be the first one in a query batch, e.g. `create trigger` on MSSQL. */
+  protected startsBatch(_statement: string): boolean {
+    return false;
   }
 
   async dropTableIfExists(name: string, schema?: string): Promise<void> {

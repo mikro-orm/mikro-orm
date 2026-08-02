@@ -229,7 +229,11 @@ export class EntityComparator {
     const context = new Map<string, any>();
     context.set('isEntityOrRef', (val: any) => Utils.isEntity(val, true));
     context.set('getCompositeKeyValue', (val: any) =>
-      Utils.flatten(Utils.getCompositeKeyValue(val, meta, 'convertToDatabaseValue', this.#platform) as unknown[][]),
+      // deep flatten, nested composite PKs produce nested arrays that would be comma-joined by the hash
+      Utils.flatten(
+        Utils.getCompositeKeyValue(val, meta, 'convertToDatabaseValue', this.#platform) as unknown[][],
+        true,
+      ),
     );
     context.set('getPrimaryKeyHash', (val: any) => Utils.getPrimaryKeyHash(Utils.asArray(val)));
 
@@ -240,6 +244,9 @@ export class EntityComparator {
           lines.push(
             `    (entity${this.wrap(pk)} != null && isEntityOrRef(entity${this.wrap(pk)})) ? entity${this.wrap(pk)}.__helper.getSerializedPrimaryKey() : entity${this.wrap(pk)},`,
           );
+        } else if (meta.properties[pk].customType) {
+          const convertorKey = this.registerCustomType(meta.properties[pk], context);
+          lines.push(`    convertToDatabaseValue_${convertorKey}(entity${this.wrap(pk)}),`);
         } else {
           lines.push(`    entity${this.wrap(pk)},`);
         }
@@ -603,6 +610,7 @@ export class EntityComparator {
     const padding = ' '.repeat(level * 2);
     const idx = this.#tmpIndex++;
 
+    ret.push(`${padding}if (entity${entityKey} === null) ret${dataKey} = null;`);
     ret.push(`${padding}if (Array.isArray(entity${entityKey})) {`);
     ret.push(`${padding}  ret${dataKey} = [];`);
     ret.push(`${padding}  entity${entityKey}.forEach((_, idx_${idx}) => {`);

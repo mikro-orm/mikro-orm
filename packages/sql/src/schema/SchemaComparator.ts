@@ -1145,9 +1145,16 @@ export class SchemaComparator {
           // lookbehind: only strip a real charset introducer, never an underscore inside a literal like 'a_b'
           ?.replace(/(?<![\w'])_\w+'(.*?)'/g, '$1')
           .replace(/!=/g, '<>')
-          .replace(/in\s*\((.*?)\)/gi, '= any (array[$1])')
+          // `\b` keeps this from firing inside identifiers like `min(...)`
+          .replace(/\bin\s*\((.*?)\)/gi, '= any (array[$1])')
           // MySQL normalizes count(*) to count(0)
           .replace(/\bcount\s*\(\s*0\s*\)/gi, 'count(*)')
+          // multi word type names in casts, the generic `::\w+` below only covers single word ones
+          // the precision is kept, so `timestamptz(3)` and `timestamp(3) with time zone` leave the same residue
+          .replace(
+            /::\s*(?:character\s+varying|bit\s+varying|double\s+precision|(?:timestamp|time)\b(\s*\(\d+\))?(?:\s+with(?:out)?\s+time\s+zone)?)/gi,
+            '$1',
+          )
           // Remove quotes first so we can process identifiers
           .replace(/['"`]/g, '')
           // MySQL adds table/alias prefixes to columns (e.g., a.name or table_name.column vs just column)
@@ -1155,12 +1162,18 @@ export class SchemaComparator {
           .replace(/\b\w+\.(\w+)/g, '$1')
           // Normalize JOIN syntax: inner join -> join (equivalent in SQL)
           .replace(/\binner\s+join\b/gi, 'join')
+          // PostgreSQL names an unaliased bare function call after the function itself,
+          // so `max(created_at)` comes back as `max(created_at) AS max`
+          // the lookahead skips table function column alias lists like `unnest(a) AS unnest(c)`, which are meaningful
+          .replace(/\b(\w+)\s*\(((?:[^()]|\([^()]*\))*)\)\s+as\s+\1\b(?!\s*\()/gi, '$1($2)')
           // Remove redundant column aliases like `title AS title` -> `title`
           .replace(/\b(\w+)\s+as\s+\1\b/gi, '$1')
           // Remove AS keyword (optional in SQL, MySQL may add/remove it)
           .replace(/\bas\b/gi, '')
           // Remove remaining special chars, parentheses, type casts, asterisks, and normalize whitespace
-          .replace(/[()\n[\]*]|::\w+| +/g, '')
+          // tabs and CRs included — the schema generator trims every line before executing the DDL,
+          // so indentation and CRLF endings can never come back from introspection
+          .replace(/[()\n\r\t[\]*]|::\w+| +/g, '')
           .replace(/anyarray\[(.*)]/gi, '$1')
           .toLowerCase()
           // PostgreSQL adds default aliases to aggregate functions (e.g., count(*) AS count)

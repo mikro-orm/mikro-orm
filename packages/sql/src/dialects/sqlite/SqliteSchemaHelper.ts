@@ -86,7 +86,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
       const prefix = this.getSchemaPrefix(dbName);
       const tables = await connection.execute<{ name: string }[]>(
         `select name from ${prefix}sqlite_master where type = 'table' ` +
-          `and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys'`,
+          `and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' order by name`,
         [],
         'all',
         ctx,
@@ -787,7 +787,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
       const name = trigger.events.length > 1 ? `${trigger.name}_${event}` : trigger.name;
       const when = trigger.when ? `\n  when ${trigger.when}` : '';
       ret.push(
-        `create trigger ${this.quote(name)} ${timing} ${event.toUpperCase()} on ${table.getQuotedName()} for each ${forEach}${when} begin ${trigger.body}; end`,
+        `create trigger ${this.quote(name)} ${timing} ${event.toUpperCase()} on ${table.getQuotedName()} for each ${forEach}${when} begin ${this.normalizeTriggerBody(trigger.body)} end`,
       );
     }
 

@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
+
+### Bug Fixes
+
+- **oracledb:** bind every returned column of a multi column property ([#8059](https://github.com/mikro-orm/mikro-orm/issues/8059)) ([dc17ec2](https://github.com/mikro-orm/mikro-orm/commit/dc17ec2afe93cb173d89277dc33ed234c2cc7506))
+- **oracle:** keep the config user in sync with the pool after `dropDatabase()` ([#8043](https://github.com/mikro-orm/mikro-orm/issues/8043)) ([6e1113d](https://github.com/mikro-orm/mikro-orm/commit/6e1113d6334f01ad8ebbc5a846d6249d23d34ecd))
+- **oracle:** set the session schema when the connection user differs from `dbName` ([#8042](https://github.com/mikro-orm/mikro-orm/issues/8042)) ([3a942d2](https://github.com/mikro-orm/mikro-orm/commit/3a942d22bdc50914e3e4db61f1f8f3f8a22c7c73)), closes [#8040](https://github.com/mikro-orm/mikro-orm/issues/8040)
+- **sql:** pass a flat PK array when persisting M:N of a composite PK owner ([#8073](https://github.com/mikro-orm/mikro-orm/issues/8073)) ([f88d567](https://github.com/mikro-orm/mikro-orm/commit/f88d567f645a7a19e2848d2c4516b74594e3a08c))
+
+## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
+
+### Bug Fixes
+
+- **sql:** order introspection queries so generated schema diffs are stable ([#8031](https://github.com/mikro-orm/mikro-orm/issues/8031)) ([25d956b](https://github.com/mikro-orm/mikro-orm/commit/25d956b3284ff40e3d7c5fd2bf527f5521f5d2ae))
+
 ## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
 
 **Note:** Version bump only for package @mikro-orm/oracledb

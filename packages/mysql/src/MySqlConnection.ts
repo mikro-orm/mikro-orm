@@ -1,5 +1,11 @@
-import { type ControlledTransaction, type MysqlPool, type MysqlPoolConnection, MysqlDialect } from 'kysely';
-import { createPool, type Pool, type PoolOptions } from 'mysql2';
+import {
+  type ControlledTransaction,
+  type MysqlDialectConfig,
+  type MysqlPool,
+  type MysqlPoolConnection,
+  MysqlDialect,
+} from 'kysely';
+import { createConnection, createPool, type Pool, type PoolOptions } from 'mysql2';
 import { type Routine, type Transaction } from '@mikro-orm/core';
 import {
   type ConnectionConfig,
@@ -11,6 +17,11 @@ import {
 
 /** MySQL database connection using the `mysql2` driver. */
 export class MySqlConnection extends AbstractSqlConnection {
+  // Kysely sends `cancel query`/`kill session` over this connection rather than over the pool, so an
+  // abort doesn't have to wait for an idle pool connection — or, inside a transaction, for the very
+  // query it is meant to cancel. Postgres gets one from its pool by default, mysql2 does not.
+  static readonly #controlConnection = createConnection as unknown as MysqlDialectConfig['controlConnection'];
+
   override async createKyselyDialect(overrides: PoolOptions): Promise<MysqlDialect> {
     const options = this.mapOptions(overrides);
     const password = options.password as ConnectionConfig['password'];
@@ -44,6 +55,7 @@ export class MySqlConnection extends AbstractSqlConnection {
 
       return new MysqlDialect({
         pool,
+        controlConnection: MySqlConnection.#controlConnection,
         onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
         onReserveConnection: this.options.onReserveConnection ?? this.config.get('onReserveConnection'),
       });
@@ -51,6 +63,7 @@ export class MySqlConnection extends AbstractSqlConnection {
 
     return new MysqlDialect({
       pool: createPool(options) as any,
+      controlConnection: MySqlConnection.#controlConnection,
       onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
       onReserveConnection: this.options.onReserveConnection ?? this.config.get('onReserveConnection'),
     });

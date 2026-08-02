@@ -24,7 +24,7 @@ describe('GH #7798 — migrator.up() rewrites snapshot, dropping sqlite comments
       metadataProvider: ReflectMetadataProvider,
       entities: [Account7798],
       dbName: ':memory:',
-      migrations: { path: PATH, snapshot: true },
+      migrations: { path: PATH, snapshot: true, silent: true },
       extensions: [Migrator],
     });
     await rm(PATH, { recursive: true, force: true });

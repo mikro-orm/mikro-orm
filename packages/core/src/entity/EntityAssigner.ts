@@ -300,7 +300,9 @@ export class EntityAssigner {
         const pk = Utils.extractPK(item, prop.targetMeta);
 
         if (pk && EntityAssigner.validateEM(em)) {
-          const ref = em.getUnitOfWork().getById(prop.targetMeta!.class, pk as Primary<U>, options.schema);
+          const ref = em
+            .getUnitOfWork()
+            .getById(prop.targetMeta!.class, pk as Primary<U>, options.schema, options.convertCustomTypes);
 
           if (ref) {
             return EntityAssigner.assign(ref, item as any, options);

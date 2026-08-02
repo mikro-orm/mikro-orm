@@ -590,6 +590,8 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
         entity.pets[idx_62] = null;
       }
     });
+  } else if (data.pets === null) {
+    entity.pets = null;
   }
 }"
 `;
@@ -648,6 +650,7 @@ exports[`polymorphic embeddables in sqlite > diffing 2`] = `
     ret.pet2 = cloneEmbeddable(ret.pet2);
   }
 
+  if (entity.pets === null) ret.pets = null;
   if (Array.isArray(entity.pets)) {
     ret.pets = [];
     entity.pets.forEach((_, idx_0) => {

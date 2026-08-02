@@ -326,6 +326,14 @@ export class QueryHelper {
 
       if (prop?.customType && convertCustomTypes && !isRaw(value)) {
         value = QueryHelper.processCustomType<T>(prop, value, platform, undefined, true);
+      } else if (
+        !prop &&
+        meta?.compositePK &&
+        convertCustomTypes &&
+        Array.isArray(value) &&
+        key === Utils.getPrimaryKeyHash(meta.primaryKeys)
+      ) {
+        value = QueryHelper.processCompositeCustomTypes(value, meta, platform) as typeof value;
       }
 
       // oxfmt-ignore
@@ -466,6 +474,34 @@ export class QueryHelper {
     }
 
     return prop.customType!.convertToDatabaseValue(cond, platform, { fromQuery, key, mode: 'query' });
+  }
+
+  /**
+   * Composite PK conditions are keyed by a hash of all the PK names, which `findProperty` cannot
+   * resolve, so the custom types have to be applied positionally instead.
+   */
+  private static processCompositeCustomTypes<T extends object>(
+    value: unknown[],
+    meta: EntityMetadata<T>,
+    platform: Platform,
+  ): unknown[] {
+    const props = meta.primaryKeys.map(pk => meta.properties[pk]);
+
+    if (!props.some(prop => prop.customType)) {
+      return value;
+    }
+
+    // the tuple can be longer than the PK when the user passes a malformed condition
+    const convert = (tuple: unknown[]) =>
+      tuple.map((val, idx) => {
+        if (!props[idx]?.customType) {
+          return val;
+        }
+
+        return QueryHelper.processCustomType(props[idx], val as FilterQuery<T>, platform, undefined, true);
+      });
+
+    return value.every(val => Array.isArray(val)) ? value.map(val => convert(val as unknown[])) : convert(value);
   }
 
   private static isSupportedOperator(key: string): boolean {

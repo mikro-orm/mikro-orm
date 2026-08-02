@@ -147,7 +147,9 @@ describe('EntityManagerPostgre', () => {
     } as any);
 
     expect(receivedPool).toBeInstanceOf(Pool);
-    expect(receivedPool!.listenerCount('error')).toBe(1);
+    // the hook's own listener, plus the built-in one that keeps a dropped connection from killing
+    // the process
+    expect(receivedPool!.listenerCount('error')).toBe(2);
     // the hook key must not be forwarded into the pg PoolConfig
     expect(Object.prototype.hasOwnProperty.call((receivedPool as any).options, 'onPoolCreated')).toBe(false);
   });

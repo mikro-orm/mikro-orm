@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
+
+### Bug Fixes
+
+- **postgresql:** don't crash the process when the server drops a connection ([#8069](https://github.com/mikro-orm/mikro-orm/issues/8069)) ([66d3b1a](https://github.com/mikro-orm/mikro-orm/commit/66d3b1a18979eac676c57755e595f62377566362))
+
+## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
 ## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
 
 **Note:** Version bump only for package @mikro-orm/postgresql

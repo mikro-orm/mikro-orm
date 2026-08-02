@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
+
+### Bug Fixes
+
+- **core:** fix batch updates when the whole primary key is one relation ([#8065](https://github.com/mikro-orm/mikro-orm/issues/8065)) ([aeefa5e](https://github.com/mikro-orm/mikro-orm/commit/aeefa5e90577fa24081a64f9f8ef55d1edbf8bd2))
+- **core:** keep `null` value of embedded arrays in snapshots and hydration ([#8046](https://github.com/mikro-orm/mikro-orm/issues/8046)) ([93d62bf](https://github.com/mikro-orm/mikro-orm/commit/93d62bf278b21169ade73b6448daab846634d5d0)), closes [#8045](https://github.com/mikro-orm/mikro-orm/issues/8045)
+- **core:** keep the fixed order column as the sole pivot PK for polymorphic M:N ([#8083](https://github.com/mikro-orm/mikro-orm/issues/8083)) ([3ac8b73](https://github.com/mikro-orm/mikro-orm/commit/3ac8b73ebd90dc85a414ae8f36ffddb185c71fd1))
+- **core:** map returning values back to entities after batch update ([#8056](https://github.com/mikro-orm/mikro-orm/issues/8056)) ([5895309](https://github.com/mikro-orm/mikro-orm/commit/589530926386ae962aa551465094e61307527e8b))
+- **core:** support mixed STI child types in batch updates ([#8057](https://github.com/mikro-orm/mikro-orm/issues/8057)) ([f6e5fd4](https://github.com/mikro-orm/mikro-orm/commit/f6e5fd4fac3c5b62d75ea74838c2108b1b7f126f))
+- **core:** support version and optimistic locking on nested composite keys ([#8064](https://github.com/mikro-orm/mikro-orm/issues/8064)) ([d533e76](https://github.com/mikro-orm/mikro-orm/commit/d533e76fe441ed3f06b5efcbb45407d82eb63ab8))
+- **migrations:** sanitize custom migration names into valid class identifiers ([#8053](https://github.com/mikro-orm/mikro-orm/issues/8053)) ([20a3ae2](https://github.com/mikro-orm/mikro-orm/commit/20a3ae258b2592176bc6207204aeb4f9c95b142e))
+
+## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
+
+### Bug Fixes
+
+- **core:** convert custom types when querying composite PK via array form ([#8035](https://github.com/mikro-orm/mikro-orm/issues/8035)) ([ba0c4c2](https://github.com/mikro-orm/mikro-orm/commit/ba0c4c23e9eed5ada3aa51687425543198862704))
+- **core:** don't let a partially loaded fork entity clobber the parent context ([#8036](https://github.com/mikro-orm/mikro-orm/issues/8036)) ([d3e9f1c](https://github.com/mikro-orm/mikro-orm/commit/d3e9f1c7d0e2ee6550c77683effba50d11aba913))
+- **core:** fix infinite recursion when flushing a `mapToPk` FK with value `0` ([#8004](https://github.com/mikro-orm/mikro-orm/issues/8004)) ([f01fd6f](https://github.com/mikro-orm/mikro-orm/commit/f01fd6faf7cbd7a9e6810015b605f9a29bdc04da)), closes [#8003](https://github.com/mikro-orm/mikro-orm/issues/8003)
+- **core:** key composite primary keys with custom types by their database form ([#8029](https://github.com/mikro-orm/mikro-orm/issues/8029)) ([5d582ec](https://github.com/mikro-orm/mikro-orm/commit/5d582ec19b44a25f5c311769817cb9978ef12c34)), closes [#8021](https://github.com/mikro-orm/mikro-orm/issues/8021)
+- **core:** populate 1:m collections of parents with falsy PK values ([#8002](https://github.com/mikro-orm/mikro-orm/issues/8002)) ([eaa25d4](https://github.com/mikro-orm/mikro-orm/commit/eaa25d49536422e591d3a5ce1fe5a50b71fa4dba)), closes [#8000](https://github.com/mikro-orm/mikro-orm/issues/8000)
+- **core:** respect custom type conversion in identity map lookups ([#8021](https://github.com/mikro-orm/mikro-orm/issues/8021)) ([44d470d](https://github.com/mikro-orm/mikro-orm/commit/44d470d4333c57720b2ffdfda62eeab1eed2fbe8)), closes [#8020](https://github.com/mikro-orm/mikro-orm/issues/8020)
+- **migrations:** store the create snapshot in the resolved migrations folder ([#8027](https://github.com/mikro-orm/mikro-orm/issues/8027)) ([d7a9ea8](https://github.com/mikro-orm/mikro-orm/commit/d7a9ea81a6be5a650201cd80774b4d1489508fae)), closes [#8024](https://github.com/mikro-orm/mikro-orm/issues/8024)
+
 ## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
 
 ### Bug Fixes

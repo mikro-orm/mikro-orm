@@ -2091,7 +2091,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options.cascade ??= true;
     validatePrimaryKey(data as EntityData<Entity>, em.metadata.get(entityName));
 
-    let entity = em.#unitOfWork.tryGetById<Entity>(entityName, data as FilterQuery<Entity>, options.schema, false);
+    let entity = em.#unitOfWork.tryGetById<Entity>(
+      entityName,
+      data as FilterQuery<Entity>,
+      options.schema,
+      false,
+      options.convertCustomTypes,
+    );
 
     if (entity && helper(entity).__managed && helper(entity).__initialized && !options.refresh) {
       return entity;

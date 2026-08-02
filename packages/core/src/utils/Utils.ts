@@ -522,7 +522,8 @@ export class Utils {
     let pks = this.getCompositeKeyValue(data, meta, convertCustomTypes, platform);
 
     if (flat) {
-      pks = Utils.flatten(pks as unknown[][]) as Primary<T>;
+      // deep flatten, nested composite PKs produce nested arrays that would be comma-joined by the hash
+      pks = Utils.flatten(pks as unknown[][], true) as Primary<T>;
     }
 
     return Utils.getPrimaryKeyHash(pks as string[]);
@@ -602,7 +603,9 @@ export class Utils {
 
   static getPrimaryKeyCond<T>(entity: T, primaryKeys: EntityKey<T>[]): Record<string, Primary<T>> | null {
     const cond = primaryKeys.reduce((o, pk) => {
-      o[pk] = Utils.extractPK(entity[pk]);
+      const value = entity[pk];
+      // FKs pointing to a composite PK are arrays, which `extractPK` rejects
+      o[pk] = Utils.isPrimaryKey(value, true) ? value : Utils.extractPK(value);
       return o;
     }, {} as any);
 

@@ -953,6 +953,7 @@ export class OracleSchemaHelper extends SchemaHelper {
       from USER_PROCEDURES p
       where p.OBJECT_TYPE in ('PROCEDURE', 'FUNCTION')
         and p.PROCEDURE_NAME is null
+      order by p.OBJECT_NAME
     `;
 
     const [rows, paramsAndReturns] = await Promise.all([
