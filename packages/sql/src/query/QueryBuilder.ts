@@ -1500,6 +1500,7 @@ export class QueryBuilder<
       filterOptions = QueryHelper.mergePropertyFilters(join.prop.filters, filterOptions);
       let cond = await em.applyFilters(join.prop.targetMeta!.class, join.cond, filterOptions, 'read');
       const criteriaNode = CriteriaNodeFactory.createNode<Entity>(this.metadata, join.prop.targetMeta!.class, cond);
+      const joinCountBefore = Object.keys(this.#state.joins).length;
       cond = criteriaNode.process(this as IQueryBuilder<Entity>, {
         matchPopulateJoins: true,
         filter: true,
@@ -1507,6 +1508,7 @@ export class QueryBuilder<
         ignoreBranching: true,
         parentPath: join.path,
       });
+      this.nestNewJoins(join, joinCountBefore);
 
       if (Utils.hasObjectKeys(cond) || RawQueryFragment.hasObjectFragments(cond)) {
         // remove nested filters, we only care about scalars here, nesting would require another join branch
@@ -1555,6 +1557,32 @@ export class QueryBuilder<
           }
         }
       }
+    }
+  }
+
+  /**
+   * Auto-joins added while processing a condition of `condJoin` would render after it and produce a
+   * forward alias reference in its `on` clause. Fold them into `condJoin`, so they render as a single
+   * parenthesized join group and share the scope of the outer `on` clause (issue #7681).
+   */
+  private nestNewJoins(condJoin: JoinOptions | undefined, joinCountBefore: number): void {
+    // m:n pivot joins might not have the target join entry created
+    if (!condJoin) {
+      return;
+    }
+
+    const joinKeys = Object.keys(this.#state.joins);
+
+    for (let i = joinCountBefore; i < joinKeys.length; i++) {
+      const j = this.#state.joins[joinKeys[i]];
+
+      if (j === condJoin || j.ownerAlias !== condJoin.alias) {
+        continue;
+      }
+
+      const nested = (condJoin.nested ??= new Set());
+      j.type = j.type === JoinType.innerJoin ? JoinType.nestedInnerJoin : JoinType.nestedLeftJoin;
+      nested.add(j);
     }
   }
 
@@ -3168,23 +3196,7 @@ export class QueryBuilder<
       this.#state.joins[aliasedName].path ??= path;
     }
 
-    // auto-joins added by cond processing that depend on the new alias would otherwise produce a
-    // forward reference (the auto-join's ON refers to alias, while alias's ON refers back to it);
-    // fold them into the new join so both aliases share scope in the outer ON clause (issue #7681)
-    const condJoin = this.#state.joins[aliasedName];
-    const joinKeys = Object.keys(this.#state.joins);
-
-    for (let i = joinCountBefore; i < joinKeys.length; i++) {
-      const j = this.#state.joins[joinKeys[i]];
-
-      if (j === condJoin || j.ownerAlias !== alias) {
-        continue;
-      }
-
-      const nested = (condJoin.nested ??= new Set());
-      j.type = j.type === JoinType.innerJoin ? JoinType.nestedInnerJoin : JoinType.nestedLeftJoin;
-      nested.add(j);
-    }
+    this.nestNewJoins(this.#state.joins[aliasedName], joinCountBefore);
 
     return { prop, key: aliasedName };
   }
