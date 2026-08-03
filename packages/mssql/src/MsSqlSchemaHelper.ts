@@ -923,6 +923,11 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return col.join(' ');
   }
 
+  // SQL Server generates a random `PK__…` name when the constraint is unnamed, so always name it
+  protected override getPrimaryKeyConstraintPrefix(table: DatabaseTable, index: IndexDef): string {
+    return `constraint ${this.quote(index.keyName)} `;
+  }
+
   override alterTableColumn(column: Column, table: DatabaseTable, changedProperties: Set<string>): string[] {
     const parts: string[] = [];
 

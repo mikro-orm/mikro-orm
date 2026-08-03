@@ -206,6 +206,10 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return this.getIndexName(tableName, columns, 'primary');
   }
 
+  override supportsCustomPrimaryKeyNames(): boolean {
+    return true;
+  }
+
   override getUuidTypeDeclarationSQL(column: { length?: number }): string {
     return 'uniqueidentifier';
   }

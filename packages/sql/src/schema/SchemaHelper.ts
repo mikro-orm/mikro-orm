@@ -691,6 +691,11 @@ export abstract class SchemaHelper {
     return pkIndex?.keyName !== defaultName;
   }
 
+  /** Returns the `constraint <name> ` prefix for a primary key definition, empty when the server assigns the default name on its own. */
+  protected getPrimaryKeyConstraintPrefix(table: DatabaseTable, index: IndexDef): string {
+    return this.hasNonDefaultPrimaryKeyName(table) ? `constraint ${this.quote(index.keyName)} ` : '';
+  }
+
   /* v8 ignore next */
   castColumn(name: string, type: string): string {
     return '';
@@ -1006,7 +1011,7 @@ export abstract class SchemaHelper {
       !table.getColumns().some(c => c.autoincrement && c.primary) || this.hasNonDefaultPrimaryKeyName(table);
 
     if (createPrimary && primaryKey) {
-      const name = this.hasNonDefaultPrimaryKeyName(table) ? `constraint ${this.quote(primaryKey.keyName)} ` : '';
+      const name = this.getPrimaryKeyConstraintPrefix(table, primaryKey);
       sql += `, ${name}primary key (${primaryKey.columnNames.map(c => this.quote(c)).join(', ')})`;
     }
 
@@ -1120,7 +1125,7 @@ export abstract class SchemaHelper {
     const defer = index.deferMode ? ` deferrable initially ${index.deferMode}` : '';
 
     if (index.primary) {
-      const keyName = this.hasNonDefaultPrimaryKeyName(table) ? `constraint ${index.keyName} ` : '';
+      const keyName = this.getPrimaryKeyConstraintPrefix(table, index);
       return `alter table ${table.getQuotedName()} add ${keyName}primary key (${columns})${defer}`;
     }
 
