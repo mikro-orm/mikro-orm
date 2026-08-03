@@ -314,13 +314,28 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
           return def[key];
         });
       } else {
-        /* v8 ignore next */
-        offsets = def ? Cursor.decode(def as string) : [];
+        try {
+          /* v8 ignore next */
+          offsets = def ? Cursor.decode(def as string) : [];
+        } catch (error) {
+          throw CursorError.invalidCursor(meta.className, error as Error);
+        }
+
         fromJson = true;
       }
 
       if (definition.length > 0 && definition.length === offsets.length) {
-        return this.createCursorCondition<T>(definition, offsets as Dictionary[], inverse, meta, fromJson);
+        // a string cursor is client supplied, so everything failing to restore from it is an
+        // invalid cursor, letting callers map `CursorError` to a client error response
+        try {
+          return this.createCursorCondition<T>(definition, offsets as Dictionary[], inverse, meta, fromJson);
+        } catch (error) {
+          if (!fromJson || error instanceof CursorError) {
+            throw error;
+          }
+
+          throw CursorError.invalidCursor(meta.className, error as Error);
+        }
       }
 
       /* v8 ignore next */

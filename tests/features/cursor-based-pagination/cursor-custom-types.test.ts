@@ -1,4 +1,4 @@
-import { BigIntType, Cursor, DateTimeType, Reference, ScalarReference, Type } from '@mikro-orm/core';
+import { BigIntType, Cursor, CursorError, DateTimeType, Reference, ScalarReference, Type } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 import {
   Embeddable,
@@ -994,6 +994,40 @@ test('scalar value where a nested cursor object is expected', async () => {
       orderBy: { owner: { since: 'asc' }, id: 'asc' },
     }),
   ).rejects.toThrow("value for 'Job.owner.since' is missing");
+});
+
+test('invalid string cursors surface as CursorError', async () => {
+  // undecodable payload
+  await expect(
+    orm.em.findByCursor(Job, {
+      first: 3,
+      after: '!!not a cursor!!',
+      orderBy: { id: 'asc' },
+    }),
+  ).rejects.toThrow(CursorError);
+
+  // decodable payload the type cannot restore, original error kept on the cause chain
+  const tampered = orm.em.findByCursor(Job, {
+    first: 3,
+    after: Cursor.encode(['nope', 3]),
+    orderBy: { loggedAt: 'asc', id: 'asc' },
+  });
+  await expect(tampered).rejects.toThrow(CursorError);
+  await expect(tampered).rejects.toThrow(
+    "Invalid cursor for entity Job: Could not convert JSON value 'nope' of type 'string' to type DateTimeType",
+  );
+});
+
+test('`BigIntType.fromJSON` restores all three modes', () => {
+  expect(new BigIntType().fromJSON('1003')).toBe(BigInt(1003));
+  expect(new BigIntType('number').fromJSON(2003)).toBe(2003);
+  expect(new BigIntType('string').fromJSON('3003')).toBe('3003');
+});
+
+test('`Cursor.for` keeps non-object values under a nested direction', () => {
+  const meta = orm.getMetadata().get(Job);
+  const encoded = Cursor.for(meta, { owner: null, id: 3 } as never, { owner: { since: 'asc' }, id: 'asc' });
+  expect(Cursor.decode(encoded)).toEqual([null, 3]);
 });
 
 test('`Cursor.decode` returns raw JSON values', () => {
