@@ -1468,8 +1468,8 @@ __metadata:
     "@swc/core": "npm:1.15.47"
     "@types/better-sqlite3": "npm:7.6.13"
     "@types/node": "npm:24.13.3"
-    "@types/oracledb": "npm:7.0.1"
-    "@types/pg": "npm:8.20.0"
+    "@types/oracledb": "npm:7.0.2"
+    "@types/pg": "npm:8.20.3"
     "@types/pg-cursor": "npm:2.7.2"
     "@types/picomatch": "npm:4.0.3"
     "@types/semver": "npm:7.7.1"
@@ -1485,7 +1485,7 @@ __metadata:
     jsr: "npm:0.14.3"
     knex: "npm:3.3.0"
     lerna: "npm:10.0.0"
-    lint-staged: "npm:17.2.0"
+    lint-staged: "npm:17.3.0"
     mongodb-memory-server-core: "npm:11.2.0"
     oxfmt: "npm:0.61.0"
     oxlint: "npm:1.76.0"
@@ -3285,12 +3285,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/oracledb@npm:7.0.1":
-  version: 7.0.1
-  resolution: "@types/oracledb@npm:7.0.1"
+"@types/oracledb@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@types/oracledb@npm:7.0.2"
   dependencies:
     "@types/node": "npm:*"
-  checksum: 10/7be238fe83c7bc54e0bfc330c5fafd2ac2af0e9432746609ae32655bcb139255840e05855b1622a48dc97f8db931b050fe5cc08841defa5f1ce036674f2d9a62
+  checksum: 10/7908e2ca3ec0955758cc061462931722eb233aadfb719bc077b9dda493604d8273ca938a0b435f00b989dcc44de9b4eeb86e6ccea8cc0350332fad5a2d8c2577
   languageName: node
   linkType: hard
 
@@ -3315,14 +3315,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pg@npm:8.20.0":
-  version: 8.20.0
-  resolution: "@types/pg@npm:8.20.0"
+"@types/pg@npm:8.20.3":
+  version: 8.20.3
+  resolution: "@types/pg@npm:8.20.3"
   dependencies:
     "@types/node": "npm:*"
     pg-protocol: "npm:*"
     pg-types: "npm:^2.2.0"
-  checksum: 10/3fb5be6e02de5c1a519acfbcb73647864e0d118bd09d0dea9b02091992095094e1ba150454c1175fd0127a596947e7216e15ff9b6162cd7792b62effce6aa751
+  checksum: 10/c4a9ccf97b16335ad8a7d592dd29448c6a808cab4b26c9be82a50c638170d80b75bd57e8132e022ad7a8f79cb9e5ebfee1a5cacaac74aa9e941646a7469ba628
   languageName: node
   linkType: hard
 
@@ -6572,9 +6572,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:17.2.0":
-  version: 17.2.0
-  resolution: "lint-staged@npm:17.2.0"
+"lint-staged@npm:17.3.0":
+  version: 17.3.0
+  resolution: "lint-staged@npm:17.3.0"
   dependencies:
     picomatch: "npm:^4.0.5"
     string-argv: "npm:^0.3.2"
@@ -6585,7 +6585,7 @@ __metadata:
       optional: true
   bin:
     lint-staged: bin/lint-staged.js
-  checksum: 10/7c26129d6dd27f20d8fc8d70b13252f15baf569124721d7f5e9ed289e054ed43f5cc2a35de4129b65a7c7f1ad4a5900859a7488f8a1f0b96428b995b29ec2ba8
+  checksum: 10/52510d48c6b4aabeb61f84ad77f785f3af17fbfa517be8881de45144723df873996d767d9a7cf3bee4057037960ea5236fe3ac47a5d60fa9538078061b254445
   languageName: node
   linkType: hard
 
