@@ -119,6 +119,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       };
       const meta = this.metadata.find<T>(entityName)!;
       const { orderBy: newOrderBy, where: newWhere } = this.processCursorOptions(meta, options, options.orderBy!);
+      this.convertCursorDates(newWhere as Dictionary);
       const newWhereConverted = this.renameFields(entityName, newWhere as T, true);
       const orderBy = Utils.asArray(newOrderBy).map(order => this.renameFields(entityName, order as T, true));
       const res = await this.rethrow(
@@ -735,6 +736,22 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     return data;
+  }
+
+  /**
+   * `Cursor.decode` revives ISO date strings only at the top level of the offsets array, but object
+   * embeddables are stored as documents with real BSON dates, so we need to revive the nested values too.
+   */
+  private convertCursorDates(data: Dictionary): void {
+    Object.keys(data).forEach(k => {
+      if (Array.isArray(data[k])) {
+        data[k].forEach((item: unknown) => Utils.isPlainObject(item) && this.convertCursorDates(item));
+      } else if (Utils.isPlainObject(data[k])) {
+        this.convertCursorDates(data[k]);
+      } else if (typeof data[k] === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}/.exec(data[k])) {
+        data[k] = new Date(data[k]);
+      }
+    });
   }
 
   private buildFilterById<T extends { _id: any }>(entityName: EntityName, id: string): FilterQuery<T> {
