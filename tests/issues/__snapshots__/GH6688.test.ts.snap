@@ -8,7 +8,7 @@ create table \`a\` (\`id\` int unsigned not null auto_increment primary key, \`l
 `;
 
 exports[`default array values [mssql] > database default when using arrays 1`] = `
-"create table [a] ([id] int identity(1,1) not null primary key, [languages] text not null constraint [a_languages_default] default 'en', [accounts] nvarchar(max) not null constraint [a_accounts_default] default '[]', [items] text not null constraint [a_items_default] default '');
+"create table [a] ([id] int identity(1,1) not null constraint [a_pkey] primary key, [languages] text not null constraint [a_languages_default] default 'en', [accounts] nvarchar(max) not null constraint [a_accounts_default] default '[]', [items] text not null constraint [a_items_default] default '');
 "
 `;
 

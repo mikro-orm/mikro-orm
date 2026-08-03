@@ -202,6 +202,14 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return 'dbo';
   }
 
+  override getDefaultPrimaryName(tableName: string, columns: string[]): string {
+    return this.getIndexName(tableName, columns, 'primary');
+  }
+
+  override supportsCustomPrimaryKeyNames(): boolean {
+    return true;
+  }
+
   override getUuidTypeDeclarationSQL(column: { length?: number }): string {
     return 'uniqueidentifier';
   }

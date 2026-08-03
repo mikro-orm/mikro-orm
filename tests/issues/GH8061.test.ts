@@ -120,7 +120,7 @@ describe('GH #8061 — multi statement trigger bodies stay a single DDL statemen
     });
 
     expect(await orm.schema.getCreateSchemaSQL({ wrap: false })).toMatchInlineSnapshot(`
-      "create table [items] ([id] int identity(1,1) not null primary key, [value] int not null);
+      "create table [items] ([id] int identity(1,1) not null constraint [items_pkey] primary key, [value] int not null);
       create trigger [items_increment_after_insert] on [items] AFTER INSERT as begin update items set value = value + 1 where id = NEW.id; set @sum = 1; end;
       "
     `);

@@ -23,7 +23,7 @@ exports[`GH7185 [mssql] > multiline comments are not split in migration SQL 1`] 
 export class Migration20250101000000 extends Migration {
 
   override up(): void | Promise<void> {
-    this.addSql(\`create table [test_entity] ([id] int identity(1,1) not null primary key, [name] nvarchar(255) not null);\`);
+    this.addSql(\`create table [test_entity] ([id] int identity(1,1) not null constraint [test_entity_pkey] primary key, [name] nvarchar(255) not null);\`);
     this.addSql(\`if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'test_entity', null, null))
   exec sys.sp_updateextendedproperty N'MS_Description', N'line1;
 line2;

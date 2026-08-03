@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`collation diffing [mssql] > create schema emits column-level collate clause 1`] = `
-"create table [book] ([id] int identity(1,1) not null primary key, [code] nvarchar(26) collate Latin1_General_BIN not null, [name] nvarchar(255) not null);
+"create table [book] ([id] int identity(1,1) not null constraint [book_pkey] primary key, [code] nvarchar(26) collate Latin1_General_BIN not null, [name] nvarchar(255) not null);
 "
 `;
 
