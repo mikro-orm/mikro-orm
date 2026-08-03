@@ -133,7 +133,7 @@
     "@mikro-orm/sql-highlighter": "1.0.1",
     "@swc-node/register": "1.12.1",
     "@swc/core": "1.15.47",
-    "@types/better-sqlite3": "7.6.13",
+    "@types/better-sqlite3": "9.6.0",
     "@types/node": "24.13.3",
     "@types/oracledb": "7.0.2",
     "@types/pg": "8.20.3",
