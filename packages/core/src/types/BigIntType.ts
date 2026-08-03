@@ -1,6 +1,7 @@
 import { Type } from './Type.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
+import { ValidationError } from '../errors.js';
 
 /**
  * This type will automatically convert string values returned from the database to native JS bigints (default)
@@ -45,6 +46,26 @@ export class BigIntType<Mode extends 'bigint' | 'number' | 'string' = 'bigint'> 
     }
 
     return this.convertToDatabaseValue(value) as JSTypeByMode<Mode> | null | undefined;
+  }
+
+  override fromJSON(value: unknown): JSTypeByMode<Mode> | null | undefined {
+    // the serialized form is a decimal string, or a plain number in `number` mode
+    const valid =
+      (typeof value === 'string' && /^-?\d+$/.test(value)) || (typeof value === 'number' && Number.isInteger(value));
+
+    if (!valid) {
+      throw ValidationError.invalidType(BigIntType, value, 'JSON');
+    }
+
+    switch (this.mode) {
+      case 'number':
+        return Number(value) as JSTypeByMode<Mode>;
+      case 'string':
+        return String(value) as JSTypeByMode<Mode>;
+      case 'bigint':
+      default:
+        return BigInt(value) as JSTypeByMode<Mode>;
+    }
   }
 
   override getColumnType(prop: EntityProperty, platform: Platform): string {

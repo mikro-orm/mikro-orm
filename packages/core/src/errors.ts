@@ -200,6 +200,12 @@ export class CursorError<T extends AnyEntity = AnyEntity> extends ValidationErro
   static missingValue(entityName: string, prop: string): ValidationError {
     return new CursorError(`Invalid cursor condition, value for '${entityName}.${prop}' is missing.`);
   }
+
+  static invalidCursor(entityName: string, cause: Error): CursorError {
+    const error = new CursorError(`Invalid cursor for entity ${entityName}: ${cause.message}`);
+    error.cause = cause;
+    return error;
+  }
 }
 
 /** Error thrown when an optimistic lock conflict is detected during entity persistence. */

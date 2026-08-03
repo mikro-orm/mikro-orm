@@ -1,4 +1,4 @@
-import type { Dictionary, EntityKey, EntityMetadata, FilterObject, Loaded } from '../typings.js';
+import type { Dictionary, EntityKey, EntityMetadata, EntityProperty, FilterObject, Loaded } from '../typings.js';
 import type { FindByCursorOptions, OrderDefinition } from '../drivers/IDatabaseDriver.js';
 import { Utils } from './Utils.js';
 import { ReferenceKind, type QueryOrder, type QueryOrderKeys } from '../enums.js';
@@ -66,6 +66,7 @@ export class Cursor<
   readonly hasNextPage: boolean;
 
   readonly #definition: (readonly [EntityKey<Entity>, QueryOrder])[];
+  readonly #meta: EntityMetadata<Entity>;
 
   constructor(
     readonly items: Loaded<Entity, Hint, Fields, Excludes>[],
@@ -89,6 +90,7 @@ export class Cursor<
     }
 
     this.#definition = Cursor.getDefinition(meta, orderBy!);
+    this.#meta = meta;
   }
 
   get startCursor(): string | null {
@@ -111,50 +113,69 @@ export class Cursor<
    * Computes the cursor value for a given entity.
    */
   from(entity: Entity | Loaded<Entity, Hint, Fields, Excludes>): string {
-    const processEntity = <T extends object>(
-      entity: T,
-      prop: EntityKey<T>,
-      direction: QueryOrderKeys<T>,
-      object = false,
-    ) => {
-      if (Utils.isPlainObject(direction)) {
-        const unwrapped = Reference.unwrapReference(entity[prop] as T);
-
-        // Check if the relation is loaded - for nested properties, undefined means not populated
-        if (Utils.isEntity(unwrapped) && !helper(unwrapped).isInitialized()) {
-          throw CursorError.entityNotPopulated(entity, prop);
-        }
-
-        return Utils.keys(direction).reduce((o, key) => {
-          Object.assign(o, processEntity(unwrapped, key, direction[key] as QueryOrderKeys<T>, true));
-          return o;
-        }, {} as Dictionary);
-      }
-
-      let value: unknown = entity[prop];
-
-      // Allow null/undefined values in cursor - they will be handled in createCursorCondition
-      // undefined can occur with forceUndefined config option which converts null to undefined
-      if (value == null) {
-        return object ? { [prop]: null } : null;
-      }
-
-      if (Utils.isEntity(value, true)) {
-        value = helper(value).getPrimaryKey();
-      }
-
-      if (Utils.isScalarReference(value)) {
-        value = value.unwrap();
-      }
-
-      if (object) {
-        return { [prop]: value };
-      }
-
-      return value;
-    };
-    const value = this.#definition.map(([key, direction]) => processEntity(entity as Entity, key, direction));
+    const value = this.#definition.map(([key, direction]) =>
+      Cursor.serialize(this.#meta.properties as Dictionary<EntityProperty>, entity as Entity, key, direction),
+    );
     return Cursor.encode(value);
+  }
+
+  /** Serializes a single cursor value, walking nested directions and reading the owner's properties. */
+  private static serialize<T extends object>(
+    properties: Dictionary<EntityProperty>,
+    owner: T,
+    key: EntityKey<T>,
+    direction: unknown,
+  ): unknown {
+    const prop = properties[key as string];
+    let value: unknown = owner[key];
+
+    if (Utils.isPlainObject(direction)) {
+      const unwrapped: unknown = Reference.unwrapReference(value as object);
+
+      // for nested properties, an uninitialized relation means not populated
+      if (Utils.isEntity(unwrapped) && !helper(unwrapped).isInitialized()) {
+        throw CursorError.entityNotPopulated(owner, key as string);
+      }
+
+      if (unwrapped == null || typeof unwrapped !== 'object') {
+        return unwrapped;
+      }
+
+      const childProps = prop?.kind === ReferenceKind.EMBEDDED ? prop.embeddedProps : prop?.targetMeta?.properties;
+
+      return Utils.keys(direction).reduce((o, childKey) => {
+        o[childKey as string] = Cursor.serialize(
+          childProps ?? {},
+          unwrapped as Dictionary,
+          childKey as string,
+          (direction as Dictionary)[childKey as string],
+        );
+        return o;
+      }, {} as Dictionary);
+    }
+
+    // allow null/undefined values in cursor - they will be handled in createCursorCondition
+    // undefined can occur with forceUndefined config option which converts null to undefined
+    if (value == null) {
+      return null;
+    }
+
+    if (Utils.isEntity(value, true)) {
+      value = helper(value).getPrimaryKey();
+    }
+
+    if (Utils.isScalarReference(value)) {
+      value = value.unwrap();
+    }
+
+    // only types implementing `fromJSON` own their wire format, others keep the raw JS value,
+    // so their cursors stay decodable by the `convertToJSValue` fallback
+    if (prop?.customType?.fromJSON) {
+      // the platform is assigned to the type instance during discovery
+      return prop.customType.toJSON(value as never, prop.customType.platform!);
+    }
+
+    return value;
   }
 
   *[Symbol.iterator](): IterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
@@ -176,13 +197,14 @@ export class Cursor<
     orderBy: OrderDefinition<Entity>,
   ): string {
     const definition = this.getDefinition(meta, orderBy);
+
     return Cursor.encode(
-      definition.map(([key]) => {
-        const value = entity[key];
-        if (value === undefined) {
+      definition.map(([key, direction]) => {
+        if (entity[key] === undefined) {
           throw CursorError.missingValue(meta.className, key as string);
         }
-        return value;
+
+        return this.serialize(meta.properties as Dictionary<EntityProperty>, entity as object, key as never, direction);
       }),
     );
   }

@@ -92,6 +92,18 @@ export abstract class Type<JSType = string, DBType = JSType> {
   }
 
   /**
+   * Converts a value from its serialized JSON form back to its JS representation. Used when
+   * decoding cursor values. The input is what `toJSON` produced, after a `JSON.parse` round
+   * trip, and never an already restored JS value. Cursors are client supplied, so the value
+   * can be any JSON shape: validate it and throw for values the type cannot restore, and
+   * `findByCursor` surfaces the failure as a `CursorError`.
+   * Implementing this method also makes cursor encoding use `toJSON`. Without it, cursors
+   * carry the raw JS value, and decoding falls back to `convertToJSValue`, with shape based
+   * `Date` restoration for date-like columns.
+   */
+  fromJSON?(value: unknown, platform: Platform): JSType;
+
+  /**
    * Gets the SQL declaration snippet for a field of this type.
    */
   getColumnType(prop: EntityProperty, platform: Platform): string {
