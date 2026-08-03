@@ -184,4 +184,27 @@ describe('stored routines — Routine + validator', () => {
 
     expect(r.returnCustomType).toBe(stringType);
   });
+
+  it('Routine.is', () => {
+    const routine = new Routine({
+      name: 'is_routine_test',
+      type: 'function',
+      returns: { runtimeType: 'number', columnType: 'int' },
+      body: 'select 1',
+    });
+    // real instances pass via instanceof
+    expect(Routine.is(routine)).toBe(true);
+    // duck-type fallback: object with matching constructor name and `type` property
+    const fake = Object.create({ constructor: { name: 'Routine' } });
+    Object.defineProperty(fake, 'type', { value: 'function', enumerable: true });
+    expect(Routine.is(fake)).toBe(true);
+    // non-matching values
+    expect(Routine.is(null)).toBe(false);
+    expect(Routine.is(undefined)).toBe(false);
+    expect(Routine.is({})).toBe(false);
+    expect(Routine.is('string')).toBe(false);
+    expect(Routine.is(42)).toBe(false);
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    expect(Routine.is(() => {})).toBe(false);
+  });
 });
