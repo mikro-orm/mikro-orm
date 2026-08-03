@@ -908,8 +908,10 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))
     ) {
       const primaryKeyName = this.platform.getDefaultPrimaryName(table.name, [column.name]);
-      Utils.runIfNotEmpty(() => col.push(`constraint ${this.quote(primaryKeyName)}`), primaryKey && column.primary);
-      Utils.runIfNotEmpty(() => col.push('primary key'), primaryKey && column.primary);
+      Utils.runIfNotEmpty(
+        () => col.push(`constraint ${this.quote(primaryKeyName)} primary key`),
+        primaryKey && column.primary,
+      );
     }
 
     const useDefault = changedProperties

@@ -11,12 +11,16 @@ class KeyNamingStrategy extends EntityCaseNamingStrategy {
   }
 
   private inferRefTable(columns: string[]): string | null {
-    if (columns.length !== 1) {return null;}
+    if (columns.length !== 1) {
+      return null;
+    }
 
     const col = columns[0] ?? '';
     const match = /^(.+?)Id$/.exec(col);
 
-    if (!match) {return null;}
+    if (!match) {
+      return null;
+    }
 
     const base = match[1] ?? '';
     const singular = base.charAt(0).toUpperCase() + base.slice(1);
@@ -37,7 +41,7 @@ class KeyNamingStrategy extends EntityCaseNamingStrategy {
       case 'primary':
         return `PK__${t}`;
       case 'foreign':
-        return ref ? `FK__${t}__${ref}` : (c ? `FK__${t}__${c}` : `FK__${t}`);
+        return ref ? `FK__${t}__${ref}` : c ? `FK__${t}__${c}` : `FK__${t}`;
       case 'unique':
         return c ? `UK__${t}__${c}` : `UK__${t}`;
       case 'index':
@@ -57,9 +61,12 @@ describe('custom constraint naming [mssql]', () => {
   const namingStrategy = new KeyNamingStrategy();
 
   beforeAll(async () => {
-    orm = await initORMMsSql({
-      namingStrategy: KeyNamingStrategy,
-    }, false);
+    orm = await initORMMsSql(
+      {
+        namingStrategy: KeyNamingStrategy,
+      },
+      false,
+    );
   });
 
   afterAll(async () => {
@@ -79,11 +86,13 @@ describe('custom constraint naming [mssql]', () => {
   test('uses KeyNamingStrategy names in generated MSSQL schema SQL', async () => {
     const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
     expect(sql).toContain('constraint [PK__Author2] primary key');
-    expect(sql).toContain('create table [FooParam2] ([bar] int not null, [baz] int not null, [value] nvarchar(255) not null, primary key ([bar], [baz]));');
+    expect(sql).toContain(
+      'create table [FooParam2] ([bar] int not null, [baz] int not null, [value] nvarchar(255) not null, primary key ([bar], [baz]));',
+    );
     expect(sql).not.toContain('constraint [PK__FooParam2] primary key');
     expect(sql).toContain('constraint [FK__FooParam2__bar] foreign key ([bar])');
     expect(sql).toContain('create unique index [UK__Author2__name_email] on [Author2] ([name], [email]);');
     expect(sql).toContain('create index [IX__Author2__termsAccepted] on [Author2] ([termsAccepted]);');
-    expect(sql).toContain('constraint [CK__Publisher2__type] check ([type] in (\'local\', \'global\'))');
+    expect(sql).toContain("constraint [CK__Publisher2__type] check ([type] in ('local', 'global'))");
   });
 });
