@@ -192,13 +192,7 @@ export class Cursor<
   }
 
   static decode(value: string): unknown[] {
-    return JSON.parse(Buffer.from(value, 'base64url').toString('utf8')).map((value: unknown) => {
-      if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}/.exec(value)) {
-        return new Date(value);
-      }
-
-      return value;
-    });
+    return JSON.parse(Buffer.from(value, 'base64url').toString('utf8'));
   }
 
   static getDefinition<Entity extends object>(

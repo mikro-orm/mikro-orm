@@ -41,8 +41,11 @@ import { EntityManager } from '../EntityManager.js';
 import { CursorError, ValidationError } from '../errors.js';
 import { DriverException } from '../exceptions.js';
 import { helper } from '../entity/wrap.js';
+import { Reference } from '../entity/Reference.js';
 import { PolymorphicRef } from '../entity/PolymorphicRef.js';
 import { JsonType } from '../types/JsonType.js';
+import { DateTimeType } from '../types/DateTimeType.js';
+import { QueryHelper } from '../utils/QueryHelper.js';
 import { MikroORM } from '../MikroORM.js';
 
 /** Abstract base class for all database drivers, implementing common driver logic. */
@@ -296,17 +299,27 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       return !!val && typeof val === 'object' && key in val;
     };
     const createCursor = (val: unknown, key: 'startCursor' | 'endCursor', inverse = false) => {
-      let def = isCursor(val, key) ? val[key] : val;
+      const def: unknown = Reference.unwrapReference((isCursor(val, key) ? val[key] : val) as T);
+      let offsets: unknown[];
 
-      if (Utils.isPlainObject<FilterObject<T>>(def)) {
-        def = Cursor.for<T>(meta, def, orderBy);
+      // entity (and reference) instances are supported as cursors too, their properties are read the same way
+      if (Utils.isPlainObject<FilterObject<T>>(def) || Utils.isEntity<FilterObject<T>>(def)) {
+        // POJO values are already JS values, extract them ordered per the definition,
+        // without the JSON round trip `Cursor.for` + `Cursor.decode` would impose
+        offsets = definition.map(([key]) => {
+          if (def[key] === undefined) {
+            throw CursorError.missingValue(meta.className, key as string);
+          }
+
+          return def[key];
+        });
+      } else {
+        /* v8 ignore next */
+        offsets = def ? Cursor.decode(def as string) : [];
       }
 
-      /* v8 ignore next */
-      const offsets = def ? (Cursor.decode(def as string) as Dictionary[]) : [];
-
-      if (definition.length === offsets.length) {
-        return this.createCursorCondition<T>(definition, offsets, inverse, meta);
+      if (definition.length > 0 && definition.length === offsets.length) {
+        return this.createCursorCondition<T>(definition, offsets as Dictionary[], inverse, meta);
       }
 
       /* v8 ignore next */
@@ -339,10 +352,61 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       return { [prop]: dir } as OrderDefinition<T>;
     };
 
+    // the cursor condition is created at the driver level, after the EM already converted custom types
+    // in the user `where`, so we need to run the same conversion over it explicitly
+    const where = QueryHelper.processWhere({
+      where: ($and.length > 1 ? { $and } : { ...$and[0] }) as FilterQuery<T>,
+      entityName: meta.class,
+      metadata: this.metadata,
+      platform: this.platform,
+      convertCustomTypes: options.convertCustomTypes,
+    });
+
     return {
       orderBy: definition.map(([prop, direction]) => createOrderBy(prop, direction)),
-      where: ($and.length > 1 ? { $and } : { ...$and[0] }) as FilterQuery<T>,
+      where,
     };
+  }
+
+  /**
+   * Restores the JS value of a single cursor offset: ISO strings become `Date` instances based on the
+   * property type (never based on the string shape alone), and custom types are restored via
+   * `convertToJSValue`. Values compared against a JSON document keep their serialized form instead.
+   */
+  private mapCursorOffset(prop: EntityProperty | undefined, value: unknown, insideJson: boolean): unknown {
+    if (Utils.isScalarReference(value)) {
+      value = value.unwrap();
+    }
+
+    // scalar direction on a relation orders by its primary key
+    if (Utils.isEntity(value, true)) {
+      value = helper(value).getPrimaryKey();
+    }
+
+    if (value == null) {
+      return value;
+    }
+
+    if (insideJson) {
+      // compared against the JSON document, which holds the serialized form
+      if (value instanceof Date) {
+        return value.toISOString();
+      }
+
+      // restore the JS value from the serialized form, `processWhere` then converts it to
+      // the database form, which is what the JSON document holds for custom typed props
+      return prop?.customType ? prop.customType.convertToJSValue(value, this.platform) : value;
+    }
+
+    if (
+      typeof value === 'string' &&
+      (prop?.runtimeType === 'Date' ||
+        (prop?.customType && this.platform.getMappedType(prop.columnTypes?.[0] ?? '') instanceof DateTimeType))
+    ) {
+      value = new Date(value);
+    }
+
+    return prop?.customType ? prop.customType.convertToJSValue(value, this.platform) : value;
   }
 
   protected createCursorCondition<T extends object>(
@@ -357,16 +421,35 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       offset: Dictionary,
       eq = false,
       path = prop,
+      properties: Dictionary<EntityProperty> = meta.properties as Dictionary<EntityProperty>,
+      insideJson = false,
     ): Dictionary => {
+      const propMeta = properties[prop];
+
       if (Utils.isPlainObject(direction)) {
         if (offset === undefined) {
           throw CursorError.missingValue(meta.className, path);
         }
 
+        // POJO cursors can carry entity, reference or embeddable class instances, read their properties directly
+        offset = Reference.unwrapReference(offset);
+        const childProps =
+          propMeta?.kind === ReferenceKind.EMBEDDED ? propMeta.embeddedProps : propMeta?.targetMeta?.properties;
+        insideJson ||=
+          (propMeta?.kind === ReferenceKind.EMBEDDED && !!propMeta.object) || propMeta?.customType instanceof JsonType;
+
         const value = Utils.keys(direction).reduce((o, key) => {
           Object.assign(
             o,
-            createCondition(key, direction[key] as QueryOrderKeys<T>, offset?.[key], eq, `${path}.${key}`),
+            createCondition(
+              key,
+              direction[key] as QueryOrderKeys<T>,
+              offset?.[key],
+              eq,
+              `${path}.${key}`,
+              childProps ?? {},
+              insideJson,
+            ),
           );
           return o;
         }, {});
@@ -392,6 +475,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       if (offset === undefined) {
         throw CursorError.missingValue(meta.className, path);
       }
+
+      offset = this.mapCursorOffset(propMeta, offset, insideJson) as Dictionary;
 
       // Handle null offset (intentional null cursor value)
       if (offset === null) {
