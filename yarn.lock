@@ -1472,7 +1472,7 @@ __metadata:
     "@types/pg": "npm:8.20.3"
     "@types/pg-cursor": "npm:2.7.2"
     "@types/picomatch": "npm:4.0.3"
-    "@types/semver": "npm:7.7.1"
+    "@types/semver": "npm:7.8.0"
     "@types/sqlstring": "npm:2.3.2"
     "@types/uuid": "npm:11.0.0"
     "@types/yargs": "npm:17.0.35"
@@ -1493,7 +1493,7 @@ __metadata:
     reflect-metadata: "npm:0.2.2"
     rimraf: "npm:6.1.3"
     tsimp: "npm:2.0.12"
-    tsx: "npm:4.23.1"
+    tsx: "npm:4.23.4"
     typescript: "npm:7.0.2"
     unplugin-swc: "npm:1.5.9"
     uuid: "npm:14.0.1"
@@ -3342,10 +3342,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/semver@npm:7.7.1":
-  version: 7.7.1
-  resolution: "@types/semver@npm:7.7.1"
-  checksum: 10/8f09e7e6ca3ded67d78ba7a8f7535c8d9cf8ced83c52e7f3ac3c281fe8c689c3fe475d199d94390dc04fc681d51f2358b430bb7b2e21c62de24f2bee2c719068
+"@types/semver@npm:7.8.0":
+  version: 7.8.0
+  resolution: "@types/semver@npm:7.8.0"
+  checksum: 10/bbb33a88cdbc72759cf6b2750f1a28468f4470a61a1543061f494c21a53ad53bb85976e5282d79c811579e7073db0ecb6643ee0bcbf0466e8b5b3cb57ea97de0
   languageName: node
   linkType: hard
 
@@ -9531,9 +9531,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsx@npm:4.23.1":
-  version: 4.23.1
-  resolution: "tsx@npm:4.23.1"
+"tsx@npm:4.23.4":
+  version: 4.23.4
+  resolution: "tsx@npm:4.23.4"
   dependencies:
     esbuild: "npm:~0.28.0"
     fsevents: "npm:~2.3.3"
@@ -9542,7 +9542,7 @@ __metadata:
       optional: true
   bin:
     tsx: dist/cli.mjs
-  checksum: 10/01123a290130314507630f1d1cf8fa71f5e93305d5d8aa57ed012f68e3c1aef2e73f537fa6064b022cb4c813fcd0e286abd6b59db5442ece3c5105e09e10b922
+  checksum: 10/9638b322f9895435ce55575156e5107c5fc69d8fed28b397d17dbb98153a1b64957d865405a67f365074d4aa36768a22c705123df12b1ff2dbb0480ad837ff02
   languageName: node
   linkType: hard
 
