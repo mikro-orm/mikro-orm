@@ -1500,7 +1500,6 @@ export class QueryBuilder<
       filterOptions = QueryHelper.mergePropertyFilters(join.prop.filters, filterOptions);
       let cond = await em.applyFilters(join.prop.targetMeta!.class, join.cond, filterOptions, 'read');
       const criteriaNode = CriteriaNodeFactory.createNode<Entity>(this.metadata, join.prop.targetMeta!.class, cond);
-      const joinCountBefore = Object.keys(this.#state.joins).length;
       cond = criteriaNode.process(this as IQueryBuilder<Entity>, {
         matchPopulateJoins: true,
         filter: true,
@@ -1508,7 +1507,6 @@ export class QueryBuilder<
         ignoreBranching: true,
         parentPath: join.path,
       });
-      this.nestNewJoins(join, joinCountBefore);
 
       if (Utils.hasObjectKeys(cond) || RawQueryFragment.hasObjectFragments(cond)) {
         // remove nested filters, we only care about scalars here, nesting would require another join branch
@@ -1529,6 +1527,8 @@ export class QueryBuilder<
         } else {
           join.cond = { ...cond };
         }
+
+        this.nestReferencedJoins(join);
 
         // For polymorphic LEFT JOIN filters, add a WHERE condition to enforce the filter
         // only for rows matching this target's discriminator value. This ensures rows pointing
@@ -1561,29 +1561,53 @@ export class QueryBuilder<
   }
 
   /**
-   * Auto-joins added while processing a condition of `condJoin` would render after it and produce a
-   * forward alias reference in its `on` clause. Fold them into `condJoin`, so they render as a single
-   * parenthesized join group and share the scope of the outer `on` clause (issue #7681).
+   * The `on` clause of `condJoin` — its explicit join condition or a filter condition merged into
+   * it — can reference the alias of any join in its subtree, both auto-joins created while
+   * processing the condition and pre-existing joined paths, all of which render after `condJoin`
+   * and would be forward alias references (issues #7681, #8090, #8099). When that happens, fold the
+   * subtree into `condJoin`, so it renders as a single parenthesized join group and every alias
+   * shares the scope of the outer `on` clause.
    */
-  private nestNewJoins(condJoin: JoinOptions | undefined, joinCountBefore: number): void {
+  private nestReferencedJoins(condJoin: JoinOptions | undefined): void {
     // m:n pivot joins might not have the target join entry created
     if (!condJoin) {
       return;
     }
 
-    const joinKeys = Object.keys(this.#state.joins);
+    const subtree = this.getJoinSubtree(condJoin);
 
-    for (let i = joinCountBefore; i < joinKeys.length; i++) {
-      const j = this.#state.joins[joinKeys[i]];
-
-      if (j === condJoin || j.ownerAlias !== condJoin.alias) {
-        continue;
-      }
-
-      const nested = (condJoin.nested ??= new Set());
-      j.type = j.type === JoinType.innerJoin ? JoinType.nestedInnerJoin : JoinType.nestedLeftJoin;
-      nested.add(j);
+    if (!subtree.some(j => this.condReferencesAlias(condJoin.cond, j.alias))) {
+      return;
     }
+
+    for (const j of subtree) {
+      const parent = j.ownerAlias === condJoin.alias ? condJoin : subtree.find(p => p.alias === j.ownerAlias)!;
+
+      if (!parent.nested?.has(j)) {
+        const nested = (parent.nested ??= new Set());
+        j.type = j.type === JoinType.innerJoin ? JoinType.nestedInnerJoin : JoinType.nestedLeftJoin;
+        nested.add(j);
+      }
+    }
+  }
+
+  private getJoinSubtree(join: JoinOptions): JoinOptions[] {
+    const children = Object.values(this.#state.joins).filter(j => j !== join && j.ownerAlias === join.alias);
+    return children.flatMap(j => [j, ...this.getJoinSubtree(j)]);
+  }
+
+  private condReferencesAlias(cond: unknown, alias: string): boolean {
+    if (Array.isArray(cond)) {
+      return cond.some(c => this.condReferencesAlias(c, alias));
+    }
+
+    if (Utils.isPlainObject(cond)) {
+      return Object.entries(cond).some(
+        ([key, value]) => key.startsWith(`${alias}.`) || this.condReferencesAlias(value, alias),
+      );
+    }
+
+    return false;
   }
 
   withSubQuery(subQuery: RawQueryFragment | NativeQueryBuilder, alias: string): this {
@@ -3164,7 +3188,6 @@ export class QueryBuilder<
       aliased: [QueryType.SELECT, QueryType.COUNT].includes(this.type),
     })!;
     const criteriaNode = CriteriaNodeFactory.createNode<Entity>(this.metadata, prop.targetMeta!.class, cond);
-    const joinCountBefore = Object.keys(this.#state.joins).length;
     cond = criteriaNode.process(this as IQueryBuilder<Entity>, { ignoreBranching: true, alias });
     let aliasedName = `${fromAlias}.${prop.name}#${alias}`;
     path ??= `${Object.values(this.#state.joins).find(j => j.alias === fromAlias)?.path ?? Utils.className(entityName)}.${prop.name}`;
@@ -3196,7 +3219,7 @@ export class QueryBuilder<
       this.#state.joins[aliasedName].path ??= path;
     }
 
-    this.nestNewJoins(this.#state.joins[aliasedName], joinCountBefore);
+    this.nestReferencedJoins(this.#state.joins[aliasedName]);
 
     return { prop, key: aliasedName };
   }
