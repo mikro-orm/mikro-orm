@@ -623,6 +623,11 @@ export abstract class Platform {
     return true;
   }
 
+  /** Whether date values inside JSON documents keep their native type (e.g. BSON dates), instead of being serialized to ISO strings. */
+  preservesDatesInsideJson(): boolean {
+    return false;
+  }
+
   /** Converts a JS value to its JSON database representation (typically JSON.stringify). */
   convertJsonToDatabaseValue(value: unknown, context?: TransformContext): unknown {
     return JSON.stringify(value);

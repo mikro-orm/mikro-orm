@@ -371,7 +371,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   /**
    * Restores the JS value of a single cursor offset: ISO strings become `Date` instances based on the
    * property type (never based on the string shape alone), and custom types are restored via
-   * `convertToJSValue`. Values compared against a JSON document keep their serialized form instead.
+   * `convertToJSValue`. Values compared against a JSON document keep their serialized form instead,
+   * unless the platform preserves native date types inside JSON documents (mongo).
    */
   private mapCursorOffset(prop: EntityProperty | undefined, value: unknown, insideJson: boolean): unknown {
     if (Utils.isScalarReference(value)) {
@@ -387,7 +388,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       return value;
     }
 
-    if (insideJson) {
+    if (insideJson && !this.platform.preservesDatesInsideJson()) {
       // compared against the JSON document, which holds the serialized form
       if (value instanceof Date) {
         return value.toISOString();
