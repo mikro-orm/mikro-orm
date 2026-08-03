@@ -1530,6 +1530,8 @@ export class QueryBuilder<
           join.cond = { ...cond };
         }
 
+        this.nestReferencedJoins(join);
+
         // For polymorphic LEFT JOIN filters, add a WHERE condition to enforce the filter
         // only for rows matching this target's discriminator value. This ensures rows pointing
         // to other polymorphic targets are not excluded.
@@ -1584,6 +1586,44 @@ export class QueryBuilder<
       j.type = j.type === JoinType.innerJoin ? JoinType.nestedInnerJoin : JoinType.nestedLeftJoin;
       nested.add(j);
     }
+  }
+
+  /**
+   * A joined filter can resolve to an alias created by an earlier joined path that renders after
+   * `condJoin`, so its `on` clause forward-references that alias. Such joins are owned by `condJoin`
+   * but predate its pass, so `nestNewJoins` skips them. Fold the referenced ones into `condJoin`, so
+   * they render inside its parenthesized group and share the scope of the outer `on` clause.
+   */
+  private nestReferencedJoins(condJoin: JoinOptions): void {
+    for (const j of Object.values(this.#state.joins)) {
+      if (j === condJoin || j.ownerAlias !== condJoin.alias || condJoin.nested?.has(j)) {
+        continue;
+      }
+
+      if (!this.condReferencesAlias(condJoin.cond, j.alias)) {
+        continue;
+      }
+
+      const nested = (condJoin.nested ??= new Set());
+      j.type = j.type === JoinType.innerJoin ? JoinType.nestedInnerJoin : JoinType.nestedLeftJoin;
+      nested.add(j);
+    }
+  }
+
+  private condReferencesAlias(cond: Dictionary, alias: string): boolean {
+    const check = (value: unknown): boolean => {
+      if (Array.isArray(value)) {
+        return value.some(check);
+      }
+
+      if (Utils.isPlainObject(value)) {
+        return Object.entries(value).some(([key, val]) => key.startsWith(`${alias}.`) || check(val));
+      }
+
+      return false;
+    };
+
+    return check(cond);
   }
 
   withSubQuery(subQuery: RawQueryFragment | NativeQueryBuilder, alias: string): this {
