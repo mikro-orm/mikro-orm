@@ -44,7 +44,6 @@ import { helper } from '../entity/wrap.js';
 import { Reference } from '../entity/Reference.js';
 import { PolymorphicRef } from '../entity/PolymorphicRef.js';
 import { JsonType } from '../types/JsonType.js';
-import { DateTimeType } from '../types/DateTimeType.js';
 import { QueryHelper } from '../utils/QueryHelper.js';
 import { MikroORM } from '../MikroORM.js';
 
@@ -301,6 +300,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     const createCursor = (val: unknown, key: 'startCursor' | 'endCursor', inverse = false) => {
       const def: unknown = Reference.unwrapReference((isCursor(val, key) ? val[key] : val) as T);
       let offsets: unknown[];
+      let fromJson = false;
 
       // entity (and reference) instances are supported as cursors too, their properties are read the same way
       if (Utils.isPlainObject<FilterObject<T>>(def) || Utils.isEntity<FilterObject<T>>(def)) {
@@ -316,10 +316,11 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       } else {
         /* v8 ignore next */
         offsets = def ? Cursor.decode(def as string) : [];
+        fromJson = true;
       }
 
       if (definition.length > 0 && definition.length === offsets.length) {
-        return this.createCursorCondition<T>(definition, offsets as Dictionary[], inverse, meta);
+        return this.createCursorCondition<T>(definition, offsets as Dictionary[], inverse, meta, fromJson);
       }
 
       /* v8 ignore next */
@@ -374,7 +375,12 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
    * `convertToJSValue`. Values compared against a JSON document keep their serialized form instead,
    * unless the platform preserves native date types inside JSON documents (mongo).
    */
-  private mapCursorOffset(prop: EntityProperty | undefined, value: unknown, insideJson: boolean): unknown {
+  private mapCursorOffset(
+    prop: EntityProperty | undefined,
+    value: unknown,
+    insideJson: boolean,
+    fromJson: boolean,
+  ): unknown {
     if (Utils.isScalarReference(value)) {
       value = value.unwrap();
     }
@@ -388,26 +394,71 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       return value;
     }
 
+    // mongo preserves native date types inside JSON documents, restored JS values compare directly
     if (insideJson && !this.platform.preservesDatesInsideJson()) {
-      // compared against the JSON document, which holds the serialized form
+      // compared against the JSON document, which holds the JSON form of the database value
       if (value instanceof Date) {
         return value.toISOString();
       }
 
-      // restore the JS value from the serialized form, `processWhere` then converts it to
-      // the database form, which is what the JSON document holds for custom typed props
-      return prop?.customType ? prop.customType.convertToJSValue(value, this.platform) : value;
+      if (prop?.customType && fromJson) {
+        const restored = prop.customType.fromJSON
+          ? prop.customType.fromJSON(value, this.platform)
+          : prop.customType.convertToJSValue(value, this.platform);
+
+        // a restored `Date` compares against its ISO string in the document, everything else
+        // keeps the JS value and gets its single `convertToDatabaseValue` in `processWhere`
+        if (restored instanceof Date) {
+          const converted = prop.customType.convertToDatabaseValue(restored, this.platform, {
+            fromQuery: true,
+            key: prop.name,
+            mode: 'query',
+          });
+
+          if (converted instanceof Date) {
+            return converted.toISOString();
+          }
+        }
+
+        return restored;
+      }
+
+      return value;
     }
 
-    if (
-      typeof value === 'string' &&
-      (prop?.runtimeType === 'Date' ||
-        (prop?.customType && this.platform.getMappedType(prop.columnTypes?.[0] ?? '') instanceof DateTimeType))
-    ) {
-      value = new Date(value);
+    if (prop?.customType) {
+      if (fromJson && prop.customType.fromJSON) {
+        // the type owns its JSON round trip
+        return prop.customType.fromJSON(value, this.platform);
+      }
+
+      // A string is either a serialized form (string cursor) or a hand-written one (POJO).
+      // Types whose JS value is a `Date` must receive one. The rest get the string first,
+      // so any sub-millisecond precision survives.
+      if (
+        typeof value === 'string' &&
+        (prop.runtimeType === 'Date' || this.platform.getMappedType(prop.columnTypes?.[0] ?? '').runtimeType === 'Date')
+      ) {
+        if (prop.runtimeType !== 'Date') {
+          try {
+            return prop.customType.convertToJSValue(value, this.platform);
+          } catch {
+            // the type cannot read the serialized string, fall back to the `Date` form
+          }
+        }
+
+        return prop.customType.convertToJSValue(new Date(value), this.platform);
+      }
+
+      // serialized non-string values still need restoring; POJO values are already JS values
+      return fromJson ? prop.customType.convertToJSValue(value, this.platform) : value;
     }
 
-    return prop?.customType ? prop.customType.convertToJSValue(value, this.platform) : value;
+    if (typeof value === 'string' && prop?.runtimeType === 'Date') {
+      return new Date(value);
+    }
+
+    return value;
   }
 
   protected createCursorCondition<T extends object>(
@@ -415,6 +466,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     offsets: Dictionary[],
     inverse: boolean,
     meta: EntityMetadata<T>,
+    fromJson = false,
   ): FilterQuery<T> {
     const createCondition = (
       prop: string,
@@ -477,7 +529,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         throw CursorError.missingValue(meta.className, path);
       }
 
-      offset = this.mapCursorOffset(propMeta, offset, insideJson) as Dictionary;
+      offset = this.mapCursorOffset(propMeta, offset, insideJson, fromJson) as Dictionary;
 
       // Handle null offset (intentional null cursor value)
       if (offset === null) {
@@ -513,7 +565,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       ...createCondition(prop, direction, offset, true),
       $or: [
         createCondition(prop, direction, offset),
-        this.createCursorCondition(otherOrders, otherOffsets, inverse, meta),
+        this.createCursorCondition(otherOrders, otherOffsets, inverse, meta, fromJson),
       ],
     } as FilterQuery<T>;
   }
