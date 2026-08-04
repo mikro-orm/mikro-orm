@@ -1,4 +1,4 @@
-import type { Ref } from '@mikro-orm/core';
+import { type EntityCtor, MetadataStorage, ReferenceKind, type Ref } from '@mikro-orm/core';
 import { Embeddable, Embedded, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
 
@@ -82,5 +82,29 @@ test('discovery works when two entity classes share a mangled class name', async
   expect(book.author.$.name).toBe('Jon');
   expect(book.author.$.social?.twitter).toBe('@jon');
 
+  await orm.close(true);
+});
+
+test('discovery falls back to the name-keyed registry (older decorators versions)', async () => {
+  // simulate a class decorated by an older @mikro-orm/decorators version, which registered
+  // the metadata only under the `className-path` key and stored just the path on the class
+  class OldStyle {}
+  const meta = MetadataStorage.getMetadata('OldStyle', '/gh8107/old-style');
+  meta.class = OldStyle as EntityCtor;
+  meta.name = 'OldStyle';
+  meta.properties.id = {
+    name: 'id',
+    kind: ReferenceKind.SCALAR,
+    type: 'number',
+    primary: true,
+  } as (typeof meta.properties)[string];
+  Object.defineProperty(OldStyle, MetadataStorage.PATH_SYMBOL, { value: '/gh8107/old-style', writable: true });
+
+  const orm = await MikroORM.init({
+    dbName: ':memory:',
+    entities: [OldStyle],
+  });
+
+  expect(orm.getMetadata().get<any>(OldStyle).properties.id.primary).toBe(true);
   await orm.close(true);
 });
