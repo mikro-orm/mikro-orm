@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.10](https://github.com/mikro-orm/mikro-orm/compare/v7.1.9...v7.1.10) (2026-08-04)
+
+### Bug Fixes
+
+* **core:** duck-type `Routine.is()` to survive the CJS/ESM dual-package hazard ([#8094](https://github.com/mikro-orm/mikro-orm/issues/8094)) ([59df822](https://github.com/mikro-orm/mikro-orm/commit/59df82261cab79649314ae597fbd00000bf9bd7f)), closes [#7289](https://github.com/mikro-orm/mikro-orm/issues/7289) [#8092](https://github.com/mikro-orm/mikro-orm/issues/8092)
+* **core:** map cursor offsets based on property types ([#8097](https://github.com/mikro-orm/mikro-orm/issues/8097)) ([231ff06](https://github.com/mikro-orm/mikro-orm/commit/231ff06df5052c0e8235dda1b705710a2b81aff3))
+* **core:** prevent hash collisions for nested composite keys ([#8088](https://github.com/mikro-orm/mikro-orm/issues/8088)) ([7fef7ee](https://github.com/mikro-orm/mikro-orm/commit/7fef7ee9a4adaebb85318314fbd9aba7443c079c))
+* **mongo:** support cursor pagination ordered by date inside object embeddable ([#8102](https://github.com/mikro-orm/mikro-orm/issues/8102)) ([d3bb418](https://github.com/mikro-orm/mikro-orm/commit/d3bb41839fb8a991c3eb5cdd8a2ec27131f02e62)), closes [#8097](https://github.com/mikro-orm/mikro-orm/issues/8097)
+
+
 ## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
 
 ### Bug Fixes

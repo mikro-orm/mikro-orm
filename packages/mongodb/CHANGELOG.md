@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.10](https://github.com/mikro-orm/mikro-orm/compare/v7.1.9...v7.1.10) (2026-08-04)
+
+### Bug Fixes
+
+* **mongo:** support cursor pagination ordered by date inside object embeddable ([#8102](https://github.com/mikro-orm/mikro-orm/issues/8102)) ([d3bb418](https://github.com/mikro-orm/mikro-orm/commit/d3bb41839fb8a991c3eb5cdd8a2ec27131f02e62)), closes [#8097](https://github.com/mikro-orm/mikro-orm/issues/8097)
+
+
 ## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
 
 **Note:** Version bump only for package @mikro-orm/mongodb

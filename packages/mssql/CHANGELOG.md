@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.10](https://github.com/mikro-orm/mikro-orm/compare/v7.1.9...v7.1.10) (2026-08-04)
+
+### Bug Fixes
+
+* **mssql:** support predictable primary key names ([#8095](https://github.com/mikro-orm/mikro-orm/issues/8095)) ([b16daec](https://github.com/mikro-orm/mikro-orm/commit/b16daec207a72e4a922d511d13fecb172dfdd957))
+
+
 ## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
 
 ### Bug Fixes
