@@ -6,6 +6,8 @@ exports[`Migrator (postgres) > generate initial migration > initial-migration-du
 
 export class Migration20191013214813 extends Migration {
 
+  override name = 'Migration20191013214813';
+
   override up(): void | Promise<void> {
     this.addSql(\`create schema if not exists "custom";\`);
     this.addSql(\`create table "custom"."book_tag2" ("id" bigserial primary key, "name" varchar(50) not null);\`);
@@ -201,6 +203,8 @@ exports[`Migrator (postgres) > generate initial migration > initial-migration-du
   "code": "import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191013214813 extends Migration {
+
+  override name = 'Migration20191013214813';
 
   override up(): void | Promise<void> {
     this.addSql(\`create schema if not exists "custom";\`);
@@ -400,6 +404,8 @@ const { Migration } = require('@mikro-orm/migrations');
 
 class Migration20191013214813 extends Migration {
 
+  name = 'Migration20191013214813';
+
   async up() {
     this.addSql(\`alter table "custom"."book2" drop column "foo";\`);
     this.addSql(\`alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);\`);
@@ -443,6 +449,8 @@ import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191013214813 extends Migration {
 
+  override name = 'Migration20191013214813';
+
   override up(): void | Promise<void> {
     this.addSql(\`alter table "custom"."book2" drop column "foo";\`);
     this.addSql(\`alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);\`);
@@ -482,6 +490,8 @@ exports[`Migrator (postgres) > generate migration with custom name > migration-d
   "code": "import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191013214813 extends Migration {
+
+  override name = 'Migration20191013214813';
 
   override up(): void | Promise<void> {
     this.addSql(\`alter table "custom"."book2" drop column "foo";\`);
@@ -523,6 +533,8 @@ exports[`Migrator (postgres) > generate migration with custom name with name opt
 
 export class Migration20191013214813_custom_name extends Migration {
 
+  override name = 'Migration20191013214813_custom_name';
+
   override up(): void | Promise<void> {
     this.addSql(\`alter table "custom"."book2" drop column "foo";\`);
     this.addSql(\`alter table "custom"."book2" alter column "double" type double precision using ("double"::double precision);\`);
@@ -562,6 +574,8 @@ exports[`Migrator (postgres) > generate migration with snapshot > migration-snap
   "code": "import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191013214813 extends Migration {
+
+  override name = 'Migration20191013214813';
 
   override up(): void | Promise<void> {
     this.addSql(\`alter table "custom"."book2" drop column "foo";\`);
@@ -613,6 +627,8 @@ exports[`Migrator (postgres) > generate schema migration > migration-dump 1`] = 
   "code": "import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191013214813 extends Migration {
+
+  override name = 'Migration20191013214813';
 
   override up(): void | Promise<void> {
     this.addSql(\`alter table "custom"."book2" drop column "foo";\`);
@@ -814,6 +830,8 @@ exports[`respects the skipTables option when diffing schemas > migration-dump-wi
   "code": "import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191013214813 extends Migration {
+
+  override name = 'Migration20191013214813';
 
   override up(): void | Promise<void> {
     this.addSql(\`alter table "custom"."test2" drop column "path";\`);

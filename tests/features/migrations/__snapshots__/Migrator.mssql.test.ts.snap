@@ -6,6 +6,8 @@ exports[`Migrator (mssql) > generate initial migration > initial-migration-dump 
 
 export class Migration20191013214813 extends Migration {
 
+  override name = 'Migration20191013214813';
+
   override up(): void | Promise<void> {
     this.addSql(\`if (schema_id('custom') is null) begin exec ('create schema [custom] authorization [dbo]') end;\`);
     this.addSql(\`create table [custom].[book_tag2] ([id] bigint identity(1,1) not null constraint [book_tag2_pkey] primary key, [name] nvarchar(50) not null);\`);
@@ -197,6 +199,8 @@ exports[`Migrator (mssql) > generate initial migration > initial-migration-dump 
   "code": "import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191013214813 extends Migration {
+
+  override name = 'Migration20191013214813';
 
   override up(): void | Promise<void> {
     this.addSql(\`if (schema_id('custom') is null) begin exec ('create schema [custom] authorization [dbo]') end;\`);
@@ -392,6 +396,8 @@ const { Migration } = require('@mikro-orm/migrations');
 
 class Migration20191013214813 extends Migration {
 
+  name = 'Migration20191013214813';
+
   async up() {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
@@ -447,6 +453,8 @@ import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191013214813 extends Migration {
 
+  override name = 'Migration20191013214813';
+
   override up(): void | Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
@@ -498,6 +506,8 @@ exports[`Migrator (mssql) > generate migration with custom name > migration-dump
   "code": "import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191013214813 extends Migration {
+
+  override name = 'Migration20191013214813';
 
   override up(): void | Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
@@ -551,6 +561,8 @@ exports[`Migrator (mssql) > generate migration with custom name with name option
 
 export class Migration20191013214813_custom_name extends Migration {
 
+  override name = 'Migration20191013214813_custom_name';
+
   override up(): void | Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
 
@@ -602,6 +614,8 @@ exports[`Migrator (mssql) > generate migration with snapshot > migration-snapsho
   "code": "import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191013214813 extends Migration {
+
+  override name = 'Migration20191013214813';
 
   override up(): void | Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);
@@ -665,6 +679,8 @@ exports[`Migrator (mssql) > generate schema migration > migration-dump 1`] = `
   "code": "import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191013214813 extends Migration {
+
+  override name = 'Migration20191013214813';
 
   override up(): void | Promise<void> {
     this.addSql(\`alter table [custom].[book2] alter column [double] nvarchar(max);\`);

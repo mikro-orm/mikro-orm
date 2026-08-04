@@ -2318,6 +2318,8 @@ export interface IMigrationGenerator {
 
 /** Interface that all migration classes must implement. */
 export interface Migration {
+  /** Stable migration name, used instead of the class name (which minifiers can mangle). */
+  name?: string;
   up(): Promise<void> | void;
   down(): Promise<void> | void;
   isTransactional(): boolean;

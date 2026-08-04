@@ -4,6 +4,9 @@ import type { Collection, ClientSession, Document, Db } from 'mongodb';
 
 /** Base class for MongoDB migrations. Extend this class and implement `up()` (and optionally `down()`). */
 export abstract class Migration {
+  /** Stable migration name, used instead of the class name (which minifiers can mangle). */
+  name?: string;
+
   protected ctx?: Transaction<ClientSession>;
 
   constructor(
