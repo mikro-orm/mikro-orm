@@ -362,10 +362,12 @@ export class MetadataDiscovery {
 
       parent = Object.getPrototypeOf(meta.class);
 
-      // Skip if parent is the auto-generated base class for the same entity (from setClass usage)
+      // Skip if parent is the auto-generated base class for the same entity (from setClass usage).
+      // A parent carrying its own decorator metadata is a real base class even when a minifier
+      // mangles it to the same name as the child.
       if (
         parent.name !== '' &&
-        parent.name !== meta.className &&
+        (parent.name !== meta.className || Object.hasOwn(parent, MetadataStorage.META_SYMBOL)) &&
         !this.#metadata.has(parent) &&
         parent !== BaseEntity
       ) {
@@ -410,11 +412,19 @@ export class MetadataDiscovery {
     }
 
     // After the EntitySchema check, entity must be an EntityClass
-    const cls = entity as EntityClass<T> & { [MetadataStorage.PATH_SYMBOL]?: string };
+    const cls = entity as EntityClass<T> & {
+      [MetadataStorage.PATH_SYMBOL]?: string;
+      [MetadataStorage.META_SYMBOL]?: EntityMetadata<T>;
+    };
     const path = cls[MetadataStorage.PATH_SYMBOL];
 
     if (path) {
-      const meta = Utils.copy(MetadataStorage.getMetadata(cls.name, path), false);
+      // Prefer the metadata stored on the class reference, the `className-path` key can
+      // collide when a minifier mangles two classes to the same name.
+      const stored = Object.hasOwn(cls, MetadataStorage.META_SYMBOL)
+        ? cls[MetadataStorage.META_SYMBOL]!
+        : MetadataStorage.getMetadata<T>(cls.name, path);
+      const meta = Utils.copy(stored, false);
       meta.path = path;
       this.#metadata.set(cls, meta);
     }
@@ -1568,7 +1578,12 @@ export class MetadataDiscovery {
     }
 
     visited.add(embeddedProp);
-    const embeddable = this.#discovered.find(m => m.name === embeddedProp.type);
+    // Prefer resolution via the class reference, the name can be ambiguous when a minifier
+    // mangles two classes to the same name. Only named metadata counts, an auto-discovered
+    // class without the `@Embeddable()` decorator should still fail as unknown below.
+    const embeddable =
+      this.#discovered.find(m => m.name && m.class === embeddedProp.target) ??
+      this.#discovered.find(m => m.name === embeddedProp.type);
 
     if (!embeddable) {
       throw MetadataError.fromUnknownEntity(embeddedProp.type, `${meta.className}.${embeddedProp.name}`);

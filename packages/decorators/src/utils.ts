@@ -1,5 +1,6 @@
 import {
   type Dictionary,
+  type EntityCtor,
   EntityManager,
   type EntityMetadata,
   EntityRepository,
@@ -192,5 +193,5 @@ export function getMetadataFromDecorator<T = any>(
     });
   }
 
-  return MetadataStorage.getMetadata(target.name, target[MetadataStorage.PATH_SYMBOL]!);
+  return MetadataStorage.getMetadata(target.name, target[MetadataStorage.PATH_SYMBOL]!, target as EntityCtor);
 }
