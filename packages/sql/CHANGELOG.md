@@ -7,12 +7,11 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **core:** prevent hash collisions for nested composite keys ([#8088](https://github.com/mikro-orm/mikro-orm/issues/8088)) ([7fef7ee](https://github.com/mikro-orm/mikro-orm/commit/7fef7ee9a4adaebb85318314fbd9aba7443c079c))
-* **mssql:** support predictable primary key names ([#8095](https://github.com/mikro-orm/mikro-orm/issues/8095)) ([b16daec](https://github.com/mikro-orm/mikro-orm/commit/b16daec207a72e4a922d511d13fecb172dfdd957))
-* **sql:** nest joins referenced by `on` conditions instead of only newly added ones ([#8101](https://github.com/mikro-orm/mikro-orm/issues/8101)) ([d137965](https://github.com/mikro-orm/mikro-orm/commit/d137965922932b9ba6ffc6b52083fb79e4f5fde3)), closes [#8100](https://github.com/mikro-orm/mikro-orm/issues/8100) [7681/#8091](https://github.com/mikro-orm/mikro-orm/issues/8091) [#8100](https://github.com/mikro-orm/mikro-orm/issues/8100) [#8099](https://github.com/mikro-orm/mikro-orm/issues/8099)
-* **sql:** prevent forward join alias references when applying joined filters ([#8091](https://github.com/mikro-orm/mikro-orm/issues/8091)) ([8388010](https://github.com/mikro-orm/mikro-orm/commit/83880104c3544be02ba00649f8078c5405db61a4)), closes [#7681](https://github.com/mikro-orm/mikro-orm/issues/7681) [#8090](https://github.com/mikro-orm/mikro-orm/issues/8090)
-* **sql:** yield all rows merged from the final batch when streaming ([#8089](https://github.com/mikro-orm/mikro-orm/issues/8089)) ([989690a](https://github.com/mikro-orm/mikro-orm/commit/989690a2d2e5fcfe326972fb4d9531b2cb6c4853)), closes [#8078](https://github.com/mikro-orm/mikro-orm/issues/8078)
-
+- **core:** prevent hash collisions for nested composite keys ([#8088](https://github.com/mikro-orm/mikro-orm/issues/8088)) ([7fef7ee](https://github.com/mikro-orm/mikro-orm/commit/7fef7ee9a4adaebb85318314fbd9aba7443c079c))
+- **mssql:** support predictable primary key names ([#8095](https://github.com/mikro-orm/mikro-orm/issues/8095)) ([b16daec](https://github.com/mikro-orm/mikro-orm/commit/b16daec207a72e4a922d511d13fecb172dfdd957))
+- **sql:** nest joins referenced by `on` conditions instead of only newly added ones ([#8101](https://github.com/mikro-orm/mikro-orm/issues/8101)) ([d137965](https://github.com/mikro-orm/mikro-orm/commit/d137965922932b9ba6ffc6b52083fb79e4f5fde3)), closes [#8100](https://github.com/mikro-orm/mikro-orm/issues/8100) [7681/#8091](https://github.com/mikro-orm/mikro-orm/issues/8091) [#8100](https://github.com/mikro-orm/mikro-orm/issues/8100) [#8099](https://github.com/mikro-orm/mikro-orm/issues/8099)
+- **sql:** prevent forward join alias references when applying joined filters ([#8091](https://github.com/mikro-orm/mikro-orm/issues/8091)) ([8388010](https://github.com/mikro-orm/mikro-orm/commit/83880104c3544be02ba00649f8078c5405db61a4)), closes [#7681](https://github.com/mikro-orm/mikro-orm/issues/7681) [#8090](https://github.com/mikro-orm/mikro-orm/issues/8090)
+- **sql:** yield all rows merged from the final batch when streaming ([#8089](https://github.com/mikro-orm/mikro-orm/issues/8089)) ([989690a](https://github.com/mikro-orm/mikro-orm/commit/989690a2d2e5fcfe326972fb4d9531b2cb6c4853)), closes [#8078](https://github.com/mikro-orm/mikro-orm/issues/8078)
 
 ## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
 

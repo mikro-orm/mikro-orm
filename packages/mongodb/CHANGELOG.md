@@ -7,8 +7,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **mongo:** support cursor pagination ordered by date inside object embeddable ([#8102](https://github.com/mikro-orm/mikro-orm/issues/8102)) ([d3bb418](https://github.com/mikro-orm/mikro-orm/commit/d3bb41839fb8a991c3eb5cdd8a2ec27131f02e62)), closes [#8097](https://github.com/mikro-orm/mikro-orm/issues/8097)
-
+- **mongo:** support cursor pagination ordered by date inside object embeddable ([#8102](https://github.com/mikro-orm/mikro-orm/issues/8102)) ([d3bb418](https://github.com/mikro-orm/mikro-orm/commit/d3bb41839fb8a991c3eb5cdd8a2ec27131f02e62)), closes [#8097](https://github.com/mikro-orm/mikro-orm/issues/8097)
 
 ## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
 
