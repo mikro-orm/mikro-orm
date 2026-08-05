@@ -85,6 +85,22 @@ test('discovery works when two entity classes share a mangled class name', async
   await orm.close(true);
 });
 
+test('auto-discovery of referenced entities works when class names collide', async () => {
+  // `Author` and `Social` are not listed in `entities`, they are discovered
+  // via the `Book.author` relation and the `Author.social` embedded property
+  const orm = await MikroORM.init({
+    dbName: ':memory:',
+    entities: [Book],
+  });
+
+  expect(orm.getMetadata().get(Book).tableName).toBe('gh8107_book');
+  expect(orm.getMetadata().get(Author).tableName).toBe('gh8107_author');
+  expect(orm.getMetadata().get(Book).properties.author.targetMeta?.tableName).toBe('gh8107_author');
+  expect(orm.getMetadata().get(Author).properties.social.embeddable).toBe(Social);
+
+  await orm.close(true);
+});
+
 test('discovery falls back to the name-keyed registry (older decorators versions)', async () => {
   // simulate a class decorated by an older @mikro-orm/decorators version, which registered
   // the metadata only under the `className-path` key and stored just the path on the class

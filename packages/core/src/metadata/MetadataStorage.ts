@@ -35,7 +35,7 @@ export class MetadataStorage {
     }
   }
 
-  /** Returns the global metadata dictionary, or a specific entry by entity name and path. */
+  /** Returns the global metadata dictionary, or a specific entry by entity name and path (keyed by the class reference when `target` is provided). */
   static getMetadata(): Dictionary<EntityMetadata>;
   static getMetadata<T = any>(entity: string, path: string, target?: EntityCtor): EntityMetadata<T>;
   static getMetadata<T = any>(
@@ -53,8 +53,10 @@ export class MetadataStorage {
           value: new EntityMetadata({ className: entity, path }),
           writable: true,
         });
-        MetadataStorage.#metadata[key] = target[MetadataStorage.META_SYMBOL]!;
       }
+
+      // Keep the name-keyed entry in sync, the class-keyed metadata survives `MetadataStorage.clear()`.
+      MetadataStorage.#metadata[key] = target[MetadataStorage.META_SYMBOL]!;
 
       return target[MetadataStorage.META_SYMBOL]!;
     }

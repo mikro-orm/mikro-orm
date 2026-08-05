@@ -278,6 +278,13 @@ export class MetadataDiscovery {
         .replace(/\[]$/, '') // remove array suffix
         .replace(/\((.*)\)/, '$1'); // unwrap union types
 
+    // Names can be ambiguous when a minifier mangles two classes to the same name,
+    // so class references also need to be checked by identity.
+    const discoveredByIdentity = (target: unknown) => {
+      const cls = EntitySchema.is(target) ? target.meta.class : target;
+      return typeof cls !== 'function' || this.#discovered.some(m => m.class === cls);
+    };
+
     const missing: EntityClass[] = [];
     this.#discovered.forEach(meta =>
       Object.values(meta.properties).forEach(prop => {
@@ -288,7 +295,7 @@ export class MetadataDiscovery {
               ? (pivotEntity as () => EntityClass)()
               : pivotEntity;
 
-          if (!this.#discovered.find(m => m.className === Utils.className(target))) {
+          if (!this.#discovered.find(m => m.className === Utils.className(target)) || !discoveredByIdentity(target)) {
             missing.push(target);
           }
         }
@@ -299,7 +306,8 @@ export class MetadataDiscovery {
           if (
             !unwrap(prop.type)
               .split(/ ?\| ?/)
-              .every(type => this.#discovered.find(m => m.className === type))
+              .every(type => this.#discovered.find(m => m.className === type)) ||
+            !Utils.asArray(target as EntityClass).every(discoveredByIdentity)
           ) {
             missing.push(...Utils.asArray(target as EntityClass));
           }
@@ -399,9 +407,7 @@ export class MetadataDiscovery {
     }
   }
 
-  private getSchema<T>(
-    entity: (EntityClass<T> & { [MetadataStorage.PATH_SYMBOL]?: string }) | EntitySchema<T>,
-  ): EntitySchema<T> {
+  private getSchema<T>(entity: EntityClass<T> | EntitySchema<T>): EntitySchema<T> {
     if (EntitySchema.REGISTRY.has(entity)) {
       entity = EntitySchema.REGISTRY.get(entity)!;
     }
