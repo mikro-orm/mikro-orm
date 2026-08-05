@@ -483,11 +483,12 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     };
   }
 
-  protected initialize(MigrationClass: Constructor<Migration>, name: string): RunnableMigration {
+  protected initialize(MigrationClass: Constructor<Migration>, name?: string): RunnableMigration {
     const instance = new MigrationClass(this.driver, this.config);
 
     return {
-      name: this.storage.getMigrationName(name),
+      // the constructor name is the last resort, minifiers can mangle it (e.g. when bundling)
+      name: this.storage.getMigrationName(name ?? instance.name ?? MigrationClass.name),
       up: afterRun => this.runner.run(instance, 'up', afterRun),
       down: afterRun => this.runner.run(instance, 'down', afterRun),
     };
@@ -545,7 +546,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     if (this.options.migrationsList) {
       return this.options.migrationsList.map(migration => {
         if (typeof migration === 'function') {
-          return this.initialize(migration, migration.name);
+          return this.initialize(migration);
         }
 
         return this.initialize(migration.class, migration.name);

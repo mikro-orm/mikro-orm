@@ -6,6 +6,8 @@ exports[`Migrator > blank initial migration can be created if no entity metadata
 
 export class Migration20191013214813 extends Migration {
 
+  override name = 'Migration20191013214813';
+
   override up(): void | Promise<void> {
     this.addSql(\`select 1\`);
   }
@@ -33,6 +35,8 @@ exports[`Migrator > do not log a migration if the schema does not exist yet > in
   "code": "import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191013214813 extends Migration {
+
+  override name = 'Migration20191013214813';
 
   override up(): void | Promise<void> {
     this.addSql(\`create table \\\`base_user2\\\` (\\\`id\\\` int unsigned not null auto_increment primary key, \\\`first_name\\\` varchar(100) not null, \\\`last_name\\\` varchar(100) not null, \\\`type\\\` enum('employee','manager','owner') not null, \\\`owner_prop\\\` varchar(255) null, \\\`favourite_employee_id\\\` int unsigned null, \\\`favourite_manager_id\\\` int unsigned null, \\\`employee_prop\\\` int null, \\\`manager_prop\\\` varchar(255) null) default character set utf8mb4 engine = InnoDB;\`);
@@ -340,6 +344,8 @@ const { Migration } = require('@mikro-orm/migrations');
 
 class Migration20191013214813 extends Migration {
 
+  name = 'Migration20191013214813';
+
   async up() {
     this.addSql(\`alter table \\\`foo_param2\\\` drop foreign key \\\`foo_param2_bar_id_foreign\\\`;\`);
     this.addSql(\`alter table \\\`foo_param2\\\` drop foreign key \\\`foo_param2_baz_id_foreign\\\`;\`);
@@ -441,6 +447,8 @@ const { Migration } = require('@mikro-orm/migrations');
 
 class Migration20191013214813 extends Migration {
 
+  name = 'Migration20191013214813';
+
   async up() {
     this.addSql(\`alter table \\\`foo_param2\\\` drop foreign key \\\`foo_param2_bar_id_foreign\\\`;\`);
     this.addSql(\`alter table \\\`foo_param2\\\` drop foreign key \\\`foo_param2_baz_id_foreign\\\`;\`);
@@ -540,6 +548,8 @@ exports[`Migrator > generate migration with custom name > migration-dump 1`] = `
 
 export class Migration20191013214813 extends Migration {
 
+  override name = 'Migration20191013214813';
+
   override up(): void | Promise<void> {
     this.addSql(\`alter table \\\`foo_param2\\\` drop foreign key \\\`foo_param2_bar_id_foreign\\\`;\`);
     this.addSql(\`alter table \\\`foo_param2\\\` drop foreign key \\\`foo_param2_baz_id_foreign\\\`;\`);
@@ -638,6 +648,8 @@ exports[`Migrator > generate schema migration > migration-dump 1`] = `
 
 export class Migration20191013214813 extends Migration {
 
+  override name = 'Migration20191013214813';
+
   override up(): void | Promise<void> {
     this.addSql(\`alter table \\\`foo_param2\\\` drop foreign key \\\`foo_param2_bar_id_foreign\\\`;\`);
     this.addSql(\`alter table \\\`foo_param2\\\` drop foreign key \\\`foo_param2_baz_id_foreign\\\`;\`);
@@ -735,6 +747,8 @@ exports[`Migrator > log a migration when the schema already exists > initial-mig
   "code": "import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191013214813 extends Migration {
+
+  override name = 'Migration20191013214813';
 
   override up(): void | Promise<void> {
     this.addSql(\`create table \\\`base_user2\\\` (\\\`id\\\` int unsigned not null auto_increment primary key, \\\`first_name\\\` varchar(100) not null, \\\`last_name\\\` varchar(100) not null, \\\`type\\\` enum('employee','manager','owner') not null, \\\`owner_prop\\\` varchar(255) null, \\\`favourite_employee_id\\\` int unsigned null, \\\`favourite_manager_id\\\` int unsigned null, \\\`employee_prop\\\` int null, \\\`manager_prop\\\` varchar(255) null) default character set utf8mb4 engine = InnoDB;\`);
@@ -1039,6 +1053,8 @@ exports[`Migrator > snapshot should not be updated when custom migration fileNam
   "code": "import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191013214813_with_custom_name extends Migration {
+
+  override name = 'Migration20191013214813_with_custom_name';
 
   override up(): void | Promise<void> {
     this.addSql(\`alter table \\\`foo_param2\\\` drop foreign key \\\`foo_param2_bar_id_foreign\\\`;\`);
