@@ -1469,7 +1469,7 @@ __metadata:
     "@types/better-sqlite3": "npm:9.6.0"
     "@types/node": "npm:24.13.3"
     "@types/oracledb": "npm:7.0.2"
-    "@types/pg": "npm:8.20.3"
+    "@types/pg": "npm:8.20.4"
     "@types/pg-cursor": "npm:2.7.2"
     "@types/picomatch": "npm:4.0.3"
     "@types/semver": "npm:7.8.0"
@@ -3315,14 +3315,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pg@npm:8.20.3":
-  version: 8.20.3
-  resolution: "@types/pg@npm:8.20.3"
+"@types/pg@npm:8.20.4":
+  version: 8.20.4
+  resolution: "@types/pg@npm:8.20.4"
   dependencies:
     "@types/node": "npm:*"
     pg-protocol: "npm:*"
     pg-types: "npm:^2.2.0"
-  checksum: 10/c4a9ccf97b16335ad8a7d592dd29448c6a808cab4b26c9be82a50c638170d80b75bd57e8132e022ad7a8f79cb9e5ebfee1a5cacaac74aa9e941646a7469ba628
+  checksum: 10/4c14517358efd230316a04456c522cd064dc187244b3dc0b64af00ab21dd7b1997a2fe90fc5b13fa8de1867b65bf9ccebd4ecc4751e17aa24d50588385641082
   languageName: node
   linkType: hard
 
