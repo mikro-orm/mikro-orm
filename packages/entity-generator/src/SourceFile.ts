@@ -1,5 +1,6 @@
 import {
   Cascade,
+  type CheckConstraint,
   Config,
   DecimalType,
   type DeferMode,
@@ -69,6 +70,10 @@ export class SourceFile {
         continue;
       }
       ret += `@${this.referenceDecoratorImport('Unique')}(${this.serializeObject(this.getUniqueOptions(index))})\n`;
+    }
+
+    for (const check of this.meta.checks) {
+      ret += `@${this.referenceDecoratorImport('Check')}(${this.serializeObject(this.getCheckOptions(check))})\n`;
     }
 
     let classHead = '';
@@ -261,6 +266,18 @@ export class SourceFile {
     }
 
     return uniqueOpt;
+  }
+
+  protected getCheckOptions(check: EntityMetadata['checks'][number]) {
+    const checkOpt = {} as CheckConstraint<Dictionary>;
+
+    if (typeof check.name === 'string') {
+      checkOpt.name = this.quote(check.name);
+    }
+
+    checkOpt.expression = this.quote(check.expression as string);
+
+    return checkOpt;
   }
 
   protected generateImports() {

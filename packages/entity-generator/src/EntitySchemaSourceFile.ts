@@ -50,6 +50,10 @@ export class EntitySchemaSourceFile extends SourceFile {
       entitySchemaOptions.uniques = this.meta.uniques.map(index => this.getUniqueOptions(index));
     }
 
+    if (this.meta.checks.length > 0) {
+      entitySchemaOptions.checks = this.meta.checks.map(check => this.getCheckOptions(check));
+    }
+
     entitySchemaOptions.properties = Object.fromEntries(
       Object.entries(this.meta.properties).map(([name, prop]) => [name, this.getPropertyOptions(prop)]),
     );

@@ -398,6 +398,23 @@ export class DatabaseTable {
       schema.addIndex(ret);
     }
 
+    for (const check of this.getChecks()) {
+      // skip checks that were consumed by enum conversion — the enum property recreates an
+      // equivalent check under the conventional name during discovery (only on platforms that
+      // emulate enums via check constraints; mysql/mariadb enums are native and recreate nothing)
+      const enumItems = check.columnName ? this.getColumn(check.columnName)?.enumItems : undefined;
+      if (
+        this.#platform.usesEnumCheckConstraints() &&
+        enumItems?.length &&
+        (check.expression === this.#platform.getEnumCheckConstraintExpression(check.columnName!, enumItems) ||
+          check.name === this.#platform.getIndexName(this.name, [check.columnName!], 'check'))
+      ) {
+        continue;
+      }
+
+      schema.meta.checks.push({ name: check.name, expression: check.expression as string });
+    }
+
     const addedStandaloneFkPropsBasedOnColumn = new Set<string>();
     const nonSkippedColumns = this.getColumns().filter(column => !skippedColumnNames.includes(column.name));
 
