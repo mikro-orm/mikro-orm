@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.11](https://github.com/mikro-orm/mikro-orm/compare/v7.1.10...v7.1.11) (2026-08-06)
+
+### Bug Fixes
+
+* **core:** ignore metadata cache entries cached from a different source file ([#8111](https://github.com/mikro-orm/mikro-orm/issues/8111)) ([f53ab65](https://github.com/mikro-orm/mikro-orm/commit/f53ab65c39c26dc8e79beee4ab33cf4ac66b1676)), closes [#8107](https://github.com/mikro-orm/mikro-orm/issues/8107)
+* **core:** ignore own `__proto__` key when cloning objects ([#8120](https://github.com/mikro-orm/mikro-orm/issues/8120)) ([e09c881](https://github.com/mikro-orm/mikro-orm/commit/e09c8814a660097a60d011d75c69efb060077a58))
+* **core:** resolve entity metadata via class references instead of class names ([#8108](https://github.com/mikro-orm/mikro-orm/issues/8108)) ([d3564bf](https://github.com/mikro-orm/mikro-orm/commit/d3564bf29e4fafc2cdd9a5bd5a89bbb25f105e27)), closes [#8107](https://github.com/mikro-orm/mikro-orm/issues/8107)
+* **entity-generator:** emit check constraints in generated entities ([#8121](https://github.com/mikro-orm/mikro-orm/issues/8121)) ([5f56d24](https://github.com/mikro-orm/mikro-orm/commit/5f56d24e84e96b6ffa9ebde0255ec7a029e0b278)), closes [#8114](https://github.com/mikro-orm/mikro-orm/issues/8114)
+* **entity-generator:** keep index column order when columns map to relations ([#8119](https://github.com/mikro-orm/mikro-orm/issues/8119)) ([c3c0601](https://github.com/mikro-orm/mikro-orm/commit/c3c06010d1af4097d21470293f962aa7a1bb498f)), closes [#8116](https://github.com/mikro-orm/mikro-orm/issues/8116)
+* **entity-generator:** preserve advanced options of single-column indexes ([#8122](https://github.com/mikro-orm/mikro-orm/issues/8122)) ([e589ed4](https://github.com/mikro-orm/mikro-orm/commit/e589ed425d64bad01212a2f141be579a45ed9cab)), closes [#8118](https://github.com/mikro-orm/mikro-orm/issues/8118) [#8118](https://github.com/mikro-orm/mikro-orm/issues/8118)
+* **entity-generator:** preserve the where clause of partial indexes ([#8118](https://github.com/mikro-orm/mikro-orm/issues/8118)) ([fdaa9a8](https://github.com/mikro-orm/mikro-orm/commit/fdaa9a88a09ee8b316a4d74ca816a63b54e4ab3a)), closes [#8115](https://github.com/mikro-orm/mikro-orm/issues/8115)
+* **migrations:** allow stable migration names when class names are minified ([#8109](https://github.com/mikro-orm/mikro-orm/issues/8109)) ([560fb4f](https://github.com/mikro-orm/mikro-orm/commit/560fb4fac46b02715cf79af14c0fcc1c6126e22b))
+* **sql:** infer columns with a default value as kysely `Generated` ([#8117](https://github.com/mikro-orm/mikro-orm/issues/8117)) ([29f074f](https://github.com/mikro-orm/mikro-orm/commit/29f074f26dcd0390f2c138a59d253cdb36e3319d)), closes [#8113](https://github.com/mikro-orm/mikro-orm/issues/8113)
+
+
 ## [7.1.10](https://github.com/mikro-orm/mikro-orm/compare/v7.1.9...v7.1.10) (2026-08-04)
 
 ### Bug Fixes

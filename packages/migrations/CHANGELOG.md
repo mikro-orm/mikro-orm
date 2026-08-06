@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.11](https://github.com/mikro-orm/mikro-orm/compare/v7.1.10...v7.1.11) (2026-08-06)
+
+### Bug Fixes
+
+* **migrations:** allow stable migration names when class names are minified ([#8109](https://github.com/mikro-orm/mikro-orm/issues/8109)) ([560fb4f](https://github.com/mikro-orm/mikro-orm/commit/560fb4fac46b02715cf79af14c0fcc1c6126e22b))
+
+
 ## [7.1.10](https://github.com/mikro-orm/mikro-orm/compare/v7.1.9...v7.1.10) (2026-08-04)
 
 **Note:** Version bump only for package @mikro-orm/migrations
