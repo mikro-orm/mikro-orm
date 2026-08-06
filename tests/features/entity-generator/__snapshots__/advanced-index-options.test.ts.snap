@@ -275,6 +275,105 @@ export const TestIndexTypeSchema = defineEntity({
 ]
 `;
 
+exports[`EntityGenerator advanced index options > generates entities with partial index on a foreign key column > partial index on foreign key column 1`] = `
+[
+  "import { type Ref, defineEntity, p } from '@mikro-orm/core';
+import { TestPartialTenant } from './TestPartialTenant';
+
+export class TestPartialNode {
+  id!: number;
+  tenant!: Ref<TestPartialTenant>;
+  slug?: string;
+  parentId?: number;
+}
+
+export const TestPartialNodeSchema = defineEntity({
+  class: TestPartialNode,
+  indexes: [
+    { name: 'partial_slug_idx', where: 'parent_id IS NULL', properties: ['slug'] },
+  ],
+  uniques: [
+    {
+      name: 'partial_single_root_idx',
+      where: 'parent_id IS NULL',
+      properties: ['tenant'],
+    },
+  ],
+  properties: {
+    id: p.integer().primary(),
+    tenant: () => p.manyToOne(TestPartialTenant).ref().updateRule('no action').deleteRule('no action'),
+    slug: p.string().nullable(),
+    parentId: p.integer().nullable(),
+  },
+});
+",
+  "import { Collection, defineEntity, p } from '@mikro-orm/core';
+import { TestPartialNode } from './TestPartialNode';
+
+export class TestPartialTenant {
+  id!: number;
+  testPartialNodeCollection = new Collection<TestPartialNode>(this);
+}
+
+export const TestPartialTenantSchema = defineEntity({
+  class: TestPartialTenant,
+  properties: {
+    id: p.integer().primary(),
+    testPartialNodeCollection: () => p.oneToMany(TestPartialNode).mappedBy('tenant'),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options > generates entities with partial index on a foreign key column with standalone scalar properties > partial index on foreign key column with standalone scalar properties 1`] = `
+[
+  "import { type Ref, defineEntity, p } from '@mikro-orm/core';
+import { TestPartialTenant } from './TestPartialTenant';
+
+export class TestPartialNode {
+  id!: number;
+  tenant!: Ref<TestPartialTenant>;
+  tenantId!: number;
+  parentId?: number;
+}
+
+export const TestPartialNodeSchema = defineEntity({
+  class: TestPartialNode,
+  uniques: [
+    {
+      name: 'partial_single_root_idx',
+      where: 'parent_id IS NULL',
+      properties: ['tenantId'],
+    },
+  ],
+  properties: {
+    id: p.integer().primary(),
+    tenant: () => p.manyToOne(TestPartialTenant).ref().updateRule('no action').deleteRule('no action'),
+    tenantId: p.integer().persist(false),
+    parentId: p.integer().nullable(),
+  },
+});
+",
+  "import { Collection, defineEntity, p } from '@mikro-orm/core';
+import { TestPartialNode } from './TestPartialNode';
+
+export class TestPartialTenant {
+  id!: number;
+  testPartialNodeCollection = new Collection<TestPartialNode>(this);
+}
+
+export const TestPartialTenantSchema = defineEntity({
+  class: TestPartialTenant,
+  properties: {
+    id: p.integer().primary(),
+    testPartialNodeCollection: () => p.oneToMany(TestPartialNode).mappedBy('tenant'),
+  },
+});
+",
+]
+`;
+
 exports[`EntityGenerator advanced index options > generates entities with sort order and NULLS ordering > sort and nulls ordering 1`] = `
 [
   "import { defineEntity, p } from '@mikro-orm/core';

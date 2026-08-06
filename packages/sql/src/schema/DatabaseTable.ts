@@ -304,6 +304,7 @@ export class DatabaseTable {
           skippedColumnNames.includes(index.columnNames[0]) || // Non-composite indexes for skipped columns are to be mapped as entity decorators.
           index.deferMode ||
           index.expression ||
+          index.where ||
           !(index.columnNames[0] in columnFks)) && // Trivial non-composite indexes for scalar props are to be mapped to the column.
         // ignore indexes that don't have all column names (this can happen in sqlite where there is no way to infer this for expressions)
         !(index.columnNames.some(col => !col) && !index.expression),
@@ -680,6 +681,7 @@ export class DatabaseTable {
     const fkColumnsLength = currentFk.columnNames.length;
     const possibleIndexes = this.#indexes.filter(index => {
       return (
+        !index.where &&
         index.columnNames.length === fkColumnsLength &&
         !currentFk.columnNames.some((columnName, i) => index.columnNames[i] !== columnName)
       );
@@ -941,10 +943,14 @@ export class DatabaseTable {
     const persist = !(column.name in columnFks && typeof fk === 'undefined');
     const index =
       compositeFkIndexes[prop] ||
-      this.#indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && !idx.unique && !idx.primary);
+      this.#indexes.find(
+        idx => idx.columnNames[0] === column.name && !idx.composite && !idx.unique && !idx.primary && !idx.where,
+      );
     const unique =
       compositeFkUniques[prop] ||
-      this.#indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && idx.unique && !idx.primary);
+      this.#indexes.find(
+        idx => idx.columnNames[0] === column.name && !idx.composite && idx.unique && !idx.primary && !idx.where,
+      );
 
     const kind = this.getReferenceKind(fk, unique);
     const runtimeType = this.getPropertyTypeForColumn(namingStrategy, column, fk);
