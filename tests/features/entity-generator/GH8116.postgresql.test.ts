@@ -39,6 +39,23 @@ const schema = `
     on "public"."role_grants" ("tenant_id", "user_id", "role_id", "org_node_id", "coverage");
 `;
 
+const nestedSchema = `
+  create table "public"."p1" ("c1" int4 not null, "c2" int4 not null, primary key ("c1", "c2"));
+  create table "public"."p2" ("d1" int4 not null, "d2" int4 not null, primary key ("d1", "d2"));
+  create table "public"."child" (
+    "id" serial4 not null,
+    "p_a" int4 not null,
+    "q_a" int4 not null,
+    "q_b" int4 not null,
+    "filler" int4 not null,
+    "p_b" int4 not null,
+    primary key ("id"),
+    constraint "fk_p" foreign key ("p_a", "p_b") references "public"."p1" ("c1", "c2"),
+    constraint "fk_q" foreign key ("q_a", "q_b") references "public"."p2" ("d1", "d2")
+  );
+  create unique index "uq_child" on "public"."child" ("p_a", "q_a", "q_b", "filler", "p_b");
+`;
+
 test('GH8116: index column order is kept when columns are shared between relations', async () => {
   const orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
@@ -62,6 +79,31 @@ test('GH8116: index column order is kept when columns are shared between relatio
 
   const roleGrants = dump.find(file => file.includes('class RoleGrants'))!;
   expect(roleGrants).toContain(`properties: ['tenantId', 'userId', 'roleId', 'orgNodeId', 'coverage']`);
+
+  await orm.close(true);
+});
+
+test('GH8116: a relation spanning other index columns keeps the position of its first column', async () => {
+  const orm = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
+    dbName: '8116_nested',
+    discovery: {
+      warnWhenNoEntities: false,
+    },
+    ensureDatabase: false,
+    extensions: [EntityGenerator],
+    entityGenerator: {
+      scalarPropertiesForRelations: 'always',
+    },
+  });
+
+  if (await orm.schema.ensureDatabase({ create: true })) {
+    await orm.schema.execute(nestedSchema);
+  }
+
+  const dump = await orm.entityGenerator.generate();
+  const child = dump.find(file => file.includes('class Child'))!;
+  expect(child).toContain(`properties: ['p1', 'p2', 'filler']`);
 
   await orm.close(true);
 });
