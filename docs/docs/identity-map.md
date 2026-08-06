@@ -112,6 +112,53 @@ app.use((req, res, next) => {
 });
 ```
 
+### Adding additional options to the fork
+
+Additional options can be specified at the last argument. This is useful for example if you'd like to change the schema based on the request.
+
+```ts
+// `orm.em` is the global EntityManager instance
+
+app.use((req, res, next) => {
+    // calls `orm.em.fork()` and attaches it to the async context
+    RequestContext.create(orm.em, next, { schema: req.query?.tenant ?? 'public' });
+});
+```
+
+### Using multiple database configurations per request
+
+The `RequestContext.create()` method can also accept an array of entity managers, which may be from two different database configurations.
+
+```ts
+// `orm` and `adminOrm` are entity manager instances of different ORM instances.
+// `adminOrm` has `{ contextName: 'admin' }` set as part of its configuration.
+
+app.use((req, res, next) => {
+    // calls `orm.em.fork()` and attaches it to the async context
+    RequestContext.create(
+        [orm.em, adminOrm.em],
+        next
+    );
+});
+```
+
+If different options for each instance are needed, a function that takes the `contextName` and returns the options for that `contextName` can be specified.
+
+```ts
+// `orm` and `adminOrm` are entity manager instances of different ORM instances.
+// `adminOrm` has `{ contextName: 'admin' }` set as part of its configuration.
+
+app.use((req, res, next) => {
+    // calls `orm.em.fork()` and attaches it to the async context
+    RequestContext.create(
+        [orm.em, adminOrm.em],
+        next,
+        // "default" instance uses a different schema based on request, while the "admin" always uses its own default
+        (contextName) => contextName === 'default' ? { schema: req.query?.tenant ?? 'public' } : {}
+    );
+});
+```
+
 ## `@CreateRequestContext()` decorator
 
 > Before v6, `@CreateRequestContext()` was called `@UseRequestContext()`.
