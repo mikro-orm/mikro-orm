@@ -670,7 +670,8 @@ describe('InferKyselyDB', () => {
       name: string;
     }>();
 
-    orm.em.getKysely().insertInto('probe').values({ name: 'foo' });
+    const kysely = orm.em.getKysely();
+    kysely.insertInto('probe').values({ name: 'foo' });
   });
 });
 
