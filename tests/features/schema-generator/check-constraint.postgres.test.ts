@@ -415,4 +415,41 @@ describe('check constraint [postgres]', () => {
     await orm.schema.dropDatabase();
     await orm.close();
   });
+
+  test('multi-term check on a castable column keeps parentheses balanced on introspection [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.schema.update();
+
+    // pg stores this check as `CHECK (((code IS NULL) OR ((code)::text ~ '^[a-z]+$'::text)))` — the
+    // cast-stripping in getAllChecks() must not pair parens across term boundaries, otherwise the
+    // recovered expression is unbalanced and re-emitting it as DDL is a syntax error.
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+        code: { type: 'string', name: 'code', fieldName: 'code', columnType: 'varchar(255)', nullable: true },
+      },
+      name: 'MultiTermCheckTable',
+      tableName: 'multi_term_check_table',
+      checks: [{ name: 'chk_code', expression: `code IS NULL OR code ~ '^[a-z]+$'` }],
+    }).init().meta;
+    meta.set(newTableMeta.class, newTableMeta);
+
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    await orm.schema.execute(diff);
+
+    const schema = await DatabaseSchema.create(orm.em.getConnection(), orm.em.getPlatform(), orm.config);
+    const check = schema
+      .getTable('multi_term_check_table')!
+      .getChecks()
+      .find(c => c.name === 'chk_code');
+    expect(check?.expression).toBe(`(code IS NULL) OR (code ~ '^[a-z]+$'::text)`);
+
+    // the recovered expression must also round-trip through the comparator without drift
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
 });
