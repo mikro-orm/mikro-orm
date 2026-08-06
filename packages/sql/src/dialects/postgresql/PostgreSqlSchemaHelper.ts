@@ -1540,6 +1540,16 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       .join(', ');
   }
 
+  /** Non-default index access methods (gin, gist, brin, hash, ...), normalized to lower case. */
+  override getIndexAccessMethod(index: IndexDef): string {
+    // `fulltext` is a cross-dialect alias handled via `getFullTextIndexExpression`, not a pg access method
+    if (typeof index.type !== 'string' || ['', 'btree', 'fulltext'].includes(index.type.toLowerCase())) {
+      return '';
+    }
+
+    return index.type.toLowerCase();
+  }
+
   /**
    * PostgreSQL-specific index options like fill factor.
    */

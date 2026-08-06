@@ -1049,6 +1049,11 @@ export class SchemaComparator {
       return false;
     }
 
+    // Compare the index access method (e.g. `using gin` on PostgreSQL); unset means the platform default
+    if (this.#helper.getIndexAccessMethod(index1) !== this.#helper.getIndexAccessMethod(index2)) {
+      return false;
+    }
+
     // Compare WHERE predicate of partial indexes structurally (whitespace/quoting/casing
     // are normalized via the same helper used for check constraints).
     if (this.diffExpression(index1.where ?? '', index2.where ?? '')) {
