@@ -706,13 +706,24 @@ export class DatabaseTable {
     fksOnStandaloneProps: Map<string, { fkIndex?: IndexDef; currentFk: ForeignKey }>,
     namingStrategy: NamingStrategy,
   ) {
-    const propBaseNames = new Set<string>();
+    const propBaseNames = new Map<string, { first: number; last: number }>();
     const columnNames = index.columnNames;
     const l = columnNames.length;
 
     if (columnNames.some(col => !col)) {
       return;
     }
+
+    const addPropBaseName = (baseName: string, position: number) => {
+      const positions = propBaseNames.get(baseName);
+
+      if (positions) {
+        positions.last = position;
+        return;
+      }
+
+      propBaseNames.set(baseName, { first: position, last: position });
+    };
 
     for (let i = 0; i < l; ++i) {
       const columnName = columnNames[i];
@@ -725,7 +736,7 @@ export class DatabaseTable {
         }
         // It has a prop named after it.
         // Add it and move on.
-        propBaseNames.add(columnName);
+        addPropBaseName(columnName, i);
         continue;
       }
 
@@ -733,7 +744,7 @@ export class DatabaseTable {
       // include this prop and move on.
       const columnPropFk = fksOnColumnProps.get(columnName);
       if (columnPropFk && !columnPropFk.columnNames.some(fkColumnName => !columnNames.includes(fkColumnName))) {
-        propBaseNames.add(columnName);
+        addPropBaseName(columnName, i);
         continue;
       }
 
@@ -747,7 +758,7 @@ export class DatabaseTable {
         }
 
         if (!fk.columnNames.some(fkColumnName => !columnNames.includes(fkColumnName))) {
-          propBaseNames.add(propName);
+          addPropBaseName(propName, i);
           propAdded = true;
         }
       }
@@ -761,9 +772,10 @@ export class DatabaseTable {
       return;
     }
 
-    return Array.from(propBaseNames).map(baseName =>
-      this.getPropertyName(namingStrategy, baseName, fksOnColumnProps.get(baseName)),
-    );
+    // Props sharing their first column would otherwise follow FK discovery order, so break ties on the last one.
+    return Array.from(propBaseNames)
+      .sort(([, a], [, b]) => a.first - b.first || a.last - b.last)
+      .map(([baseName]) => this.getPropertyName(namingStrategy, baseName, fksOnColumnProps.get(baseName)));
   }
 
   private getSafeBaseNameForFkProp(
