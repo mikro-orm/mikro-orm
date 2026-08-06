@@ -305,6 +305,7 @@ export class DatabaseTable {
           index.deferMode ||
           index.expression ||
           index.where ||
+          this.hasAdvancedIndexOptions(index) ||
           !(index.columnNames[0] in columnFks)) && // Trivial non-composite indexes for scalar props are to be mapped to the column.
         // ignore indexes that don't have all column names (this can happen in sqlite where there is no way to infer this for expressions)
         !(index.columnNames.some(col => !col) && !index.expression),
@@ -345,15 +346,7 @@ export class DatabaseTable {
       }
 
       // An index is trivial if it has no special options that require entity-level declaration
-      const hasAdvancedOptions =
-        index.columns?.length ||
-        index.include?.length ||
-        index.fillFactor ||
-        index.type ||
-        index.invisible ||
-        index.disabled ||
-        index.clustered;
-      const isTrivial = !index.deferMode && !index.expression && !index.where && !hasAdvancedOptions;
+      const isTrivial = !index.deferMode && !index.expression && !index.where && !this.hasAdvancedIndexOptions(index);
 
       if (isTrivial) {
         // Index is for FK. Map to the FK prop and move on.
@@ -699,6 +692,7 @@ export class DatabaseTable {
     const possibleIndexes = this.#indexes.filter(index => {
       return (
         !index.where &&
+        !this.hasAdvancedIndexOptions(index) &&
         index.columnNames.length === fkColumnsLength &&
         !currentFk.columnNames.some((columnName, i) => index.columnNames[i] !== columnName)
       );
@@ -716,6 +710,19 @@ export class DatabaseTable {
     });
 
     return possibleIndexes.at(0);
+  }
+
+  /** Advanced options require an entity-level declaration, as the property-level `index`/`unique` cannot carry them. */
+  private hasAdvancedIndexOptions(index: IndexDef): boolean {
+    return !!(
+      index.columns?.length ||
+      index.include?.length ||
+      index.fillFactor ||
+      index.type ||
+      index.invisible ||
+      index.disabled ||
+      index.clustered
+    );
   }
 
   private getIndexProperties(
@@ -973,12 +980,24 @@ export class DatabaseTable {
     const index =
       compositeFkIndexes[prop] ||
       this.#indexes.find(
-        idx => idx.columnNames[0] === column.name && !idx.composite && !idx.unique && !idx.primary && !idx.where,
+        idx =>
+          idx.columnNames[0] === column.name &&
+          !idx.composite &&
+          !idx.unique &&
+          !idx.primary &&
+          !idx.where &&
+          !this.hasAdvancedIndexOptions(idx),
       );
     const unique =
       compositeFkUniques[prop] ||
       this.#indexes.find(
-        idx => idx.columnNames[0] === column.name && !idx.composite && idx.unique && !idx.primary && !idx.where,
+        idx =>
+          idx.columnNames[0] === column.name &&
+          !idx.composite &&
+          idx.unique &&
+          !idx.primary &&
+          !idx.where &&
+          !this.hasAdvancedIndexOptions(idx),
       );
 
     const kind = this.getReferenceKind(fk, unique);

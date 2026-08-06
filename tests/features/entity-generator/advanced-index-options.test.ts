@@ -315,6 +315,77 @@ describe('EntityGenerator advanced index options', () => {
     expect(dump).toMatchSnapshot('partial index on foreign key column with standalone scalar properties');
     await orm.close(true);
   });
+
+  test('generates entities with advanced index options on a foreign key column', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: 'mikro_orm_test_entity_gen_adv_fk',
+      discovery: { warnWhenNoEntities: false },
+      ensureDatabase: false,
+      extensions: [EntityGenerator],
+    });
+
+    await orm.schema.ensureDatabase({ create: true });
+    await orm.schema.execute('DROP TABLE IF EXISTS "test_adv_fk_node"');
+    await orm.schema.execute('DROP TABLE IF EXISTS "test_adv_fk_tenant"');
+    await orm.schema.execute(`
+      CREATE TABLE "test_adv_fk_tenant" (
+        "id" serial PRIMARY KEY
+      )
+    `);
+    await orm.schema.execute(`
+      CREATE TABLE "test_adv_fk_node" (
+        "id" serial PRIMARY KEY,
+        "tenant_id" int NOT NULL REFERENCES "test_adv_fk_tenant" ("id"),
+        "owner_id" int NOT NULL REFERENCES "test_adv_fk_tenant" ("id"),
+        "name" varchar(255) NOT NULL
+      )
+    `);
+    await orm.schema.execute(
+      'CREATE INDEX "adv_fk_covering_idx" ON "test_adv_fk_node" ("tenant_id") INCLUDE ("name") WITH (fillfactor = 70)',
+    );
+    await orm.schema.execute(
+      'CREATE UNIQUE INDEX "adv_fk_unique_idx" ON "test_adv_fk_node" ("owner_id") INCLUDE ("name")',
+    );
+
+    const dump = await orm.entityGenerator.generate();
+    expect(dump).toMatchSnapshot('advanced index options on foreign key column');
+    await orm.close(true);
+  });
+
+  test('generates entities with advanced index options on a foreign key column with standalone scalar properties', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: 'mikro_orm_test_entity_gen_adv_fk',
+      discovery: { warnWhenNoEntities: false },
+      ensureDatabase: false,
+      entityGenerator: { scalarPropertiesForRelations: 'always' },
+      extensions: [EntityGenerator],
+    });
+
+    await orm.schema.ensureDatabase({ create: true });
+    await orm.schema.execute('DROP TABLE IF EXISTS "test_adv_fk_node"');
+    await orm.schema.execute('DROP TABLE IF EXISTS "test_adv_fk_tenant"');
+    await orm.schema.execute(`
+      CREATE TABLE "test_adv_fk_tenant" (
+        "id" serial PRIMARY KEY
+      )
+    `);
+    await orm.schema.execute(`
+      CREATE TABLE "test_adv_fk_node" (
+        "id" serial PRIMARY KEY,
+        "tenant_id" int NOT NULL REFERENCES "test_adv_fk_tenant" ("id"),
+        "name" varchar(255) NOT NULL
+      )
+    `);
+    await orm.schema.execute(
+      'CREATE INDEX "adv_fk_covering_idx" ON "test_adv_fk_node" ("tenant_id") INCLUDE ("name") WITH (fillfactor = 70)',
+    );
+
+    const dump = await orm.entityGenerator.generate();
+    expect(dump).toMatchSnapshot('advanced index options on foreign key column with standalone scalar properties');
+    await orm.close(true);
+  });
 });
 
 describe('EntityGenerator advanced index options (MySQL)', () => {
