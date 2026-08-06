@@ -7,8 +7,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **migrations:** allow stable migration names when class names are minified ([#8109](https://github.com/mikro-orm/mikro-orm/issues/8109)) ([560fb4f](https://github.com/mikro-orm/mikro-orm/commit/560fb4fac46b02715cf79af14c0fcc1c6126e22b))
-
+- **migrations:** allow stable migration names when class names are minified ([#8109](https://github.com/mikro-orm/mikro-orm/issues/8109)) ([560fb4f](https://github.com/mikro-orm/mikro-orm/commit/560fb4fac46b02715cf79af14c0fcc1c6126e22b))
 
 ## [7.1.10](https://github.com/mikro-orm/mikro-orm/compare/v7.1.9...v7.1.10) (2026-08-04)
 

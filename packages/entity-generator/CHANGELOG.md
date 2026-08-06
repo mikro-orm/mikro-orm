@@ -7,8 +7,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **entity-generator:** emit check constraints in generated entities ([#8121](https://github.com/mikro-orm/mikro-orm/issues/8121)) ([5f56d24](https://github.com/mikro-orm/mikro-orm/commit/5f56d24e84e96b6ffa9ebde0255ec7a029e0b278)), closes [#8114](https://github.com/mikro-orm/mikro-orm/issues/8114)
-
+- **entity-generator:** emit check constraints in generated entities ([#8121](https://github.com/mikro-orm/mikro-orm/issues/8121)) ([5f56d24](https://github.com/mikro-orm/mikro-orm/commit/5f56d24e84e96b6ffa9ebde0255ec7a029e0b278)), closes [#8114](https://github.com/mikro-orm/mikro-orm/issues/8114)
 
 ## [7.1.10](https://github.com/mikro-orm/mikro-orm/compare/v7.1.9...v7.1.10) (2026-08-04)
 

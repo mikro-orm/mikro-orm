@@ -7,12 +7,11 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **entity-generator:** emit check constraints in generated entities ([#8121](https://github.com/mikro-orm/mikro-orm/issues/8121)) ([5f56d24](https://github.com/mikro-orm/mikro-orm/commit/5f56d24e84e96b6ffa9ebde0255ec7a029e0b278)), closes [#8114](https://github.com/mikro-orm/mikro-orm/issues/8114)
-* **entity-generator:** keep index column order when columns map to relations ([#8119](https://github.com/mikro-orm/mikro-orm/issues/8119)) ([c3c0601](https://github.com/mikro-orm/mikro-orm/commit/c3c06010d1af4097d21470293f962aa7a1bb498f)), closes [#8116](https://github.com/mikro-orm/mikro-orm/issues/8116)
-* **entity-generator:** preserve advanced options of single-column indexes ([#8122](https://github.com/mikro-orm/mikro-orm/issues/8122)) ([e589ed4](https://github.com/mikro-orm/mikro-orm/commit/e589ed425d64bad01212a2f141be579a45ed9cab)), closes [#8118](https://github.com/mikro-orm/mikro-orm/issues/8118) [#8118](https://github.com/mikro-orm/mikro-orm/issues/8118)
-* **entity-generator:** preserve the where clause of partial indexes ([#8118](https://github.com/mikro-orm/mikro-orm/issues/8118)) ([fdaa9a8](https://github.com/mikro-orm/mikro-orm/commit/fdaa9a88a09ee8b316a4d74ca816a63b54e4ab3a)), closes [#8115](https://github.com/mikro-orm/mikro-orm/issues/8115)
-* **sql:** infer columns with a default value as kysely `Generated` ([#8117](https://github.com/mikro-orm/mikro-orm/issues/8117)) ([29f074f](https://github.com/mikro-orm/mikro-orm/commit/29f074f26dcd0390f2c138a59d253cdb36e3319d)), closes [#8113](https://github.com/mikro-orm/mikro-orm/issues/8113)
-
+- **entity-generator:** emit check constraints in generated entities ([#8121](https://github.com/mikro-orm/mikro-orm/issues/8121)) ([5f56d24](https://github.com/mikro-orm/mikro-orm/commit/5f56d24e84e96b6ffa9ebde0255ec7a029e0b278)), closes [#8114](https://github.com/mikro-orm/mikro-orm/issues/8114)
+- **entity-generator:** keep index column order when columns map to relations ([#8119](https://github.com/mikro-orm/mikro-orm/issues/8119)) ([c3c0601](https://github.com/mikro-orm/mikro-orm/commit/c3c06010d1af4097d21470293f962aa7a1bb498f)), closes [#8116](https://github.com/mikro-orm/mikro-orm/issues/8116)
+- **entity-generator:** preserve advanced options of single-column indexes ([#8122](https://github.com/mikro-orm/mikro-orm/issues/8122)) ([e589ed4](https://github.com/mikro-orm/mikro-orm/commit/e589ed425d64bad01212a2f141be579a45ed9cab)), closes [#8118](https://github.com/mikro-orm/mikro-orm/issues/8118) [#8118](https://github.com/mikro-orm/mikro-orm/issues/8118)
+- **entity-generator:** preserve the where clause of partial indexes ([#8118](https://github.com/mikro-orm/mikro-orm/issues/8118)) ([fdaa9a8](https://github.com/mikro-orm/mikro-orm/commit/fdaa9a88a09ee8b316a4d74ca816a63b54e4ab3a)), closes [#8115](https://github.com/mikro-orm/mikro-orm/issues/8115)
+- **sql:** infer columns with a default value as kysely `Generated` ([#8117](https://github.com/mikro-orm/mikro-orm/issues/8117)) ([29f074f](https://github.com/mikro-orm/mikro-orm/commit/29f074f26dcd0390f2c138a59d253cdb36e3319d)), closes [#8113](https://github.com/mikro-orm/mikro-orm/issues/8113)
 
 ## [7.1.10](https://github.com/mikro-orm/mikro-orm/compare/v7.1.9...v7.1.10) (2026-08-04)
 

@@ -7,8 +7,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **core:** resolve entity metadata via class references instead of class names ([#8108](https://github.com/mikro-orm/mikro-orm/issues/8108)) ([d3564bf](https://github.com/mikro-orm/mikro-orm/commit/d3564bf29e4fafc2cdd9a5bd5a89bbb25f105e27)), closes [#8107](https://github.com/mikro-orm/mikro-orm/issues/8107)
-
+- **core:** resolve entity metadata via class references instead of class names ([#8108](https://github.com/mikro-orm/mikro-orm/issues/8108)) ([d3564bf](https://github.com/mikro-orm/mikro-orm/commit/d3564bf29e4fafc2cdd9a5bd5a89bbb25f105e27)), closes [#8107](https://github.com/mikro-orm/mikro-orm/issues/8107)
 
 ## [7.1.10](https://github.com/mikro-orm/mikro-orm/compare/v7.1.9...v7.1.10) (2026-08-04)
 
