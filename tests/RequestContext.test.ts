@@ -144,6 +144,32 @@ describe('MultiRequestContext', () => {
     expect(RequestContext.currentRequestContext()).toBeUndefined();
   });
 
+  test('create new context with variable options', async () => {
+    expect(RequestContext.getEntityManager(orm1.em.name)).toBeUndefined();
+    expect(RequestContext.getEntityManager(orm2.em.name)).toBeUndefined();
+    RequestContext.create(
+      [orm1.em, orm2.em],
+      () => {
+        const em1 = orm1.em.getContext();
+        expect(em1).not.toBe(orm1.em);
+        expect(em1.name).toBe(orm1.em.name);
+        expect(em1.getLoggerContext()).toEqual({ name: em1.name });
+        expect(em1.getUnitOfWork(false).getIdentityMap()).not.toBe(orm1.em.getUnitOfWork(false).getIdentityMap());
+
+        const em2 = orm2.em.getContext();
+        expect(em2).not.toBe(orm2.em);
+        expect(em2.name).toBe(orm2.em.name);
+        expect(em1).not.toBe(em2);
+        expect(em2.getLoggerContext()).toEqual({ name: em2.name });
+        expect(em2.getUnitOfWork(false).getIdentityMap()).not.toBe(orm2.em.getUnitOfWork(false).getIdentityMap());
+
+        expect(RequestContext.currentRequestContext()).not.toBeUndefined();
+      },
+      (name: string) => ({ loggerContext: { name } }),
+    );
+    expect(RequestContext.currentRequestContext()).toBeUndefined();
+  });
+
   afterAll(async () => {
     await orm1.close(true);
     await orm2.close(true);
