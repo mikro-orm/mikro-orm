@@ -255,7 +255,8 @@ export abstract class SchemaHelper {
     tableName = this.quote(tableName);
     const keyName = this.quote(index.keyName);
     const defer = index.deferMode ? ` deferrable initially ${index.deferMode}` : '';
-    let sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName}`;
+    const type = this.getIndexTypeClause(index);
+    let sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName}${type}`;
 
     if (index.unique && index.constraint) {
       sql = `alter table ${tableName} add constraint ${keyName} unique`;
@@ -263,7 +264,7 @@ export abstract class SchemaHelper {
 
     if (index.columnNames.some(column => column.includes('.'))) {
       // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
-      sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName}`;
+      sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName}${type}`;
       const columns = this.platform.getJsonIndexDefinition(index);
       return `${sql} (${columns.join(', ')})${this.getCreateIndexSuffix(index)}${this.getIndexWhereClause(index)}${defer}`;
     }
@@ -284,6 +285,13 @@ export abstract class SchemaHelper {
    * Hook for adding driver-specific index options (e.g., fill factor for PostgreSQL).
    */
   protected getCreateIndexSuffix(_index: IndexDef): string {
+    return '';
+  }
+
+  /**
+   * Hook for the index access method (e.g., ` using gist` for PostgreSQL).
+   */
+  protected getIndexTypeClause(_index: IndexDef): string {
     return '';
   }
 

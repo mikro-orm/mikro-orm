@@ -1557,6 +1557,18 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return super.getCreateIndexSuffix(index);
   }
 
+  /**
+   * PostgreSQL index access method, e.g. `gist`, `gin` or `brin`. Full-text indexes are emitted
+   * via `getFullTextIndexExpression()`, which already spells out the access method.
+   */
+  protected override getIndexTypeClause(index: IndexDef): string {
+    if (typeof index.type === 'string' && index.type !== 'fulltext') {
+      return ` using ${index.type}`;
+    }
+
+    return super.getIndexTypeClause(index);
+  }
+
   private getIndexesSQL(tables: Table[]): string {
     return `select indrelid::regclass as table_name, ns.nspname as schema_name, relname as constraint_name, idx.indisunique as unique, idx.indisprimary as primary, contype, condeferrable, condeferred,
       array(
