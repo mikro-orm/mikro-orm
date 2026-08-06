@@ -50,6 +50,10 @@ export const DcimDeviceSchema = defineEntity({
       properties: ['virtualChassisId', 'vcPosition'],
     },
   ],
+  checks: [
+    { name: 'dcim_device_chk_1', expression: '\`vc_position\` >= 0' },
+    { name: 'dcim_device_chk_2', expression: '\`vc_priority\` >= 0' },
+  ],
   properties: {
     created: p.datetime().columnType('timestamp').nullable(),
     id: p.bigint().primary().unsigned(false).autoincrement(false),
