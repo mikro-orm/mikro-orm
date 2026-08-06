@@ -456,9 +456,9 @@ type MaybeGenerated<TValue, TOptions, TProcessOnCreate extends boolean> = TOptio
   ? TValue | null
   : TOptions extends { autoincrement: true }
     ? Generated<TValue>
-    : TOptions extends { default: true }
+    : TOptions extends { default: unknown }
       ? Generated<TValue>
-      : TOptions extends { defaultRaw: true }
+      : TOptions extends { defaultRaw: unknown }
         ? Generated<TValue>
         : TProcessOnCreate extends false
           ? TValue
