@@ -255,7 +255,8 @@ export abstract class SchemaHelper {
     tableName = this.quote(tableName);
     const keyName = this.quote(index.keyName);
     const defer = index.deferMode ? ` deferrable initially ${index.deferMode}` : '';
-    let sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName}`;
+    const using = this.getIndexAccessMethodClause(index);
+    let sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName}${using}`;
 
     if (index.unique && index.constraint) {
       sql = `alter table ${tableName} add constraint ${keyName} unique`;
@@ -263,7 +264,7 @@ export abstract class SchemaHelper {
 
     if (index.columnNames.some(column => column.includes('.'))) {
       // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
-      sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName}`;
+      sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName}${using}`;
       const columns = this.platform.getJsonIndexDefinition(index);
       return `${sql} (${columns.join(', ')})${this.getCreateIndexSuffix(index)}${this.getIndexWhereClause(index)}${defer}`;
     }
@@ -285,6 +286,20 @@ export abstract class SchemaHelper {
    */
   protected getCreateIndexSuffix(_index: IndexDef): string {
     return '';
+  }
+
+  /**
+   * Normalized index access method (e.g. `gin` on PostgreSQL), empty string when the
+   * platform default applies. Used for both DDL emission and index diffing.
+   */
+  getIndexAccessMethod(_index: IndexDef): string {
+    return '';
+  }
+
+  /** Emits the access method between the table name and the column list (e.g. ` using gin`). */
+  protected getIndexAccessMethodClause(index: IndexDef): string {
+    const method = this.getIndexAccessMethod(index);
+    return method ? ` using ${method}` : '';
   }
 
   /**
