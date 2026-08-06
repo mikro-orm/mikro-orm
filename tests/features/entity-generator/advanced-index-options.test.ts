@@ -244,6 +244,77 @@ describe('EntityGenerator advanced index options', () => {
     expect(dump).toMatchSnapshot('unique with sort order');
     await orm.close(true);
   });
+
+  test('generates entities with partial index on a foreign key column', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: 'mikro_orm_test_entity_gen_partial_fk',
+      discovery: { warnWhenNoEntities: false },
+      ensureDatabase: false,
+      extensions: [EntityGenerator],
+    });
+
+    await orm.schema.ensureDatabase({ create: true });
+    await orm.schema.execute('DROP TABLE IF EXISTS "test_partial_node"');
+    await orm.schema.execute('DROP TABLE IF EXISTS "test_partial_tenant"');
+    await orm.schema.execute(`
+      CREATE TABLE "test_partial_tenant" (
+        "id" serial PRIMARY KEY
+      )
+    `);
+    await orm.schema.execute(`
+      CREATE TABLE "test_partial_node" (
+        "id" serial PRIMARY KEY,
+        "tenant_id" int NOT NULL REFERENCES "test_partial_tenant" ("id"),
+        "slug" varchar(255),
+        "parent_id" int
+      )
+    `);
+    await orm.schema.execute(
+      'CREATE UNIQUE INDEX "partial_single_root_idx" ON "test_partial_node" ("tenant_id") WHERE "parent_id" IS NULL',
+    );
+    await orm.schema.execute(
+      'CREATE INDEX "partial_slug_idx" ON "test_partial_node" ("slug") WHERE "parent_id" IS NULL',
+    );
+
+    const dump = await orm.entityGenerator.generate();
+    expect(dump).toMatchSnapshot('partial index on foreign key column');
+    await orm.close(true);
+  });
+
+  test('generates entities with partial index on a foreign key column with standalone scalar properties', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      dbName: 'mikro_orm_test_entity_gen_partial_fk',
+      discovery: { warnWhenNoEntities: false },
+      ensureDatabase: false,
+      entityGenerator: { scalarPropertiesForRelations: 'always' },
+      extensions: [EntityGenerator],
+    });
+
+    await orm.schema.ensureDatabase({ create: true });
+    await orm.schema.execute('DROP TABLE IF EXISTS "test_partial_node"');
+    await orm.schema.execute('DROP TABLE IF EXISTS "test_partial_tenant"');
+    await orm.schema.execute(`
+      CREATE TABLE "test_partial_tenant" (
+        "id" serial PRIMARY KEY
+      )
+    `);
+    await orm.schema.execute(`
+      CREATE TABLE "test_partial_node" (
+        "id" serial PRIMARY KEY,
+        "tenant_id" int NOT NULL REFERENCES "test_partial_tenant" ("id"),
+        "parent_id" int
+      )
+    `);
+    await orm.schema.execute(
+      'CREATE UNIQUE INDEX "partial_single_root_idx" ON "test_partial_node" ("tenant_id") WHERE "parent_id" IS NULL',
+    );
+
+    const dump = await orm.entityGenerator.generate();
+    expect(dump).toMatchSnapshot('partial index on foreign key column with standalone scalar properties');
+    await orm.close(true);
+  });
 });
 
 describe('EntityGenerator advanced index options (MySQL)', () => {
