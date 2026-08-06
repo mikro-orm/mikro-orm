@@ -31,6 +31,14 @@ await MikroORM.init({
 
 This way you can keep the `@mikro-orm/reflection` package as a development dependency only, use the CLI to create the cache bundle, and depend only on that in your production build.
 
+You may also optionally specify the path to save the cache file to, relative to a folder named "temp" within your current folder. For example
+
+```bash
+npx mikro-orm cache:generate --combined="../cache/mikro-orm-metadata.json"
+```
+
+would save the file at `./cache/mikro-orm-metadata.json`.
+
 > The cache bundle can be statically imported, which is handy in case you are using some bundler.
 
 ## Pre-build compiled functions
