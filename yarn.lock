@@ -1493,7 +1493,7 @@ __metadata:
     reflect-metadata: "npm:0.2.2"
     rimraf: "npm:6.1.3"
     tsimp: "npm:2.0.12"
-    tsx: "npm:4.23.5"
+    tsx: "npm:4.23.7"
     typescript: "npm:7.0.2"
     unplugin-swc: "npm:1.5.10"
     uuid: "npm:14.0.1"
@@ -9531,9 +9531,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsx@npm:4.23.5":
-  version: 4.23.5
-  resolution: "tsx@npm:4.23.5"
+"tsx@npm:4.23.7":
+  version: 4.23.7
+  resolution: "tsx@npm:4.23.7"
   dependencies:
     esbuild: "npm:~0.28.0"
     fsevents: "npm:~2.3.3"
@@ -9542,7 +9542,7 @@ __metadata:
       optional: true
   bin:
     tsx: dist/cli.mjs
-  checksum: 10/f0dfea2f4cd546c608e3da7e30c5b3949b77d001c601000af1c879fad3c317b793c701ea95a81c6b813718b5fa585f3ba756f8ff2fd07feefb3eee5553909296
+  checksum: 10/f3dd161e80f1615c8158cc8babcf7cb0666b0fb957620aa1e492d91965aca07c87ba7d1f6d46c2e50237081e5221a66b50381d900002f55577cc11b83b139fda
   languageName: node
   linkType: hard
 
