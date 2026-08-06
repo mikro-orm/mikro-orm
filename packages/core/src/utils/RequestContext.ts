@@ -26,7 +26,7 @@ export class RequestContext {
   static create<T>(
     em: EntityManager | EntityManager[],
     next: (...args: any[]) => T,
-    options: CreateContextOptions = {},
+    options: ((name: string) => CreateContextOptions) | CreateContextOptions = {},
   ): T {
     const ctx = this.createContext(em, options);
     return this.storage.run(ctx, next);
@@ -37,7 +37,10 @@ export class RequestContext {
    * If the handler is async, the return value needs to be awaited.
    * Uses `AsyncLocalStorage.enterWith()`, suitable for elysia style middlewares without a `next` callback.
    */
-  static enter(em: EntityManager | EntityManager[], options: CreateContextOptions = {}): void {
+  static enter(
+    em: EntityManager | EntityManager[],
+    options: ((name: string) => CreateContextOptions) | CreateContextOptions = {},
+  ): void {
     const ctx = this.createContext(em, options);
     this.storage.enterWith(ctx);
   }
@@ -59,14 +62,25 @@ export class RequestContext {
 
   private static createContext(
     em: EntityManager | EntityManager[],
-    options: CreateContextOptions = {},
+    options: ((name: string) => CreateContextOptions) | CreateContextOptions = {},
   ): RequestContext {
     const forks = new Map<string, EntityManager>();
 
     if (Array.isArray(em)) {
-      em.forEach(em => forks.set(em.name, em.fork({ useContext: true, ...options })));
+      if (typeof options === 'function') {
+        for (const emInstance of em) {
+          forks.set(emInstance.name, emInstance.fork({ useContext: true, ...options(emInstance.name) }));
+        }
+      } else {
+        for (const emInstance of em) {
+          forks.set(emInstance.name, emInstance.fork({ useContext: true, ...options }));
+        }
+      }
     } else {
-      forks.set(em.name, em.fork({ useContext: true, ...options }));
+      forks.set(
+        em.name,
+        em.fork({ useContext: true, ...(typeof options === 'function' ? options(em.name) : options) }),
+      );
     }
 
     return new RequestContext(forks);
