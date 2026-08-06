@@ -52,6 +52,10 @@ describe('GenerateCacheCommand', () => {
     await expect(cmd.handler({ quiet: true, ts: true } as any)).resolves.toBeUndefined();
     expect(discoverMock.mock.calls.length).toBe(4);
     expect(discoverMock.mock.calls[3][0]).toBe(true);
+
+    infoMock.mockRestore();
+    discoverMock.mockRestore();
+    getConfigurationMock.mockRestore();
   });
   test('combined argument', async () => {
     vi.spyOn(CLIHelper, 'dump').mockImplementation(i => i);
