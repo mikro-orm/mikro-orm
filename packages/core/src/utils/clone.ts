@@ -126,6 +126,13 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
     }
 
     for (const i in parent) {
+      // an own `__proto__` key (as produced by `JSON.parse`) has no own counterpart on
+      // `child` to shadow the inherited accessor, so assigning it would replace the
+      // clone's prototype instead of copying the value
+      if (i === '__proto__') {
+        continue;
+      }
+
       let attrs;
 
       if (proto) {
