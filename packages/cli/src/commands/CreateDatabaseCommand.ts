@@ -10,6 +10,7 @@ export class CreateDatabaseCommand implements BaseCommand {
    * @inheritDoc
    */
   async handler(args: ArgumentsCamelCase<BaseArgs>) {
+    CLIHelper.quiet = args.quiet;
     const orm = await CLIHelper.getORM(args.contextName, args.config);
     await orm.schema.ensureDatabase();
     await orm.close(true);

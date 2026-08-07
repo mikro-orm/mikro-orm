@@ -21,10 +21,11 @@ export class DatabaseSeedCommand implements BaseCommand<DatabaseSeedArgs> {
    * @inheritDoc
    */
   async handler(args: ArgumentsCamelCase<DatabaseSeedArgs>) {
+    CLIHelper.quiet = args.quiet;
     const orm = await CLIHelper.getORM(args.contextName, args.config);
     const className = args.class ?? orm.config.get('seeder').defaultSeeder!;
     await orm.seeder.seedString(className);
-    CLIHelper.dump(colors.green(`Seeder ${className} successfully executed`));
+    CLIHelper.info(colors.green(`Seeder ${className} successfully executed`));
     await orm.close(true);
   }
 }
