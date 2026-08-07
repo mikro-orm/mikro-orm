@@ -12,6 +12,7 @@ export class DebugCommand implements BaseCommand {
    * @inheritDoc
    */
   async handler(args: ArgumentsCamelCase<BaseArgs>) {
+    CLIHelper.quiet = args.quiet;
     CLIHelper.dump(`Current ${colors.cyan('MikroORM')} CLI configuration`);
     CLIHelper.dumpDependencies();
     const settings = CLIHelper.getSettings();
