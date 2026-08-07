@@ -29,14 +29,14 @@ describe('RollupMigrationCommand', () => {
     vi.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
     const rollupMock = vi.spyOn(Migrator.prototype, 'rollup');
     rollupMock.mockResolvedValue({ fileName: 'Migration20250401000000.ts', code: '...', diff: { up: [], down: [] } });
-    const dumpMock = vi.spyOn(CLIHelper, 'dump');
-    dumpMock.mockImplementation(() => void 0);
+    const infoMock = vi.spyOn(CLIHelper, 'info');
+    infoMock.mockImplementation(() => void 0);
 
     const cmd = MigrationCommandFactory.create('rollup');
 
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(rollupMock).toHaveBeenCalledTimes(1);
     expect(closeSpy).toHaveBeenCalledTimes(1);
-    expect(dumpMock).toHaveBeenLastCalledWith('Migration20250401000000.ts successfully created (rollup)');
+    expect(infoMock).toHaveBeenLastCalledWith('Migration20250401000000.ts successfully created (rollup)');
   });
 });
