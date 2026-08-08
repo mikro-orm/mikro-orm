@@ -1259,6 +1259,12 @@ export class SchemaComparator {
     return parseJsonSafe(val);
   }
 
+  private parseDecimalDefault(defaultValue: string | number): number | null {
+    const value = +('' + defaultValue).replace(/^'(.+)'$/, '$1');
+
+    return Number.isFinite(value) ? value : null;
+  }
+
   hasSameDefaultValue(from: Column, to: Column): boolean {
     if (
       from.default == null ||
@@ -1294,12 +1300,18 @@ export class SchemaComparator {
       return defaultValueFrom === defaultValueTo;
     }
 
-    // mysql stores decimal defaults padded to scale (`0` → `0.00`); compare numerically so the
-    // entity-side raw literal and the introspected padded form don't churn the no-op migration
-    if (to.mappedType instanceof DecimalType && Number.isFinite(+from.default) && Number.isFinite(+to.default)) {
-      return (
-        this.#platform.formatDecimal(from.default, to.scale) === this.#platform.formatDecimal(to.default, to.scale)
-      );
+    // mysql pads decimal defaults to scale (`0` → `0.00`) and postgres reports them unquoted
+    // while metadata keeps them quoted; compare numerically so neither churns a no-op migration
+    if (to.mappedType instanceof DecimalType) {
+      const defaultValueFrom = this.parseDecimalDefault(from.default);
+      const defaultValueTo = this.parseDecimalDefault(to.default);
+
+      if (defaultValueFrom != null && defaultValueTo != null) {
+        return (
+          this.#platform.formatDecimal(defaultValueFrom, to.scale) ===
+          this.#platform.formatDecimal(defaultValueTo, to.scale)
+        );
+      }
     }
 
     if (from.default && to.default) {
