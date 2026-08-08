@@ -6103,7 +6103,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:4.3.0, js-yaml@npm:^4.1.0":
+"js-yaml@npm:4.3.0":
   version: 4.3.0
   resolution: "js-yaml@npm:4.3.0"
   dependencies:
@@ -9301,7 +9301,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tar@npm:7.5.22, tar@npm:^7.4.3, tar@npm:^7.5.4":
+"tar@npm:7.5.22":
   version: 7.5.22
   resolution: "tar@npm:7.5.22"
   dependencies:
