@@ -38,6 +38,10 @@ class Widget7796 {
   @Property({ columnType: 'decimal(10,2)', default: 0 })
   price: number = 0;
 
+  // string default gets quoted in metadata (`'0.00'`), see GH #8131
+  @Property({ columnType: 'decimal(10,2)', type: 'decimal', default: '0.00' })
+  fee: string = '0.00';
+
   @ManyToOne(() => Category7796, { deleteRule: 'cascade', updateRule: 'cascade' })
   category!: Category7796;
 }

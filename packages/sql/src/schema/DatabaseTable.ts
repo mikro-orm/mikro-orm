@@ -1401,8 +1401,13 @@ export class DatabaseTable {
       // mysql stores decimal defaults padded to scale (`0` → `0.00`); collapse to canonical numeric form
       // so the metadata-side (`0`) and introspection-side (`0.00`) snapshots agree
       let defaultValue: string | null = c.default ?? null;
-      if (defaultValue != null && c.mappedType instanceof DecimalType && Number.isFinite(+defaultValue)) {
-        defaultValue = this.#platform.formatDecimal(defaultValue, c.scale).toString();
+      if (defaultValue != null && c.mappedType instanceof DecimalType) {
+        // string defaults like `default: '0.00'` are quoted in metadata, so strip the quotes first
+        const unquoted = defaultValue.replace(/^'(.*)'$/, '$1');
+
+        if (Number.isFinite(+unquoted)) {
+          defaultValue = this.#platform.formatDecimal(unquoted, c.scale).toString();
+        }
       }
       const normalized: Dictionary = {
         name: c.name,
