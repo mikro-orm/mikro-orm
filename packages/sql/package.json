@@ -47,7 +47,7 @@
     "copy": "node ../../scripts/copy.mjs"
   },
   "dependencies": {
-    "kysely": "0.29.4"
+    "kysely": "0.29.5"
   },
   "devDependencies": {
     "@mikro-orm/core": "^7.1.11"
