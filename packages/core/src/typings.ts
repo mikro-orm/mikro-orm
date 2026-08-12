@@ -239,11 +239,13 @@ export type ExtractIndexHints<T> = T extends { [IndexHints]?: infer H }
  * Checks `.index('name')` and `.unique('name')` on each property in a single pass.
  */
 export type InferPropertyIndexMap<Properties extends Record<string, any>> = {
-  [K in keyof Properties as MaybeReturnType<Properties[K]> extends { '~options': { index: infer N extends string } }
-    ? N
-    : MaybeReturnType<Properties[K]> extends { '~options': { unique: infer N extends string } }
+  [
+    K in keyof Properties as MaybeReturnType<Properties[K]> extends { '~options': { index: infer N extends string } }
       ? N
-      : never]: K & string;
+      : MaybeReturnType<Properties[K]> extends { '~options': { unique: infer N extends string } }
+        ? N
+        : never
+  ]: K & string;
 };
 
 /**
@@ -1052,12 +1054,12 @@ export type SerializeDTO<
           | Extract<T[K], null | undefined>;
       }
     : {
-        [K in keyof T as ExcludeHidden<T, K> &
-          CleanKeys<T, K> &
-          (IsNever<E> extends true ? K : Exclude<K, E>) &
-          SerializeFieldsFilter<T, K, F, KeepPK>]:
-          | SerializePropValueWithFields<T, K, H, C, F, KeepPK>
-          | Extract<T[K], null | undefined>;
+        [
+          K in keyof T as ExcludeHidden<T, K> &
+            CleanKeys<T, K> &
+            (IsNever<E> extends true ? K : Exclude<K, E>) &
+            SerializeFieldsFilter<T, K, F, KeepPK>
+        ]: SerializePropValueWithFields<T, K, H, C, F, KeepPK> | Extract<T[K], null | undefined>;
       };
 
 type TargetKeys<T> = T extends EntityClass<infer P> ? keyof P : keyof T;
