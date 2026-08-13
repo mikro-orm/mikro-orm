@@ -28,6 +28,9 @@ import { normalizePartitionBound, normalizePartitionDefinition } from '../../sch
 /** PostGIS system views that should be automatically ignored */
 const POSTGIS_VIEWS = ['geography_columns', 'geometry_columns'];
 
+/** Dollar-quote delimiter, e.g. `$$` or `$body$`, captured so `split` keeps it. */
+const DOLLAR_QUOTE_TAG = /(\$(?:[A-Za-z_]\w*)?\$)/;
+
 export class PostgreSqlSchemaHelper extends SchemaHelper {
   static readonly DEFAULT_VALUES = {
     'now()': ['now()', 'current_timestamp'],
@@ -711,7 +714,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   /** Generates SQL to create a PostgreSQL trigger and its associated function. */
   override createTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
     if (trigger.expression) {
-      return trigger.expression;
+      return this.flattenDollarQuotedBodies(trigger.expression);
     }
 
     const timing = trigger.timing.toUpperCase();
@@ -734,9 +737,27 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `drop trigger if exists ${triggerName} on ${table.getQuotedName()};\ndrop function if exists ${fnName}()`;
   }
 
+  /** Flattens `;\n` inside the dollar-quoted blocks of a raw DDL expression, which are not statement boundaries. */
+  private flattenDollarQuotedBodies(ddl: string): string {
+    let openTag = '';
+
+    return ddl
+      .split(DOLLAR_QUOTE_TAG)
+      .map((part, i) => {
+        // the capture group puts the delimiters on the odd indexes
+        if (i % 2 === 1) {
+          openTag = openTag === part ? '' : openTag || part;
+          return part;
+        }
+
+        return openTag ? stripStatementNewlines(part) : part;
+      })
+      .join('');
+  }
+
   override createRoutine(routine: SqlRoutineDef): string {
     if (routine.expression) {
-      return routine.expression;
+      return this.flattenDollarQuotedBodies(routine.expression);
     }
 
     const qualifiedName = this.qualifiedRoutineName(routine);
