@@ -5,6 +5,7 @@ import { MikroORM as MsSqlMikroORM } from '@mikro-orm/mssql';
 
 enum Status {
   ItsComplicated = "it's complicated",
+  Pending = 'pending',
   Active = 'active',
 }
 
@@ -29,7 +30,7 @@ describe('GH #7395 - enum CHECK constraint with single quotes', () => {
     await orm.schema.refreshDatabase();
 
     const createSQL = await orm.schema.getCreateSchemaSQL({ wrap: false });
-    expect(createSQL).toContain(`check ("status" in ('it''s complicated', 'active'))`);
+    expect(createSQL).toContain(`check ("status" in ('it''s complicated', 'pending', 'active'))`);
 
     const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toBe('');
@@ -46,7 +47,7 @@ describe('GH #7395 - enum CHECK constraint with single quotes', () => {
     await orm.schema.refreshDatabase();
 
     const createSQL = await orm.schema.getCreateSchemaSQL({ wrap: false });
-    expect(createSQL).toContain(`check (\`status\` in ('it''s complicated', 'active'))`);
+    expect(createSQL).toContain(`check (\`status\` in ('it''s complicated', 'pending', 'active'))`);
 
     const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toBe('');
@@ -63,7 +64,7 @@ describe('GH #7395 - enum CHECK constraint with single quotes', () => {
     await orm.schema.refreshDatabase();
 
     const createSQL = await orm.schema.getCreateSchemaSQL({ wrap: false });
-    expect(createSQL).toContain(`check ([status] in ('it''s complicated', 'active'))`);
+    expect(createSQL).toContain(`check ([status] in ('it''s complicated', 'pending', 'active'))`);
 
     const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toBe('');
