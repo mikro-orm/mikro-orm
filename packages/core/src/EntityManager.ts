@@ -233,7 +233,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const em = this.getContext();
-    em.prepareOptions(options);
+    options = em.prepareOptions(options);
     const meta = this.metadata.get<Entity>(entityName);
     em.validateIndexUsage(meta, where, options);
     await em.tryFlush(entityName, options);
@@ -346,7 +346,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     > = {} as any,
   ): AsyncIterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
     const em = this.getContext();
-    em.prepareOptions(options);
+    options = em.prepareOptions(options);
     (options as Dictionary).strategy = 'joined';
     await em.tryFlush(entityName, options);
     const where = (await em.processWhere(entityName, options.where ?? {}, options, 'read')) as FilterQuery<Entity>;
@@ -840,7 +840,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   ): Promise<[Loaded<Entity, Hint, Fields, Excludes>[], number]> {
     const em = this.getContext(false);
     await em.tryFlush(entityName, options);
-    options.flushMode = 'commit'; // do not try to auto flush again
+    options = { ...options, flushMode: 'commit' }; // do not try to auto flush again
 
     return Promise.all([
       em.find(entityName, where as any, options),
@@ -920,6 +920,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     >,
   ): Promise<Cursor<Entity, Hint, Fields, Excludes, IncludeCount>> {
     const em = this.getContext(false);
+    options = { ...options };
     options.overfetch ??= true;
     (options as any).where ??= {};
 
@@ -1058,7 +1059,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const em = this.getContext();
-    em.prepareOptions(options);
+    options = em.prepareOptions(options);
     let entity = em.#unitOfWork.tryGetById(entityName, where, options.schema);
 
     // query for a not managed entity which is already in the identity map as it
@@ -1234,7 +1235,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const em = this.getContext(false);
-    em.prepareOptions(options);
+    options = em.prepareOptions(options);
 
     let entityName: EntityName<Entity>;
     let where: FilterQuery<Entity>;
@@ -1407,7 +1408,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const em = this.getContext(false);
-    em.prepareOptions(options);
+    options = em.prepareOptions(options);
 
     let entityName: EntityName<Entity>;
     let propIndex: number | false;
@@ -1758,7 +1759,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options: LockOptions | number | Date = {},
   ): Promise<void> {
     options = Utils.isPlainObject(options) ? (options as LockOptions) : { lockVersion: options };
-    this.getContext(false).prepareOptions(options as FindOptions<any, any, any, any>);
+    options = this.getContext(false).prepareOptions(options as FindOptions<any, any, any, any>);
     await this.getUnitOfWork().lock(entity, { lockMode, ...options });
   }
 
@@ -1771,7 +1772,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options: NativeInsertUpdateOptions<Entity> = {},
   ): Promise<Primary<Entity>> {
     const em = this.getContext(false);
-    em.prepareOptions(options);
+    options = em.prepareOptions(options);
 
     let entityName: EntityName<Entity>;
 
@@ -1852,7 +1853,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     options ??= {};
-    em.prepareOptions(options);
+    options = em.prepareOptions(options);
 
     const meta = em.metadata.get<Entity>(entityName);
     const res = await em.driver.nativeClone<Entity>(entityName, where, overrides, {
@@ -1876,7 +1877,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options: NativeInsertUpdateOptions<Entity> = {},
   ): Promise<Primary<Entity>[]> {
     const em = this.getContext(false);
-    em.prepareOptions(options);
+    options = em.prepareOptions(options);
 
     let entityName: EntityName<Entity>;
 
@@ -1934,7 +1935,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options: UpdateOptions<Entity> = {},
   ): Promise<number> {
     const em = this.getContext(false);
-    em.prepareOptions(options);
+    options = em.prepareOptions(options);
 
     await em.processUnionWhere(entityName, options, 'update');
 
@@ -1999,7 +2000,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options: DeleteOptions<Entity> = {},
   ): Promise<number> {
     const em = this.getContext(false);
-    em.prepareOptions(options);
+    options = em.prepareOptions(options);
 
     await em.processUnionWhere(entityName, options, 'delete');
 
@@ -2309,9 +2310,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   ): Promise<number> {
     const em = this.getContext(false);
 
-    // Shallow copy options since the object will be modified when deleting orderBy
-    options = { ...options };
-    em.prepareOptions(options);
+    options = em.prepareOptions(options);
 
     await em.tryFlush(entityName, options);
     where = await em.processWhere(entityName, where, options as FindOptions<Entity, Hint>, 'read');
@@ -2515,7 +2514,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const em = this.getContext();
-    em.prepareOptions(options);
+    options = em.prepareOptions(options);
     const entityName = arr[0].constructor;
     const preparedPopulate = await em.preparePopulate<Entity>(
       entityName,
@@ -3088,28 +3087,32 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     return !!options.populate;
   }
 
-  protected prepareOptions(
-    options: (
+  protected prepareOptions<
+    Options extends (
       | FindOptions<any, any, any, any>
       | FindOneOptions<any, any, any, any>
       | CountOptions<any, any>
       | CountByOptions<any>
     ) &
       AbortQueryOptions,
-  ): void {
+  >(options: Options): Options {
     if (!Utils.isEmpty((options as FindOptions<any>).fields) && !Utils.isEmpty((options as FindOptions<any>).exclude)) {
       throw new ValidationError(`Cannot combine 'fields' and 'exclude' option.`);
     }
 
-    options.schema ??= this.#schema;
-    options.signal ??= this.signal;
-    options.inflightQueryAbortStrategy ??= this.inflightQueryAbortStrategy;
-    options.logging = options.loggerContext = Utils.merge(
+    // the options object belongs to the caller, everything below works on our own copy
+    const opts = { ...options };
+    opts.schema ??= this.#schema;
+    opts.signal ??= this.signal;
+    opts.inflightQueryAbortStrategy ??= this.inflightQueryAbortStrategy;
+    opts.logging = opts.loggerContext = Utils.merge(
       { id: this.id },
       this.loggerContext,
-      options.loggerContext,
-      options.logging,
+      opts.loggerContext,
+      opts.logging,
     );
+
+    return opts;
   }
 
   /**
