@@ -184,29 +184,18 @@ jobs:
           # Start everything so all services boot in parallel.
           docker compose up -d
           rc=0
-          # Wait for the reliable services to become healthy; a failure here is a
-          # real problem, but route it through the diagnostics dump below.
-          docker compose up -d --wait mongo mysql9 mariadb postgre postgis cockroachdb oracledb || rc=1
+          # Wait for all services to become healthy; route a failure through the
+          # diagnostics dump below.
+          docker compose up -d --wait || rc=1
 
-          # mssql 2025-CU3 intermittently crashes during early startup
-          # (SQLPAL/lsass.exe segfault) and is recovered by `restart: always`.
-          # `docker compose up --wait` aborts the moment it observes the restart
-          # cycle, so poll the probe ourselves until mssql is *stably* reachable;
-          # several consecutive successes rule out a pending crash-restart.
-          ok=0
-          for i in $(seq 1 72); do
-            if docker compose exec -T mssql /opt/mssql-tools18/bin/sqlcmd -b -C -S tcp:localhost -U sa -P 'Root.Root' -Q 'select 1' >/dev/null 2>&1; then
-              ok=$((ok + 1))
-              [ "$ok" -ge 5 ] && break
-            else
-              [ "$ok" -gt 0 ] && echo "::warning::mssql probe failed after $ok consecutive successes; tolerating restart cycle"
-              ok=0
-            fi
-            sleep 5
-          done
-          if [ "$ok" -lt 5 ]; then
-            echo "::error::mssql did not stabilise within the startup window"
-            rc=1
+          # mssql sometimes segfaults during early startup (SQLPAL lsass.exe crash, see
+          # microsoft/mssql-docker#947); `restart: always` never recovers from it, so give
+          # it one clean container before failing the job.
+          if [ "$rc" -ne 0 ]; then
+            echo "::warning::services did not become healthy, recreating mssql and retrying"
+            docker compose rm -fsv mssql
+            rc=0
+            docker compose up -d --wait || rc=1
           fi
 
           if [ "$rc" -eq 0 ]; then

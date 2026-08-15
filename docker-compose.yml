@@ -74,7 +74,7 @@ services:
       test: cockroach sql --insecure -e 'select 1'
 
   mssql:
-    image: mcr.microsoft.com/mssql/server:2025-CU3-ubuntu-24.04
+    image: mcr.microsoft.com/mssql/server:2025-CU8-ubuntu-24.04
     platform: linux/amd64
     restart: always
     ports:
