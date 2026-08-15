@@ -1,7 +1,6 @@
 import {
   ALIAS_REPLACEMENT,
   ARRAY_OPERATORS,
-  type Dictionary,
   type EntityProperty,
   type IsolationLevel,
   raw,

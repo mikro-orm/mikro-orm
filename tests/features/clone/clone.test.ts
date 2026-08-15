@@ -1,7 +1,6 @@
 import {
   Collection,
   Dictionary,
-  EntityData,
   IDatabaseDriver,
   MikroORM,
   Opt,
@@ -19,7 +18,6 @@ import {
   OneToMany,
   PrimaryKey,
   Property,
-  Unique,
   ManyToMany,
   ReflectMetadataProvider,
 } from '@mikro-orm/decorators/legacy';

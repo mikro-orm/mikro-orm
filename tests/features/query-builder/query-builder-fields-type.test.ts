@@ -7,7 +7,7 @@ import {
   type SerializeDTO,
   type Dictionary,
 } from '@mikro-orm/mysql';
-import { Author2, Book2, Publisher2 } from '../../entities-sql/index.js';
+import { Author2, Book2 } from '../../entities-sql/index.js';
 import { initORMMySql } from '../../bootstrap.js';
 import { expectTypeOf } from 'vitest';
 import type { ModifyFields } from '@mikro-orm/sql';

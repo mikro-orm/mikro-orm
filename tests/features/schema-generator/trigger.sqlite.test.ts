@@ -1,4 +1,4 @@
-import { DatabaseSchema, EntitySchema, MikroORM } from '@mikro-orm/sqlite';
+import { EntitySchema, MikroORM } from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey, Property, Trigger, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Trigger({

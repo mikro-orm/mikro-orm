@@ -8,7 +8,6 @@ import type {
   EntityProperty,
   EntityValue,
   FilterDef,
-  FilterKey,
   FilterQuery,
 } from '../typings.js';
 import { ARRAY_OPERATORS, GroupOperator, JSON_KEY_OPERATORS, type QueryOrderMap, ReferenceKind } from '../enums.js';

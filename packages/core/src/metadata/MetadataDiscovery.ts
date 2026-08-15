@@ -17,7 +17,7 @@ import { MetadataProvider } from './MetadataProvider.js';
 import type { NamingStrategy } from '../naming-strategy/NamingStrategy.js';
 import { MetadataStorage } from './MetadataStorage.js';
 import { EntitySchema } from './EntitySchema.js';
-import { Cascade, type EventType, ReferenceKind } from '../enums.js';
+import { Cascade, ReferenceKind } from '../enums.js';
 import { MetadataError } from '../errors.js';
 import type { Platform } from '../platforms/Platform.js';
 import { t, Type } from '../types/index.js';

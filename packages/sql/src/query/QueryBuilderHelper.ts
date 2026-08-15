@@ -178,7 +178,6 @@ export class QueryBuilderHelper {
     // Only apply TPT resolution when `a` is an actual table alias (in aliasMap),
     // not when it's an embedded property name like 'profile1.identity.links'
     const isTableAlias = !!this.#aliasMap[a];
-    const baseAlias = isTableAlias ? a : this.#alias;
     const resolvedAlias = isTableAlias ? this.getTPTAliasForProperty(prop?.name ?? f, a) : this.#alias;
     const aliasPrefix = isTableNameAliasRequired ? resolvedAlias + '.' : '';
     const fkIdx2 = prop?.fieldNames.findIndex(name => name === f) ?? -1;

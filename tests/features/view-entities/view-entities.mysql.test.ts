@@ -1,7 +1,7 @@
 import { defineEntity, p, sql, type EntityManager as EM } from '@mikro-orm/core';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MikroORM as MySqlORM, EntityManager as MySqlEM } from '@mikro-orm/mysql';
-import { MikroORM as MariaDbORM, EntityManager as MariaDbEM } from '@mikro-orm/mariadb';
+import { MikroORM as MariaDbORM } from '@mikro-orm/mariadb';
 import {
   Author2,
   Book2,

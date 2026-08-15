@@ -8,6 +8,9 @@
     "**/*.mjs",
     "**/*.d.ts"
   ],
+  "jsPlugins": [
+    "./scripts/oxlint-no-unused-imports.mjs"
+  ],
   "plugins": [
     "typescript",
     "import",
@@ -162,6 +165,8 @@
     "typescript/restrict-template-expressions": "off",
 
     "import/no-duplicates": "error",
+
+    "mikro-orm/no-unused-imports": "error",
 
     "unicorn/prefer-node-protocol": "error",
     "unicorn/no-new-array": "off",

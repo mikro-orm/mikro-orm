@@ -564,7 +564,6 @@ export class OracleSchemaHelper extends SchemaHelper {
     const schemaName = parts.pop();
     const name =
       (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
-    const quotedName = this.quote(name);
 
     // indexes need to be first dropped to be able to change a column type
     const changedTypes = Object.values(tableDiff.changedColumns).filter(col => col.changedProperties.has('type'));

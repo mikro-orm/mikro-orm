@@ -695,7 +695,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
    * Foreign key references can only point to tables in the same database.
    */
   override getReferencedTableName(referencedTableName: string, schema?: string): string {
-    const [schemaName, tableName] = this.splitTableName(referencedTableName);
+    const [, tableName] = this.splitTableName(referencedTableName);
     // Strip any schema prefix - SQLite REFERENCES clause doesn't support it
     return tableName;
   }
