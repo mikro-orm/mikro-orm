@@ -76,22 +76,22 @@ function useField<E, R extends string, C>(_field: Field<E, R, C>): void {}
 
 bench('Field<Author, "a", never> - no context', () => {
   useField<Author, 'a', never>('name');
-}).types([137, 'instantiations']);
+}).types([136, 'instantiations']);
 
 bench('Field<Author, "a", never> - wildcard', () => {
   useField<Author, 'a', never>('*');
-}).types([137, 'instantiations']);
+}).types([136, 'instantiations']);
 
 bench('Field<Author, "a", never> - alias wildcard', () => {
   useField<Author, 'a', never>('a.*');
-}).types([137, 'instantiations']);
+}).types([136, 'instantiations']);
 
 // Context uses tuple format: [Path, Alias, Type, Select]
 type SimpleContext = { b: ['books', 'b', Book, false] };
 
 bench('Field<Author, "a", SimpleContext> - with one join', () => {
   useField<Author, 'a', SimpleContext>('b.title');
-}).types([201, 'instantiations']);
+}).types([200, 'instantiations']);
 
 type TwoJoinContext = {
   b: ['books', 'b', Book, false];
@@ -100,7 +100,7 @@ type TwoJoinContext = {
 
 bench('Field<Author, "a", TwoJoinContext> - with two joins', () => {
   useField<Author, 'a', TwoJoinContext>('t.name');
-}).types([246, 'instantiations']);
+}).types([245, 'instantiations']);
 
 // ============================================
 // ModifyHint benchmarks
@@ -396,7 +396,7 @@ bench('with() - single CTE type accumulation', () => {
   const sub = {} as QueryBuilder<Book>;
   const r = withCte(qb, 'cte', sub);
   void r;
-}).types([15, 'instantiations']);
+}).types([18, 'instantiations']);
 
 // Measure the cost of chaining two .with() calls (intersecting CTEs records)
 bench('with() - two chained CTEs', () => {
@@ -405,7 +405,7 @@ bench('with() - two chained CTEs', () => {
   const sub2 = {} as QueryBuilder<Tag>;
   const r = qb.with('books_cte', sub1).with('tags_cte', sub2);
   void r;
-}).types([73, 'instantiations']);
+}).types([83, 'instantiations']);
 
 // Measure the cost of from() resolving a CTE name to its entity type
 bench('from() - CTE name resolution', () => {
@@ -420,7 +420,7 @@ bench('with().from() - full CTE chain', () => {
   const sub = {} as QueryBuilder<Book>;
   const r = qb.with('cte', sub).from('cte');
   void r;
-}).types([84, 'instantiations']);
+}).types([88, 'instantiations']);
 
 // Verify from() preserves the alias as a literal type
 bench('from() - CTE alias preserved as literal', () => {
@@ -437,4 +437,4 @@ bench('with().from() then select() - type-safe field access', () => {
   // After from(), select should accept 'c.title' as a valid field for Book
   fromQb.select('c.title');
   void fromQb;
-}).types([2455, 'instantiations']);
+}).types([2457, 'instantiations']);
