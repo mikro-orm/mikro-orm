@@ -434,27 +434,6 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       this.append(ret, this.helper.createTable(newTable, true), true);
     }
 
-    if (this.helper.supportsSchemaConstraints()) {
-      for (const newTable of Object.values(schemaDiff.newTables)) {
-        const sql: string[] = [];
-
-        if (this.options.createForeignKeyConstraints) {
-          const fks = Object.values(newTable.getForeignKeys()).map(fk => this.helper.createForeignKey(newTable, fk));
-          this.append(sql, fks);
-        }
-
-        for (const check of newTable.getChecks()) {
-          this.append(sql, this.helper.createCheck(newTable, check));
-        }
-
-        for (const trigger of newTable.getTriggers()) {
-          this.append(sql, this.helper.createTrigger(newTable, trigger));
-        }
-
-        this.append(ret, sql, true);
-      }
-    }
-
     if (options.dropTables && !options.safe) {
       for (const table of Object.values(schemaDiff.removedTables)) {
         // Drop triggers before the table so driver-specific cleanup runs (e.g. PostgreSQL function removal)
@@ -490,6 +469,28 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
     for (const changedTable of alteredTables) {
       this.append(ret, this.helper.getPostAlterTable(changedTable, options.safe!), true);
+    }
+
+    // after the alters, so a new table's FK can reference a unique constraint an existing table gains in the same diff
+    if (this.helper.supportsSchemaConstraints()) {
+      for (const newTable of Object.values(schemaDiff.newTables)) {
+        const sql: string[] = [];
+
+        if (this.options.createForeignKeyConstraints) {
+          const fks = Object.values(newTable.getForeignKeys()).map(fk => this.helper.createForeignKey(newTable, fk));
+          this.append(sql, fks);
+        }
+
+        for (const check of newTable.getChecks()) {
+          this.append(sql, this.helper.createCheck(newTable, check));
+        }
+
+        for (const trigger of newTable.getTriggers()) {
+          this.append(sql, this.helper.createTrigger(newTable, trigger));
+        }
+
+        this.append(ret, sql, true);
+      }
     }
 
     if (!options.safe && this.platform.supportsNativeEnums()) {

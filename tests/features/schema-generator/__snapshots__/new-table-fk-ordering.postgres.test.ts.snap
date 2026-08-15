@@ -1,0 +1,16 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`constraints of new tables are created after altering existing tables (GH 8141) > new table FK can reference a unique constraint added to an existing table in the same diff 1`] = `
+{
+  "down": "drop table if exists "book" cascade;
+
+alter table "author" drop constraint "author_id_tenant_id_unique";
+",
+  "up": "create table "book" ("id" serial primary key, "author_id" int not null, "author_tenant_id" int not null);
+
+alter table "author" add constraint "author_id_tenant_id_unique" unique ("id", "tenant_id");
+
+alter table "book" add constraint "book_author_id_author_tenant_id_foreign" foreign key ("author_id", "author_tenant_id") references "author" ("id", "tenant_id");
+",
+}
+`;
