@@ -25,7 +25,6 @@ import type {
   ModifyFields,
   JoinSelectField,
   QueryBuilder,
-  SelectQueryBuilder,
 } from '@mikro-orm/sql';
 
 // ============================================

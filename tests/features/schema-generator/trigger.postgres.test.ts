@@ -1,4 +1,4 @@
-import { DatabaseSchema, EntitySchema, MikroORM } from '@mikro-orm/postgresql';
+import { EntitySchema, MikroORM } from '@mikro-orm/postgresql';
 import { Entity, PrimaryKey, Property, Trigger, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { initORMPostgreSql } from '../../bootstrap.js';
 

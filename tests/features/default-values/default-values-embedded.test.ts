@@ -1,4 +1,4 @@
-import { defineEntity, MikroORM, p, quote, serialize } from '@mikro-orm/sqlite';
+import { defineEntity, MikroORM, p } from '@mikro-orm/sqlite';
 
 const ClientProductOptionsSchema = defineEntity({
   embeddable: true,
