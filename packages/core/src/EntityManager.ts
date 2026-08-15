@@ -958,10 +958,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const ret = await this.refresh(entity, options);
 
     if (!ret) {
-      options.failHandler ??= this.config.get('findOneOrFailHandler');
+      const failHandler = options.failHandler ?? this.config.get('findOneOrFailHandler');
       const wrapped = helper(entity);
       const where = wrapped.getPrimaryKey();
-      throw options.failHandler(wrapped.__meta.className, where);
+      throw failHandler(wrapped.__meta.className, where);
     }
 
     return ret as any;
@@ -1188,11 +1188,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     if (!entity || isStrictViolation) {
       const key = options.strict ? 'findExactlyOneOrFailHandler' : 'findOneOrFailHandler';
-      options.failHandler ??= this.config.get(key);
+      const failHandler = options.failHandler ?? this.config.get(key);
       const name = Utils.className(entityName);
       /* v8 ignore next */
       where = Utils.isEntity(where) ? (helper(where).getPrimaryKey() as any) : where;
-      throw options.failHandler(name, where);
+      throw failHandler(name, where);
     }
 
     return entity;
@@ -2315,7 +2315,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     await em.tryFlush(entityName, options);
     where = await em.processWhere(entityName, where, options as FindOptions<Entity, Hint>, 'read');
     options.populate = (await em.preparePopulate(entityName, options as FindOptions<Entity, Hint>)) as any;
-    options = { ...options };
     // save the original hint value so we know it was infer/all
     const meta = em.metadata.find(entityName)!;
     (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');

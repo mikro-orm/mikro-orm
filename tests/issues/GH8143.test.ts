@@ -46,6 +46,23 @@ test('em.findByCursor() does not mutate the options object', async () => {
   expect(options).toEqual({ first: 1, orderBy: { id: 'asc' } });
 });
 
+test('em.findOneOrFail() does not mutate the options object on the failure path', async () => {
+  const options = Object.freeze({ filters: false });
+  await expect(orm.em.findOneOrFail(User, { id: 123 }, options)).rejects.toThrow('User not found ({ id: 123 })');
+  expect(options).toEqual({ filters: false });
+});
+
+test('em.refreshOrFail() does not mutate the options object on the failure path', async () => {
+  const em = orm.em.fork();
+  const user = em.create(User, { name: 'u1' });
+  await em.flush();
+  await em.nativeDelete(User, { id: user.id });
+
+  const options = Object.freeze({ filters: false });
+  await expect(em.refreshOrFail(user, options)).rejects.toThrow(`User not found (${user.id})`);
+  expect(options).toEqual({ filters: false });
+});
+
 test('em.count() does not mutate the options object', async () => {
   const options = Object.freeze({ filters: false });
   await orm.em.count(User, {}, options);
