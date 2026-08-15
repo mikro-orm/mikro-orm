@@ -51,7 +51,13 @@ class MsSqlReserveDialect extends MssqlDialect {
   }
 }
 
-/** Microsoft SQL Server database connection using the `tedious` driver. */
+/**
+ * Microsoft SQL Server database connection using the `tedious` driver.
+ *
+ * There is no `getNativeClient()` here: tedious has no long-lived client object, and the pool
+ * kysely builds holds its own connection wrappers rather than tedious ones. Reach individual
+ * `Tedious.Connection`s through the `onCreateConnection`/`onReserveConnection` hooks instead.
+ */
 export class MsSqlConnection extends AbstractSqlConnection {
   override createKyselyDialect(overrides: ConnectionConfiguration): MssqlDialect {
     const options = this.mapOptions(overrides);

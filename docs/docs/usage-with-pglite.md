@@ -92,6 +92,19 @@ const orm = await MikroORM.init({
 });
 ```
 
+### Accessing the PGlite instance
+
+[`getNativeClient()`](./configuration.md#accessing-the-native-client) returns the `PGlite` instance the connection is using, whether MikroORM created it or you passed it in. Use it for PGlite APIs that have no ORM equivalent, such as [`pgDump`](https://pglite.dev/docs/pglite-tools#pgdump) or `dumpDataDir`:
+
+```ts
+import { pgDump } from '@electric-sql/pglite-tools/pg_dump';
+
+const pglite = await orm.em.getConnection().getNativeClient();
+const dump = await pgDump({ pg: pglite });
+```
+
+Unless you supplied the instance yourself, its lifecycle stays with the ORM — let `orm.close()` close it rather than calling `close()` on it directly.
+
 ## Schema, migrations, and queries
 
 PGlite implements standard PostgreSQL features, so the [Schema Generator](./schema-generator.md), [Migrations](./migrations.md), [QueryBuilder](./query-builder.md), and [Kysely integration](./kysely.md) all work the same way as with `@mikro-orm/postgresql`.

@@ -26,6 +26,12 @@ export class SqliteConnection extends BaseSqliteConnection {
     this.database.exec(dump);
   }
 
+  /** Returns the `better-sqlite3` database backing this connection. */
+  override async getNativeClient(): Promise<Database.Database> {
+    await this.ensureConnection();
+    return this.requireNativeClient(this.database);
+  }
+
   /** SQLite has no procedures; functions bridge via `bodyJs` registered as a UDF. */
   override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
     if (routine.type === 'procedure') {

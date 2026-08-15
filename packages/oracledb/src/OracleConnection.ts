@@ -243,6 +243,12 @@ export class OracleConnection extends AbstractSqlConnection {
     }
   }
 
+  /** Returns the `oracledb` connection pool backing this connection. */
+  override async getNativeClient(): Promise<oracledb.Pool> {
+    await this.ensureConnection();
+    return this.requireNativeClient(this.oraclePool);
+  }
+
   /**
    * Oracle routines acquire their own pool connection with `autoCommit: true` (refcursor binds
    * and DML need to resolve in one round-trip), so they cannot share the EM's transaction. Wrapping

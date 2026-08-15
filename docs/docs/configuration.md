@@ -203,6 +203,28 @@ MikroORM.init({
 });
 ```
 
+### Accessing the native client
+
+`getNativeClient()` returns the client the connection drives, for vendor APIs MikroORM does not wrap. Each driver narrows the return type to its own client:
+
+```ts
+const pool = await orm.em.getConnection().getNativeClient(); // pg Pool on postgresql
+```
+
+| Driver                   | Returns                                     |
+| ------------------------ | ------------------------------------------- |
+| `postgresql`             | `Pool` from `pg`                            |
+| `mysql`, `mariadb`       | `Pool` from `mysql2`                        |
+| `sqlite`                 | `Database` from `better-sqlite3`            |
+| `libsql`                 | `Database` from `libsql`                    |
+| `pglite`                 | `PGlite` from `@electric-sql/pglite`        |
+| `oracledb`               | `Pool` from `oracledb`                      |
+| `mongodb`                | `MongoClient` (same as `getClient()`)       |
+
+It throws on `mssql`, which has no long-lived native client — use the `onCreateConnection`/`onReserveConnection` hooks to reach `tedious` connections. It also throws when you supplied a ready-made Kysely instance or dialect via `driverOptions`, since the driver never creates a client of its own in that case.
+
+The client's lifecycle belongs to the ORM, so leave closing it to `orm.close()` unless you provided it yourself. For the Kysely query builder rather than the vendor client, use [`getClient()`](./kysely.md).
+
 > You can also set the timezone directly in the ORM configuration:
 >
 > ```ts
