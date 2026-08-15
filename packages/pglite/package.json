@@ -48,7 +48,7 @@
     "copy": "node ../../scripts/copy.mjs"
   },
   "dependencies": {
-    "@electric-sql/pglite": "0.5.4",
+    "@electric-sql/pglite": "0.5.5",
     "@mikro-orm/sql": "7.1.11",
     "kysely": "0.29.5",
     "postgres-array": "3.0.4",
