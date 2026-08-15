@@ -139,7 +139,8 @@ jobs:
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v6
         with:
-          node-version: ${{ matrix.node-version }}
+          # node 24.19 asserts in better-sqlite3 11.x teardown (RemoveEnvironmentCleanupHook), pin to 24.18
+          node-version: ${{ matrix.node-version == 24 && '24.18.0' || matrix.node-version }}
           package-manager-cache: false
 
       - name: Enable corepack
