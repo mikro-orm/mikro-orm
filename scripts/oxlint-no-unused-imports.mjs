@@ -28,6 +28,9 @@ const rule = {
       JSXIdentifier: markUsed,
       'Program:exit'() {
         const text = context.sourceCode.text;
+        const reports = [];
+        // [start, end, ownerIndex] triples, owner points into `reports`
+        const removals = [];
 
         for (const decl of decls) {
           const specs = decl.specifiers;
@@ -37,15 +40,13 @@ const rule = {
             continue;
           }
 
-          const report = (spec, fix) => {
-            context.report({ node: spec, messageId: 'unused', data: { name: spec.local.name }, fix });
-          };
+          const owner = reports.length;
+          unused.forEach(spec => reports.push(spec));
 
           if (unused.length === specs.length) {
             // whole declaration is dead, remove it including the trailing newline
             const end = text[decl.range[1]] === '\n' ? decl.range[1] + 1 : decl.range[1];
-            report(unused[0], fixer => fixer.removeRange([decl.range[0], end]));
-            unused.slice(1).forEach(spec => report(spec));
+            removals.push([decl.range[0], end, owner]);
             continue;
           }
 
@@ -56,7 +57,7 @@ const rule = {
           for (const spec of unused.filter(spec => spec.type !== 'ImportSpecifier')) {
             const comma = text.indexOf(',', spec.range[1]);
             const tail = /^\s*/.exec(text.slice(comma + 1))[0].length;
-            report(spec, fixer => fixer.removeRange([spec.range[0], comma + 1 + tail]));
+            removals.push([spec.range[0], comma + 1 + tail, reports.indexOf(spec)]);
           }
 
           if (namedUnused.length === named.length && named.length > 0) {
@@ -64,12 +65,11 @@ const rule = {
             const prev = specs[specs.indexOf(named[0]) - 1];
             const comma = text.indexOf(',', prev.range[1]);
             const close = text.indexOf('}', named[named.length - 1].range[1]) + 1;
-            report(namedUnused[0], fixer => fixer.removeRange([comma, close]));
-            namedUnused.slice(1).forEach(spec => report(spec));
+            removals.push([comma, close, reports.indexOf(namedUnused[0])]);
             continue;
           }
 
-          // remove contiguous runs of unused named specifiers in a single fix to keep `--fix` one-pass
+          // contiguous runs of unused named specifiers collapse into a single removal
           for (let i = 0; i < named.length; i++) {
             if (used.has(named[i].local.name)) {
               continue;
@@ -81,18 +81,39 @@ const rule = {
               j++;
             }
 
-            const range = i === 0
+            const [start, end] = i === 0
               ? [named[0].range[0], named[j + 1].range[0]]
               : [named[i - 1].range[1], named[j].range[1]];
-            report(named[i], fixer => fixer.removeRange(range));
-
-            for (let k = i + 1; k <= j; k++) {
-              report(named[k]);
-            }
-
+            removals.push([start, end, reports.indexOf(named[i])]);
             i = j;
           }
         }
+
+        // merge touching removals so no two fixes have adjacent ranges, keeping `--fix` single-pass
+        removals.sort((a, b) => a[0] - b[0]);
+        const merged = [];
+
+        for (const removal of removals) {
+          const last = merged[merged.length - 1];
+
+          if (last && removal[0] <= last[1]) {
+            last[1] = Math.max(last[1], removal[1]);
+          } else {
+            merged.push(removal);
+          }
+        }
+
+        const fixes = new Map(merged.map(([start, end, owner]) => [owner, [start, end]]));
+
+        reports.forEach((spec, index) => {
+          const range = fixes.get(index);
+          context.report({
+            node: spec,
+            messageId: 'unused',
+            data: { name: spec.local.name },
+            fix: range && (fixer => fixer.removeRange(range)),
+          });
+        });
       },
     };
   },
