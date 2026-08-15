@@ -41,7 +41,6 @@ import type {
   Config,
   MaybePromise,
   IndexHints,
-  InferPropertyIndexMap,
   ExtractDefineEntityProperties,
 } from '../typings.js';
 import type { Raw } from '../utils/RawQueryFragment.js';
@@ -79,11 +78,7 @@ type BuilderKeys = Exclude<UniversalPropertyKeys, ExcludeKeys> | BuilderExtraKey
 
 type IncludeKeysForProperty = Exclude<keyof PropertyOptions<any>, ExcludeKeys> | BuilderExtraKeys;
 type IncludeKeysForEnumOptions = Exclude<keyof EnumOptions<any>, ExcludeKeys> | BuilderExtraKeys;
-type IncludeKeysForEmbeddedOptions = Exclude<keyof EmbeddedOptions<any, any>, ExcludeKeys> | BuilderExtraKeys;
-type IncludeKeysForManyToOneOptions = Exclude<keyof ManyToOneOptions<any, any>, ExcludeKeys> | BuilderExtraKeys;
 type IncludeKeysForOneToManyOptions = Exclude<keyof OneToManyOptions<any, any>, ExcludeKeys> | BuilderExtraKeys;
-type IncludeKeysForOneToOneOptions = Exclude<keyof OneToOneOptions<any, any>, ExcludeKeys> | BuilderExtraKeys;
-type IncludeKeysForManyToManyOptions = Exclude<keyof ManyToManyOptions<any, any>, ExcludeKeys> | BuilderExtraKeys;
 
 // Helper for restricting PropertyChain methods by kind via conditional return types.
 // Uses Options['kind'] (already present) to avoid a 3rd type parameter (which causes measurable instantiation overhead).
@@ -1523,10 +1518,6 @@ export interface DefineEntityHooks<T = any> {
   beforeDelete?: EntityHookValue<T, 'beforeDelete'>;
   afterDelete?: EntityHookValue<T, 'afterDelete'>;
 }
-
-type MapToArray<T extends Record<string, any>> = {
-  [K in keyof T]: NonNullable<T[K]>[];
-};
 
 type PropertyValueType = PropertyOptions<any>['type'];
 

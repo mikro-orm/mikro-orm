@@ -12,7 +12,6 @@ import type {
   FilterQuery,
   PopulateHintOptions,
   PopulateOptions,
-  Primary,
 } from '../typings.js';
 import type { EntityManager } from '../EntityManager.js';
 import { QueryHelper } from '../utils/QueryHelper.js';

@@ -33,7 +33,6 @@ import { EntityComparator } from './utils/EntityComparator.js';
 import type { EntityManager } from './EntityManager.js';
 import type { EventSubscriber } from './events/EventSubscriber.js';
 import type { FilterOptions, FindOneOptions, FindOptions, LoadHint } from './drivers/IDatabaseDriver.js';
-import { BaseEntity } from './entity/BaseEntity.js';
 
 export type { Raw };
 

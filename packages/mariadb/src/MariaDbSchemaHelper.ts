@@ -4,7 +4,6 @@ import {
   type Column,
   type IndexDef,
   type DatabaseSchema,
-  type DatabaseTable,
   type Table,
   MySqlSchemaHelper,
 } from '@mikro-orm/mysql';

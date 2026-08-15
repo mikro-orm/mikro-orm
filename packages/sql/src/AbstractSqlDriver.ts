@@ -43,7 +43,6 @@ import {
   parseJsonSafe,
   PolymorphicRef,
   type PopulateOptions,
-  type PopulatePath,
   type Primary,
   QueryFlag,
   QueryHelper,

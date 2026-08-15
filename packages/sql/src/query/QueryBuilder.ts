@@ -6,7 +6,6 @@ import {
   type ConnectionType,
   type Dictionary,
   type EntityData,
-  type EntityDTO,
   type EntityDTOFlat,
   type EntityDTOProp,
   type EntityKey,
@@ -281,9 +280,6 @@ type JoinedEntityType<Entity extends object, Context, Field extends string> = Ex
   GetType<Entity, Context, Field>[GetPropName<Field> & keyof GetType<Entity, Context, Field>]
 >;
 
-// Get Context keys (all keys are valid now that depth tracking is removed)
-type ContextKeys<C> = keyof C;
-
 // Extract alias names from Context
 type AliasNames<Context> = Context[keyof Context] extends infer Join
   ? Join extends any
@@ -458,10 +454,6 @@ type AliasedFilterValue = Scalar | FlatOperatorMap | readonly Scalar[] | null | 
 // Type-aware filter value that uses the property type for better validation
 // Uses ExpandProperty to unwrap Collection/Reference types
 type TypedAliasedFilterValue<T> = FilterValue<ExpandProperty<T>> | QueryBuilder<any> | NativeQueryBuilder;
-
-// Filter value that can include subqueries (QueryBuilder, NativeQueryBuilder)
-// Used for record-based where() overloads
-type QBFilterValue = FilterValue<Scalar> | QueryBuilder<any> | NativeQueryBuilder;
 
 // Split mapped types for better TypeScript caching
 // Each part can be cached independently

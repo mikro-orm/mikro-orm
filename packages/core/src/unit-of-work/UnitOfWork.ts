@@ -177,7 +177,6 @@ export class UnitOfWork {
       return entity;
     }
 
-    const forceUndefined = this.#em.config.get('forceUndefined');
     const wrapped = helper(entity);
 
     if (options?.loaded && wrapped.__initialized && !wrapped.__onLoadFired) {
