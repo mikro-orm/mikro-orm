@@ -143,6 +143,22 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
+  /**
+   * Guards `getNativeClient()` overrides — drivers only capture their client while building their
+   * own dialect, which `driverOptions` carrying a ready-made Kysely instance or dialect skips.
+   *
+   * @internal
+   */
+  protected requireNativeClient<T>(client: T | undefined | null): T {
+    if (client == null) {
+      throw new Error(
+        'The native client is not available, as it is owned by the Kysely instance or dialect passed via `driverOptions`. Access it through the object you provided there instead.',
+      );
+    }
+
+    return client;
+  }
+
   /** Executes a callback within a transaction, committing on success and rolling back on error. */
   override async transactional<T>(
     cb: (trx: Transaction<ControlledTransaction<any, any>>) => Promise<T>,
