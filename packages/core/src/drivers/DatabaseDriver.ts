@@ -325,17 +325,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       }
 
       if (definition.length > 0 && definition.length === offsets.length) {
-        // a string cursor is client supplied, so everything failing to restore from it is an
-        // invalid cursor, letting callers map `CursorError` to a client error response
-        try {
-          return this.createCursorCondition<T>(definition, offsets as Dictionary[], inverse, meta, fromJson);
-        } catch (error) {
-          if (!fromJson || error instanceof CursorError) {
-            throw error;
-          }
-
-          throw CursorError.invalidCursor(meta.className, error as Error);
-        }
+        return this.createCursorCondition<T>(definition, offsets as Dictionary[], inverse, meta, fromJson);
       }
 
       /* v8 ignore next */
@@ -544,7 +534,17 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         throw CursorError.missingValue(meta.className, path);
       }
 
-      offset = this.mapCursorOffset(propMeta, offset, insideJson, fromJson) as Dictionary;
+      // string-cursor values are client supplied, so a value the type cannot restore is an
+      // invalid cursor, letting callers map `CursorError` to a client error response
+      try {
+        offset = this.mapCursorOffset(propMeta, offset, insideJson, fromJson) as Dictionary;
+      } catch (error) {
+        if (!fromJson || error instanceof CursorError) {
+          throw error;
+        }
+
+        throw CursorError.invalidCursor(meta.className, error as Error);
+      }
 
       // Handle null offset (intentional null cursor value)
       if (offset === null) {

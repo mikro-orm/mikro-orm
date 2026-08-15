@@ -1022,6 +1022,12 @@ test('`BigIntType.fromJSON` restores all three modes', () => {
   expect(new BigIntType().fromJSON('1003')).toBe(BigInt(1003));
   expect(new BigIntType('number').fromJSON(2003)).toBe(2003);
   expect(new BigIntType('string').fromJSON('3003')).toBe('3003');
+
+  // `number` mode cannot represent values past `MAX_SAFE_INTEGER` without rounding
+  expect(() => new BigIntType('number').fromJSON('9007199254740993')).toThrow(
+    "Could not convert JSON value '9007199254740993' of type 'string' to type BigIntType",
+  );
+  expect(new BigIntType().fromJSON('9007199254740993')).toBe(9007199254740993n);
 });
 
 test('`Cursor.for` keeps non-object values under a nested direction', () => {

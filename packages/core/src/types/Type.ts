@@ -98,7 +98,7 @@ export abstract class Type<JSType = string, DBType = JSType> {
    * can be any JSON shape: validate it and throw for values the type cannot restore, and
    * `findByCursor` surfaces the failure as a `CursorError`.
    * Implementing this method also makes cursor encoding use `toJSON`. Without it, cursors
-   * carry the raw JS value, and decoding falls back to `convertToJSValue`, with shape based
+   * carry the raw JS value, and decoding falls back to `convertToJSValue`, with type-based
    * `Date` restoration for date-like columns.
    */
   fromJSON?(value: unknown, platform: Platform): JSType;

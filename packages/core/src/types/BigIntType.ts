@@ -58,8 +58,16 @@ export class BigIntType<Mode extends 'bigint' | 'number' | 'string' = 'bigint'> 
     }
 
     switch (this.mode) {
-      case 'number':
-        return Number(value) as JSTypeByMode<Mode>;
+      case 'number': {
+        // `Number` silently rounds past `MAX_SAFE_INTEGER`, tampered cursors must fail loudly
+        const num = Number(value);
+
+        if (!Number.isSafeInteger(num)) {
+          throw ValidationError.invalidType(BigIntType, value, 'JSON');
+        }
+
+        return num as JSTypeByMode<Mode>;
+      }
       case 'string':
         return String(value) as JSTypeByMode<Mode>;
       case 'bigint':
