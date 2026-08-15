@@ -35,7 +35,6 @@ Attach policies to an entity through the `policies` option, and toggle the table
 import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity({
-  rowLevelSecurity: true,
   policies: [
     {
       name: 'article_tenant',
@@ -63,7 +62,6 @@ import { defineEntity, p } from '@mikro-orm/postgresql';
 
 export const Article = defineEntity({
   name: 'Article',
-  rowLevelSecurity: true,
   properties: {
     id: p.integer().primary(),
     tenantId: p.uuid(),
@@ -86,7 +84,6 @@ import { EntitySchema } from '@mikro-orm/postgresql';
 
 export const Article = new EntitySchema({
   name: 'Article',
-  rowLevelSecurity: true,
   properties: {
     id: { type: 'number', primary: true },
     tenantId: { type: 'uuid' },
