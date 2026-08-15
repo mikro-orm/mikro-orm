@@ -488,18 +488,13 @@ type ContextFieldType<Context, K extends string> = Context[keyof Context] extend
 type ContextFilterKeys<Context> = { [K in ContextFieldKeys<Context>]?: ContextFieldType<Context, K> };
 type RawFilterKeys<RawAliases extends string> = { [K in RawAliases]?: AliasedFilterValue };
 
-// Internal type for nested filter conditions in group operators ($and, $or, $not)
-// Uses intersection to ensure unknown aliased keys are caught by excess property checking
-type NestedFilterCondition<Entity, RootAlias extends string, Context, RawAliases extends string> = ObjectQuery<Entity> &
-  (IsNever<RootAlias> extends true ? {} : string extends RootAlias ? {} : RootAliasFilterKeys<RootAlias, Entity>) &
-  ([Context] extends [never] ? {} : ContextFilterKeys<Context>) &
-  (IsNever<RawAliases> extends true ? {} : string extends RawAliases ? {} : RawFilterKeys<RawAliases>);
-
 // Group operators type that accepts both plain entity keys and aliased keys
+// Nested conditions reuse `QBFilterQuery` so aliases keep validating at any depth; going through
+// `ObjectQuery` instead would widen the element type to `FilterQuery` and disable excess property checking
 type GroupOperators<RootAlias extends string, Context, Entity, RawAliases extends string> = {
-  $and?: NestedFilterCondition<Entity, RootAlias, Context, RawAliases>[];
-  $or?: NestedFilterCondition<Entity, RootAlias, Context, RawAliases>[];
-  $not?: NestedFilterCondition<Entity, RootAlias, Context, RawAliases>;
+  $and?: QBFilterQuery<Entity, RootAlias, Context, RawAliases>[];
+  $or?: QBFilterQuery<Entity, RootAlias, Context, RawAliases>[];
+  $not?: QBFilterQuery<Entity, RootAlias, Context, RawAliases>;
 };
 
 // Aliased keys filter condition - split into separate intersected parts for better caching

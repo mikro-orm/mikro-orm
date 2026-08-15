@@ -164,7 +164,13 @@ bench('QBFilterQuery<Author, "a", SimpleContext> - with $and', () => {
   useFilter<Author, 'a', SimpleContext>({
     $and: [{ 'b.title': 'test' }, { name: 'foo' }],
   });
-}).types([423, 'instantiations']);
+}).types([413, 'instantiations']);
+
+bench('QBFilterQuery<Author, "a", SimpleContext> - with nested $or in $and', () => {
+  useFilter<Author, 'a', SimpleContext>({
+    $and: [{ $or: [{ 'b.title': 'test' }, { name: 'foo' }] }],
+  });
+}).types([437, 'instantiations']);
 
 // ============================================
 // ModifyFields benchmarks (Fields tracking)
