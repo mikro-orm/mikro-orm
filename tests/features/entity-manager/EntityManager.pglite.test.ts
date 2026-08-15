@@ -3115,6 +3115,32 @@ describe('EntityManagerPglite', () => {
     expect(existsSync('whatever')).toBe(false);
   });
 
+  test('getNativeClient() exposes the underlying PGlite instance', async () => {
+    const { PGlite } = await import('@electric-sql/pglite');
+    const connection = orm.em.getConnection();
+    const pglite = await connection.getNativeClient();
+    expect(pglite).toBeInstanceOf(PGlite);
+
+    // PGlite-only APIs we don't wrap (multi-statement `exec`, `dumpDataDir`) are now reachable
+    const res = await pglite.exec('select 1 as a; select 2 as b');
+    expect(res.map(r => r.rows[0])).toEqual([{ a: 1 }, { b: 2 }]);
+    expect(await connection.getNativeClient()).toBe(pglite);
+  });
+
+  test('getNativeClient() returns the instance passed via driverOptions', async () => {
+    const { defineEntity, p } = await import('@mikro-orm/core');
+    const { PGlite } = await import('@electric-sql/pglite');
+    const Mini = defineEntity({
+      name: 'Mini',
+      properties: { id: p.integer().primary().autoincrement(), name: p.string() },
+    });
+    const pglite = await PGlite.create();
+    const child = await MikroORM.init({ entities: [Mini], driverOptions: { pglite } });
+    await expect(child.em.getConnection().getNativeClient()).resolves.toBe(pglite);
+    await child.close(true);
+    await pglite.close();
+  });
+
   test('MikroORM.init resolves with PgliteDriver and accepts a PGlite instance', async () => {
     const { defineEntity, p } = await import('@mikro-orm/core');
     const { PGlite } = await import('@electric-sql/pglite');

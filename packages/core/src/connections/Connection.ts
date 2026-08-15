@@ -103,6 +103,16 @@ export abstract class Connection {
     throw new Error(`Executing SQL dumps is not supported by current driver`);
   }
 
+  /**
+   * Returns the underlying database client the connection drives — e.g. the `pg` pool, the
+   * `better-sqlite3` database, or the `PGlite` instance — for vendor APIs MikroORM does not wrap.
+   * Each driver narrows the return type to its own client. Its lifecycle belongs to the ORM, so
+   * leave closing it to `orm.close()` unless you supplied the client yourself via `driverOptions`.
+   */
+  async getNativeClient(): Promise<unknown> {
+    throw new Error(`Accessing the native client is not supported by current driver`);
+  }
+
   protected async onConnect(): Promise<void> {
     const schemaGenerator = this.config.getExtension<ISchemaGenerator>('@mikro-orm/schema-generator');
 

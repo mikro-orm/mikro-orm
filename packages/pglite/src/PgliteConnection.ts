@@ -12,9 +12,8 @@ import { AbstractSqlConnection, type Dictionary, createPostgreSqlTypeParsers } f
  * you're responsible for configuring them yourself, and `dataDir` from
  * `dbName` is ignored — your instance keeps whatever it was constructed with).
  *
- * @internal — kept module-local so `@electric-sql/pglite`'s d.ts (which
- * references DOM/Emscripten/WebAssembly ambient globals) doesn't leak into
- * downstream type graphs.
+ * @internal — kept module-local; `driverOptions` is untyped at the config level
+ * anyway, so exporting this would only widen the API surface.
  */
 type PgliteDriverOptions = Partial<PGliteOptions> & {
   pglite?: PGlite | (() => PGlite | Promise<PGlite>);
@@ -128,10 +127,19 @@ export class PgliteConnection extends AbstractSqlConnection {
     }
   }
 
+  /**
+   * Returns the underlying `PGlite` instance, for APIs we don't wrap (e.g. `pgDump`
+   * from `@electric-sql/pglite-tools`, extensions, or `dumpDataDir`). Closing it is
+   * still `orm.close()`'s job unless you supplied it via `driverOptions.pglite`.
+   */
+  override async getNativeClient(): Promise<PGlite> {
+    await this.ensureConnection();
+    return this.#pglite!;
+  }
+
   /** PGlite supports multi-statement scripts via `exec()`, which is what schema dumps need. */
   override async executeDump(source: string): Promise<void> {
-    await this.ensureConnection();
-    const pglite = await this.#pglite!;
+    const pglite = await this.getNativeClient();
     await pglite.exec(source);
   }
 }

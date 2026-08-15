@@ -7,12 +7,15 @@ import { AbstractSqlConnection, createPostgreSqlTypeParsers, Utils } from '@mikr
 
 /** PostgreSQL database connection using the `pg` driver. */
 export class PostgreSqlConnection extends AbstractSqlConnection {
+  #pool?: Pool;
+
   override createKyselyDialect(overrides: PoolConfig): PostgresDialect {
     const { onPoolCreated, ...poolOverrides } = (overrides ?? {}) as PoolConfig & {
       onPoolCreated?: (pool: Pool) => unknown;
     };
     const options = this.mapOptions(poolOverrides);
     const pool = new Pool(options);
+    this.#pool = pool;
     this.handlePoolErrors(pool);
     void onPoolCreated?.(pool);
     return new PostgresDialect({
@@ -21,6 +24,12 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
       onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
       onReserveConnection: this.options.onReserveConnection ?? this.config.get('onReserveConnection'),
     });
+  }
+
+  /** Returns the `pg` connection pool backing this connection. */
+  override async getNativeClient(): Promise<Pool> {
+    await this.ensureConnection();
+    return this.requireNativeClient(this.#pool);
   }
 
   /**

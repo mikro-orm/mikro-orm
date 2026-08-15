@@ -136,6 +136,12 @@ export class MongoConnection extends Connection {
     return this.#client!;
   }
 
+  /** Returns the `MongoClient` backing this connection, the async counterpart of `getClient()`. */
+  override async getNativeClient(): Promise<MongoClient> {
+    await this.ensureConnection();
+    return this.getClient();
+  }
+
   getCollection<T extends object>(name: EntityName<T> | string): Collection<T> {
     return this.getDb().collection<T>(this.getCollectionName(name));
   }
