@@ -114,9 +114,9 @@ export abstract class BaseSqliteSchemaHelper extends SchemaHelper {
 
       /* istanbul ignore else */
       if (match) {
-        o[match[1]] = match[2]
-          .split(/,(?=\s*'(?:[^']|'')*'(?:\s*\)|$))/)
-          .map((item: string) => item.trim().match(/^\(?'((?:[^']|'')*)'/)![1].replace(/''/g, "'"));
+        // Match each SQL string literal so commas inside enum values are preserved.
+        o[match[1]] = [...match[2].matchAll(/'((?:[^']|'')*)'/g)]
+          .map(item => item[1].replace(/''/g, "'"));
       }
 
       return o;
