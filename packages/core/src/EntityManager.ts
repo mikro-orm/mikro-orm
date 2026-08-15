@@ -424,6 +424,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
    */
   addFilter<T extends EntityName | readonly EntityName[]>(options: FilterDef<T>): void {
+    options = { ...options };
+
     if (options.entity) {
       options.entity = Utils.asArray(options.entity).map(n => Utils.className(n)) as any;
     }
@@ -2086,6 +2088,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const em = options.disableContextResolution ? this : this.getContext();
+    options = { ...options };
     options.schema ??= em.#schema;
     options.validate ??= true;
     options.cascade ??= true;
@@ -2184,6 +2187,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options: CreateOptions<Convert> = {},
   ): Entity {
     const em = this.getContext();
+    options = { ...options };
     options.schema ??= em.#schema;
     const entity = em.#entityFactory.create(entityName, data as EntityData<Entity>, {
       ...options,
@@ -2278,6 +2282,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     id: Primary<Entity>,
     options: GetReferenceOptions = {},
   ): Entity | Ref<Entity> | Reference<Entity> {
+    options = { ...options };
     options.schema ??= this.schema;
     options.convertCustomTypes ??= false;
     const meta = this.metadata.get(entityName);
@@ -2532,6 +2537,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    */
   fork(options: ForkOptions = {}): this {
     const em = options.disableContextResolution ? this : this.getContext(false);
+    options = { ...options };
     options.clear ??= true;
     options.useContext ??= false;
     options.freshEventManager ??= false;
