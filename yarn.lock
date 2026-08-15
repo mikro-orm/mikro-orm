@@ -2062,72 +2062,72 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nx/nx-darwin-arm64@npm:23.1.0":
-  version: 23.1.0
-  resolution: "@nx/nx-darwin-arm64@npm:23.1.0"
+"@nx/nx-darwin-arm64@npm:23.1.1":
+  version: 23.1.1
+  resolution: "@nx/nx-darwin-arm64@npm:23.1.1"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@nx/nx-darwin-x64@npm:23.1.0":
-  version: 23.1.0
-  resolution: "@nx/nx-darwin-x64@npm:23.1.0"
+"@nx/nx-darwin-x64@npm:23.1.1":
+  version: 23.1.1
+  resolution: "@nx/nx-darwin-x64@npm:23.1.1"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@nx/nx-freebsd-x64@npm:23.1.0":
-  version: 23.1.0
-  resolution: "@nx/nx-freebsd-x64@npm:23.1.0"
+"@nx/nx-freebsd-x64@npm:23.1.1":
+  version: 23.1.1
+  resolution: "@nx/nx-freebsd-x64@npm:23.1.1"
   conditions: os=freebsd & cpu=x64
   languageName: node
   linkType: hard
 
-"@nx/nx-linux-arm-gnueabihf@npm:23.1.0":
-  version: 23.1.0
-  resolution: "@nx/nx-linux-arm-gnueabihf@npm:23.1.0"
+"@nx/nx-linux-arm-gnueabihf@npm:23.1.1":
+  version: 23.1.1
+  resolution: "@nx/nx-linux-arm-gnueabihf@npm:23.1.1"
   conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
 
-"@nx/nx-linux-arm64-gnu@npm:23.1.0":
-  version: 23.1.0
-  resolution: "@nx/nx-linux-arm64-gnu@npm:23.1.0"
+"@nx/nx-linux-arm64-gnu@npm:23.1.1":
+  version: 23.1.1
+  resolution: "@nx/nx-linux-arm64-gnu@npm:23.1.1"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@nx/nx-linux-arm64-musl@npm:23.1.0":
-  version: 23.1.0
-  resolution: "@nx/nx-linux-arm64-musl@npm:23.1.0"
+"@nx/nx-linux-arm64-musl@npm:23.1.1":
+  version: 23.1.1
+  resolution: "@nx/nx-linux-arm64-musl@npm:23.1.1"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@nx/nx-linux-x64-gnu@npm:23.1.0":
-  version: 23.1.0
-  resolution: "@nx/nx-linux-x64-gnu@npm:23.1.0"
+"@nx/nx-linux-x64-gnu@npm:23.1.1":
+  version: 23.1.1
+  resolution: "@nx/nx-linux-x64-gnu@npm:23.1.1"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@nx/nx-linux-x64-musl@npm:23.1.0":
-  version: 23.1.0
-  resolution: "@nx/nx-linux-x64-musl@npm:23.1.0"
+"@nx/nx-linux-x64-musl@npm:23.1.1":
+  version: 23.1.1
+  resolution: "@nx/nx-linux-x64-musl@npm:23.1.1"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@nx/nx-win32-arm64-msvc@npm:23.1.0":
-  version: 23.1.0
-  resolution: "@nx/nx-win32-arm64-msvc@npm:23.1.0"
+"@nx/nx-win32-arm64-msvc@npm:23.1.1":
+  version: 23.1.1
+  resolution: "@nx/nx-win32-arm64-msvc@npm:23.1.1"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@nx/nx-win32-x64-msvc@npm:23.1.0":
-  version: 23.1.0
-  resolution: "@nx/nx-win32-x64-msvc@npm:23.1.0"
+"@nx/nx-win32-x64-msvc@npm:23.1.1":
+  version: 23.1.1
+  resolution: "@nx/nx-win32-x64-msvc@npm:23.1.1"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -3890,15 +3890,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.16.1":
-  version: 1.16.1
-  resolution: "axios@npm:1.16.1"
+"axios@npm:1.18.1":
+  version: 1.18.1
+  resolution: "axios@npm:1.18.1"
   dependencies:
     follow-redirects: "npm:^1.16.0"
     form-data: "npm:^4.0.5"
     https-proxy-agent: "npm:^5.0.1"
     proxy-from-env: "npm:^2.1.0"
-  checksum: 10/9b6218cf96321cfbbf8f160658d695367114bcf4fb62492bdc1ccd647f184b5c71ae400e5ecaaf41079bc561de2ecbaf1fec63f398b3ec53389beff7694df64c
+  checksum: 10/c4cdced3ee0a9bf7dcae189fbc74a124aa079d4f04dbd995e602d39c1419476e8d021f87ee39ac8d8398e5a55e6d0b986238b3645f0d9177ac80de87c2a73f18
   languageName: node
   linkType: hard
 
@@ -4095,12 +4095,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"brace-expansion@npm:5.0.6":
-  version: 5.0.6
-  resolution: "brace-expansion@npm:5.0.6"
+"brace-expansion@npm:5.0.8, brace-expansion@npm:^5.0.2, brace-expansion@npm:^5.0.5":
+  version: 5.0.8
+  resolution: "brace-expansion@npm:5.0.8"
   dependencies:
     balanced-match: "npm:^4.0.2"
-  checksum: 10/a7acf120fefa79e9d7c9c92898114f57c07596a3920197f3c5917e6a628b04220a5f7f9618c30bdd973a6576a32113b99f9c3f1c8245ccc399dd2a9a718d81d8
+  checksum: 10/75d2d2ebc8f5f65156d16706216d23e48f499a1164e4b045e0ca4045d3ce6b16ced11ea2e4c76e3670b6c38454123213f43d23127df8fc6840980aea9a35e061
   languageName: node
   linkType: hard
 
@@ -4120,15 +4120,6 @@ __metadata:
   dependencies:
     balanced-match: "npm:^1.0.0"
   checksum: 10/0e0f9b0df1f0809e9c326470e022eeb24334ddb54c43b1ac39f1d38f3cbaeb940794de1db826f5491843ac00d7932c43f10350a65ccd51fe7d05da627152f204
-  languageName: node
-  linkType: hard
-
-"brace-expansion@npm:^5.0.2, brace-expansion@npm:^5.0.5":
-  version: 5.0.8
-  resolution: "brace-expansion@npm:5.0.8"
-  dependencies:
-    balanced-match: "npm:^4.0.2"
-  checksum: 10/75d2d2ebc8f5f65156d16706216d23e48f499a1164e4b045e0ca4045d3ce6b16ced11ea2e4c76e3670b6c38454123213f43d23127df8fc6840980aea9a35e061
   languageName: node
   linkType: hard
 
@@ -4180,7 +4171,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bundle-name@npm:^4.1.0":
+"bundle-name@npm:4.1.0, bundle-name@npm:^4.1.0":
   version: 4.1.0
   resolution: "bundle-name@npm:4.1.0"
   dependencies:
@@ -4737,14 +4728,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"default-browser-id@npm:^5.0.0":
+"default-browser-id@npm:5.0.0, default-browser-id@npm:^5.0.0":
   version: 5.0.0
   resolution: "default-browser-id@npm:5.0.0"
   checksum: 10/185bfaecec2c75fa423544af722a3469b20704c8d1942794a86e4364fe7d9e8e9f63241a5b769d61c8151993bc65833a5b959026fa1ccea343b3db0a33aa6deb
   languageName: node
   linkType: hard
 
-"default-browser@npm:^5.2.1":
+"default-browser@npm:5.2.1, default-browser@npm:^5.2.1":
   version: 5.2.1
   resolution: "default-browser@npm:5.2.1"
   dependencies:
@@ -4763,14 +4754,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"define-lazy-prop@npm:2.0.0, define-lazy-prop@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "define-lazy-prop@npm:2.0.0"
-  checksum: 10/0115fdb065e0490918ba271d7339c42453d209d4cb619dfe635870d906731eff3e1ade8028bb461ea27ce8264ec5e22c6980612d332895977e89c1bbc80fcee2
-  languageName: node
-  linkType: hard
-
-"define-lazy-prop@npm:^3.0.0":
+"define-lazy-prop@npm:3.0.0, define-lazy-prop@npm:^3.0.0":
   version: 3.0.0
   resolution: "define-lazy-prop@npm:3.0.0"
   checksum: 10/f28421cf9ee86eecaf5f3b8fe875f13d7009c2625e97645bfff7a2a49aca678270b86c39f9c32939e5ca7ab96b551377ed4139558c795e076774287ad3af1aa4
@@ -5888,16 +5872,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-docker@npm:2.2.1, is-docker@npm:^2.0.0, is-docker@npm:^2.1.1":
-  version: 2.2.1
-  resolution: "is-docker@npm:2.2.1"
-  bin:
-    is-docker: cli.js
-  checksum: 10/3fef7ddbf0be25958e8991ad941901bf5922ab2753c46980b60b05c1bf9c9c2402d35e6dc32e4380b980ef5e1970a5d9d5e5aa2e02d77727c3b6b5e918474c56
-  languageName: node
-  linkType: hard
-
-"is-docker@npm:^3.0.0":
+"is-docker@npm:3.0.0, is-docker@npm:^3.0.0":
   version: 3.0.0
   resolution: "is-docker@npm:3.0.0"
   bin:
@@ -5913,7 +5888,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-inside-container@npm:^1.0.0":
+"is-inside-container@npm:1.0.0, is-inside-container@npm:^1.0.0":
   version: 1.0.0
   resolution: "is-inside-container@npm:1.0.0"
   dependencies:
@@ -5968,16 +5943,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-wsl@npm:2.2.0, is-wsl@npm:^2.2.0":
-  version: 2.2.0
-  resolution: "is-wsl@npm:2.2.0"
-  dependencies:
-    is-docker: "npm:^2.0.0"
-  checksum: 10/20849846ae414997d290b75e16868e5261e86ff5047f104027026fd61d8b5a9b0b3ade16239f35e1a067b3c7cc02f70183cb661010ed16f4b6c7c93dad1b19d8
-  languageName: node
-  linkType: hard
-
-"is-wsl@npm:^3.1.0":
+"is-wsl@npm:3.1.0, is-wsl@npm:^3.1.0":
   version: 3.1.0
   resolution: "is-wsl@npm:3.1.0"
   dependencies:
@@ -7443,24 +7409,24 @@ __metadata:
   linkType: hard
 
 "nx@npm:>=23.1.0 < 24.0.0":
-  version: 23.1.0
-  resolution: "nx@npm:23.1.0"
+  version: 23.1.1
+  resolution: "nx@npm:23.1.1"
   dependencies:
     "@emnapi/core": "npm:1.4.5"
     "@emnapi/runtime": "npm:1.4.5"
     "@emnapi/wasi-threads": "npm:1.0.4"
     "@jest/diff-sequences": "npm:30.0.1"
     "@napi-rs/wasm-runtime": "npm:0.2.4"
-    "@nx/nx-darwin-arm64": "npm:23.1.0"
-    "@nx/nx-darwin-x64": "npm:23.1.0"
-    "@nx/nx-freebsd-x64": "npm:23.1.0"
-    "@nx/nx-linux-arm-gnueabihf": "npm:23.1.0"
-    "@nx/nx-linux-arm64-gnu": "npm:23.1.0"
-    "@nx/nx-linux-arm64-musl": "npm:23.1.0"
-    "@nx/nx-linux-x64-gnu": "npm:23.1.0"
-    "@nx/nx-linux-x64-musl": "npm:23.1.0"
-    "@nx/nx-win32-arm64-msvc": "npm:23.1.0"
-    "@nx/nx-win32-x64-msvc": "npm:23.1.0"
+    "@nx/nx-darwin-arm64": "npm:23.1.1"
+    "@nx/nx-darwin-x64": "npm:23.1.1"
+    "@nx/nx-freebsd-x64": "npm:23.1.1"
+    "@nx/nx-linux-arm-gnueabihf": "npm:23.1.1"
+    "@nx/nx-linux-arm64-gnu": "npm:23.1.1"
+    "@nx/nx-linux-arm64-musl": "npm:23.1.1"
+    "@nx/nx-linux-x64-gnu": "npm:23.1.1"
+    "@nx/nx-linux-x64-musl": "npm:23.1.1"
+    "@nx/nx-win32-arm64-msvc": "npm:23.1.1"
+    "@nx/nx-win32-x64-msvc": "npm:23.1.1"
     "@tybys/wasm-util": "npm:0.9.0"
     "@yarnpkg/lockfile": "npm:1.1.0"
     "@zkochan/js-yaml": "npm:0.0.7"
@@ -7470,12 +7436,13 @@ __metadata:
     ansi-styles: "npm:4.3.0"
     argparse: "npm:2.0.1"
     asynckit: "npm:0.4.0"
-    axios: "npm:1.16.1"
+    axios: "npm:1.18.1"
     balanced-match: "npm:4.0.3"
     base64-js: "npm:1.5.1"
     bl: "npm:4.1.0"
-    brace-expansion: "npm:5.0.6"
+    brace-expansion: "npm:5.0.8"
     buffer: "npm:5.7.1"
+    bundle-name: "npm:4.1.0"
     call-bind-apply-helpers: "npm:1.0.2"
     chalk: "npm:4.1.2"
     cli-cursor: "npm:3.1.0"
@@ -7486,8 +7453,10 @@ __metadata:
     color-name: "npm:1.1.4"
     combined-stream: "npm:1.0.8"
     debug: "npm:4.4.3"
+    default-browser: "npm:5.2.1"
+    default-browser-id: "npm:5.0.0"
     defaults: "npm:1.0.4"
-    define-lazy-prop: "npm:2.0.0"
+    define-lazy-prop: "npm:3.0.0"
     delayed-stream: "npm:1.0.0"
     dotenv: "npm:16.4.7"
     dotenv-expand: "npm:12.0.3"
@@ -7520,11 +7489,12 @@ __metadata:
     ieee754: "npm:1.2.1"
     ignore: "npm:7.0.5"
     inherits: "npm:2.0.4"
-    is-docker: "npm:2.2.1"
+    is-docker: "npm:3.0.0"
     is-fullwidth-code-point: "npm:3.0.0"
+    is-inside-container: "npm:1.0.0"
     is-interactive: "npm:1.0.0"
     is-unicode-supported: "npm:0.1.0"
-    is-wsl: "npm:2.2.0"
+    is-wsl: "npm:3.1.0"
     isexe: "npm:2.0.0"
     json5: "npm:2.2.3"
     jsonc-parser: "npm:3.3.1"
@@ -7540,7 +7510,7 @@ __metadata:
     npm-run-path: "npm:4.0.1"
     once: "npm:1.4.0"
     onetime: "npm:5.1.2"
-    open: "npm:8.4.2"
+    open: "npm:10.1.0"
     ora: "npm:5.4.1"
     path-key: "npm:3.1.1"
     picocolors: "npm:1.1.1"
@@ -7549,6 +7519,7 @@ __metadata:
     require-directory: "npm:2.1.1"
     resolve.exports: "npm:2.0.3"
     restore-cursor: "npm:3.1.0"
+    run-applescript: "npm:7.0.0"
     safe-buffer: "npm:5.2.1"
     semver: "npm:7.8.4"
     signal-exit: "npm:3.0.7"
@@ -7603,7 +7574,7 @@ __metadata:
   bin:
     nx: ./dist/bin/nx.js
     nx-cloud: ./dist/bin/nx-cloud.js
-  checksum: 10/22070bfb43b635d85aad6f62b2626d5348ddfe32b705b99c41a56d0cdd218d17c837d634de5f6d4f7d2c5b856bde234294c67c81b62621a71ece9b2ce23abeef
+  checksum: 10/8a9c8ebf2dc538e964011d95e7b8ee7ddf18094c5add47a40e873a5fc22e14d3bfe5b255c56fed45901bdd0a80ef104c6cbf64a1516bfffff0bbb9aa5837763d
   languageName: node
   linkType: hard
 
@@ -7632,14 +7603,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"open@npm:8.4.2":
-  version: 8.4.2
-  resolution: "open@npm:8.4.2"
+"open@npm:10.1.0":
+  version: 10.1.0
+  resolution: "open@npm:10.1.0"
   dependencies:
-    define-lazy-prop: "npm:^2.0.0"
-    is-docker: "npm:^2.1.1"
-    is-wsl: "npm:^2.2.0"
-  checksum: 10/acd81a1d19879c818acb3af2d2e8e9d81d17b5367561e623248133deb7dd3aefaed527531df2677d3e6aaf0199f84df57b6b2262babff8bf46ea0029aac536c9
+    default-browser: "npm:^5.2.1"
+    define-lazy-prop: "npm:^3.0.0"
+    is-inside-container: "npm:^1.0.0"
+    is-wsl: "npm:^3.1.0"
+  checksum: 10/a9c4105243a1b3c5312bf2aeb678f78d31f00618b5100088ee01eed2769963ea1f2dd464ac8d93cef51bba2d911e1a9c0c34a753ec7b91d6b22795903ea6647a
   languageName: node
   linkType: hard
 
@@ -8764,6 +8736,13 @@ __metadata:
   bin:
     rolldown: ./bin/cli.mjs
   checksum: 10/4dbe2c055104c47c15c051b713068cf4660acd473841904d3f7118f730922b2e498176610a45826cbc1ffe36842a29a076385d3bfcd5acb0f7ef8ad06b8feefb
+  languageName: node
+  linkType: hard
+
+"run-applescript@npm:7.0.0":
+  version: 7.0.0
+  resolution: "run-applescript@npm:7.0.0"
+  checksum: 10/b02462454d8b182ad4117e5d4626e9e6782eb2072925c9fac582170b0627ae3c1ea92ee9b2df7daf84b5e9ffe14eb1cf5fb70bc44b15c8a0bfcdb47987e2410c
   languageName: node
   linkType: hard
 
