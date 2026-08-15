@@ -37,6 +37,9 @@ describe('Connection', () => {
     await expect(conn.commit({} as any)).rejects.toThrow('Transactions are not supported by current driver');
     await expect(conn.rollback({} as any)).rejects.toThrow('Transactions are not supported by current driver');
     await expect(conn.executeDump('...')).rejects.toThrow('Executing SQL dumps is not supported by current driver');
+    await expect(conn.getNativeClient()).rejects.toThrow(
+      'Accessing the native client is not supported by current driver',
+    );
   });
 
   test('special characters in username and password', async () => {

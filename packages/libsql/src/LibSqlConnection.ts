@@ -47,6 +47,15 @@ export class LibSqlConnection extends BaseSqliteConnection {
     this.database.exec(source);
   }
 
+  /**
+   * Returns the `libsql` database backing this connection. Remote/replica connections are
+   * recycled, so re-read it rather than holding on to the returned handle.
+   */
+  override async getNativeClient(): Promise<Database.Database> {
+    await this.ensureConnection();
+    return this.requireNativeClient(this.database);
+  }
+
   private validateAttachSupport(): void {
     const attachDatabases = this.config.get('attachDatabases');
     if (!attachDatabases?.length) {

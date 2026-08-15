@@ -22,6 +22,8 @@ export class MySqlConnection extends AbstractSqlConnection {
   // query it is meant to cancel. Postgres gets one from its pool by default, mysql2 does not.
   static readonly #controlConnection = createConnection as unknown as MysqlDialectConfig['controlConnection'];
 
+  #pool?: Pool;
+
   override async createKyselyDialect(overrides: PoolOptions): Promise<MysqlDialect> {
     const options = this.mapOptions(overrides);
     const password = options.password as ConnectionConfig['password'];
@@ -29,6 +31,8 @@ export class MySqlConnection extends AbstractSqlConnection {
     if (typeof password === 'function') {
       const initialPassword = await password();
       const innerPool = createPool({ ...options, password: initialPassword });
+      // the wrapper below is a kysely-shaped shim, so expose the real mysql2 pool
+      this.#pool = innerPool;
 
       // mysql2 reads pool.config.connectionConfig.password when creating new physical
       // connections, so updating it before getConnection() ensures fresh tokens are used.
@@ -61,12 +65,20 @@ export class MySqlConnection extends AbstractSqlConnection {
       });
     }
 
+    this.#pool = createPool(options);
+
     return new MysqlDialect({
-      pool: createPool(options) as any,
+      pool: this.#pool as any,
       controlConnection: MySqlConnection.#controlConnection,
       onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
       onReserveConnection: this.options.onReserveConnection ?? this.config.get('onReserveConnection'),
     });
+  }
+
+  /** Returns the `mysql2` connection pool backing this connection. */
+  override async getNativeClient(): Promise<Pool> {
+    await this.ensureConnection();
+    return this.requireNativeClient(this.#pool);
   }
 
   mapOptions(overrides: PoolOptions): PoolOptions {
