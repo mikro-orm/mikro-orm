@@ -99,6 +99,17 @@ This method has some limitations:
 - ORM extensions are not auto-loaded
 - when metadata cache is enabled, `FileCacheAdapter` needs to be explicitly set in the config
 
+## Closing the ORM
+
+To close the database connection, call `orm.close()`. The ORM instance also implements the async disposable protocol via `Symbol.asyncDispose`, so you can use [explicit resource management](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Resource_management) to close it automatically:
+
+```ts
+await using orm = await MikroORM.init({ ... });
+// `orm.close()` is called automatically at the end of the enclosing scope
+```
+
+> The `await using` syntax requires node 24+, or a transpiler that downlevels it (TypeScript does so for any compilation target below `ESNext`).
+
 ## RequestContext helper
 
 Now you will need to fork entity manager for each request so their [identity maps](https://mikro-orm.io/identity-map/)
