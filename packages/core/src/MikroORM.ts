@@ -214,6 +214,13 @@ export class MikroORM<
   }
 
   /**
+   * Closes the database connection, allows using the ORM instance with `await using`.
+   */
+  async [Symbol.asyncDispose](): Promise<void> {
+    await this.close();
+  }
+
+  /**
    * Gets the `MetadataStorage`.
    */
   getMetadata(): MetadataStorage;
