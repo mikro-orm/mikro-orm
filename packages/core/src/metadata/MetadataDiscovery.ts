@@ -1299,6 +1299,13 @@ export class MetadataDiscovery {
     owner: boolean,
     selfReferencing: boolean,
   ): EntityProperty {
+    let index = prop.index ?? this.#platform.indexForeignKeys();
+
+    if (owner && prop.index) {
+      // owner join columns are the leading prefix of the composite PK, so an explicit `index` only applies to them with `fixedOrder`; a custom index name always belongs to the inverse side
+      index = prop.fixedOrder ? true : this.#platform.indexForeignKeys();
+    }
+
     const ret = {
       name,
       type: Utils.className(type),
@@ -1307,7 +1314,7 @@ export class MetadataDiscovery {
       cascade: [Cascade.ALL],
       fixedOrder: prop.fixedOrder,
       fixedOrderColumn: prop.fixedOrderColumn,
-      index: this.#platform.indexForeignKeys(),
+      index,
       primary: !prop.fixedOrder,
       autoincrement: false,
       updateRule: prop.updateRule,
