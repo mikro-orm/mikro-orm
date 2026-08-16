@@ -1018,7 +1018,7 @@ export class QueryBuilder<
   >;
 
   /**
-   * Adds a JOIN clause to the query for a subquery.
+   * Adds a JOIN clause to the query for a subquery. Use `sql.ref('...')` to join a table or CTE by name.
    */
   join<Alias extends string>(
     field: RawQueryFragment | QueryBuilder<any>,
@@ -1076,7 +1076,7 @@ export class QueryBuilder<
   >;
 
   /**
-   * Adds an INNER JOIN clause to the query for a subquery.
+   * Adds an INNER JOIN clause to the query for a subquery. Use `sql.ref('...')` to join a table or CTE by name.
    */
   innerJoin<Alias extends string>(
     field: RawQueryFragment | QueryBuilder<any>,
@@ -1147,7 +1147,7 @@ export class QueryBuilder<
   >;
 
   /**
-   * Adds a LEFT JOIN clause to the query for a subquery.
+   * Adds a LEFT JOIN clause to the query for a subquery. Use `sql.ref('...')` to join a table or CTE by name.
    */
   leftJoin<Alias extends string>(
     field: RawQueryFragment | QueryBuilder<any>,
@@ -3117,20 +3117,21 @@ export class QueryBuilder<
         field = field.getNativeQuery();
       }
 
-      if (isRaw(field)) {
-        field = this.platform.formatQuery(field.sql, field.params);
+      const key = `${this.alias}.${prop.name}#${alias}`;
+      const join = { prop, alias, type, cond, schema, ownerAlias: this.alias } as unknown as JoinOptions;
+
+      // `sql.ref('...')` is a bare table/CTE reference, join it by name instead of wrapping it as a sub-query
+      if (isRaw(field) && field.sql === '??' && field.params.length === 1) {
+        join.table = String(field.params[0]);
+      } else {
+        if (isRaw(field)) {
+          field = this.platform.formatQuery(field.sql, field.params);
+        }
+
+        join.subquery = field.toString();
       }
 
-      const key = `${this.alias}.${prop.name}#${alias}`;
-      this.#state.joins[key] = {
-        prop,
-        alias,
-        type,
-        cond,
-        schema,
-        subquery: field.toString(),
-        ownerAlias: this.alias,
-      } as any;
+      this.#state.joins[key] = join;
 
       return { prop, key };
     }
