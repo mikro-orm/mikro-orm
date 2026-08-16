@@ -436,6 +436,17 @@ books = new Collection<Book>(this);
 </TabItem>
 </Tabs>
 
+### Indexing pivot table join columns
+
+Whether the join columns of the generated pivot table get indexed is driven by the platform default (e.g. SQLite indexes every foreign key, PostgreSQL does not). You can override this via the `index` option on the owning side of the M:N property:
+
+```ts
+@ManyToMany({ entity: () => User, index: true })
+users = new Collection<User>(this);
+```
+
+With `index: true`, only the join columns not already covered by a leading prefix of the pivot table's composite primary key get an extra index — for the default pivot that means just the inverse join column, while with `fixedOrder` both get indexed. The owning join column keeps the platform default either way (so on platforms that index every foreign key, it stays indexed too). You can also pass a string to name the index (it applies to the inverse join column), or `index: false` to disable the platform default indexes.
+
 ### Custom pivot table entity
 
 By default, a generated pivot table entity is used under the hood to represent the pivot table. You can provide your own implementation via `pivotEntity` option.
