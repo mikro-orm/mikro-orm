@@ -1,4 +1,4 @@
-import { type Ref, raw, Utils } from '@mikro-orm/core';
+import { type Ref, raw, sql, Utils } from '@mikro-orm/core';
 import { MikroORM, type AbstractSqlDriver, type SelectQueryBuilder } from '@mikro-orm/sql';
 import { Entity, PrimaryKey, Property, ManyToOne, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { PLATFORMS } from '../../bootstrap.js';
@@ -132,6 +132,35 @@ describe.each(Utils.keys(options))('CTE [%s]', type => {
     const rows = await qb.execute<{ name: string }[]>();
     expect(rows).toHaveLength(1);
     expect(rows[0].name).toBe('Bob');
+  });
+
+  test('join() can reference a CTE by name via sql.ref (#8157)', async () => {
+    const sub = orm.em
+      .createQueryBuilder(Author, 'a')
+      .select(['a.id', 'a.name'])
+      .where({ age: { $gte: 45 } });
+    const qb = orm.em
+      .createQueryBuilder(Book, 'b')
+      .with('older', sub)
+      .select(['b.title'])
+      .join(sql.ref('older'), 'o', { 'o.id': sql.ref('b.author_id') });
+
+    // the CTE name must be joined as a bare identifier, not wrapped as a sub-query
+    expect(qb.getFormattedQuery()).not.toMatch(/join \(/);
+
+    const rows = await qb.execute<{ title: string }[]>();
+    expect(rows).toHaveLength(1);
+    expect(rows[0].title).toBe('Bob Book');
+
+    // an active schema override must not qualify the CTE name
+    const qb2 = orm.em
+      .createQueryBuilder(Book, 'b')
+      .withSchema('custom')
+      .with('older', sub.clone())
+      .select(['b.title'])
+      .join(sql.ref('older'), 'o', { 'o.id': sql.ref('b.author_id') });
+    const quotedCte = orm.em.getPlatform().quoteIdentifier('older');
+    expect(qb2.getFormattedQuery()).toContain(`join ${quotedCte} `);
   });
 
   test('duplicate CTE name throws', () => {

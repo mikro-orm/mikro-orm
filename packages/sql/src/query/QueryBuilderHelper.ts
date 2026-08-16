@@ -394,7 +394,12 @@ export class QueryBuilderHelper {
       }[join.type] ?? join.type;
     const conditions: string[] = [];
     const params: unknown[] = [];
-    schema = join.schema === '*' ? schema : (join.schema ?? schemaOverride);
+    if (join.prop.name === '__subquery__') {
+      // bare table/CTE references (`sql.ref()` joins) keep their literal name, only an explicit schema applies
+      schema = join.schema === '*' ? undefined : join.schema;
+    } else {
+      schema = join.schema === '*' ? schema : (join.schema ?? schemaOverride);
+    }
 
     if (schema && schema !== this.#platform.getDefaultSchemaName()) {
       table = `${schema}.${table}`;
