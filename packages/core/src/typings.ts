@@ -712,7 +712,7 @@ export type EntityDataProp<T, C extends boolean> = T extends Date
             : T extends CollectionShape<infer U>
               ? U | U[] | EntityDataNested<U & object, C> | EntityDataNested<U & object, C>[]
               : T extends readonly (infer U)[]
-                ? U extends NonArrayObject
+                ? [U] extends [NonArrayObject]
                   ? U | U[] | EntityDataNested<U, C> | EntityDataNested<U, C>[]
                   : U[] | EntityDataNested<U, C>[]
                 : EntityDataNested<T, C>;
@@ -737,7 +737,7 @@ export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
               : T extends CollectionShape<infer U>
                 ? U | U[] | RequiredEntityDataNested<U & object, O, C> | RequiredEntityDataNested<U & object, O, C>[]
                 : T extends readonly (infer U)[]
-                  ? U extends NonArrayObject
+                  ? [U] extends [NonArrayObject]
                     ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
                     : U[] | RequiredEntityDataNested<U, O, C>[]
                   : RequiredEntityDataNested<T, O, C>;
