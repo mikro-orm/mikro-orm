@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.12](https://github.com/mikro-orm/mikro-orm/compare/v7.1.11...v7.1.12) (2026-08-17)
+
+### Bug Fixes
+
+* **core:** do not mutate caller-provided options in `merge`, `create`, `getReference` and `fork` ([#8150](https://github.com/mikro-orm/mikro-orm/issues/8150)) ([8f3ea3f](https://github.com/mikro-orm/mikro-orm/commit/8f3ea3feeaf2b1c8356803745152db0dba5add52)), closes [#8144](https://github.com/mikro-orm/mikro-orm/issues/8144) [#8143](https://github.com/mikro-orm/mikro-orm/issues/8143)
+* **core:** do not mutate the options object provided by the caller ([#8144](https://github.com/mikro-orm/mikro-orm/issues/8144)) ([bc60f44](https://github.com/mikro-orm/mikro-orm/commit/bc60f44be58275efd401b792a4f7bfe7d10a0a28)), closes [#8143](https://github.com/mikro-orm/mikro-orm/issues/8143)
+* **core:** use own-property checks in populate hints, canPopulate, and filter options ([#8164](https://github.com/mikro-orm/mikro-orm/issues/8164)) ([fdf9f50](https://github.com/mikro-orm/mikro-orm/commit/fdf9f5011f64e79c153439f994ecada5cfba55d9))
+
+
 ## [7.1.11](https://github.com/mikro-orm/mikro-orm/compare/v7.1.10...v7.1.11) (2026-08-06)
 
 ### Bug Fixes

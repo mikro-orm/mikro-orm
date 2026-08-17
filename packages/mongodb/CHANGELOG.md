@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.12](https://github.com/mikro-orm/mikro-orm/compare/v7.1.11...v7.1.12) (2026-08-17)
+
+### Bug Fixes
+
+* **core:** do not mutate the options object provided by the caller ([#8144](https://github.com/mikro-orm/mikro-orm/issues/8144)) ([bc60f44](https://github.com/mikro-orm/mikro-orm/commit/bc60f44be58275efd401b792a4f7bfe7d10a0a28)), closes [#8143](https://github.com/mikro-orm/mikro-orm/issues/8143)
+
+
 ## [7.1.11](https://github.com/mikro-orm/mikro-orm/compare/v7.1.10...v7.1.11) (2026-08-06)
 
 **Note:** Version bump only for package @mikro-orm/mongodb
