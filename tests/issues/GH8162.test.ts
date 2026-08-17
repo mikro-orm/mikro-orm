@@ -1,10 +1,9 @@
 import { MikroORM } from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
-import { mockLogger } from '../../bootstrap.js';
+import { mockLogger } from '../bootstrap.js';
 
 @Entity({ inheritance: 'tpt' })
 abstract class Account {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,15 +12,12 @@ abstract class Account {
 
   @Property({ type: 'json' })
   name!: Record<string, string>;
-
 }
 
 @Entity()
 class Member extends Account {
-
   @Property({ type: 'json' })
   settings!: Record<string, string>;
-
 }
 
 let orm: MikroORM;

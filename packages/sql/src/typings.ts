@@ -298,6 +298,8 @@ export interface IQueryBuilder<T> {
     options?: CteOptions,
   ): this;
   scheduleFilterCheck(path: string): void;
+  /** @internal */
+  ensureTPTJoins(): void;
   withSchema(schema: string): this;
 }
 
