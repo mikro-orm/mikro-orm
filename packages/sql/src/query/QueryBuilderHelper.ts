@@ -109,7 +109,7 @@ export class QueryBuilderHelper {
    * Replaces `ALIAS_REPLACEMENT` placeholders, resolving column-qualified ones via
    * `getTPTAliasForProperty()` so TPT inherited columns map to their owning table.
    */
-  replaceAliases(sql: string, alias = this.#alias): string {
+  replaceAliases(sql: string, alias: string = this.#alias): string {
     return sql
       .replace(QUALIFYING_ALIAS_RE, (_, column: string) => this.getTPTAliasForProperty(column, alias))
       .replaceAll(ALIAS_REPLACEMENT, alias);
