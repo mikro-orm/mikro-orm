@@ -7,13 +7,15 @@ export interface StringTypeOptions {
   case?: 'upper' | 'lower';
 }
 
+const stringTypeOptions = Symbol('StringTypeOptions');
+
 /** Maps a database VARCHAR column to a JS `string`. */
 export class StringType extends Type<string | null | undefined, string | null | undefined> {
-  readonly #options: StringTypeOptions;
+  declare private readonly [stringTypeOptions]: StringTypeOptions;
 
   constructor(options: StringTypeOptions = {}) {
     super();
-    this.#options = options;
+    Object.defineProperty(this, stringTypeOptions, { value: options, enumerable: false });
   }
 
   override convertToDatabaseValue(
@@ -41,7 +43,7 @@ export class StringType extends Type<string | null | undefined, string | null | 
   }
 
   override ensureComparable(): boolean {
-    return this.#options.trim === true || this.#options.case != null;
+    return this[stringTypeOptions].trim === true || this[stringTypeOptions].case != null;
   }
 
   override getDefaultLength(platform: Platform): number {
@@ -53,15 +55,15 @@ export class StringType extends Type<string | null | undefined, string | null | 
       return value;
     }
 
-    if (this.#options.trim) {
+    if (this[stringTypeOptions].trim) {
       value = value.trim();
     }
 
-    if (this.#options.case === 'upper') {
+    if (this[stringTypeOptions].case === 'upper') {
       return value.toUpperCase();
     }
 
-    if (this.#options.case === 'lower') {
+    if (this[stringTypeOptions].case === 'lower') {
       return value.toLowerCase();
     }
 

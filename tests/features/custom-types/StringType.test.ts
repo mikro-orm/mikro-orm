@@ -1,5 +1,5 @@
 import { inspect } from 'node:util';
-import { type StringTypeOptions, StringType } from '@mikro-orm/core';
+import { type StringTypeOptions, StringType, Utils } from '@mikro-orm/core';
 import { MongoPlatform } from '@mikro-orm/mongodb';
 
 describe('StringType', () => {
@@ -13,6 +13,14 @@ describe('StringType', () => {
     expect(type.convertToJSValue('  Foo Bar  ', platform)).toBe('  Foo Bar  ');
     expect(type.ensureComparable()).toBe(false);
     expect(new StringType({ trim: false }).ensureComparable()).toBe(false);
+  });
+
+  test('preserves hidden options when cloned with metadata', () => {
+    const type = Utils.copy(new StringType({ trim: true, case: 'upper' }), false);
+
+    expect(inspect(type)).toBe('StringType {}');
+    expect(type.convertToDatabaseValue('  Foo Bar  ', platform)).toBe('FOO BAR');
+    expect(type.ensureComparable()).toBe(true);
   });
 
   test.each<[StringTypeOptions, string, string]>([
