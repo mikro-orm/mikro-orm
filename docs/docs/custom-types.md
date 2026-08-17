@@ -67,6 +67,46 @@ For most custom types, you only need the runtime conversion methods. The SQL-lev
 - The database stores values in a binary or internal format that requires SQL functions to convert (e.g., PostGIS geometry, MySQL spatial types)
 - You want to leverage database-specific functions for encoding/decoding
 
+## Normalizing string properties
+
+The built-in `StringType` can trim and change the casing of string values. With `defineEntity`, pass the options to
+`p.string()`:
+
+```ts
+const Customer = defineEntity({
+  name: 'Customer',
+  properties: {
+    id: p.integer().primary().autoincrement(),
+    currency: p.string({ trim: true, case: 'upper' }),
+    email: p.string({ trim: true, case: 'lower' }).unique(),
+  },
+});
+```
+
+Decorator and `EntitySchema` definitions can use a configured type instance directly:
+
+```ts
+@Entity()
+class Customer {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ type: new StringType({ trim: true, case: 'upper' }) })
+  currency!: string;
+
+}
+```
+
+When both options are enabled, trimming runs before casing. The same normalization is applied when values are written
+to the database, used as query parameters, and hydrated from database results. `null` and `undefined` are preserved.
+The casing conversion uses `toUpperCase()` or `toLowerCase()` and is not locale-specific.
+
+Like other custom type conversions, normalization does not act as a property setter. Direct assignment, `em.create()`,
+and `em.assign()` keep the assigned value in memory. A flush writes its normalized form without changing the entity
+property; reloading or refreshing the entity hydrates the normalized value. These options only affect runtime values
+and do not change the SQL column type or generated schema.
+
 ### Handling null and undefined
 
 **Important:** The ORM handles `null` values from the database automatically - they will **not** be passed to your custom type's `convertToJSValue` method. However, `null` or `undefined` values **can** be passed to `convertToDatabaseValue` when using `em.create()` or when setting property values directly.
