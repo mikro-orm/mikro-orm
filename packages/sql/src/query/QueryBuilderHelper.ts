@@ -35,6 +35,9 @@ import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import type { NativeQueryBuilder } from './NativeQueryBuilder.js';
 
+/** Captures the column name that follows the alias placeholder. */
+const QUALIFYING_ALIAS_RE = new RegExp(ALIAS_REPLACEMENT_RE + '(?=["\'`\\]]*\\.["\'`\\[]?([\\w$]+))', 'g');
+
 /**
  * @internal
  */
@@ -100,6 +103,16 @@ export class QueryBuilderHelper {
 
     // Property not found in hierarchy, return default alias
     return defaultAlias;
+  }
+
+  /**
+   * Replaces `ALIAS_REPLACEMENT` placeholders, resolving column-qualified ones via
+   * `getTPTAliasForProperty()` so TPT inherited columns map to their owning table.
+   */
+  replaceAliases(sql: string, alias = this.#alias): string {
+    return sql
+      .replace(QUALIFYING_ALIAS_RE, (_, column: string) => this.getTPTAliasForProperty(column, alias))
+      .replaceAll(ALIAS_REPLACEMENT, alias);
   }
 
   mapper(field: string | Raw | RawQueryFragmentSymbol, type?: QueryType): string;
@@ -698,7 +711,7 @@ export class QueryBuilderHelper {
 
     if (Raw.isKnownFragmentSymbol(key)) {
       const raw = Raw.getKnownFragment(key)!;
-      const sql = raw.sql.replaceAll(ALIAS_REPLACEMENT, this.#alias);
+      const sql = this.replaceAliases(raw.sql);
       const value = Utils.asArray(cond[key]);
       params.push(...raw.params);
 
@@ -838,7 +851,7 @@ export class QueryBuilderHelper {
         const query: RawQueryFragment = opValueIsRaw ? opValue : opValue.toRaw();
         const mappedKey = this.mapper(key, type, query, null);
 
-        let sql = query.sql.replaceAll(ALIAS_REPLACEMENT, this.#alias);
+        let sql = this.replaceAliases(query.sql);
 
         if (['$in', '$nin'].includes(op)) {
           sql = `(${sql})`;
