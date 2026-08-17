@@ -15,7 +15,7 @@ import type {
 } from '../typings.js';
 import type { EntityManager } from '../EntityManager.js';
 import { QueryHelper } from '../utils/QueryHelper.js';
-import { Utils } from '../utils/Utils.js';
+import { DANGEROUS_PROPERTY_NAMES, Utils } from '../utils/Utils.js';
 import { ValidationError } from '../errors.js';
 import type { Collection } from './Collection.js';
 import {
@@ -245,11 +245,11 @@ export class EntityLoader {
     const tmp = populate.reduce(
       (ret, item) => {
         /* v8 ignore next */
-        if (item.field === PopulatePath.ALL) {
+        if (item.field === PopulatePath.ALL || DANGEROUS_PROPERTY_NAMES.includes(item.field as string)) {
           return ret;
         }
 
-        if (!ret[item.field]) {
+        if (!Object.hasOwn(ret, item.field)) {
           ret[item.field] = item;
           return ret;
         }
