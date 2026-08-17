@@ -1,3 +1,4 @@
+import { inspect } from 'node:util';
 import { type StringTypeOptions, StringType } from '@mikro-orm/core';
 import { MongoPlatform } from '@mikro-orm/mongodb';
 
@@ -7,6 +8,7 @@ describe('StringType', () => {
   test('preserves values and the fast comparison path without options', () => {
     const type = new StringType();
 
+    expect(inspect(type)).toBe('StringType {}');
     expect(type.convertToDatabaseValue('  Foo Bar  ', platform)).toBe('  Foo Bar  ');
     expect(type.convertToJSValue('  Foo Bar  ', platform)).toBe('  Foo Bar  ');
     expect(type.ensureComparable()).toBe(false);

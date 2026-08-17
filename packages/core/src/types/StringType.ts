@@ -9,8 +9,11 @@ export interface StringTypeOptions {
 
 /** Maps a database VARCHAR column to a JS `string`. */
 export class StringType extends Type<string | null | undefined, string | null | undefined> {
-  constructor(private readonly options: StringTypeOptions = {}) {
+  readonly #options: StringTypeOptions;
+
+  constructor(options: StringTypeOptions = {}) {
     super();
+    this.#options = options;
   }
 
   override convertToDatabaseValue(
@@ -38,7 +41,7 @@ export class StringType extends Type<string | null | undefined, string | null | 
   }
 
   override ensureComparable(): boolean {
-    return this.options.trim === true || this.options.case != null;
+    return this.#options.trim === true || this.#options.case != null;
   }
 
   override getDefaultLength(platform: Platform): number {
@@ -50,15 +53,15 @@ export class StringType extends Type<string | null | undefined, string | null | 
       return value;
     }
 
-    if (this.options.trim) {
+    if (this.#options.trim) {
       value = value.trim();
     }
 
-    if (this.options.case === 'upper') {
+    if (this.#options.case === 'upper') {
       return value.toUpperCase();
     }
 
-    if (this.options.case === 'lower') {
+    if (this.#options.case === 'lower') {
       return value.toLowerCase();
     }
 
