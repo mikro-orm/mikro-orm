@@ -2484,9 +2484,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     // For TPT inheritance, check the entity's own properties, not just the root's
     // For STI, meta.properties includes all properties anyway
-    const ret = p in meta.properties;
+    // use an own-property check so inherited `Object.prototype` members (e.g. `__proto__`, `constructor`) are not treated as populatable
+    const ret = Object.hasOwn(meta.properties, p);
 
-    if (parts.length > 0) {
+    if (ret && parts.length > 0) {
       return this.canPopulate(meta.properties[p as EntityKey<Entity>].targetMeta!.class, parts.join('.'));
     }
 

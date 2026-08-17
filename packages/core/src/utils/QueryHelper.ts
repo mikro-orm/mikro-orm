@@ -1,5 +1,5 @@
 import { Reference } from '../entity/Reference.js';
-import { Utils } from './Utils.js';
+import { DANGEROUS_PROPERTY_NAMES, Utils } from './Utils.js';
 import type {
   Dictionary,
   EntityKey,
@@ -386,7 +386,11 @@ export class QueryHelper {
     if (Array.isArray(options)) {
       options.forEach(filter => (opts[filter] = true));
     } else if (Utils.isPlainObject(options)) {
-      Object.keys(options).forEach(filter => (opts[filter] = options[filter]));
+      Object.keys(options).forEach(filter => {
+        if (!DANGEROUS_PROPERTY_NAMES.includes(filter)) {
+          opts[filter] = options[filter];
+        }
+      });
     }
 
     return Object.keys(filters)
