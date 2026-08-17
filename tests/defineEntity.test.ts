@@ -23,6 +23,7 @@ import {
   Reference,
   RequiredEntityData,
   ScalarReference,
+  StringType,
   Type,
   types,
   p,
@@ -68,6 +69,43 @@ type _AssertParamsInSync = _ParamsMatch<keyof _TestPC> extends true ? true : nev
 const _paramsInSync: _AssertParamsInSync = true as any;
 
 describe('defineEntity', () => {
+  it('should configure string normalization without changing builder inference', () => {
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: {
+        plain: p.string(),
+        normalized: p.string({ trim: true, case: 'upper' }).length(50),
+        nullable: p.string({ case: 'lower' }).nullable(),
+        optional: p.string({ trim: true }).onCreate(() => ''),
+      },
+    });
+
+    type IFoo = InferEntity<typeof Foo>;
+    assert<
+      IsExact<
+        Omit<IFoo, typeof IndexHints>,
+        {
+          plain: string;
+          normalized: string;
+          nullable: string | null | undefined;
+          optional: Opt<string>;
+          [PrimaryKeyProp]?: undefined;
+        }
+      >
+    >(true);
+
+    expect(Foo.meta.properties.plain.type).toBe(types.string);
+    expect(Foo.meta.properties.normalized.type).toBeInstanceOf(StringType);
+    expect(Foo.meta.properties.normalized.length).toBe(50);
+
+    // @ts-expect-error invalid casing option
+    expect(p.string({ case: 'title' })).toBeDefined();
+    // @ts-expect-error options are specialized to p.string()
+    expect(p.integer({ trim: true })).toBeDefined();
+    // @ts-expect-error string normalizers are not universal builder methods
+    expect(p.integer().trim).toBeUndefined();
+  });
+
   it('should define entity', () => {
     const Foo = defineEntity({
       name: 'Foo',

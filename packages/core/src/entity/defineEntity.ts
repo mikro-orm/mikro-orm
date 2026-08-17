@@ -57,7 +57,7 @@ import type {
 } from '../enums.js';
 import type { EventSubscriber } from '../events/EventSubscriber.js';
 import type { IType, Type } from '../types/Type.js';
-import { types } from '../types/index.js';
+import { type StringTypeOptions, types } from '../types/index.js';
 import { EntitySchema } from '../metadata/EntitySchema.js';
 import type { Collection } from './Collection.js';
 import type { FilterOptions, FindOptions, FindOneOptions } from '../drivers/IDatabaseDriver.js';
@@ -1115,6 +1115,13 @@ const propertyBuilders: PropertyBuilders = {
 
   json: <T>() => new UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>({ type: types.json }),
 
+  string: (options?: StringTypeOptions) =>
+    new UniversalPropertyOptionsBuilder<
+      InferPropertyValueType<typeof types.string>,
+      EmptyOptions,
+      IncludeKeysForProperty
+    >({ type: options?.trim === true || options?.case != null ? new types.string(options) : types.string }),
+
   formula: <T>(formula: string | FormulaCallback<any>) =>
     new UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>({ formula }),
 
@@ -1182,7 +1189,7 @@ const propertyBuilders: PropertyBuilders = {
     }) as any,
 } as PropertyBuilders;
 
-type PropertyBuildersOverrideKeys = 'bigint' | 'array' | 'decimal' | 'json' | 'datetime' | 'time' | 'enum';
+type PropertyBuildersOverrideKeys = 'bigint' | 'array' | 'decimal' | 'json' | 'string' | 'datetime' | 'time' | 'enum';
 
 /** Map of factory functions for creating type-safe property builders (scalars, enums, embeddables, and relations). */
 export type PropertyBuilders = {
@@ -1215,6 +1222,13 @@ export type PropertyBuilders = {
     IncludeKeysForProperty
   >;
   json: <T>() => UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>;
+  string: (
+    options?: StringTypeOptions,
+  ) => UniversalPropertyOptionsBuilder<
+    InferPropertyValueType<typeof types.string>,
+    EmptyOptions,
+    IncludeKeysForProperty
+  >;
   formula: <T>(
     formula: string | FormulaCallback<any>,
   ) => UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>;
