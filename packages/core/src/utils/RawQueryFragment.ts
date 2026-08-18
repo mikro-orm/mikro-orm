@@ -186,6 +186,12 @@ export const ALIAS_REPLACEMENT_RE = '\\[::alias::\\]';
  * await em.find(User, { [raw(alias => `lower(${alias}.name)`)]: name.toLowerCase() });
  * ```
  *
+ * Named parameters are supported via an object of parameters, use `:name` for values and `:name:` for identifiers:
+ *
+ * ```ts
+ * raw('select :col: from geo where city = :city or region = :city', { col: 'city', city: 'Brno' });
+ * ```
+ *
  * You can also use the `sql` tagged template function, which works the same, but supports only the simple string signature:
  *
  * ```ts
@@ -238,14 +244,19 @@ export function raw<R = RawQueryFragment & symbol, T extends object = any>(
   }
 
   if (typeof params === 'object' && !Array.isArray(params)) {
-    const pairs = Object.entries(params);
-    const objectParams = [];
+    const dict = params as Dictionary<unknown>;
+    const objectParams: unknown[] = [];
 
-    for (const [key, value] of pairs) {
-      sql = sql.replace(`:${key}:`, '??');
-      sql = sql.replace(`:${key}`, '?');
-      objectParams.push(value);
-    }
+    // single left-to-right scan keeps values in SQL-placeholder order while `::` casts and unknown tokens stay untouched
+    sql = sql.replace(/(?<!:):([$\w]+)(:(?!:))?/g, (match, key: string, identifier?: string) => {
+      if (!Object.hasOwn(dict, key)) {
+        return match;
+      }
+
+      objectParams.push(dict[key]);
+
+      return identifier ? '??' : '?';
+    });
 
     return new RawQueryFragment(sql, objectParams) as R;
   }

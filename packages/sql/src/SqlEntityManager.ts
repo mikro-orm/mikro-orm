@@ -132,7 +132,7 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
    */
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(
     query: string | NativeQueryBuilder | RawQueryFragment,
-    params?: any[],
+    params?: any[] | Dictionary,
     method?: 'all' | 'get' | 'run',
     loggerContext?: LoggingOptions,
   ): Promise<T>;
@@ -144,12 +144,12 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
    */
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(
     query: string | NativeQueryBuilder | RawQueryFragment,
-    params: any[],
+    params: any[] | Dictionary,
     options: EmExecuteOptions,
   ): Promise<T>;
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(
     query: string | NativeQueryBuilder | RawQueryFragment,
-    params: any[] = [],
+    params: any[] | Dictionary = [],
     methodOrOptions: 'all' | 'get' | 'run' | EmExecuteOptions = 'all',
     loggerContext?: LoggingOptions,
   ): Promise<T> {
