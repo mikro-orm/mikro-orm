@@ -136,7 +136,7 @@
     "@types/better-sqlite3": "9.6.0",
     "@types/node": "24.13.3",
     "@types/oracledb": "7.0.2",
-    "@types/pg": "8.21.0",
+    "@types/pg": "8.23.1",
     "@types/pg-cursor": "2.7.2",
     "@types/picomatch": "4.0.3",
     "@types/semver": "7.8.0",
