@@ -309,7 +309,7 @@ export class TransactionManager {
           fork.setTransactionContext(trx);
           return this.executeTransactionFlow(fork, cb, propagateToUpperContext, em);
         },
-        { ...options, eventBroadcaster },
+        { sessionContext: fork.getTransactionSessionContext(), ...options, eventBroadcaster },
       ),
     );
   }
