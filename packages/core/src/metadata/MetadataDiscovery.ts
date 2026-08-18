@@ -2670,6 +2670,7 @@ export class MetadataDiscovery {
 
       if (!targetMeta.compositePK || prop.targetKey) {
         prop.customType = referencedProp.customType;
+        prop.collation ??= referencedProp.collation;
       }
     }
   }
