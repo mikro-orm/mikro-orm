@@ -6,7 +6,9 @@ const NormalizedStringUser = defineEntity({
   name: 'NormalizedStringUser',
   properties: {
     id: p.integer().primary().autoincrement(),
-    name: p.string({ trim: true, case: 'upper' }),
+    name: p.string().trim().uppercase(),
+    description: p.text().trim().lowercase(),
+    aliases: p.string().trim().lowercase().array(),
   },
 });
 
@@ -35,8 +37,14 @@ describe('string normalization', () => {
   beforeEach(() => orm.schema.clear());
 
   test('normalizes persistence, query parameters, assignment, and refresh', async () => {
-    const user = orm.em.create(NormalizedStringUser, { name: '  Alice  ' });
+    const user = orm.em.create(NormalizedStringUser, {
+      name: '  Alice  ',
+      description: '  DESCRIPTION  ',
+      aliases: ['  Alice  ', '  A. SMITH  '],
+    });
     expect(user.name).toBe('  Alice  ');
+    expect(user.description).toBe('  DESCRIPTION  ');
+    expect(user.aliases).toEqual(['  Alice  ', '  A. SMITH  ']);
 
     orm.em.assign(user, { name: '  Alice Smith  ' });
     expect(user.name).toBe('  Alice Smith  ');
@@ -44,13 +52,19 @@ describe('string normalization', () => {
 
     const [inserted] = await orm.em
       .getConnection()
-      .execute<{ name: string }[]>('select "name" from "normalized_string_user" where "id" = ?', [user.id]);
+      .execute<{ name: string; description: string }[]>(
+        'select "name", "description" from "normalized_string_user" where "id" = ?',
+        [user.id],
+      );
     expect(inserted.name).toBe('ALICE SMITH');
+    expect(inserted.description).toBe('description');
     expect(user.name).toBe('  Alice Smith  ');
 
     orm.em.clear();
     const loaded = await orm.em.findOneOrFail(NormalizedStringUser, { name: '  alice smith  ' });
     expect(loaded.name).toBe('ALICE SMITH');
+    expect(loaded.description).toBe('description');
+    expect(loaded.aliases).toEqual(['alice', 'a. smith']);
 
     loaded.name = '  Bob  ';
     await orm.em.flush();
@@ -65,13 +79,41 @@ describe('string normalization', () => {
     expect(loaded.name).toBe('BOB');
   });
 
-  test('normalizes externally inserted values during hydration without a phantom update', async () => {
+  test('compares assigned values by their normalized representation', async () => {
+    const user = orm.em.create(NormalizedStringUser, {
+      name: 'Alice',
+      description: 'Description',
+      aliases: ['Alias'],
+    });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const loaded = await orm.em.findOneOrFail(NormalizedStringUser, user.id);
+    loaded.name = '  alice  ';
+
+    const logger = mockLogger(orm);
+    logger.mockClear();
+    await orm.em.flush();
+
+    expect(loaded.name).toBe('  alice  ');
+    expect(logger.mock.calls.filter(([message]) => /update/i.test(String(message)))).toHaveLength(0);
+  });
+
+  test('does not normalize externally inserted values during hydration', async () => {
+    const aliases = orm.em.getPlatform().marshallArray(['  Alias  ']);
     await orm.em
       .getConnection()
-      .execute('insert into "normalized_string_user" ("id", "name") values (?, ?)', [100, '  External  ']);
+      .execute('insert into "normalized_string_user" ("id", "name", "description", "aliases") values (?, ?, ?, ?)', [
+        100,
+        '  External  ',
+        '  DESCRIPTION  ',
+        aliases,
+      ]);
 
     const user = await orm.em.findOneOrFail(NormalizedStringUser, 100);
-    expect(user.name).toBe('EXTERNAL');
+    expect(user.name).toBe('  External  ');
+    expect(user.description).toBe('  DESCRIPTION  ');
+    expect(user.aliases).toEqual(['  Alias  ']);
 
     const logger = mockLogger(orm);
     logger.mockClear();

@@ -24,6 +24,7 @@ import {
   RequiredEntityData,
   ScalarReference,
   StringType,
+  TextType,
   Type,
   types,
   p,
@@ -74,9 +75,13 @@ describe('defineEntity', () => {
       name: 'Foo',
       properties: {
         plain: p.string(),
-        normalized: p.string({ trim: true, case: 'upper' }).length(50),
-        nullable: p.string({ case: 'lower' }).nullable(),
-        optional: p.string({ trim: true }).onCreate(() => ''),
+        normalized: p.string().trim().uppercase().length(50),
+        nullable: p.text().lowercase().nullable(),
+        optional: p
+          .string()
+          .trim()
+          .onCreate(() => ''),
+        aliases: p.string().trim().lowercase().array(),
       },
     });
 
@@ -89,6 +94,7 @@ describe('defineEntity', () => {
           normalized: string;
           nullable: string | null | undefined;
           optional: Opt<string>;
+          aliases: string[];
           [PrimaryKeyProp]?: undefined;
         }
       >
@@ -96,11 +102,18 @@ describe('defineEntity', () => {
 
     expect(Foo.meta.properties.plain.type).toBe(types.string);
     expect(Foo.meta.properties.normalized.type).toBeInstanceOf(StringType);
+    expect((Foo.meta.properties.normalized.type as unknown as StringType).options).toEqual({
+      trim: true,
+      case: 'upper',
+    });
     expect(Foo.meta.properties.normalized.length).toBe(50);
+    expect(Foo.meta.properties.nullable.type).toBeInstanceOf(TextType);
+    expect((Foo.meta.properties.nullable.type as unknown as TextType).options).toEqual({ case: 'lower' });
+    expect(Foo.meta.properties.aliases.array).toBe(true);
 
-    // @ts-expect-error invalid casing option
-    expect(p.string({ case: 'title' })).toBeDefined();
-    // @ts-expect-error options are specialized to p.string()
+    // @ts-expect-error p.string() no longer accepts an options object
+    expect(p.string({ trim: true, case: 'lower' })).toBeDefined();
+    // @ts-expect-error non-string property factories do not accept normalization options
     expect(p.integer({ trim: true })).toBeDefined();
     // @ts-expect-error string normalizers are not universal builder methods
     expect(p.integer().trim).toBeUndefined();

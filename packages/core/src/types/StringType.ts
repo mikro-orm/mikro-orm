@@ -1,4 +1,4 @@
-import { type TransformContext, Type } from './Type.js';
+import { Type } from './Type.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
 
@@ -7,35 +7,18 @@ export interface StringTypeOptions {
   case?: 'upper' | 'lower';
 }
 
-const stringTypeOptions = Symbol('StringTypeOptions');
-
-/** Maps a database VARCHAR column to a JS `string`. */
-export class StringType extends Type<string | null | undefined, string | null | undefined> {
-  declare private readonly [stringTypeOptions]: StringTypeOptions;
-
-  constructor(options: StringTypeOptions = {}) {
+/** @internal */
+export abstract class BaseStringType extends Type<string | null | undefined, string | null | undefined> {
+  constructor(readonly options: StringTypeOptions = {}) {
     super();
-    Object.defineProperty(this, stringTypeOptions, { value: options, enumerable: false });
   }
 
-  override convertToDatabaseValue(
-    value: string | null | undefined,
-    _platform: Platform,
-    _context?: TransformContext,
-  ): string | null | undefined {
+  override convertToDatabaseValue(value: string | null | undefined): string | null | undefined {
     return this.normalize(value);
   }
 
-  override convertToJSValue(
-    value: string | null | undefined,
-    _platform: Platform,
-    _context?: TransformContext,
-  ): string | null | undefined {
-    return this.normalize(value);
-  }
-
-  override getColumnType(prop: EntityProperty, platform: Platform): string {
-    return platform.getVarcharTypeDeclarationSQL(prop);
+  override compareValues(a: string | null | undefined, b: string | null | undefined): boolean {
+    return this.normalize(a) === this.normalize(b);
   }
 
   override compareAsType(): string {
@@ -43,11 +26,7 @@ export class StringType extends Type<string | null | undefined, string | null | 
   }
 
   override ensureComparable(): boolean {
-    return this[stringTypeOptions].trim === true || this[stringTypeOptions].case != null;
-  }
-
-  override getDefaultLength(platform: Platform): number {
-    return platform.getDefaultVarcharLength();
+    return false;
   }
 
   private normalize(value: string | null | undefined): string | null | undefined {
@@ -55,20 +34,29 @@ export class StringType extends Type<string | null | undefined, string | null | 
       return value;
     }
 
-    const options = this[stringTypeOptions];
-
-    if (options.trim) {
+    if (this.options.trim) {
       value = value.trim();
     }
 
-    if (options.case === 'upper') {
+    if (this.options.case === 'upper') {
       return value.toUpperCase();
     }
 
-    if (options.case === 'lower') {
+    if (this.options.case === 'lower') {
       return value.toLowerCase();
     }
 
     return value;
+  }
+}
+
+/** Maps a database VARCHAR column to a JS `string`. */
+export class StringType extends BaseStringType {
+  override getColumnType(prop: EntityProperty, platform: Platform): string {
+    return platform.getVarcharTypeDeclarationSQL(prop);
+  }
+
+  override getDefaultLength(platform: Platform): number {
+    return platform.getDefaultVarcharLength();
   }
 }

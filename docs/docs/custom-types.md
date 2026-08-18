@@ -69,43 +69,40 @@ For most custom types, you only need the runtime conversion methods. The SQL-lev
 
 ## Normalizing string properties
 
-The built-in `StringType` can trim and change the casing of string values. With `defineEntity`, pass the options to
-`p.string()`:
+The built-in `StringType` and `TextType` can trim and change the casing of string values. With `defineEntity`, use the string-specific builder methods:
 
 ```ts
 const Customer = defineEntity({
   name: 'Customer',
   properties: {
     id: p.integer().primary().autoincrement(),
-    currency: p.string({ trim: true, case: 'upper' }),
-    email: p.string({ trim: true, case: 'lower' }).unique(),
+    currency: p.string().trim().uppercase(),
+    email: p.string().trim().lowercase().unique(),
+    biography: p.text().trim(),
+    aliases: p.string().trim().lowercase().array(),
   },
 });
 ```
 
-Decorator and `EntitySchema` definitions can use a configured type instance directly:
+Decorator and `EntitySchema` definitions can configure the mapped type directly with an options object:
 
 ```ts
 @Entity()
 class Customer {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: new StringType({ trim: true, case: 'upper' }) })
   currency!: string;
 
+  @Property({ type: new TextType({ trim: true }) })
+  biography!: string;
 }
 ```
 
-When both options are enabled, trimming runs before casing. The same normalization is applied when values are written
-to the database, used as query parameters, and hydrated from database results. `null` and `undefined` are preserved.
-The casing conversion uses `toUpperCase()` or `toLowerCase()` and is not locale-specific.
+When both operations are enabled, trimming runs before casing. Normalization is applied when values are written to the database or used as ORM query parameters. `null` and `undefined` are preserved. The casing conversion uses `toUpperCase()` or `toLowerCase()` and is not locale-specific.
 
-Like other custom type conversions, normalization does not act as a property setter. Direct assignment, `em.create()`,
-and `em.assign()` keep the assigned value in memory. A flush writes its normalized form without changing the entity
-property; reloading or refreshing the entity hydrates the normalized value. These options only affect runtime values
-and do not change the SQL column type or generated schema.
+Normalization does not act as a property setter. Direct assignment, `em.create()`, and `em.assign()` keep the assigned value in memory, while a flush writes its normalized form without changing the entity property. Values read from the database are not normalized again, as values written through the mapped type are already normalized. Existing columns containing non-normalized data should be updated with a migration before enabling these options. The options do not change the SQL column type or generated schema.
 
 ### Handling null and undefined
 
