@@ -28,6 +28,26 @@ The `raw` helper supports several signatures, you can pass in a callback that re
 await em.find(User, { [raw(alias => `lower(${alias}.name)`)]: name.toLowerCase() });
 ```
 
+### Named parameters
+
+Besides positional `?` placeholders bound from an array, the `raw` helper supports named parameters bound from an object. Use `:name` for values and `:name:` for identifiers (quoted according to the database in use). Parameters can repeat, and PostgreSQL `::` casts are left untouched:
+
+```ts
+const fragment = raw('select :col: from geo_seed where city = :city or region = :city', { col: 'city', city: 'Brno' });
+```
+
+This also works with `em.execute()` and `connection.execute()`, where you can pass the object directly as the `params` argument:
+
+```ts
+await em.execute(`
+  insert into geo_seed (country, region, city)
+  values (:country, :region, :city)
+  on conflict (city)
+      do update set country = excluded.country,
+                    region  = excluded.region
+`, { country, region, city });
+```
+
 ### Raw fragments in filters
 
 When using raw query fragment inside a filter, you might have to use a callback signature to create new raw instance for every filter usage - namely when you use the fragment as an object key, which requires its serialization.

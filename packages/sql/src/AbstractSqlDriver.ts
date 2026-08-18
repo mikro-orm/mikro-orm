@@ -2350,7 +2350,7 @@ export abstract class AbstractSqlDriver<
 
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(
     query: string | NativeQueryBuilder | RawQueryFragment,
-    params: any[] = [],
+    params: any[] | Dictionary = [],
     method: 'all' | 'get' | 'run' = 'all',
     ctx?: Transaction,
     loggerContext?: LoggingOptions,
