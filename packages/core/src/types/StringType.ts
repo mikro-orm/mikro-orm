@@ -55,15 +55,17 @@ export class StringType extends Type<string | null | undefined, string | null | 
       return value;
     }
 
-    if (this[stringTypeOptions].trim) {
+    const options = this[stringTypeOptions];
+
+    if (options.trim) {
       value = value.trim();
     }
 
-    if (this[stringTypeOptions].case === 'upper') {
+    if (options.case === 'upper') {
       return value.toUpperCase();
     }
 
-    if (this[stringTypeOptions].case === 'lower') {
+    if (options.case === 'lower') {
       return value.toLowerCase();
     }
 
