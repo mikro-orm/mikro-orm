@@ -591,8 +591,9 @@ export class MetadataDiscovery {
   private initManyToOneFieldName(prop: EntityProperty, name: string): string[] {
     const meta2 = prop.targetMeta!;
     const ret: string[] = [];
-    // with `targetKey`, the FK references that property instead of the target's PKs
-    const referencedKeys = prop.targetKey ? [prop.targetKey] : meta2.primaryKeys;
+    // with `targetKey` on a composite PK target, derive the FK field name from that property
+    // instead of the PKs (simple PK targets keep the PK based naming for backwards compatibility)
+    const referencedKeys = prop.targetKey && meta2.compositePK ? [prop.targetKey] : meta2.primaryKeys;
 
     for (const referencedKey of referencedKeys) {
       this.initFieldName(meta2.properties[referencedKey]);
