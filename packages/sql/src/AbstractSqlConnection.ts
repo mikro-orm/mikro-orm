@@ -12,6 +12,7 @@ import {
   type LoggingOptions,
   type MaybePromise,
   type QueryResult,
+  raw,
   type RawQueryFragment,
   type Transaction,
   type TransactionEventBroadcaster,
@@ -295,10 +296,15 @@ export abstract class AbstractSqlConnection extends Connection {
 
   private prepareQuery(
     query: string | NativeQueryBuilder | RawQueryFragment,
-    params: readonly unknown[] = [],
+    params: readonly unknown[] | Dictionary<unknown> = [],
   ): { query: string; params: readonly unknown[]; formatted: string } {
     if (query instanceof NativeQueryBuilder) {
       query = query.toRaw();
+    }
+
+    if (typeof query === 'string' && !Array.isArray(params)) {
+      // plain object params hold named parameters, translate them via the `raw()` helper
+      query = raw<RawQueryFragment>(query, params);
     }
 
     if (isRaw(query)) {
@@ -306,16 +312,16 @@ export abstract class AbstractSqlConnection extends Connection {
       query = query.sql;
     }
 
-    query = this.config.get('onQuery')(query, params);
-    const formatted = this.platform.formatQuery(query, params);
+    query = this.config.get('onQuery')(query as string, params as readonly unknown[]);
+    const formatted = this.platform.formatQuery(query, params as readonly unknown[]);
 
-    return { query, params, formatted };
+    return { query, params: params as readonly unknown[], formatted };
   }
 
   /** Executes a SQL query and returns the result based on the method: `'all'` for rows, `'get'` for single row, `'run'` for affected count. */
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(
     query: string | NativeQueryBuilder | RawQueryFragment,
-    params: readonly unknown[] = [],
+    params: readonly unknown[] | Dictionary<unknown> = [],
     method: 'all' | 'get' | 'run' = 'all',
     ctx?: Transaction,
     loggerContext?: LoggingOptions,
@@ -339,7 +345,7 @@ export abstract class AbstractSqlConnection extends Connection {
   /** Executes a SQL query and returns an async iterable that yields results row by row. */
   async *stream<T extends EntityData<AnyEntity>>(
     query: string | NativeQueryBuilder | RawQueryFragment,
-    params: readonly unknown[] = [],
+    params: readonly unknown[] | Dictionary<unknown> = [],
     ctx?: Transaction<Kysely<any>>,
     loggerContext?: LoggingOptions,
     chunkSize?: number,
@@ -365,7 +371,7 @@ export abstract class AbstractSqlConnection extends Connection {
 
       this.logQuery(sql, {
         sql,
-        params,
+        params: q.params,
         ...cleanCtx,
         affected: Utils.isPlainObject<QueryResult>(res) ? res.affectedRows : undefined,
       });
@@ -376,7 +382,7 @@ export abstract class AbstractSqlConnection extends Connection {
         }
       }
     } catch (e) {
-      this.logQuery(sql, { sql, params, ...cleanCtx, level: 'error' });
+      this.logQuery(sql, { sql, params: q.params, ...cleanCtx, level: 'error' });
       throw e;
     }
   }
