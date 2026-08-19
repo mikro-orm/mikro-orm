@@ -2167,7 +2167,10 @@ export class MetadataDiscovery {
           continue;
         }
 
-        if (prop.customType instanceof t.json || (prop.columnTypes?.[0] && ['json', 'jsonb'].includes(prop.columnTypes[0]))) {
+        if (
+          prop.customType instanceof t.json ||
+          (prop.columnTypes?.[0] && ['json', 'jsonb'].includes(prop.columnTypes[0]))
+        ) {
           continue;
         }
 
