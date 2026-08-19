@@ -146,6 +146,23 @@ test('populate where with `$or` does not turn one branch into a join condition',
   expect(bookQuery).not.toMatch(/on `b0`\.`publisher_id` = `p1`\.`id` and `p1`\.`open` = true/);
 });
 
+test('`$or` with an explicit `$and` branch on a to-one relation is not distributed to the join', async () => {
+  const em = orm.em.fork();
+  const books = await em.find(
+    Book,
+    {
+      $or: [{ publisher: { open: true } }, { $and: [{ publisher: { open: false } }, { publisher: { id: 11 } }] }],
+    },
+    { populate: ['publisher'], strategy: 'joined', populateWhere: 'infer', orderBy: { id: 'asc' } },
+  );
+
+  // each book matches one branch, distributing the `$and` branch would flatten it into the join `on` clause
+  expect(books.map(book => [book.id, book.publisher?.id])).toEqual([
+    [100, 10],
+    [101, 11],
+  ]);
+});
+
 test('populate where without `$or` does not turn the condition into a join condition', async () => {
   const em = orm.em.fork();
   const authors = await em.find(Author, {}, { orderBy: { id: 'asc' } });
