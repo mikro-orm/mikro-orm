@@ -1,4 +1,5 @@
 import { type IndexOptions, type UniqueOptions, type EntityMetadata, type EntityCtor } from '@mikro-orm/core';
+import { ensureOwnMetadataArray } from '../utils.js';
 
 function createDecorator<T extends object>(options: IndexOptions<T> | UniqueOptions<T>, unique: boolean) {
   return function (
@@ -12,8 +13,7 @@ function createDecorator<T extends object>(options: IndexOptions<T> | UniqueOpti
     }
 
     const key = unique ? 'uniques' : 'indexes';
-    meta[key] ??= [];
-    meta[key].push(options as any);
+    ensureOwnMetadataArray(meta, key).push(options as any);
   };
 }
 
