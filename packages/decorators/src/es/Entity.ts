@@ -1,5 +1,5 @@
 import { type Constructor, type EntityCtor, type EntityOptions, type EntityClass, Utils } from '@mikro-orm/core';
-import { getMetadataFromDecorator } from '../utils.js';
+import { getMetadataFromDecorator, registeredEntitySymbol } from '../utils.js';
 
 /** Marks a class as a MikroORM entity (TC39 decorator). */
 export function Entity<Owner extends EntityClass<unknown> & EntityCtor>(
@@ -14,5 +14,7 @@ export function Entity<Owner extends EntityClass<unknown> & EntityCtor>(
     if (!options.abstract || meta.discriminatorColumn || meta.discriminator) {
       meta.name = context.name;
     }
+
+    Object.defineProperty(context.metadata, registeredEntitySymbol, { value: true });
   };
 }

@@ -1,13 +1,8 @@
 import { MikroORM } from '@mikro-orm/sqlite';
 import { BeforeCreate, Check, Entity, Index, PrimaryKey, Property, Trigger, Unique } from '@mikro-orm/decorators/es';
 
-// With TC39 decorators, a subclass metadata object has the parent class metadata as its
-// prototype. Decorators like `@Check()` used to initialize their collections via
-// `meta.checks ??= []`, where the read resolves an array owned by a base class through the
-// prototype chain, so the subsequent `push()` mutated the base class metadata instead of
-// creating an own copy on the subclass. Since `@Entity()` transfers only own properties of
-// the metadata object, such items were silently dropped for the subclass. Affected
-// collections: `checks`, `indexes`, `uniques`, `triggers` and `hooks`.
+// Inheritance of `checks`, `indexes`, `uniques`, `triggers` and `hooks` with TC39 decorators,
+// where the subclass metadata object has the base class metadata as its prototype (GH #8178).
 
 abstract class BaseWithProperty {
   @PrimaryKey({ type: 'number' })
@@ -115,6 +110,35 @@ class TriggeredEntity extends BaseWithTrigger {
   name!: string;
 }
 
+@Entity()
+@Check({ expression: 'base_col >= 0' })
+@Trigger({
+  name: 'trg_concrete_base',
+  timing: 'after',
+  events: ['insert'],
+  body: 'select 3',
+})
+class ConcreteBase {
+  @PrimaryKey({ type: 'number' })
+  id!: number;
+
+  @Property({ type: 'number' })
+  baseCol!: number;
+}
+
+@Entity()
+@Check({ expression: 'own_col >= 0' })
+@Trigger({
+  name: 'trg_concrete_own',
+  timing: 'after',
+  events: ['insert'],
+  body: 'select 4',
+})
+class ConcreteSub extends ConcreteBase {
+  @Property({ type: 'number' })
+  ownCol!: number;
+}
+
 let orm: MikroORM;
 
 beforeAll(async () => {
@@ -165,4 +189,24 @@ test('hooks declared on both base and subclass all fire', async () => {
 test('subclass @Trigger survives a base class with @Trigger', async () => {
   const meta = orm.getMetadata().get(TriggeredEntity);
   expect(meta.triggers.map(t => t.name)).toEqual(['trg_base', 'trg_own']);
+});
+
+test('collections inherited from a concrete entity base are not duplicated', async () => {
+  // separate ORM instance, as the base trigger propagates to the subclass table under the same
+  // name, which sqlite rejects on schema execution
+  const orm2 = await MikroORM.init({
+    dbName: ':memory:',
+    entities: [ConcreteBase, ConcreteSub],
+  });
+
+  try {
+    const base = orm2.getMetadata().get(ConcreteBase);
+    const sub = orm2.getMetadata().get(ConcreteSub);
+    expect(base.checks.map(c => c.expression)).toEqual(['base_col >= 0']);
+    expect(base.triggers.map(t => t.name)).toEqual(['trg_concrete_base']);
+    expect(sub.checks.map(c => c.expression)).toEqual(['base_col >= 0', 'own_col >= 0']);
+    expect(sub.triggers.map(t => t.name)).toEqual(['trg_concrete_base', 'trg_concrete_own']);
+  } finally {
+    await orm2.close(true);
+  }
 });
