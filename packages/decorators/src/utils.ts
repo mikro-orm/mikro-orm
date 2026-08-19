@@ -128,6 +128,23 @@ export function prepareMetadataContext<T>(
 }
 
 /**
+ * Ensures the metadata object has its own array under the given key, copying any items inherited from a base class.
+ * The decorator metadata object respects inheritance (a subclass metadata object has the parent metadata object as
+ * its prototype), and the `@Entity()` decorator transfers only own properties of the metadata object, so pushing to
+ * an inherited array would both leak the item to the base class metadata and lose it for the subclass.
+ */
+export function ensureOwnMetadataArray<T, K extends 'checks' | 'indexes' | 'uniques' | 'triggers'>(
+  meta: Partial<EntityMetadata<T>>,
+  key: K,
+): NonNullable<Partial<EntityMetadata<T>>[K]> {
+  if (!Object.hasOwn(meta, key)) {
+    meta[key] = [...(meta[key] ?? [])] as EntityMetadata<T>[K];
+  }
+
+  return meta[key]!;
+}
+
+/**
  * Uses some dark magic to get source path to caller where decorator is used.
  * Analyzes stack trace of error created inside the function call.
  */
