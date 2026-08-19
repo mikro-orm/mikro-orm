@@ -3938,6 +3938,11 @@ export class QueryBuilder<
     for (const k of Object.keys(cond)) {
       if (Utils.isOperator(k)) {
         if (Array.isArray(cond[k])) {
+          // a partial `$or` on a to-one join drops rows matching a sibling branch, but entity filters have no other sink, so they must pass
+          if (k === '$or' && !filter && !this.canDistributeOrBranches(cond[k], joins)) {
+            continue;
+          }
+
           cond[k].forEach((c: Dictionary) => this.mergeOnConditions(joins, c, filter, k));
         }
 
@@ -3973,6 +3978,35 @@ export class QueryBuilder<
         }
       }
     }
+  }
+
+  /**
+   * `$or` branches can be moved to a to-one join's `on` clause only when they all target that same
+   * join and stay flat — a partial `$or` in the `on` clause would drop rows matching a sibling
+   * branch. A `$or` targeting only to-many joins keeps the partial distribution, as that is how
+   * `PopulateHint.INFER` narrows collections.
+   */
+  private canDistributeOrBranches(branches: Dictionary[], joins: JoinOptions[]): boolean {
+    const aliases = new Set<string>();
+    const collectAliases = (cond: Dictionary) => {
+      for (const k of Object.keys(cond)) {
+        if (Utils.isOperator(k)) {
+          Utils.asArray(cond[k]).forEach((c: Dictionary) => collectAliases(c));
+        } else {
+          aliases.add(this.helper.splitField(k as EntityKey<Entity>)[0]);
+        }
+      }
+    };
+    branches.forEach(collectAliases);
+    const targeted = joins.filter(j => aliases.has(j.alias));
+    // nested operators cannot be preserved inside a distributed disjunction, `mergeOnConditions` would flatten them into `and` conjuncts
+    const flat = branches.every(branch => Object.keys(branch).every(k => !Utils.isOperator(k)));
+
+    if (aliases.size === 1 && targeted.length === 1 && flat) {
+      return true;
+    }
+
+    return !targeted.some(j => [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(j.prop.kind));
   }
 
   /**
