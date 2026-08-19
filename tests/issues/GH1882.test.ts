@@ -69,9 +69,8 @@ describe('GH issue 1882', () => {
     expect(mock.mock.calls[0][0]).toMatch(
       'select `f0`.* from `foo` as `f0` left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` where (`b1`.`id` = ? or `f0`.`name` = ?)',
     );
-    expect(mock.mock.calls[1][0]).toMatch(
-      'select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?) and `b0`.`id` = ?',
-    );
+    // one branch of the `$or` names a root property, so the collection cannot be narrowed by the other branch
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?)');
     mock.mockReset();
 
     await orm.em.fork().find(Foo, cond, { populate: ['barItems'], strategy: 'select-in' });
@@ -136,11 +135,12 @@ describe('GH issue 1882', () => {
     await orm.em
       .fork()
       .find(Foo, cond, { populate: ['barItems'], populateWhere: PopulateHint.INFER, strategy: 'joined' });
+    // one branch of the `$or` names a root property, so it must not be repeated in the join `on` clause
     expect(mock.mock.calls[0][0]).toMatch(
       'select `f0`.*, ' +
         '`b1`.`id` as `b1__id`, `b1`.`foo_id` as `b1__foo_id`, `b1`.`name` as `b1__name` ' +
         'from `foo` as `f0` ' +
-        'left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` and `b1`.`id` = ? ' +
+        'left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` ' +
         'where (`b1`.`id` = ? or `f0`.`name` = ?)',
     );
     mock.mockReset();
