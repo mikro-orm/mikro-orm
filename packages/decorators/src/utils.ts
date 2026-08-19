@@ -127,30 +127,18 @@ export function prepareMetadataContext<T>(
   return meta;
 }
 
-/** Marks a decorator metadata object as processed by the `@Entity()` decorator. @internal */
-export const registeredEntitySymbol = Symbol('mikro-orm:registered-entity');
-
 /**
  * Ensures the metadata object has its own array under the given key, copying any items inherited from a base class.
  * The decorator metadata object respects inheritance (a subclass metadata object has the parent metadata object as
  * its prototype), and the `@Entity()` decorator transfers only own properties of the metadata object, so pushing to
  * an inherited array would both leak the item to the base class metadata and lose it for the subclass.
- * When the inherited array is owned by a registered entity, we start with an empty array instead, as `MetadataDiscovery`
- * merges base entity collections into the subclass on its own, and copying here would duplicate the items.
  */
 export function ensureOwnMetadataArray<T, K extends 'checks' | 'indexes' | 'uniques' | 'triggers'>(
   meta: Partial<EntityMetadata<T>>,
   key: K,
 ): NonNullable<Partial<EntityMetadata<T>>[K]> {
   if (!Object.hasOwn(meta, key)) {
-    let owner: object | null = meta;
-
-    while (owner && !Object.hasOwn(owner, key)) {
-      owner = Object.getPrototypeOf(owner);
-    }
-
-    const inherited = owner && !Object.hasOwn(owner, registeredEntitySymbol) ? meta[key]! : [];
-    meta[key] = [...inherited] as EntityMetadata<T>[K];
+    meta[key] = [...(meta[key] ?? [])] as EntityMetadata<T>[K];
   }
 
   return meta[key]!;
