@@ -73,10 +73,7 @@ afterAll(async () => {
 test('filter with `$or` spanning a to-one relation is not bypassed on joined populate', async () => {
   const em = orm.em.fork();
   const authors = await em.find(Author, {}, { populate: ['books'], strategy: 'joined' });
-  const ids = authors[0].books.getIdentifiers();
-
-  // joined strategy splits the branches into separate `on` clauses and drops books 100/101 too (pre-existing), so only the safety property holds: 102 matches no branch
-  expect(ids).not.toContain(102);
+  expect(authors[0].books.getIdentifiers().sort()).toEqual([100, 101]);
 });
 
 test('filter with `$or` spanning a to-one relation applies on select-in populate', async () => {

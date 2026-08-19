@@ -3938,8 +3938,12 @@ export class QueryBuilder<
     for (const k of Object.keys(cond)) {
       if (Utils.isOperator(k)) {
         if (Array.isArray(cond[k])) {
-          // a partial `$or` on a join drops rows matching a sibling branch, but entity filters have no other sink, so they must pass
-          if (k === '$or' && !filter && !this.canDistributeOrBranches(cond[k], joins)) {
+          if (k === '$or' && !this.canDistributeOrBranches(cond[k], joins)) {
+            // entity filters have no other sink, so their `$or` is kept intact on the outermost targeted join instead
+            if (filter) {
+              this.mergeFilterOrCondition(cond[k], joins);
+            }
+
             continue;
           }
 
@@ -3987,6 +3991,14 @@ export class QueryBuilder<
    * would flatten them into `and` conjuncts.
    */
   private canDistributeOrBranches(branches: Dictionary[], joins: JoinOptions[]): boolean {
+    const aliases = this.getOrBranchAliases(branches);
+    const targeted = joins.filter(j => aliases.has(j.alias));
+    const flat = branches.every(branch => Object.keys(branch).every(k => !Utils.isOperator(k)));
+
+    return aliases.size === 1 && targeted.length === 1 && flat;
+  }
+
+  private getOrBranchAliases(branches: Dictionary[]): Set<string> {
     const aliases = new Set<string>();
     const collectAliases = (cond: Dictionary) => {
       for (const k of Object.keys(cond)) {
@@ -3998,10 +4010,43 @@ export class QueryBuilder<
       }
     };
     branches.forEach(collectAliases);
-    const targeted = joins.filter(j => aliases.has(j.alias));
-    const flat = branches.every(branch => Object.keys(branch).every(k => !Utils.isOperator(k)));
 
-    return aliases.size === 1 && targeted.length === 1 && flat;
+    return aliases;
+  }
+
+  /**
+   * An entity filter's `$or` that cannot be distributed is applied intact to the `on` clause of the
+   * outermost join common to all targeted joins, nesting the targeted joins under it so the clause
+   * can reference their aliases.
+   */
+  private mergeFilterOrCondition(branches: Dictionary[], joins: JoinOptions[]): void {
+    const aliases = this.getOrBranchAliases(branches);
+    const chainOf = (join: JoinOptions): JoinOptions[] => {
+      const parent = joins.find(j => j.alias === join.ownerAlias);
+      return parent ? [join, ...chainOf(parent)] : [join];
+    };
+    // chains go from each targeted join up to its root, so the first join present in all of them is the outermost common one
+    const chains = joins.filter(j => aliases.has(j.alias)).map(chainOf);
+    const anchor = chains[0]?.find(a => chains.every(chain => chain.includes(a)));
+
+    /* v8 ignore next 3 */
+    if (!anchor) {
+      return;
+    }
+
+    for (const chain of chains) {
+      // nest the chain below the anchor, so the anchor's `on` clause can reference the nested aliases
+      for (let i = 0; chain[i] !== anchor; i++) {
+        const nested = (chain[i + 1].nested ??= new Set());
+
+        if (!nested.has(chain[i])) {
+          chain[i].type = chain[i].type === JoinType.innerJoin ? JoinType.nestedInnerJoin : JoinType.nestedLeftJoin;
+          nested.add(chain[i]);
+        }
+      }
+    }
+
+    anchor.cond = anchor.cond.$or ? { $and: [anchor.cond, { $or: branches }] } : { ...anchor.cond, $or: branches };
   }
 
   /**
