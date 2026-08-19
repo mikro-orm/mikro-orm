@@ -706,7 +706,12 @@ export class EntityLoader {
       }
     }
 
-    if ([ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && items.length !== children.length) {
+    // a missing target row means an orphaned reference, unless the query was narrowed by a populate condition
+    if (
+      [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) &&
+      items.length !== children.length &&
+      Utils.isEmpty(options.where)
+    ) {
       const nullVal = this.#em.config.get('forceUndefined') ? undefined : null;
       const itemsMap = new Set<string>();
       const childrenMap = new Set<string>();
@@ -1005,7 +1010,10 @@ export class EntityLoader {
             return cond;
           });
 
-        if (child.length > 0) {
+        // partial extraction from `$or` is unsound for to-one relations — the parent may have matched via a dropped branch
+        const toOne = [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind);
+
+        if (child.length > 0 && (op === '$and' || !toOne || child.length === where[op].length)) {
           subCond[op] = child;
         }
       }

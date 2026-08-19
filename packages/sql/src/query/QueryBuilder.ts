@@ -3938,6 +3938,11 @@ export class QueryBuilder<
     for (const k of Object.keys(cond)) {
       if (Utils.isOperator(k)) {
         if (Array.isArray(cond[k])) {
+          // distributing a partial `$or` to a to-one join would drop rows that match a sibling branch
+          if (k === '$or' && !this.canDistributeOrBranches(cond[k], joins)) {
+            continue;
+          }
+
           cond[k].forEach((c: Dictionary) => this.mergeOnConditions(joins, c, filter, k));
         }
 
@@ -3973,6 +3978,32 @@ export class QueryBuilder<
         }
       }
     }
+  }
+
+  /**
+   * `$or` branches can be moved to a to-one join's `on` clause only when they all target that same
+   * join — a partial `$or` in the `on` clause would drop rows matching a sibling branch. To-many
+   * joins keep receiving partial branches, as that is how `PopulateHint.INFER` narrows collections.
+   */
+  private canDistributeOrBranches(branches: Dictionary[], joins: JoinOptions[]): boolean {
+    const aliases = new Set<string>();
+    const collectAliases = (cond: Dictionary) => {
+      for (const k of Object.keys(cond)) {
+        if (Utils.isOperator(k)) {
+          Utils.asArray(cond[k]).forEach((c: Dictionary) => collectAliases(c));
+        } else {
+          aliases.add(this.helper.splitField(k as EntityKey<Entity>)[0]);
+        }
+      }
+    };
+    branches.forEach(collectAliases);
+    const targeted = joins.filter(j => aliases.has(j.alias));
+
+    if (aliases.size === 1 && targeted.length === 1) {
+      return true;
+    }
+
+    return !targeted.some(j => [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(j.prop.kind));
   }
 
   /**
