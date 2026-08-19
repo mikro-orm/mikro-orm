@@ -279,9 +279,13 @@ export class Utils {
   /**
    * Gets array without duplicates.
    */
-  static unique<T = string>(items: T[]): T[] {
+  static unique<T = string>(items: T[], equals?: (a: T, b: T) => boolean): T[] {
     if (items.length < 2) {
       return items;
+    }
+
+    if (equals) {
+      return items.filter((a, idx) => items.findIndex(b => equals(a, b)) === idx);
     }
 
     return [...new Set(items)];

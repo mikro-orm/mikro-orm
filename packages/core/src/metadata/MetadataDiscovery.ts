@@ -1393,11 +1393,12 @@ export class MetadataDiscovery {
 
     // TPT children have their own tables that don't contain the parent's columns,
     // so propagating parent indexes/uniques/checks/triggers would target missing columns.
+    // deep equality, as the subclass items might be copies of the base class ones (e.g. with TC39 decorators)
     if (meta.inheritanceType !== 'tpt' || !meta.tptParent) {
-      meta.indexes = Utils.unique([...base.indexes, ...meta.indexes]);
-      meta.uniques = Utils.unique([...base.uniques, ...meta.uniques]);
-      meta.checks = Utils.unique([...base.checks, ...meta.checks]);
-      meta.triggers = Utils.unique([...base.triggers, ...meta.triggers]);
+      meta.indexes = Utils.unique([...base.indexes, ...meta.indexes], Utils.equals);
+      meta.uniques = Utils.unique([...base.uniques, ...meta.uniques], Utils.equals);
+      meta.checks = Utils.unique([...base.checks, ...meta.checks], Utils.equals);
+      meta.triggers = Utils.unique([...base.triggers, ...meta.triggers], Utils.equals);
     }
     const pks = Object.values(meta.properties)
       .filter(p => p.primary)
