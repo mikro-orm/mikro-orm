@@ -15,7 +15,7 @@ import { IntervalType } from './IntervalType.js';
 import { JsonType } from './JsonType.js';
 import { MediumIntType } from './MediumIntType.js';
 import { SmallIntType } from './SmallIntType.js';
-import { StringType } from './StringType.js';
+import { type StringTypeOptions, StringType } from './StringType.js';
 import { TextType } from './TextType.js';
 import { TimeType } from './TimeType.js';
 import { TinyIntType } from './TinyIntType.js';
@@ -24,7 +24,7 @@ import { Uint8ArrayType } from './Uint8ArrayType.js';
 import { UnknownType } from './UnknownType.js';
 import { UuidType } from './UuidType.js';
 
-export type { TransformContext, IType };
+export type { TransformContext, IType, StringTypeOptions };
 export {
   Type,
   DateType,

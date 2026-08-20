@@ -23,6 +23,8 @@ import {
   Reference,
   RequiredEntityData,
   ScalarReference,
+  StringType,
+  TextType,
   Type,
   types,
   p,
@@ -68,6 +70,55 @@ type _AssertParamsInSync = _ParamsMatch<keyof _TestPC> extends true ? true : nev
 const _paramsInSync: _AssertParamsInSync = true as any;
 
 describe('defineEntity', () => {
+  it('should configure string normalization without changing builder inference', () => {
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: {
+        plain: p.string(),
+        normalized: p.string().trim().uppercase().length(50),
+        nullable: p.text().lowercase().nullable(),
+        optional: p
+          .string()
+          .trim()
+          .onCreate(() => ''),
+        aliases: p.string().trim().lowercase().array(),
+      },
+    });
+
+    type IFoo = InferEntity<typeof Foo>;
+    assert<
+      IsExact<
+        Omit<IFoo, typeof IndexHints>,
+        {
+          plain: string;
+          normalized: string;
+          nullable: string | null | undefined;
+          optional: Opt<string>;
+          aliases: string[];
+          [PrimaryKeyProp]?: undefined;
+        }
+      >
+    >(true);
+
+    expect(Foo.meta.properties.plain.type).toBe(types.string);
+    expect(Foo.meta.properties.normalized.type).toBeInstanceOf(StringType);
+    expect((Foo.meta.properties.normalized.type as unknown as StringType).options).toEqual({
+      trim: true,
+      case: 'upper',
+    });
+    expect(Foo.meta.properties.normalized.length).toBe(50);
+    expect(Foo.meta.properties.nullable.type).toBeInstanceOf(TextType);
+    expect((Foo.meta.properties.nullable.type as unknown as TextType).options).toEqual({ case: 'lower' });
+    expect(Foo.meta.properties.aliases.array).toBe(true);
+
+    // @ts-expect-error p.string() no longer accepts an options object
+    expect(p.string({ trim: true, case: 'lower' })).toBeDefined();
+    // @ts-expect-error non-string property factories do not accept normalization options
+    expect(p.integer({ trim: true })).toBeDefined();
+    // @ts-expect-error string normalizers are not universal builder methods
+    expect(p.integer().trim).toBeUndefined();
+  });
+
   it('should define entity', () => {
     const Foo = defineEntity({
       name: 'Foo',
