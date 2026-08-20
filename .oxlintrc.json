@@ -116,7 +116,8 @@
     "typescript/no-empty-object-type": "off",
     "typescript/no-useless-constructor": "off",
     "no-useless-constructor": "off",
-    "typescript/no-redeclare": "error",
+    // flags valid TS declaration merging since oxlint 1.79 (https://github.com/oxc-project/oxc/issues/25906)
+    "typescript/no-redeclare": "off",
     "typescript/no-unsafe-declaration-merging": "off",
     "typescript/no-unnecessary-parameter-property-assignment": "off",
 
