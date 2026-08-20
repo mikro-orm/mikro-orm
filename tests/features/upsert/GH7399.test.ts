@@ -121,7 +121,7 @@ test('GH #7399 - upsert with plain data applies onCreate hooks', async () => {
   const user = await orm.em.upsert(User2, {
     email: 'pojo@bar.com',
     name: 'test',
-  } as any);
+  });
 
   expect(user.id).toBeDefined();
   expect(user.createdAt).toBeInstanceOf(Date);
@@ -138,8 +138,8 @@ test('GH #7399 - upsert with plain data applies onCreate hooks', async () => {
 
 test('GH #7399 - upsertMany with plain data applies onCreate hooks', async () => {
   const [user1, user2] = await orm.em.upsertMany(User2, [
-    { email: 'pojo-many1@bar.com', name: 'test1' } as any,
-    { email: 'pojo-many2@bar.com', name: 'test2' } as any,
+    { email: 'pojo-many1@bar.com', name: 'test1' },
+    { email: 'pojo-many2@bar.com', name: 'test2' },
   ]);
 
   expect(user1.id).toBeDefined();
@@ -149,13 +149,13 @@ test('GH #7399 - upsertMany with plain data applies onCreate hooks', async () =>
 });
 
 test('GH #7399 - upsert of existing row does not overwrite onCreate values (plain data)', async () => {
-  const first = await orm.em.upsert(User2, { email: 'existing@bar.com', name: 'a' } as any);
+  const first = await orm.em.upsert(User2, { email: 'existing@bar.com', name: 'a' });
   const originalId = first.id;
   const originalCreatedAt = first.createdAt;
   orm.em.clear();
 
   const mock = mockLogger(orm);
-  const second = await orm.em.upsert(User2, { email: 'existing@bar.com', name: 'b' } as any);
+  const second = await orm.em.upsert(User2, { email: 'existing@bar.com', name: 'b' });
 
   // generated values must not leak into the `on conflict do update set` clause
   const upsertQuery = mock.mock.calls.find(c => c[0].includes('on conflict'))![0];
@@ -174,7 +174,7 @@ test('GH #7399 - upsert of existing row does not overwrite onCreate values (plai
 });
 
 test('GH #7399 - upsert of existing row does not overwrite onCreate values (entity instance)', async () => {
-  await orm.em.upsert(User2, { email: 'existing2@bar.com', name: 'a' } as any);
+  await orm.em.upsert(User2, { email: 'existing2@bar.com', name: 'a' });
   const original = await orm.em.fork().findOneOrFail(User2, { email: 'existing2@bar.com' });
   orm.em.clear();
 
@@ -190,16 +190,16 @@ test('GH #7399 - upsert of existing row does not overwrite onCreate values (enti
 
 test('GH #7399 - upsertMany of existing rows does not overwrite onCreate values', async () => {
   const [first1, first2] = await orm.em.upsertMany(User2, [
-    { email: 'existing-many1@bar.com', name: 'a1' } as any,
-    { email: 'existing-many2@bar.com', name: 'a2' } as any,
+    { email: 'existing-many1@bar.com', name: 'a1' },
+    { email: 'existing-many2@bar.com', name: 'a2' },
   ]);
   const originalIds = [first1.id, first2.id];
   const originalCreatedAts = [+first1.createdAt, +first2.createdAt];
   orm.em.clear();
 
   const [second1, second2] = await orm.em.upsertMany(User2, [
-    { email: 'existing-many1@bar.com', name: 'b1' } as any,
-    { email: 'existing-many2@bar.com', name: 'b2' } as any,
+    { email: 'existing-many1@bar.com', name: 'b1' },
+    { email: 'existing-many2@bar.com', name: 'b2' },
   ]);
 
   expect(second1.id).toBe(originalIds[0]);
@@ -211,7 +211,7 @@ test('GH #7399 - upsertMany of existing rows does not overwrite onCreate values'
 });
 
 test('GH #7399 - explicitly provided values still update existing rows', async () => {
-  await orm.em.upsert(User2, { email: 'explicit@bar.com', name: 'a' } as any);
+  await orm.em.upsert(User2, { email: 'explicit@bar.com', name: 'a' });
   orm.em.clear();
 
   // when the value is provided by the user, it is not `onCreate` generated and should be merged
@@ -220,7 +220,7 @@ test('GH #7399 - explicitly provided values still update existing rows', async (
     email: 'explicit@bar.com',
     name: 'b',
     createdAt: explicitDate,
-  } as any);
+  });
 
   expect(+second.createdAt).toBe(+explicitDate);
 });
