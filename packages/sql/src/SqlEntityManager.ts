@@ -192,7 +192,9 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
     await em.tryFlush(entityName, options);
     const where = await em.processWhere(entityName, rawWhere ?? ({} as FilterQuery<Entity>), options as any, 'read');
 
-    const qb = em.createQueryBuilder(meta.class);
+    // match `em.count()` semantics: an active transaction always wins over the requested connection type
+    const connectionType = em.getTransactionContext() ? 'write' : options.connectionType;
+    const qb = em.createQueryBuilder(meta.class, undefined, connectionType);
 
     (qb as any)
       .select([...fields, raw('count(*) as cnt')])
