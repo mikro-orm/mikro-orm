@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.13](https://github.com/mikro-orm/mikro-orm/compare/v7.1.12...v7.1.13) (2026-08-20)
+
+### Bug Fixes
+
+* **decorators:** don't mutate base class metadata in TC39 decorators ([#8177](https://github.com/mikro-orm/mikro-orm/issues/8177)) ([b4e72bd](https://github.com/mikro-orm/mikro-orm/commit/b4e72bd2b7c47c7949dab8ad1a44c10edec33cca)), closes [#8178](https://github.com/mikro-orm/mikro-orm/issues/8178)
+
+
 ## [7.1.12](https://github.com/mikro-orm/mikro-orm/compare/v7.1.11...v7.1.12) (2026-08-17)
 
 **Note:** Version bump only for package @mikro-orm/decorators
