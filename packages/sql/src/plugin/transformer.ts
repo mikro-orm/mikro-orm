@@ -631,22 +631,13 @@ export class MikroTransformer extends OperationNodeTransformer {
 
   /** Resolve the entity property a comparison's left operand refers to, so its value operand can be converted. */
   resolveOperandProperty(operand: OperationNode): { prop: EntityProperty; fieldName: string } | undefined {
-    let column: ColumnNode | undefined;
-    let tableName: string | undefined;
-
-    if (ReferenceNode.is(operand) && ColumnNode.is(operand.column)) {
-      column = operand.column;
-      tableName = operand.table ? this.getTableName(operand.table) : undefined;
-    } else if (ColumnNode.is(operand)) {
-      column = operand;
-    }
-
-    if (!column) {
+    if (!ReferenceNode.is(operand) || !ColumnNode.is(operand.column)) {
       return undefined;
     }
 
+    const tableName = operand.table ? this.getTableName(operand.table) : undefined;
     const meta = this.findOwnerMeta(tableName);
-    const fieldName = this.normalizeColumnName(column.column);
+    const fieldName = this.normalizeColumnName(operand.column.column);
     const prop = this.findProperty(meta, fieldName);
 
     return prop ? { prop, fieldName } : undefined;

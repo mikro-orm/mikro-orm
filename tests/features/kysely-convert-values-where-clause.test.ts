@@ -1,6 +1,6 @@
 import { defineEntity, p, Type } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
-import { sql } from 'kysely';
+import { expressionBuilder, sql } from 'kysely';
 
 class Email {
   constructor(readonly value: string) {}
@@ -154,6 +154,41 @@ test('where clause values on aliased tables are converted', async () => {
 test('raw root query with embedded comparison does not crash', async () => {
   const res = await sql`select * from user where ${sql.ref('email')} = ${'nobody@example.com'}`.execute(getKysely());
   expect(res.rows).toEqual([]);
+
+  // embedded binary operation reaches the transformer with an empty context stack
+  const eb = expressionBuilder<{ User: UserTable }, 'User'>();
+  const res2 = await sql`select * from user where ${eb('name', '=', 'Nobody')}`.execute(getKysely());
+  expect(res2.rows).toEqual([]);
+});
+
+test('non-column left operands are left alone', async () => {
+  const user = await getKysely()
+    .selectFrom('User')
+    .select(['name'])
+    .where(sql<string>`lower(email)`, '=', 'foo@example.com')
+    .executeTakeFirstOrThrow();
+
+  expect(user.name).toBe('Foo');
+});
+
+test('`in` list values are wrapped with convertToDatabaseValueSQL', async () => {
+  const query = getKysely().selectFrom('User').select(['name']).where('secret', 'in', ['foo secret', 'bar secret']);
+
+  expect(query.compile().sql).toBe('select "name" from "user" where "secret" in (unhex(?), unhex(?))');
+
+  const users = await query.execute();
+  expect(users.map(u => u.name).sort()).toEqual(['Bar', 'Foo']);
+});
+
+test('`in` list mixing values and expressions converts only the values', async () => {
+  const users = await getKysely()
+    .selectFrom('User')
+    .select(['name'])
+    .where('email', 'in', [new Email('foo@example.com'), sql<Email>`${'bar@example.com'}`])
+    .orderBy('id')
+    .execute();
+
+  expect(users.map(u => u.name)).toEqual(['Foo', 'Bar']);
 });
 
 test('where clause values are wrapped with convertToDatabaseValueSQL', async () => {
