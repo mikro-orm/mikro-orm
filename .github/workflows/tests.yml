@@ -17,10 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Use Node.js 22
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           package-manager-cache: false
@@ -33,7 +33,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           cache: yarn
 
@@ -52,10 +52,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Use Node.js 22
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           package-manager-cache: false
@@ -68,7 +68,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           cache: yarn
 
@@ -76,12 +76,12 @@ jobs:
         run: yarn
 
       - name: Check spelling (next docs)
-        uses: crate-ci/typos@master
+        uses: crate-ci/typos@8a48f81b6c64dcfea44b3633223084c4be58ac5f # v1.49.0
         with:
           files: docs/docs
 
       - name: Check spelling (versioned docs)
-        uses: crate-ci/typos@master
+        uses: crate-ci/typos@8a48f81b6c64dcfea44b3633223084c4be58ac5f # v1.49.0
         with:
           files: docs/versioned_docs
 
@@ -98,10 +98,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Use Node.js 22
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           package-manager-cache: false
@@ -114,7 +114,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           cache: yarn
 
@@ -139,10 +139,10 @@ jobs:
         shard: [ 1, 2, 3, 4 ]
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node-version }}
           package-manager-cache: false
@@ -156,7 +156,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           cache: yarn
 
@@ -223,7 +223,7 @@ jobs:
 
       - name: Get number of CPU cores
         id: cpu-cores
-        uses: SimenB/github-actions-cpu-cores@v3
+        uses: SimenB/github-actions-cpu-cores@97330871fe1b7d3529392ea000e3d2c4b357e403 # v3.0.0
 
       - name: Test
         if: matrix.node-version != 24
@@ -243,7 +243,7 @@ jobs:
           RETRY_TESTS: 1
 
       - name: Codecov
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -256,10 +256,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Use Node.js 24
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           package-manager-cache: false
@@ -272,7 +272,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           cache: yarn
 
@@ -288,10 +288,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Use Node.js 24
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           package-manager-cache: false
@@ -304,7 +304,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           cache: yarn
 
@@ -324,10 +324,10 @@ jobs:
         node-version: [ 22, 24, 26 ]
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node-version }}
           package-manager-cache: false
@@ -341,7 +341,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           cache: yarn
 
@@ -357,10 +357,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Use Node.js 24
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           package-manager-cache: false
@@ -373,7 +373,7 @@ jobs:
       # Yarn dependencies cannot be cached until yarn is installed
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           cache: yarn
 
@@ -388,7 +388,7 @@ jobs:
         run: docker compose up -d mongo --wait
 
       - name: Setup Deno
-        uses: denoland/setup-deno@v2
+        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
         with:
           deno-version: v2.x
 
@@ -404,7 +404,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ build, test, lint, docs ]
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           sparse-checkout: lerna.json
           sparse-checkout-cone-mode: false
@@ -422,7 +422,7 @@ jobs:
           fi
 
       - name: Publish packages
-        uses: apify/workflows/execute-workflow@main
+        uses: apify/workflows/execute-workflow@d55875a16921721f4a1f33fcf8403a1f3d70db1a # main
         with:
           workflow: release.yml
           inputs: >
