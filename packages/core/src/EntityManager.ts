@@ -1,5 +1,10 @@
 import { type Configuration } from './utils/Configuration.js';
-import { getOnConflictReturningFields, getWhereCondition, resetUntouchedCollections } from './utils/upsert-utils.js';
+import {
+  getOnConflictReturningFields,
+  getOnCreateGeneratedFields,
+  getWhereCondition,
+  resetUntouchedCollections,
+} from './utils/upsert-utils.js';
 import { Utils } from './utils/Utils.js';
 import { Cursor } from './utils/Cursor.js';
 import { QueryHelper } from './utils/QueryHelper.js';
@@ -1252,6 +1257,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const meta = this.metadata.get<Entity>(entityName);
     const convertCustomTypes = !Utils.isEntity(data);
+    let generatedFields: EntityKey<Entity>[] = [];
 
     if (Utils.isEntity(data)) {
       entity = data as Entity;
@@ -1262,6 +1268,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       where = helper(entity).getPrimaryKey() as FilterQuery<Entity>;
+      generatedFields = getOnCreateGeneratedFields(meta, entity);
       em.#entityFactory.assignDefaultValues(entity, meta);
       data = em.#comparator.prepareEntity(entity);
     } else {
@@ -1276,6 +1283,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         }
       }
 
+      generatedFields = getOnCreateGeneratedFields(meta, data as EntityData<Entity>);
       em.#entityFactory.assignDefaultValues(data as Entity, meta, true);
 
       for (const key of Object.keys(data!)) {
@@ -1285,6 +1293,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           delete data![key as EntityKey<Entity>];
         }
       }
+    }
+
+    // `onCreate` generated values are for the insert clause only, they must not overwrite an existing row
+    if (generatedFields.length > 0 && !options.onConflictMergeFields) {
+      options.onConflictExcludeFields = [...(options.onConflictExcludeFields ?? []), ...generatedFields] as never[];
     }
 
     where = getWhereCondition(meta, options.onConflictFields, data as EntityData<Entity>, where).where;
@@ -1437,6 +1450,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const meta = this.metadata.get<Entity>(entityName);
     const convertCustomTypes = !Utils.isEntity(data[0]);
+    const generatedFields = new Set<EntityKey<Entity>>();
     const allData: EntityData<Entity>[] = [];
     const allWhere: FilterQuery<Entity>[] = [];
     const entities = new Map<Entity, EntityData<Entity>>();
@@ -1458,6 +1472,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         }
 
         where = helper(entity).getPrimaryKey() as FilterQuery<Entity>;
+        getOnCreateGeneratedFields(meta, entity).forEach(field => generatedFields.add(field));
         em.#entityFactory.assignDefaultValues(entity, meta);
         entitiesByAllDataIdx.set(allData.length, entity);
         row = em.#comparator.prepareEntity(entity);
@@ -1476,6 +1491,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           }
         }
 
+        getOnCreateGeneratedFields(meta, row).forEach(field => generatedFields.add(field));
         em.#entityFactory.assignDefaultValues(row as Entity, meta, true);
 
         for (const key of Object.keys(row)) {
@@ -1507,6 +1523,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     if (entities.size === data.length) {
       return [...entities.keys()];
+    }
+
+    // `onCreate` generated values are for the insert clause only, they must not overwrite existing rows
+    if (generatedFields.size > 0 && !options.onConflictMergeFields) {
+      options.onConflictExcludeFields = [...(options.onConflictExcludeFields ?? []), ...generatedFields] as never[];
     }
 
     if (em.eventManager.hasListeners(EventType.beforeUpsert, meta)) {
