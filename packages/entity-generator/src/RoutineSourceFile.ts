@@ -28,7 +28,9 @@ function quoteMultiline(val: string): string {
 
 function toPascalCase(name: string): string {
   const pascal = name
-    .split(/[_\s-]+/)
+    // anything that cannot appear in an identifier acts as a word separator, which keeps
+    // path separators out of both the emitted const name and the generated file name
+    .split(/[^\p{L}\p{N}$]+/u)
     .filter(Boolean)
     .map(part => part.charAt(0).toUpperCase() + part.slice(1))
     .join('');

@@ -19,3 +19,11 @@ exports[`comment diffing in postgres 3`] = `
 comment on table "foo"."book" is '';
 "
 `;
+
+exports[`comment diffing in postgres 4`] = `
+"alter table "foo"."book" add "description" varchar(255) null;
+comment on column "foo"."book"."description" is 'comment of a newly added column';
+alter table "foo"."book" alter column "name" type varchar(100) using ("name"::varchar(100));
+comment on column "foo"."book"."name" is 'new comment';
+"
+`;

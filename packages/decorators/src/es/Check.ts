@@ -1,4 +1,5 @@
 import { type CheckConstraint, type EntityMetadata, type EntityCtor } from '@mikro-orm/core';
+import { ensureOwnMetadataArray } from '../utils.js';
 
 /** Defines a database check constraint on a property or entity class (TC39 decorator). */
 export function Check<T>(
@@ -9,12 +10,12 @@ export function Check<T>(
     context: ClassDecoratorContext<T & EntityCtor> | ClassFieldDecoratorContext<T>,
   ): void {
     const meta = context.metadata as Partial<EntityMetadata<T>>;
-    meta.checks ??= [];
+    const checks = ensureOwnMetadataArray(meta, 'checks');
 
     if (context.kind === 'field') {
       options.property ??= context.name as string;
     }
 
-    meta.checks.push(options);
+    checks.push(options);
   };
 }

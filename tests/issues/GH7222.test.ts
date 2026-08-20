@@ -6,7 +6,7 @@
  * the entity returns `EntityDTO<BaseEntity>` instead of the proper entity DTO type.
  * Using `wrap(user).toObject()` works correctly as a workaround.
  */
-import { defineEntity, BaseEntity, p, wrap, MikroORM, EntityDTO, InferEntity } from '@mikro-orm/core';
+import { defineEntity, BaseEntity, p, wrap, MikroORM, InferEntity } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 const User = defineEntity({

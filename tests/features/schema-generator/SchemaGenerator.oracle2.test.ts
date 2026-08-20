@@ -44,6 +44,19 @@ describe('SchemaGenerator2 [oracle]', () => {
 
     await orm.schema.ensureDatabase();
     await orm.schema.dropDatabase(dbName);
+
+    // the pool stays logged in as the management user, as the dropped one can no longer authenticate
+    const res = await orm.em.getConnection().execute<{ user: string }[]>('select user as "user" from dual');
+    expect(res[0].user.toLowerCase()).toBe(orm.config.get('user')!.toLowerCase());
+
+    // the generator must no longer believe the dropped database exists
+    await orm.schema.ensureDatabase();
+    const users = await orm.em
+      .getConnection()
+      .execute<{ username: string }[]>(`select username from all_users where upper(username) = upper('${dbName}')`);
+    expect(users).toHaveLength(1);
+
+    await orm.schema.dropDatabase(dbName);
     await orm.close(true);
   });
 

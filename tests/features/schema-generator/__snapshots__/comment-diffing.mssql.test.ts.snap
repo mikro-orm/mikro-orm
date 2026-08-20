@@ -1,0 +1,74 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`comment diffing [mssql] > adding, changing and removing table and column comments 1`] = `
+"if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'book', N'Column', N'id'))
+  exec sys.sp_updateextendedproperty N'MS_Description', N'this is primary''s key', N'Schema', N'dbo', N'Table', N'book', N'Column', N'id'
+else
+  exec sys.sp_addextendedproperty N'MS_Description', N'this is primary''s key', N'Schema', N'dbo', N'Table', N'book', N'Column', N'id';
+if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'book', N'Column', N'name'))
+  exec sys.sp_updateextendedproperty N'MS_Description', N'this is name of book', N'Schema', N'dbo', N'Table', N'book', N'Column', N'name'
+else
+  exec sys.sp_addextendedproperty N'MS_Description', N'this is name of book', N'Schema', N'dbo', N'Table', N'book', N'Column', N'name';
+if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'book', null, null))
+  exec sys.sp_updateextendedproperty N'MS_Description', N'this is book''s table', N'Schema', N'dbo', N'Table', N'book'
+else
+  exec sys.sp_addextendedproperty N'MS_Description', N'this is book''s table', N'Schema', N'dbo', N'Table', N'book';
+"
+`;
+
+exports[`comment diffing [mssql] > adding, changing and removing table and column comments 2`] = `
+"if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'book', N'Column', N'id'))
+  exec sys.sp_updateextendedproperty N'MS_Description', N'new comment', N'Schema', N'dbo', N'Table', N'book', N'Column', N'id'
+else
+  exec sys.sp_addextendedproperty N'MS_Description', N'new comment', N'Schema', N'dbo', N'Table', N'book', N'Column', N'id';
+if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'book', N'Column', N'name'))
+  exec sys.sp_dropextendedproperty N'MS_Description', N'Schema', N'dbo', N'Table', N'book', N'Column', N'name';
+if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'book', null, null))
+  exec sys.sp_updateextendedproperty N'MS_Description', N'table comment', N'Schema', N'dbo', N'Table', N'book'
+else
+  exec sys.sp_addextendedproperty N'MS_Description', N'table comment', N'Schema', N'dbo', N'Table', N'book';
+"
+`;
+
+exports[`comment diffing [mssql] > adding, changing and removing table and column comments 3`] = `
+"if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'book', N'Column', N'id'))
+  exec sys.sp_dropextendedproperty N'MS_Description', N'Schema', N'dbo', N'Table', N'book', N'Column', N'id';
+if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'book', null, null))
+  exec sys.sp_dropextendedproperty N'MS_Description', N'Schema', N'dbo', N'Table', N'book';
+"
+`;
+
+exports[`comment diffing [mssql] > adding, changing and removing table and column comments 4`] = `
+"alter table [book] add [description] nvarchar(255) null;
+if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'book', N'Column', N'description'))
+  exec sys.sp_updateextendedproperty N'MS_Description', N'comment of a newly added column', N'Schema', N'dbo', N'Table', N'book', N'Column', N'description'
+else
+  exec sys.sp_addextendedproperty N'MS_Description', N'comment of a newly added column', N'Schema', N'dbo', N'Table', N'book', N'Column', N'description';
+"
+`;
+
+exports[`comment diffing [mssql] > comments are diffed in a non-default schema 1`] = `
+"if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'foo', N'Table', N'book', N'Column', N'id'))
+  exec sys.sp_updateextendedproperty N'MS_Description', N'this is primary''s key', N'Schema', N'foo', N'Table', N'book', N'Column', N'id'
+else
+  exec sys.sp_addextendedproperty N'MS_Description', N'this is primary''s key', N'Schema', N'foo', N'Table', N'book', N'Column', N'id';
+if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'foo', N'Table', N'book', N'Column', N'name'))
+  exec sys.sp_updateextendedproperty N'MS_Description', N'this is name of book', N'Schema', N'foo', N'Table', N'book', N'Column', N'name'
+else
+  exec sys.sp_addextendedproperty N'MS_Description', N'this is name of book', N'Schema', N'foo', N'Table', N'book', N'Column', N'name';
+if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'foo', N'Table', N'book', null, null))
+  exec sys.sp_updateextendedproperty N'MS_Description', N'this is book''s table', N'Schema', N'foo', N'Table', N'book'
+else
+  exec sys.sp_addextendedproperty N'MS_Description', N'this is book''s table', N'Schema', N'foo', N'Table', N'book';
+"
+`;
+
+exports[`comment diffing [mssql] > comments are diffed in a non-default schema 2`] = `
+"if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'foo', N'Table', N'book', N'Column', N'id'))
+  exec sys.sp_dropextendedproperty N'MS_Description', N'Schema', N'foo', N'Table', N'book', N'Column', N'id';
+if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'foo', N'Table', N'book', N'Column', N'name'))
+  exec sys.sp_dropextendedproperty N'MS_Description', N'Schema', N'foo', N'Table', N'book', N'Column', N'name';
+if exists(select * from sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'foo', N'Table', N'book', null, null))
+  exec sys.sp_dropextendedproperty N'MS_Description', N'Schema', N'foo', N'Table', N'book';
+"
+`;

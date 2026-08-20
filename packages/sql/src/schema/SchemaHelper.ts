@@ -22,9 +22,19 @@ import type {
 import type { DatabaseSchema } from './DatabaseSchema.js';
 import type { DatabaseTable } from './DatabaseTable.js';
 
-/** Flattens `;\n` boundaries so the schema-generator's statement splitter doesn't break the routine DDL apart. Other whitespace is preserved. */
+/**
+ * Flattens `;\n` boundaries and drops blank lines so the schema-generator's statement splitter
+ * doesn't break the routine or trigger DDL apart — it treats both as statement/group separators.
+ * Blank lines go first, otherwise a `;` followed by one would keep its newline. Like
+ * `normalizeViewDefinition`, this is not string-literal aware, so a blank line inside a multi-line
+ * literal is dropped too. Other whitespace is preserved.
+ */
 export function stripStatementNewlines(body: string): string {
-  return body.replace(/;[\t ]*\r?\n/g, '; ');
+  return body
+    .split('\n')
+    .filter(line => line.trim() !== '')
+    .join('\n')
+    .replace(/;[\t ]*\r?\n/g, '; ');
 }
 
 /**
@@ -245,7 +255,8 @@ export abstract class SchemaHelper {
     tableName = this.quote(tableName);
     const keyName = this.quote(index.keyName);
     const defer = index.deferMode ? ` deferrable initially ${index.deferMode}` : '';
-    let sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName}`;
+    const using = this.getIndexAccessMethodClause(index);
+    let sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName}${using}`;
 
     if (index.unique && index.constraint) {
       sql = `alter table ${tableName} add constraint ${keyName} unique`;
@@ -253,7 +264,7 @@ export abstract class SchemaHelper {
 
     if (index.columnNames.some(column => column.includes('.'))) {
       // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them
-      sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName}`;
+      sql = `create ${index.unique ? 'unique ' : ''}index ${keyName} on ${tableName}${using}`;
       const columns = this.platform.getJsonIndexDefinition(index);
       return `${sql} (${columns.join(', ')})${this.getCreateIndexSuffix(index)}${this.getIndexWhereClause(index)}${defer}`;
     }
@@ -275,6 +286,20 @@ export abstract class SchemaHelper {
    */
   protected getCreateIndexSuffix(_index: IndexDef): string {
     return '';
+  }
+
+  /**
+   * Normalized index access method (e.g. `gin` on PostgreSQL), empty string when the
+   * platform default applies. Used for both DDL emission and index diffing.
+   */
+  getIndexAccessMethod(_index: IndexDef): string {
+    return '';
+  }
+
+  /** Emits the access method between the table name and the column list (e.g. ` using gin`). */
+  protected getIndexAccessMethodClause(index: IndexDef): string {
+    const method = this.getIndexAccessMethod(index);
+    return method ? ` using ${method}` : '';
   }
 
   /**
@@ -580,6 +605,7 @@ export abstract class SchemaHelper {
       diff.changedProperties.has('comment'),
     )) {
       if (
+        this.hasInlineColumnComment() &&
         ['type', 'nullable', 'autoincrement', 'unsigned', 'default', 'enumItems', 'collation'].some(t =>
           changedProperties.has(t),
         )
@@ -650,7 +676,15 @@ export abstract class SchemaHelper {
       })
       .join(', ');
 
-    return [`alter table ${table.getQuotedName()} ${adds}`];
+    const ret = [`alter table ${table.getQuotedName()} ${adds}`];
+
+    if (!this.hasInlineColumnComment()) {
+      for (const column of columns.filter(column => column.comment)) {
+        ret.push(this.getChangeColumnCommentSQL(table.name, column, table.schema));
+      }
+    }
+
+    return ret;
   }
 
   getDropColumnsSQL(tableName: string, columns: Column[], schemaName?: string): string {
@@ -670,6 +704,11 @@ export abstract class SchemaHelper {
     const defaultName = this.platform.getDefaultPrimaryName(table.name, pkIndex.columnNames);
 
     return pkIndex?.keyName !== defaultName;
+  }
+
+  /** Returns the `constraint <name> ` prefix for a primary key definition, empty when the server assigns the default name on its own. */
+  protected getPrimaryKeyConstraintPrefix(table: DatabaseTable, index: IndexDef): string {
+    return this.hasNonDefaultPrimaryKeyName(table) ? `constraint ${this.quote(index.keyName)} ` : '';
   }
 
   /* v8 ignore next */
@@ -807,6 +846,11 @@ export abstract class SchemaHelper {
 
   getChangeColumnCommentSQL(tableName: string, to: Column, schemaName?: string): string {
     return '';
+  }
+
+  /** Whether the column comment is part of the column declaration, as opposed to a separate statement. */
+  protected hasInlineColumnComment(): boolean {
+    return false;
   }
 
   async getNamespaces(connection: AbstractSqlConnection, ctx?: Transaction): Promise<string[]> {
@@ -982,7 +1026,7 @@ export abstract class SchemaHelper {
       !table.getColumns().some(c => c.autoincrement && c.primary) || this.hasNonDefaultPrimaryKeyName(table);
 
     if (createPrimary && primaryKey) {
-      const name = this.hasNonDefaultPrimaryKeyName(table) ? `constraint ${this.quote(primaryKey.keyName)} ` : '';
+      const name = this.getPrimaryKeyConstraintPrefix(table, primaryKey);
       sql += `, ${name}primary key (${primaryKey.columnNames.map(c => this.quote(c)).join(', ')})`;
     }
 
@@ -1096,7 +1140,7 @@ export abstract class SchemaHelper {
     const defer = index.deferMode ? ` deferrable initially ${index.deferMode}` : '';
 
     if (index.primary) {
-      const keyName = this.hasNonDefaultPrimaryKeyName(table) ? `constraint ${index.keyName} ` : '';
+      const keyName = this.getPrimaryKeyConstraintPrefix(table, index);
       return `alter table ${table.getQuotedName()} add ${keyName}primary key (${columns})${defer}`;
     }
 
@@ -1136,7 +1180,7 @@ export abstract class SchemaHelper {
     const events = trigger.events.map(e => e.toUpperCase()).join(' OR ');
     const forEach = trigger.forEach === 'statement' ? 'STATEMENT' : 'ROW';
     const when = trigger.when ? ` when (${trigger.when})` : '';
-    return `create trigger ${this.quote(trigger.name)} ${timing} ${events} on ${table.getQuotedName()} for each ${forEach}${when} begin ${trigger.body}; end`;
+    return `create trigger ${this.quote(trigger.name)} ${timing} ${events} on ${table.getQuotedName()} for each ${forEach}${when} begin ${this.normalizeTriggerBody(trigger.body)} end`;
   }
 
   /**
@@ -1164,6 +1208,12 @@ export abstract class SchemaHelper {
 
   async getAllRoutines(_connection: AbstractSqlConnection, _schemas: string[] = []): Promise<SqlRoutineDef[]> {
     return [];
+  }
+
+  /** Flattens internal `;\n` so the statement splitter doesn't tear the DDL, and ensures exactly one trailing `;` for the enclosing `begin ... end` block. */
+  protected normalizeTriggerBody(body: string): string {
+    const trimmed = stripStatementNewlines(body).trim();
+    return /;\s*$/.test(trimmed) ? trimmed : `${trimmed};`;
   }
 
   /** Wraps the body in `BEGIN ... END` if not already, and flattens internal `;\n` so the schema-generator's statement splitter doesn't tear the DDL. */

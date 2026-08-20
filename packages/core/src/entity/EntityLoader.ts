@@ -12,11 +12,10 @@ import type {
   FilterQuery,
   PopulateHintOptions,
   PopulateOptions,
-  Primary,
 } from '../typings.js';
 import type { EntityManager } from '../EntityManager.js';
 import { QueryHelper } from '../utils/QueryHelper.js';
-import { Utils } from '../utils/Utils.js';
+import { DANGEROUS_PROPERTY_NAMES, Utils } from '../utils/Utils.js';
 import { ValidationError } from '../errors.js';
 import type { Collection } from './Collection.js';
 import {
@@ -246,11 +245,11 @@ export class EntityLoader {
     const tmp = populate.reduce(
       (ret, item) => {
         /* v8 ignore next */
-        if (item.field === PopulatePath.ALL) {
+        if (item.field === PopulatePath.ALL || DANGEROUS_PROPERTY_NAMES.includes(item.field as string)) {
           return ret;
         }
 
-        if (!ret[item.field]) {
+        if (!Object.hasOwn(ret, item.field)) {
           ret[item.field] = item;
           return ret;
         }
@@ -500,7 +499,8 @@ export class EntityLoader {
     for (const child of children) {
       const fk = child.__helper.__data[prop.mappedBy] ?? child[prop.mappedBy];
 
-      if (fk) {
+      // check for `null`/`undefined` explicitly, the FK can be a falsy raw PK value like `0` (e.g. with `mapToPk`)
+      if (fk != null) {
         let key: string;
 
         if (targetKey) {
@@ -706,7 +706,12 @@ export class EntityLoader {
       }
     }
 
-    if ([ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && items.length !== children.length) {
+    // a missing target row means an orphaned reference, unless the query was narrowed by a populate condition
+    if (
+      [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) &&
+      items.length !== children.length &&
+      Utils.isEmpty(options.where)
+    ) {
       const nullVal = this.#em.config.get('forceUndefined') ? undefined : null;
       const itemsMap = new Set<string>();
       const childrenMap = new Set<string>();
@@ -1005,7 +1010,8 @@ export class EntityLoader {
             return cond;
           });
 
-        if (child.length > 0) {
+        // partial extraction from `$or` is unsound — the parent may have matched via a dropped branch
+        if (child.length > 0 && (op === '$and' || child.length === where[op].length)) {
           subCond[op] = child;
         }
       }

@@ -66,6 +66,11 @@ test('MsSqlNativeQueryBuilder', async () => {
     params: ['bar', 2, 1],
   });
 
+  // an empty condition must not leave a dangling `having` behind
+  const qb7b = new MsSqlNativeQueryBuilder(orm.em.getPlatform());
+  qb7b.select('*').from('baz').groupBy(['foo']).having('', []);
+  expect(qb7b.compile()).toEqual({ sql: 'select * from [baz] group by [foo]', params: [] });
+
   const qb8 = new MsSqlNativeQueryBuilder(orm.em.getPlatform());
   const date = new Date();
   qb8

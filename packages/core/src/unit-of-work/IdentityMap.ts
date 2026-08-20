@@ -52,6 +52,14 @@ export class IdentityMap {
     }
   }
 
+  /**
+   * Retrieves the entity occupying the same slot as the given one, if any. Hashes the entity the same way `store()`
+   * does, so it matches regardless of the primary key shape — unlike hashing a primary key value obtained elsewhere.
+   */
+  getByEntity<T>(item: T): T | undefined {
+    return this.getStore((item as AnyEntity).__meta!.root).get(this.getPkHash(item)) as T | undefined;
+  }
+
   /** Retrieves an entity by its hash key from the identity map. */
   getByHash<T>(meta: EntityMetadata<T>, hash: string): T | undefined {
     const store = this.getStore(meta);

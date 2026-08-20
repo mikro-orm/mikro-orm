@@ -58,21 +58,31 @@ function getCallSite(): string | null {
   return null;
 }
 
-for (const key of ['log', 'warn', 'error'] as const) {
-  const original = console[key].bind(console);
-  console[key] = (...args: unknown[]) => {
-    const loc = getCallSite();
+// Vitest re-imports setup files for every test file (it invalidates them explicitly), while
+// `isolate: false` keeps one `console` per worker — so without this guard every test file wraps the
+// previous wrapper. Each `console.log` would then capture one stack trace and print one `at ...`
+// line per test file the worker has already run.
+const PATCHED = Symbol.for('mikro-orm-tests:console-patched');
 
-    if (loc) {
-      // Prepend newline to first arg if it's a string (preserves format string substitution)
-      if (typeof args[0] === 'string') {
-        args[0] = '\n' + args[0];
+if (!(console as any)[PATCHED]) {
+  (console as any)[PATCHED] = true;
+
+  for (const key of ['log', 'warn', 'error'] as const) {
+    const original = console[key].bind(console);
+    console[key] = (...args: unknown[]) => {
+      const loc = getCallSite();
+
+      if (loc) {
+        // Prepend newline to first arg if it's a string (preserves format string substitution)
+        if (typeof args[0] === 'string') {
+          args[0] = '\n' + args[0];
+        } else {
+          args.unshift('\n');
+        }
+        original(...args, `\n\n  at ${loc}\n`);
       } else {
-        args.unshift('\n');
+        original(...args);
       }
-      original(...args, `\n\n  at ${loc}\n`);
-    } else {
-      original(...args);
-    }
-  };
+    };
+  }
 }

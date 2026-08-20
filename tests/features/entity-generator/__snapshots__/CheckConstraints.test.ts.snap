@@ -1,0 +1,114 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`check constraints in generated entities > decorators 1`] = `
+"import { Check, Entity, Enum, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+
+export const ProbeMode = {
+  EXPLICIT: 'explicit',
+  'ALL-ACTIVE': 'all-active',
+} as const;
+
+export type TProbeMode = (typeof ProbeMode)[keyof typeof ProbeMode];
+
+@Entity()
+@Check({ name: 'probe_price_check', expression: 'price >= 0' })
+@Check({ name: 'chk_probe_code_format', expression: 'code like \\'x%\\'' })
+@Check({ name: 'chk_probe_shape', expression: 'mode <> \\'all-active\\' or system_key is not null' })
+export class Probe {
+
+  @PrimaryKey({ autoincrement: false, nullable: true })
+  id?: number;
+
+  @Property({ type: 'text' })
+  code!: string;
+
+  @Enum({ items: () => ProbeMode })
+  mode!: TProbeMode;
+
+  @Property({ type: 'text', nullable: true })
+  systemKey?: string;
+
+  @Property()
+  price!: number;
+
+}
+"
+`;
+
+exports[`check constraints in generated entities > defineEntity 1`] = `
+"import { defineEntity, p } from '@mikro-orm/core';
+
+export class Probe {
+  id?: number;
+  code!: string;
+  mode!: TProbeMode;
+  systemKey?: string;
+  price!: number;
+}
+
+export const ProbeMode = {
+  EXPLICIT: 'explicit',
+  'ALL-ACTIVE': 'all-active',
+} as const;
+
+export type TProbeMode = (typeof ProbeMode)[keyof typeof ProbeMode];
+
+export const ProbeSchema = defineEntity({
+  class: Probe,
+  checks: [
+    { name: 'probe_price_check', expression: 'price >= 0' },
+    { name: 'chk_probe_code_format', expression: 'code like \\'x%\\'' },
+    {
+      name: 'chk_probe_shape',
+      expression: 'mode <> \\'all-active\\' or system_key is not null',
+    },
+  ],
+  properties: {
+    id: p.integer().primary().autoincrement(false).nullable(),
+    code: p.text(),
+    mode: p.enum(() => ProbeMode),
+    systemKey: p.text().nullable(),
+    price: p.integer(),
+  },
+});
+"
+`;
+
+exports[`check constraints in generated entities > entitySchema 1`] = `
+"import { EntitySchema } from '@mikro-orm/core';
+
+export class Probe {
+  id?: number;
+  code!: string;
+  mode!: TProbeMode;
+  systemKey?: string;
+  price!: number;
+}
+
+export const ProbeMode = {
+  EXPLICIT: 'explicit',
+  'ALL-ACTIVE': 'all-active',
+} as const;
+
+export type TProbeMode = (typeof ProbeMode)[keyof typeof ProbeMode];
+
+export const ProbeSchema = new EntitySchema({
+  class: Probe,
+  checks: [
+    { name: 'probe_price_check', expression: 'price >= 0' },
+    { name: 'chk_probe_code_format', expression: 'code like \\'x%\\'' },
+    {
+      name: 'chk_probe_shape',
+      expression: 'mode <> \\'all-active\\' or system_key is not null',
+    },
+  ],
+  properties: {
+    id: { primary: true, type: 'integer', autoincrement: false, nullable: true },
+    code: { type: 'text' },
+    mode: { enum: true, items: () => ProbeMode },
+    systemKey: { type: 'text', nullable: true },
+    price: { type: 'integer' },
+  },
+});
+"
+`;

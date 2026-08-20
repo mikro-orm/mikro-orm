@@ -1,5 +1,5 @@
 import { type EntityKey, type EntityProperty, type PropertyOptions, ReferenceKind, Utils } from '@mikro-orm/core';
-import { prepareMetadataContext } from '../utils.js';
+import { ensureOwnMetadataArray, prepareMetadataContext } from '../utils.js';
 
 /** Defines a scalar property on an entity (TC39 decorator). */
 export function Property<T extends object>(
@@ -26,7 +26,6 @@ export function Property<T extends object>(
     const { check, ...opts } = options;
     const prop = { kind: ReferenceKind.SCALAR, ...opts } as EntityProperty<T>;
     const name = options.name ?? context.name;
-    meta.checks ??= [];
 
     if (context.name !== name) {
       Utils.renameKey(options, 'name', 'fieldName');
@@ -57,7 +56,7 @@ export function Property<T extends object>(
     }
 
     if (check) {
-      meta.checks.push({ property: prop.name, expression: check });
+      ensureOwnMetadataArray(meta, 'checks').push({ property: prop.name, expression: check });
     }
 
     meta.properties[prop.name] = prop;

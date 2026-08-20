@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.12](https://github.com/mikro-orm/mikro-orm/compare/v7.1.11...v7.1.12) (2026-08-17)
+
+**Note:** Version bump only for package @mikro-orm/migrations
+
+## [7.1.11](https://github.com/mikro-orm/mikro-orm/compare/v7.1.10...v7.1.11) (2026-08-06)
+
+### Bug Fixes
+
+- **migrations:** allow stable migration names when class names are minified ([#8109](https://github.com/mikro-orm/mikro-orm/issues/8109)) ([560fb4f](https://github.com/mikro-orm/mikro-orm/commit/560fb4fac46b02715cf79af14c0fcc1c6126e22b))
+
+## [7.1.10](https://github.com/mikro-orm/mikro-orm/compare/v7.1.9...v7.1.10) (2026-08-04)
+
+**Note:** Version bump only for package @mikro-orm/migrations
+
+## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
+
+**Note:** Version bump only for package @mikro-orm/migrations
+
+## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
+
+### Bug Fixes
+
+- **migrations:** respect `skipTables`/`skipViews` when rewriting the snapshot ([#8038](https://github.com/mikro-orm/mikro-orm/issues/8038)) ([08e5801](https://github.com/mikro-orm/mikro-orm/commit/08e580114bdb61bc57cb8d8517110b06f83eabd5)), closes [#8037](https://github.com/mikro-orm/mikro-orm/issues/8037)
+- **migrations:** store the create snapshot in the resolved migrations folder ([#8027](https://github.com/mikro-orm/mikro-orm/issues/8027)) ([d7a9ea8](https://github.com/mikro-orm/mikro-orm/commit/d7a9ea81a6be5a650201cd80774b4d1489508fae)), closes [#8024](https://github.com/mikro-orm/mikro-orm/issues/8024)
+
+## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
+
+**Note:** Version bump only for package @mikro-orm/migrations
+
 ## [7.1.6](https://github.com/mikro-orm/mikro-orm/compare/v7.1.5...v7.1.6) (2026-07-13)
 
 **Note:** Version bump only for package @mikro-orm/migrations

@@ -465,7 +465,7 @@ test('ensureTable when the schema does not exist', async () => {
     `if (schema_id('custom2') is null) begin exec ('create schema [custom2] authorization [dbo]') end`,
   );
   expect(mock.mock.calls[3][0]).toMatch(
-    `create table [custom2].[mikro_orm_migrations] ([id] int identity(1,1) not null primary key, [name] varchar(255) not null, [executed_at] datetime2(7) not null constraint [mikro_orm_migrations_executed_at_default] default current_timestamp)`,
+    `create table [custom2].[mikro_orm_migrations] ([id] int identity(1,1) not null constraint [mikro_orm_migrations_pkey] primary key, [name] varchar(255) not null, [executed_at] datetime2(7) not null constraint [mikro_orm_migrations_executed_at_default] default current_timestamp)`,
   );
   await orm.close();
 });

@@ -1,6 +1,5 @@
 import { MikroORM } from '@mikro-orm/mysql';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
-import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 let orm: MikroORM;
 

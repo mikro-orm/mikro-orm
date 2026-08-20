@@ -12,6 +12,9 @@ export type Query = string | NativeQueryBuilder | RawQueryFragment;
 
 /** Base class for SQL database migrations. Extend this class and implement `up()` (and optionally `down()`). */
 export abstract class Migration {
+  /** Stable migration name, used instead of the class name (which minifiers can mangle). */
+  name?: string;
+
   readonly #queries: Query[] = [];
   protected ctx?: Transaction;
   #em?: EntityManager;

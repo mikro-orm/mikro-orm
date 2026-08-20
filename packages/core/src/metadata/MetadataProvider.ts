@@ -121,7 +121,7 @@ export class MetadataProvider {
       return undefined;
     }
 
-    const cache = meta.path && this.config.getMetadataCacheAdapter().get(this.getCacheKey(meta));
+    const cache = meta.path && this.config.getMetadataCacheAdapter().get(this.getCacheKey(meta), meta.path);
 
     if (cache) {
       this.loadFromCache(meta as EntityMetadata<T>, cache);

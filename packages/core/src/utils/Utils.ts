@@ -18,6 +18,19 @@ import { Collection } from '../entity/Collection.js';
 import { EntityHelper } from '../entity/EntityHelper.js';
 import { Raw, isRaw, type RawQueryFragmentSymbol } from './RawQueryFragment.js';
 
+/**
+ * List of property names that could lead to prototype pollution vulnerabilities.
+ * These names should never be used as entity property names because they could
+ * allow malicious code to modify object prototypes when property values are assigned.
+ *
+ * - `__proto__`: Could modify the prototype chain
+ * - `constructor`: Could modify the constructor property
+ * - `prototype`: Could modify the prototype object
+ *
+ * @internal
+ */
+export const DANGEROUS_PROPERTY_NAMES: readonly string[] = ['__proto__', 'constructor', 'prototype'];
+
 function compareConstructors(a: any, b: any) {
   if (a.constructor === b.constructor) {
     return true;
@@ -266,9 +279,13 @@ export class Utils {
   /**
    * Gets array without duplicates.
    */
-  static unique<T = string>(items: T[]): T[] {
+  static unique<T = string>(items: T[], equals?: (a: T, b: T) => boolean): T[] {
     if (items.length < 2) {
       return items;
+    }
+
+    if (equals) {
+      return items.filter((a, idx) => items.findIndex(b => equals(a, b)) === idx);
     }
 
     return [...new Set(items)];
@@ -300,7 +317,7 @@ export class Utils {
 
     if (Utils.isObject(target) && Utils.isPlainObject(source)) {
       for (const [key, value] of Object.entries(source)) {
-        if (['__proto__', 'constructor', 'prototype'].includes(key)) {
+        if (DANGEROUS_PROPERTY_NAMES.includes(key)) {
           continue;
         }
 
@@ -509,7 +526,8 @@ export class Utils {
     let pks = this.getCompositeKeyValue(data, meta, convertCustomTypes, platform);
 
     if (flat) {
-      pks = Utils.flatten(pks as unknown[][]) as Primary<T>;
+      // deep flatten, nested composite PKs produce nested arrays that would be comma-joined by the hash
+      pks = Utils.flatten(pks as unknown[][], true) as Primary<T>;
     }
 
     return Utils.getPrimaryKeyHash(pks as string[]);
@@ -589,7 +607,9 @@ export class Utils {
 
   static getPrimaryKeyCond<T>(entity: T, primaryKeys: EntityKey<T>[]): Record<string, Primary<T>> | null {
     const cond = primaryKeys.reduce((o, pk) => {
-      o[pk] = Utils.extractPK(entity[pk]);
+      const value = entity[pk];
+      // FKs pointing to a composite PK are arrays, which `extractPK` rejects
+      o[pk] = Utils.isPrimaryKey(value, true) ? value : Utils.extractPK(value);
       return o;
     }, {} as any);
 

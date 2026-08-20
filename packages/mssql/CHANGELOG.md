@@ -3,6 +3,42 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.12](https://github.com/mikro-orm/mikro-orm/compare/v7.1.11...v7.1.12) (2026-08-17)
+
+**Note:** Version bump only for package @mikro-orm/mssql
+
+## [7.1.11](https://github.com/mikro-orm/mikro-orm/compare/v7.1.10...v7.1.11) (2026-08-06)
+
+**Note:** Version bump only for package @mikro-orm/mssql
+
+## [7.1.10](https://github.com/mikro-orm/mikro-orm/compare/v7.1.9...v7.1.10) (2026-08-04)
+
+### Bug Fixes
+
+- **mssql:** support predictable primary key names ([#8095](https://github.com/mikro-orm/mikro-orm/issues/8095)) ([b16daec](https://github.com/mikro-orm/mikro-orm/commit/b16daec207a72e4a922d511d13fecb172dfdd957))
+
+## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
+
+### Bug Fixes
+
+- **mssql:** execute `create trigger` in its own query batch ([#8072](https://github.com/mikro-orm/mikro-orm/issues/8072)) ([5d0420e](https://github.com/mikro-orm/mikro-orm/commit/5d0420edebc27454c09bba22ea7baf637d7c70e0))
+- **mssql:** manage table and column comments via extended properties ([#8076](https://github.com/mikro-orm/mikro-orm/issues/8076)) ([d579f04](https://github.com/mikro-orm/mikro-orm/commit/d579f04aaf969c876d4630aab1369e369ad1807e))
+- **sql:** normalize trigger bodies when generating DDL ([#8063](https://github.com/mikro-orm/mikro-orm/issues/8063)) ([32da92f](https://github.com/mikro-orm/mikro-orm/commit/32da92ff4f0d1af47db62a30e82cc4a0d6117839)), closes [#8061](https://github.com/mikro-orm/mikro-orm/issues/8061)
+
+## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
+
+### Bug Fixes
+
+- **sql:** order introspection queries so generated schema diffs are stable ([#8031](https://github.com/mikro-orm/mikro-orm/issues/8031)) ([25d956b](https://github.com/mikro-orm/mikro-orm/commit/25d956b3284ff40e3d7c5fd2bf527f5521f5d2ae))
+
+## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
+
+### Bug Fixes
+
+- **mssql:** map FK, CHECK, PK/unique, deadlock and lock-timeout errors to driver exceptions ([#7959](https://github.com/mikro-orm/mikro-orm/issues/7959)) ([adc52fc](https://github.com/mikro-orm/mikro-orm/commit/adc52fced854c89b6f6496b4c356f1910379d0c3))
+- **mssql:** retry create database when the model database is locked ([#7985](https://github.com/mikro-orm/mikro-orm/issues/7985)) ([f528107](https://github.com/mikro-orm/mikro-orm/commit/f52810710c9fdea1d3e10cfcc80f9c12257edeb0))
+- **sql:** validate order by direction against known values ([#7996](https://github.com/mikro-orm/mikro-orm/issues/7996)) ([3aba926](https://github.com/mikro-orm/mikro-orm/commit/3aba926fd07156f5e1ebf06294fd77ee1215bad5))
+
 ## [7.1.6](https://github.com/mikro-orm/mikro-orm/compare/v7.1.5...v7.1.6) (2026-07-13)
 
 **Note:** Version bump only for package @mikro-orm/mssql

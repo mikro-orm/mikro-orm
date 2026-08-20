@@ -1,6 +1,9 @@
 import { type ClearDatabaseOptions, type DropSchemaOptions, type MikroORM, SchemaGenerator } from '@mikro-orm/sql';
 import type { MsSqlDriver } from './MsSqlDriver.js';
 
+/** MSSQL rejects these unless they are the first statement in a query batch. */
+const BATCH_FIRST_STATEMENT = /^create\s+(or\s+alter\s+)?(trigger|view|proc(edure)?|function|schema)\b/i;
+
 /** Schema generator with MSSQL-specific behavior for clearing and dropping schemas. */
 export class MsSqlSchemaGenerator extends SchemaGenerator {
   static override register(orm: MikroORM<MsSqlDriver>): void {
@@ -47,5 +50,9 @@ export class MsSqlSchemaGenerator extends SchemaGenerator {
 
   override async getDropSchemaSQL(options: Omit<DropSchemaOptions, 'dropDb'> = {}): Promise<string> {
     return super.getDropSchemaSQL({ dropForeignKeys: true, ...options });
+  }
+
+  protected override startsBatch(statement: string): boolean {
+    return BATCH_FIRST_STATEMENT.test(statement);
   }
 }

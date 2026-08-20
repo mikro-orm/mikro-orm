@@ -1,4 +1,4 @@
-import { DatabaseSchema, EntitySchema, MikroORM, MySqlDriver } from '@mikro-orm/mysql';
+import { EntitySchema, MikroORM } from '@mikro-orm/mysql';
 import { Entity, PrimaryKey, Property, Trigger, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Trigger({

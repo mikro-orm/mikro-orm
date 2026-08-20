@@ -31,6 +31,7 @@ import type { ObjectId } from 'bson';
 import type {
   AutoPath,
   EntityData,
+  EntityDataProp,
   EntityDTO,
   FilterQuery,
   FilterValue,
@@ -40,6 +41,7 @@ import type {
   Primary,
   PrimaryKeyProp,
   ExpandQuery,
+  RequiredEntityDataProp,
   RequiredNullable,
 } from '../packages/core/src/typings.js';
 import type { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql/index.js';
@@ -547,6 +549,30 @@ describe('check typings', () => {
     }
     // @ts-expect-error name requires a string, not a number
     const r6: RequiredEntityData<RowTyped> = { name: 123 };
+  });
+
+  test('enum array property accepts a plain array regardless of convertCustomTypes (GH #8166)', async () => {
+    enum Colour {
+      Red = 'Red',
+      Green = 'Green',
+      Blue = 'Blue',
+    }
+
+    class Thing {
+      id!: number;
+      colours: Colour[] | null = null;
+    }
+
+    // the array branch must not distribute over enum members (`Colour.Red[] | Colour.Green[] | ...`)
+    assert<IsAssignable<EntityDataProp<Colour[], true>, Colour[]>>(true);
+    assert<IsAssignable<EntityDataProp<Colour[], false>, Colour[]>>(true);
+    assert<IsAssignable<RequiredEntityDataProp<Colour[], Thing, true>, Colour[]>>(true);
+    assert<IsAssignable<RequiredEntityDataProp<Colour[], Thing, false>, Colour[]>>(true);
+
+    const dto = {} as { colours?: Colour[] | null };
+    const d1: EntityData<Thing, false> = dto;
+    const d2: EntityData<Thing, true> = dto;
+    const d3: RequiredEntityData<Thing, never, true> = { id: 1, colours: [Colour.Red, Colour.Green] };
   });
 
   test('FilterQuery ok assignments', async () => {

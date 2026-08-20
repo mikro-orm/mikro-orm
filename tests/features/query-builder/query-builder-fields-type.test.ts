@@ -7,7 +7,7 @@ import {
   type SerializeDTO,
   type Dictionary,
 } from '@mikro-orm/mysql';
-import { Author2, Book2, Publisher2 } from '../../entities-sql/index.js';
+import { Author2, Book2 } from '../../entities-sql/index.js';
 import { initORMMySql } from '../../bootstrap.js';
 import { expectTypeOf } from 'vitest';
 import type { ModifyFields } from '@mikro-orm/sql';
@@ -247,6 +247,102 @@ describe('QueryBuilder Fields type tracking', () => {
       const qb = orm.em.createQueryBuilder(Author2, 'a').select('*');
       // @ts-expect-error 'invalid' is not a valid field of Book2
       qb.innerJoinAndSelect('a.books', 'b', {}, ['invalid']);
+    });
+  });
+
+  describe('join methods return type', () => {
+    test('join should preserve fields', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('a.id').join('a.books', 'b');
+      const result = await qb.getResultList();
+      type Element = (typeof result)[number];
+      expectTypeOf<Element>().toHaveProperty('id');
+      expectTypeOf<Element>().not.toHaveProperty('name');
+    });
+
+    test('leftJoin should preserve fields', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('a.id').leftJoin('a.books', 'b');
+      const result = await qb.getResultList();
+      type Element = (typeof result)[number];
+      expectTypeOf<Element>().toHaveProperty('id');
+      expectTypeOf<Element>().not.toHaveProperty('name');
+    });
+
+    test('innerJoin should preserve fields', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('a.id').innerJoin('a.books', 'b');
+      const result = await qb.getResultList();
+      type Element = (typeof result)[number];
+      expectTypeOf<Element>().toHaveProperty('id');
+      expectTypeOf<Element>().not.toHaveProperty('name');
+    });
+
+    test('leftJoinLateral should preserve fields', async () => {
+      const qb1 = orm.em.createQueryBuilder(Book2, 'b').limit(1).orderBy({ title: 1 });
+      const qb2 = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select('a.id')
+        .leftJoinLateral(qb1, 'sub', { author_id: sql.ref('a.id') });
+      const result = await qb2.getResultList();
+      type Element = (typeof result)[number];
+      expectTypeOf<Element>().toHaveProperty('id');
+      expectTypeOf<Element>().not.toHaveProperty('name');
+    });
+
+    test('innerJoinLateral should preserve fields', async () => {
+      const qb1 = orm.em.createQueryBuilder(Book2, 'b').limit(1).orderBy({ title: 1 });
+      const qb2 = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select('a.id')
+        .innerJoinLateral(qb1, 'sub', { author_id: sql.ref('a.id') });
+      const result = await qb2.getResultList();
+      type Element = (typeof result)[number];
+      expectTypeOf<Element>().toHaveProperty('id');
+      expectTypeOf<Element>().not.toHaveProperty('name');
+    });
+  });
+
+  describe('from() method return type', () => {
+    test('from() should preserve fields', async () => {
+      const sub = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select(['a.id', 'a.name'])
+        .where({ age: { $gte: 50 } });
+      const qb = orm.em.createQueryBuilder(Author2).with('older', sub).select('id').from('older', 'o');
+      const result = await qb.getResultList();
+      type Element = (typeof result)[number];
+      expectTypeOf<Element>().toHaveProperty('id');
+      expectTypeOf<Element>().not.toHaveProperty('name');
+    });
+  });
+
+  describe('union methods return type', () => {
+    test('union should preserve fields', async () => {
+      const qb1 = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select('a.id')
+        .where({ age: { $gte: 50 } });
+      const qb2 = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select('a.id')
+        .where({ age: { $lt: 20 } });
+      const result = await qb1.union(qb2).getResultList();
+      type Element = (typeof result)[number];
+      expectTypeOf<Element>().toHaveProperty('id');
+      expectTypeOf<Element>().not.toHaveProperty('name');
+    });
+
+    test('unionAll should preserve fields', async () => {
+      const qb1 = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select('a.id')
+        .where({ age: { $gte: 50 } });
+      const qb2 = orm.em
+        .createQueryBuilder(Author2, 'a')
+        .select('a.id')
+        .where({ age: { $lt: 20 } });
+      const result = await qb1.unionAll(qb2).getResultList();
+      type Element = (typeof result)[number];
+      expectTypeOf<Element>().toHaveProperty('id');
+      expectTypeOf<Element>().not.toHaveProperty('name');
     });
   });
 

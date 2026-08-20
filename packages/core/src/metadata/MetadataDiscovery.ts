@@ -17,7 +17,7 @@ import { MetadataProvider } from './MetadataProvider.js';
 import type { NamingStrategy } from '../naming-strategy/NamingStrategy.js';
 import { MetadataStorage } from './MetadataStorage.js';
 import { EntitySchema } from './EntitySchema.js';
-import { Cascade, type EventType, ReferenceKind } from '../enums.js';
+import { Cascade, ReferenceKind } from '../enums.js';
 import { MetadataError } from '../errors.js';
 import type { Platform } from '../platforms/Platform.js';
 import { t, Type } from '../types/index.js';
@@ -278,6 +278,13 @@ export class MetadataDiscovery {
         .replace(/\[]$/, '') // remove array suffix
         .replace(/\((.*)\)/, '$1'); // unwrap union types
 
+    // Names can be ambiguous when a minifier mangles two classes to the same name,
+    // so class references also need to be checked by identity.
+    const discoveredByIdentity = (target: unknown) => {
+      const cls = EntitySchema.is(target) ? target.meta.class : target;
+      return typeof cls !== 'function' || this.#discovered.some(m => m.class === cls);
+    };
+
     const missing: EntityClass[] = [];
     this.#discovered.forEach(meta =>
       Object.values(meta.properties).forEach(prop => {
@@ -288,7 +295,7 @@ export class MetadataDiscovery {
               ? (pivotEntity as () => EntityClass)()
               : pivotEntity;
 
-          if (!this.#discovered.find(m => m.className === Utils.className(target))) {
+          if (!this.#discovered.find(m => m.className === Utils.className(target)) || !discoveredByIdentity(target)) {
             missing.push(target);
           }
         }
@@ -299,7 +306,8 @@ export class MetadataDiscovery {
           if (
             !unwrap(prop.type)
               .split(/ ?\| ?/)
-              .every(type => this.#discovered.find(m => m.className === type))
+              .every(type => this.#discovered.find(m => m.className === type)) ||
+            !Utils.asArray(target as EntityClass).every(discoveredByIdentity)
           ) {
             missing.push(...Utils.asArray(target as EntityClass));
           }
@@ -362,10 +370,12 @@ export class MetadataDiscovery {
 
       parent = Object.getPrototypeOf(meta.class);
 
-      // Skip if parent is the auto-generated base class for the same entity (from setClass usage)
+      // Skip if parent is the auto-generated base class for the same entity (from setClass usage).
+      // A parent carrying its own decorator metadata is a real base class even when a minifier
+      // mangles it to the same name as the child.
       if (
         parent.name !== '' &&
-        parent.name !== meta.className &&
+        (parent.name !== meta.className || Object.hasOwn(parent, MetadataStorage.META_SYMBOL)) &&
         !this.#metadata.has(parent) &&
         parent !== BaseEntity
       ) {
@@ -397,9 +407,7 @@ export class MetadataDiscovery {
     }
   }
 
-  private getSchema<T>(
-    entity: (EntityClass<T> & { [MetadataStorage.PATH_SYMBOL]?: string }) | EntitySchema<T>,
-  ): EntitySchema<T> {
+  private getSchema<T>(entity: EntityClass<T> | EntitySchema<T>): EntitySchema<T> {
     if (EntitySchema.REGISTRY.has(entity)) {
       entity = EntitySchema.REGISTRY.get(entity)!;
     }
@@ -410,11 +418,19 @@ export class MetadataDiscovery {
     }
 
     // After the EntitySchema check, entity must be an EntityClass
-    const cls = entity as EntityClass<T> & { [MetadataStorage.PATH_SYMBOL]?: string };
+    const cls = entity as EntityClass<T> & {
+      [MetadataStorage.PATH_SYMBOL]?: string;
+      [MetadataStorage.META_SYMBOL]?: EntityMetadata<T>;
+    };
     const path = cls[MetadataStorage.PATH_SYMBOL];
 
     if (path) {
-      const meta = Utils.copy(MetadataStorage.getMetadata(cls.name, path), false);
+      // Prefer the metadata stored on the class reference, the `className-path` key can
+      // collide when a minifier mangles two classes to the same name.
+      const stored = Object.hasOwn(cls, MetadataStorage.META_SYMBOL)
+        ? cls[MetadataStorage.META_SYMBOL]!
+        : MetadataStorage.getMetadata<T>(cls.name, path);
+      const meta = Utils.copy(stored, false);
       meta.path = path;
       this.#metadata.set(cls, meta);
     }
@@ -575,12 +591,15 @@ export class MetadataDiscovery {
   private initManyToOneFieldName(prop: EntityProperty, name: string): string[] {
     const meta2 = prop.targetMeta!;
     const ret: string[] = [];
+    // with `targetKey` on a composite PK target, derive the FK field name from that property
+    // instead of the PKs (simple PK targets keep the PK based naming for backwards compatibility)
+    const referencedKeys = prop.targetKey && meta2.compositePK ? [prop.targetKey] : meta2.primaryKeys;
 
-    for (const primaryKey of meta2.primaryKeys) {
-      this.initFieldName(meta2.properties[primaryKey]);
+    for (const referencedKey of referencedKeys) {
+      this.initFieldName(meta2.properties[referencedKey]);
 
-      for (const fieldName of meta2.properties[primaryKey].fieldNames) {
-        ret.push(this.#namingStrategy.joinKeyColumnName(name, fieldName, meta2.compositePK));
+      for (const fieldName of meta2.properties[referencedKey].fieldNames) {
+        ret.push(this.#namingStrategy.joinKeyColumnName(name, fieldName, !prop.targetKey && meta2.compositePK));
       }
     }
 
@@ -1090,7 +1109,7 @@ export class MetadataDiscovery {
       discriminatorColumn,
       [this.#platform.getVarcharTypeDeclarationSQL(prop)],
       [discriminatorColumn],
-      { type: 'string', primary: !isCompositePK, nullable: false },
+      { type: 'string', primary: !prop.fixedOrder, nullable: false },
     );
     this.initFieldName(discriminatorProp);
     pivotMeta.properties[discriminatorColumn] = discriminatorProp;
@@ -1116,7 +1135,7 @@ export class MetadataDiscovery {
         prop.discriminator!,
         columnTypes,
         [...prop.joinColumns],
-        { type: meta.className, primary: true, nullable: false },
+        { type: meta.className, primary: !prop.fixedOrder, nullable: false },
       );
     }
 
@@ -1167,7 +1186,7 @@ export class MetadataDiscovery {
       discriminatorColumn,
       [this.#platform.getVarcharTypeDeclarationSQL(prop)],
       [discriminatorColumn],
-      { type: 'string', primary: true, nullable: false },
+      { type: 'string', primary: !prop.fixedOrder, nullable: false },
     );
     this.initFieldName(discriminatorProp);
     pivotMeta.properties[discriminatorColumn] = discriminatorProp;
@@ -1177,7 +1196,7 @@ export class MetadataDiscovery {
       prop.discriminator!,
       firstTargetColumnTypes,
       [...prop.inverseJoinColumns],
-      { type: targets[0].className, primary: true, nullable: false },
+      { type: targets[0].className, primary: !prop.fixedOrder, nullable: false },
     );
 
     pivotMeta.polymorphicDiscriminatorMap ??= {};
@@ -1374,11 +1393,12 @@ export class MetadataDiscovery {
 
     // TPT children have their own tables that don't contain the parent's columns,
     // so propagating parent indexes/uniques/checks/triggers would target missing columns.
+    // deep equality, as the subclass items might be copies of the base class ones (e.g. with TC39 decorators)
     if (meta.inheritanceType !== 'tpt' || !meta.tptParent) {
-      meta.indexes = Utils.unique([...base.indexes, ...meta.indexes]);
-      meta.uniques = Utils.unique([...base.uniques, ...meta.uniques]);
-      meta.checks = Utils.unique([...base.checks, ...meta.checks]);
-      meta.triggers = Utils.unique([...base.triggers, ...meta.triggers]);
+      meta.indexes = Utils.unique([...base.indexes, ...meta.indexes], Utils.equals);
+      meta.uniques = Utils.unique([...base.uniques, ...meta.uniques], Utils.equals);
+      meta.checks = Utils.unique([...base.checks, ...meta.checks], Utils.equals);
+      meta.triggers = Utils.unique([...base.triggers, ...meta.triggers], Utils.equals);
     }
     const pks = Object.values(meta.properties)
       .filter(p => p.primary)
@@ -1568,7 +1588,12 @@ export class MetadataDiscovery {
     }
 
     visited.add(embeddedProp);
-    const embeddable = this.#discovered.find(m => m.name === embeddedProp.type);
+    // Prefer resolution via the class reference, the name can be ambiguous when a minifier
+    // mangles two classes to the same name. Only named metadata counts, an auto-discovered
+    // class without the `@Embeddable()` decorator should still fail as unknown below.
+    const embeddable =
+      this.#discovered.find(m => m.name && m.class === embeddedProp.target) ??
+      this.#discovered.find(m => m.name === embeddedProp.type);
 
     if (!embeddable) {
       throw MetadataError.fromUnknownEntity(embeddedProp.type, `${meta.className}.${embeddedProp.name}`);
@@ -2143,6 +2168,10 @@ export class MetadataDiscovery {
           continue;
         }
 
+        if (prop.customType instanceof t.json || ['json', 'jsonb'].includes(prop.columnTypes?.[0])) {
+          continue;
+        }
+
         this.initFieldName(prop);
         let expression: string | null = null;
 
@@ -2649,6 +2678,7 @@ export class MetadataDiscovery {
 
       if (!targetMeta.compositePK || prop.targetKey) {
         prop.customType = referencedProp.customType;
+        prop.collation ??= referencedProp.collation;
       }
     }
   }

@@ -639,6 +639,40 @@ describe('InferKyselyDB', () => {
       lives: number;
     }>();
   });
+
+  test('infer columns with a default value as Generated (GH #8113)', () => {
+    const Probe = defineEntity({
+      name: 'Probe8113',
+      tableName: 'probe',
+      properties: {
+        id: p.uuid().primary().defaultRaw('uuidv7()'),
+        createdAt: p.datetime().defaultRaw('now()'),
+        enabled: p.boolean().default(true),
+        disabled: p.boolean().default(false),
+        count: p.integer().default(0),
+        name: p.string(),
+      },
+    });
+
+    const orm = new MikroORM({
+      entities: [Probe],
+      dbName: ':memory:',
+    });
+
+    type DB = InferKyselyDB<typeof Probe, {}>;
+
+    expectTypeOf<DB['probe']>().toEqualTypeOf<{
+      id: Generated<string>;
+      created_at: Generated<Date>;
+      enabled: Generated<boolean>;
+      disabled: Generated<boolean>;
+      count: Generated<number>;
+      name: string;
+    }>();
+
+    const kysely = orm.em.getKysely();
+    kysely.insertInto('probe').values({ name: 'foo' });
+  });
 });
 
 describe('InferClassEntityDB', () => {

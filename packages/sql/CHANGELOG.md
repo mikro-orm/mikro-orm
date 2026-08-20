@@ -3,6 +3,80 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.12](https://github.com/mikro-orm/mikro-orm/compare/v7.1.11...v7.1.12) (2026-08-17)
+
+### Bug Fixes
+
+- **core:** do not mutate the options object provided by the caller ([#8144](https://github.com/mikro-orm/mikro-orm/issues/8144)) ([bc60f44](https://github.com/mikro-orm/mikro-orm/commit/bc60f44be58275efd401b792a4f7bfe7d10a0a28)), closes [#8143](https://github.com/mikro-orm/mikro-orm/issues/8143)
+- **postgres:** emit and diff the index access method ([#8126](https://github.com/mikro-orm/mikro-orm/issues/8126)) ([94d57e8](https://github.com/mikro-orm/mikro-orm/commit/94d57e8ad000eed93dd805a7d8531a784d55ef87)), closes [#8124](https://github.com/mikro-orm/mikro-orm/issues/8124)
+- **postgres:** flatten dollar-quoted bodies in raw trigger and routine DDL ([#8142](https://github.com/mikro-orm/mikro-orm/issues/8142)) ([5835d84](https://github.com/mikro-orm/mikro-orm/commit/5835d84c93b3115226b6231cad7ec5e7729a73d8)), closes [#8063](https://github.com/mikro-orm/mikro-orm/issues/8063) [#8062](https://github.com/mikro-orm/mikro-orm/issues/8062) [#8140](https://github.com/mikro-orm/mikro-orm/issues/8140)
+- **postgres:** keep parens balanced when stripping casts from introspected checks ([#8125](https://github.com/mikro-orm/mikro-orm/issues/8125)) ([93bf909](https://github.com/mikro-orm/mikro-orm/commit/93bf90930cf52f376ebd363e489fb9183886a71c)), closes [#8123](https://github.com/mikro-orm/mikro-orm/issues/8123)
+- **query-builder:** allow alias-prefixed keys in nested `$and`/`$or` groups ([#8147](https://github.com/mikro-orm/mikro-orm/issues/8147)) ([ac7cc91](https://github.com/mikro-orm/mikro-orm/commit/ac7cc919ba044241783b2545a9490b347614a88d)), closes [#8145](https://github.com/mikro-orm/mikro-orm/issues/8145)
+- **schema:** create foreign keys of new tables after altering existing ones ([#8151](https://github.com/mikro-orm/mikro-orm/issues/8151)) ([96ec0fa](https://github.com/mikro-orm/mikro-orm/commit/96ec0fae03f906e08c9a129569603e226618b8af)), closes [#8141](https://github.com/mikro-orm/mikro-orm/issues/8141)
+- **sql:** compare quoted decimal defaults numerically ([#8132](https://github.com/mikro-orm/mikro-orm/issues/8132)) ([2776140](https://github.com/mikro-orm/mikro-orm/commit/27761407b2ff8a8a87ed0bf9b13286bc812bd455)), closes [#8131](https://github.com/mikro-orm/mikro-orm/issues/8131)
+- **sql:** resolve TPT parent alias in JSON property conditions ([#8163](https://github.com/mikro-orm/mikro-orm/issues/8163)) ([fec54ef](https://github.com/mikro-orm/mikro-orm/commit/fec54ef0c3480c48bcb4fec5a2d841cfef9f1af5)), closes [#8162](https://github.com/mikro-orm/mikro-orm/issues/8162)
+- **sql:** support joining a table or CTE by name via sql.ref() ([#8161](https://github.com/mikro-orm/mikro-orm/issues/8161)) ([45d67be](https://github.com/mikro-orm/mikro-orm/commit/45d67bed10fb371dbbf3a266038b9b1eabf0c050)), closes [#8157](https://github.com/mikro-orm/mikro-orm/issues/8157)
+
+## [7.1.11](https://github.com/mikro-orm/mikro-orm/compare/v7.1.10...v7.1.11) (2026-08-06)
+
+### Bug Fixes
+
+- **entity-generator:** emit check constraints in generated entities ([#8121](https://github.com/mikro-orm/mikro-orm/issues/8121)) ([5f56d24](https://github.com/mikro-orm/mikro-orm/commit/5f56d24e84e96b6ffa9ebde0255ec7a029e0b278)), closes [#8114](https://github.com/mikro-orm/mikro-orm/issues/8114)
+- **entity-generator:** keep index column order when columns map to relations ([#8119](https://github.com/mikro-orm/mikro-orm/issues/8119)) ([c3c0601](https://github.com/mikro-orm/mikro-orm/commit/c3c06010d1af4097d21470293f962aa7a1bb498f)), closes [#8116](https://github.com/mikro-orm/mikro-orm/issues/8116)
+- **entity-generator:** preserve advanced options of single-column indexes ([#8122](https://github.com/mikro-orm/mikro-orm/issues/8122)) ([e589ed4](https://github.com/mikro-orm/mikro-orm/commit/e589ed425d64bad01212a2f141be579a45ed9cab)), closes [#8118](https://github.com/mikro-orm/mikro-orm/issues/8118) [#8118](https://github.com/mikro-orm/mikro-orm/issues/8118)
+- **entity-generator:** preserve the where clause of partial indexes ([#8118](https://github.com/mikro-orm/mikro-orm/issues/8118)) ([fdaa9a8](https://github.com/mikro-orm/mikro-orm/commit/fdaa9a88a09ee8b316a4d74ca816a63b54e4ab3a)), closes [#8115](https://github.com/mikro-orm/mikro-orm/issues/8115)
+- **sql:** infer columns with a default value as kysely `Generated` ([#8117](https://github.com/mikro-orm/mikro-orm/issues/8117)) ([29f074f](https://github.com/mikro-orm/mikro-orm/commit/29f074f26dcd0390f2c138a59d253cdb36e3319d)), closes [#8113](https://github.com/mikro-orm/mikro-orm/issues/8113)
+
+## [7.1.10](https://github.com/mikro-orm/mikro-orm/compare/v7.1.9...v7.1.10) (2026-08-04)
+
+### Bug Fixes
+
+- **core:** prevent hash collisions for nested composite keys ([#8088](https://github.com/mikro-orm/mikro-orm/issues/8088)) ([7fef7ee](https://github.com/mikro-orm/mikro-orm/commit/7fef7ee9a4adaebb85318314fbd9aba7443c079c))
+- **mssql:** support predictable primary key names ([#8095](https://github.com/mikro-orm/mikro-orm/issues/8095)) ([b16daec](https://github.com/mikro-orm/mikro-orm/commit/b16daec207a72e4a922d511d13fecb172dfdd957))
+- **sql:** nest joins referenced by `on` conditions instead of only newly added ones ([#8101](https://github.com/mikro-orm/mikro-orm/issues/8101)) ([d137965](https://github.com/mikro-orm/mikro-orm/commit/d137965922932b9ba6ffc6b52083fb79e4f5fde3)), closes [#8100](https://github.com/mikro-orm/mikro-orm/issues/8100) [7681/#8091](https://github.com/mikro-orm/mikro-orm/issues/8091) [#8100](https://github.com/mikro-orm/mikro-orm/issues/8100) [#8099](https://github.com/mikro-orm/mikro-orm/issues/8099)
+- **sql:** prevent forward join alias references when applying joined filters ([#8091](https://github.com/mikro-orm/mikro-orm/issues/8091)) ([8388010](https://github.com/mikro-orm/mikro-orm/commit/83880104c3544be02ba00649f8078c5405db61a4)), closes [#7681](https://github.com/mikro-orm/mikro-orm/issues/7681) [#8090](https://github.com/mikro-orm/mikro-orm/issues/8090)
+- **sql:** yield all rows merged from the final batch when streaming ([#8089](https://github.com/mikro-orm/mikro-orm/issues/8089)) ([989690a](https://github.com/mikro-orm/mikro-orm/commit/989690a2d2e5fcfe326972fb4d9531b2cb6c4853)), closes [#8078](https://github.com/mikro-orm/mikro-orm/issues/8078)
+
+## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
+
+### Bug Fixes
+
+- **core:** fix batch updates when the whole primary key is one relation ([#8065](https://github.com/mikro-orm/mikro-orm/issues/8065)) ([aeefa5e](https://github.com/mikro-orm/mikro-orm/commit/aeefa5e90577fa24081a64f9f8ef55d1edbf8bd2))
+- **core:** support mixed STI child types in batch updates ([#8057](https://github.com/mikro-orm/mikro-orm/issues/8057)) ([f6e5fd4](https://github.com/mikro-orm/mikro-orm/commit/f6e5fd4fac3c5b62d75ea74838c2108b1b7f126f))
+- **libsql:** stop recycling local connections every 10 seconds ([#8050](https://github.com/mikro-orm/mikro-orm/issues/8050)) ([bd2a1cf](https://github.com/mikro-orm/mikro-orm/commit/bd2a1cf06d8d0f4823e19c5d6670a8e2be837c24))
+- **mssql:** execute `create trigger` in its own query batch ([#8072](https://github.com/mikro-orm/mikro-orm/issues/8072)) ([5d0420e](https://github.com/mikro-orm/mikro-orm/commit/5d0420edebc27454c09bba22ea7baf637d7c70e0))
+- **sql:** apply column comment changes in a single schema update pass ([#8077](https://github.com/mikro-orm/mikro-orm/issues/8077)) ([c48a435](https://github.com/mikro-orm/mikro-orm/commit/c48a435d33113d66db53adf0ae9ff8c5e87c346b))
+- **sql:** apply query cancellation strategies inside transactions ([#8067](https://github.com/mikro-orm/mikro-orm/issues/8067)) ([11525e3](https://github.com/mikro-orm/mikro-orm/commit/11525e36bb0d3f13921059d64fe1c5ffe4125c36))
+- **sql:** compile an empty `$or` to an always-false predicate ([#8054](https://github.com/mikro-orm/mikro-orm/issues/8054)) ([0578108](https://github.com/mikro-orm/mikro-orm/commit/057810881d2151355770a2782bb08bd136c80209))
+- **sql:** emit valid SQL for negated and empty condition groups ([#8060](https://github.com/mikro-orm/mikro-orm/issues/8060)) ([905286b](https://github.com/mikro-orm/mikro-orm/commit/905286b53a4d9234a81f871d1c510e77c8c67e2e))
+- **sql:** include composite FK values in the pivot row hash ([#8082](https://github.com/mikro-orm/mikro-orm/issues/8082)) ([f2d5a89](https://github.com/mikro-orm/mikro-orm/commit/f2d5a896531a35a0b2a0b361047322fa06ab38bb)), closes [#8078](https://github.com/mikro-orm/mikro-orm/issues/8078) [#8078](https://github.com/mikro-orm/mikro-orm/issues/8078)
+- **sql:** keep multi line comments intact when grouping schema DDL ([#8079](https://github.com/mikro-orm/mikro-orm/issues/8079)) ([b74e332](https://github.com/mikro-orm/mikro-orm/commit/b74e33218f3961e90064e720556f24e4291eead3))
+- **sql:** keep multi line trigger bodies stable across schema updates ([#8074](https://github.com/mikro-orm/mikro-orm/issues/8074)) ([165ff59](https://github.com/mikro-orm/mikro-orm/commit/165ff591ff4233457f713a74267e173e2c1f5b8f))
+- **sql:** keep pivot rows distinct when the fixed order column is not unique ([#8078](https://github.com/mikro-orm/mikro-orm/issues/8078)) ([63a2c83](https://github.com/mikro-orm/mikro-orm/commit/63a2c8338d6b89c916cd2de5c18d7075fefcf51a)), closes [#8075](https://github.com/mikro-orm/mikro-orm/issues/8075)
+- **sql:** keep polymorphic pivot rows distinct when the fixed order column is not unique ([#8085](https://github.com/mikro-orm/mikro-orm/issues/8085)) ([20734f7](https://github.com/mikro-orm/mikro-orm/commit/20734f799da2ae784f911ec81bf9e2fce023c6d1)), closes [#8078](https://github.com/mikro-orm/mikro-orm/issues/8078)
+- **sql:** keep the original error when the rollback of a failed transaction also fails ([#8068](https://github.com/mikro-orm/mikro-orm/issues/8068)) ([7663639](https://github.com/mikro-orm/mikro-orm/commit/76636397bdff8167c1a1e8ea67d721c553a6976b))
+- **sql:** load M:N collections of owners with a nested composite PK ([#8080](https://github.com/mikro-orm/mikro-orm/issues/8080)) ([d4a5a33](https://github.com/mikro-orm/mikro-orm/commit/d4a5a33a2c3205c73ee23b96c96833d70dcc3045))
+- **sql:** load the owner side of a polymorphic M:N pivot shared by owners of different PK arity ([#8084](https://github.com/mikro-orm/mikro-orm/issues/8084)) ([6fbdcc4](https://github.com/mikro-orm/mikro-orm/commit/6fbdcc4a2bf24785bec9ff6c1a0d0305ea65e013)), closes [#8081](https://github.com/mikro-orm/mikro-orm/issues/8081)
+- **sql:** load the owner side of a polymorphic M:N with a composite PK owner ([#8081](https://github.com/mikro-orm/mikro-orm/issues/8081)) ([a38cca5](https://github.com/mikro-orm/mikro-orm/commit/a38cca50297083df5847cccd620e7f3c62583262)), closes [#8080](https://github.com/mikro-orm/mikro-orm/issues/8080)
+- **sql:** normalize implicit aggregate aliases and multi word casts ([#8058](https://github.com/mikro-orm/mikro-orm/issues/8058)) ([e90c141](https://github.com/mikro-orm/mikro-orm/commit/e90c14175f5f05509d2e028882c80f0eddd24fb3)), closes [#8055](https://github.com/mikro-orm/mikro-orm/issues/8055)
+- **sql:** normalize trigger bodies when generating DDL ([#8063](https://github.com/mikro-orm/mikro-orm/issues/8063)) ([32da92f](https://github.com/mikro-orm/mikro-orm/commit/32da92ff4f0d1af47db62a30e82cc4a0d6117839)), closes [#8061](https://github.com/mikro-orm/mikro-orm/issues/8061)
+- **sql:** pass a flat PK array when persisting M:N of a composite PK owner ([#8073](https://github.com/mikro-orm/mikro-orm/issues/8073)) ([f88d567](https://github.com/mikro-orm/mikro-orm/commit/f88d567f645a7a19e2848d2c4516b74594e3a08c))
+
+## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
+
+### Bug Fixes
+
+- **sql:** do not apply collection `where` of non-joined nested relations ([#8030](https://github.com/mikro-orm/mikro-orm/issues/8030)) ([f3d48d8](https://github.com/mikro-orm/mikro-orm/commit/f3d48d89ccb50da48039e37c2865586e830fae60)), closes [#8022](https://github.com/mikro-orm/mikro-orm/issues/8022)
+- **sql:** order introspection queries so generated schema diffs are stable ([#8031](https://github.com/mikro-orm/mikro-orm/issues/8031)) ([25d956b](https://github.com/mikro-orm/mikro-orm/commit/25d956b3284ff40e3d7c5fd2bf527f5521f5d2ae))
+- **sql:** preserve query builder field types across joins and CTEs ([#8005](https://github.com/mikro-orm/mikro-orm/issues/8005)) ([b8a5bea](https://github.com/mikro-orm/mikro-orm/commit/b8a5bea56b5786917d83eab6f31304d243283515))
+
+## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
+
+### Bug Fixes
+
+- **postgres:** make check introspection columnName deterministic ([#7992](https://github.com/mikro-orm/mikro-orm/issues/7992)) ([ab14f97](https://github.com/mikro-orm/mikro-orm/commit/ab14f9767a6bd1fe9347d5722f51515c997855e8)), closes [#7991](https://github.com/mikro-orm/mikro-orm/issues/7991)
+- **sql:** validate order by direction against known values ([#7996](https://github.com/mikro-orm/mikro-orm/issues/7996)) ([3aba926](https://github.com/mikro-orm/mikro-orm/commit/3aba926fd07156f5e1ebf06294fd77ee1215bad5))
+
 ## [7.1.6](https://github.com/mikro-orm/mikro-orm/compare/v7.1.5...v7.1.6) (2026-07-13)
 
 ### Bug Fixes

@@ -49,7 +49,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @ManyToOne({ entity: () => Cars, updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => Cars, updateRule: 'no action', deleteRule: 'no action', nullable: true })
   favorite?: Cars;
 
   @Index({ name: 'fk_users_cars_idx', invisible: true })
@@ -152,7 +152,6 @@ export const UsersSchema = new EntitySchema({
       updateRule: 'no action',
       deleteRule: 'no action',
       nullable: true,
-      index: 'fk_users_cars_idx',
     },
     favoriteCarBrand: { type: 'string', nullable: true, persist: false },
     favoriteCarYear: {
@@ -170,7 +169,6 @@ export const UsersSchema = new EntitySchema({
       updateRule: 'no action',
       deleteRule: 'no action',
       nullable: true,
-      index: 'fk_users_fashionable_colors1_idx',
     },
   },
 });
@@ -227,7 +225,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @ManyToOne({ entity: () => Cars, ref: true, updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => Cars, ref: true, updateRule: 'no action', deleteRule: 'no action', nullable: true })
   favorite?: Ref<Cars>;
 
   @Index({ name: 'fk_users_cars_idx', invisible: true })
@@ -331,7 +329,6 @@ export const UsersSchema = new EntitySchema({
       updateRule: 'no action',
       deleteRule: 'no action',
       nullable: true,
-      index: 'fk_users_cars_idx',
     },
     favoriteCarBrand: { type: 'string', nullable: true, persist: false },
     favoriteCarYear: {
@@ -350,7 +347,6 @@ export const UsersSchema = new EntitySchema({
       updateRule: 'no action',
       deleteRule: 'no action',
       nullable: true,
-      index: 'fk_users_fashionable_colors1_idx',
     },
   },
 });
@@ -415,7 +411,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @ManyToOne({ entity: () => Cars, updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => Cars, updateRule: 'no action', deleteRule: 'no action', nullable: true })
   favorite?: Cars;
 
   @Index({ name: 'fk_users_cars_idx', invisible: true })
@@ -528,7 +524,6 @@ export const UsersSchema = new EntitySchema({
       updateRule: 'no action',
       deleteRule: 'no action',
       nullable: true,
-      index: 'fk_users_cars_idx',
     },
     favoriteCarBrand: { type: 'string', nullable: true, persist: false },
     favoriteCarYear: {
@@ -546,7 +541,6 @@ export const UsersSchema = new EntitySchema({
       updateRule: 'no action',
       deleteRule: 'no action',
       nullable: true,
-      index: 'fk_users_fashionable_colors1_idx',
     },
   },
 });
@@ -611,7 +605,7 @@ export class Users {
   @PrimaryKey()
   userId!: number;
 
-  @ManyToOne({ entity: () => Cars, ref: true, updateRule: 'no action', deleteRule: 'no action', nullable: true, index: 'fk_users_cars_idx' })
+  @ManyToOne({ entity: () => Cars, ref: true, updateRule: 'no action', deleteRule: 'no action', nullable: true })
   favorite?: Ref<Cars>;
 
   @Index({ name: 'fk_users_cars_idx', invisible: true })
@@ -725,7 +719,6 @@ export const UsersSchema = new EntitySchema({
       updateRule: 'no action',
       deleteRule: 'no action',
       nullable: true,
-      index: 'fk_users_cars_idx',
     },
     favoriteCarBrand: { type: 'string', nullable: true, persist: false },
     favoriteCarYear: {
@@ -744,7 +737,6 @@ export const UsersSchema = new EntitySchema({
       updateRule: 'no action',
       deleteRule: 'no action',
       nullable: true,
-      index: 'fk_users_fashionable_colors1_idx',
     },
   },
 });

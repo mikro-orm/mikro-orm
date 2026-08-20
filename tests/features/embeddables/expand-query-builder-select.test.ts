@@ -1,4 +1,4 @@
-import { JoinType, MikroORM, Ref, sql } from '@mikro-orm/sqlite';
+import { JoinType, MikroORM, Ref } from '@mikro-orm/sqlite';
 import {
   Embeddable,
   Embedded,

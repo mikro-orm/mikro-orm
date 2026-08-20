@@ -8,6 +8,7 @@ export class TSMigrationGenerator extends MigrationGenerator {
   generateMigrationFile(className: string, diff: { up: string[]; down: string[] }): string {
     let ret = `import { Migration } from '@mikro-orm/migrations-mongodb';\n\n`;
     ret += `export class ${className} extends Migration {\n\n`;
+    ret += `  override name = '${className}';\n\n`;
     ret += `  async up(): Promise<void> {\n`;
     /* v8 ignore next */
     diff.up.forEach(sql => (ret += this.createStatement(sql, 4)));

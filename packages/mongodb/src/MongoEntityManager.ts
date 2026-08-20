@@ -72,8 +72,7 @@ export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extend
     options: CountByOptions<Entity> = {},
   ): Promise<Dictionary<number>> {
     const em = this.getContext(false) as MongoEntityManager;
-    options = { ...options };
-    em.prepareOptions(options);
+    options = em.prepareOptions(options);
     const meta = em.getMetadata().find(entityName)!;
     const fields = Utils.asArray(groupBy);
 

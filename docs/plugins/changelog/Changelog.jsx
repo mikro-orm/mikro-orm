@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Layout from '@theme/Layout';
 import styles from './styles.module.css';
 

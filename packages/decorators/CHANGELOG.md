@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.12](https://github.com/mikro-orm/mikro-orm/compare/v7.1.11...v7.1.12) (2026-08-17)
+
+**Note:** Version bump only for package @mikro-orm/decorators
+
+## [7.1.11](https://github.com/mikro-orm/mikro-orm/compare/v7.1.10...v7.1.11) (2026-08-06)
+
+### Bug Fixes
+
+- **core:** resolve entity metadata via class references instead of class names ([#8108](https://github.com/mikro-orm/mikro-orm/issues/8108)) ([d3564bf](https://github.com/mikro-orm/mikro-orm/commit/d3564bf29e4fafc2cdd9a5bd5a89bbb25f105e27)), closes [#8107](https://github.com/mikro-orm/mikro-orm/issues/8107)
+
+## [7.1.10](https://github.com/mikro-orm/mikro-orm/compare/v7.1.9...v7.1.10) (2026-08-04)
+
+**Note:** Version bump only for package @mikro-orm/decorators
+
+## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
+
+**Note:** Version bump only for package @mikro-orm/decorators
+
+## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
+
+**Note:** Version bump only for package @mikro-orm/decorators
+
+## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
+
+**Note:** Version bump only for package @mikro-orm/decorators
+
 ## [7.1.6](https://github.com/mikro-orm/mikro-orm/compare/v7.1.5...v7.1.6) (2026-07-13)
 
 ### Bug Fixes

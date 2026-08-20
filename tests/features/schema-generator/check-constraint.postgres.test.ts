@@ -24,6 +24,28 @@ class FooEntity extends Base {
   email!: string;
 }
 
+@Entity()
+@Check({ name: 'bounds_sample_bounds_check', expression: 'col_a + col_b + col_c + col_d + col_e > 0' })
+class BoundsSample {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  colA!: number;
+
+  @Property()
+  colB!: number;
+
+  @Property()
+  colC!: number;
+
+  @Property()
+  colD!: number;
+
+  @Property()
+  colE!: number;
+}
+
 describe('check constraint [postgres]', () => {
   test('check constraint is generated for decorator [postgres]', async () => {
     const orm = await MikroORM.init({
@@ -334,6 +356,29 @@ describe('check constraint [postgres]', () => {
     await orm.close();
   });
 
+  test('multi-column check introspection has deterministic columnName [postgres]', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [BoundsSample],
+      dbName: 'mikro_orm_test_check_7991',
+      pool: { min: 1, max: 1 },
+    });
+    await orm.schema.refresh();
+
+    // `constraint_column_usage` yields one row per referenced column and only the first one is kept —
+    // `enable_sort = off` makes the view's DISTINCT hash-based, so ties stop being alphabetical by accident.
+    await orm.em.getConnection().execute('set enable_sort = off');
+    const schema = await DatabaseSchema.create(orm.em.getConnection(), orm.em.getPlatform(), orm.config);
+    const check = schema
+      .getTable('bounds_sample')!
+      .getChecks()
+      .find(c => c.name === 'bounds_sample_bounds_check');
+    expect(check?.columnName).toBe('col_a');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
   test('check constraint with bare boolean CASE expression does not cause drift [postgres]', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();
@@ -364,6 +409,43 @@ describe('check constraint [postgres]', () => {
     expect(diff).not.toBe('');
     await orm.schema.execute(diff);
 
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
+  test('multi-term check on a castable column keeps parentheses balanced on introspection [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.schema.update();
+
+    // pg stores this check as `CHECK (((code IS NULL) OR ((code)::text ~ '^[a-z]+$'::text)))` — the
+    // cast-stripping in getAllChecks() must not pair parens across term boundaries, otherwise the
+    // recovered expression is unbalanced and re-emitting it as DDL is a syntax error.
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+        code: { type: 'string', name: 'code', fieldName: 'code', columnType: 'varchar(255)', nullable: true },
+      },
+      name: 'MultiTermCheckTable',
+      tableName: 'multi_term_check_table',
+      checks: [{ name: 'chk_code', expression: `code IS NULL OR code ~ '^[a-z]+$'` }],
+    }).init().meta;
+    meta.set(newTableMeta.class, newTableMeta);
+
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    await orm.schema.execute(diff);
+
+    const schema = await DatabaseSchema.create(orm.em.getConnection(), orm.em.getPlatform(), orm.config);
+    const check = schema
+      .getTable('multi_term_check_table')!
+      .getChecks()
+      .find(c => c.name === 'chk_code');
+    expect(check?.expression).toBe(`(code IS NULL) OR (code ~ '^[a-z]+$'::text)`);
+
+    // the recovered expression must also round-trip through the comparator without drift
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toBe('');
 

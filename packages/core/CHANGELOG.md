@@ -3,6 +3,63 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.12](https://github.com/mikro-orm/mikro-orm/compare/v7.1.11...v7.1.12) (2026-08-17)
+
+### Bug Fixes
+
+- **core:** do not mutate caller-provided options in `merge`, `create`, `getReference` and `fork` ([#8150](https://github.com/mikro-orm/mikro-orm/issues/8150)) ([8f3ea3f](https://github.com/mikro-orm/mikro-orm/commit/8f3ea3feeaf2b1c8356803745152db0dba5add52)), closes [#8144](https://github.com/mikro-orm/mikro-orm/issues/8144) [#8143](https://github.com/mikro-orm/mikro-orm/issues/8143)
+- **core:** do not mutate the options object provided by the caller ([#8144](https://github.com/mikro-orm/mikro-orm/issues/8144)) ([bc60f44](https://github.com/mikro-orm/mikro-orm/commit/bc60f44be58275efd401b792a4f7bfe7d10a0a28)), closes [#8143](https://github.com/mikro-orm/mikro-orm/issues/8143)
+- **core:** use own-property checks in populate hints, canPopulate, and filter options ([#8164](https://github.com/mikro-orm/mikro-orm/issues/8164)) ([fdf9f50](https://github.com/mikro-orm/mikro-orm/commit/fdf9f5011f64e79c153439f994ecada5cfba55d9))
+
+## [7.1.11](https://github.com/mikro-orm/mikro-orm/compare/v7.1.10...v7.1.11) (2026-08-06)
+
+### Bug Fixes
+
+- **core:** ignore metadata cache entries cached from a different source file ([#8111](https://github.com/mikro-orm/mikro-orm/issues/8111)) ([f53ab65](https://github.com/mikro-orm/mikro-orm/commit/f53ab65c39c26dc8e79beee4ab33cf4ac66b1676)), closes [#8107](https://github.com/mikro-orm/mikro-orm/issues/8107)
+- **core:** ignore own `__proto__` key when cloning objects ([#8120](https://github.com/mikro-orm/mikro-orm/issues/8120)) ([e09c881](https://github.com/mikro-orm/mikro-orm/commit/e09c8814a660097a60d011d75c69efb060077a58))
+- **core:** resolve entity metadata via class references instead of class names ([#8108](https://github.com/mikro-orm/mikro-orm/issues/8108)) ([d3564bf](https://github.com/mikro-orm/mikro-orm/commit/d3564bf29e4fafc2cdd9a5bd5a89bbb25f105e27)), closes [#8107](https://github.com/mikro-orm/mikro-orm/issues/8107)
+- **migrations:** allow stable migration names when class names are minified ([#8109](https://github.com/mikro-orm/mikro-orm/issues/8109)) ([560fb4f](https://github.com/mikro-orm/mikro-orm/commit/560fb4fac46b02715cf79af14c0fcc1c6126e22b))
+
+## [7.1.10](https://github.com/mikro-orm/mikro-orm/compare/v7.1.9...v7.1.10) (2026-08-04)
+
+### Bug Fixes
+
+- **core:** duck-type `Routine.is()` to survive the CJS/ESM dual-package hazard ([#8094](https://github.com/mikro-orm/mikro-orm/issues/8094)) ([59df822](https://github.com/mikro-orm/mikro-orm/commit/59df82261cab79649314ae597fbd00000bf9bd7f)), closes [#7289](https://github.com/mikro-orm/mikro-orm/issues/7289) [#8092](https://github.com/mikro-orm/mikro-orm/issues/8092)
+- **core:** map cursor offsets based on property types ([#8097](https://github.com/mikro-orm/mikro-orm/issues/8097)) ([231ff06](https://github.com/mikro-orm/mikro-orm/commit/231ff06df5052c0e8235dda1b705710a2b81aff3))
+- **core:** prevent hash collisions for nested composite keys ([#8088](https://github.com/mikro-orm/mikro-orm/issues/8088)) ([7fef7ee](https://github.com/mikro-orm/mikro-orm/commit/7fef7ee9a4adaebb85318314fbd9aba7443c079c))
+- **mongo:** support cursor pagination ordered by date inside object embeddable ([#8102](https://github.com/mikro-orm/mikro-orm/issues/8102)) ([d3bb418](https://github.com/mikro-orm/mikro-orm/commit/d3bb41839fb8a991c3eb5cdd8a2ec27131f02e62)), closes [#8097](https://github.com/mikro-orm/mikro-orm/issues/8097)
+
+## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
+
+### Bug Fixes
+
+- **core:** fix batch updates when the whole primary key is one relation ([#8065](https://github.com/mikro-orm/mikro-orm/issues/8065)) ([aeefa5e](https://github.com/mikro-orm/mikro-orm/commit/aeefa5e90577fa24081a64f9f8ef55d1edbf8bd2))
+- **core:** keep `null` value of embedded arrays in snapshots and hydration ([#8046](https://github.com/mikro-orm/mikro-orm/issues/8046)) ([93d62bf](https://github.com/mikro-orm/mikro-orm/commit/93d62bf278b21169ade73b6448daab846634d5d0)), closes [#8045](https://github.com/mikro-orm/mikro-orm/issues/8045)
+- **core:** keep the fixed order column as the sole pivot PK for polymorphic M:N ([#8083](https://github.com/mikro-orm/mikro-orm/issues/8083)) ([3ac8b73](https://github.com/mikro-orm/mikro-orm/commit/3ac8b73ebd90dc85a414ae8f36ffddb185c71fd1))
+- **core:** map returning values back to entities after batch update ([#8056](https://github.com/mikro-orm/mikro-orm/issues/8056)) ([5895309](https://github.com/mikro-orm/mikro-orm/commit/589530926386ae962aa551465094e61307527e8b))
+- **core:** support mixed STI child types in batch updates ([#8057](https://github.com/mikro-orm/mikro-orm/issues/8057)) ([f6e5fd4](https://github.com/mikro-orm/mikro-orm/commit/f6e5fd4fac3c5b62d75ea74838c2108b1b7f126f))
+- **core:** support version and optimistic locking on nested composite keys ([#8064](https://github.com/mikro-orm/mikro-orm/issues/8064)) ([d533e76](https://github.com/mikro-orm/mikro-orm/commit/d533e76fe441ed3f06b5efcbb45407d82eb63ab8))
+- **migrations:** sanitize custom migration names into valid class identifiers ([#8053](https://github.com/mikro-orm/mikro-orm/issues/8053)) ([20a3ae2](https://github.com/mikro-orm/mikro-orm/commit/20a3ae258b2592176bc6207204aeb4f9c95b142e))
+
+## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
+
+### Bug Fixes
+
+- **core:** convert custom types when querying composite PK via array form ([#8035](https://github.com/mikro-orm/mikro-orm/issues/8035)) ([ba0c4c2](https://github.com/mikro-orm/mikro-orm/commit/ba0c4c23e9eed5ada3aa51687425543198862704))
+- **core:** don't let a partially loaded fork entity clobber the parent context ([#8036](https://github.com/mikro-orm/mikro-orm/issues/8036)) ([d3e9f1c](https://github.com/mikro-orm/mikro-orm/commit/d3e9f1c7d0e2ee6550c77683effba50d11aba913))
+- **core:** fix infinite recursion when flushing a `mapToPk` FK with value `0` ([#8004](https://github.com/mikro-orm/mikro-orm/issues/8004)) ([f01fd6f](https://github.com/mikro-orm/mikro-orm/commit/f01fd6faf7cbd7a9e6810015b605f9a29bdc04da)), closes [#8003](https://github.com/mikro-orm/mikro-orm/issues/8003)
+- **core:** key composite primary keys with custom types by their database form ([#8029](https://github.com/mikro-orm/mikro-orm/issues/8029)) ([5d582ec](https://github.com/mikro-orm/mikro-orm/commit/5d582ec19b44a25f5c311769817cb9978ef12c34)), closes [#8021](https://github.com/mikro-orm/mikro-orm/issues/8021)
+- **core:** populate 1:m collections of parents with falsy PK values ([#8002](https://github.com/mikro-orm/mikro-orm/issues/8002)) ([eaa25d4](https://github.com/mikro-orm/mikro-orm/commit/eaa25d49536422e591d3a5ce1fe5a50b71fa4dba)), closes [#8000](https://github.com/mikro-orm/mikro-orm/issues/8000)
+- **core:** respect custom type conversion in identity map lookups ([#8021](https://github.com/mikro-orm/mikro-orm/issues/8021)) ([44d470d](https://github.com/mikro-orm/mikro-orm/commit/44d470d4333c57720b2ffdfda62eeab1eed2fbe8)), closes [#8020](https://github.com/mikro-orm/mikro-orm/issues/8020)
+- **migrations:** store the create snapshot in the resolved migrations folder ([#8027](https://github.com/mikro-orm/mikro-orm/issues/8027)) ([d7a9ea8](https://github.com/mikro-orm/mikro-orm/commit/d7a9ea81a6be5a650201cd80774b4d1489508fae)), closes [#8024](https://github.com/mikro-orm/mikro-orm/issues/8024)
+
+## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
+
+### Bug Fixes
+
+- **core:** ignore special object keys in `assign()` ([#7998](https://github.com/mikro-orm/mikro-orm/issues/7998)) ([6c65ffb](https://github.com/mikro-orm/mikro-orm/commit/6c65ffb10ef2387adaa202121dd0ba1ca644c018))
+- **core:** support same-named nested embeddables with different props in polymorphic embeddables ([#7986](https://github.com/mikro-orm/mikro-orm/issues/7986)) ([c926fd8](https://github.com/mikro-orm/mikro-orm/commit/c926fd86f7dd93f060e8a77ebcdf40d889009dcd)), closes [#7983](https://github.com/mikro-orm/mikro-orm/issues/7983)
+
 ## [7.1.6](https://github.com/mikro-orm/mikro-orm/compare/v7.1.5...v7.1.6) (2026-07-13)
 
 ### Bug Fixes

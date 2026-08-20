@@ -14,7 +14,7 @@ export const TestClusteredSchema = defineEntity({
   indexes: [{ name: 'clustered_idx', properties: ['sortKey'], clustered: true }],
   properties: {
     id: p.integer().primary().autoincrement(false),
-    sortKey: p.integer().index('clustered_idx'),
+    sortKey: p.integer(),
   },
 });
 ",
@@ -35,7 +35,7 @@ export const TestDisabledSchema = defineEntity({
   indexes: [{ name: 'disabled_idx', properties: ['name'], disabled: true }],
   properties: {
     id: p.integer().primary(),
-    name: p.string().columnType('varchar(255)').index('disabled_idx'),
+    name: p.string().columnType('varchar(255)'),
   },
 });
 ",
@@ -58,7 +58,7 @@ export const TestDisabledUniqueSchema = defineEntity({
   ],
   properties: {
     id: p.integer().primary(),
-    email: p.string().columnType('varchar(255)').unique('disabled_unique_idx'),
+    email: p.string().columnType('varchar(255)'),
   },
 });
 ",
@@ -79,7 +79,7 @@ export const TestFulltextSchema = defineEntity({
   indexes: [{ name: 'fulltext_idx', properties: ['content'], type: 'fulltext' }],
   properties: {
     id: p.integer().primary().unsigned(false),
-    content: p.text().length(65535).index('fulltext_idx'),
+    content: p.text().length(65535),
   },
 });
 ",
@@ -100,7 +100,7 @@ export const TestFulltextSchema = defineEntity({
   indexes: [{ name: 'fulltext_idx', properties: ['content'], type: 'fulltext' }],
   properties: {
     id: p.integer().primary().unsigned(false),
-    content: p.text().length(65535).index('fulltext_idx'),
+    content: p.text().length(65535),
   },
 });
 ",
@@ -121,7 +121,7 @@ export const TestInvisibleSchema = defineEntity({
   indexes: [{ name: 'invisible_idx', properties: ['name'], invisible: true }],
   properties: {
     id: p.integer().primary().unsigned(false),
-    name: p.string().index('invisible_idx'),
+    name: p.string(),
   },
 });
 ",
@@ -148,7 +148,110 @@ export const TestPrefixSchema = defineEntity({
   ],
   properties: {
     id: p.integer().primary().unsigned(false),
-    content: p.text().length(65535).index('prefix_idx'),
+    content: p.text().length(65535),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options > generates entities with advanced index options on a foreign key column > advanced index options on foreign key column 1`] = `
+[
+  "import { type Ref, defineEntity, p } from '@mikro-orm/core';
+import { TestAdvFkTenant } from './TestAdvFkTenant';
+
+export class TestAdvFkNode {
+  id!: number;
+  tenant!: Ref<TestAdvFkTenant>;
+  owner!: Ref<TestAdvFkTenant>;
+  name!: string;
+}
+
+export const TestAdvFkNodeSchema = defineEntity({
+  class: TestAdvFkNode,
+  indexes: [
+    {
+      name: 'adv_fk_covering_idx',
+      properties: ['tenant'],
+      include: ['name'],
+      fillFactor: 70,
+    },
+  ],
+  uniques: [
+    { name: 'adv_fk_unique_idx', properties: ['owner'], include: ['name'] },
+  ],
+  properties: {
+    id: p.integer().primary(),
+    tenant: () => p.manyToOne(TestAdvFkTenant).ref().updateRule('no action').deleteRule('no action'),
+    owner: () => p.manyToOne(TestAdvFkTenant).ref().updateRule('no action').deleteRule('no action'),
+    name: p.string(),
+  },
+});
+",
+  "import { Collection, defineEntity, p } from '@mikro-orm/core';
+import { TestAdvFkNode } from './TestAdvFkNode';
+
+export class TestAdvFkTenant {
+  id!: number;
+  testAdvFkNodeCollection = new Collection<TestAdvFkNode>(this);
+  testAdvFkNodeCollection1 = new Collection<TestAdvFkNode>(this);
+}
+
+export const TestAdvFkTenantSchema = defineEntity({
+  class: TestAdvFkTenant,
+  properties: {
+    id: p.integer().primary(),
+    testAdvFkNodeCollection: () => p.oneToMany(TestAdvFkNode).mappedBy('tenant'),
+    testAdvFkNodeCollection1: () => p.oneToMany(TestAdvFkNode).mappedBy('owner'),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options > generates entities with advanced index options on a foreign key column with standalone scalar properties > advanced index options on foreign key column with standalone scalar properties 1`] = `
+[
+  "import { type Ref, defineEntity, p } from '@mikro-orm/core';
+import { TestAdvFkTenant } from './TestAdvFkTenant';
+
+export class TestAdvFkNode {
+  id!: number;
+  tenant!: Ref<TestAdvFkTenant>;
+  tenantId!: number;
+  name!: string;
+}
+
+export const TestAdvFkNodeSchema = defineEntity({
+  class: TestAdvFkNode,
+  indexes: [
+    {
+      name: 'adv_fk_covering_idx',
+      properties: ['tenantId'],
+      include: ['name'],
+      fillFactor: 70,
+    },
+  ],
+  properties: {
+    id: p.integer().primary(),
+    tenant: () => p.manyToOne(TestAdvFkTenant).ref().updateRule('no action').deleteRule('no action'),
+    tenantId: p.integer().persist(false),
+    name: p.string(),
+  },
+});
+",
+  "import { Collection, defineEntity, p } from '@mikro-orm/core';
+import { TestAdvFkNode } from './TestAdvFkNode';
+
+export class TestAdvFkTenant {
+  id!: number;
+  testAdvFkNodeCollection = new Collection<TestAdvFkNode>(this);
+}
+
+export const TestAdvFkTenantSchema = defineEntity({
+  class: TestAdvFkTenant,
+  properties: {
+    id: p.integer().primary(),
+    testAdvFkNodeCollection: () => p.oneToMany(TestAdvFkNode).mappedBy('tenant'),
   },
 });
 ",
@@ -195,7 +298,7 @@ export const TestCollationSchema = defineEntity({
   ],
   properties: {
     id: p.integer().primary(),
-    name: p.string().index('collation_idx'),
+    name: p.string(),
   },
 });
 ",
@@ -224,7 +327,7 @@ export const TestIncludeSchema = defineEntity({
   ],
   properties: {
     id: p.integer().primary(),
-    email: p.string().index('covering_idx'),
+    email: p.string(),
     name: p.string(),
     createdAt: p.datetime().columnType('timestamp(6)'),
   },
@@ -247,7 +350,7 @@ export const TestFillFactorSchema = defineEntity({
   indexes: [{ name: 'fill_factor_idx', properties: ['name'], fillFactor: 70 }],
   properties: {
     id: p.integer().primary(),
-    name: p.string().index('fill_factor_idx'),
+    name: p.string(),
   },
 });
 ",
@@ -268,7 +371,106 @@ export const TestIndexTypeSchema = defineEntity({
   indexes: [{ name: 'gin_idx', properties: ['tags'], type: 'gin' }],
   properties: {
     id: p.integer().primary(),
-    tags: p.type(string[]).index('gin_idx'),
+    tags: p.type(string[]),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options > generates entities with partial index on a foreign key column > partial index on foreign key column 1`] = `
+[
+  "import { type Ref, defineEntity, p } from '@mikro-orm/core';
+import { TestPartialTenant } from './TestPartialTenant';
+
+export class TestPartialNode {
+  id!: number;
+  tenant!: Ref<TestPartialTenant>;
+  slug?: string;
+  parentId?: number;
+}
+
+export const TestPartialNodeSchema = defineEntity({
+  class: TestPartialNode,
+  indexes: [
+    { name: 'partial_slug_idx', where: 'parent_id IS NULL', properties: ['slug'] },
+  ],
+  uniques: [
+    {
+      name: 'partial_single_root_idx',
+      where: 'parent_id IS NULL',
+      properties: ['tenant'],
+    },
+  ],
+  properties: {
+    id: p.integer().primary(),
+    tenant: () => p.manyToOne(TestPartialTenant).ref().updateRule('no action').deleteRule('no action'),
+    slug: p.string().nullable(),
+    parentId: p.integer().nullable(),
+  },
+});
+",
+  "import { Collection, defineEntity, p } from '@mikro-orm/core';
+import { TestPartialNode } from './TestPartialNode';
+
+export class TestPartialTenant {
+  id!: number;
+  testPartialNodeCollection = new Collection<TestPartialNode>(this);
+}
+
+export const TestPartialTenantSchema = defineEntity({
+  class: TestPartialTenant,
+  properties: {
+    id: p.integer().primary(),
+    testPartialNodeCollection: () => p.oneToMany(TestPartialNode).mappedBy('tenant'),
+  },
+});
+",
+]
+`;
+
+exports[`EntityGenerator advanced index options > generates entities with partial index on a foreign key column with standalone scalar properties > partial index on foreign key column with standalone scalar properties 1`] = `
+[
+  "import { type Ref, defineEntity, p } from '@mikro-orm/core';
+import { TestPartialTenant } from './TestPartialTenant';
+
+export class TestPartialNode {
+  id!: number;
+  tenant!: Ref<TestPartialTenant>;
+  tenantId!: number;
+  parentId?: number;
+}
+
+export const TestPartialNodeSchema = defineEntity({
+  class: TestPartialNode,
+  uniques: [
+    {
+      name: 'partial_single_root_idx',
+      where: 'parent_id IS NULL',
+      properties: ['tenantId'],
+    },
+  ],
+  properties: {
+    id: p.integer().primary(),
+    tenant: () => p.manyToOne(TestPartialTenant).ref().updateRule('no action').deleteRule('no action'),
+    tenantId: p.integer().persist(false),
+    parentId: p.integer().nullable(),
+  },
+});
+",
+  "import { Collection, defineEntity, p } from '@mikro-orm/core';
+import { TestPartialNode } from './TestPartialNode';
+
+export class TestPartialTenant {
+  id!: number;
+  testPartialNodeCollection = new Collection<TestPartialNode>(this);
+}
+
+export const TestPartialTenantSchema = defineEntity({
+  class: TestPartialTenant,
+  properties: {
+    id: p.integer().primary(),
+    testPartialNodeCollection: () => p.oneToMany(TestPartialNode).mappedBy('tenant'),
   },
 });
 ",
@@ -329,7 +531,7 @@ export const TestUniqueOptsSchema = defineEntity({
   ],
   properties: {
     id: p.integer().primary(),
-    email: p.string().unique('unique_with_include'),
+    email: p.string(),
     name: p.string(),
   },
 });

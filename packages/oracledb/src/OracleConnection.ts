@@ -54,11 +54,34 @@ export class OracleConnection extends AbstractSqlConnection {
     const onCreateConnection = this.options.onCreateConnection ?? this.config.get('onCreateConnection');
 
     const initialPassword = typeof password === 'function' ? await password() : password;
+    const dbName = this.config.get('dbName')!;
+    // unqualified names resolve against the login user's schema, but we manage `dbName`
+    const setSchemaSql =
+      this.config.get('user', dbName) === dbName ? undefined : this.platform.getSchemaHelper()!.getSetSchemaSQL(dbName);
 
-    const poolOptions = {
+    const poolOptions: PoolAttributes = {
       ...options,
       password: initialPassword,
-      sessionCallback: onCreateConnection as PoolAttributes['sessionCallback'],
+      sessionCallback:
+        setSchemaSql || onCreateConnection
+          ? (conn, _requestedTag, cb) => {
+              const initSession = async () => {
+                if (setSchemaSql) {
+                  // ORA-01435: the schema might not exist yet, `ensureDatabase()` creates it later on
+                  await conn.execute(setSchemaSql).catch((e: any) => {
+                    /* v8 ignore next 3: other failures of `alter session` are not reproducible in tests */
+                    if (e.errorNum !== 1435) {
+                      throw e;
+                    }
+                  });
+                }
+
+                await onCreateConnection?.(conn);
+              };
+
+              initSession().then(() => cb(), cb);
+            }
+          : undefined,
     };
 
     // Retry pool creation for transient Oracle errors (e.g. ORA-01017 under load)

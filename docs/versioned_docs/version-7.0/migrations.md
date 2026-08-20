@@ -348,6 +348,18 @@ await MikroORM.init({
 });
 ```
 
+For migration classes passed directly (without an explicit name), the name is resolved from the `name` property of the migration instance, falling back to the class name. Newly generated migrations set the `name` property automatically, since minifiers can mangle class names (the migration would then be recorded in the migrations table under a different name in minified and unminified builds of the same app). If your migration files predate this and you bundle your app with a minifier, add the property manually:
+
+```ts
+export class Migration20191019195930 extends Migration {
+
+  override name = 'Migration20191019195930';
+
+  // ...
+
+}
+```
+
 With the help of [webpack's context module api](https://webpack.js.org/guides/dependency-management/#context-module-api) you can dynamically import the migrations making it possible to import all files in a folder.
 
 ```ts

@@ -13,7 +13,7 @@ import {
   type LoadedCollection,
   type Populate,
   type Primary,
-  CollectionBrand,
+  type CollectionBrand,
 } from '../typings.js';
 import { Utils } from '../utils/Utils.js';
 import { MetadataError, ValidationError } from '../errors.js';

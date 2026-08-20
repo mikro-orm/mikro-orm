@@ -6,6 +6,8 @@ exports[`Migrator (sqlite) > generate initial migration > initial-migration-dump
 
 export class Migration20191013214813 extends Migration {
 
+  override name = 'Migration20191013214813';
+
   override up(): void | Promise<void> {
     this.addSql(\`create table \\\`book_tag4\\\` (\\\`id\\\` integer not null primary key autoincrement, \\\`created_at\\\` datetime null, \\\`updated_at\\\` datetime null, \\\`name\\\` text not null, \\\`version\\\` datetime not null default (strftime('%s', 'now') * 1000));\`);
 
@@ -87,6 +89,8 @@ exports[`Migrator (sqlite) > generate initial migration > initial-migration-dump
   "code": "import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191013214813 extends Migration {
+
+  override name = 'Migration20191013214813';
 
   override up(): void | Promise<void> {
     this.addSql(\`create table \\\`book_tag4\\\` (\\\`id\\\` integer not null primary key autoincrement, \\\`created_at\\\` datetime null, \\\`updated_at\\\` datetime null, \\\`name\\\` text not null, \\\`version\\\` datetime not null default (strftime('%s', 'now') * 1000));\`);

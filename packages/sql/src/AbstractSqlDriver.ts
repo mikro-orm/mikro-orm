@@ -43,7 +43,6 @@ import {
   parseJsonSafe,
   PolymorphicRef,
   type PopulateOptions,
-  type PopulatePath,
   type Primary,
   QueryFlag,
   QueryHelper,
@@ -952,7 +951,7 @@ export abstract class AbstractSqlDriver<
 
     if (meta.primaryKeys.length > 1) {
       // owner has composite pk
-      pk = Utils.getPrimaryKeyCond(data as T, meta.primaryKeys);
+      pk = Utils.getOrderedPrimaryKeys(data as Record<string, Primary<T>>, meta);
     } else {
       /* v8 ignore next */
       res.insertId = data[meta.primaryKeys[0]] ?? res.insertId ?? res.row[meta.primaryKeys[0]];
@@ -1351,10 +1350,9 @@ export abstract class AbstractSqlDriver<
     );
     let pk: any[];
 
-    /* v8 ignore next */
     if (pks.length > 1) {
       // owner has composite pk
-      pk = data.map(d => Utils.getPrimaryKeyCond(d as T, pks as EntityKey<T>[]));
+      pk = data.map(d => Utils.getOrderedPrimaryKeys(d as Record<string, Primary<T>>, meta));
     } else {
       res.row ??= {};
       res.rows ??= [];
@@ -1437,8 +1435,7 @@ export abstract class AbstractSqlDriver<
       res = await this.rethrow(qb.execute('run', false));
     }
 
-    /* v8 ignore next */
-    const pk = pks.map(pk => Utils.extractPK<T>(data[pk] || where, meta)!) as Primary<T>[];
+    const pk = Utils.getOrderedPrimaryKeys({ ...(where as Dictionary), ...data } as Record<string, Primary<T>>, meta);
     await this.processManyToMany<T>(meta, pk, collections, true, options);
 
     return res;
@@ -1601,7 +1598,8 @@ export abstract class AbstractSqlDriver<
       : `(${pks.map(pk => `${this.platform.quoteIdentifier(pk)} = ?`).join(' and ')})`;
 
     const conds = where.map(cond => {
-      if (Utils.isPlainObject(cond) && Utils.getObjectKeysSize(cond) === 1) {
+      // with multiple PK columns the condition is looked up by property name, so it needs to stay an object
+      if (pks.length === 1 && Utils.isPlainObject(cond) && Utils.getObjectKeysSize(cond) === 1) {
         cond = Object.values(cond)[0] as object;
       }
 
@@ -1632,7 +1630,9 @@ export abstract class AbstractSqlDriver<
     }
 
     if (this.platform.usesReturningStatement() && returning.size > 0) {
-      const returningFields = Utils.flatten([...returning].map(prop => meta.properties[prop].fieldNames));
+      const returningFields = Utils.flatten(
+        [...returning].map(prop => (meta.properties[prop] ?? meta.root.properties[prop]).fieldNames),
+      );
       /* v8 ignore next */
       sql +=
         returningFields.length > 0
@@ -1649,7 +1649,8 @@ export abstract class AbstractSqlDriver<
     );
 
     for (let i = 0; i < collections.length; i++) {
-      await this.processManyToMany<T>(meta, where[i] as Primary<T>[], collections[i], false, options);
+      const pk = Utils.getOrderedPrimaryKeys(where[i] as Record<string, Primary<T>>, meta);
+      await this.processManyToMany<T>(meta, pk, collections[i], false, options);
     }
 
     return res;
@@ -1920,7 +1921,7 @@ export abstract class AbstractSqlDriver<
       }
     }
 
-    return this.buildPivotResultMap(owners, res, pivotProp2.name, pivotProp1.name);
+    return this.buildPivotResultMap(owners, res, pivotProp2.name, pivotProp1.name, ownerMeta);
   }
 
   /**
@@ -1964,11 +1965,16 @@ export abstract class AbstractSqlDriver<
   ): Promise<Dictionary<T[]>> {
     const pivotMeta = this.metadata.get(prop.pivotEntity);
     const targetMeta = prop.targetMeta!;
+    // `prop.discriminator` spans all owner FK columns but carries no target metadata, so a composite
+    // owner PK neither expands to a tuple condition nor gets mapped back; the virtual M:1 relation
+    // to this discriminator's owner describes the same columns as an actual relation
+    const ownerMeta = this.metadata.get<O>(pivotMeta.polymorphicDiscriminatorMap![prop.discriminatorValue!]);
+    const ownerProp = pivotMeta.properties[`${prop.discriminator}_${ownerMeta.tableName}`];
 
-    // Build condition: discriminator = 'post' AND {discriminator} IN (...)
+    // Build condition: discriminator = 'post' AND {owner} IN (...)
     const cond: Dictionary = {
       [prop.discriminatorColumn!]: prop.discriminatorValue,
-      [prop.discriminator!]: { $in: owners.length === 1 && owners[0].length === 1 ? owners.map(o => o[0]) : owners },
+      [ownerProp.name]: { $in: owners.length === 1 && owners[0].length === 1 ? owners.map(o => o[0]) : owners },
     };
 
     if (!Utils.isEmpty(where)) {
@@ -1985,9 +1991,15 @@ export abstract class AbstractSqlDriver<
     const childExclude = !Utils.isEmpty(options?.exclude)
       ? options!.exclude!.map(f => `${inverseProp!.name}.${f}`)
       : [];
+    // the owner relation is virtual, so its FK columns have to be selected via the pivot props that
+    // cover them; only the first owner of a shared pivot gets the flat prop named after the
+    // discriminator, and it keeps that owner's columns, so later owners get per-column props instead
+    const ownerFields = Utils.unique(
+      prop.joinColumns.map(col => (pivotMeta.properties[col] ? col : prop.discriminator!)),
+    );
     const fields = pivotJoin
-      ? ([inverseProp!.name, prop.discriminator!, prop.discriminatorColumn!] as any[])
-      : [inverseProp!.name, prop.discriminator!, prop.discriminatorColumn!, ...childFields];
+      ? ([inverseProp!.name, ...ownerFields, prop.discriminatorColumn!] as any[])
+      : [inverseProp!.name, ...ownerFields, prop.discriminatorColumn!, ...childFields];
 
     const res = await this.find(pivotMeta.class, cond as FilterQuery<any>, {
       ctx,
@@ -2010,7 +2022,7 @@ export abstract class AbstractSqlDriver<
       populateFilter: this.wrapPopulateFilter(options, inverseProp!.name),
     });
 
-    return this.buildPivotResultMap(owners, res, prop.discriminator!, inverseProp!.name);
+    return this.buildPivotResultMap(owners, res, ownerProp.name, inverseProp!.name, ownerMeta);
   }
 
   /**
@@ -2078,7 +2090,7 @@ export abstract class AbstractSqlDriver<
       populateFilter: this.wrapPopulateFilter(options, ownerRelationName),
     });
 
-    return this.buildPivotResultMap(owners, res, tagProp.name, ownerRelationName);
+    return this.buildPivotResultMap(owners, res, tagProp.name, ownerRelationName, tagProp.targetMeta);
   }
 
   /**
@@ -2201,7 +2213,7 @@ export abstract class AbstractSqlDriver<
     }
 
     const result = orphanedRows.size > 0 ? pivotRows.filter(r => !orphanedRows.has(r)) : pivotRows;
-    return this.buildPivotResultMap<T, O>(owners, result, ownerProp.name, prop.discriminator!);
+    return this.buildPivotResultMap<T, O>(owners, result, ownerProp.name, prop.discriminator!, ownerMeta);
   }
 
   /**
@@ -2212,6 +2224,7 @@ export abstract class AbstractSqlDriver<
     results: object[],
     keyProp: string,
     valueProp: string,
+    ownerMeta?: EntityMetadata<O>,
   ): Dictionary<T[]> {
     const map: Dictionary<T[]> = {};
 
@@ -2221,7 +2234,11 @@ export abstract class AbstractSqlDriver<
     }
 
     for (const item of results) {
-      const key = Utils.getPrimaryKeyHash(Utils.asArray((item as any)[keyProp]));
+      const fk = (item as any)[keyProp];
+      // the owner PKs are always flat, while the pivot FK follows the owner PK structure,
+      // so a PK built from a relation to another composite PK entity needs flattening too
+      const pks = ownerMeta && fk != null ? Utils.getOrderedPrimaryKeys(fk, ownerMeta) : Utils.asArray(fk);
+      const key = Utils.getPrimaryKeyHash(pks as string[]);
       const entity = (item as any)[valueProp] as T;
 
       if (map[key]) {
@@ -2415,8 +2432,28 @@ export abstract class AbstractSqlDriver<
       return { propName, ref, children: hint.children };
     });
 
+    // with `fixedOrder` the pivot PK is the order column, which is not guaranteed to be unique when the
+    // pivot table is managed externally, so we disambiguate the rows by their FKs on top of the PK
+    // (including virtual ones, as the owner FK of a polymorphic pivot is only mapped via non-persisted relations)
+    const pivotRelations =
+      meta.pivotTable && !meta.compositePK ? meta.relations.filter(p => p.kind === ReferenceKind.MANY_TO_ONE) : [];
+
     for (const item of rawResults) {
-      const pk = Utils.getCompositeKeyHash(item, meta);
+      // flat hash, so nested composite PK values keep their own separators and cannot collide
+      let pk = Utils.getCompositeKeyHash(item, meta, false, undefined, true);
+
+      if (pivotRelations.length > 0) {
+        pk = Utils.getPrimaryKeyHash([
+          pk,
+          ...pivotRelations.flatMap(p => {
+            const value = item[p.name as EntityKey<T>];
+            // composite FKs are mapped to an array of values, which `extractPK` does not accept
+            return (Array.isArray(value) ? Utils.flatten(value, true) : Utils.extractPK(value, p.targetMeta)) as
+              | string
+              | string[];
+          }),
+        ]);
+      }
 
       if (map[pk]) {
         for (const { propName } of hints) {
@@ -3057,7 +3094,24 @@ export abstract class AbstractSqlDriver<
 
     for (const prop of meta.relations) {
       if (prop.kind === ReferenceKind.MANY_TO_MANY && data[prop.name]) {
-        ret[prop.name] = data[prop.name].map((item: Primary<T>) => Utils.asArray(item));
+        // union targets are validated to have a single PK column, so a pivot row is always keyed
+        // by exactly `[discriminator, pk]` - anything else cannot address a target table
+        const discriminators = QueryHelper.isUnionTargetPolymorphic(prop)
+          ? Object.keys(prop.discriminatorMap!)
+          : undefined;
+        ret[prop.name] = data[prop.name].map((item: Primary<T>) => {
+          const values = Utils.asArray(item);
+
+          if (discriminators && !(values.length === 2 && discriminators.includes('' + values[0]))) {
+            throw new Error(
+              `Cannot resolve the discriminator value of ${meta.className}.${prop.name} from '${values.join(', ')}', ` +
+                `as the same primary key can exist in any of the target tables. ` +
+                `Pass the target as a [discriminator, ...primaryKey] tuple, e.g. ${JSON.stringify([discriminators[0], ...values])}.`,
+            );
+          }
+
+          return values;
+        });
         delete data[prop.name];
       }
     }
@@ -3105,7 +3159,7 @@ export abstract class AbstractSqlDriver<
   protected buildPopulateWhere<T extends object>(
     meta: EntityMetadata<T>,
     joinedProps: PopulateOptions<T>[],
-    options: Pick<FindOptions<any>, 'populateWhere'>,
+    options: Pick<FindOptions<any>, 'populateWhere' | 'strategy'>,
   ): ObjectQuery<T> {
     const where = {} as ObjectQuery<T>;
 
@@ -3120,7 +3174,9 @@ export abstract class AbstractSqlDriver<
       if (hint.children) {
         const targetMeta = prop.targetMeta;
         if (targetMeta) {
-          const inner = this.buildPopulateWhere(targetMeta, hint.children as any, {});
+          // only joined children contribute to the ON conditions, the rest is handled by the entity loader
+          const children = this.joinedProps(targetMeta, hint.children as any, options);
+          const inner = this.buildPopulateWhere(targetMeta, children, { strategy: options.strategy });
 
           if (!Utils.isEmpty(inner) || RawQueryFragment.hasObjectFragments(inner)) {
             where[prop.name] ??= {} as any;

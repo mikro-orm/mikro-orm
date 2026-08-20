@@ -298,6 +298,8 @@ export interface IQueryBuilder<T> {
     options?: CteOptions,
   ): this;
   scheduleFilterCheck(path: string): void;
+  /** @internal */
+  ensureTPTJoins(): void;
   withSchema(schema: string): this;
 }
 
@@ -366,9 +368,11 @@ export type MapTableName<
   T extends { name: string; tableName?: string },
   TOptions extends MikroKyselyPluginOptions = {},
 > = {
-  [P in T as TOptions['tableNamingStrategy'] extends 'entity'
-    ? P['name']
-    : PreferStringLiteral<NonNullable<P['tableName']>, P['name']>]: P;
+  [
+    P in T as TOptions['tableNamingStrategy'] extends 'entity'
+      ? P['name']
+      : PreferStringLiteral<NonNullable<P['tableName']>, P['name']>
+  ]: P;
 };
 
 type ResolveTableNaming<TOptions extends MikroKyselyPluginOptions> = TOptions['tableNamingStrategy'] extends 'entity'
@@ -383,11 +387,13 @@ export type InferKyselyTable<
   TSchema extends EntitySchemaWithMeta,
   TOptions extends MikroKyselyPluginOptions = {},
 > = ExcludeNever<{
-  -readonly [K in keyof InferEntityProperties<TSchema> as TransformColumnName<
-    K,
-    TOptions['columnNamingStrategy'] extends 'property' ? 'property' : 'underscore',
-    MaybeReturnType<InferEntityProperties<TSchema>[K]>
-  >]: InferColumnValue<
+  -readonly [
+    K in keyof InferEntityProperties<TSchema> as TransformColumnName<
+      K,
+      TOptions['columnNamingStrategy'] extends 'property' ? 'property' : 'underscore',
+      MaybeReturnType<InferEntityProperties<TSchema>[K]>
+    >
+  ]: InferColumnValue<
     MaybeReturnType<InferEntityProperties<TSchema>[K]>,
     TOptions['processOnCreateHooks'] extends true ? true : false
   >;
@@ -456,9 +462,9 @@ type MaybeGenerated<TValue, TOptions, TProcessOnCreate extends boolean> = TOptio
   ? TValue | null
   : TOptions extends { autoincrement: true }
     ? Generated<TValue>
-    : TOptions extends { default: true }
+    : TOptions extends { default: unknown }
       ? Generated<TValue>
-      : TOptions extends { defaultRaw: true }
+      : TOptions extends { defaultRaw: unknown }
         ? Generated<TValue>
         : TProcessOnCreate extends false
           ? TValue

@@ -22,7 +22,7 @@ export class FileCacheAdapter implements SyncCacheAdapter {
   /**
    * @inheritDoc
    */
-  get(name: string): any {
+  get(name: string, origin?: string): any {
     const path = this.path(name);
 
     if (!existsSync(path)) {
@@ -30,6 +30,13 @@ export class FileCacheAdapter implements SyncCacheAdapter {
     }
 
     const payload = fs.readJSONSync(path);
+
+    // Two classes with the same name share the cache key, ignore entries cached
+    // from a different source file.
+    if (origin && fs.absolutePath(payload.origin, this.#baseDir) !== fs.absolutePath(origin, this.#baseDir)) {
+      return null;
+    }
+
     const hash = this.getHash(payload.origin);
 
     if (!hash || payload.hash !== hash) {

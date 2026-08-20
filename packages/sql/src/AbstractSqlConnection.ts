@@ -162,7 +162,15 @@ export abstract class AbstractSqlConnection extends Connection {
 
       return ret;
     } catch (error) {
-      await this.rollback(trx, options.eventBroadcaster, options.loggerContext);
+      // A failing rollback must not mask why the transaction failed in the first place — the
+      // `'kill session'` abort strategy tears the connection down, so the rollback that follows can
+      // only ever report the dead connection.
+      try {
+        await this.rollback(trx, options.eventBroadcaster, options.loggerContext);
+      } catch (rollbackError: any) {
+        this.logger.warn('query', `Failed to roll back transaction: ${rollbackError.message}`);
+      }
+
       throw error;
     }
   }
@@ -205,17 +213,8 @@ export abstract class AbstractSqlConnection extends Connection {
 
     const trx = await trxBuilder.execute();
 
-    if (options.ctx) {
-      const ctx = options.ctx as Dictionary;
-      ctx.index ??= 0;
-      const savepointName = `trx${ctx.index + 1}`;
-      Reflect.defineProperty(trx, 'index', { value: ctx.index + 1 });
-      Reflect.defineProperty(trx, 'savepointName', { value: savepointName });
-      this.logQuery(this.platform.getSavepointSQL(savepointName), options.loggerContext);
-    } else {
-      for (const query of this.platform.getBeginTransactionSQL(options)) {
-        this.logQuery(query, options.loggerContext);
-      }
+    for (const query of this.platform.getBeginTransactionSQL(options)) {
+      this.logQuery(query, options.loggerContext);
     }
 
     await options.eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, trx);
@@ -253,6 +252,8 @@ export abstract class AbstractSqlConnection extends Connection {
     loggerContext?: LogContext,
   ): Promise<void> {
     await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionRollback, ctx);
+    await this.waitForIdleTransaction(ctx);
+
     if ('savepointName' in ctx) {
       await ctx.rollbackToSavepoint(ctx.savepointName).execute();
       this.logQuery(this.platform.getRollbackToSavepointSQL(ctx.savepointName as string), loggerContext);
@@ -262,6 +263,18 @@ export abstract class AbstractSqlConnection extends Connection {
     }
 
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
+  }
+
+  /**
+   * Waits until the transaction's connection has no query in flight. Kysely runs `rollback` straight
+   * on that connection instead of going through its connection provider, so a rollback caused by an
+   * aborted query would otherwise be sent while the aborted query is still running. That not only
+   * queues the rollback behind it on the server, it also overwrites the query id Kysely compares
+   * against before firing the `'cancel query'`/`'kill session'` control statement — the control
+   * statement is then discarded as stale and the abort never reaches the database.
+   */
+  private async waitForIdleTransaction(ctx: ControlledTransaction<any, any>): Promise<void> {
+    await ctx.getExecutor().provideConnection(async () => undefined);
   }
 
   private prepareQuery(

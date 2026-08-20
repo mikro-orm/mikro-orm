@@ -35,6 +35,9 @@ import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import type { NativeQueryBuilder } from './NativeQueryBuilder.js';
 
+/** Captures the column name that follows the alias placeholder. */
+const QUALIFYING_ALIAS_RE = new RegExp(ALIAS_REPLACEMENT_RE + '(?=["\'`\\]]*\\.["\'`\\[]?([\\w$]+))', 'g');
+
 /**
  * @internal
  */
@@ -100,6 +103,16 @@ export class QueryBuilderHelper {
 
     // Property not found in hierarchy, return default alias
     return defaultAlias;
+  }
+
+  /**
+   * Replaces `ALIAS_REPLACEMENT` placeholders, resolving column-qualified ones via
+   * `getTPTAliasForProperty()` so TPT inherited columns map to their owning table.
+   */
+  replaceAliases(sql: string, alias: string = this.#alias): string {
+    return sql
+      .replace(QUALIFYING_ALIAS_RE, (_, column: string) => this.getTPTAliasForProperty(column, alias))
+      .replaceAll(ALIAS_REPLACEMENT, alias);
   }
 
   mapper(field: string | Raw | RawQueryFragmentSymbol, type?: QueryType): string;
@@ -178,7 +191,6 @@ export class QueryBuilderHelper {
     // Only apply TPT resolution when `a` is an actual table alias (in aliasMap),
     // not when it's an embedded property name like 'profile1.identity.links'
     const isTableAlias = !!this.#aliasMap[a];
-    const baseAlias = isTableAlias ? a : this.#alias;
     const resolvedAlias = isTableAlias ? this.getTPTAliasForProperty(prop?.name ?? f, a) : this.#alias;
     const aliasPrefix = isTableNameAliasRequired ? resolvedAlias + '.' : '';
     const fkIdx2 = prop?.fieldNames.findIndex(name => name === f) ?? -1;
@@ -395,7 +407,12 @@ export class QueryBuilderHelper {
       }[join.type] ?? join.type;
     const conditions: string[] = [];
     const params: unknown[] = [];
-    schema = join.schema === '*' ? schema : (join.schema ?? schemaOverride);
+    if (join.prop.name === '__subquery__') {
+      // bare table/CTE references (`sql.ref()` joins) keep their literal name, only an explicit schema applies
+      schema = join.schema === '*' ? undefined : join.schema;
+    } else {
+      schema = join.schema === '*' ? schema : (join.schema ?? schemaOverride);
+    }
 
     if (schema && schema !== this.#platform.getDefaultSchemaName()) {
       table = `${schema}.${table}`;
@@ -617,7 +634,8 @@ export class QueryBuilderHelper {
 
       if (k === '$not') {
         const res = this._appendQueryCondition(type, cond[k]);
-        parts.push(`not (${res.sql})`);
+        // negating a vacuously true condition (e.g. an empty `$and`) matches nothing
+        parts.push(res.sql ? `not (${res.sql})` : '1 = 0');
         res.params.forEach(p => params.push(p));
         continue;
       }
@@ -693,7 +711,7 @@ export class QueryBuilderHelper {
 
     if (Raw.isKnownFragmentSymbol(key)) {
       const raw = Raw.getKnownFragment(key)!;
-      const sql = raw.sql.replaceAll(ALIAS_REPLACEMENT, this.#alias);
+      const sql = this.replaceAliases(raw.sql);
       const value = Utils.asArray(cond[key]);
       params.push(...raw.params);
 
@@ -833,7 +851,7 @@ export class QueryBuilderHelper {
         const query: RawQueryFragment = opValueIsRaw ? opValue : opValue.toRaw();
         const mappedKey = this.mapper(key, type, query, null);
 
-        let sql = query.sql.replaceAll(ALIAS_REPLACEMENT, this.#alias);
+        let sql = this.replaceAliases(query.sql);
 
         if (['$in', '$nin'].includes(op)) {
           sql = `(${sql})`;
@@ -1131,6 +1149,11 @@ export class QueryBuilderHelper {
   ): { sql: string; params: unknown[] } {
     const parts: string[] = [];
     const params: unknown[] = [];
+
+    // an empty disjunction is false, same as `$in: []`, while an empty conjunction is vacuously true
+    if (operator === '$or' && subCondition.length === 0) {
+      return { sql: '1 = 0', params };
+    }
 
     // single sub-condition can be ignored to reduce nesting of parens
     if (subCondition.length === 1 || operator === '$and') {
