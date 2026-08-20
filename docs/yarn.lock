@@ -7418,7 +7418,7 @@ __metadata:
     "@types/react": "npm:^19.1.6"
     "@types/react-dom": "npm:^19.1.5"
     classnames: "npm:^2.5.1"
-    marked: "npm:18.0.9"
+    marked: "npm:18.0.10"
     prettier: "npm:^3.5.3"
     prism-react-renderer: "npm:^2.4.1"
     react: "npm:^19.2.4"
@@ -10151,12 +10151,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"marked@npm:18.0.9":
-  version: 18.0.9
-  resolution: "marked@npm:18.0.9"
+"marked@npm:18.0.10":
+  version: 18.0.10
+  resolution: "marked@npm:18.0.10"
   bin:
     marked: bin/marked.js
-  checksum: 10/99d337c50acd57034734f8460f25b28e9658b15627f950092707cb443b840f0bd29fe343bf211b948e643303c34abdb5b5a12cf5245a846635750697524bb747
+  checksum: 10/0d4b560e0773fd6ba30a4e7560ba7ae1f05d47b23926ad8337d9f80c598dfdbffdf2f81e773a1789e8bc9d9c2c2d3d0c9143a54d32581c336a3bbb1bad80461c
   languageName: node
   linkType: hard
 
