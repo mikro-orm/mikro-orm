@@ -2168,6 +2168,10 @@ export class MetadataDiscovery {
           continue;
         }
 
+        if (prop.customType instanceof t.json || ['json', 'jsonb'].includes(prop.columnTypes?.[0])) {
+          continue;
+        }
+
         this.initFieldName(prop);
         let expression: string | null = null;
 

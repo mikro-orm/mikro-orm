@@ -1782,7 +1782,12 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
       const platform = config.getPlatform();
 
       for (const prop of this.props) {
-        if (prop.enum && !prop.nativeEnumName && prop.items?.every(item => typeof item === 'string')) {
+        if (
+          prop.enum &&
+          !prop.nativeEnumName &&
+          prop.items?.every(item => typeof item === 'string') &&
+          !['json', 'jsonb'].includes(prop.columnTypes?.[0])
+        ) {
           const name = platform.getIndexName(this.tableName, prop.fieldNames, 'check');
           const exists = this.checks.findIndex(check => check.name === name);
 
