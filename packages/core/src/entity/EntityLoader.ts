@@ -1010,10 +1010,8 @@ export class EntityLoader {
             return cond;
           });
 
-        // partial extraction from `$or` is unsound for to-one relations — the parent may have matched via a dropped branch
-        const toOne = [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind);
-
-        if (child.length > 0 && (op === '$and' || !toOne || child.length === where[op].length)) {
+        // partial extraction from `$or` is unsound — the parent may have matched via a dropped branch
+        if (child.length > 0 && (op === '$and' || child.length === where[op].length)) {
           subCond[op] = child;
         }
       }
