@@ -1786,7 +1786,7 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
           prop.enum &&
           !prop.nativeEnumName &&
           prop.items?.every(item => typeof item === 'string') &&
-          !(prop.columnTypes?.[0] && ['json', 'jsonb'].includes(prop.columnTypes[0]))
+          !['json', 'jsonb'].includes(prop.columnTypes?.[0])
         ) {
           const name = platform.getIndexName(this.tableName, prop.fieldNames, 'check');
           const exists = this.checks.findIndex(check => check.name === name);

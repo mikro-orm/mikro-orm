@@ -1,5 +1,5 @@
 import { MikroORM } from '@mikro-orm/postgresql';
-import { Entity, Enum, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { Entity, Enum, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 enum ServiceProvidedAt {
   BusinessPremises = 'BusinessPremises',
@@ -20,8 +20,8 @@ class Setting {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'json', default: '[]' })
-  tags: string[] = [];
+  @Enum({ items: () => ServiceProvidedAt, array: true, type: 'json' })
+  providers: ServiceProvidedAt[] = [];
 }
 
 test('enum array with jsonb column type does not emit text[]-typed check constraint', async () => {
@@ -36,6 +36,8 @@ test('enum array with jsonb column type does not emit text[]-typed check constra
   expect(createSQL).toContain('"service_provided_at" jsonb');
   expect(createSQL).not.toContain('business_service_provided_at_check');
   expect(createSQL).not.toContain("<@ array['BusinessPremises'::text, 'Remote'::text]");
+  expect(createSQL).toContain('"providers" jsonb');
+  expect(createSQL).not.toContain('setting_providers_check');
 
   await orm.schema.refresh();
   const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
