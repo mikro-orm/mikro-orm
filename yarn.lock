@@ -1484,7 +1484,7 @@ __metadata:
     jiti: "npm:2.7.0"
     jsr: "npm:0.14.3"
     knex: "npm:3.3.0"
-    lerna: "npm:10.0.0"
+    lerna: "npm:10.0.1"
     lint-staged: "npm:17.3.0"
     mongodb-memory-server-core: "npm:11.2.0"
     oxfmt: "npm:0.64.0"
@@ -4501,15 +4501,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"conventional-commits-parser@npm:7.1.0":
-  version: 7.1.0
-  resolution: "conventional-commits-parser@npm:7.1.0"
+"conventional-commits-parser@npm:7.1.2":
+  version: 7.1.2
+  resolution: "conventional-commits-parser@npm:7.1.2"
   dependencies:
     "@simple-libs/stream-utils": "npm:^2.0.0"
     argue-cli: "npm:^3.1.0"
   bin:
     conventional-commits-parser: ./dist/cli/index.js
-  checksum: 10/53ae3939469602f5767870a5417952aea6fb68cb602706e680a1df826f39ed381eaef2e99fe7e06ff9df040dc6f5ada4eb923004b3b50bb584fb8e65f749bb69
+  checksum: 10/50b846af6cd494d3c7fd680f17af7dc2e762a43c45ea160c433e2bc24040337275418b401f4796be70b3de6221f41ae2471a0e5acc6e86b7a857a65e42e9d128
   languageName: node
   linkType: hard
 
@@ -6193,9 +6193,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lerna@npm:10.0.0":
-  version: 10.0.0
-  resolution: "lerna@npm:10.0.0"
+"lerna@npm:10.0.1":
+  version: 10.0.1
+  resolution: "lerna@npm:10.0.1"
   dependencies:
     "@npmcli/arborist": "npm:9.1.6"
     "@npmcli/package-json": "npm:7.0.2"
@@ -6209,7 +6209,7 @@ __metadata:
     conventional-changelog: "npm:8.1.0"
     conventional-changelog-angular: "npm:9.2.1"
     conventional-commits-filter: "npm:6.0.1"
-    conventional-commits-parser: "npm:7.1.0"
+    conventional-commits-parser: "npm:7.1.2"
     conventional-recommended-bump: "npm:12.1.0"
     cosmiconfig: "npm:9.0.0"
     dedent: "npm:1.5.3"
@@ -6240,7 +6240,7 @@ __metadata:
     signal-exit: "npm:3.0.7"
     ssri: "npm:12.0.0"
     string-width: "npm:^4.2.3"
-    tar: "npm:7.5.20"
+    tar: "npm:7.5.22"
     tinyglobby: "npm:0.2.12"
     validate-npm-package-license: "npm:3.0.4"
     validate-npm-package-name: "npm:6.0.2"
@@ -6248,7 +6248,7 @@ __metadata:
     yargs: "npm:17.7.2"
   bin:
     lerna: dist/cli.js
-  checksum: 10/bdd0befb7130972eb641ff13a72a92b0a2b5071ebd32d698f076c1b202ba45b58a0c87c66bf15b378b3c7b62b7c3437346313f0d791e59b319281fb3c791dac3
+  checksum: 10/21932dcf1730028262e82ebd0a1da11b52deedd319ae646d3b75d4b531745d82c9744761be6a3f38b26a17e39c6d63ad251d9ef61aab3e2c3310c4fcaa3d12ea
   languageName: node
   linkType: hard
 
