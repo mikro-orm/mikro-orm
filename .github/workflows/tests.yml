@@ -76,12 +76,12 @@ jobs:
         run: yarn
 
       - name: Check spelling (next docs)
-        uses: crate-ci/typos@dbe52f72499cd4ab666928e4d14ecfa9ddbb6852 # v1.48.0
+        uses: crate-ci/typos@8a48f81b6c64dcfea44b3633223084c4be58ac5f # v1.49.0
         with:
           files: docs/docs
 
       - name: Check spelling (versioned docs)
-        uses: crate-ci/typos@dbe52f72499cd4ab666928e4d14ecfa9ddbb6852 # v1.48.0
+        uses: crate-ci/typos@8a48f81b6c64dcfea44b3633223084c4be58ac5f # v1.49.0
         with:
           files: docs/versioned_docs
 
@@ -422,7 +422,7 @@ jobs:
           fi
 
       - name: Publish packages
-        uses: apify/workflows/execute-workflow@2675e8d2956255f39a667ca35857799aeb9d7b94 # main
+        uses: apify/workflows/execute-workflow@d55875a16921721f4a1f33fcf8403a1f3d70db1a # main
         with:
           workflow: release.yml
           inputs: >
