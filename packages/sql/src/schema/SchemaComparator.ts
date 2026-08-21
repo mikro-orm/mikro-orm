@@ -1220,7 +1220,7 @@ export class SchemaComparator {
 
   private diffTrigger(from: SqlTriggerDef, to: SqlTriggerDef): boolean {
     // Raw DDL expression cannot be meaningfully compared to introspected
-    // trigger metadata, so skip diffing when either side uses it.
+    // trigger metadata, so it needs special handling when either side uses it.
     if (from.expression || to.expression) {
       // Both sides have expression — compare the raw DDL directly
       if (from.expression && to.expression) {

@@ -265,6 +265,7 @@ execute function "trg_custom_fn"()`,
       },
       name: 'ExprDownTriggerTable',
       tableName: 'expr_down_trigger_table',
+      // fn name follows the `{table}_{trigger}_fn` convention, so introspection reports a body to diff against
       triggers: [
         {
           name: 'trg_custom',
