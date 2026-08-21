@@ -234,12 +234,13 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   override getSearchJsonPropertyKey(
     path: string[],
     type: string,
-    aliased: boolean,
+    aliased: boolean | string,
     value?: unknown,
   ): string | RawQueryFragment {
     const [a, ...b] = path;
+    const alias = typeof aliased === 'string' ? this.quoteIdentifier(aliased) : `[${ALIAS_REPLACEMENT}]`;
     /* v8 ignore next */
-    const root = aliased ? `[${ALIAS_REPLACEMENT}].${this.quoteIdentifier(a)}` : this.quoteIdentifier(a);
+    const root = aliased ? `${alias}.${this.quoteIdentifier(a)}` : this.quoteIdentifier(a);
     const types = {
       boolean: 'bit',
     } as Dictionary;

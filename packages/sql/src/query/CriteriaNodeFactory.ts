@@ -133,6 +133,11 @@ export class CriteriaNodeFactory {
       return this.createScalarNode(metadata, childEntity, val, node, key, validate);
     }
 
+    // operator payloads under an unresolvable alias-prefixed key (e.g. `a.meta`) are opaque values, not entity criteria
+    if (!prop && !rawField && Utils.isOperator(key, false) && String(node.key).includes('.')) {
+      return this.createScalarNode(metadata, entityName, val, node, key, validate);
+    }
+
     if (prop?.kind === ReferenceKind.SCALAR && val != null && Object.keys(val).some(f => f in GroupOperator)) {
       throw ValidationError.cannotUseGroupOperatorsInsideScalars(entityName, prop.name, payload);
     }

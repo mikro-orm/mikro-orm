@@ -339,12 +339,17 @@ export class QueryHelper {
       const isJsonProperty = prop?.customType instanceof JsonType && !isRaw(value) && (Utils.isPlainObject(value) ? !['$eq', '$elemMatch'].includes(Object.keys(value)[0]) : !Array.isArray(value));
 
       if (isJsonProperty && prop?.kind !== ReferenceKind.EMBEDDED) {
+        // an explicit alias prefix (e.g. `a.meta`) has to survive, otherwise the condition falls back to the root alias
+        const explicitAlias = (key as string).includes('.')
+          ? (key as string).split('.').slice(0, -1).join('.')
+          : undefined;
+
         return this.processJsonCondition<T>(
           o as FilterQuery<T>,
           value as EntityValue<T>,
           [prop.fieldNames[0]] as EntityKey<T>[],
           platform,
-          aliased,
+          aliased && explicitAlias != null ? explicitAlias : aliased,
         );
       }
 
@@ -516,7 +521,7 @@ export class QueryHelper {
     value: EntityValue<T>,
     path: EntityKey<T>[],
     platform: Platform,
-    alias: boolean,
+    alias: boolean | string,
   ) {
     return platform.processJsonCondition(o, value, path, alias);
   }
