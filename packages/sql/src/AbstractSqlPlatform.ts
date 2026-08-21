@@ -111,11 +111,15 @@ export abstract class AbstractSqlPlatform extends Platform {
   override getSearchJsonPropertyKey(
     path: string[],
     type: string,
-    aliased: boolean,
+    aliased: boolean | string,
     value?: unknown,
   ): string | RawQueryFragment {
     const [a, ...b] = path;
     const jsonPath = this.quoteValue(`$.${b.map(this.quoteJsonKey).join('.')}`);
+
+    if (typeof aliased === 'string') {
+      return raw(`json_extract(${this.quoteIdentifier(`${aliased}.${a}`)}, ${jsonPath})`);
+    }
 
     if (aliased) {
       return raw(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, ${jsonPath})`);
