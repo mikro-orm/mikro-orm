@@ -237,7 +237,8 @@ export class DataloaderUtils {
         const prop = group[0][0].property;
         const options = {} as Dictionary;
         const wrap = (cond: unknown) => ({ [prop.name]: cond });
-        const orderBy = Utils.asArray(group[0][1]?.orderBy).map(o => wrap(o));
+        // `findChildrenFromPivotTable` expects the `orderBy` relative to the target entity, so no wrapping here
+        const orderBy = Utils.asArray(group[0][1]?.orderBy);
         const populate = wrap(group[0][1]?.populate);
         const owners = group.map(c => c[0].owner);
         const $or: Dictionary[] = [];
