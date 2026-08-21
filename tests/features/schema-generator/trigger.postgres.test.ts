@@ -247,4 +247,50 @@ execute function "trg_custom_fn"()`,
     await orm.schema.dropDatabase();
     await orm.close();
   });
+
+  test('trigger with expression escape hatch is not diffed in the reverse direction [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.schema.update();
+
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: {
+          primary: true,
+          name: 'id',
+          type: 'number',
+          fieldName: 'id',
+          columnType: 'int',
+        },
+      },
+      name: 'ExprDownTriggerTable',
+      tableName: 'expr_down_trigger_table',
+      triggers: [
+        {
+          name: 'trg_custom',
+          timing: 'after' as const,
+          events: ['insert' as const],
+          expression: `create or replace function "expr_down_trigger_table_trg_custom_fn"() returns trigger as $$
+begin
+  RETURN NEW;
+end;
+$$ language plpgsql;
+create trigger "trg_custom"
+AFTER INSERT on "expr_down_trigger_table"
+for each ROW
+execute function "expr_down_trigger_table_trg_custom_fn"()`,
+        },
+      ],
+    }).init().meta;
+    meta.set(newTableMeta.class, newTableMeta);
+
+    await orm.schema.execute(await orm.schema.getUpdateSchemaSQL({ wrap: false }));
+
+    const migration = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
+    expect(migration.up).toBe('');
+    expect(migration.down).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
 });
