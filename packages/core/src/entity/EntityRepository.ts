@@ -1,5 +1,5 @@
 import type { PopulatePath } from '../enums.js';
-import type { CreateOptions, EntityManager, MergeOptions } from '../EntityManager.js';
+import type { CreateOptions, EntityManager, MapOptions, MergeOptions } from '../EntityManager.js';
 import type { AssignOptions } from './EntityAssigner.js';
 import type {
   Dictionary,
@@ -258,9 +258,10 @@ export class EntityRepository<Entity extends object> {
   }
 
   /**
-   * Maps raw database result to an entity and merges it to this EntityManager.
+   * Maps raw database result to an entity and merges it to this EntityManager by default.
+   * Use `disableIdentityMap` to return an isolated entity without affecting the current context.
    */
-  map(result: EntityDictionary<Entity>, options?: { schema?: string }): Entity {
+  map(result: EntityDictionary<Entity>, options?: Omit<MapOptions, 'mapped'>): Entity {
     return this.getEntityManager().map(this.entityName, result, options);
   }
 

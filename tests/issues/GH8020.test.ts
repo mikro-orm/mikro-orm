@@ -91,6 +91,24 @@ test('GH #8020: em.map does not convert database-form custom primary key again',
   expect(authorAgain).toBe(author);
 });
 
+test('em.map can bypass the identity map', () => {
+  const em = orm.em.fork();
+  const before = em.map(Tag, { id: 'db-1' }, { disableIdentityMap: true });
+
+  expect(before).toBeInstanceOf(Tag);
+  expect(before.id).toBe('js-1');
+  expect(em.getUnitOfWork().getIdentityMap().values()).toEqual([]);
+
+  const after = em.map(Tag, { id: 'db-1' });
+  const isolated = em.getRepository(Tag).map({ id: 'db-1' }, { disableIdentityMap: true });
+
+  expect(after).not.toBe(before);
+  expect(isolated).not.toBe(after);
+  expect(isolated).not.toBe(before);
+  expect(em.getUnitOfWork().getIdentityMap().values()).toEqual([after]);
+  expect(em.map(Tag, { id: 'db-1' })).toBe(after);
+});
+
 test('GH #8020: em.assign does not convert database-form custom primary key again', () => {
   const em = orm.em.fork();
   const tag = em.map(Tag, { id: 'db-1' });

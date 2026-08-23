@@ -2023,14 +2023,24 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Maps raw database result to an entity and merges it to this EntityManager.
+   * Maps raw database result to an entity and merges it to this EntityManager by default.
+   * Use `disableIdentityMap` to return an isolated entity without affecting the current context.
    */
   map<Entity extends object>(
     entityName: EntityName<Entity>,
     result: EntityDictionary<Entity>,
-    options: { schema?: string; mapped?: boolean } = {},
+    options: MapOptions = {},
   ): Entity {
-    const { mapped, ...rest } = options;
+    if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
+      const em = this.getContext(false);
+      const fork = em.fork({ keepTransactionContext: true });
+      const ret = fork.map(entityName, result, { ...options, disableIdentityMap: false });
+      fork.clear();
+
+      return ret;
+    }
+
+    const { mapped, disableIdentityMap, ...rest } = options;
     const meta = this.metadata.get(entityName);
     const data = (mapped ? result : this.driver.mapResult(result, meta)) as Dictionary;
 
@@ -3294,6 +3304,15 @@ export interface CreateOptions<Convert extends boolean> {
    * With this option, they will be processed early inside `em.create()` method.
    */
   processOnCreateHooksEarly?: boolean;
+}
+
+export interface MapOptions {
+  /** schema to use when mapping the entity */
+  schema?: string;
+  /** set to true when the result is already mapped to entity property names */
+  mapped?: boolean;
+  /** map the entity in an isolated context without adding it to the identity map */
+  disableIdentityMap?: boolean;
 }
 
 export interface MergeOptions {
