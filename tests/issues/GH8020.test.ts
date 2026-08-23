@@ -109,6 +109,29 @@ test('em.map can bypass the identity map', () => {
   expect(em.map(Tag, { id: 'db-1' })).toBe(after);
 });
 
+test('em.map respects the global identity map setting and local override', () => {
+  const em = orm.em.fork();
+  const previous = orm.config.get('disableIdentityMap');
+  orm.config.set('disableIdentityMap', true);
+
+  try {
+    const first = em.map(Tag, { id: 'db-1' });
+    const second = em.map(Tag, { id: 'db-1' });
+
+    expect(second).not.toBe(first);
+    expect(em.getUnitOfWork().getIdentityMap().values()).toEqual([]);
+
+    const managed = em.map(Tag, { id: 'db-1' }, { disableIdentityMap: false });
+
+    expect(managed).not.toBe(first);
+    expect(managed).not.toBe(second);
+    expect(em.getUnitOfWork().getIdentityMap().values()).toEqual([managed]);
+    expect(em.map(Tag, { id: 'db-1' }, { disableIdentityMap: false })).toBe(managed);
+  } finally {
+    orm.config.set('disableIdentityMap', previous);
+  }
+});
+
 test('GH #8020: em.assign does not convert database-form custom primary key again', () => {
   const em = orm.em.fork();
   const tag = em.map(Tag, { id: 'db-1' });
