@@ -452,4 +452,48 @@ describe('check constraint [postgres]', () => {
     await orm.schema.dropDatabase();
     await orm.close();
   });
+
+  test('array-typed cast in a non-enum check keeps brackets balanced on introspection [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.schema.update();
+
+    // pg stores `mode in ('a', 'b')` on a varchar column as
+    // `CHECK (((mode IS NULL) OR ((mode)::text = ANY ((ARRAY['a'::character varying, 'b'::character varying])::text[]))))`
+    // — the array literal is cast as a whole, so the cast strip must consume the array-type suffix
+    // too, otherwise the recovered expression keeps an orphaned `[]` and re-emitting it as DDL is a
+    // syntax error. The `is null` disjunct keeps the check out of the enum-as-check detection, which
+    // would otherwise rebuild the expression from the parsed items and mask the recovery.
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+        mode: { type: 'string', name: 'mode', fieldName: 'mode', columnType: 'varchar(16)', nullable: true },
+      },
+      name: 'ArrayCastCheckTable',
+      tableName: 'array_cast_check_table',
+      checks: [{ name: 'chk_mode', expression: `mode is null or mode in ('a', 'b')` }],
+    }).init().meta;
+    meta.set(newTableMeta.class, newTableMeta);
+
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    await orm.schema.execute(diff);
+
+    const schema = await DatabaseSchema.create(orm.em.getConnection(), orm.em.getPlatform(), orm.config);
+    const check = schema
+      .getTable('array_cast_check_table')!
+      .getChecks()
+      .find(c => c.name === 'chk_mode');
+    expect(check?.expression).toBe(
+      `(mode IS NULL) OR (mode = ANY (ARRAY['a'::character varying, 'b'::character varying]))`,
+    );
+
+    // the recovered expression must be valid SQL again — re-adding the constraint from it must work
+    await orm.schema.execute(`alter table "array_cast_check_table" drop constraint "chk_mode";`);
+    await orm.schema.execute(
+      `alter table "array_cast_check_table" add constraint "chk_mode" check (${check!.expression});`,
+    );
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
 });
