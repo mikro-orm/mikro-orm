@@ -41,6 +41,7 @@ import type {
   Config,
   MaybePromise,
   IndexHints,
+  OptionalProps,
   ExtractDefineEntityProperties,
 } from '../typings.js';
 import type { Raw } from '../utils/RawQueryFragment.js';
@@ -1652,13 +1653,20 @@ type ExtractBaseProperties<Base> = [ExtractDefineEntityProperties<Base>] extends
     : P
   : {};
 
+// Recovers the `[OptionalProps]` declaration of a base entity, so `NarrowDiscriminator` can extend
+// it instead of replacing it; `never` when there is none.
+type ExtractOptionalProps<Base> = Base extends { [OptionalProps]?: infer K } ? (K extends string ? K : never) : never;
+
 // Narrows the inherited discriminator property on `Base` to the literal `DiscValue` so a union
-// of sibling subtypes forms a proper discriminated union (GH #7677). Falls through to `Base`
-// when either marker is absent (parent without `discriminatorColumn`, or self-defined entity).
+// of sibling subtypes forms a proper discriminated union (GH #7677), and marks it optional for
+// `em.create()`, as the ORM fills it in from the schema. Falls through to `Base` when either
+// marker is absent (parent without `discriminatorColumn`, or self-defined entity).
 type NarrowDiscriminator<Base, DiscColumn extends string | undefined, DiscValue> = DiscColumn extends string
   ? DiscColumn extends keyof Base
     ? DiscValue extends string | number
-      ? Omit<Base, DiscColumn> & { [K in DiscColumn]: DiscValue }
+      ? Omit<Base, DiscColumn | typeof OptionalProps> & { [K in DiscColumn]: DiscValue } & {
+          [OptionalProps]?: DiscColumn | ExtractOptionalProps<Base>;
+        }
       : Base
     : Base
   : Base;

@@ -149,6 +149,15 @@ export class EntityFactory {
     }
 
     data = { ...data };
+
+    if (options.newEntity && meta2.root.inheritanceType === 'sti' && meta2.discriminatorValue != null) {
+      const prop = meta2.properties[meta2.root.discriminatorColumn as EntityKey<T>];
+
+      if (prop && prop.userDefined !== false) {
+        data[prop.name] ??= meta2.discriminatorValue as EntityValue<T>;
+      }
+    }
+
     const entity = exists ?? this.createEntity<T>(data, meta2, options);
     wrapped = helper(entity);
     wrapped.__processing = true;
