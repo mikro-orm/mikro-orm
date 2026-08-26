@@ -410,6 +410,25 @@ describe('defineEntity', () => {
     expect(UserSchema.meta.className).toBe('User');
   });
 
+  it('should keep primary key optional in em.create() when extending a plain class', () => {
+    abstract class BaseEntity {
+      id!: number;
+    }
+
+    const TagSchema = defineEntity({
+      name: 'Tag',
+      extends: BaseEntity,
+      properties: {
+        name: p.string(),
+      },
+    });
+
+    type ITag = InferEntity<typeof TagSchema>;
+    assert<IsExact<Primary<ITag>, number>>(true);
+    const data: RequiredEntityData<ITag> = { name: 'ts' };
+    expect(data.name).toBe('ts');
+  });
+
   it('should inherit property initializers from parent class via extends', () => {
     const BaseSchema = defineEntity({
       name: 'BaseWithInit',
