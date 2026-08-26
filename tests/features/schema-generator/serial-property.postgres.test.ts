@@ -141,7 +141,7 @@ test('schema generator works with non-pk autoincrement columns (serial)', async 
     `'type' changed for column something.id { fromColumnType: 'int', toColumnType: 'varchar(255)' }`,
   );
   expect(mock.mock.calls[8][0]).toMatch(
-    `'autoincrement' changed for column something.id { fromColumn: { name: 'id', type: 'int4', mappedType: IntegerType {}, length: null, precision: 32, scale: 0, nullable: false, default: null, unsigned: true, autoincrement: true, comment: null, primary: true, unique: false, enumItems: [] }, toColumn: { name: 'id', type: 'varchar(255)', mappedType: StringType {}, unsigned: false, autoincrement: false, primary: true, nullable: false, length: 255 }}`,
+    `'autoincrement' changed for column something.id { fromColumn: { name: 'id', type: 'int4', mappedType: IntegerType {}, length: null, precision: 32, scale: 0, nullable: false, default: null, unsigned: true, autoincrement: true, comment: null, primary: true, unique: false, enumItems: [] }, toColumn: { name: 'id', type: 'varchar(255)', mappedType: StringType { options: {} }, unsigned: false, autoincrement: false, primary: true, nullable: false, length: 255 }}`,
   );
   expect(mock.mock.calls[9][0]).toMatch(
     `column something.id changed { changedProperties: Set(2) { 'type', 'autoincrement' } }`,
