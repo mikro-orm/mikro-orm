@@ -7,12 +7,11 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **core:** don't double-wrap `orderBy` in M:N dataloader batch load ([#8194](https://github.com/mikro-orm/mikro-orm/issues/8194)) ([20aa5a8](https://github.com/mikro-orm/mikro-orm/commit/20aa5a80c551ef7f36e88f3e5ef2ec080bff48a5)), closes [#8193](https://github.com/mikro-orm/mikro-orm/issues/8193)
-* **core:** don't require the discriminator value when creating an STI entity ([#8201](https://github.com/mikro-orm/mikro-orm/issues/8201)) ([2b0ca9b](https://github.com/mikro-orm/mikro-orm/commit/2b0ca9b1635401b797b96e077211e54a2034aa10)), closes [#7677](https://github.com/mikro-orm/mikro-orm/issues/7677) [#8200](https://github.com/mikro-orm/mikro-orm/issues/8200)
-* **core:** evict referrers holding a removed entity in their primary key ([#8205](https://github.com/mikro-orm/mikro-orm/issues/8205)) ([16d80a9](https://github.com/mikro-orm/mikro-orm/commit/16d80a9b784f01f0ab060e6c0331728dcc420377)), closes [#8203](https://github.com/mikro-orm/mikro-orm/issues/8203)
-* **core:** infer primary key from plain class base in `defineEntity` ([#8207](https://github.com/mikro-orm/mikro-orm/issues/8207)) ([7762f42](https://github.com/mikro-orm/mikro-orm/commit/7762f42e9aa2c4babb28c38066221f27948e43ff))
-* **core:** respect explicit join alias in JSON property conditions ([#8195](https://github.com/mikro-orm/mikro-orm/issues/8195)) ([16a147c](https://github.com/mikro-orm/mikro-orm/commit/16a147c16c86727ff36470c96086a443aa0e3e70)), closes [#8192](https://github.com/mikro-orm/mikro-orm/issues/8192)
-
+- **core:** don't double-wrap `orderBy` in M:N dataloader batch load ([#8194](https://github.com/mikro-orm/mikro-orm/issues/8194)) ([20aa5a8](https://github.com/mikro-orm/mikro-orm/commit/20aa5a80c551ef7f36e88f3e5ef2ec080bff48a5)), closes [#8193](https://github.com/mikro-orm/mikro-orm/issues/8193)
+- **core:** don't require the discriminator value when creating an STI entity ([#8201](https://github.com/mikro-orm/mikro-orm/issues/8201)) ([2b0ca9b](https://github.com/mikro-orm/mikro-orm/commit/2b0ca9b1635401b797b96e077211e54a2034aa10)), closes [#7677](https://github.com/mikro-orm/mikro-orm/issues/7677) [#8200](https://github.com/mikro-orm/mikro-orm/issues/8200)
+- **core:** evict referrers holding a removed entity in their primary key ([#8205](https://github.com/mikro-orm/mikro-orm/issues/8205)) ([16d80a9](https://github.com/mikro-orm/mikro-orm/commit/16d80a9b784f01f0ab060e6c0331728dcc420377)), closes [#8203](https://github.com/mikro-orm/mikro-orm/issues/8203)
+- **core:** infer primary key from plain class base in `defineEntity` ([#8207](https://github.com/mikro-orm/mikro-orm/issues/8207)) ([7762f42](https://github.com/mikro-orm/mikro-orm/commit/7762f42e9aa2c4babb28c38066221f27948e43ff))
+- **core:** respect explicit join alias in JSON property conditions ([#8195](https://github.com/mikro-orm/mikro-orm/issues/8195)) ([16a147c](https://github.com/mikro-orm/mikro-orm/commit/16a147c16c86727ff36470c96086a443aa0e3e70)), closes [#8192](https://github.com/mikro-orm/mikro-orm/issues/8192)
 
 ## [7.1.13](https://github.com/mikro-orm/mikro-orm/compare/v7.1.12...v7.1.13) (2026-08-20)
 
