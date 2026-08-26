@@ -432,7 +432,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options = { ...options };
 
     if (options.entity) {
-      options.entity = Utils.asArray(options.entity).map(n => Utils.className(n)) as any;
+      // classes are kept as references, as minifiers can mangle two classes to the same name
+      options.entity = Utils.asArray(options.entity).map(n =>
+        typeof n === 'function' ? n : Utils.className(n),
+      ) as any;
     }
 
     options.default ??= true;
