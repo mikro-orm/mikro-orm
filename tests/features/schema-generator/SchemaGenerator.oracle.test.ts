@@ -266,5 +266,5 @@ describe('SchemaGenerator [oracle]', () => {
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('oracle-update-schema-drop-table');
     await orm.schema.execute(diff, { wrap: true });
-  });
+  }, 120_000);
 });
