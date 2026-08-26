@@ -134,10 +134,7 @@ export class EventManager {
       return new Set();
     }
 
-    // classes are kept as references, as minifiers can mangle two classes to the same name
-    return new Set(
-      listener.getSubscribedEntities().map(name => (typeof name === 'function' ? name : Utils.className(name))),
-    );
+    return new Set(listener.getSubscribedEntities().map(name => Utils.classOrName(name)));
   }
 }
 

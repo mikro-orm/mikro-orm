@@ -2,6 +2,7 @@ import { clone } from './clone.js';
 import type {
   CompiledFunctions,
   Dictionary,
+  EntityCtor,
   EntityData,
   EntityDictionary,
   EntityKey,
@@ -742,6 +743,23 @@ export class Utils {
     }
 
     return classOrName.name as string;
+  }
+
+  /**
+   * Normalizes an entity reference for identity-safe matching: keeps class references
+   * (minifiers can mangle two classes to the same name) and falls back to the class name otherwise.
+   */
+  static classOrName<T>(classOrName: string | EntityName<T>): EntityCtor<T> | string {
+    return typeof classOrName === 'function' ? (classOrName as EntityCtor<T>) : Utils.className(classOrName);
+  }
+
+  /**
+   * Checks whether the given entity reference points at the given metadata,
+   * comparing classes by identity and strings by class name.
+   */
+  static matchesEntity<T>(classOrName: string | EntityName<T>, meta: EntityMetadata<any>): boolean {
+    const ref = Utils.classOrName(classOrName);
+    return typeof ref === 'function' ? (ref as unknown) === meta.class : ref === meta.className;
   }
 
   static extractChildElements(items: readonly string[], prefix: string, allSymbol?: string): string[] {

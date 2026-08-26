@@ -437,10 +437,7 @@ export class QueryHelper {
     filter: FilterDef,
     options: Dictionary<boolean | Dictionary>,
   ): boolean {
-    const matches = (e: EntityName) =>
-      typeof e === 'function' ? e === meta.class : Utils.className(e) === meta.className;
-
-    if (filter.entity && !Utils.asArray(filter.entity).some(matches)) {
+    if (filter.entity && !Utils.asArray(filter.entity).some(e => Utils.matchesEntity(e, meta))) {
       return false;
     }
 
