@@ -888,9 +888,7 @@ users[0].name = 'changed';
 await em.flush(); // calling flush have no effect, as the entity is not managed
 ```
 
-The same option is available when mapping raw database results manually. This is useful for cases such as CDC
-processing, where a before-image should be converted to an entity without affecting the current context, while the
-after-image can still use the default managed behavior.
+The same option is available when mapping raw database results manually. This is useful for cases such as CDC processing, where a before-image should be converted to an entity without affecting the current context, while the after-image can still use the default managed behavior.
 
 ```ts
 const before = em.map(User, beforeRow, { disableIdentityMap: true });
