@@ -11,14 +11,15 @@ export interface StringTypeOptions {
 export abstract class BaseStringType extends Type<string | null | undefined, string | null | undefined> {
   constructor(readonly options: StringTypeOptions = {}) {
     super();
+
+    // a defined `compareValues` replaces the inline `!==` comparator, so only provide it when normalization is configured
+    if (options.trim || options.case) {
+      this.compareValues = (a, b) => this.normalize(a) === this.normalize(b);
+    }
   }
 
   override convertToDatabaseValue(value: string | null | undefined): string | null | undefined {
     return this.normalize(value);
-  }
-
-  override compareValues(a: string | null | undefined, b: string | null | undefined): boolean {
-    return this.normalize(a) === this.normalize(b);
   }
 
   override compareAsType(): string {

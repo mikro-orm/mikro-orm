@@ -41,8 +41,10 @@ describe('StringType', () => {
   test('compares values by their normalized database representation', () => {
     const type = new StringType({ trim: true, case: 'lower' });
 
-    expect(type.compareValues('  Foo Bar  ', 'foo bar')).toBe(true);
-    expect(type.compareValues('  Foo Bar  ', 'other')).toBe(false);
+    expect(type.compareValues!('  Foo Bar  ', 'foo bar')).toBe(true);
+    expect(type.compareValues!('  Foo Bar  ', 'other')).toBe(false);
+    // without normalization options the default inline comparator is kept
+    expect(new StringType().compareValues).toBeUndefined();
   });
 
   test('applies trim before casing', () => {
@@ -66,7 +68,7 @@ describe('StringType', () => {
 
     expect(type.convertToDatabaseValue('  Foo Bar  ')).toBe('foo bar');
     expect(type.convertToJSValue('  Foo Bar  ', platform)).toBe('  Foo Bar  ');
-    expect(type.compareValues('  Foo Bar  ', 'foo bar')).toBe(true);
+    expect(type.compareValues!('  Foo Bar  ', 'foo bar')).toBe(true);
     expect(type.getDefaultLength).toBeUndefined();
   });
 });

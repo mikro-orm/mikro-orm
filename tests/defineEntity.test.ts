@@ -111,7 +111,7 @@ describe('defineEntity', () => {
     expect((Foo.meta.properties.nullable.type as unknown as TextType).options).toEqual({ case: 'lower' });
     expect(Foo.meta.properties.aliases.array).toBe(true);
 
-    // @ts-expect-error p.string() no longer accepts an options object
+    // @ts-expect-error p.string() does not accept an options object
     expect(p.string({ trim: true, case: 'lower' })).toBeDefined();
     // @ts-expect-error non-string property factories do not accept normalization options
     expect(p.integer({ trim: true })).toBeDefined();
