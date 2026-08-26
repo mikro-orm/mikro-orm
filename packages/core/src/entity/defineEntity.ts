@@ -1284,6 +1284,7 @@ export interface EntityMetadataWithProperties<
   TDiscriminatorColumn extends string | undefined = undefined,
   TDiscriminatorValue extends string | number | undefined = undefined,
   TBaseDiscriminatorColumn extends string | undefined = undefined,
+  TEmbeddable extends boolean = false,
 > extends Omit<
   Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK, TBase, TRepository>>>,
   | 'properties'
@@ -1334,6 +1335,9 @@ export interface EntityMetadataWithProperties<
     strict?: boolean;
   }>;
   forceObject?: TForceObject;
+  // Captured as a literal so `NarrowDiscriminator` can keep the discriminator required for
+  // polymorphic embeddables, where the ORM cannot auto-fill it (the value picks the subtype).
+  embeddable?: TEmbeddable;
 
   // Table-per-type inheritance (each entity has its own table)
   inheritance?: 'tpt';
@@ -1400,6 +1404,7 @@ export function defineEntity<
   const TDiscriminatorColumn extends string | undefined = undefined,
   const TDiscriminatorValue extends string | number | undefined = undefined,
   const TBaseDiscriminatorColumn extends string | undefined = undefined,
+  const TEmbeddable extends boolean = false,
 >(
   meta: EntityMetadataWithProperties<
     TName,
@@ -1411,7 +1416,8 @@ export function defineEntity<
     TForceObject,
     TDiscriminatorColumn,
     TDiscriminatorValue,
-    TBaseDiscriminatorColumn
+    TBaseDiscriminatorColumn,
+    TEmbeddable
   >,
 ): EntitySchemaWithMeta<
   TName,
@@ -1423,7 +1429,8 @@ export function defineEntity<
     TRepository,
     TForceObject,
     TBaseDiscriminatorColumn,
-    TDiscriminatorValue
+    TDiscriminatorValue,
+    TEmbeddable
   >,
   TBase,
   TProperties,
@@ -1435,7 +1442,8 @@ export function defineEntity<
       TRepository,
       TForceObject,
       TBaseDiscriminatorColumn,
-      TDiscriminatorValue
+      TDiscriminatorValue,
+      TEmbeddable
     >
   >,
   TDiscriminatorColumn
@@ -1613,6 +1621,7 @@ export type InferEntityFromProperties<
   ForceObject extends boolean = false,
   BaseDiscriminatorColumn extends string | undefined = undefined,
   DiscriminatorValue extends string | number | undefined = undefined,
+  Embeddable extends boolean = false,
 > = (IsNever<Base> extends true
   ? {}
   : Base extends { toObject(...args: any[]): any }
@@ -1625,7 +1634,12 @@ export type InferEntityFromProperties<
           } & (IsNever<Repository> extends true
               ? {}
               : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository }) &
-            NarrowDiscriminator<Omit<Base, typeof PrimaryKeyProp>, BaseDiscriminatorColumn, DiscriminatorValue>
+            NarrowDiscriminator<
+              Omit<Base, typeof PrimaryKeyProp>,
+              BaseDiscriminatorColumn,
+              DiscriminatorValue,
+              Embeddable
+            >
         >,
         BaseEntityMethodKeys
       >
@@ -1638,7 +1652,7 @@ export type InferEntityFromProperties<
     : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository }) &
   (IsNever<Base> extends true
     ? {}
-    : NarrowDiscriminator<Omit<Base, typeof PrimaryKeyProp>, BaseDiscriminatorColumn, DiscriminatorValue>) &
+    : NarrowDiscriminator<Omit<Base, typeof PrimaryKeyProp>, BaseDiscriminatorColumn, DiscriminatorValue, Embeddable>) &
   (ForceObject extends true ? { [Config]?: DefineConfig<{ forceObject: true }> } : {}) & {
     [IndexHints]?: [Omit<ExtractBaseProperties<Base>, keyof Properties> & Properties];
   };
@@ -1659,14 +1673,23 @@ type ExtractOptionalProps<Base> = Base extends { [OptionalProps]?: infer K } ? (
 
 // Narrows the inherited discriminator property on `Base` to the literal `DiscValue` so a union
 // of sibling subtypes forms a proper discriminated union (GH #7677), and marks it optional for
-// `em.create()`, as the ORM fills it in from the schema. Falls through to `Base` when either
-// marker is absent (parent without `discriminatorColumn`, or self-defined entity).
-type NarrowDiscriminator<Base, DiscColumn extends string | undefined, DiscValue> = DiscColumn extends string
+// `em.create()`, as the ORM fills it in from the schema (GH #8200). Falls through to `Base` when
+// either marker is absent (parent without `discriminatorColumn`, or self-defined entity).
+// Polymorphic embeddables keep the discriminator required — there the provided value is the only
+// thing that identifies which subtype a plain object is, so it cannot be auto-filled.
+type NarrowDiscriminator<
+  Base,
+  DiscColumn extends string | undefined,
+  DiscValue,
+  Embeddable extends boolean = false,
+> = DiscColumn extends string
   ? DiscColumn extends keyof Base
     ? DiscValue extends string | number
-      ? Omit<Base, DiscColumn | typeof OptionalProps> & { [K in DiscColumn]: DiscValue } & {
-          [OptionalProps]?: DiscColumn | ExtractOptionalProps<Base>;
-        }
+      ? Embeddable extends true
+        ? Omit<Base, DiscColumn> & { [K in DiscColumn]: DiscValue }
+        : Omit<Base, DiscColumn | typeof OptionalProps> & { [K in DiscColumn]: DiscValue } & {
+            [OptionalProps]?: DiscColumn | ExtractOptionalProps<Base>;
+          }
       : Base
     : Base
   : Base;
