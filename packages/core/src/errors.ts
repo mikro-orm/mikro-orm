@@ -343,6 +343,12 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`Metadata for entity ${entity} not found`);
   }
 
+  static ambiguousEntityName(className: string): MetadataError {
+    return new MetadataError(
+      `Entity name '${className}' is ambiguous, multiple discovered entity classes share it (possibly due to a minifier mangling class names). Use a class reference instead of a string name.`,
+    );
+  }
+
   static invalidPrimaryKey(meta: EntityMetadata, prop: EntityProperty, requiredName: string): MetadataError {
     return this.fromMessage(meta, prop, `has wrong field name, '${requiredName}' is required in current driver`);
   }

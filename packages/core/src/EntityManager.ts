@@ -3169,7 +3169,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       delete opts[k as keyof typeof opts];
     }
 
-    return [Utils.className(entityName), method, opts, where];
+    // the table name (plus discriminator value for STI) is stable across builds and processes,
+    // unlike class names, which minifiers can mangle to the same short name for two entities
+    const meta = this.metadata.find(entityName);
+    const key = meta?.tableName ? [meta.schema, meta.tableName, meta.discriminatorValue] : Utils.className(entityName);
+
+    return [key, method, opts, where];
   }
 
   /**
