@@ -119,13 +119,12 @@ export abstract class Type<JSType = string, DBType = JSType> {
     DBType = JSType,
     TypeClass extends Constructor<Type<JSType, DBType>> = Constructor<Type<JSType, DBType>>,
   >(cls: TypeClass): InstanceType<TypeClass> {
-    const key = cls.name;
-
-    if (!Type.types.has(key)) {
-      Type.types.set(key, new cls());
+    // keyed by class reference, as minifiers can mangle two classes to the same name
+    if (!Type.types.has(cls)) {
+      Type.types.set(cls, new cls());
     }
 
-    return Type.types.get(key);
+    return Type.types.get(cls);
   }
 
   /**

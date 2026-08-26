@@ -437,7 +437,7 @@ export class QueryHelper {
     filter: FilterDef,
     options: Dictionary<boolean | Dictionary>,
   ): boolean {
-    if (filter.entity && !(filter.entity as string[]).includes(meta.className)) {
+    if (filter.entity && !Utils.asArray(filter.entity).some(e => Utils.matchesEntity(e, meta))) {
       return false;
     }
 

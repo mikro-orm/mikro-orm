@@ -473,8 +473,13 @@ export class EntityRepository<Entity extends object> {
 
     const entityName = entities[0].constructor.name;
     const repoType = Utils.className(this.entityName);
+    // compare class identity where possible, as minifiers can mangle two classes to the same name
+    const entityMeta = (entities[0] as Dictionary).__meta;
+    const repoMeta = this.getEntityManager().getMetadata?.().find(this.entityName);
+    const mismatch =
+      entityMeta && repoMeta ? entityMeta.class !== repoMeta.class : entityName && repoType !== entityName;
 
-    if (entityName && repoType !== entityName) {
+    if (mismatch) {
       throw ValidationError.fromWrongRepositoryType(entityName, repoType, method);
     }
   }

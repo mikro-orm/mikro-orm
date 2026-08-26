@@ -22,6 +22,7 @@ export class MetadataStorage {
   readonly #idMap: Record<number, EntityMetadata>;
   readonly #classNameMap: Record<string, EntityMetadata>;
   readonly #uniqueNameMap: Record<string, EntityMetadata>;
+  readonly #ambiguousNames = new Set<string>();
 
   constructor(metadata: Dictionary<EntityMetadata> = {}) {
     this.#idMap = {};
@@ -89,6 +90,11 @@ export class MetadataStorage {
 
   /** Returns metadata for the given entity, optionally initializing it if not found. */
   get<T = any>(entityName: EntityName<T>, init = false): EntityMetadata<T> {
+    // string lookups cannot be resolved when several classes were minified to the same name
+    if (typeof entityName === 'string' && this.#ambiguousNames.has(entityName)) {
+      throw MetadataError.ambiguousEntityName(entityName);
+    }
+
     const exists = this.find(entityName);
 
     if (exists) {
@@ -136,7 +142,15 @@ export class MetadataStorage {
     this.#metadataMap.set(entityName, meta);
     this.#idMap[meta._id] = meta;
     this.#uniqueNameMap[meta.uniqueName] = meta;
-    this.#classNameMap[Utils.className(entityName)] = meta;
+    const className = Utils.className(entityName);
+    const existing = this.#classNameMap[className];
+
+    // track name collisions caused by minifiers mangling two classes to the same name
+    if (existing && existing !== meta && existing.class !== meta.class) {
+      this.#ambiguousNames.add(className);
+    }
+
+    this.#classNameMap[className] = meta;
 
     return meta;
   }
@@ -150,6 +164,15 @@ export class MetadataStorage {
       delete this.#idMap[meta._id];
       delete this.#uniqueNameMap[meta.uniqueName];
       delete this.#classNameMap[meta.className];
+
+      // the name may still be ambiguous among the remaining metas
+      const remaining = new Set(
+        [...this.#metadataMap.values()].filter(m => m.className === meta.className).map(m => m.class),
+      );
+
+      if (remaining.size <= 1) {
+        this.#ambiguousNames.delete(meta.className);
+      }
     }
   }
 

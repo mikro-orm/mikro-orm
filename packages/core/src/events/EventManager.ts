@@ -1,4 +1,4 @@
-import type { AnyEntity, AsyncFunction, EntityKey, EntityMetadata } from '../typings.js';
+import type { AnyEntity, AsyncFunction, EntityClass, EntityKey, EntityMetadata } from '../typings.js';
 import type { EventArgs, EventSubscriber, FlushEventArgs, TransactionEventArgs } from './EventSubscriber.js';
 import { Utils } from '../utils/Utils.js';
 import { EventType, EventTypeMap, type TransactionEventType } from '../enums.js';
@@ -6,7 +6,7 @@ import { EventType, EventTypeMap, type TransactionEventType } from '../enums.js'
 /** Manages event subscribers and dispatches entity/flush/transaction lifecycle events. */
 export class EventManager {
   readonly #listeners: { [K in EventType]?: Set<EventSubscriber> } = {};
-  readonly #entities = new Map<EventSubscriber, Set<string>>();
+  readonly #entities = new Map<EventSubscriber, Set<string | EntityClass>>();
   readonly #cache = new Map<number, boolean>();
   readonly #subscribers = new Set<EventSubscriber>();
 
@@ -75,7 +75,12 @@ export class EventManager {
     for (const listener of this.#listeners[event] ?? new Set()) {
       const entities = this.#entities.get(listener)!;
 
-      if (entities.size === 0 || !entity || entities.has(entity.constructor.name)) {
+      if (
+        entities.size === 0 ||
+        !entity ||
+        entities.has(entity.constructor as EntityClass) ||
+        entities.has(entity.constructor.name)
+      ) {
         listeners.push(listener[event]!.bind(listener) as AsyncFunction);
       }
     }
@@ -109,7 +114,7 @@ export class EventManager {
     for (const listener of this.#listeners[event] ?? new Set()) {
       const entities = this.#entities.get(listener)!;
 
-      if (entities.size === 0 || entities.has(meta.className)) {
+      if (entities.size === 0 || entities.has(meta.class) || entities.has(meta.className)) {
         this.#cache.set(cacheKey, true);
         return true;
       }
@@ -124,12 +129,12 @@ export class EventManager {
     return new EventManager(this.#subscribers);
   }
 
-  private getSubscribedEntities(listener: EventSubscriber): Set<string> {
+  private getSubscribedEntities(listener: EventSubscriber): Set<string | EntityClass> {
     if (!listener.getSubscribedEntities) {
       return new Set();
     }
 
-    return new Set(listener.getSubscribedEntities().map(name => Utils.className(name)));
+    return new Set(listener.getSubscribedEntities().map(name => Utils.classOrName(name)));
   }
 }
 

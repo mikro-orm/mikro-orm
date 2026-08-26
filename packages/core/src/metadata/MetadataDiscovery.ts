@@ -2749,7 +2749,7 @@ export class MetadataDiscovery {
     const forceConstructor = this.#config.get('forceEntityConstructor');
 
     if (Array.isArray(forceConstructor)) {
-      return forceConstructor.some(cls => Utils.className(cls) === meta.className);
+      return forceConstructor.some(cls => Utils.matchesEntity(cls, meta));
     }
 
     return forceConstructor;
