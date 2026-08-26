@@ -1699,8 +1699,20 @@ type InferCombinedPrimaryKey<Properties extends Record<string, any>, PK, Base> =
   ? CombinePrimaryKeys<InferPrimaryKey<Properties>, ExtractBasePrimaryKey<Base>>
   : PK;
 
-// Extract primary key from base entity type
-type ExtractBasePrimaryKey<Base> = Base extends { [PrimaryKeyProp]?: infer BasePK } ? BasePK : never;
+// Extract primary key from base entity type, falling back to `_id`/`id`/`uuid` detection (as in `Primary`) for plain classes without `[PrimaryKeyProp]`
+type ExtractBasePrimaryKey<Base> = typeof PrimaryKeyProp extends keyof Base
+  ? Base extends { [PrimaryKeyProp]?: infer BasePK }
+    ? BasePK
+    : never
+  : [keyof Base] extends [never] // a structurally empty base would falsely match the weak `{ _id?: any }` check below
+    ? never
+    : Base extends { _id?: any }
+      ? '_id'
+      : Base extends { id?: any }
+        ? 'id'
+        : Base extends { uuid?: any }
+          ? 'uuid'
+          : never;
 
 // Combine child and base primary keys into a union
 type CombinePrimaryKeys<ChildPK, BasePK> = [ChildPK] extends [never]
