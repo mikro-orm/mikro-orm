@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.14](https://github.com/mikro-orm/mikro-orm/compare/v7.1.13...v7.1.14) (2026-08-26)
+
+**Note:** Version bump only for package @mikro-orm/knex-compat
+
+
+
+
+
 ## [7.1.13](https://github.com/mikro-orm/mikro-orm/compare/v7.1.12...v7.1.13) (2026-08-20)
 
 **Note:** Version bump only for package @mikro-orm/knex-compat

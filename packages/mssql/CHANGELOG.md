@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.14](https://github.com/mikro-orm/mikro-orm/compare/v7.1.13...v7.1.14) (2026-08-26)
+
+### Bug Fixes
+
+* **core:** respect explicit join alias in JSON property conditions ([#8195](https://github.com/mikro-orm/mikro-orm/issues/8195)) ([16a147c](https://github.com/mikro-orm/mikro-orm/commit/16a147c16c86727ff36470c96086a443aa0e3e70)), closes [#8192](https://github.com/mikro-orm/mikro-orm/issues/8192)
+
+
 ## [7.1.13](https://github.com/mikro-orm/mikro-orm/compare/v7.1.12...v7.1.13) (2026-08-20)
 
 **Note:** Version bump only for package @mikro-orm/mssql

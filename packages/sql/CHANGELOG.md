@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.14](https://github.com/mikro-orm/mikro-orm/compare/v7.1.13...v7.1.14) (2026-08-26)
+
+### Bug Fixes
+
+* **core:** respect explicit join alias in JSON property conditions ([#8195](https://github.com/mikro-orm/mikro-orm/issues/8195)) ([16a147c](https://github.com/mikro-orm/mikro-orm/commit/16a147c16c86727ff36470c96086a443aa0e3e70)), closes [#8192](https://github.com/mikro-orm/mikro-orm/issues/8192)
+* **postgres:** strip array-typed casts cleanly when recovering check constraints ([#8198](https://github.com/mikro-orm/mikro-orm/issues/8198)) ([2b3d9c3](https://github.com/mikro-orm/mikro-orm/commit/2b3d9c33f2d805d827af44771ea34a7691cbf240)), closes [#8197](https://github.com/mikro-orm/mikro-orm/issues/8197)
+* **sql:** keep row-value tuples in `$in` on a `raw()` key ([#8202](https://github.com/mikro-orm/mikro-orm/issues/8202)) ([7c2e382](https://github.com/mikro-orm/mikro-orm/commit/7c2e38250cc51845fe1bfe432b0ced8995f9c95b))
+* **sql:** skip trigger diff when only one side uses `expression` ([#8191](https://github.com/mikro-orm/mikro-orm/issues/8191)) ([e486d39](https://github.com/mikro-orm/mikro-orm/commit/e486d39daf8f2ff8a0becd7756339e03adef5def)), closes [#8190](https://github.com/mikro-orm/mikro-orm/issues/8190)
+
+
 ## [7.1.13](https://github.com/mikro-orm/mikro-orm/compare/v7.1.12...v7.1.13) (2026-08-20)
 
 ### Bug Fixes
