@@ -43,12 +43,8 @@ afterAll(async () => {
 
 const tupleKey = () => raw('([tool].[class_id], [tool].[role_id])');
 
-// SQL Server has no row value constructor. `MsSqlPlatform.allowsComparingTuples()` returns false
-// so that the ORM can decompose a composite key it renders itself into `(a = ? and b = ?) or ...`,
-// but that rewrite needs the individual column names and a raw fragment does not expose them --
-// it is an opaque SQL string. So the row-value form is emitted as written and mssql rejects it,
-// exactly as it did in v6 where knex rendered the same shape for a raw key. Grouping the tuples
-// is still the right output; it is just not something mssql can run. Use `$or` over the columns.
+// SQL Server has no row value constructor, and a raw key cannot be decomposed into per-column
+// comparisons (its column names are not recoverable), so the row-value form is emitted and rejected
 test('a raw column tuple is emitted as a row value and rejected by the driver', async () => {
   const qb = orm.em
     .createQueryBuilder(Tool, 'tool')

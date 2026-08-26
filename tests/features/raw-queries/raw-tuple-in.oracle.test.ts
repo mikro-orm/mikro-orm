@@ -42,13 +42,8 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-// A raw key can hold a column tuple, and the pairs are meaningful together --
-// `classId in (1, 2) and roleId in (1, 2)` is a different, wider condition.
-//
-// `OraclePlatform.allowsComparingTuples()` returns false, so the ORM avoids row values when it
-// renders a composite key itself. That opt-out is more conservative than the database requires:
-// Oracle does accept row-value comparisons, and a raw fragment gets them either way, since its
-// column names are not recoverable from the SQL string and cannot be compared one by one.
+// Oracle accepts row-value comparisons even though `allowsComparingTuples()` returns false,
+// and a raw key cannot be decomposed anyway, so the row-value form is emitted and runs fine
 const tupleKey = () => raw('("tool"."class_id", "tool"."role_id")');
 
 test('tuple $in on a raw key renders a row-value comparison', async () => {

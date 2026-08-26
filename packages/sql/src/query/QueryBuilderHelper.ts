@@ -782,8 +782,7 @@ export class QueryBuilderHelper {
     const replacement = this.getOperatorReplacement(op, value);
     const rawField = Raw.isKnownFragmentSymbol(key);
     const fields = rawField ? [key as unknown as string] : Utils.splitPrimaryKeys(key);
-    // a raw key can hold a column tuple like `(a, b)`, but its arity is opaque, so we detect the
-    // row-value form from the payload instead: an `$in`/`$nin` list where every item is an array
+    // a raw key's arity is opaque, so the row-value form is detected from the payload instead
     const rowValues =
       rawField &&
       ['$in', '$nin'].includes(op) &&
