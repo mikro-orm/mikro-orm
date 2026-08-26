@@ -890,6 +890,13 @@ users[0].name = 'changed';
 await em.flush(); // calling flush have no effect, as the entity is not managed
 ```
 
+The same option is available when mapping raw database results manually. This is useful for cases such as CDC processing, where a before-image should be converted to an entity without affecting the current context, while the after-image can still use the default managed behavior.
+
+```ts
+const before = em.map(User, beforeRow, { disableIdentityMap: true });
+const after = em.map(User, afterRow);
+```
+
 > Keep in mind that this can also have [negative effect on the performance](https://stackoverflow.com/questions/9259480/entity-framework-mergeoption-notracking-bad-performance).
 
 ## Entity Repositories
