@@ -710,6 +710,9 @@ export class UnitOfWork {
         ) {
           if (prop.formula) {
             delete referrer[prop.name];
+          } else if (prop.primary) {
+            // the referrer's primary key contains the removed entity, so its identity cannot survive the removal
+            this.unsetIdentity(referrer);
           } else {
             delete helper(referrer).__data[prop.name];
           }
