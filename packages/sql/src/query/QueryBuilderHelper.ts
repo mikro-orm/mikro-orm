@@ -782,6 +782,12 @@ export class QueryBuilderHelper {
     const replacement = this.getOperatorReplacement(op, value);
     const rawField = Raw.isKnownFragmentSymbol(key);
     const fields = rawField ? [key as unknown as string] : Utils.splitPrimaryKeys(key);
+    // a raw key's arity is opaque, so the row-value form is detected from the payload instead
+    const rowValues =
+      rawField &&
+      ['$in', '$nin'].includes(op) &&
+      Array.isArray(value[op]) &&
+      value[op].every((v: unknown) => Array.isArray(v));
 
     if (fields.length > 1 && Array.isArray(value[op])) {
       const singleTuple = !value[op].every((v: unknown) => Array.isArray(v));
@@ -861,7 +867,7 @@ export class QueryBuilderHelper {
         params.push(...query.params);
       } else {
         const mappedKey = this.mapper(key, type, opValue, null);
-        const val = this.getValueReplacement(fields, opValue, params, op, prop);
+        const val = this.getValueReplacement(fields, opValue, params, op, prop, rowValues);
 
         parts.push(`${this.#platform.quoteIdentifier(mappedKey)} ${replacement} ${val}`);
       }
@@ -876,9 +882,10 @@ export class QueryBuilderHelper {
     params: unknown[],
     key?: string,
     prop?: EntityProperty,
+    rowValues = false,
   ): string {
     if (Array.isArray(value)) {
-      if (fields.length > 1) {
+      if (fields.length > 1 || rowValues) {
         const tmp = [];
 
         for (const field of value) {
