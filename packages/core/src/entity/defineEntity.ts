@@ -57,7 +57,7 @@ import type {
 } from '../enums.js';
 import type { EventSubscriber } from '../events/EventSubscriber.js';
 import type { IType, Type } from '../types/Type.js';
-import { types } from '../types/index.js';
+import { type StringTypeOptions, types } from '../types/index.js';
 import { EntitySchema } from '../metadata/EntitySchema.js';
 import type { Collection } from './Collection.js';
 import type { FilterOptions, FindOptions, FindOneOptions } from '../drivers/IDatabaseDriver.js';
@@ -1071,6 +1071,36 @@ export class UniversalPropertyOptionsBuilder<
 export interface EmptyOptions extends Partial<Record<UniversalPropertyKeys, unknown>> {}
 
 /** @internal */
+export class StringPropertyOptionsBuilder<Value, Options> extends UniversalPropertyOptionsBuilder<
+  Value,
+  Options,
+  IncludeKeysForProperty
+> {
+  trim(): StringPropertyOptionsBuilder<Value, Options> {
+    return this.withOptions({ trim: true });
+  }
+
+  lowercase(): StringPropertyOptionsBuilder<Value, Options> {
+    return this.withOptions({ case: 'lower' });
+  }
+
+  uppercase(): StringPropertyOptionsBuilder<Value, Options> {
+    return this.withOptions({ case: 'upper' });
+  }
+
+  private withOptions(options: StringTypeOptions): StringPropertyOptionsBuilder<Value, Options> {
+    const type = (this['~options'] as Dictionary).type;
+    const TypeClass = typeof type === 'function' ? type : type.constructor;
+    const currentOptions = typeof type === 'function' ? {} : type.options;
+
+    return new StringPropertyOptionsBuilder({
+      ...this['~options'],
+      type: new TypeClass({ ...currentOptions, ...options }),
+    });
+  }
+}
+
+/** @internal */
 export class OneToManyOptionsBuilderOnlyMappedBy<Value extends object> extends UniversalPropertyOptionsBuilder<
   Value,
   EmptyOptions & { kind: '1:m' },
@@ -1129,6 +1159,16 @@ const propertyBuilders: PropertyBuilders = {
     >({ type: new types.decimal(mode) }),
 
   json: <T>() => new UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>({ type: types.json }),
+
+  string: () =>
+    new StringPropertyOptionsBuilder<InferPropertyValueType<typeof types.string>, EmptyOptions>({
+      type: types.string,
+    }),
+
+  text: () =>
+    new StringPropertyOptionsBuilder<InferPropertyValueType<typeof types.text>, EmptyOptions>({
+      type: types.text,
+    }),
 
   formula: <T>(formula: string | FormulaCallback<any>) =>
     new UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>({ formula }),
@@ -1197,7 +1237,16 @@ const propertyBuilders: PropertyBuilders = {
     }) as any,
 } as PropertyBuilders;
 
-type PropertyBuildersOverrideKeys = 'bigint' | 'array' | 'decimal' | 'json' | 'datetime' | 'time' | 'enum';
+type PropertyBuildersOverrideKeys =
+  | 'bigint'
+  | 'array'
+  | 'decimal'
+  | 'json'
+  | 'string'
+  | 'text'
+  | 'datetime'
+  | 'time'
+  | 'enum';
 
 /** Map of factory functions for creating type-safe property builders (scalars, enums, embeddables, and relations). */
 export type PropertyBuilders = {
@@ -1230,6 +1279,8 @@ export type PropertyBuilders = {
     IncludeKeysForProperty
   >;
   json: <T>() => UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>;
+  string: () => StringPropertyOptionsBuilder<InferPropertyValueType<typeof types.string>, EmptyOptions>;
+  text: () => StringPropertyOptionsBuilder<InferPropertyValueType<typeof types.text>, EmptyOptions>;
   formula: <T>(
     formula: string | FormulaCallback<any>,
   ) => UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>;
