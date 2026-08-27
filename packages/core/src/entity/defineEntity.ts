@@ -762,7 +762,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
    * @see https://mikro-orm.io/docs/serializing#property-serializers
    */
   serializer(
-    serializer: (value: SerializerValue<Value, Options>, options?: SerializeOptions<any>) => any,
+    serializer: (value: Value, options?: SerializeOptions<any>) => any,
   ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ serializer });
   }
@@ -1754,11 +1754,8 @@ type InferBuilderValue<Builder> = Builder extends { '~type'?: { value: infer Val
 
 type MaybeArray<Value, Options> = Options extends { array: true } ? Value[] : Value;
 
-/** The runtime value passed to a custom serializer — the property value as stored on the entity (e.g. `Collection`/`Ref` for relations), without the `Opt`/`Hidden` branding. */
-type SerializerValue<Value, Options> = MaybeScalarRef<
-  MaybeNullable<MaybeRelationRef<MaybeMapToPk<MaybeArray<Value, Options>, Options>, Options>, Options>,
-  Options
->;
+/** The runtime value passed to a custom serializer — the property value as stored on the entity (e.g. `Collection`/`Ref` for relations). Skips `MaybeMapToPk`, as its `Primary<Value>` branch is too costly for the type checker. */
+type SerializerValue<Value, Options> = MaybeNullable<MaybeRelationRef<MaybeArray<Value, Options>, Options>, Options>;
 
 type MaybeMapToPk<Value, Options> = Options extends { mapToPk: true } ? Primary<Value> : Value;
 
