@@ -153,7 +153,9 @@ export interface PropertyChain<Value, Options> {
   getter(getter?: boolean): PropertyChain<Value, Options>;
   getterName(getterName: string): PropertyChain<Value, Options>;
   serializedPrimaryKey(serializedPrimaryKey?: boolean): PropertyChain<Value, Options>;
-  serializer(serializer: (value: Value, options?: SerializeOptions<any>) => any): PropertyChain<Value, Options>;
+  serializer(
+    serializer: (value: SerializerValue<Value, Options>, options?: SerializeOptions<any>) => any,
+  ): PropertyChain<Value, Options>;
   serializedName(serializedName: string): PropertyChain<Value, Options>;
   groups(...groups: string[]): PropertyChain<Value, Options>;
   customOrder(...customOrder: string[] | number[] | boolean[]): PropertyChain<Value, Options>;
@@ -1064,7 +1066,7 @@ export class OneToManyOptionsBuilderOnlyMappedBy<Value extends object> extends U
     UniversalPropertyOptionsBuilder<Value, EmptyOptions & { kind: '1:m' }, IncludeKeysForOneToManyOptions>,
     IncludeKeysForOneToManyOptions
   > {
-    return new UniversalPropertyOptionsBuilder({ ...this['~options'], mappedBy });
+    return this.assignOptions({ mappedBy });
   }
 }
 
@@ -1751,6 +1753,9 @@ type InferBuilderValue<Builder> = Builder extends { '~type'?: { value: infer Val
   : never;
 
 type MaybeArray<Value, Options> = Options extends { array: true } ? Value[] : Value;
+
+/** The runtime value passed to a custom serializer — the property value as stored on the entity (e.g. `Collection`/`Ref` for relations). Skips `MaybeMapToPk`, as its `Primary<Value>` branch is too costly for the type checker. */
+type SerializerValue<Value, Options> = MaybeNullable<MaybeRelationRef<MaybeArray<Value, Options>, Options>, Options>;
 
 type MaybeMapToPk<Value, Options> = Options extends { mapToPk: true } ? Primary<Value> : Value;
 
