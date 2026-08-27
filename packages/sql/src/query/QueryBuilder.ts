@@ -2475,13 +2475,16 @@ export class QueryBuilder<
 
     if (!join && options?.ignoreBranching) {
       join = joins.find(j => {
-        return j.path?.replace(/\[\d+]/g, '') === path.replace(/\[\d+]/g, '');
+        return j.path?.replace(/\[\d+]/g, '') === path.replace(/\[\d+]/g, '') && !this.branchesConflict(j.path!, path);
       });
     }
 
     if (!join && options?.matchPopulateJoins && options?.ignoreBranching) {
       join = joins.find(j => {
-        return j.path?.replace(/\[\d+]|\[populate]/g, '') === path.replace(/\[\d+]|\[populate]/g, '');
+        return (
+          j.path?.replace(/\[\d+]|\[populate]/g, '') === path.replace(/\[\d+]|\[populate]/g, '') &&
+          !this.branchesConflict(j.path!, path)
+        );
       });
     }
 
@@ -2492,6 +2495,13 @@ export class QueryBuilder<
     }
 
     return join;
+  }
+
+  /** Branch-insensitive path matching still must not cross branches — segments with different explicit branch markers (e.g. `Mobile[0]` vs `Mobile[1]`) belong to sibling joins. */
+  private branchesConflict(path1: string, path2: string): boolean {
+    const markers = (path: string) => path.split('.').map(segment => /\[(\d+)]/.exec(segment)?.[1]);
+    const markers2 = markers(path2);
+    return markers(path1).some((m, idx) => m != null && markers2[idx] != null && m !== markers2[idx]);
   }
 
   /**
