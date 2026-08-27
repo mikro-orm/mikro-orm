@@ -514,10 +514,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@electric-sql/pglite@npm:0.5.7":
-  version: 0.5.7
-  resolution: "@electric-sql/pglite@npm:0.5.7"
-  checksum: 10/0a9bcb8a921bb4d6f1f316979d4d8cd0c9762e0e27643e16d67bb687209c8a5027cbfbc8eb93f1b57f67fc36d7ebcb5859590f8cbb0b0a1fbbc52d0220cdc1c9
+"@electric-sql/pglite@npm:0.5.8":
+  version: 0.5.8
+  resolution: "@electric-sql/pglite@npm:0.5.8"
+  checksum: 10/6c614347c7333eaea5d189d385c0de5436862712a7f41e2d15a3287184e86f98889d714c638bfbd02bd2c9e4d161ed3e14e1cde019609b4a7f70c3215147d553
   languageName: node
   linkType: hard
 
@@ -1416,7 +1416,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/pglite@workspace:packages/pglite"
   dependencies:
-    "@electric-sql/pglite": "npm:0.5.7"
+    "@electric-sql/pglite": "npm:0.5.8"
     "@mikro-orm/core": "npm:^7.1.14"
     "@mikro-orm/sql": "npm:7.1.14"
     kysely: "npm:0.29.5"
