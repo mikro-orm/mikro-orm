@@ -1470,7 +1470,10 @@ export class QueryBuilder<
    * @internal
    */
   scheduleFilterCheck(path: string): void {
-    this.#state.autoJoinedPaths.push(path);
+    // deduplicate so filters forming a relation cycle cannot reschedule an already visited path forever
+    if (!this.#state.autoJoinedPaths.includes(path)) {
+      this.#state.autoJoinedPaths.push(path);
+    }
   }
 
   /**
