@@ -581,7 +581,19 @@ export class MetadataDiscovery {
 
     if (prop.kind === ReferenceKind.SCALAR || prop.kind === ReferenceKind.EMBEDDED) {
       prop.fieldNames = [this.#namingStrategy.propertyToColumnName(prop.name, object)];
-    } else if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && !prop.polymorphic) {
+    } else if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && prop.polymorphic) {
+      if (prop.targetMeta) {
+        // same layout as `initManyToOneFields` builds later: `[discriminatorColumn, ...fkIdColumns]`
+        const pkFields = prop.targetMeta.getPrimaryProps().flatMap(pk => {
+          this.initFieldName(pk);
+          return pk.fieldNames;
+        });
+        const idColumns = pkFields.map(fieldName =>
+          this.#namingStrategy.joinKeyColumnName(prop.discriminator!, fieldName, pkFields.length > 1),
+        );
+        prop.fieldNames = [prop.discriminatorColumn!, ...idColumns];
+      }
+    } else if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
       prop.fieldNames = this.initManyToOneFieldName(prop, prop.name);
     } else if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner) {
       prop.fieldNames = this.initManyToManyFieldName(prop, prop.name);
@@ -1645,8 +1657,18 @@ export class MetadataDiscovery {
         meta.properties[name].nullable = true;
       }
 
+      // polymorphic relations derive their column names from the discriminator, so prefix it too
+      if (meta.properties[name].polymorphic && !object) {
+        meta.properties[name].discriminator = prefix + meta.properties[name].discriminator;
+        meta.properties[name].discriminatorColumn = prefix + meta.properties[name].discriminatorColumn;
+      }
+
       if (meta.properties[name].fieldNames) {
-        meta.properties[name].fieldNames[0] = prefix + meta.properties[name].fieldNames[0];
+        const { fieldNames, polymorphic } = meta.properties[name];
+        // polymorphic `fieldNames` hold `[discriminatorColumn, ...fkIdColumns]`, so prefix all of them
+        for (let i = 0; i < (polymorphic ? fieldNames.length : 1); i++) {
+          fieldNames[i] = prefix + fieldNames[i];
+        }
       } else {
         const name2 = meta.properties[name].name;
         meta.properties[name].name = prefix + prop.name;
