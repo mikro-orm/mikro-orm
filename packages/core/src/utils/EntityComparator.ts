@@ -840,7 +840,7 @@ export class EntityComparator {
           ret += `    ret${dataKey} = entity${entityKey};\n`;
         }
       } else if (prop.polymorphic) {
-        const discriminatorMapKey = `discriminatorMapReverse_${prop.name}`;
+        const discriminatorMapKey = `discriminatorMapReverse_${this.safeKey(prop.name)}`;
         const reverseMap = new Map<Function, string>();
 
         for (const [key, value] of Object.entries(prop.discriminatorMap!)) {

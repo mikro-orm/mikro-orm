@@ -581,8 +581,12 @@ export class MetadataDiscovery {
 
     if (prop.kind === ReferenceKind.SCALAR || prop.kind === ReferenceKind.EMBEDDED) {
       prop.fieldNames = [this.#namingStrategy.propertyToColumnName(prop.name, object)];
-    } else if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && !prop.polymorphic) {
-      prop.fieldNames = this.initManyToOneFieldName(prop, prop.name);
+    } else if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
+      if (prop.polymorphic && prop.polymorphTargets) {
+        this.initManyToOneFields(prop);
+      } else if (!prop.polymorphic) {
+        prop.fieldNames = this.initManyToOneFieldName(prop, prop.name);
+      }
     } else if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner) {
       prop.fieldNames = this.initManyToManyFieldName(prop, prop.name);
     }
