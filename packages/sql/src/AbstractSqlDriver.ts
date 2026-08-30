@@ -2402,6 +2402,12 @@ export abstract class AbstractSqlDriver<
         return false;
       }
 
+      // Polymorphic to-one flattened from an object embeddable lives inside a JSON column, so the join
+      // conditions would need JSON extraction for both the discriminator and the FK; fall back to SELECT_IN.
+      if (prop.polymorphic && prop.object && prop.embedded) {
+        return false;
+      }
+
       if (strategy !== LoadStrategy.JOINED) {
         // force joined strategy for explicit 1:1 owner populate hint as it would require a join anyway
         return prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner;

@@ -407,9 +407,10 @@ export class EntityLoader {
           continue;
         }
         toPopulate.push(entity);
-      } else if (refValue == null && !helper(entity).__loadedProperties.has(prop.name)) {
+      } else if (refValue == null && !prop.object && !helper(entity).__loadedProperties.has(prop.name)) {
         // FK columns weren't loaded (partial loading) — need to re-fetch them.
         // If the property IS in __loadedProperties, the FK was loaded and is genuinely null.
+        // Object-embedded virtual props are skipped — they are populated via the embeddable instance.
         needsFkLoad.push(entity);
       }
     }

@@ -1,0 +1,14 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`GH #8217 polymorphic relation inside an embeddable 1`] = `
+"create table \`sub_entity1\` (\`id\` integer not null primary key autoincrement);
+
+create table \`object_owner\` (\`id\` integer not null primary key autoincrement, \`embeddable\` json not null);
+create index \`object_owner_embeddable_subentity_type_index\` on \`object_owner\` ((json_extract(embeddable, '$.subentity_type')));
+
+create table \`inline_owner\` (\`id\` integer not null primary key autoincrement, \`embeddable_subentity_type\` text not null, \`embeddable_subentity_id\` integer not null);
+create index \`inline_owner_embeddable_subentity_type_embeddable_subentity_id_index\` on \`inline_owner\` (\`embeddable_subentity_type\`, \`embeddable_subentity_id\`);
+
+create table \`sub_entity2\` (\`id\` integer not null primary key autoincrement);
+"
+`;
