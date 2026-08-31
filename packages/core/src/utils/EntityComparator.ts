@@ -1072,7 +1072,12 @@ export class EntityComparator {
       return key;
     }
 
-    return /^\w+$/.exec(key) ? `.${key}` : `[${JSON.stringify(key)}]`;
+    return /^\w+$/.exec(key) ? `.${key}` : `[${this.quote(key)}]`;
+  }
+
+  /** Renders a key as a single-quoted JS string literal, safe to embed in generated code. */
+  private quote(key: string): string {
+    return `'${key.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
   }
 
   private safeKey(key: string): string {

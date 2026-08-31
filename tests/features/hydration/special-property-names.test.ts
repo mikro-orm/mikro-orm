@@ -8,7 +8,7 @@ interface IFoo {
 // Property names are embedded into the JIT-compiled hydrator/comparator source. Names that are not
 // plain identifiers (quotes, brackets, dots, whitespace) must be emitted as data, not as raw code,
 // otherwise they break the generated function or change its behaviour.
-const weirdNames = [`weird'quote`, '[bracket]', 'has.dot', 'has space', 'back`tick', 'dollar${x}'];
+const weirdNames = [`weird'quote`, '[bracket]', 'has.dot', 'has space', 'back`tick', 'dollar${x}', 'back\\slash'];
 
 function buildSchema() {
   const schema = new EntitySchema<IFoo>({

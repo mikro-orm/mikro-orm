@@ -313,25 +313,25 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
       } else if (typeof data.pet2.canBark !== 'undefined') {
         entity.pet2.canBark = !!data.pet2.canBark;
       }
-      if (data["pet2~foodcats"] != null || data["pet2~foodmice"] != null) {
+      if (data['pet2~foodcats'] != null || data['pet2~foodmice'] != null) {
         const embeddedData = {
-          cats: data["pet2~foodcats"],
-          mice: data["pet2~foodmice"],
+          cats: data['pet2~foodcats'],
+          mice: data['pet2~foodmice'],
         };
         if (entity.pet2.food == null) {
           entity.pet2.food = factory.createEmbeddable(dog_food_43, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
-        if (data["pet2~foodcats"] === null) {
+        if (data['pet2~foodcats'] === null) {
           entity.pet2.food.cats = null;
-        } else if (typeof data["pet2~foodcats"] !== 'undefined') {
-          entity.pet2.food.cats = data["pet2~foodcats"];
+        } else if (typeof data['pet2~foodcats'] !== 'undefined') {
+          entity.pet2.food.cats = data['pet2~foodcats'];
         }
-        if (data["pet2~foodmice"] === null) {
+        if (data['pet2~foodmice'] === null) {
           entity.pet2.food.mice = null;
-        } else if (typeof data["pet2~foodmice"] !== 'undefined') {
-          entity.pet2.food.mice = data["pet2~foodmice"];
+        } else if (typeof data['pet2~foodmice'] !== 'undefined') {
+          entity.pet2.food.mice = data['pet2~foodmice'];
         }
-      } else if (data["pet2~foodcats"] === null && data["pet2~foodmice"] === null) {
+      } else if (data['pet2~foodcats'] === null && data['pet2~foodmice'] === null) {
         entity.pet2.food = null;
       }
       if (typeof data.pet2.food === 'string') {
@@ -380,25 +380,25 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
       } else if (typeof data.pet2.canBark !== 'undefined') {
         entity.pet2.canBark = data.pet2.canBark;
       }
-      if (data["pet2~foodcats"] != null || data["pet2~foodmice"] != null) {
+      if (data['pet2~foodcats'] != null || data['pet2~foodmice'] != null) {
         const embeddedData = {
-          cats: data["pet2~foodcats"],
-          mice: data["pet2~foodmice"],
+          cats: data['pet2~foodcats'],
+          mice: data['pet2~foodmice'],
         };
         if (entity.pet2.food == null) {
           entity.pet2.food = factory.createEmbeddable(cat_food_53, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
         }
-        if (data["pet2~foodcats"] === null) {
+        if (data['pet2~foodcats'] === null) {
           entity.pet2.food.cats = null;
-        } else if (typeof data["pet2~foodcats"] !== 'undefined') {
-          entity.pet2.food.cats = data["pet2~foodcats"];
+        } else if (typeof data['pet2~foodcats'] !== 'undefined') {
+          entity.pet2.food.cats = data['pet2~foodcats'];
         }
-        if (data["pet2~foodmice"] === null) {
+        if (data['pet2~foodmice'] === null) {
           entity.pet2.food.mice = null;
-        } else if (typeof data["pet2~foodmice"] !== 'undefined') {
-          entity.pet2.food.mice = data["pet2~foodmice"];
+        } else if (typeof data['pet2~foodmice'] !== 'undefined') {
+          entity.pet2.food.mice = data['pet2~foodmice'];
         }
-      } else if (data["pet2~foodcats"] === null && data["pet2~foodmice"] === null) {
+      } else if (data['pet2~foodcats'] === null && data['pet2~foodmice'] === null) {
         entity.pet2.food = null;
       }
       if (typeof data.pet2.food === 'string') {
@@ -461,25 +461,25 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
           } else if (typeof data.pets[idx_62].canBark !== 'undefined') {
             entity.pets[idx_62].canBark = !!data.pets[idx_62].canBark;
           }
-          if (data["pets~foodcats"] != null || data["pets~foodmice"] != null) {
+          if (data['pets~foodcats'] != null || data['pets~foodmice'] != null) {
             const embeddedData = {
-              cats: data["pets~foodcats"],
-              mice: data["pets~foodmice"],
+              cats: data['pets~foodcats'],
+              mice: data['pets~foodmice'],
             };
             if (entity.pets[idx_62].food == null) {
               entity.pets[idx_62].food = factory.createEmbeddable(dog_food_64, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
             }
-            if (data["pets~foodcats"] === null) {
+            if (data['pets~foodcats'] === null) {
               entity.pets[idx_62].food.cats = null;
-            } else if (typeof data["pets~foodcats"] !== 'undefined') {
-              entity.pets[idx_62].food.cats = data["pets~foodcats"];
+            } else if (typeof data['pets~foodcats'] !== 'undefined') {
+              entity.pets[idx_62].food.cats = data['pets~foodcats'];
             }
-            if (data["pets~foodmice"] === null) {
+            if (data['pets~foodmice'] === null) {
               entity.pets[idx_62].food.mice = null;
-            } else if (typeof data["pets~foodmice"] !== 'undefined') {
-              entity.pets[idx_62].food.mice = data["pets~foodmice"];
+            } else if (typeof data['pets~foodmice'] !== 'undefined') {
+              entity.pets[idx_62].food.mice = data['pets~foodmice'];
             }
-          } else if (data["pets~foodcats"] === null && data["pets~foodmice"] === null) {
+          } else if (data['pets~foodcats'] === null && data['pets~foodmice'] === null) {
             entity.pets[idx_62].food = null;
           }
           if (typeof data.pets[idx_62].food === 'string') {
@@ -528,25 +528,25 @@ exports[`polymorphic embeddables in sqlite > diffing 1`] = `
           } else if (typeof data.pets[idx_62].canBark !== 'undefined') {
             entity.pets[idx_62].canBark = data.pets[idx_62].canBark;
           }
-          if (data["pets~foodcats"] != null || data["pets~foodmice"] != null) {
+          if (data['pets~foodcats'] != null || data['pets~foodmice'] != null) {
             const embeddedData = {
-              cats: data["pets~foodcats"],
-              mice: data["pets~foodmice"],
+              cats: data['pets~foodcats'],
+              mice: data['pets~foodmice'],
             };
             if (entity.pets[idx_62].food == null) {
               entity.pets[idx_62].food = factory.createEmbeddable(cat_food_74, embeddedData, { newEntity, convertCustomTypes, normalizeAccessors });
             }
-            if (data["pets~foodcats"] === null) {
+            if (data['pets~foodcats'] === null) {
               entity.pets[idx_62].food.cats = null;
-            } else if (typeof data["pets~foodcats"] !== 'undefined') {
-              entity.pets[idx_62].food.cats = data["pets~foodcats"];
+            } else if (typeof data['pets~foodcats'] !== 'undefined') {
+              entity.pets[idx_62].food.cats = data['pets~foodcats'];
             }
-            if (data["pets~foodmice"] === null) {
+            if (data['pets~foodmice'] === null) {
               entity.pets[idx_62].food.mice = null;
-            } else if (typeof data["pets~foodmice"] !== 'undefined') {
-              entity.pets[idx_62].food.mice = data["pets~foodmice"];
+            } else if (typeof data['pets~foodmice'] !== 'undefined') {
+              entity.pets[idx_62].food.mice = data['pets~foodmice'];
             }
-          } else if (data["pets~foodcats"] === null && data["pets~foodmice"] === null) {
+          } else if (data['pets~foodcats'] === null && data['pets~foodmice'] === null) {
             entity.pets[idx_62].food = null;
           }
           if (typeof data.pets[idx_62].food === 'string') {
