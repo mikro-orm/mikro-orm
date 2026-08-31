@@ -1068,11 +1068,11 @@ export class EntityComparator {
   }
 
   private wrap(key: string): string {
-    if (/^\[.*]$/.exec(key)) {
+    if (/^\[idx_\d+]$/.exec(key)) {
       return key;
     }
 
-    return /^\w+$/.exec(key) ? `.${key}` : `['${key}']`;
+    return /^\w+$/.exec(key) ? `.${key}` : `[${JSON.stringify(key)}]`;
   }
 
   private safeKey(key: string): string {

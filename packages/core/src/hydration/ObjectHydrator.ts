@@ -163,7 +163,7 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`  if (data${dataKey} === null) {`);
       if (prop.ref) {
         ret.push(`    entity${entityKey} = new ScalarReference();`);
-        ret.push(`    entity${entityKey}.bind(entity, '${prop.name}');`);
+        ret.push(`    entity${entityKey}.bind(entity, ${JSON.stringify(prop.name)});`);
         ret.push(`    entity${entityKey}.set(${nullVal});`);
       } else {
         ret.push(`    entity${entityKey} = ${nullVal};`);
@@ -217,7 +217,7 @@ export class ObjectHydrator extends Hydrator {
           `    const value = isScalarReference(entity${entityKey}) ? entity${entityKey}.unwrap() : entity${entityKey};`,
         );
         ret.push(`    entity${entityKey} = oldValue_${idx} ?? new ScalarReference(value);`);
-        ret.push(`    entity${entityKey}.bind(entity, '${prop.name}');`);
+        ret.push(`    entity${entityKey}.bind(entity, ${JSON.stringify(prop.name)});`);
         ret.push(`    entity${entityKey}.set(value);`);
       }
 
@@ -226,7 +226,7 @@ export class ObjectHydrator extends Hydrator {
       if (prop.ref) {
         ret.push(`  if (!entity${entityKey}) {`);
         ret.push(`    entity${entityKey} = new ScalarReference();`);
-        ret.push(`    entity${entityKey}.bind(entity, '${prop.name}');`);
+        ret.push(`    entity${entityKey}.bind(entity, ${JSON.stringify(prop.name)});`);
         ret.push(`  }`);
       }
 
@@ -256,7 +256,7 @@ export class ObjectHydrator extends Hydrator {
         context.set(discriminatorMapKey, prop.discriminatorMap);
         ret.push(`      const targetClass = ${discriminatorMapKey}[data${dataKey}.discriminator];`);
         ret.push(
-          `      if (!targetClass) throw new ValidationError(\`Unknown discriminator value '\${data${dataKey}.discriminator}' for polymorphic relation '${prop.name}'. Valid values: \${Object.keys(${discriminatorMapKey}).join(', ')}\`);`,
+          `      if (!targetClass) throw new ValidationError(\`Unknown discriminator value '\${data${dataKey}.discriminator}' for polymorphic relation ${JSON.stringify(prop.name)}. Valid values: \${Object.keys(${discriminatorMapKey}).join(', ')}\`);`,
         );
         if (prop.ref) {
           ret.push(
@@ -344,7 +344,7 @@ export class ObjectHydrator extends Hydrator {
       ret.push(
         `    const items = data${dataKey}.map(value => createCollectionItem_${this.safeKey(prop.name)}(value, entity));`,
       );
-      ret.push(`    const coll = Collection.create(entity, '${prop.name}', items, newEntity);`);
+      ret.push(`    const coll = Collection.create(entity, ${JSON.stringify(prop.name)}, items, newEntity);`);
       ret.push(`    if (newEntity) {`);
       ret.push(`      coll.setDirty();`);
       ret.push(`    } else {`);
@@ -357,13 +357,13 @@ export class ObjectHydrator extends Hydrator {
         ret.push(`  } else if (!entity${entityKey} && Array.isArray(data${dataKey})) {`);
         const items = this.platform.usesPivotTable() || !prop.owner ? 'undefined' : '[]';
         ret.push(
-          `    const coll = Collection.create(entity, '${prop.name}', ${items}, !!data${dataKey} || newEntity);`,
+          `    const coll = Collection.create(entity, ${JSON.stringify(prop.name)}, ${items}, !!data${dataKey} || newEntity);`,
         );
         ret.push(`    coll.setDirty(false);`);
       }
 
       ret.push(`  } else if (!entity${entityKey}) {`);
-      ret.push(`    const coll = Collection.create(entity, '${prop.name}', undefined, newEntity);`);
+      ret.push(`    const coll = Collection.create(entity, ${JSON.stringify(prop.name)}, undefined, newEntity);`);
       ret.push(`    coll.setDirty(false);`);
       ret.push(`  }`);
 
@@ -616,11 +616,11 @@ export class ObjectHydrator extends Hydrator {
   }
 
   private wrap(key: string): string {
-    if (/^\[.*]$/.exec(key)) {
+    if (/^\[idx_\d+]$/.exec(key)) {
       return key;
     }
 
-    return /^\w+$/.exec(key) ? `.${key}` : `['${key}']`;
+    return /^\w+$/.exec(key) ? `.${key}` : `[${JSON.stringify(key)}]`;
   }
 
   private safeKey(key: string): string {
