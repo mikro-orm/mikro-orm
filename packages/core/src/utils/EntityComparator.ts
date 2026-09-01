@@ -795,11 +795,16 @@ export class EntityComparator {
   }
 
   private wrap(key: string): string {
-    if (key.match(/^\[.*]$/)) {
+    if (key.match(/^\[idx_\d+]$/)) {
       return key;
     }
 
-    return key.match(/^\w+$/) ? `.${key}` : `['${key}']`;
+    return key.match(/^\w+$/) ? `.${key}` : `[${this.quote(key)}]`;
+  }
+
+  /** Renders a key as a single-quoted JS string literal, safe to embed in generated code. */
+  private quote(key: string): string {
+    return `'${key.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
   }
 
   private safeKey(key: string): string {
