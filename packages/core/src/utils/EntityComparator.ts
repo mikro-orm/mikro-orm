@@ -1068,11 +1068,16 @@ export class EntityComparator {
   }
 
   private wrap(key: string): string {
-    if (/^\[.*]$/.exec(key)) {
+    if (/^\[idx_\d+]$/.exec(key)) {
       return key;
     }
 
-    return /^\w+$/.exec(key) ? `.${key}` : `['${key}']`;
+    return /^\w+$/.exec(key) ? `.${key}` : `[${this.quote(key)}]`;
+  }
+
+  /** Renders a key as a single-quoted JS string literal, safe to embed in generated code. */
+  private quote(key: string): string {
+    return `'${key.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
   }
 
   private safeKey(key: string): string {
