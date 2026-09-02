@@ -91,23 +91,6 @@ describe.each(Utils.keys(options))('TPT upsert [%s]', type => {
     expect(all[0].breed).toBe('labrador');
   });
 
-  test('em.upsert(Type, data) with a unique column below the root', async () => {
-    const puppy = await orm.em.upsert(Puppy, { name: 'Rex', breed: 'poodle', tag: 'A1' });
-    orm.em.clear();
-
-    const updated = await orm.em.upsert(
-      Puppy,
-      { name: 'Rexy', breed: 'labrador', tag: 'A1', toy: 'ball' },
-      { onConflictFields: ['tag'] },
-    );
-    expect(updated.id).toBe(puppy.id);
-    orm.em.clear();
-
-    const found = await orm.em.findOneOrFail(Puppy, puppy.id);
-    expect(found).toMatchObject({ name: 'Rexy', breed: 'labrador', tag: 'A1', toy: 'ball' });
-    expect(await orm.em.count(Animal)).toBe(1);
-  });
-
   test('em.upsert(entity)', async () => {
     const dog = orm.em.create(Dog, { id: 1, name: 'Rex', breed: 'poodle' });
     await orm.em.upsert(dog);

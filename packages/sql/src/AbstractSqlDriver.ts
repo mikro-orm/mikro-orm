@@ -1389,7 +1389,7 @@ export abstract class AbstractSqlDriver<
     }
 
     if (options.upsert && meta.tptParent) {
-      res = await this.upsertTPT(meta, [where], [data], options);
+      res = await this.nativeUpdateMany(entityName, [where], [data], options);
     } else if (Utils.hasObjectKeys(data) || (meta.inheritanceType === 'tpt' && meta.ownsVersionProperty())) {
       // a TPT table declaring the version property is bumped even when only other tables of the hierarchy changed
       const qb = this.createQueryBuilder<T>(
@@ -1444,146 +1444,6 @@ export abstract class AbstractSqlDriver<
     return res;
   }
 
-  private async upsertRows<T extends object>(
-    meta: EntityMetadata<T>,
-    where: FilterQuery<T>[],
-    data: EntityDictionary<T>[],
-    options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T>,
-  ): Promise<QueryResult<T>> {
-    const uniqueFields =
-      options.onConflictFields ??
-      ((Utils.isPlainObject(where[0])
-        ? Object.keys(where[0]).flatMap(key => Utils.splitPrimaryKeys(key))
-        : meta.primaryKeys) as (keyof T)[]);
-    const qb = this.createQueryBuilder<T>(
-      meta.class,
-      options.ctx,
-      'write',
-      options.convertCustomTypes,
-      options.loggerContext,
-    ).withSchema(this.getSchemaName(meta, options));
-    qb.setAbortOptions(pickAbortOptions(options));
-    let returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options);
-
-    // a TPT table can only return its own columns
-    if (meta.inheritanceType === 'tpt' && Array.isArray(returning)) {
-      const tableProps = this.getTableProps(meta);
-      returning = returning.filter(
-        field => meta.primaryKeys.includes(field as EntityKey<T>) || tableProps.some(prop => prop.name === field),
-      );
-    }
-
-    qb.insert(data as T[])
-      .onConflict(uniqueFields as any)
-      .returning(returning as any);
-
-    if (!options.onConflictAction || options.onConflictAction === 'merge') {
-      const fields = getOnConflictFields(meta, data[0], uniqueFields, options);
-      qb.merge(fields as any);
-    }
-
-    if (options.onConflictAction === 'ignore') {
-      qb.ignore();
-    }
-
-    if (options.onConflictWhere) {
-      qb.where(options.onConflictWhere as any);
-    }
-
-    return this.rethrow(qb.execute('run', false));
-  }
-
-  /** A TPT row spans several tables, so the upsert runs per table from the root down, which provides the PK for the child tables. */
-  private async upsertTPT<T extends object>(
-    meta: EntityMetadata<T>,
-    where: FilterQuery<T>[],
-    data: EntityDictionary<T>[],
-    options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T>,
-  ): Promise<QueryResult<T>> {
-    const pks = meta.primaryKeys;
-    const hasPrimaryKey = (row: Dictionary) => pks.every(pk => row[pk] != null);
-
-    // the root insert provides the PK of each new row, so rows without one are processed one by one
-    if (data.length > 1 && !data.every(hasPrimaryKey)) {
-      const results = await Utils.runSerial(data.keys(), i => this.upsertTPT(meta, [where[i]], [data[i]], options));
-      const affectedRows = results.reduce((sum, res) => sum + res.affectedRows, 0);
-      return { ...results[0], affectedRows, rows: results.every(res => res.row) ? results.map(res => res.row!) : [] };
-    }
-
-    const lookupPrimaryKey = async () => {
-      const found = await this.findOne(meta.class, where[0] as ObjectQuery<T>, {
-        fields: pks as any[],
-        ctx: options.ctx,
-        convertCustomTypes: true,
-        connectionType: 'write',
-        schema: options.schema,
-      });
-
-      if (found) {
-        pks.forEach(pk => (data[0][pk] = found[pk] as never));
-      }
-    };
-
-    if (!hasPrimaryKey(data[0])) {
-      await lookupPrimaryKey();
-    }
-
-    const tables: EntityMetadata<T>[] = [];
-
-    for (let current: EntityMetadata<T> | undefined = meta; current; current = current.tptParent) {
-      tables.unshift(current);
-    }
-
-    const owns = (table: EntityMetadata<T>, key: string) =>
-      pks.includes(key as EntityKey<T>) || table.ownProps!.some(prop => prop.name === key.split('.')[0]);
-    const uniqueFields = options.onConflictFields ?? (Utils.keys(where[0] as Dictionary) as (keyof T)[]);
-    const rows: Dictionary[] = data.map(() => ({}));
-    let complete = true;
-    let res!: QueryResult<T>;
-
-    for (const table of tables) {
-      const isRoot = table === tables[0];
-      // only the root table can use the conflict target of a new row, and only when it owns those columns
-      const rootConflict =
-        isRoot && !hasPrimaryKey(data[0]) && !isRaw(uniqueFields) && uniqueFields.every(f => owns(table, f as string));
-      const tableRes = await this.upsertRows(
-        table,
-        where,
-        data.map(
-          row => Object.fromEntries(Object.entries(row).filter(([key]) => owns(table, key))) as EntityDictionary<T>,
-        ),
-        {
-          ...options,
-          onConflictFields: rootConflict ? uniqueFields : pks,
-          onConflictMergeFields: options.onConflictMergeFields?.filter(f => owns(table, f as string)),
-          onConflictExcludeFields: options.onConflictExcludeFields?.filter(f => owns(table, f as string)),
-          onConflictWhere: isRoot ? options.onConflictWhere : undefined,
-        } as typeof options,
-      );
-      res ??= tableRes;
-
-      // the returned rows align with the input only when every row came back (`do nothing` skips existing ones)
-      if (tableRes.rows?.length === data.length) {
-        tableRes.rows.forEach((row, i) => Object.assign(rows[i], row));
-      } else {
-        complete = false;
-      }
-
-      if (isRoot && !hasPrimaryKey(data[0])) {
-        const insertId = tableRes.affectedRows === 1 ? tableRes.insertId : undefined;
-        pks.forEach(pk => (data[0][pk] ??= (rows[0][table.properties[pk].fieldNames[0]] ?? insertId) as never));
-
-        // the row was inserted concurrently between the lookup and the upsert
-        if (!hasPrimaryKey(data[0])) {
-          await lookupPrimaryKey();
-        }
-      }
-    }
-
-    // without a complete set of returned rows, the entity manager reloads the entities instead
-    return { ...res, rows: complete ? rows : [], row: complete ? rows[0] : undefined };
-  }
-
   override async nativeUpdateMany<T extends object>(
     entityName: EntityName<T>,
     where: FilterQuery<T>[],
@@ -1596,7 +1456,73 @@ export abstract class AbstractSqlDriver<
     const meta = this.metadata.get<T>(entityName);
 
     if (options.upsert) {
-      return meta.tptParent ? this.upsertTPT(meta, where, data, options) : this.upsertRows(meta, where, data, options);
+      if (meta.tptParent) {
+        // TPT parent tables go first, the PK they provide is the conflict target of this table
+        await this.nativeUpdateMany(meta.tptParent.class, where, data, options);
+
+        for (const [i, row] of data.entries()) {
+          if (meta.primaryKeys.some(pk => row[pk] == null)) {
+            const found = await this.findOne(meta.tptParent.class as EntityName<T>, where[i] as ObjectQuery<T>, {
+              fields: meta.primaryKeys as any[],
+              ctx: options.ctx,
+              connectionType: 'write',
+              schema: options.schema,
+            });
+            meta.primaryKeys.forEach(pk => (row[pk] = found?.[pk] as never));
+          }
+        }
+
+        options = { ...options, onConflictFields: meta.primaryKeys, onConflictWhere: undefined };
+      }
+
+      const uniqueFields =
+        options.onConflictFields ??
+        ((Utils.isPlainObject(where[0])
+          ? Object.keys(where[0]).flatMap(key => Utils.splitPrimaryKeys(key))
+          : meta.primaryKeys) as (keyof T)[]);
+      const qb = this.createQueryBuilder<T>(
+        entityName,
+        options.ctx,
+        'write',
+        options.convertCustomTypes,
+        options.loggerContext,
+      ).withSchema(this.getSchemaName(meta, options));
+      qb.setAbortOptions(pickAbortOptions(options));
+      let returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options);
+
+      if (meta.inheritanceType === 'tpt') {
+        // each TPT table only carries its own columns, the entity is reloaded instead of mapping the returned rows
+        const own = (key: string) =>
+          meta.primaryKeys.includes(key as EntityKey<T>) ||
+          this.getTableProps(meta).some(prop => prop.name === key.split('.')[0]);
+        data = data.map(
+          row => Object.fromEntries(Object.entries(row).filter(([key]) => own(key))) as EntityDictionary<T>,
+        );
+        options.onConflictMergeFields = options.onConflictMergeFields?.filter(f => own(f as string));
+        options.onConflictExcludeFields = options.onConflictExcludeFields?.filter(f => own(f as string));
+        returning = [];
+      }
+
+      qb.insert(data as T[])
+        .onConflict(uniqueFields as any)
+        .returning(returning as any);
+
+      if (!options.onConflictAction || options.onConflictAction === 'merge') {
+        const fields = getOnConflictFields(meta, data[0], uniqueFields, options);
+        qb.merge(fields as any);
+      }
+
+      if (options.onConflictAction === 'ignore') {
+        qb.ignore();
+      }
+
+      if (options.onConflictWhere) {
+        qb.where(options.onConflictWhere as any);
+      }
+
+      const res = await this.rethrow(qb.execute('run', false));
+
+      return meta.inheritanceType === 'tpt' ? { ...res, row: undefined, rows: [] } : res;
     }
 
     const collections = options.processCollections ? data.map(d => this.extractManyToMany(meta, d)) : [];
