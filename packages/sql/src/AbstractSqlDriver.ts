@@ -1493,27 +1493,25 @@ export abstract class AbstractSqlDriver<
     return this.rethrow(qb.execute('run', false));
   }
 
-  /**
-   * A TPT row spans several tables, so the upsert runs once per table starting from the root,
-   * and the primary key resolved by the root table is used as the conflict target of the child tables.
-   */
+  /** A TPT row spans several tables, so the upsert runs per table from the root down, which provides the PK for the child tables. */
   private async upsertTPT<T extends object>(
     meta: EntityMetadata<T>,
     where: FilterQuery<T>[],
     data: EntityDictionary<T>[],
     options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T>,
   ): Promise<QueryResult<T>> {
-    const tables: EntityMetadata<T>[] = [];
-
-    for (let current: EntityMetadata<T> | undefined = meta; current; current = current.tptParent) {
-      tables.unshift(current);
-    }
-
-    const root = tables[0];
     const pks = meta.primaryKeys;
     const hasPrimaryKey = (row: Dictionary) => pks.every(pk => row[pk] != null);
-    const resolvePrimaryKey = async (target: EntityMetadata<T>, i: number) => {
-      const found = await this.findOne(target.class, where[i] as ObjectQuery<T>, {
+
+    // the root insert provides the PK of each new row, so rows without one are processed one by one
+    if (data.length > 1 && !data.every(hasPrimaryKey)) {
+      const results = await Utils.runSerial(data.keys(), i => this.upsertTPT(meta, [where[i]], [data[i]], options));
+      const affectedRows = results.reduce((sum, res) => sum + res.affectedRows, 0);
+      return { ...results[0], affectedRows, rows: results.every(res => res.row) ? results.map(res => res.row!) : [] };
+    }
+
+    const lookupPrimaryKey = async () => {
+      const found = await this.findOne(meta.class, where[0] as ObjectQuery<T>, {
         fields: pks as any[],
         ctx: options.ctx,
         convertCustomTypes: true,
@@ -1522,102 +1520,62 @@ export abstract class AbstractSqlDriver<
       });
 
       if (found) {
-        pks.forEach(pk => (data[i][pk] = found[pk] as never));
+        pks.forEach(pk => (data[0][pk] = found[pk] as never));
       }
     };
-    let uniqueFields =
-      options.onConflictFields ??
-      ((Utils.isPlainObject(where[0])
-        ? Object.keys(where[0]).flatMap(key => Utils.splitPrimaryKeys(key))
-        : pks) as (keyof T)[]);
 
-    // a conflict target on a child table cannot drive the root insert, so the PK is looked up first
-    if (isRaw(uniqueFields) || !uniqueFields.every(field => root.ownProps!.some(prop => prop.name === field))) {
-      for (let i = 0; i < data.length; i++) {
-        if (!hasPrimaryKey(data[i])) {
-          await resolvePrimaryKey(meta, i);
-        }
-      }
-
-      uniqueFields = pks;
+    if (!hasPrimaryKey(data[0])) {
+      await lookupPrimaryKey();
     }
 
-    // without `returning`, the PKs of a batched insert cannot be mapped back to the rows
-    if (!this.platform.usesReturningStatement() && data.length > 1 && !data.every(hasPrimaryKey)) {
-      const results: QueryResult<T>[] = [];
+    const tables: EntityMetadata<T>[] = [];
 
-      for (let i = 0; i < data.length; i++) {
-        results.push(await this.upsertTPT(meta, [where[i]], [data[i]], options));
-      }
-
-      const affectedRows = results.reduce((sum, res) => sum + res.affectedRows, 0);
-      const rows = results.every(res => res.row) ? results.map(res => res.row!) : [];
-      return { ...results[0], affectedRows, rows };
+    for (let current: EntityMetadata<T> | undefined = meta; current; current = current.tptParent) {
+      tables.unshift(current);
     }
 
+    const owns = (table: EntityMetadata<T>, key: string) =>
+      pks.includes(key as EntityKey<T>) || table.ownProps!.some(prop => prop.name === key.split('.')[0]);
+    const uniqueFields = options.onConflictFields ?? (Utils.keys(where[0] as Dictionary) as (keyof T)[]);
     const rows: Dictionary[] = data.map(() => ({}));
     let complete = true;
-    const pick = (fields: (keyof T)[] | undefined, table: EntityMetadata<T>) =>
-      fields?.filter(field => {
-        const name = (field as string).split('.')[0];
-        return pks.includes(name as EntityKey<T>) || table.ownProps!.some(prop => prop.name === name);
-      });
     let res!: QueryResult<T>;
 
     for (const table of tables) {
-      const isRoot = table === root;
-      const tableData = data.map(row => {
-        const tableRow: Dictionary = {};
+      const isRoot = table === tables[0];
+      // only the root table can use the conflict target of a new row, and only when it owns those columns
+      const rootConflict =
+        isRoot && !hasPrimaryKey(data[0]) && !isRaw(uniqueFields) && uniqueFields.every(f => owns(table, f as string));
+      const tableRes = await this.upsertRows(
+        table,
+        where,
+        data.map(
+          row => Object.fromEntries(Object.entries(row).filter(([key]) => owns(table, key))) as EntityDictionary<T>,
+        ),
+        {
+          ...options,
+          onConflictFields: rootConflict ? uniqueFields : pks,
+          onConflictMergeFields: options.onConflictMergeFields?.filter(f => owns(table, f as string)),
+          onConflictExcludeFields: options.onConflictExcludeFields?.filter(f => owns(table, f as string)),
+          onConflictWhere: isRoot ? options.onConflictWhere : undefined,
+        } as typeof options,
+      );
+      res ??= tableRes;
 
-        for (const key of Utils.keys(row)) {
-          if (pks.includes(key) || table.ownProps!.some(prop => prop.name === key)) {
-            tableRow[key] = row[key];
-          }
-        }
-
-        return tableRow as EntityDictionary<T>;
-      });
-      const tableOptions = {
-        ...options,
-        onConflictFields: isRoot ? uniqueFields : pks,
-        onConflictMergeFields: pick(options.onConflictMergeFields as (keyof T)[], table),
-        onConflictExcludeFields: pick(options.onConflictExcludeFields as (keyof T)[], table),
-        onConflictWhere: isRoot ? options.onConflictWhere : undefined,
-      } as NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T>;
-      const tableRes = await this.upsertRows(table, where, tableData, tableOptions);
       // the returned rows align with the input only when every row came back (`do nothing` skips existing ones)
-      const returned = tableRes.rows?.length === data.length ? tableRes.rows : undefined;
-      returned?.forEach((row, i) => Object.assign(rows[i], row));
-      complete &&= !!returned;
-
-      if (!isRoot) {
-        continue;
+      if (tableRes.rows?.length === data.length) {
+        tableRes.rows.forEach((row, i) => Object.assign(rows[i], row));
+      } else {
+        complete = false;
       }
 
-      res = tableRes;
+      if (isRoot && !hasPrimaryKey(data[0])) {
+        const insertId = tableRes.affectedRows === 1 ? tableRes.insertId : undefined;
+        pks.forEach(pk => (data[0][pk] ??= (rows[0][table.properties[pk].fieldNames[0]] ?? insertId) as never));
 
-      for (let i = 0; i < data.length; i++) {
-        if (hasPrimaryKey(data[i])) {
-          continue;
-        }
-
-        for (const pk of pks) {
-          const prop = root.properties[pk];
-          let value =
-            returned?.[i][prop.fieldNames[0]] ??
-            (data.length === 1 && tableRes.affectedRows === 1 ? tableRes.insertId : undefined);
-
-          if (value != null && options.convertCustomTypes && prop.customType) {
-            value = prop.customType.convertToJSValue(value, this.platform);
-          }
-
-          if (value != null) {
-            data[i][pk] = value as never;
-          }
-        }
-
-        if (!hasPrimaryKey(data[i])) {
-          await resolvePrimaryKey(root, i);
+        // the row was inserted concurrently between the lookup and the upsert
+        if (!hasPrimaryKey(data[0])) {
+          await lookupPrimaryKey();
         }
       }
     }
