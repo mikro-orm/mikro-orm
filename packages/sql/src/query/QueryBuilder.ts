@@ -2365,6 +2365,10 @@ export class QueryBuilder<
           prop =>
             prop.returning || (prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw)),
         )
+        // a TPT table can only return its own columns
+        .filter(
+          prop => meta.inheritanceType !== 'tpt' || prop.primary || meta.ownProps!.some(p => p.name === prop.name),
+        )
         .filter(prop => !data || !(prop.name in data));
 
       if (returningProps.length > 0) {

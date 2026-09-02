@@ -195,7 +195,16 @@ export function getWhereCondition<T extends object>(
   data: EntityData<T>,
   where: FilterQuery<T>,
 ): { where: FilterQuery<T>; propIndex: number | false } {
-  const unique = (onConflictFields as string[]) ?? meta.props.filter(p => p.unique).map(p => p.name);
+  // TPT children do not inherit the unique flags and indexes of their parent tables
+  const uniqueProps = new Set<string>();
+  const uniques: typeof meta.uniques = [];
+
+  for (let current: EntityMetadata<T> | undefined = meta; current; current = current.tptParent) {
+    current.props.filter(p => p.unique).forEach(p => uniqueProps.add(p.name));
+    uniques.push(...current.uniques);
+  }
+
+  const unique = (onConflictFields as string[]) ?? [...uniqueProps];
   const propIndex =
     !isRaw(unique) &&
     unique.findIndex(p => (data as Dictionary)[p] ?? (data as Dictionary)[p.substring(0, p.indexOf('.'))] != null);
@@ -213,8 +222,8 @@ export function getWhereCondition<T extends object>(
       }
 
       where = { [key]: getPropertyValue(data as Dictionary, unique[propIndex]) } as FilterQuery<T>;
-    } else if (meta.uniques.length > 0) {
-      for (const u of meta.uniques) {
+    } else {
+      for (const u of uniques) {
         if (Utils.asArray<EntityKey<T>>(u.properties).every(p => data[p] != null)) {
           where = Utils.asArray<EntityKey<T>>(u.properties).reduce((o, key) => {
             o[key] = data[key];
