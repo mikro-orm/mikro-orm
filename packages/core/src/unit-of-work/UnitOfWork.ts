@@ -468,6 +468,7 @@ export class UnitOfWork {
 
           if (!parentCs) {
             parentCs = new ChangeSet(entity, changeSet.type, {} as EntityDictionary<T>, current as EntityMetadata<T>);
+            parentCs.originalEntity = changeSet.originalEntity;
             changeSet.tptChangeSets.splice(idx, 0, parentCs);
           }
 
@@ -938,7 +939,8 @@ export class UnitOfWork {
         }
       }
 
-      if (!isCreate && Object.keys(payload).length === 0) {
+      // the table declaring the version property still needs its bump and lock check
+      if (!isCreate && Object.keys(payload).length === 0 && !current.ownsVersionProperty()) {
         current = current.tptParent;
         continue;
       }
@@ -949,9 +951,9 @@ export class UnitOfWork {
         payload as EntityDictionary<T>,
         current as EntityMetadata<T>,
       );
+      cs.originalEntity = originalChangeSet.originalEntity;
 
       if (current === meta) {
-        cs.originalEntity = originalChangeSet.originalEntity;
         leafCs = cs;
       } else {
         parentChangeSets.push(cs);
@@ -1624,7 +1626,8 @@ export class UnitOfWork {
       // Skip stub TPT changesets with empty payload (e.g. leaf with no own-property changes on UPDATE)
       if (
         (cs.type === ChangeSetType.UPDATE || cs.type === ChangeSetType.UPDATE_EARLY) &&
-        !Utils.hasObjectKeys(cs.payload)
+        !Utils.hasObjectKeys(cs.payload) &&
+        !cs.meta.ownsVersionProperty()
       ) {
         return;
       }
