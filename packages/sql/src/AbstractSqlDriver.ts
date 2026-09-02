@@ -1388,8 +1388,10 @@ export abstract class AbstractSqlDriver<
       where = (await this.applyUnionWhere(meta, where as ObjectQuery<T>, options, true)) as FilterQuery<T>;
     }
 
-    // a TPT table declaring the version property is bumped even when only other tables of the hierarchy changed
-    if (Utils.hasObjectKeys(data) || (meta.inheritanceType === 'tpt' && meta.ownsVersionProperty())) {
+    if (options.upsert && meta.tptParent) {
+      res = await this.nativeUpdateMany(entityName, [where], [data], options);
+    } else if (Utils.hasObjectKeys(data) || (meta.inheritanceType === 'tpt' && meta.ownsVersionProperty())) {
+      // a TPT table declaring the version property is bumped even when only other tables of the hierarchy changed
       const qb = this.createQueryBuilder<T>(
         entityName,
         options.ctx,
@@ -1454,6 +1456,25 @@ export abstract class AbstractSqlDriver<
     const meta = this.metadata.get<T>(entityName);
 
     if (options.upsert) {
+      if (meta.tptParent) {
+        // TPT parent tables go first, the PK they provide is the conflict target of this table
+        await this.nativeUpdateMany(meta.tptParent.class, where, data, options);
+
+        for (const [i, row] of data.entries()) {
+          if (meta.primaryKeys.some(pk => row[pk] == null)) {
+            const found = await this.findOne(meta.tptParent.class as EntityName<T>, where[i] as ObjectQuery<T>, {
+              fields: meta.primaryKeys as any[],
+              ctx: options.ctx,
+              connectionType: 'write',
+              schema: options.schema,
+            });
+            meta.primaryKeys.forEach(pk => (row[pk] = found?.[pk] as never));
+          }
+        }
+
+        options = { ...options, onConflictFields: meta.primaryKeys, onConflictWhere: undefined };
+      }
+
       const uniqueFields =
         options.onConflictFields ??
         ((Utils.isPlainObject(where[0])
@@ -1467,7 +1488,21 @@ export abstract class AbstractSqlDriver<
         options.loggerContext,
       ).withSchema(this.getSchemaName(meta, options));
       qb.setAbortOptions(pickAbortOptions(options));
-      const returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options);
+      let returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options);
+
+      if (meta.inheritanceType === 'tpt') {
+        // each TPT table only carries its own columns, the entity is reloaded instead of mapping the returned rows
+        const own = (key: string) =>
+          meta.primaryKeys.includes(key as EntityKey<T>) ||
+          this.getTableProps(meta).some(prop => prop.name === key.split('.')[0]);
+        data = data.map(
+          row => Object.fromEntries(Object.entries(row).filter(([key]) => own(key))) as EntityDictionary<T>,
+        );
+        options.onConflictMergeFields = options.onConflictMergeFields?.filter(f => own(f as string));
+        options.onConflictExcludeFields = options.onConflictExcludeFields?.filter(f => own(f as string));
+        returning = [];
+      }
+
       qb.insert(data as T[])
         .onConflict(uniqueFields as any)
         .returning(returning as any);
@@ -1485,7 +1520,9 @@ export abstract class AbstractSqlDriver<
         qb.where(options.onConflictWhere as any);
       }
 
-      return this.rethrow(qb.execute('run', false));
+      const res = await this.rethrow(qb.execute('run', false));
+
+      return meta.inheritanceType === 'tpt' ? { ...res, row: undefined, rows: [] } : res;
     }
 
     const collections = options.processCollections ? data.map(d => this.extractManyToMany(meta, d)) : [];
