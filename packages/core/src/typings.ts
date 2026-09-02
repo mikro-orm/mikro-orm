@@ -1611,6 +1611,22 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
     return this.inheritanceType !== 'tpt' || !this.ownProps || this.ownProps.some(p => p.name === this.versionProperty);
   }
 
+  /** For TPT entities, concurrency check columns exist only on the table of the entity that declares them. */
+  getOwnConcurrencyCheckKeys(): EntityKey<Entity>[] {
+    const keys = [...this.concurrencyCheckKeys];
+
+    if (this.inheritanceType !== 'tpt' || !this.ownProps) {
+      return keys;
+    }
+
+    return keys.filter(key => this.ownProps!.some(p => p.name === key));
+  }
+
+  /** Whether updates of this table are guarded by a version property or concurrency check columns it owns. */
+  hasOptimisticLock(): boolean {
+    return this.ownsVersionProperty() || this.getOwnConcurrencyCheckKeys().length > 0;
+  }
+
   getPrimaryProps(flatten = false): EntityProperty<Entity>[] {
     const pks = this.primaryKeys.map(pk => this.properties[pk]);
 

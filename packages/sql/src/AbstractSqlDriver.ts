@@ -1593,7 +1593,7 @@ export abstract class AbstractSqlDriver<
     }
 
     sql = sql.substring(0, sql.length - 2) + ' where ';
-    const pkProps = meta.primaryKeys.concat(...meta.concurrencyCheckKeys);
+    const pkProps = meta.primaryKeys.concat(...meta.getOwnConcurrencyCheckKeys());
     const pks = Utils.flatten(pkProps.map(pk => meta.properties[pk].fieldNames));
 
     const useTupleIn = pks.length <= 1 || this.platform.allowsComparingTuples();
