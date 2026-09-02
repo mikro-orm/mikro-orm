@@ -939,8 +939,8 @@ export class UnitOfWork {
         }
       }
 
-      // the table declaring the version property still needs its bump and lock check
-      if (!isCreate && Object.keys(payload).length === 0 && !current.ownsVersionProperty()) {
+      // the table declaring the version property or a concurrency check still needs its bump and lock check
+      if (!isCreate && Object.keys(payload).length === 0 && !current.hasOptimisticLock()) {
         current = current.tptParent;
         continue;
       }
@@ -1627,7 +1627,7 @@ export class UnitOfWork {
       if (
         (cs.type === ChangeSetType.UPDATE || cs.type === ChangeSetType.UPDATE_EARLY) &&
         !Utils.hasObjectKeys(cs.payload) &&
-        !cs.meta.ownsVersionProperty()
+        !cs.meta.hasOptimisticLock()
       ) {
         return;
       }

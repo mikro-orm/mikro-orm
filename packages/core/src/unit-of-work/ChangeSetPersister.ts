@@ -328,8 +328,9 @@ export class ChangeSetPersister {
     cond: Dictionary,
   ): void {
     const tmp: string[] = [];
+    const keys = meta.getOwnConcurrencyCheckKeys();
 
-    for (const key of meta.concurrencyCheckKeys) {
+    for (const key of keys) {
       cond[key] = changeSet.originalEntity![key];
 
       if (changeSet.payload[key]) {
@@ -337,7 +338,7 @@ export class ChangeSetPersister {
       }
     }
 
-    if (tmp.length === 0 && meta.concurrencyCheckKeys.size > 0) {
+    if (tmp.length === 0 && keys.length > 0) {
       throw OptimisticLockError.lockFailed(changeSet.entity);
     }
   }
@@ -458,7 +459,7 @@ export class ChangeSetPersister {
     });
 
     if (
-      meta.concurrencyCheckKeys.size === 0 &&
+      meta.getOwnConcurrencyCheckKeys().length === 0 &&
       (!meta.ownsVersionProperty() || changeSet.entity[meta.versionProperty] == null)
     ) {
       return this.#driver.nativeUpdate(changeSet.meta.class, cond as FilterQuery<T>, changeSet.payload, options);
@@ -481,8 +482,10 @@ export class ChangeSetPersister {
     changeSets: ChangeSet<T>[],
     options?: DriverMethodOptions,
   ): Promise<void> {
+    const concurrencyCheckKeys = meta.getOwnConcurrencyCheckKeys();
+
     if (
-      meta.concurrencyCheckKeys.size === 0 &&
+      concurrencyCheckKeys.length === 0 &&
       (!meta.ownsVersionProperty() || changeSets.every(cs => cs.entity[meta.versionProperty] == null))
     ) {
       return;
@@ -490,12 +493,10 @@ export class ChangeSetPersister {
 
     // skip entity references as they don't have version values loaded
     changeSets = changeSets.filter(cs => helper(cs.entity).__initialized);
+    const primaryKeys = meta.primaryKeys.concat(...concurrencyCheckKeys);
 
     const $or = changeSets.map(cs => {
-      const cond = Utils.getPrimaryKeyCond<T>(
-        cs.originalEntity as T,
-        meta.primaryKeys.concat(...meta.concurrencyCheckKeys),
-      ) as FilterQuery<T>;
+      const cond = Utils.getPrimaryKeyCond<T>(cs.originalEntity as T, primaryKeys) as FilterQuery<T>;
 
       if (meta.ownsVersionProperty()) {
         // @ts-ignore
@@ -508,7 +509,6 @@ export class ChangeSetPersister {
       return cond;
     });
 
-    const primaryKeys = meta.primaryKeys.concat(...meta.concurrencyCheckKeys);
     options = this.prepareOptions(meta, options, {
       fields: primaryKeys,
       orderBy: meta.primaryKeys.reduce((o, pk) => {
@@ -535,7 +535,7 @@ export class ChangeSetPersister {
     changeSet: ChangeSet<T>,
     res?: QueryResult<T>,
   ) {
-    if ((meta.versionProperty || meta.concurrencyCheckKeys.size > 0) && res && !res.affectedRows) {
+    if ((meta.ownsVersionProperty() || meta.getOwnConcurrencyCheckKeys().length > 0) && res && !res.affectedRows) {
       throw OptimisticLockError.lockFailed(changeSet.entity);
     }
   }
