@@ -1602,6 +1602,15 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
     }
   }
 
+  /** For TPT entities, the version column exists only on the table of the entity that declares it. */
+  ownsVersionProperty(): boolean {
+    if (!this.versionProperty) {
+      return false;
+    }
+
+    return this.inheritanceType !== 'tpt' || !this.ownProps || this.ownProps.some(p => p.name === this.versionProperty);
+  }
+
   getPrimaryProps(flatten = false): EntityProperty<Entity>[] {
     const pks = this.primaryKeys.map(pk => this.properties[pk]);
 

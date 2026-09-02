@@ -1097,7 +1097,7 @@ export class QueryBuilderHelper {
   updateVersionProperty(qb: NativeQueryBuilder, data: Dictionary): void {
     const meta = this.#metadata.find(this.#entityName);
 
-    if (!meta?.versionProperty || meta.versionProperty in data) {
+    if (!meta?.ownsVersionProperty() || meta.versionProperty in data) {
       return;
     }
 

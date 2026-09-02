@@ -1388,7 +1388,8 @@ export abstract class AbstractSqlDriver<
       where = (await this.applyUnionWhere(meta, where as ObjectQuery<T>, options, true)) as FilterQuery<T>;
     }
 
-    if (Utils.hasObjectKeys(data)) {
+    // a TPT table declaring the version property is bumped even when only other tables of the hierarchy changed
+    if (Utils.hasObjectKeys(data) || (meta.inheritanceType === 'tpt' && meta.ownsVersionProperty())) {
       const qb = this.createQueryBuilder<T>(
         entityName,
         options.ctx,
@@ -1425,7 +1426,7 @@ export abstract class AbstractSqlDriver<
 
         // reload generated columns and version fields
         const returning: string[] = [];
-        meta.props
+        this.getTableProps(meta)
           .filter(prop => (prop.generated && !prop.primary) || prop.version)
           .forEach(prop => returning.push(prop.name));
 
@@ -1503,7 +1504,10 @@ export abstract class AbstractSqlDriver<
     }
 
     // reload generated columns and version fields
-    meta.props.filter(prop => prop.generated || prop.version || prop.primary).forEach(prop => returning.add(prop.name));
+    meta.getPrimaryProps().forEach(prop => returning.add(prop.name));
+    this.getTableProps(meta)
+      .filter(prop => prop.generated || prop.version)
+      .forEach(prop => returning.add(prop.name));
 
     const pkCond = Utils.flatten(meta.primaryKeys.map(pk => meta.properties[pk].fieldNames))
       .map(pk => `${this.platform.quoteIdentifier(pk)} = ?`)
@@ -1574,7 +1578,7 @@ export abstract class AbstractSqlDriver<
       });
     }
 
-    if (meta.versionProperty) {
+    if (meta.ownsVersionProperty()) {
       const versionProperty = meta.properties[meta.versionProperty];
       const quotedFieldName = this.platform.quoteIdentifier(versionProperty.fieldNames[0]);
       sql += `${quotedFieldName} = `;
