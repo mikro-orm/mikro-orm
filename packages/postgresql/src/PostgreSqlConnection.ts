@@ -43,6 +43,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
   mapOptions(overrides: PoolConfig): PoolConfig {
     const ret = { ...this.getConnectionOptions() } as PoolConfig;
     const pool = this.config.get('pool');
+    Utils.defaultValue(ret, 'min', pool?.min);
     Utils.defaultValue(ret, 'max', pool?.max);
     Utils.defaultValue(ret, 'idleTimeoutMillis', pool?.idleTimeoutMillis);
 
