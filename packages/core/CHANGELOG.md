@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.15](https://github.com/mikro-orm/mikro-orm/compare/v7.1.14...v7.1.15) (2026-09-03)
+
+### Bug Fixes
+
+* **core:** apply TPT concurrency check only to the table that declares it ([#8228](https://github.com/mikro-orm/mikro-orm/issues/8228)) ([9d47084](https://github.com/mikro-orm/mikro-orm/commit/9d47084ed0c64487431a1ee1e34f9529bc413257)), closes [#8227](https://github.com/mikro-orm/mikro-orm/issues/8227) [#8226](https://github.com/mikro-orm/mikro-orm/issues/8226) [#8226](https://github.com/mikro-orm/mikro-orm/issues/8226)
+* **core:** apply TPT version property only to the table that declares it ([#8227](https://github.com/mikro-orm/mikro-orm/issues/8227)) ([8ee0365](https://github.com/mikro-orm/mikro-orm/commit/8ee036519466e500c953a4fa96ec53d2fde900e2)), closes [#8226](https://github.com/mikro-orm/mikro-orm/issues/8226)
+* **core:** escape entity property names in generated hydration/comparison code ([#8221](https://github.com/mikro-orm/mikro-orm/issues/8221)) ([b01c17d](https://github.com/mikro-orm/mikro-orm/commit/b01c17d8c9590b9f3bc7534dc5d198072812b226))
+* **core:** infer `serializer` callback value from relation kind in `defineEntity` ([#8215](https://github.com/mikro-orm/mikro-orm/issues/8215)) ([9631464](https://github.com/mikro-orm/mikro-orm/commit/963146430578325920687e1341ece8cc245a5d5b)), closes [#8214](https://github.com/mikro-orm/mikro-orm/issues/8214)
+* **core:** resolve user-class lookups by class reference instead of class name ([#8209](https://github.com/mikro-orm/mikro-orm/issues/8209)) ([2431265](https://github.com/mikro-orm/mikro-orm/commit/2431265f11baafee4afc8c1e19c89cf180c0345f)), closes [#8208](https://github.com/mikro-orm/mikro-orm/issues/8208)
+* **core:** support polymorphic relations inside embeddables ([#8219](https://github.com/mikro-orm/mikro-orm/issues/8219)) ([69ed8f8](https://github.com/mikro-orm/mikro-orm/commit/69ed8f816e887067d1ea8de4c3d894b7751b1056)), closes [#8218](https://github.com/mikro-orm/mikro-orm/issues/8218) [#8217](https://github.com/mikro-orm/mikro-orm/issues/8217)
+* **sql:** support upsert for TPT entities ([#8229](https://github.com/mikro-orm/mikro-orm/issues/8229)) ([eafda32](https://github.com/mikro-orm/mikro-orm/commit/eafda3243dafba02d79e743b1548bd7077c1a900)), closes [#8226](https://github.com/mikro-orm/mikro-orm/issues/8226) [#8226](https://github.com/mikro-orm/mikro-orm/issues/8226)
+
+
 ## [7.1.14](https://github.com/mikro-orm/mikro-orm/compare/v7.1.13...v7.1.14) (2026-08-26)
 
 ### Bug Fixes
