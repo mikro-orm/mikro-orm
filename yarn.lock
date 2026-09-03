@@ -1468,7 +1468,7 @@ __metadata:
     "@swc/core": "npm:1.16.1"
     "@types/better-sqlite3": "npm:9.6.0"
     "@types/node": "npm:24.13.3"
-    "@types/oracledb": "npm:7.0.2"
+    "@types/oracledb": "npm:7.0.3"
     "@types/pg": "npm:8.23.1"
     "@types/pg-cursor": "npm:2.7.2"
     "@types/picomatch": "npm:4.0.3"
@@ -3272,12 +3272,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/oracledb@npm:7.0.2":
-  version: 7.0.2
-  resolution: "@types/oracledb@npm:7.0.2"
+"@types/oracledb@npm:7.0.3":
+  version: 7.0.3
+  resolution: "@types/oracledb@npm:7.0.3"
   dependencies:
     "@types/node": "npm:*"
-  checksum: 10/7908e2ca3ec0955758cc061462931722eb233aadfb719bc077b9dda493604d8273ca938a0b435f00b989dcc44de9b4eeb86e6ccea8cc0350332fad5a2d8c2577
+  checksum: 10/8c211ed115cb6a8340870c4d6cf03f4915827d06218e09b73a2716962fb684c521e1c9848338a87d59c1cac6c5610358aaa77180decb36fd645dcce1b29a0545
   languageName: node
   linkType: hard
 
