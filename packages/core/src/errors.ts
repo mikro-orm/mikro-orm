@@ -392,6 +392,36 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     );
   }
 
+  static throughRelationMissingProperty(
+    meta: EntityMetadata,
+    prop: EntityProperty,
+    through: EntityMetadata,
+    side: 'owner' | 'target',
+  ): MetadataError {
+    const target = side === 'owner' ? meta.className : prop.targetMeta!.className;
+    return this.fromMessage(
+      meta,
+      prop,
+      `uses 'through' entity ${through.className} which has no ManyToOne property pointing to ${target}`,
+    );
+  }
+
+  static throughRelationCompositeTarget(meta: EntityMetadata, prop: EntityProperty): MetadataError {
+    return this.fromMessage(
+      meta,
+      prop,
+      `uses 'through' option which is not supported for targets with composite primary key`,
+    );
+  }
+
+  static throughRelationInvalidKind(meta: EntityMetadata, prop: EntityProperty): MetadataError {
+    return this.fromMessage(
+      meta,
+      prop,
+      `uses 'through' option which is only supported for ManyToOne and OneToOne relations`,
+    );
+  }
+
   static fromMissingOption(meta: EntityMetadata, prop: EntityProperty, option: string): MetadataError {
     return this.fromMessage(meta, prop, `is missing '${option}' option`);
   }

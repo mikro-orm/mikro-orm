@@ -15,6 +15,7 @@ import type {
   EntityValue,
   EntityKey,
   FilterKey,
+  FormulaColumns,
 } from '../typings.js';
 import { ExceptionConverter } from './ExceptionConverter.js';
 import { MetadataError } from '../errors.js';
@@ -808,6 +809,14 @@ export abstract class Platform {
     Object.defineProperty(copy, JsonProperty, { enumerable: false, value: true });
 
     return copy;
+  }
+
+  /**
+   * Builds the correlated subquery used as the formula of a virtual to-one relation defined via `through`.
+   * @internal
+   */
+  getThroughRelationFormula(prop: EntityProperty, columns: FormulaColumns<any>): string {
+    throw new Error(`${this.constructor.name} does not support the 'through' option of ${prop.name}`);
   }
 
   /** Initializes the platform with the ORM configuration. */

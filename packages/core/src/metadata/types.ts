@@ -531,9 +531,19 @@ interface PolymorphicOptions {
   discriminatorMap?: Dictionary<string>;
 }
 
-export interface ManyToOneOptions<Owner, Target> extends ReferenceOptions<Owner, Target>, PolymorphicOptions {
+export interface ManyToOneOptions<Owner, Target, Through = Target>
+  extends ReferenceOptions<Owner, Target>, PolymorphicOptions {
   /** Point to the inverse side property name. */
   inversedBy?: (string & keyof Target) | ((e: Target) => any);
+
+  /** Resolve this read-only relation via a subquery on another entity: a pivot entity with FKs to both sides, or the target itself to pick a single item out of a to-many relation (see {@doclink relationships#to-one-relations-through-another-entity | To-one relations through another entity}). */
+  through?: () => EntityName<Through>;
+
+  /** Condition applied on the `through` entity. */
+  where?: FilterQuery<Through>;
+
+  /** Ordering applied on the `through` entity, the first matching row is used. */
+  orderBy?: QueryOrderMap<Through> | QueryOrderMap<Through>[];
 
   /** Wrap the entity in {@apilink Reference} wrapper. */
   ref?: boolean;
@@ -610,10 +620,19 @@ export interface OneToManyOptions<Owner, Target> extends ReferenceOptions<Owner,
   mappedBy: (string & keyof Target) | ((e: Target) => any);
 }
 
-export interface OneToOneOptions<Owner, Target>
-  extends Partial<Omit<OneToManyOptions<Owner, Target>, 'orderBy'>>, PolymorphicOptions {
+export interface OneToOneOptions<Owner, Target, Through = Target>
+  extends Partial<Omit<OneToManyOptions<Owner, Target>, 'orderBy' | 'where'>>, PolymorphicOptions {
   /** Set this side as owning. Owning side is where the foreign key is defined. This option is not required if you use `inversedBy` or `mappedBy` to distinguish owning and inverse side. */
   owner?: boolean;
+
+  /** Resolve this read-only relation via a subquery on another entity: a pivot entity with FKs to both sides, or the target itself to pick a single item out of a to-many relation (see {@doclink relationships#to-one-relations-through-another-entity | To-one relations through another entity}). */
+  through?: () => EntityName<Through>;
+
+  /** Condition for {@doclink collections#declarative-partial-loading | Declarative partial loading}, or the condition applied on the `through` entity. */
+  where?: FilterQuery<Through>;
+
+  /** Ordering applied on the `through` entity, the first matching row is used. */
+  orderBy?: QueryOrderMap<Through> | QueryOrderMap<Through>[];
 
   /** Point to the inverse side property name. */
   inversedBy?: (string & keyof Target) | ((e: Target) => any);
