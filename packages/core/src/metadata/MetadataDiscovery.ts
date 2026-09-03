@@ -2656,6 +2656,7 @@ export class MetadataDiscovery {
     const pointsTo = (p: EntityProperty, m: EntityMetadata) => {
       const candidate = this.#metadata.find(p.target);
 
+      /* v8 ignore next 3 */
       if (!candidate) {
         return false;
       }

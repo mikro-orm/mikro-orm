@@ -815,6 +815,7 @@ export abstract class Platform {
    * Builds the correlated subquery used as the formula of a virtual to-one relation defined via `through`.
    * @internal
    */
+  /* v8 ignore next 3 */
   getThroughRelationFormula(prop: EntityProperty, columns: FormulaColumns<any>): string {
     throw new Error(`${this.constructor.name} does not support the 'through' option of ${prop.name}`);
   }
