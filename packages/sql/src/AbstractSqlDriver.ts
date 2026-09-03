@@ -2651,7 +2651,7 @@ export abstract class AbstractSqlDriver<
           // INNER JOINs get nested inside the polymorphic LEFT JOIN by processNestedJoins, which
           // keeps the resulting query valid for rows pointing to other polymorphic targets.
           if (targetMeta.inheritanceType === 'tpt' && targetMeta.tptParent) {
-            this.addTPTParentJoinsForRelation(qb, targetMeta as EntityMetadata<T>, tableAlias, targetPath);
+            qb.addTPTParentJoins(targetMeta, tableAlias, targetPath);
           }
 
           // For polymorphic targets that are TPT base classes, also LEFT JOIN
@@ -2711,11 +2711,6 @@ export abstract class AbstractSqlDriver<
       const schema =
         prop.targetMeta!.schema === '*' ? (options?.schema ?? this.config.get('schema')) : prop.targetMeta!.schema;
       qb.join(field as any, tableAlias, {}, joinType, path, schema);
-
-      // For relations to TPT child entities, INNER JOIN parent tables (GH #7469)
-      if (meta2.inheritanceType === 'tpt' && meta2.tptParent) {
-        this.addTPTParentJoinsForRelation(qb, meta2, tableAlias, path);
-      }
 
       // For relations to TPT base classes, add LEFT JOINs for all child tables (polymorphic loading)
       if (meta2.inheritanceType === 'tpt' && meta2.tptChildren?.length && !ref) {
@@ -2786,38 +2781,6 @@ export abstract class AbstractSqlDriver<
     }
 
     return fields;
-  }
-
-  /**
-   * Walks the TPT inheritance chain of `leafMeta` and INNER JOINs each parent table.
-   * Registers the parent aliases in `qb.state.tptAlias` so column resolution finds them
-   * when filter conditions reference parent-table columns.
-   * @internal
-   */
-  protected addTPTParentJoinsForRelation<T extends object>(
-    qb: AnyQueryBuilder<T>,
-    leafMeta: EntityMetadata,
-    leafAlias: string,
-    basePath: string,
-  ): void {
-    let childAlias = leafAlias;
-    let childMeta: EntityMetadata = leafMeta;
-
-    while (childMeta.tptParent) {
-      const parentMeta = childMeta.tptParent;
-      const parentAlias = qb.getNextAlias(parentMeta.className);
-      qb.createAlias(parentMeta.class, parentAlias);
-      qb.state.tptAlias[`${leafAlias}:${parentMeta.className}`] = parentAlias;
-      qb.addPropertyJoin(
-        childMeta.tptParentProp!,
-        childAlias,
-        parentAlias,
-        JoinType.innerJoin,
-        `${basePath}.[tpt]${childMeta.className}`,
-      );
-      childAlias = parentAlias;
-      childMeta = parentMeta;
-    }
   }
 
   /**

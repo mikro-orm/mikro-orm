@@ -1592,9 +1592,10 @@ export class QueryBuilder<
     }
 
     if (Utils.isPlainObject(cond)) {
-      return Object.entries(cond).some(
-        ([key, value]) => key.startsWith(`${alias}.`) || this.condReferencesAlias(value, alias),
-      );
+      return Object.entries(cond).some(([key, value]) => {
+        const [keyAlias, field] = this.helper.splitField(key as EntityKey<Entity>);
+        return this.helper.getTPTAliasForProperty(field, keyAlias) === alias || this.condReferencesAlias(value, alias);
+      });
     }
 
     return false;
@@ -3224,9 +3225,40 @@ export class QueryBuilder<
       this.#state.joins[aliasedName].path ??= path;
     }
 
+    if (prop.targetMeta!.inheritanceType === 'tpt' && prop.targetMeta!.tptParent) {
+      this.addTPTParentJoins(prop.targetMeta!, alias, path);
+    }
+
     this.nestReferencedJoins(this.#state.joins[aliasedName]);
 
     return { prop, key: aliasedName };
+  }
+
+  /**
+   * Walks the TPT inheritance chain of `leafMeta` and INNER JOINs each parent table.
+   * Registers the parent aliases in `state.tptAlias` so column resolution finds them
+   * when conditions reference parent-table columns.
+   * @internal
+   */
+  addTPTParentJoins(leafMeta: EntityMetadata, leafAlias: string, basePath: string): void {
+    let childAlias = leafAlias;
+    let childMeta: EntityMetadata = leafMeta;
+
+    while (childMeta.tptParent) {
+      const parentMeta = childMeta.tptParent;
+      const parentAlias = this.getNextAlias(parentMeta.className);
+      this.createAlias(parentMeta.class, parentAlias);
+      this.#state.tptAlias[`${leafAlias}:${parentMeta.className}`] = parentAlias;
+      this.addPropertyJoin(
+        childMeta.tptParentProp!,
+        childAlias,
+        parentAlias,
+        JoinType.innerJoin,
+        `${basePath}.[tpt]${childMeta.className}`,
+      );
+      childAlias = parentAlias;
+      childMeta = parentMeta;
+    }
   }
 
   protected prepareFields<T>(
@@ -3997,6 +4029,8 @@ export class QueryBuilder<
         } else {
           join.cond = { ...join.cond, [k]: cond[k] };
         }
+
+        this.nestReferencedJoins(join);
       }
     }
   }
