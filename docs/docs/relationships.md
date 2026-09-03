@@ -625,7 +625,7 @@ const CustomerSchema = defineEntity({
     edges: () => p.oneToMany(Edge).mappedBy('start'),
     // the account linked via an edge in the `cleared` state
     account: () => p.manyToOne(Account).through(() => Edge).where({ state: 'cleared' }).ref().nullable(),
-    // the most recent edge of this customer
+    // the newest edge of this customer, picked out of the `edges` collection
     latestEdge: () => p.oneToOne(Edge).through(() => Edge).orderBy({ id: 'desc' }).ref().nullable(),
   },
 });
@@ -661,7 +661,7 @@ export const Customer = defineEntity({
     edges: () => p.oneToMany(Edge).mappedBy('start'),
     // the account linked via an edge in the `cleared` state
     account: () => p.manyToOne(Account).through(() => Edge).where({ state: 'cleared' }).ref().nullable(),
-    // the most recent edge of this customer
+    // the newest edge of this customer, picked out of the `edges` collection
     latestEdge: () => p.oneToOne(Edge).through(() => Edge).orderBy({ id: 'desc' }).ref().nullable(),
   },
 });
@@ -699,7 +699,7 @@ export class Customer {
   @ManyToOne(() => Account, { through: () => Edge, where: { state: 'cleared' }, ref: true, nullable: true })
   account?: Ref<Account>;
 
-  // the most recent edge of this customer
+  // the newest edge of this customer, picked out of the `edges` collection
   @OneToOne(() => Edge, { through: () => Edge, orderBy: { id: 'desc' }, ref: true, nullable: true })
   latestEdge?: Ref<Edge>;
 
@@ -741,7 +741,7 @@ export class Customer {
   @ManyToOne({ through: () => Edge, where: { state: 'cleared' }, ref: true, nullable: true })
   account?: Ref<Account>;
 
-  // the most recent edge of this customer
+  // the newest edge of this customer, picked out of the `edges` collection
   @OneToOne({ through: () => Edge, orderBy: { id: 'desc' }, ref: true, nullable: true })
   latestEdge?: Ref<Edge>;
 
@@ -768,7 +768,7 @@ export class Edge {
   </TabItem>
 </Tabs>
 
-When reading, such relation behaves like any other to-one relation: it can be populated with both loading strategies, used in `where` and `orderBy` conditions, combined with `ref` or `mapToPk`, and it takes part in `Loaded<>` type inference and serialization. Under the hood, the ORM selects the target primary key via a subquery on the `through` entity, so for the `account` property above the generated column looks like this:
+When reading, such relation behaves like any other to-one relation: it can be populated with both loading strategies, used in `where` and `orderBy` conditions, combined with `ref` or `mapToPk`, and it takes part in `Loaded<>` type inference and serialization. Under the hood, the ORM selects the target primary key via a subquery on the `through` entity. For the `account` property above, the subquery goes through the pivot entity: it filters `edge` rows by the FK back to the customer and by the `where` condition, and selects the FK to the account:
 
 ```sql
 select c.*, (
@@ -777,6 +777,19 @@ select c.*, (
   limit 1
 ) as account_id from customer as c
 ```
+
+The `latestEdge` property shows the other use: `through` is the target entity itself, so there is no pivot and the subquery selects the primary key of `edge` directly. It picks one row out of what the `edges` collection would hold, using `orderBy` to decide which one:
+
+```sql
+select c.*, (
+  select e.id from edge as e
+  where e.start_id = c.id
+  order by e.id desc
+  limit 1
+) as latest_edge_id from customer as c
+```
+
+This is the same as loading the `edges` collection and taking the newest item, without loading the whole collection. Combine it with `where` to pick e.g. the newest edge in a given state.
 
 The relation is read-only, no column or foreign key constraint is created for it and assignments to it are ignored during flush. To create or change the link, work with the `through` entity directly, e.g. via a `OneToMany` relation to it like the `edges` collection above. When several rows match, the first one is used, add a unique index on the `through` entity if you need to guarantee there is at most one.
 
