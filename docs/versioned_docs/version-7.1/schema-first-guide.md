@@ -780,9 +780,9 @@ npm install argon2
 The next step is to create the class that our DB value will be transformed to and from. Let's add it to the "users" module. We'll use the suffix "runtimeType" to make it clear this will be set as the runtime type at an entity. We'll also make the type automatically rehash the password on successful verification if needed.
 
 ```ts title="src/modules/user/password.runtimeType.ts
-import { hash, verify, needsRehash, Options } from 'argon2';
+import { hash, verify, needsRehash, type HashOptions } from 'argon2';
 
-const hashOptions: Options = {
+const hashOptions: HashOptions = {
   hashLength: 100
 };
 
