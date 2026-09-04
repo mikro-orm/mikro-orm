@@ -655,7 +655,10 @@ export class EntityLoader {
       convertCustomTypes,
       lockMode,
       populateWhere,
-      populateFilter: options.populateFilter?.[prop.name],
+      populateFilter: await this.extractChildCondition(
+        { ...options, where: Utils.copy(options.populateFilter) ?? {} },
+        prop,
+      ),
       logging,
       orderBy,
       populate: (populate.children as never) ?? populate.all ?? [],
@@ -880,7 +883,10 @@ export class EntityLoader {
         filters,
         ignoreLazyScalarProperties,
         populateWhere,
-        populateFilter: options.populateFilter?.[prop.name] as ObjectQuery<Entity> | undefined,
+        populateFilter: await this.extractChildCondition(
+          { ...options, where: Utils.copy(options.populateFilter) ?? {} },
+          prop,
+        ),
         connectionType,
         logging,
         schema,
@@ -927,7 +933,10 @@ export class EntityLoader {
     const fields = this.buildFields(options.fields as any, prop) as typeof options.fields;
     // oxfmt-ignore
     const exclude = Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) : options.exclude;
-    const populateFilter = options.populateFilter?.[prop.name];
+    const populateFilter = await this.extractChildCondition(
+      { ...options, where: Utils.copy(options.populateFilter) ?? {} },
+      prop,
+    );
     const options2 = { ...options, fields, exclude, populateFilter } as unknown as FindOptions<Entity, any, any, any> &
       Dictionary;
     (['limit', 'offset', 'first', 'last', 'before', 'after', 'overfetch'] as const).forEach(
