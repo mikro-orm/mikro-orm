@@ -528,7 +528,8 @@ describe('Dataloader', () => {
     const mock = mockLogger(orm);
     const res = await refBatchLoadFn(collections.map(col => [col]));
     await orm.em.flush();
-    expect(mock.mock.calls).toMatchSnapshot();
+    // Independent dataloader batches can execute in any order.
+    expect([...mock.mock.calls].sort(([a], [b]) => a.localeCompare(b))).toMatchSnapshot();
     expect(res.length).toBe(collections.length);
     for (let i = 0; i < collections.length; i++) {
       expect(res[i].map((el: any) => el.id)).toEqual((await collections[i].loadItems()).map((el: any) => el.id));
@@ -542,7 +543,8 @@ describe('Dataloader', () => {
     const mock = mockLogger(orm);
     await Promise.all(colsB.map(col => col.load({ dataloader: true })));
     await orm.em.flush();
-    expect(mock.mock.calls).toMatchSnapshot();
+    // Independent dataloader batches can execute in any order.
+    expect([...mock.mock.calls].sort(([a], [b]) => a.localeCompare(b))).toMatchSnapshot();
     expect(colsA.length).toBe(colsB.length);
     for (const [colA, colB] of colsA.map((colA, i) => [colA, colsB[i]])) {
       expect(colA.isInitialized()).toBe(true);
@@ -780,7 +782,8 @@ describe('Dataloader', () => {
       await Promise.all(cols.map(col => col.load()));
       await orm.em.flush();
       await orm.close(true);
-      return mock.mock.calls;
+      // Independent dataloader batches can execute in any order.
+      return [...mock.mock.calls].sort(([a], [b]) => a.localeCompare(b));
     }
 
     const res = structuredClone(await getCols(DataloaderType.ALL));
