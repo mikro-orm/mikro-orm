@@ -256,3 +256,22 @@ bench('defineEntity with indexes', () => {
     indexes: [{ name: 'idx_status_views', properties: ['status', 'views'] }],
   });
 }).types([1982, 'instantiations']);
+
+// GH #8240: a generic builder call (`fieldName`, `index`, ...) ending an arrow-defined relation chain makes TS infer
+// from the chain's return type, which blew up to ~155k instantiations via structural variance measurement
+bench('defineEntity relation chain ending with a generic builder call', () => {
+  const Bar = defineEntity({
+    name: 'Bar',
+    properties: {
+      id: p.integer().primary(),
+    },
+  });
+
+  const Foo = defineEntity({
+    name: 'Foo',
+    properties: {
+      id: p.integer().primary(),
+      bar: () => p.oneToOne(Bar).lazy().fieldName('bar_id'),
+    },
+  });
+}).types([20902, 'instantiations']);

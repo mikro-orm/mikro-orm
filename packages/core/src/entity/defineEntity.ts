@@ -1614,6 +1614,9 @@ type InferColumnType<T extends string> = T extends
 // before the Base in the intersection — TypeScript picks earlier overloads first.
 type BaseEntityMethodKeys = 'toObject' | 'toPOJO' | 'serialize' | 'assign' | 'populate' | 'init' | 'toReference';
 
+// `in out` skips variance measurement, which would otherwise structurally compare every `IWrappedEntity` method whenever two inferred entity types meet
+interface BaseEntityMethods<in out Entity extends object> extends Pick<IWrappedEntity<Entity>, BaseEntityMethodKeys> {}
+
 /** Infers the entity type from a `defineEntity()` properties map, resolving builders, base classes, and primary keys. */
 export type InferEntityFromProperties<
   Properties extends Record<string, any>,
@@ -1627,23 +1630,20 @@ export type InferEntityFromProperties<
 > = (IsNever<Base> extends true
   ? {}
   : Base extends { toObject(...args: any[]): any }
-    ? Pick<
-        IWrappedEntity<
-          {
-            -readonly [K in keyof Properties]: InferBuilderValue<MaybeReturnType<Properties[K]>>;
-          } & {
-            [PrimaryKeyProp]?: InferCombinedPrimaryKey<Properties, PK, Base>;
-          } & (IsNever<Repository> extends true
-              ? {}
-              : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository }) &
-            NarrowDiscriminator<
-              Omit<Base, typeof PrimaryKeyProp>,
-              BaseDiscriminatorColumn,
-              DiscriminatorValue,
-              Embeddable
-            >
-        >,
-        BaseEntityMethodKeys
+    ? BaseEntityMethods<
+        {
+          -readonly [K in keyof Properties]: InferBuilderValue<MaybeReturnType<Properties[K]>>;
+        } & {
+          [PrimaryKeyProp]?: InferCombinedPrimaryKey<Properties, PK, Base>;
+        } & (IsNever<Repository> extends true
+            ? {}
+            : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository }) &
+          NarrowDiscriminator<
+            Omit<Base, typeof PrimaryKeyProp>,
+            BaseDiscriminatorColumn,
+            DiscriminatorValue,
+            Embeddable
+          >
       >
     : {}) & {
   -readonly [K in keyof Properties]: InferBuilderValue<MaybeReturnType<Properties[K]>>;
