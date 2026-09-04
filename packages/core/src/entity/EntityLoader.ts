@@ -652,6 +652,7 @@ export class EntityLoader {
       convertCustomTypes,
       lockMode,
       populateWhere,
+      populateFilter: (options as Dictionary).populateFilter?.[prop.name],
       logging,
       orderBy,
       populate: (populate.children as never) ?? populate.all ?? [],
@@ -876,6 +877,8 @@ export class EntityLoader {
         filters,
         ignoreLazyScalarProperties,
         populateWhere,
+        // @ts-ignore not a public option, will be propagated to the populate call
+        populateFilter: (options as Dictionary).populateFilter?.[prop.name],
         connectionType,
         logging,
         schema,
