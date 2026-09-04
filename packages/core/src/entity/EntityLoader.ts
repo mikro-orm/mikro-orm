@@ -10,6 +10,7 @@ import type {
   EntityValue,
   FilterKey,
   FilterQuery,
+  ObjectQuery,
   PopulateHintOptions,
   PopulateOptions,
 } from '../typings.js';
@@ -46,6 +47,8 @@ export interface EntityLoaderOptions<Entity, Fields extends string = never, Excl
   where?: FilterQuery<Entity>;
   /** Controls how `where` conditions are applied to populated relations. */
   populateWhere?: PopulateHint | `${PopulateHint}`;
+  /** @see FindOptions.populateFilter */
+  populateFilter?: ObjectQuery<Entity>;
   /** Ordering for populated relations. */
   orderBy?: QueryOrderMap<Entity> | QueryOrderMap<Entity>[];
   /** Whether to reload already loaded entities. */
@@ -652,7 +655,7 @@ export class EntityLoader {
       convertCustomTypes,
       lockMode,
       populateWhere,
-      populateFilter: (options as Dictionary).populateFilter?.[prop.name],
+      populateFilter: options.populateFilter?.[prop.name],
       logging,
       orderBy,
       populate: (populate.children as never) ?? populate.all ?? [],
@@ -877,8 +880,7 @@ export class EntityLoader {
         filters,
         ignoreLazyScalarProperties,
         populateWhere,
-        // @ts-ignore not a public option, will be propagated to the populate call
-        populateFilter: (options as Dictionary).populateFilter?.[prop.name],
+        populateFilter: options.populateFilter?.[prop.name] as ObjectQuery<Entity> | undefined,
         connectionType,
         logging,
         schema,
@@ -925,7 +927,7 @@ export class EntityLoader {
     const fields = this.buildFields(options.fields as any, prop) as typeof options.fields;
     // oxfmt-ignore
     const exclude = Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) : options.exclude;
-    const populateFilter = (options as Dictionary).populateFilter?.[prop.name];
+    const populateFilter = options.populateFilter?.[prop.name];
     const options2 = { ...options, fields, exclude, populateFilter } as unknown as FindOptions<Entity, any, any, any> &
       Dictionary;
     (['limit', 'offset', 'first', 'last', 'before', 'after', 'overfetch'] as const).forEach(
