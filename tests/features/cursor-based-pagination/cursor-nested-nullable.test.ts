@@ -52,6 +52,8 @@ describe('cursor pagination with nested null values', () => {
 
   afterAll(() => orm.close(true));
 
+  afterEach(() => orm.em.clear());
+
   test('cursor can be created from entity with nested null value', async () => {
     // Book with author that has null rating
     const book = await orm.em.findOneOrFail(Book, { id: 2 }, { populate: ['author'] });
@@ -122,8 +124,39 @@ describe('cursor pagination with nested null values', () => {
       populate: ['author'],
     });
 
-    // Should get books with non-null author ratings
-    expect(result.items.length).toBeGreaterThanOrEqual(0);
+    // the remaining row with a null sort key comes first, then the non-null rows
+    expect(result.items.map(b => b.id)).toEqual([3, 1]);
+  });
+
+  test('cursor produced for a null relation under a nested direction is consumable', async () => {
+    // books 2 (author with null rating) and 3 (null author) share a null sort key
+    const cursor1 = await orm.em.findByCursor(Book, {
+      first: 1,
+      orderBy: { author: { rating: 'asc nulls first' }, id: 'asc' },
+      populate: ['author'],
+    });
+    expect(cursor1.items.map(b => b.id)).toEqual([2]);
+    orm.em.clear();
+
+    const cursor2 = await orm.em.findByCursor(Book, {
+      first: 1,
+      after: cursor1.endCursor!,
+      orderBy: { author: { rating: 'asc nulls first' }, id: 'asc' },
+      populate: ['author'],
+    });
+    expect(cursor2.items.map(b => b.id)).toEqual([3]);
+    // the boundary row has no author, its cursor carries a null in place of the nested object
+    expect(Cursor.decode(cursor2.endCursor!)).toEqual([null, 3]);
+    orm.em.clear();
+
+    const cursor3 = await orm.em.findByCursor(Book, {
+      first: 1,
+      after: cursor2.endCursor!,
+      orderBy: { author: { rating: 'asc nulls first' }, id: 'asc' },
+      populate: ['author'],
+    });
+    expect(cursor3.items.map(b => b.id)).toEqual([1]);
+    expect(cursor3.hasNextPage).toBe(false);
   });
 
   test('throws error for missing nested property when relation not populated', async () => {

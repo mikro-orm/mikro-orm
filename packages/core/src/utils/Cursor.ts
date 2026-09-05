@@ -1,7 +1,7 @@
 import type { Dictionary, EntityKey, EntityMetadata, EntityProperty, FilterObject, Loaded } from '../typings.js';
 import type { FindByCursorOptions, OrderDefinition } from '../drivers/IDatabaseDriver.js';
 import { Utils } from './Utils.js';
-import { ReferenceKind, type QueryOrder, type QueryOrderKeys } from '../enums.js';
+import { ReferenceKind, type QueryOrder } from '../enums.js';
 import { Reference } from '../entity/Reference.js';
 import { helper } from '../entity/wrap.js';
 import { Raw } from '../utils/RawQueryFragment.js';
