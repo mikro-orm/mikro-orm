@@ -631,6 +631,11 @@ export abstract class Platform {
     return false;
   }
 
+  /** Whether `nulls first`/`nulls last` can be requested in an `orderBy`. Platforms returning `false` always sort nulls as the lowest value. */
+  supportsNullsOrdering(): boolean {
+    return true;
+  }
+
   /** Converts a JS value to its JSON database representation (typically JSON.stringify). */
   convertJsonToDatabaseValue(value: unknown, context?: TransformContext): unknown {
     return JSON.stringify(value);

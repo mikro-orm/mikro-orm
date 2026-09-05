@@ -377,8 +377,8 @@ describe('cursor pagination - null cursor condition branches', () => {
       orderBy: { age: 'asc nulls first', id: 'asc' },
     });
 
-    // Result count depends on database NULLS ordering support
-    expect(result.items.length).toBeGreaterThanOrEqual(0);
+    // the null block comes first, so every non-null row follows it
+    expect(result.items.map(u => u.id)).toEqual([1, 2, 4]);
   });
 
   test('cursor condition with null value and nulls last (forward)', async () => {
@@ -458,7 +458,7 @@ describe('cursor pagination - null cursor condition branches', () => {
       orderBy: { age: 'asc nulls last', id: 'asc' },
     });
 
-    // Result count depends on database NULLS ordering support
-    expect(result.items.length).toBeGreaterThanOrEqual(0);
+    // the null block comes last, so every non-null row precedes it
+    expect(result.items.map(u => u.id)).toEqual([1, 2, 4]);
   });
 });

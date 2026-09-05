@@ -44,7 +44,6 @@ import { helper } from '../entity/wrap.js';
 import { Reference } from '../entity/Reference.js';
 import { PolymorphicRef } from '../entity/PolymorphicRef.js';
 import { JsonType } from '../types/JsonType.js';
-import { DateTimeType } from '../types/DateTimeType.js';
 import { QueryHelper } from '../utils/QueryHelper.js';
 import { MikroORM } from '../MikroORM.js';
 
@@ -301,6 +300,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     const createCursor = (val: unknown, key: 'startCursor' | 'endCursor', inverse = false) => {
       const def: unknown = Reference.unwrapReference((isCursor(val, key) ? val[key] : val) as T);
       let offsets: unknown[];
+      let fromJson = false;
 
       // entity (and reference) instances are supported as cursors too, their properties are read the same way
       if (Utils.isPlainObject<FilterObject<T>>(def) || Utils.isEntity<FilterObject<T>>(def)) {
@@ -314,12 +314,18 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
           return def[key];
         });
       } else {
-        /* v8 ignore next */
-        offsets = def ? Cursor.decode(def as string) : [];
+        try {
+          /* v8 ignore next */
+          offsets = def ? Cursor.decode(def as string) : [];
+        } catch (error) {
+          throw CursorError.invalidCursor(meta.className, error as Error);
+        }
+
+        fromJson = true;
       }
 
       if (definition.length > 0 && definition.length === offsets.length) {
-        return this.createCursorCondition<T>(definition, offsets as Dictionary[], inverse, meta);
+        return this.createCursorCondition<T>(definition, offsets as Dictionary[], inverse, meta, fromJson);
       }
 
       /* v8 ignore next */
@@ -338,17 +344,38 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       options.limit = limit + (overfetch ? 1 : 0);
     }
 
-    const createOrderBy = (prop: string, direction: QueryOrderKeys<T>): OrderDefinition<T> => {
+    const createOrderBy = (
+      prop: string,
+      direction: QueryOrderKeys<T>,
+      properties: Dictionary<EntityProperty> = meta.properties as Dictionary<EntityProperty>,
+      nullable = false,
+    ): OrderDefinition<T> => {
+      const propMeta = properties[prop];
+      // a nullable relation or embeddable makes its joined columns null too
+      nullable ||= !!propMeta?.nullable;
+
       if (Utils.isPlainObject(direction)) {
+        const childProps =
+          propMeta?.kind === ReferenceKind.EMBEDDED ? propMeta.embeddedProps : propMeta?.targetMeta?.properties;
         const value = Utils.getObjectQueryKeys(direction).reduce((o, key) => {
-          Object.assign(o, createOrderBy(key as string, direction[key] as unknown as QueryOrderKeys<T>));
+          Object.assign(
+            o,
+            createOrderBy(key as string, direction[key] as unknown as QueryOrderKeys<T>, childProps ?? {}, nullable),
+          );
           return o;
         }, {});
         return { [prop]: value } as OrderDefinition<T>;
       }
 
-      const desc = (direction as unknown) === QueryOrderNumeric.DESC || direction.toString().toLowerCase() === 'desc';
+      const { desc, nullsFirst } = this.parseCursorDirection(direction);
       const dir = Utils.xor(desc, isLast) ? 'desc' : 'asc';
+
+      // the condition assumes a placement, spell it out instead of taking the database default
+      if (nullable && this.platform.supportsNullsOrdering()) {
+        const nulls = Utils.xor(nullsFirst, isLast) ? 'first' : 'last';
+        return { [prop]: `${dir} nulls ${nulls}` } as OrderDefinition<T>;
+      }
+
       return { [prop]: dir } as OrderDefinition<T>;
     };
 
@@ -369,12 +396,44 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   /**
-   * Restores the JS value of a single cursor offset: ISO strings become `Date` instances based on the
-   * property type (never based on the string shape alone), and custom types are restored via
-   * `convertToJSValue`. Values compared against a JSON document keep their serialized form instead,
-   * unless the platform preserves native date types inside JSON documents (mongo).
+   * Resolves a leaf `orderBy` direction into the two flags the rewritten `orderBy` and the cursor
+   * condition have to agree on, or pagination skips rows at the null boundary. Platforms that cannot
+   * order nulls explicitly sort them as the lowest value, elsewhere the requested placement wins,
+   * defaulting to nulls last for `asc` and nulls first for `desc`.
    */
-  private mapCursorOffset(prop: EntityProperty | undefined, value: unknown, insideJson: boolean): unknown {
+  private parseCursorDirection(direction: unknown): { desc: boolean; nullsFirst: boolean } {
+    const dir = ('' + direction).toLowerCase();
+    const desc = direction === QueryOrderNumeric.DESC || dir.startsWith('desc');
+
+    if (!this.platform.supportsNullsOrdering()) {
+      return { desc, nullsFirst: !desc };
+    }
+
+    if (dir.includes('nulls first')) {
+      return { desc, nullsFirst: true };
+    }
+
+    if (dir.includes('nulls last')) {
+      return { desc, nullsFirst: false };
+    }
+
+    return { desc, nullsFirst: desc };
+  }
+
+  /**
+   * Restores the JS value of a single cursor offset. String-cursor values (`fromJson`) are decoded
+   * JSON: types implementing `fromJSON` own the round trip, other custom types restore via
+   * `convertToJSValue`, with `Date` healing for date-like columns based on the property type (never
+   * based on the string shape alone). POJO values are already JS values and only date-like strings
+   * are healed. Values compared against a JSON document keep their serialized form instead, unless
+   * the platform preserves native date types inside JSON documents (mongo).
+   */
+  private mapCursorOffset(
+    prop: EntityProperty | undefined,
+    value: unknown,
+    insideJson: boolean,
+    fromJson: boolean,
+  ): unknown {
     if (Utils.isScalarReference(value)) {
       value = value.unwrap();
     }
@@ -388,26 +447,71 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       return value;
     }
 
+    // mongo preserves native date types inside JSON documents, restored JS values compare directly
     if (insideJson && !this.platform.preservesDatesInsideJson()) {
-      // compared against the JSON document, which holds the serialized form
+      // compared against the JSON document, which holds the JSON form of the database value
       if (value instanceof Date) {
         return value.toISOString();
       }
 
-      // restore the JS value from the serialized form, `processWhere` then converts it to
-      // the database form, which is what the JSON document holds for custom typed props
-      return prop?.customType ? prop.customType.convertToJSValue(value, this.platform) : value;
+      if (prop?.customType && fromJson) {
+        const restored = prop.customType.fromJSON
+          ? prop.customType.fromJSON(value, this.platform)
+          : prop.customType.convertToJSValue(value, this.platform);
+
+        // a restored `Date` compares against its ISO string in the document, everything else
+        // keeps the JS value and gets its single `convertToDatabaseValue` in `processWhere`
+        if (restored instanceof Date) {
+          const converted = prop.customType.convertToDatabaseValue(restored, this.platform, {
+            fromQuery: true,
+            key: prop.name,
+            mode: 'query',
+          });
+
+          if (converted instanceof Date) {
+            return converted.toISOString();
+          }
+        }
+
+        return restored;
+      }
+
+      return value;
     }
 
-    if (
-      typeof value === 'string' &&
-      (prop?.runtimeType === 'Date' ||
-        (prop?.customType && this.platform.getMappedType(prop.columnTypes?.[0] ?? '') instanceof DateTimeType))
-    ) {
-      value = new Date(value);
+    if (prop?.customType) {
+      if (fromJson && prop.customType.fromJSON) {
+        // the type owns its JSON round trip
+        return prop.customType.fromJSON(value, this.platform);
+      }
+
+      // A string is either a serialized form (string cursor) or a hand-written one (POJO).
+      // Types whose JS value is a `Date` must receive one. The rest get the string first,
+      // so any sub-millisecond precision survives.
+      if (
+        typeof value === 'string' &&
+        (prop.runtimeType === 'Date' || this.platform.getMappedType(prop.columnTypes?.[0] ?? '').runtimeType === 'Date')
+      ) {
+        if (prop.runtimeType !== 'Date') {
+          try {
+            return prop.customType.convertToJSValue(value, this.platform);
+          } catch {
+            // the type cannot read the serialized string, fall back to the `Date` form
+          }
+        }
+
+        return prop.customType.convertToJSValue(new Date(value), this.platform);
+      }
+
+      // serialized non-string values still need restoring; POJO values are already JS values
+      return fromJson ? prop.customType.convertToJSValue(value, this.platform) : value;
     }
 
-    return prop?.customType ? prop.customType.convertToJSValue(value, this.platform) : value;
+    if (typeof value === 'string' && prop?.runtimeType === 'Date') {
+      return new Date(value);
+    }
+
+    return value;
   }
 
   protected createCursorCondition<T extends object>(
@@ -415,6 +519,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     offsets: Dictionary[],
     inverse: boolean,
     meta: EntityMetadata<T>,
+    fromJson = false,
   ): FilterQuery<T> {
     const createCondition = (
       prop: string,
@@ -424,8 +529,11 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       path = prop,
       properties: Dictionary<EntityProperty> = meta.properties as Dictionary<EntityProperty>,
       insideJson = false,
+      nullable = false,
     ): Dictionary => {
       const propMeta = properties[prop];
+      // a nullable relation or embeddable makes its joined columns null too
+      nullable ||= !!propMeta?.nullable;
 
       if (Utils.isPlainObject(direction)) {
         if (offset === undefined) {
@@ -439,37 +547,33 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         insideJson ||=
           (propMeta?.kind === ReferenceKind.EMBEDDED && !!propMeta.object) || propMeta?.customType instanceof JsonType;
 
-        const value = Utils.keys(direction).reduce((o, key) => {
-          Object.assign(
-            o,
+        const children = Utils.keys(direction)
+          .map(key =>
             createCondition(
               key,
               direction[key] as QueryOrderKeys<T>,
-              offset?.[key],
+              // a null relation offset means the whole sort key is null, propagate it to the leaves
+              offset === null ? null : offset[key],
               eq,
               `${path}.${key}`,
               childProps ?? {},
               insideJson,
+              nullable,
             ),
-          );
-          return o;
-        }, {});
-        return { [prop]: value };
+          )
+          .filter(child => Utils.hasObjectKeys(child));
+
+        // children comparing against nulls are group conditions, those cannot be merged into one object
+        const value =
+          children.length > 1 && children.some(child => '$or' in child)
+            ? { $and: children }
+            : children.reduce((o, child) => Object.assign(o, child), {} as Dictionary);
+
+        // an unconstrained child condition must not degrade to `{ [prop]: {} }`
+        return children.length > 0 ? { [prop]: value } : {};
       }
 
-      const isDesc = (direction as unknown) === QueryOrderNumeric.DESC || direction.toString().toLowerCase() === 'desc';
-      const dirStr = direction.toString().toLowerCase();
-      let nullsFirst: boolean;
-
-      if (dirStr.includes('nulls first')) {
-        nullsFirst = true;
-      } else if (dirStr.includes('nulls last')) {
-        nullsFirst = false;
-      } else {
-        // Default: NULLS LAST for ASC, NULLS FIRST for DESC (matches most databases)
-        nullsFirst = isDesc;
-      }
-
+      const { desc: isDesc, nullsFirst } = this.parseCursorDirection(direction);
       const operator = Utils.xor(isDesc, inverse) ? '$lt' : '$gt';
 
       // For leaf-level properties, undefined means missing value
@@ -477,18 +581,30 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         throw CursorError.missingValue(meta.className, path);
       }
 
-      offset = this.mapCursorOffset(propMeta, offset, insideJson) as Dictionary;
+      // string-cursor values are client supplied, so a value the type cannot restore is an
+      // invalid cursor, letting callers map `CursorError` to a client error response
+      try {
+        offset = this.mapCursorOffset(propMeta, offset, insideJson, fromJson) as Dictionary;
+      } catch (error) {
+        if (!fromJson || error instanceof CursorError) {
+          throw error;
+        }
+
+        throw CursorError.invalidCursor(meta.className, error as Error);
+      }
 
       // Handle null offset (intentional null cursor value)
       if (offset === null) {
+        // hasItemsAfterNull: forward + nullsFirst, or backward + nullsLast
+        const hasItemsAfterNull = Utils.xor(nullsFirst, inverse);
+
         if (eq) {
-          // Equal to null
-          return { [prop]: null };
+          // at-or-after a null sort key means every row when non-null rows follow the null block,
+          // so the tie-breaker in the `$or` sibling can reach past it
+          return hasItemsAfterNull ? {} : { [prop]: null };
         }
 
         // Strict comparison with null cursor value
-        // hasItemsAfterNull: forward + nullsFirst, or backward + nullsLast
-        const hasItemsAfterNull = Utils.xor(nullsFirst, inverse);
         if (hasItemsAfterNull) {
           return { [prop]: { $ne: null } };
         }
@@ -498,7 +614,14 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       }
 
       // Non-null offset
-      return { [prop]: { [operator + (eq ? 'e' : '')]: offset } };
+      const condition = { [prop]: { [operator + (eq ? 'e' : '')]: offset } };
+
+      // null sort keys lie past the offset here, and no comparison ever matches them
+      if (nullable && !Utils.xor(nullsFirst, inverse)) {
+        return { $or: [condition, { [prop]: null }] };
+      }
+
+      return condition;
     };
 
     const [order, ...otherOrders] = definition;
@@ -509,13 +632,20 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       return createCondition(prop, direction, offset) as FilterQuery<T>;
     }
 
-    return {
-      ...createCondition(prop, direction, offset, true),
+    const atOrPast = createCondition(prop, direction, offset, true);
+    const past = {
       $or: [
         createCondition(prop, direction, offset),
-        this.createCursorCondition(otherOrders, otherOffsets, inverse, meta),
+        this.createCursorCondition(otherOrders, otherOffsets, inverse, meta, fromJson),
       ],
-    } as FilterQuery<T>;
+    };
+
+    // the `at or past` prefix is itself a group condition when it compares against nulls
+    if ('$or' in atOrPast) {
+      return { $and: [atOrPast, past] } as FilterQuery<T>;
+    }
+
+    return { ...atOrPast, ...past } as FilterQuery<T>;
   }
 
   /** @internal */

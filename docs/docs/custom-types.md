@@ -19,6 +19,10 @@ You can define custom types by extending `Type` abstract class. It has several o
 
   Converts a value from its JS representation to its serialized JSON form of this type. By default, uses the runtime value.
 
+- `fromJSON(value: unknown, platform: Platform): any` (optional)
+
+  Converts a value from its serialized JSON form (what `toJSON` produced, after a `JSON.parse` round trip) back to its JS representation. Implementing it makes the type own its cursor wire format: cursor encoding then uses `toJSON`, and decoding passes the value back to `fromJSON`. Cursor values are client supplied, so implementations should validate the input and throw for values they cannot restore — the failure surfaces as a `CursorError`. Without it, cursors carry the raw JS value and decoding falls back to `convertToJSValue`.
+
 - `getColumnType(prop: EntityProperty, platform: Platform): string`
 
   Gets the SQL declaration snippet for a field of this type. By default, returns `columnType` of given property.
