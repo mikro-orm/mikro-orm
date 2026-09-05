@@ -166,7 +166,8 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         this.inlineCondition(childNode.renameFieldToPK(qb, alias, options), o, payload);
       } else if (isRawField) {
         const rawField = RawQueryFragment.getKnownFragment(field)!;
-        o[raw(rawField.sql.replaceAll(ALIAS_REPLACEMENT, alias!), rawField.params) as any] = payload;
+        qb.ensureTPTJoins();
+        o[raw(qb.helper.replaceAliases(rawField.sql, alias!), rawField.params) as any] = payload;
       } else if (!childNode.validate && !childNode.prop && !field.includes('.') && !operator) {
         // wrap unknown fields in raw() to prevent alias prefixing (e.g. raw SQL aliases in HAVING)
         // use '??' placeholder to properly quote the identifier

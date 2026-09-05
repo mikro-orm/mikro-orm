@@ -37,6 +37,18 @@ class Book3 {
   name!: string;
 }
 
+@Entity({ tableName: 'book' })
+class Book4 {
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 100, comment: 'new comment' })
+  name!: string;
+
+  @Property({ nullable: true, comment: 'comment of a newly added column' })
+  description?: string;
+}
+
 describe('comment diffing in mysql', () => {
   let orm: MikroORM;
 
@@ -69,6 +81,14 @@ describe('comment diffing in mysql', () => {
     const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toMatchSnapshot();
     await orm.schema.execute(diff3);
+
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+
+    // comments of changed and newly added columns need to be applied in the same pass
+    orm.discoverEntity(Book4, Book3);
+    const diff4 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff4).toMatchSnapshot();
+    await orm.schema.execute(diff4);
 
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
   });

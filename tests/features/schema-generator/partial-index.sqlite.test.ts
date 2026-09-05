@@ -1,6 +1,13 @@
 import { defineEntity, EntitySchema, MikroORM, p, raw } from '@mikro-orm/sqlite';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
-import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Formula,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 
 interface PartialUser {
   id: number;
@@ -27,6 +34,23 @@ class PostRel {
 
   @ManyToOne(() => TagRel)
   tag!: TagRel;
+}
+
+@Entity({ tableName: 'formula_user' })
+class FormulaUser {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  email!: string;
+
+  @Property()
+  status: string = 'active';
+
+  // non-lazy formula, selected by default — its subquery has an inner `where`
+  // referencing another table, which must NOT leak into the partial-index predicate
+  @Formula(alias => `(select count(*) from post_rel p where p.tag_id = ${alias}.id)`)
+  postCount!: number;
 }
 
 function makeMeta(opts: { where?: string }) {
@@ -150,7 +174,7 @@ describe('partial index [sqlite]', () => {
     // Decorator-based entities wire up relation metadata (EntitySchema's string `entity`
     // reference isn't enough for the QB to resolve join targets).
     const rtOrm = await MikroORM.init({
-      entities: [TagRel, PostRel],
+      entities: [TagRel, PostRel, FormulaUser],
       dbName: ':memory:',
       metadataProvider: ReflectMetadataProvider,
       discovery: { warnWhenNoEntities: false },
@@ -186,6 +210,12 @@ describe('partial index [sqlite]', () => {
       // lookahead distinguishes `pg_catalog.lower(name)` (OK) from `other_table.col` (rejected).
       expect(driver.renderPartialIndexWhere(TagRel, { name: raw(`pg_catalog.lower('x')`) })).toMatch(
         /`name` = pg_catalog\.lower\('x'\)/,
+      );
+
+      // a clean predicate on an entity with a non-lazy @Formula (whose subquery has its own
+      // inner `where` referencing another table) must not false-positive as a cross-table ref
+      expect(driver.renderPartialIndexWhere(FormulaUser, { status: { $ne: 'deleted' } })).toMatch(
+        /`status` != 'deleted'/,
       );
     } finally {
       await rtOrm.close(true);

@@ -34,8 +34,8 @@ import {
   inspect,
   type IsolationLevel,
   type LoggingOptions,
-  QueryOrder,
   type QueryOrderMap,
+  QueryOrderNumeric,
   type QueryResult,
   type Transaction,
   type TransactionEventBroadcaster,
@@ -182,6 +182,18 @@ export class MongoConnection extends Connection {
     throw new Error(`${this.constructor.name} does not support generic execute method`);
   }
 
+  /**
+   * Maps an order direction to mongo's `1`/`-1`, ignoring any `nulls first`/`nulls last` qualifier, which mongo cannot honor.
+   * @internal
+   */
+  static getSortDirection(direction: string | number): 1 | -1 {
+    if (typeof direction === 'number') {
+      return direction === QueryOrderNumeric.DESC ? -1 : 1;
+    }
+
+    return direction.toLowerCase().startsWith('desc') ? -1 : 1;
+  }
+
   async find<T extends object>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
@@ -251,7 +263,7 @@ export class MongoConnection extends Connection {
         Utils.keys(o).forEach(k => {
           const direction = o[k] as SortDirection;
           if (typeof direction === 'string') {
-            orderByTuples.push([k.toString(), direction.toUpperCase() === QueryOrder.ASC ? 1 : -1]);
+            orderByTuples.push([k.toString(), MongoConnection.getSortDirection(direction)]);
           } else {
             orderByTuples.push([k.toString(), direction]);
           }

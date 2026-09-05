@@ -50,6 +50,10 @@ export class EntitySchemaSourceFile extends SourceFile {
       entitySchemaOptions.uniques = this.meta.uniques.map(index => this.getUniqueOptions(index));
     }
 
+    if (this.meta.checks.length > 0) {
+      entitySchemaOptions.checks = this.meta.checks.map(check => this.getCheckOptions(check));
+    }
+
     entitySchemaOptions.properties = Object.fromEntries(
       Object.entries(this.meta.properties).map(([name, prop]) => [name, this.getPropertyOptions(prop)]),
     );
@@ -95,7 +99,7 @@ export class EntitySchemaSourceFile extends SourceFile {
     }
 
     if (primaryProps.length > 0) {
-      const primaryPropNames = primaryProps.map(prop => `'${prop.name}'`);
+      const primaryPropNames = primaryProps.map(prop => this.quoteKey(prop.name));
 
       if (primaryProps.length > 1) {
         classBody += `${' '.repeat(2)}[${this.referenceCoreImport('PrimaryKeyProp')}]?: [${primaryPropNames.join(', ')}];\n`;
@@ -105,7 +109,7 @@ export class EntitySchemaSourceFile extends SourceFile {
     }
 
     if (eagerProperties.length > 0) {
-      const eagerPropertyNames = eagerProperties.map(prop => `'${prop.name}'`).sort();
+      const eagerPropertyNames = eagerProperties.map(prop => this.quoteKey(prop.name)).sort();
       classBody += `${' '.repeat(2)}[${this.referenceCoreImport('EagerProps')}]?: ${eagerPropertyNames.join(' | ')};\n`;
     }
 

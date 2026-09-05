@@ -6,6 +6,7 @@ import type {
   EntityName,
   EntityProperty,
   EntitySchemaWithMeta,
+  ExtractDefineEntityProperties,
   FilterQuery,
   GroupOperator,
   IndexColumnOptions,
@@ -297,6 +298,8 @@ export interface IQueryBuilder<T> {
     options?: CteOptions,
   ): this;
   scheduleFilterCheck(path: string): void;
+  /** @internal */
+  ensureTPTJoins(): void;
   withSchema(schema: string): this;
 }
 
@@ -330,7 +333,21 @@ export interface ICriteriaNode<T extends object> {
 export type MaybeReturnType<T> = T extends (...args: any[]) => infer R ? R : T;
 
 export type InferEntityProperties<Schema> =
-  Schema extends EntitySchemaWithMeta<any, any, any, any, infer Properties> ? Properties : never;
+  Schema extends EntitySchemaWithMeta<any, any, any, infer Base, infer Properties>
+    ? MergeInheritedProperties<Base, Properties>
+    : never;
+
+// Columns inherited via `extends` live in the base entity's own builders, recoverable from its
+// `[IndexHints]` marker; merge them under the child's own properties so the Kysely table type
+// exposes inherited columns too (GH #7937). Child properties win on name conflicts; bases without
+// recoverable builders (no base, or a decorator class) fall back to the child's own properties.
+type MergeInheritedProperties<Base, Properties extends Record<string, any>> = [
+  ExtractDefineEntityProperties<Base>,
+] extends [infer BaseProps extends Record<string, any>]
+  ? [BaseProps] extends [never]
+    ? Properties
+    : Omit<BaseProps, keyof Properties> & Properties
+  : Properties;
 
 export type InferKyselyDB<
   TEntities extends { name: string },
@@ -351,9 +368,11 @@ export type MapTableName<
   T extends { name: string; tableName?: string },
   TOptions extends MikroKyselyPluginOptions = {},
 > = {
-  [P in T as TOptions['tableNamingStrategy'] extends 'entity'
-    ? P['name']
-    : PreferStringLiteral<NonNullable<P['tableName']>, P['name']>]: P;
+  [
+    P in T as TOptions['tableNamingStrategy'] extends 'entity'
+      ? P['name']
+      : PreferStringLiteral<NonNullable<P['tableName']>, P['name']>
+  ]: P;
 };
 
 type ResolveTableNaming<TOptions extends MikroKyselyPluginOptions> = TOptions['tableNamingStrategy'] extends 'entity'
@@ -368,11 +387,13 @@ export type InferKyselyTable<
   TSchema extends EntitySchemaWithMeta,
   TOptions extends MikroKyselyPluginOptions = {},
 > = ExcludeNever<{
-  -readonly [K in keyof InferEntityProperties<TSchema> as TransformColumnName<
-    K,
-    TOptions['columnNamingStrategy'] extends 'property' ? 'property' : 'underscore',
-    MaybeReturnType<InferEntityProperties<TSchema>[K]>
-  >]: InferColumnValue<
+  -readonly [
+    K in keyof InferEntityProperties<TSchema> as TransformColumnName<
+      K,
+      TOptions['columnNamingStrategy'] extends 'property' ? 'property' : 'underscore',
+      MaybeReturnType<InferEntityProperties<TSchema>[K]>
+    >
+  ]: InferColumnValue<
     MaybeReturnType<InferEntityProperties<TSchema>[K]>,
     TOptions['processOnCreateHooks'] extends true ? true : false
   >;
@@ -428,16 +449,22 @@ type InferColumnValue<TBuilder, TProcessOnCreate extends boolean> = TBuilder ext
   '~type'?: { value: infer Value };
   '~options': infer TOptions;
 }
-  ? MaybeNever<MaybeGenerated<MaybeJoinKey<Value, TOptions>, TOptions, TProcessOnCreate>, TOptions>
+  ? MaybeNever<
+      MaybeGenerated<MaybeJoinKey<MaybeArray<Value, TOptions>, TOptions>, TOptions, TProcessOnCreate>,
+      TOptions
+    >
   : never;
+
+// `.array()` marks a native array column (e.g. postgres text[]); mirror the em.create inference.
+type MaybeArray<TValue, TOptions> = TOptions extends { array: true } ? TValue[] : TValue;
 
 type MaybeGenerated<TValue, TOptions, TProcessOnCreate extends boolean> = TOptions extends { nullable: true }
   ? TValue | null
   : TOptions extends { autoincrement: true }
     ? Generated<TValue>
-    : TOptions extends { default: true }
+    : TOptions extends { default: unknown }
       ? Generated<TValue>
-      : TOptions extends { defaultRaw: true }
+      : TOptions extends { defaultRaw: unknown }
         ? Generated<TValue>
         : TProcessOnCreate extends false
           ? TValue
@@ -501,4 +528,9 @@ type ClassEntityColumnName<K, V, TOptions extends MikroKyselyPluginOptions = {}>
 type ClassEntityJoinColumnName<TName extends string, V> =
   PrimaryProperty<V> extends string ? `${TName}_${SnakeCase<PrimaryProperty<V>>}` : never;
 
-type ClassEntityColumnValue<V> = NonNullable<V> extends Scalar | readonly any[] ? V : Primary<NonNullable<V>>;
+type ClassEntityColumnValue<V> =
+  NonNullable<V> extends Scalar | readonly any[]
+    ? V
+    : V extends NonNullable<V>
+      ? Primary<NonNullable<V>>
+      : Primary<NonNullable<V>> | null;

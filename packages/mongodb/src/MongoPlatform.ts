@@ -88,6 +88,10 @@ export class MongoPlatform extends Platform {
     return true;
   }
 
+  override preservesDatesInsideJson(): boolean {
+    return true;
+  }
+
   override convertJsonToDatabaseValue(value: unknown): unknown {
     return Utils.copy(value);
   }

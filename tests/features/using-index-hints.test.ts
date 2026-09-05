@@ -1,4 +1,4 @@
-import { IndexHints, MikroORM, PrimaryKeyProp, type EntityManager, type IndexFilterQuery } from '@mikro-orm/core';
+import { IndexHints, MikroORM, PrimaryKeyProp, type EntityManager } from '@mikro-orm/core';
 import { Entity, Index, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { defineEntity, p, SqliteDriver } from '@mikro-orm/sqlite';
 import { MySqlDriver } from '@mikro-orm/mysql';

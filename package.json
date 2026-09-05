@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "tests/bench/types"
   ],
   "version": "7.0.0",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
@@ -53,7 +54,7 @@
     "test:sqlite": "vitest run **/*.sqlite.test.ts **/*.win.test.ts",
     "test:fast": "vitest run --exclude='tests/features/schema-generator'",
     "bench": "tsx tests/bench/basic.bench.ts",
-    "bench:types": "bash -c 'for f in tests/bench/types/*.ts; do node --import=tsx \"$f\" || exit 1; done'",
+    "bench:types": "bash -c 'for f in tests/bench/types/*.ts; do node --import=tsx \"$f\" --benchPercentThreshold 10 || exit 1; done'",
     "clean-tests": "rimraf temp tests/generated-entities",
     "coverage": "yarn clean-tests && yarn test --coverage",
     "lint": "oxlint packages tests --tsconfig=tsconfig.json --type-aware --type-check",
@@ -108,9 +109,6 @@
     "node": ">= 22.17.0",
     "yarn": ">=4.6.0"
   },
-  "resolutions": {
-    "@ark/util": "0.56.0"
-  },
   "dependenciesMeta": {
     "@swc/core": {
       "built": true
@@ -129,45 +127,49 @@
     }
   },
   "devDependencies": {
-    "@ark/attest": "0.56.0",
-    "@commitlint/cli": "21.0.2",
-    "@commitlint/config-conventional": "21.0.2",
+    "@commitlint/cli": "21.2.2",
+    "@commitlint/config-conventional": "21.2.2",
     "@mikro-orm/mongo-highlighter": "1.0.0",
     "@mikro-orm/sql-highlighter": "1.0.1",
-    "@swc-node/register": "1.11.1",
-    "@swc/core": "1.15.41",
-    "@types/better-sqlite3": "7.6.13",
-    "@types/node": "24.13.2",
-    "@types/oracledb": "7.0.1",
-    "@types/pg": "8.20.0",
+    "@swc-node/register": "1.12.1",
+    "@swc/core": "1.16.1",
+    "@types/better-sqlite3": "9.6.0",
+    "@types/node": "24.13.3",
+    "@types/oracledb": "7.0.3",
+    "@types/pg": "8.23.1",
     "@types/pg-cursor": "2.7.2",
     "@types/picomatch": "4.0.3",
-    "@types/semver": "7.7.1",
+    "@types/semver": "7.8.0",
     "@types/sqlstring": "2.3.2",
     "@types/uuid": "11.0.0",
     "@types/yargs": "17.0.35",
-    "@vitest/coverage-v8": "4.1.9",
-    "bson": "7.2.0",
+    "@vitest/coverage-v8": "5.0.0",
+    "bson": "7.3.2",
     "conditional-type-checks": "1.0.6",
     "dataloader": "2.2.3",
     "husky": "9.1.7",
     "jiti": "2.7.0",
     "jsr": "0.14.3",
-    "knex": "3.2.10",
-    "lerna": "9.0.7",
-    "lint-staged": "17.0.7",
+    "knex": "3.3.0",
+    "lerna": "10.0.1",
+    "lint-staged": "17.4.1",
     "mongodb-memory-server-core": "11.2.0",
-    "oxfmt": "0.55.0",
-    "oxlint": "1.70.0",
-    "oxlint-tsgolint": "^0.23.0",
+    "oxfmt": "0.66.0",
+    "oxlint": "1.81.0",
+    "oxlint-tsgolint": "^7.0.0",
     "reflect-metadata": "0.2.2",
     "rimraf": "6.1.3",
     "tsimp": "2.0.12",
-    "tsx": "4.22.4",
-    "typescript": "6.0.3",
-    "unplugin-swc": "1.5.9",
-    "uuid": "14.0.0",
-    "vitest": "4.1.9"
+    "tsx": "4.23.13",
+    "typescript": "7.0.2",
+    "unplugin-swc": "1.5.11",
+    "uuid": "14.0.2",
+    "vite": "8.2.2",
+    "vitest": "5.0.0"
   },
-  "packageManager": "yarn@4.17.0"
+  "resolutions": {
+    "js-yaml": "4.3.1",
+    "tar": "7.5.22"
+  },
+  "packageManager": "yarn@4.18.0"
 }

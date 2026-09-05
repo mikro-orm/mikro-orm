@@ -1,12 +1,4 @@
-import {
-  type AnyEntity,
-  type EntityKey,
-  type EntityMetadata,
-  isRaw,
-  raw,
-  RawQueryFragment,
-  Utils,
-} from '@mikro-orm/core';
+import { type AnyEntity, type EntityKey, type EntityMetadata, raw, RawQueryFragment, Utils } from '@mikro-orm/core';
 import { QueryBuilder } from '@mikro-orm/mysql';
 
 /**
@@ -32,8 +24,6 @@ export class MariaDbQueryBuilder<
       subQuery.offset(this.state.offset);
     }
 
-    const addToSelect = [];
-
     if (this.state.orderBy.length > 0) {
       const orderBy = [];
 
@@ -51,12 +41,13 @@ export class MariaDbQueryBuilder<
           const type = this.platform.castColumn(prop);
           const fieldName = this.helper.mapper(field, this.type, undefined, null);
 
-          if (!prop?.persist && !prop?.formula && !pks.includes(fieldName)) {
-            addToSelect.push(fieldName);
-          }
-
-          const key = raw(`min(${this.platform.quoteIdentifier(fieldName)}${type})`);
-          orderBy.push({ [key as any]: direction });
+          // virtual fields (e.g. `qb.as(...)`) have no column to reference inside `min()`; inline their expression
+          const virtual =
+            !prop?.persist && !prop?.formula && !pks.includes(fieldName)
+              ? this.resolveVirtualField(f, fieldName)
+              : undefined;
+          const expr = virtual ? virtual.expr : this.platform.quoteIdentifier(fieldName);
+          orderBy.push({ [raw(`min(${expr}${type})`) as any]: direction });
         }
       }
 
@@ -65,30 +56,6 @@ export class MariaDbQueryBuilder<
 
     subQuery.state.finalized = true;
     const innerQuery = subQuery.as(this.mainAlias.aliasName).clear('select').select(pks);
-
-    /* v8 ignore next */
-    if (addToSelect.length > 0) {
-      addToSelect.forEach(prop => {
-        const field = this.state.fields!.find(field => {
-          if (typeof field === 'object' && field && '__as' in field) {
-            return field.__as === prop;
-          }
-
-          if (isRaw(field)) {
-            // not perfect, but should work most of the time, ideally we should check only the alias (`... as alias`)
-            return field.sql.includes(prop);
-          }
-
-          return false;
-        });
-
-        if (isRaw(field)) {
-          innerQuery.select(this.platform.formatQuery(field.sql, field.params));
-        } else if (field) {
-          innerQuery.select(field as string);
-        }
-      });
-    }
 
     // multiple sub-queries are needed to get around mysql limitations with order by + limit + where in + group by (o.O)
     // https://stackoverflow.com/questions/17892762/mysql-this-version-of-mysql-doesnt-yet-support-limit-in-all-any-some-subqu

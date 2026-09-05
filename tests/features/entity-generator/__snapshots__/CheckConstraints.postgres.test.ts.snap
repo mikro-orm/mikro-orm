@@ -1,0 +1,40 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`check constraints are emitted in generated entities 1`] = `
+"import { type Opt, defineEntity, p } from '@mikro-orm/core';
+
+export class Probe {
+  id!: string & Opt;
+  code!: string;
+  mode!: TProbeMode;
+  systemKey?: string;
+}
+
+export const ProbeMode = {
+  EXPLICIT: 'explicit',
+  'ALL-ACTIVE': 'all-active',
+} as const;
+
+export type TProbeMode = (typeof ProbeMode)[keyof typeof ProbeMode];
+
+export const ProbeSchema = defineEntity({
+  class: Probe,
+  checks: [
+    {
+      name: 'chk_probe_code_format',
+      expression: 'code ~ \\'^[a-z0-9]+(?:-[a-z0-9]+)*$\\'::text',
+    },
+    {
+      name: 'chk_probe_shape',
+      expression: '(mode <> \\'all-active\\'::text) OR (system_key IS NOT NULL)',
+    },
+  ],
+  properties: {
+    id: p.uuid().primary().defaultRaw(\`gen_random_uuid()\`),
+    code: p.string().length(63),
+    mode: p.enum(() => ProbeMode),
+    systemKey: p.string().length(63).nullable(),
+  },
+});
+"
+`;

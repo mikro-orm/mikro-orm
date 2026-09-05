@@ -1,4 +1,4 @@
-import { EntitySchema, MikroORM } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/postgresql';
 
 import { Entity, Enum, PrimaryKey, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 

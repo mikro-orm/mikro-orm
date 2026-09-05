@@ -8,15 +8,17 @@ import TabItem from '@theme/TabItem';
 When you want to make complex queries, you can easily end up with a lot of boilerplate code full of curly brackets:
 
 ```ts
-const res = await orm.em.find(Author, { $and: [
-  { id: { $in: [1, 2, 7] }, },
-  { id: { $nin: [3, 4] }, },
-  { id: { $gt: 5 }, },
-  { id: { $lt: 10 }, },
-  { id: { $gte: 7 }, },
-  { id: { $lte: 8 }, },
-  { id: { $ne: 9 }, },
-] });
+const res = await orm.em.find(Author, {
+  $and: [
+    { id: { $in: [1, 2, 7] } },
+    { id: { $nin: [3, 4] } },
+    { id: { $gt: 5 } },
+    { id: { $lt: 10 } },
+    { id: { $gte: 7 } },
+    { id: { $lte: 8 } },
+    { id: { $ne: 9 } },
+  ],
+});
 ```
 
 For AND condition with single field, you can also do this:
@@ -85,13 +87,13 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 
 In addition to the regular operators that translate to a real SQL operator expression (e.g. `>=`), you can also use the following collection operators:
 
-| operator | description                                                        |
-|----------|--------------------------------------------------------------------|
-| `$some`  | Finds collections that have some record matching the condition.    |
-| `$none`  | Finds collections that have no records matching the condition.     |
-| `$every` | Finds collections where every record is matching the condition.    |
-| `$size`  | Finds collections based on the number of related records.          |
-| `$all`   | Finds collections that contain all of the given records.           |
+| operator | description                                                     |
+| -------- | --------------------------------------------------------------- |
+| `$some`  | Finds collections that have some record matching the condition. |
+| `$none`  | Finds collections that have no records matching the condition.  |
+| `$every` | Finds collections where every record is matching the condition. |
+| `$size`  | Finds collections based on the number of related records.       |
+| `$all`   | Finds collections that contain all of the given records.        |
 
 This will be resolved as a subquery condition:
 
@@ -179,7 +181,7 @@ The implementation and requirements differs per driver so it's important that fi
 
 ### PostgreSQL
 
-PosgreSQL allows to execute queries (pg-query) on the type pg-vector. The pg-vector type can be a column (more performant) or be created in the query (no excess columns in the database).  When using a column, advanced functionality such as [a custom `regconfig` or `setweight`](https://www.postgresql.org/docs/current/textsearch-controls.html) (the default `regconfig` is `simple`) is also supported.
+PosgreSQL allows to execute queries (pg-query) on the type pg-vector. The pg-vector type can be a column (more performant) or be created in the query (no excess columns in the database). When using a column, advanced functionality such as [a custom `regconfig` or `setweight`](https://www.postgresql.org/docs/current/textsearch-controls.html) (the default `regconfig` is `simple`) is also supported.
 
 Refer to the [PostgreSQL documentation](https://www.postgresql.org/docs/current/functions-textsearch.html) for possible queries.
 
@@ -191,30 +193,29 @@ values={[
 {label: 'Using an index', value: 'in-query'},
 ]
 }>
-  <TabItem value="as-column">
+<TabItem value="as-column">
 
 ```ts title="./entities/Book.ts"
 import { FullTextType, WeightedFullTextValue } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Book {
-
   @Property()
   title!: string;
 
   // example when using default settings
   @Index({ type: 'fulltext' })
-  @Property({ type: FullTextType, onUpdate: (book) => book.title })
+  @Property({ type: FullTextType, onUpdate: book => book.title })
   searchableTitle!: string;
 
   // example when using a custom regconfig
   @Index({ type: 'fulltext' })
-  @Property({ type: new FullTextType('english'), onUpdate: (book) => book.title })
+  @Property({ type: new FullTextType('english'), onUpdate: book => book.title })
   searchableTitle!: string;
 
   // example when using weights
   @Index({ type: 'fulltext' })
-  @Property({ type: FullTextType, onUpdate: (book) => ({ A: book.title, B: book.description }) })
+  @Property({ type: FullTextType, onUpdate: book => ({ A: book.title, B: book.description }) })
   searchableTitle!: WeightedFullTextValue;
 }
 ```
@@ -227,11 +228,9 @@ And to find results: `repository.findOne({ searchableTitle: { $fulltext: 'query'
 ```ts title="./entities/Book.ts"
 @Entity()
 export class Book {
-
   @Index({ type: 'fulltext' })
   @Property()
   title!: string;
-
 }
 ```
 
@@ -249,11 +248,9 @@ Refer to the [MySQL documentation](https://dev.mysql.com/doc/refman/8.0/en/fullt
 ```ts title="./entities/Book.ts"
 @Entity()
 export class Book {
-
   @Index({ type: 'fulltext' })
   @Property()
   title!: string;
-
 }
 ```
 
@@ -268,11 +265,9 @@ Refer to the [MongoDB documentation](https://www.mongodb.com/docs/manual/referen
 ```ts title="./entities/Book.ts"
 @Entity()
 export class Book {
-
   @Index({ type: 'fulltext' })
   @Property()
   title!: string;
-
 }
 ```
 
@@ -289,13 +284,11 @@ Refer to the [SQLite documentation](https://www.sqlite.org/fts5.html#full_text_q
 ```ts title="./entities/Book.ts"
 @Entity()
 export class Book {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   title!: string;
-
 }
 ```
 

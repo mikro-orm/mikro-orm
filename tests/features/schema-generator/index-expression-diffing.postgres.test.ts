@@ -1,4 +1,4 @@
-import { type EntityMetadata, MikroORM, MetadataProvider, Utils, quote, type Ref } from '@mikro-orm/postgresql';
+import { type EntityMetadata, MikroORM, Utils, quote, type Ref } from '@mikro-orm/postgresql';
 import { Entity, Index, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { Migrator } from '@mikro-orm/migrations';
 import { rm } from 'node:fs/promises';

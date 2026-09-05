@@ -1,10 +1,10 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`schema 1`] = `
-"create table [foo] ([id] int identity(1,1) not null primary key, [col1] nvarchar(255) not null, [col2] nvarchar(255) not null, [col3] nvarchar(255) not null, [generated] as (CASE WHEN (col1 IS NOT NULL) THEN 'one' WHEN (col2 IS NOT NULL) THEN 'two' WHEN (col3 IS NOT NULL) THEN 'three' ELSE 'four' END) PERSISTED, [generated2] as (CONCAT([col1], ' ', [col2])) PERSISTED);
+"create table [foo] ([id] int identity(1,1) not null constraint [foo_pkey] primary key, [col1] nvarchar(255) not null, [col2] nvarchar(255) not null, [col3] nvarchar(255) not null, [generated] as (CASE WHEN (col1 IS NOT NULL) THEN 'one' WHEN (col2 IS NOT NULL) THEN 'two' WHEN (col3 IS NOT NULL) THEN 'three' ELSE 'four' END) PERSISTED, [generated2] as (CONCAT([col1], ' ', [col2])) PERSISTED);
 create unique index [foo_col3_unique] on [foo] ([col3]);
 
-create table [user] ([id] int identity(1,1) not null primary key, [first_name] nvarchar(50) not null, [last_name] nvarchar(50) not null, [full_name] as (concat([first_name],' ',[last_name])) persisted, [full_name2] as (concat([first_name],' ',[last_name])) persisted);
+create table [user] ([id] int identity(1,1) not null constraint [user_pkey] primary key, [first_name] nvarchar(50) not null, [last_name] nvarchar(50) not null, [full_name] as (concat([first_name],' ',[last_name])) persisted, [full_name2] as (concat([first_name],' ',[last_name])) persisted);
 "
 `;
 

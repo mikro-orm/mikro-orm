@@ -136,6 +136,33 @@ describe('read-replicas', () => {
       expect(mock.mock.calls[8][0]).toMatch(/select.*via write connection '127\.0\.0\.1'/);
     });
 
+    test('can explicitly set connection type for countBy operations', async () => {
+      const mock = mockLogger(orm, ['query']);
+      const author = new Author2('Jon Snow', 'snow@wall.st');
+      author.born = '1990-03-23';
+      author.books.add(new Book2('B', author));
+      await orm.em.persist(author).flush();
+
+      // defaults to read
+      await orm.em.countBy(Author2, 'termsAccepted');
+      expect(mock.mock.calls[4][0]).toMatch(/via read connection 'read-.*'/);
+
+      // explicitly set to read
+      await orm.em.countBy(Author2, 'termsAccepted', { connectionType: 'read' });
+      expect(mock.mock.calls[5][0]).toMatch(/via read connection 'read-.*'/);
+
+      // explicitly set to write
+      await orm.em.countBy(Author2, 'termsAccepted', { connectionType: 'write' });
+      expect(mock.mock.calls[6][0]).toMatch(/via write connection '127\.0\.0\.1'/);
+
+      // when running in a transaction will always use a write connection
+      await orm.em.transactional(async em => {
+        return em.countBy(Author2, 'termsAccepted', { connectionType: 'read' });
+      });
+      expect(mock.mock.calls[7][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
+      expect(mock.mock.calls[8][0]).toMatch(/select.*via write connection '127\.0\.0\.1'/);
+    });
+
     test('use write connection for fetching data after upsert/upsertMany', async () => {
       const mock = mockLogger(orm, ['query']);
       await orm.em.upsert(Author2, { name: 'Jon Snow', email: 'snow@wall.st', born: '1990-03-23' });
@@ -264,6 +291,35 @@ describe('read-replicas', () => {
       // when running in a transaction will always use a write connection
       await orm.em.transactional(async em => {
         return em.count(Author2, {}, { connectionType: 'read' });
+      });
+      expect(mock.mock.calls[7][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
+      expect(mock.mock.calls[8][0]).toMatch(/select.*via write connection '127\.0\.0\.1'/);
+    });
+
+    test('can explicitly set connection type for countBy operations', async () => {
+      orm.config.set('preferReadReplicas', false);
+
+      const mock = mockLogger(orm, ['query']);
+      const author = new Author2('Jon Snow', 'snow@wall.st');
+      author.born = '1990-03-23';
+      author.books.add(new Book2('B', author));
+      await orm.em.persist(author).flush();
+
+      // defaults to write
+      await orm.em.countBy(Author2, 'termsAccepted');
+      expect(mock.mock.calls[4][0]).toMatch(/via write connection '127\.0\.0\.1'/);
+
+      // explicitly set to read
+      await orm.em.countBy(Author2, 'termsAccepted', { connectionType: 'read' });
+      expect(mock.mock.calls[5][0]).toMatch(/via read connection 'read-.*'/);
+
+      // explicitly set to write
+      await orm.em.countBy(Author2, 'termsAccepted', { connectionType: 'write' });
+      expect(mock.mock.calls[6][0]).toMatch(/via write connection '127\.0\.0\.1'/);
+
+      // when running in a transaction will always use a write connection
+      await orm.em.transactional(async em => {
+        return em.countBy(Author2, 'termsAccepted', { connectionType: 'read' });
       });
       expect(mock.mock.calls[7][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
       expect(mock.mock.calls[8][0]).toMatch(/select.*via write connection '127\.0\.0\.1'/);

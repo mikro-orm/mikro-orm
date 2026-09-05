@@ -1,2 +1,4 @@
 yarn.lock   -diff -merge
 yarn.lock   linguist-generated=true
+
+*.snap      text eol=lf

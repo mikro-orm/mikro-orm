@@ -353,6 +353,8 @@ export class CLIHelper {
       tsimp: { cjs: 'tsimp/import', cb: setEsmImportProvider },
     } as const;
 
+    const errors: Error[] = [];
+
     for (const loader of Utils.keys(loaders)) {
       if (explicitLoader !== 'auto' && loader !== explicitLoader) {
         continue;
@@ -361,13 +363,33 @@ export class CLIHelper {
       const { esm, cjs, cb } = loaders[loader] as { esm: string; cjs: string; cb?: (mod: any) => void };
       const isEsm = this.isESM();
       const module = isEsm && esm ? esm : cjs;
-      const mod = await Utils.tryImport({ module });
+      let mod: any;
+
+      try {
+        mod = await Utils.tryImport({ module });
+      } catch (e: any) {
+        const error = new Error(`Failed to load TypeScript loader \`${loader}\` (${module}): ${e.message}`, {
+          cause: e,
+        });
+
+        if (explicitLoader !== 'auto') {
+          throw error;
+        }
+
+        errors.push(error);
+        continue;
+      }
 
       if (mod) {
         cb?.(mod);
         process.env.MIKRO_ORM_CLI_TS_LOADER = loader;
         return true;
       }
+    }
+
+    // a loader that is installed but broken is a real problem, not a missing dependency
+    if (errors.length > 0) {
+      throw new Error(errors.map(e => e.message).join('\n'), { cause: errors[0] });
     }
 
     // eslint-disable-next-line no-console

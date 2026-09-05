@@ -33,6 +33,9 @@ import type {
   UniqueOptions,
 } from './types.js';
 
+// mirrors `MetadataStorage.META_SYMBOL`, we can't import it here due to a module cycle
+const META_SYMBOL = Symbol.for('@mikro-orm/core/MetadataStorage.META_SYMBOL');
+
 type TypeType =
   | string
   | NumberConstructor
@@ -371,8 +374,9 @@ export class EntitySchema<Entity = any, Base = never, Class extends EntityCtor =
     // Only set extends if the parent is NOT the auto-generated class for this same entity.
     // When the user extends the auto-generated class (from defineEntity without a class option)
     // and registers their custom class via setClass, we don't want to discover the
-    // auto-generated class as a separate parent entity.
-    if (base !== BaseEntity && base.name !== this._meta.className) {
+    // auto-generated class as a separate parent entity. A parent carrying its own decorator
+    // metadata is a real base class even when a minifier mangles it to the same name as the child.
+    if (base !== BaseEntity && (base.name !== this._meta.className || Object.hasOwn(base, META_SYMBOL))) {
       this._meta.extends ??= base.name ? base : undefined;
     }
   }

@@ -15,12 +15,14 @@ function getGlobalStorage(namespace: string): Dictionary {
 /** Registry that stores and provides access to entity metadata by class, name, or id. */
 export class MetadataStorage {
   static readonly PATH_SYMBOL = Symbol.for('@mikro-orm/core/MetadataStorage.PATH_SYMBOL');
+  static readonly META_SYMBOL = Symbol.for('@mikro-orm/core/MetadataStorage.META_SYMBOL');
 
   static readonly #metadata: Dictionary<EntityMetadata> = getGlobalStorage('metadata');
   readonly #metadataMap = new Map<EntityName, EntityMetadata>();
   readonly #idMap: Record<number, EntityMetadata>;
   readonly #classNameMap: Record<string, EntityMetadata>;
   readonly #uniqueNameMap: Record<string, EntityMetadata>;
+  readonly #ambiguousNames = new Set<string>();
 
   constructor(metadata: Dictionary<EntityMetadata> = {}) {
     this.#idMap = {};
@@ -34,11 +36,31 @@ export class MetadataStorage {
     }
   }
 
-  /** Returns the global metadata dictionary, or a specific entry by entity name and path. */
+  /** Returns the global metadata dictionary, or a specific entry by entity name and path (keyed by the class reference when `target` is provided). */
   static getMetadata(): Dictionary<EntityMetadata>;
-  static getMetadata<T = any>(entity: string, path: string): EntityMetadata<T>;
-  static getMetadata<T = any>(entity?: string, path?: string): Dictionary<EntityMetadata> | EntityMetadata<T> {
+  static getMetadata<T = any>(entity: string, path: string, target?: EntityCtor): EntityMetadata<T>;
+  static getMetadata<T = any>(
+    entity?: string,
+    path?: string,
+    target?: EntityCtor & { [MetadataStorage.META_SYMBOL]?: EntityMetadata },
+  ): Dictionary<EntityMetadata> | EntityMetadata<T> {
     const key = entity && path ? entity + '-' + Utils.hash(path) : null;
+
+    // Key the registry by the class reference when available, so two classes minified
+    // to the same mangled name don't collide on the `className-path` key.
+    if (key && target) {
+      if (!Object.hasOwn(target, MetadataStorage.META_SYMBOL)) {
+        Object.defineProperty(target, MetadataStorage.META_SYMBOL, {
+          value: new EntityMetadata({ className: entity, path }),
+          writable: true,
+        });
+      }
+
+      // Keep the name-keyed entry in sync, the class-keyed metadata survives `MetadataStorage.clear()`.
+      MetadataStorage.#metadata[key] = target[MetadataStorage.META_SYMBOL]!;
+
+      return target[MetadataStorage.META_SYMBOL]!;
+    }
 
     if (key && !MetadataStorage.#metadata[key]) {
       MetadataStorage.#metadata[key] = new EntityMetadata({ className: entity, path });
@@ -68,6 +90,11 @@ export class MetadataStorage {
 
   /** Returns metadata for the given entity, optionally initializing it if not found. */
   get<T = any>(entityName: EntityName<T>, init = false): EntityMetadata<T> {
+    // string lookups cannot be resolved when several classes were minified to the same name
+    if (typeof entityName === 'string' && this.#ambiguousNames.has(entityName)) {
+      throw MetadataError.ambiguousEntityName(entityName);
+    }
+
     const exists = this.find(entityName);
 
     if (exists) {
@@ -115,7 +142,15 @@ export class MetadataStorage {
     this.#metadataMap.set(entityName, meta);
     this.#idMap[meta._id] = meta;
     this.#uniqueNameMap[meta.uniqueName] = meta;
-    this.#classNameMap[Utils.className(entityName)] = meta;
+    const className = Utils.className(entityName);
+    const existing = this.#classNameMap[className];
+
+    // track name collisions caused by minifiers mangling two classes to the same name
+    if (existing && existing !== meta && existing.class !== meta.class) {
+      this.#ambiguousNames.add(className);
+    }
+
+    this.#classNameMap[className] = meta;
 
     return meta;
   }
@@ -129,6 +164,15 @@ export class MetadataStorage {
       delete this.#idMap[meta._id];
       delete this.#uniqueNameMap[meta.uniqueName];
       delete this.#classNameMap[meta.className];
+
+      // the name may still be ambiguous among the remaining metas
+      const remaining = new Set(
+        [...this.#metadataMap.values()].filter(m => m.className === meta.className).map(m => m.class),
+      );
+
+      if (remaining.size <= 1) {
+        this.#ambiguousNames.delete(meta.className);
+      }
     }
   }
 

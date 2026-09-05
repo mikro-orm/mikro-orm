@@ -3,9 +3,9 @@ import { EventType, type EntityMetadata } from '@mikro-orm/core';
 function hook<Owner extends object>(type: EventType) {
   return function (value: (...args: any[]) => unknown, context: ClassMethodDecoratorContext) {
     const meta = context.metadata as Partial<EntityMetadata<Owner>>;
-    meta.hooks ??= {};
-    meta.hooks[type] ??= [];
-    meta.hooks[type].push(value);
+    meta.hooks = Object.hasOwn(meta, 'hooks') ? meta.hooks! : { ...meta.hooks };
+    // the array itself may still be inherited from a base class metadata, so never push into it in place
+    meta.hooks[type] = [...(meta.hooks[type] ?? []), value];
   };
 }
 

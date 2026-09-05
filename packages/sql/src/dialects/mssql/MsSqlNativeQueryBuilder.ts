@@ -206,7 +206,7 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
       this.parts.push(`group by ${fields.join(', ')}`);
     }
 
-    if (this.options.having) {
+    if (this.options.having?.sql.trim()) {
       this.parts.push(`having ${this.options.having.sql}`);
       this.params.push(...this.options.having.params);
     }

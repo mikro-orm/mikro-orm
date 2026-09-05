@@ -229,7 +229,11 @@ export class EntityComparator {
     const context = new Map<string, any>();
     context.set('isEntityOrRef', (val: any) => Utils.isEntity(val, true));
     context.set('getCompositeKeyValue', (val: any) =>
-      Utils.flatten(Utils.getCompositeKeyValue(val, meta, 'convertToDatabaseValue', this.#platform) as unknown[][]),
+      // deep flatten, nested composite PKs produce nested arrays that would be comma-joined by the hash
+      Utils.flatten(
+        Utils.getCompositeKeyValue(val, meta, 'convertToDatabaseValue', this.#platform) as unknown[][],
+        true,
+      ),
     );
     context.set('getPrimaryKeyHash', (val: any) => Utils.getPrimaryKeyHash(Utils.asArray(val)));
 
@@ -240,6 +244,9 @@ export class EntityComparator {
           lines.push(
             `    (entity${this.wrap(pk)} != null && isEntityOrRef(entity${this.wrap(pk)})) ? entity${this.wrap(pk)}.__helper.getSerializedPrimaryKey() : entity${this.wrap(pk)},`,
           );
+        } else if (meta.properties[pk].customType) {
+          const convertorKey = this.registerCustomType(meta.properties[pk], context);
+          lines.push(`    convertToDatabaseValue_${convertorKey}(entity${this.wrap(pk)}),`);
         } else {
           lines.push(`    entity${this.wrap(pk)},`);
         }
@@ -603,6 +610,7 @@ export class EntityComparator {
     const padding = ' '.repeat(level * 2);
     const idx = this.#tmpIndex++;
 
+    ret.push(`${padding}if (entity${entityKey} === null) ret${dataKey} = null;`);
     ret.push(`${padding}if (Array.isArray(entity${entityKey})) {`);
     ret.push(`${padding}  ret${dataKey} = [];`);
     ret.push(`${padding}  entity${entityKey}.forEach((_, idx_${idx}) => {`);
@@ -832,7 +840,7 @@ export class EntityComparator {
           ret += `    ret${dataKey} = entity${entityKey};\n`;
         }
       } else if (prop.polymorphic) {
-        const discriminatorMapKey = `discriminatorMapReverse_${prop.name}`;
+        const discriminatorMapKey = `discriminatorMapReverse_${this.safeKey(prop.name)}`;
         const reverseMap = new Map<Function, string>();
 
         for (const [key, value] of Object.entries(prop.discriminatorMap!)) {
@@ -1060,11 +1068,16 @@ export class EntityComparator {
   }
 
   private wrap(key: string): string {
-    if (/^\[.*]$/.exec(key)) {
+    if (/^\[idx_\d+]$/.exec(key)) {
       return key;
     }
 
-    return /^\w+$/.exec(key) ? `.${key}` : `['${key}']`;
+    return /^\w+$/.exec(key) ? `.${key}` : `[${this.quote(key)}]`;
+  }
+
+  /** Renders a key as a single-quoted JS string literal, safe to embed in generated code. */
+  private quote(key: string): string {
+    return `'${key.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
   }
 
   private safeKey(key: string): string {

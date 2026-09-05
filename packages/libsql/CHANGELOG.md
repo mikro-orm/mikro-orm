@@ -3,6 +3,52 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.15](https://github.com/mikro-orm/mikro-orm/compare/v7.1.14...v7.1.15) (2026-09-03)
+
+**Note:** Version bump only for package @mikro-orm/libsql
+
+## [7.1.14](https://github.com/mikro-orm/mikro-orm/compare/v7.1.13...v7.1.14) (2026-08-26)
+
+**Note:** Version bump only for package @mikro-orm/libsql
+
+## [7.1.13](https://github.com/mikro-orm/mikro-orm/compare/v7.1.12...v7.1.13) (2026-08-20)
+
+**Note:** Version bump only for package @mikro-orm/libsql
+
+## [7.1.12](https://github.com/mikro-orm/mikro-orm/compare/v7.1.11...v7.1.12) (2026-08-17)
+
+**Note:** Version bump only for package @mikro-orm/libsql
+
+## [7.1.11](https://github.com/mikro-orm/mikro-orm/compare/v7.1.10...v7.1.11) (2026-08-06)
+
+**Note:** Version bump only for package @mikro-orm/libsql
+
+## [7.1.10](https://github.com/mikro-orm/mikro-orm/compare/v7.1.9...v7.1.10) (2026-08-04)
+
+**Note:** Version bump only for package @mikro-orm/libsql
+
+## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
+
+### Bug Fixes
+
+- **libsql:** stop recycling local connections every 10 seconds ([#8050](https://github.com/mikro-orm/mikro-orm/issues/8050)) ([bd2a1cf](https://github.com/mikro-orm/mikro-orm/commit/bd2a1cf06d8d0f4823e19c5d6670a8e2be837c24))
+
+## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
+
+**Note:** Version bump only for package @mikro-orm/libsql
+
+## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
+
+**Note:** Version bump only for package @mikro-orm/libsql
+
+## [7.1.6](https://github.com/mikro-orm/mikro-orm/compare/v7.1.5...v7.1.6) (2026-07-13)
+
+**Note:** Version bump only for package @mikro-orm/libsql
+
+## [7.1.5](https://github.com/mikro-orm/mikro-orm/compare/v7.1.4...v7.1.5) (2026-06-26)
+
+**Note:** Version bump only for package @mikro-orm/libsql
+
 ## [7.1.4](https://github.com/mikro-orm/mikro-orm/compare/v7.1.3...v7.1.4) (2026-06-06)
 
 **Note:** Version bump only for package @mikro-orm/libsql

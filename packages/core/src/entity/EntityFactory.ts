@@ -149,6 +149,15 @@ export class EntityFactory {
     }
 
     data = { ...data };
+
+    if (options.newEntity && meta2.root.inheritanceType === 'sti' && meta2.discriminatorValue != null) {
+      const prop = meta2.properties[meta2.root.discriminatorColumn as EntityKey<T>];
+
+      if (prop && prop.userDefined !== false) {
+        data[prop.name] ??= meta2.discriminatorValue as EntityValue<T>;
+      }
+    }
+
     const entity = exists ?? this.createEntity<T>(data, meta2, options);
     wrapped = helper(entity);
     wrapped.__processing = true;
@@ -202,7 +211,11 @@ export class EntityFactory {
         loaded: options.initialized,
       });
 
-      if (options.recomputeSnapshot) {
+      // A reference seeded from a raw scalar PK with `convertCustomTypes: false` (e.g. `em.getReference()` or a to-one
+      // relation assigned a raw scalar in `em.create()`) keeps its snapshot in JS-form, while `prepareEntity()` derives
+      // DB-form — so for a custom type mapping between different shapes (e.g. ULID <-> UUID) they always diff, yielding a
+      // spurious PK update on every flush. Recompute the snapshot from the entity to keep it in DB-form (GH #7966).
+      if (options.recomputeSnapshot || (!options.convertCustomTypes && !options.initialized)) {
         wrapped.__originalEntityData = this.#comparator.prepareEntity(entity);
       }
     }
@@ -293,8 +306,7 @@ export class EntityFactory {
         prop.customType?.ensureComparable(meta, prop) &&
         diff2[key] != null
       ) {
-        const converted = prop.customType.convertToJSValue(diff2[key], this.#platform, { force: true });
-        diff2[key] = prop.customType.convertToDatabaseValue(converted, this.#platform, { fromQuery: true });
+        diff2[key] = prop.customType.convertToDatabaseValue(diff2[key], this.#platform, { fromQuery: true });
       }
 
       originalEntityData[key] = diff2[key] === null ? nullVal : diff2[key];
@@ -642,7 +654,12 @@ export class EntityFactory {
 
       if (prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && value) {
         const pk = Reference.unwrapReference<any>(value);
-        const entity = this.unitOfWork.getById(prop.targetMeta!.class, pk, options.schema, true) as T[keyof T];
+        const entity = this.unitOfWork.getById(
+          prop.targetMeta!.class,
+          pk,
+          options.schema,
+          options.convertCustomTypes,
+        ) as T[keyof T];
 
         if (entity) {
           return entity;

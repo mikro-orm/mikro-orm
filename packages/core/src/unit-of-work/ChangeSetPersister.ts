@@ -20,7 +20,7 @@ import { helper } from '../entity/wrap.js';
 import { ChangeSetType, type ChangeSet } from './ChangeSet.js';
 import type { QueryResult } from '../connections/Connection.js';
 import { isRaw } from '../utils/RawQueryFragment.js';
-import { Utils } from '../utils/Utils.js';
+import { equals, Utils } from '../utils/Utils.js';
 import { type Configuration } from '../utils/Configuration.js';
 import { type EntityComparator } from '../utils/EntityComparator.js';
 import type { DriverMethodOptions, IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
@@ -328,8 +328,9 @@ export class ChangeSetPersister {
     cond: Dictionary,
   ): void {
     const tmp: string[] = [];
+    const keys = meta.getOwnConcurrencyCheckKeys();
 
-    for (const key of meta.concurrencyCheckKeys) {
+    for (const key of keys) {
       cond[key] = changeSet.originalEntity![key];
 
       if (changeSet.payload[key]) {
@@ -337,7 +338,7 @@ export class ChangeSetPersister {
       }
     }
 
-    if (tmp.length === 0 && meta.concurrencyCheckKeys.size > 0) {
+    if (tmp.length === 0 && keys.length > 0) {
       throw OptimisticLockError.lockFailed(changeSet.entity);
     }
   }
@@ -364,14 +365,16 @@ export class ChangeSetPersister {
 
     const res = await this.#driver.nativeUpdateMany(meta.class, cond, payload, options);
     const map = new Map<string, Dictionary>();
-    res.rows?.forEach(item =>
-      map.set(Utils.getCompositeKeyHash(item as EntityData<T>, meta, true, this.#platform, true), item),
-    );
+    // returning rows are not mapped yet, so they are keyed by field names - we need to build the hash
+    // from those to be able to match them with `getSerializedPrimaryKey()` of the entity
+    const pkFields = meta.getPrimaryProps().flatMap(prop => prop.fieldNames);
+    res.rows?.forEach(item => map.set(Utils.getPrimaryKeyHash(pkFields.map(field => item[field])), item));
 
     for (const changeSet of changeSets) {
       if (res.rows) {
         const row = map.get(helper(changeSet.entity).getSerializedPrimaryKey());
-        this.mapReturnedValues(changeSet.entity, changeSet.payload, row, meta);
+        // STI batches can mix child types, so map through the change set's own metadata
+        this.mapReturnedValues(changeSet.entity, changeSet.payload, row, changeSet.meta);
       }
 
       changeSet.persisted = true;
@@ -456,13 +459,13 @@ export class ChangeSetPersister {
     });
 
     if (
-      meta.concurrencyCheckKeys.size === 0 &&
-      (!meta.versionProperty || changeSet.entity[meta.versionProperty] == null)
+      meta.getOwnConcurrencyCheckKeys().length === 0 &&
+      (!meta.ownsVersionProperty() || changeSet.entity[meta.versionProperty] == null)
     ) {
       return this.#driver.nativeUpdate(changeSet.meta.class, cond as FilterQuery<T>, changeSet.payload, options);
     }
 
-    if (meta.versionProperty) {
+    if (meta.ownsVersionProperty()) {
       cond[meta.versionProperty] = this.#platform.convertVersionValue(
         changeSet.entity[meta.versionProperty] as unknown as Date,
         meta.properties[meta.versionProperty],
@@ -479,23 +482,23 @@ export class ChangeSetPersister {
     changeSets: ChangeSet<T>[],
     options?: DriverMethodOptions,
   ): Promise<void> {
+    const concurrencyCheckKeys = meta.getOwnConcurrencyCheckKeys();
+
     if (
-      meta.concurrencyCheckKeys.size === 0 &&
-      (!meta.versionProperty || changeSets.every(cs => cs.entity[meta.versionProperty] == null))
+      concurrencyCheckKeys.length === 0 &&
+      (!meta.ownsVersionProperty() || changeSets.every(cs => cs.entity[meta.versionProperty] == null))
     ) {
       return;
     }
 
     // skip entity references as they don't have version values loaded
     changeSets = changeSets.filter(cs => helper(cs.entity).__initialized);
+    const primaryKeys = meta.primaryKeys.concat(...concurrencyCheckKeys);
 
     const $or = changeSets.map(cs => {
-      const cond = Utils.getPrimaryKeyCond<T>(
-        cs.originalEntity as T,
-        meta.primaryKeys.concat(...meta.concurrencyCheckKeys),
-      ) as FilterQuery<T>;
+      const cond = Utils.getPrimaryKeyCond<T>(cs.originalEntity as T, primaryKeys) as FilterQuery<T>;
 
-      if (meta.versionProperty) {
+      if (meta.ownsVersionProperty()) {
         // @ts-ignore
         cond[meta.versionProperty] = this.#platform.convertVersionValue(
           cs.entity[meta.versionProperty] as unknown as Date,
@@ -506,7 +509,6 @@ export class ChangeSetPersister {
       return cond;
     });
 
-    const primaryKeys = meta.primaryKeys.concat(...meta.concurrencyCheckKeys);
     options = this.prepareOptions(meta, options, {
       fields: primaryKeys,
       orderBy: meta.primaryKeys.reduce((o, pk) => {
@@ -514,10 +516,13 @@ export class ChangeSetPersister {
         return o;
       }, {} as Dictionary),
     });
-    const res = await this.#driver.find<T>(meta.root.class, { $or } as FilterQuery<T>, options);
+    // TPT tables query their own metadata, as the version column might not live on the root table
+    const target = meta.inheritanceType === 'tpt' ? meta : meta.root;
+    const res = await this.#driver.find<T>(target.class, { $or } as FilterQuery<T>, options);
 
     if (res.length !== changeSets.length) {
-      const compare = (a: Dictionary, b: Dictionary, keys: string[]) => keys.every(k => a[k] === b[k]);
+      // a FK pointing to a composite PK is an array, so the values need to be compared deeply
+      const compare = (a: Dictionary, b: Dictionary, keys: string[]) => keys.every(k => equals(a[k], b[k]));
       const entity = changeSets.find(cs => {
         return !res.some(row => compare(Utils.getPrimaryKeyCond(cs.entity, primaryKeys)!, row, primaryKeys));
       })!.entity;
@@ -530,7 +535,7 @@ export class ChangeSetPersister {
     changeSet: ChangeSet<T>,
     res?: QueryResult<T>,
   ) {
-    if ((meta.versionProperty || meta.concurrencyCheckKeys.size > 0) && res && !res.affectedRows) {
+    if ((meta.ownsVersionProperty() || meta.getOwnConcurrencyCheckKeys().length > 0) && res && !res.affectedRows) {
       throw OptimisticLockError.lockFailed(changeSet.entity);
     }
   }
@@ -545,7 +550,7 @@ export class ChangeSetPersister {
     options?: DriverMethodOptions,
   ) {
     const reloadProps =
-      meta.versionProperty && !this.#usesReturningStatement ? [meta.properties[meta.versionProperty]] : [];
+      meta.ownsVersionProperty() && !this.#usesReturningStatement ? [meta.properties[meta.versionProperty]] : [];
 
     if (changeSets[0].type === ChangeSetType.CREATE) {
       for (const prop of meta.props) {
@@ -574,7 +579,8 @@ export class ChangeSetPersister {
       changeSets.forEach(cs => {
         Utils.keys(cs.payload).forEach(k => {
           if (isRaw(cs.payload[k]) && isRaw(cs.entity[k as EntityKey<T>])) {
-            returning.add(meta.properties[k as EntityKey<T>]);
+            // STI batches can mix child types, so the property might not exist on `meta`
+            returning.add(cs.meta.properties[k as EntityKey<T>]);
           }
         });
       });
@@ -603,13 +609,23 @@ export class ChangeSetPersister {
     options = this.prepareOptions(meta, options, {
       fields: Utils.unique(reloadProps.map(prop => prop.name)),
     });
-    const data = await this.#driver.find<T>(meta.class, { [pk]: { $in: pks } } as FilterQuery<T>, options);
+    // a mixed STI batch shares one table but the child discriminator would filter out the siblings
+    const target = changeSets.some(cs => cs.meta !== meta) && meta.root.discriminatorColumn ? meta.root : meta;
+    const data = await this.#driver.find<T>(target.class, { [pk]: { $in: pks } } as FilterQuery<T>, options);
     const map = new Map<string, Dictionary>();
     data.forEach(item => map.set(Utils.getCompositeKeyHash(item, meta, false, this.#platform, true), item));
 
     for (const changeSet of changeSets) {
       const data = map.get(helper(changeSet.entity).getSerializedPrimaryKey());
-      this.#hydrator.hydrate<T>(changeSet.entity, meta, data as EntityData<T>, this.#factory, 'full', false, true);
+      this.#hydrator.hydrate<T>(
+        changeSet.entity,
+        changeSet.meta,
+        data as EntityData<T>,
+        this.#factory,
+        'full',
+        false,
+        true,
+      );
       Object.assign(changeSet.payload, data); // merge to the changeset payload, so it gets saved to the entity snapshot
     }
   }

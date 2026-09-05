@@ -160,7 +160,7 @@ describe('SchemaGenerator', () => {
     newTableMeta.removeProperty('updatedAt');
     authorMeta.removeProperty('favouriteBook');
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff.replace(/PK__new_tabl__\w+/, 'PK__new_tabl__123')).toMatchSnapshot('mssql-update-schema-drop-column');
+    expect(diff).toMatchSnapshot('mssql-update-schema-drop-column');
     await orm.schema.execute(diff);
 
     newTableMeta.addProperty(idProp);

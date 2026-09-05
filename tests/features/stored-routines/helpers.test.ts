@@ -26,6 +26,12 @@ SELECT y`;
       expect(out).toContain('-- header comment\nSET x = 1');
       expect(out).toContain("'hello\nworld'");
     });
+
+    it('drops blank lines, including the one that follows a statement', () => {
+      expect(stripStatementNewlines('SET a = 1;\n\nSET b = 2')).toBe('SET a = 1; SET b = 2');
+      expect(stripStatementNewlines('IF x THEN\n\n\tSET a = 1\nEND IF')).toBe('IF x THEN\n\tSET a = 1\nEND IF');
+      expect(stripStatementNewlines('SET a = 1;\r\n\r\nSET b = 2')).toBe('SET a = 1; SET b = 2');
+    });
   });
 
   describe('MySQL', () => {

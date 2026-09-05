@@ -173,6 +173,10 @@ export class Routine<
   }
 
   static is(item: unknown): item is Routine {
-    return item instanceof Routine;
+    if (item instanceof Routine) {
+      return true;
+    }
+
+    return item != null && typeof item === 'object' && item.constructor?.name === 'Routine' && 'type' in item;
   }
 }

@@ -1,5 +1,6 @@
 import {
   Cascade,
+  type CheckConstraint,
   Config,
   DecimalType,
   type DeferMode,
@@ -71,6 +72,10 @@ export class SourceFile {
       ret += `@${this.referenceDecoratorImport('Unique')}(${this.serializeObject(this.getUniqueOptions(index))})\n`;
     }
 
+    for (const check of this.meta.checks) {
+      ret += `@${this.referenceDecoratorImport('Check')}(${this.serializeObject(this.getCheckOptions(check))})\n`;
+    }
+
     let classHead = '';
     if (this.meta.className === this.options.customBaseEntityName) {
       const defineConfigTypeSettings: TypeConfig = {};
@@ -113,7 +118,7 @@ export class SourceFile {
     });
 
     if (primaryProps.length > 0) {
-      const primaryPropNames = primaryProps.map(prop => `'${prop.name}'`);
+      const primaryPropNames = primaryProps.map(prop => this.quoteKey(prop.name));
 
       if (primaryProps.length > 1) {
         classHead += `\n${' '.repeat(2)}[${this.referenceCoreImport('PrimaryKeyProp')}]?: [${primaryPropNames.join(', ')}];\n`;
@@ -123,7 +128,7 @@ export class SourceFile {
     }
 
     if (eagerProperties.length > 0) {
-      const eagerPropertyNames = eagerProperties.map(prop => `'${prop.name}'`).sort();
+      const eagerPropertyNames = eagerProperties.map(prop => this.quoteKey(prop.name)).sort();
       classHead += `\n${' '.repeat(2)}[${this.referenceCoreImport('EagerProps')}]?: ${eagerPropertyNames.join(' | ')};\n`;
     }
 
@@ -263,6 +268,18 @@ export class SourceFile {
     return uniqueOpt;
   }
 
+  protected getCheckOptions(check: EntityMetadata['checks'][number]) {
+    const checkOpt = {} as CheckConstraint<Dictionary>;
+
+    if (typeof check.name === 'string') {
+      checkOpt.name = this.quote(check.name);
+    }
+
+    checkOpt.expression = this.quote(check.expression as string);
+
+    return checkOpt;
+  }
+
   protected generateImports() {
     const imports = new Set<string>();
 
@@ -315,24 +332,24 @@ export class SourceFile {
         if (file.name === '') {
           continue;
         }
-        importMap.set(file.path, `import ${this.quote(file.name)};`);
+        importMap.set(file.path, `import ${this.quoteKey(file.name)};`);
         continue;
       }
       if (file.name === '') {
-        importMap.set(file.path, `import * as ${entity} from ${this.quote(file.path)};`);
+        importMap.set(file.path, `import * as ${entity} from ${this.quoteKey(file.path)};`);
         continue;
       }
       if (file.name === 'default') {
-        importMap.set(file.path, `import ${entity} from ${this.quote(file.path)};`);
+        importMap.set(file.path, `import ${entity} from ${this.quoteKey(file.path)};`);
         continue;
       }
       if (file.name === entity) {
-        importMap.set(file.path, `import { ${entity} } from ${this.quote(file.path)};`);
+        importMap.set(file.path, `import { ${entity} } from ${this.quoteKey(file.path)};`);
         continue;
       }
       importMap.set(
         file.path,
-        `import { ${identifierRegex.test(file.name) ? file.name : this.quote(file.name)} as ${entity} } from ${this.quote(file.path)};`,
+        `import { ${identifierRegex.test(file.name) ? file.name : this.quoteKey(file.name)} as ${entity} } from ${this.quoteKey(file.path)};`,
       );
     }
 
@@ -342,7 +359,7 @@ export class SourceFile {
           path: `${basePath}/${this.options.fileName!(name)}${extension}`,
           name,
         };
-        importMap.set(file.path, `import { ${exports.join(', ')} } from ${this.quote(file.path)};`);
+        importMap.set(file.path, `import { ${exports.join(', ')} } from ${this.quoteKey(file.path)};`);
       }
     }
 
@@ -375,13 +392,30 @@ export class SourceFile {
 
   protected quote(val: string) {
     const backtick = val.startsWith(`'`) || val.includes('\n');
-    /* v8 ignore next */
-    return backtick ? `\`${val.replaceAll('`', '\\``')}\`` : `'${val.replaceAll(`'`, `\\'`)}'`;
+    // Backslashes first, so the escapes added below don't get neutralized by a preceding `\`.
+    // A raw `\r` is a syntax error in a string literal and silently normalizes to `\n` in a template one.
+    const escaped = val.replaceAll('\\', '\\\\').replaceAll('\r', '\\r');
+
+    return backtick
+      ? `\`${escaped.replaceAll('`', '\\`').replaceAll('${', '\\${')}\``
+      : `'${escaped.replaceAll(`'`, `\\'`)}'`;
+  }
+
+  /** For positions that reject a template literal: object keys, import bindings/specifiers, string literal types. */
+  protected quoteKey(val: string) {
+    const escaped = val
+      .replaceAll('\\', '\\\\')
+      .replaceAll('\r', '\\r')
+      .replaceAll('\n', '\\n')
+      .replaceAll('\t', '\\t')
+      .replaceAll(`'`, `\\'`);
+
+    return `'${escaped}'`;
   }
 
   protected getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
     const padding = ' '.repeat(padLeft);
-    const propName = identifierRegex.test(prop.name) ? prop.name : this.quote(prop.name);
+    const propName = identifierRegex.test(prop.name) ? prop.name : this.quoteKey(prop.name);
     const enumMode = this.options.enumMode;
     let hiddenType = '';
 
@@ -557,9 +591,9 @@ export class SourceFile {
       );
 
       if (enumMode === 'dictionary') {
-        ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quote(enumName)}: ${formatValue(enumValue)},\n`;
+        ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quoteKey(enumName)}: ${formatValue(enumValue)},\n`;
       } else {
-        ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quote(enumName)} = ${formatValue(enumValue)},\n`;
+        ret += `${padding}${identifierRegex.test(enumName) ? enumName : this.quoteKey(enumName)} = ${formatValue(enumValue)},\n`;
       }
     }
 
@@ -592,7 +626,7 @@ export class SourceFile {
     const entries = Object.entries(options);
     return `{${doIndent ? `\n${' '.repeat(spaces)}` : ' '}${entries
       .map(([opt, val]) => {
-        const key = identifierRegex.test(opt) ? opt : this.quote(opt);
+        const key = identifierRegex.test(opt) ? opt : this.quoteKey(opt);
         return `${doIndent ? ' '.repeat(level * 2 + (spaces + 2)) : ''}${key}: ${this.serializeValue(val, typeof nextWordwrap === 'number' ? nextWordwrap - key.length - 2 /* ': '.length*/ : undefined, doIndent ? spaces : undefined, level + 1)}`;
       })
       .join(sep)}${doIndent ? `${entries.length > 0 ? ',\n' : ''}${' '.repeat(spaces + level * 2)}` : ' '}}`;
@@ -869,7 +903,8 @@ export class SourceFile {
         prop.defaultRaw !== '' &&
         prop.defaultRaw !== (typeof prop.default === 'string' ? this.quote(prop.default) : `${prop.default}`)
       ) {
-        options.defaultRaw = `\`${prop.defaultRaw}\``;
+        // kept as a template literal for readability, but raw SQL may contain `${`, which would otherwise interpolate
+        options.defaultRaw = `\`${prop.defaultRaw.replaceAll('\\', '\\\\').replaceAll('`', '\\`').replaceAll('${', '\\${')}\``;
       } else if (
         !(typeof prop.default === 'undefined' || prop.default === null) &&
         (prop.ref ||

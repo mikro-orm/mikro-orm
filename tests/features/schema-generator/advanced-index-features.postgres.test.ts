@@ -1,4 +1,4 @@
-import { DeferMode, defineEntity, MikroORM, p, type Options } from '@mikro-orm/postgresql';
+import { DatabaseSchema, DeferMode, defineEntity, MikroORM, p, type Options } from '@mikro-orm/postgresql';
 
 class TestEntity {
   id!: number;
@@ -396,6 +396,40 @@ const ColumnsMismatchSchema = defineEntity({
   },
 });
 
+class AccessMethodTestEntity {
+  id!: number;
+  data!: unknown;
+  createdAt!: Date;
+}
+
+const AccessMethodSchema = defineEntity({
+  class: AccessMethodTestEntity,
+  tableName: 'index_access_method_test',
+  indexes: [
+    { name: 'data_gin_idx', properties: ['data'], type: 'gin' },
+    { name: 'created_at_brin_idx', properties: ['createdAt'], type: 'brin' },
+  ],
+  properties: {
+    id: p.integer().primary(),
+    data: p.json(),
+    createdAt: p.datetime(),
+  },
+});
+
+const AccessMethodSchema2 = defineEntity({
+  class: AccessMethodTestEntity,
+  tableName: 'index_access_method_test',
+  indexes: [
+    { name: 'data_gin_idx', properties: ['data'], type: 'gist' },
+    { name: 'created_at_brin_idx', properties: ['createdAt'], type: 'btree' },
+  ],
+  properties: {
+    id: p.integer().primary(),
+    data: p.json(),
+    createdAt: p.datetime(),
+  },
+});
+
 describe('advanced index features in postgres', () => {
   let orm: MikroORM;
 
@@ -613,5 +647,37 @@ describe('advanced index features in postgres', () => {
         fillFactor: 200,
       }),
     ).toThrow('fillFactor must be between 0 and 100, got 200');
+  });
+
+  test('schema generator emits the index access method and round-trips without drift', async () => {
+    const orm2 = await MikroORM.init({
+      entities: [AccessMethodSchema],
+      dbName: `mikro_orm_test_adv_idx_am`,
+    });
+    await orm2.schema.refresh();
+
+    const sql = await orm2.schema.getCreateSchemaSQL({ wrap: false });
+    expect(sql).toMatch(/create index "data_gin_idx" on "index_access_method_test" using gin \("data"\)/);
+    expect(sql).toMatch(/create index "created_at_brin_idx" on "index_access_method_test" using brin \("created_at"\)/);
+
+    // the indexes in the DB must actually use the declared access method, not the default b-tree
+    const schema = await DatabaseSchema.create(orm2.em.getConnection(), orm2.em.getPlatform(), orm2.config);
+    const indexes = schema.getTable('index_access_method_test')!.getIndexes();
+    expect(indexes.find(i => i.keyName === 'data_gin_idx')?.type).toBe('gin');
+    expect(indexes.find(i => i.keyName === 'created_at_brin_idx')?.type).toBe('brin');
+
+    const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    // changing the access method must be detected; explicit `btree` means the default (no `using`)
+    orm2.discoverEntity(AccessMethodSchema2, AccessMethodSchema);
+    const diff2 = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff2).toMatch(/drop index "data_gin_idx"/);
+    expect(diff2).toMatch(/create index "data_gin_idx" on "index_access_method_test" using gist \("data"\)/);
+    expect(diff2).toMatch(/drop index "created_at_brin_idx"/);
+    expect(diff2).toMatch(/create index "created_at_brin_idx" on "index_access_method_test" \("created_at"\)/);
+
+    await orm2.schema.dropDatabase();
+    await orm2.close();
   });
 });

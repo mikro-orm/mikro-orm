@@ -4,7 +4,6 @@ import {
   ChangeSet,
   ChangeSetType,
   Collection,
-  Configuration,
   DefaultLogger,
   EntityManager,
   EntityMetadata,

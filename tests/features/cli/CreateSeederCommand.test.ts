@@ -43,7 +43,6 @@ describe('CreateSeederCommand', () => {
 
   test('should generate seeder class with all kind of names', async () => {
     const cmd = new CreateSeederCommand();
-    // @ts-expect-error private method
     const spy = vi.spyOn(CreateSeederCommand, 'getSeederClassName');
     await cmd.handler({ seeder: 'DatabaseSeeder' } as any);
     expect(spy).toHaveLastReturnedWith('DatabaseSeeder');

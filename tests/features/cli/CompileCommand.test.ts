@@ -1,7 +1,7 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, unlinkSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { EntityMetadata, MetadataStorage, ReferenceKind, Utils } from '@mikro-orm/core';
+import { EntityMetadata, MetadataStorage, ReferenceKind } from '@mikro-orm/core';
 import { Configuration, MetadataDiscovery } from '@mikro-orm/core';
 import { fs as fsUtils } from '@mikro-orm/core/fs-utils';
 import { CLIHelper } from '@mikro-orm/cli';

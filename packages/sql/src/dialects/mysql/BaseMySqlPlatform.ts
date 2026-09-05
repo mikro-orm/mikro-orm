@@ -167,7 +167,7 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
 
   override getOrderByExpression(column: string, direction: string, collation?: string): string[] {
     const ret: string[] = [];
-    const dir = direction.toLowerCase() as keyof typeof this.ORDER_BY_NULLS_TRANSLATE;
+    const dir = this.validateOrderByDirection(direction) as keyof typeof this.ORDER_BY_NULLS_TRANSLATE;
     const col = collation ? `${column} collate ${this.quoteCollation(collation)}` : column;
 
     if (dir in this.ORDER_BY_NULLS_TRANSLATE) {

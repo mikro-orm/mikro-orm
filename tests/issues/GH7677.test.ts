@@ -98,4 +98,7 @@ test('discriminator on embedded inheritance narrows the union', async () => {
 
   expect(meows).toBe(1);
   expect(barks).toBe(1);
+
+  // @ts-expect-error unlike with STI (GH #8200), the discriminator of an embedded polymorph cannot be auto-filled — its value is what identifies the subtype
+  orm.em.create(Owner, { id: 3, name: 'Baz', pet: { name: 'Whiskers', canMeow: true } }, { persist: false });
 });

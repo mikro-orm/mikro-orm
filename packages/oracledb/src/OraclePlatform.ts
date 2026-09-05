@@ -312,9 +312,10 @@ export class OraclePlatform extends AbstractSqlPlatform {
     return true;
   }
 
-  override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string {
+  override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean | string, value?: unknown): string {
     const [a, ...b] = path;
-    const root = this.quoteIdentifier(aliased ? `${ALIAS_REPLACEMENT}.${a}` : a);
+    const alias = typeof aliased === 'string' ? aliased : ALIAS_REPLACEMENT;
+    const root = this.quoteIdentifier(aliased ? `${alias}.${a}` : a);
 
     if (b.length === 0) {
       return raw(`json_equal(${root}, json(?))`, [value]);
@@ -327,7 +328,7 @@ export class OraclePlatform extends AbstractSqlPlatform {
     o: FilterQuery<T>,
     value: EntityValue<T>,
     path: EntityKey<T>[],
-    alias: boolean,
+    alias: boolean | string,
   ): FilterQuery<T> {
     if (Utils.isPlainObject<Dictionary>(value) && !Object.keys(value).some(k => Utils.isOperator(k))) {
       Utils.keys(value).forEach(k => {

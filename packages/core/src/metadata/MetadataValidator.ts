@@ -1,6 +1,6 @@
 import type { EntityMetadata, EntityName, EntityProperty } from '../typings.js';
 import type { Routine } from './Routine.js';
-import { Utils } from '../utils/Utils.js';
+import { DANGEROUS_PROPERTY_NAMES, Utils } from '../utils/Utils.js';
 import { type MetadataDiscoveryOptions } from '../utils/Configuration.js';
 import { normalizePartitionNameForComparison, splitCommaSeparatedIdentifiers } from '../utils/partition-utils.js';
 import { MetadataError } from '../errors.js';
@@ -8,19 +8,6 @@ import { ReferenceKind } from '../enums.js';
 import type { MetadataStorage } from './MetadataStorage.js';
 
 type PartitionExpression = NonNullable<EntityMetadata['partitionBy']>['expression'];
-
-/**
- * List of property names that could lead to prototype pollution vulnerabilities.
- * These names should never be used as entity property names because they could
- * allow malicious code to modify object prototypes when property values are assigned.
- *
- * - `__proto__`: Could modify the prototype chain
- * - `constructor`: Could modify the constructor property
- * - `prototype`: Could modify the prototype object
- *
- * @internal
- */
-const DANGEROUS_PROPERTY_NAMES = ['__proto__', 'constructor', 'prototype'] as const;
 
 /**
  * @internal
@@ -824,7 +811,7 @@ export class MetadataValidator {
    */
   private validatePropertyNames(meta: EntityMetadata): void {
     for (const prop of Utils.values(meta.properties)) {
-      if (DANGEROUS_PROPERTY_NAMES.includes(prop.name as any)) {
+      if (DANGEROUS_PROPERTY_NAMES.includes(prop.name)) {
         throw MetadataError.dangerousPropertyName(meta, prop);
       }
     }

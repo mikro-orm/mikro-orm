@@ -9,6 +9,19 @@ import {
 
 const CONNECTION_TIMEOUT = 10_000;
 
+/** Kysely SQLite dialect config extended with the connection recycling libSQL needs for embedded replicas. */
+export interface LibSqlDialectConfig extends SqliteDialectConfig {
+  /**
+   * Recreates the underlying connection once it gets stale. Embedded replicas swap the local file out when
+   * syncing, so a long lived handle would keep serving the pre-sync data. A plain local database never goes
+   * stale, and recycling it would silently drop per-connection state like pragmas and attached databases.
+   */
+  recycleConnection?: boolean;
+
+  /** Re-applies the per-connection state after a stale connection was replaced. */
+  onRecycleConnection?: () => Promise<void>;
+}
+
 class ConnectionMutex {
   #promise?: Promise<void>;
   #resolve?: () => void;
@@ -35,7 +48,6 @@ class ConnectionMutex {
 
 class LibSqlConnection implements DatabaseConnection {
   readonly #created = Date.now();
-  declare memory: boolean;
   readonly #db: SqliteDatabase;
 
   constructor(db: SqliteDatabase) {
@@ -43,7 +55,7 @@ class LibSqlConnection implements DatabaseConnection {
   }
 
   isValid(): boolean {
-    return this.memory || this.#created > Date.now() - CONNECTION_TIMEOUT;
+    return this.#created > Date.now() - CONNECTION_TIMEOUT;
   }
 
   async executeQuery<R>(compiledQuery: any): Promise<QueryResult<R>> {
@@ -97,9 +109,9 @@ class LibSqlKyselyDriver extends SqliteDriver {
   #db!: SqliteDatabase;
   #connection!: LibSqlConnection;
   #connectionMutex = new ConnectionMutex();
-  readonly #config: SqliteDialectConfig;
+  readonly #config: LibSqlDialectConfig;
 
-  constructor(config: SqliteDialectConfig) {
+  constructor(config: LibSqlDialectConfig) {
     super(config);
     this.#config = config;
   }
@@ -117,10 +129,10 @@ class LibSqlKyselyDriver extends SqliteDriver {
   override async acquireConnection() {
     await this.#connectionMutex.lock();
 
-    /* v8 ignore next */
-    if (!this.#connection.isValid()) {
+    if (this.#config.recycleConnection && !this.#connection.isValid()) {
       await this.destroy();
       await this.init();
+      await this.#config.onRecycleConnection?.();
     }
 
     return this.#connection;
@@ -137,9 +149,9 @@ class LibSqlKyselyDriver extends SqliteDriver {
 
 /** Kysely dialect adapter for libSQL. */
 export class LibSqlDialect extends SqliteDialect {
-  readonly #config: SqliteDialectConfig;
+  readonly #config: LibSqlDialectConfig;
 
-  constructor(config: SqliteDialectConfig) {
+  constructor(config: LibSqlDialectConfig) {
     super(config);
     this.#config = config;
   }

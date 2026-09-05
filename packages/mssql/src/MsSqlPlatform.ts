@@ -202,6 +202,14 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     return 'dbo';
   }
 
+  override getDefaultPrimaryName(tableName: string, columns: string[]): string {
+    return this.getIndexName(tableName, columns, 'primary');
+  }
+
+  override supportsCustomPrimaryKeyNames(): boolean {
+    return true;
+  }
+
   override getUuidTypeDeclarationSQL(column: { length?: number }): string {
     return 'uniqueidentifier';
   }
@@ -226,12 +234,13 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   override getSearchJsonPropertyKey(
     path: string[],
     type: string,
-    aliased: boolean,
+    aliased: boolean | string,
     value?: unknown,
   ): string | RawQueryFragment {
     const [a, ...b] = path;
+    const alias = typeof aliased === 'string' ? this.quoteIdentifier(aliased) : `[${ALIAS_REPLACEMENT}]`;
     /* v8 ignore next */
-    const root = aliased ? `[${ALIAS_REPLACEMENT}].${this.quoteIdentifier(a)}` : this.quoteIdentifier(a);
+    const root = aliased ? `${alias}.${this.quoteIdentifier(a)}` : this.quoteIdentifier(a);
     const types = {
       boolean: 'bit',
     } as Dictionary;
@@ -320,19 +329,20 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override getOrderByExpression(column: string, direction: QueryOrder, collation?: string): string[] {
+    const dir = this.validateOrderByDirection(direction);
     const col = collation ? `${column} collate ${this.quoteCollation(collation)}` : column;
 
-    switch (direction.toUpperCase()) {
-      case QueryOrder.ASC_NULLS_FIRST:
+    switch (dir) {
+      case QueryOrder.asc_nulls_first:
         return [`case when ${column} is null then 0 else 1 end, ${col} asc`];
-      case QueryOrder.ASC_NULLS_LAST:
+      case QueryOrder.asc_nulls_last:
         return [`case when ${column} is null then 1 else 0 end, ${col} asc`];
-      case QueryOrder.DESC_NULLS_FIRST:
+      case QueryOrder.desc_nulls_first:
         return [`case when ${column} is null then 0 else 1 end, ${col} desc`];
-      case QueryOrder.DESC_NULLS_LAST:
+      case QueryOrder.desc_nulls_last:
         return [`case when ${column} is null then 1 else 0 end, ${col} desc`];
       default:
-        return [`${col} ${direction.toLowerCase()}`];
+        return [`${col} ${dir}`];
     }
   }
 

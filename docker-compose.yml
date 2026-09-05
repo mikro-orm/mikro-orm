@@ -6,6 +6,10 @@ services:
     ports:
       - "27017:27017"
     restart: always
+    security_opt:
+      # blocks the `rseq` syscall so tcmalloc falls back to per-thread caches, working around
+      # the mongo 8.x startup failure on linux kernel 6.19+ (https://jira.mongodb.org/browse/SERVER-121912)
+      - seccomp:./docker/mongo-seccomp.json
     healthcheck:
       test: /usr/bin/mongosh --eval 'process.exit(+!(db.runCommand("ping").ok === 1))'
 
@@ -74,7 +78,7 @@ services:
       test: cockroach sql --insecure -e 'select 1'
 
   mssql:
-    image: mcr.microsoft.com/mssql/server:2025-CU3-ubuntu-24.04
+    image: mcr.microsoft.com/mssql/server:2025-CU8-ubuntu-24.04
     platform: linux/amd64
     restart: always
     ports:

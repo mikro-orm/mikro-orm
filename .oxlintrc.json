@@ -8,6 +8,9 @@
     "**/*.mjs",
     "**/*.d.ts"
   ],
+  "jsPlugins": [
+    "./scripts/oxlint-no-unused-imports.mjs"
+  ],
   "plugins": [
     "typescript",
     "import",
@@ -113,7 +116,8 @@
     "typescript/no-empty-object-type": "off",
     "typescript/no-useless-constructor": "off",
     "no-useless-constructor": "off",
-    "typescript/no-redeclare": "error",
+    // flags valid TS declaration merging since oxlint 1.79 (https://github.com/oxc-project/oxc/issues/25906)
+    "typescript/no-redeclare": "off",
     "typescript/no-unsafe-declaration-merging": "off",
     "typescript/no-unnecessary-parameter-property-assignment": "off",
 
@@ -162,6 +166,8 @@
     "typescript/restrict-template-expressions": "off",
 
     "import/no-duplicates": "error",
+
+    "mikro-orm/no-unused-imports": "error",
 
     "unicorn/prefer-node-protocol": "error",
     "unicorn/no-new-array": "off",

@@ -1,7 +1,6 @@
 import {
   ALIAS_REPLACEMENT,
   ARRAY_OPERATORS,
-  type Dictionary,
   type EntityProperty,
   type IsolationLevel,
   raw,
@@ -402,12 +401,13 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
   override getSearchJsonPropertyKey(
     path: string[],
     type: string | undefined | Type,
-    aliased: boolean,
+    aliased: boolean | string,
     value?: unknown,
   ): string | RawQueryFragment {
     const first = path.shift();
     const last = path.pop();
-    const root = this.quoteIdentifier(aliased ? `${ALIAS_REPLACEMENT}.${first}` : first!);
+    const alias = typeof aliased === 'string' ? aliased : ALIAS_REPLACEMENT;
+    const root = this.quoteIdentifier(aliased ? `${alias}.${first}` : first!);
     type = typeof type === 'string' ? this.getMappedType(type).runtimeType : String(type);
     const cast = (key: string) =>
       raw(type in this.#jsonTypeCasts ? `(${key})::${this.#jsonTypeCasts[type as string]}` : key);

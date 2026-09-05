@@ -128,6 +128,31 @@ describe('EntityManagerPostgre', () => {
     });
   });
 
+  test('pool options are mapped to the pg pool config', async () => {
+    const config = new Configuration(
+      {
+        driver: PostgreSqlDriver,
+        clientUrl: 'postgre://root@127.0.0.1:1234/db_name',
+        logger: vi.fn(),
+        pool: { min: 2, max: 5, idleTimeoutMillis: 30_000 },
+      } as any,
+      false,
+    );
+    const driver = new PostgreSqlDriver(config);
+    expect(driver.getConnection().mapOptions({})).toMatchObject({
+      min: 2,
+      max: 5,
+      idleTimeoutMillis: 30_000,
+    });
+
+    // explicit driverOptions win over the pool config
+    expect(driver.getConnection().mapOptions({ min: 4 })).toMatchObject({
+      min: 4,
+      max: 5,
+      idleTimeoutMillis: 30_000,
+    });
+  });
+
   test('driverOptions.onPoolCreated receives the pg.Pool', async () => {
     let receivedPool: Pool | undefined;
     const config = new Configuration(
@@ -147,7 +172,9 @@ describe('EntityManagerPostgre', () => {
     } as any);
 
     expect(receivedPool).toBeInstanceOf(Pool);
-    expect(receivedPool!.listenerCount('error')).toBe(1);
+    // the hook's own listener, plus the built-in one that keeps a dropped connection from killing
+    // the process
+    expect(receivedPool!.listenerCount('error')).toBe(2);
     // the hook key must not be forwarded into the pg PoolConfig
     expect(Object.prototype.hasOwnProperty.call((receivedPool as any).options, 'onPoolCreated')).toBe(false);
   });

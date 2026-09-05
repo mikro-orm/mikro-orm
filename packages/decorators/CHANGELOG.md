@@ -3,6 +3,56 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.15](https://github.com/mikro-orm/mikro-orm/compare/v7.1.14...v7.1.15) (2026-09-03)
+
+**Note:** Version bump only for package @mikro-orm/decorators
+
+## [7.1.14](https://github.com/mikro-orm/mikro-orm/compare/v7.1.13...v7.1.14) (2026-08-26)
+
+**Note:** Version bump only for package @mikro-orm/decorators
+
+## [7.1.13](https://github.com/mikro-orm/mikro-orm/compare/v7.1.12...v7.1.13) (2026-08-20)
+
+### Bug Fixes
+
+- **decorators:** don't mutate base class metadata in TC39 decorators ([#8177](https://github.com/mikro-orm/mikro-orm/issues/8177)) ([b4e72bd](https://github.com/mikro-orm/mikro-orm/commit/b4e72bd2b7c47c7949dab8ad1a44c10edec33cca)), closes [#8178](https://github.com/mikro-orm/mikro-orm/issues/8178)
+
+## [7.1.12](https://github.com/mikro-orm/mikro-orm/compare/v7.1.11...v7.1.12) (2026-08-17)
+
+**Note:** Version bump only for package @mikro-orm/decorators
+
+## [7.1.11](https://github.com/mikro-orm/mikro-orm/compare/v7.1.10...v7.1.11) (2026-08-06)
+
+### Bug Fixes
+
+- **core:** resolve entity metadata via class references instead of class names ([#8108](https://github.com/mikro-orm/mikro-orm/issues/8108)) ([d3564bf](https://github.com/mikro-orm/mikro-orm/commit/d3564bf29e4fafc2cdd9a5bd5a89bbb25f105e27)), closes [#8107](https://github.com/mikro-orm/mikro-orm/issues/8107)
+
+## [7.1.10](https://github.com/mikro-orm/mikro-orm/compare/v7.1.9...v7.1.10) (2026-08-04)
+
+**Note:** Version bump only for package @mikro-orm/decorators
+
+## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
+
+**Note:** Version bump only for package @mikro-orm/decorators
+
+## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
+
+**Note:** Version bump only for package @mikro-orm/decorators
+
+## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
+
+**Note:** Version bump only for package @mikro-orm/decorators
+
+## [7.1.6](https://github.com/mikro-orm/mikro-orm/compare/v7.1.5...v7.1.6) (2026-07-13)
+
+### Bug Fixes
+
+- **core:** support `@Check()` on class level with TC39 decorators ([#7982](https://github.com/mikro-orm/mikro-orm/issues/7982)) ([23e47d9](https://github.com/mikro-orm/mikro-orm/commit/23e47d9075e1cf04f2a1332164af3d9a293d691b))
+
+## [7.1.5](https://github.com/mikro-orm/mikro-orm/compare/v7.1.4...v7.1.5) (2026-06-26)
+
+**Note:** Version bump only for package @mikro-orm/decorators
+
 ## [7.1.4](https://github.com/mikro-orm/mikro-orm/compare/v7.1.3...v7.1.4) (2026-06-06)
 
 **Note:** Version bump only for package @mikro-orm/decorators

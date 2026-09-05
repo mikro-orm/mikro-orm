@@ -3,6 +3,8 @@ import Database, { type Options } from 'libsql';
 import type { Routine, Transaction } from '@mikro-orm/core';
 import { LibSqlDialect } from './LibSqlDialect.js';
 
+const REMOTE_URL = /^(https?|libsql):\/\//;
+
 /** libSQL database connection supporting both local and remote databases. */
 export class LibSqlConnection extends BaseSqliteConnection {
   private database!: Database.Database;
@@ -20,7 +22,16 @@ export class LibSqlConnection extends BaseSqliteConnection {
         return (this.database = new Database(dbName, options));
       },
       onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
+      recycleConnection: !!options.syncUrl || REMOTE_URL.test(dbName),
+      onRecycleConnection: this.replayConnectionSetup.bind(this),
     });
+  }
+
+  /** Restores the state a recycled connection was replaced with, run on the raw handle to skip the held mutex. */
+  protected async replayConnectionSetup(): Promise<void> {
+    for (const sql of await this.getConnectionSetupSql()) {
+      this.database.exec(sql);
+    }
   }
 
   /** libsql's `Database.function()` is declared but throws "not implemented"; better-sqlite3 has the UDF bridge. */
@@ -42,7 +53,7 @@ export class LibSqlConnection extends BaseSqliteConnection {
       return;
     }
     const dbName = this.config.get('dbName') as string;
-    if (/^(https?|libsql):\/\//.exec(dbName)) {
+    if (REMOTE_URL.test(dbName)) {
       throw new Error(
         'ATTACH DATABASE is not supported for remote libSQL connections. ' + 'Use local file-based databases only.',
       );

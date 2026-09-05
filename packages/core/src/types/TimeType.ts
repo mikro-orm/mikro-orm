@@ -4,9 +4,9 @@ import type { EntityProperty } from '../typings.js';
 import { ValidationError } from '../errors.js';
 
 /** Maps a database TIME column to a JS `string` in HH:MM:SS format. */
-export class TimeType extends Type {
-  override convertToDatabaseValue(value: any, platform: Platform): string {
-    if (value && !value.toString().match(/^\d{2,}:(?:[0-5]\d):(?:[0-5]\d)$/)) {
+export class TimeType extends Type<string | null | undefined, string | null | undefined> {
+  override convertToDatabaseValue(value: string | null | undefined, platform: Platform): string | null | undefined {
+    if (value && !/^\d{2,}:(?:[0-5]\d):(?:[0-5]\d)$/.test(value)) {
       throw ValidationError.invalidType(TimeType, value, 'JS');
     }
 
