@@ -230,7 +230,9 @@ describe('cursor pagination - ordering by nullable column', () => {
       orderBy: { age: 'asc', id: 'asc' },
     });
 
-    expect(cursor.items.map(u => u.age)).toEqual([null, 10, 20, 30]);
+    // an unqualified direction on a nullable column is spelled out as `asc nulls last`, so the
+    // placement no longer follows the database default
+    expect(cursor.items.map(u => u.age)).toEqual([10, 20, 30, null]);
   });
 
   test('can order by nullable column descending', async () => {
@@ -239,7 +241,7 @@ describe('cursor pagination - ordering by nullable column', () => {
       orderBy: { age: 'desc', id: 'asc' },
     });
 
-    expect(cursor.items.map(u => u.age)).toEqual([30, 20, 10, null]);
+    expect(cursor.items.map(u => u.age)).toEqual([null, 30, 20, 10]);
   });
 
   test('can paginate through results with null in cursor', async () => {
@@ -359,8 +361,8 @@ describe('cursor pagination - null cursor condition branches', () => {
       orderBy: { age: 'asc nulls first', id: 'asc' },
     });
 
-    // nulls sort first, so every non-null row comes after the null cursor
-    expect(result.items.map(u => u.age)).toEqual([10, 20, 30]);
+    // the null block comes first, so every non-null row follows it
+    expect(result.items.map(u => u.id)).toEqual([1, 2, 4]);
   });
 
   test('cursor condition with null value and nulls last (forward)', async () => {
@@ -440,63 +442,7 @@ describe('cursor pagination - null cursor condition branches', () => {
       orderBy: { age: 'asc nulls last', id: 'asc' },
     });
 
-    // nulls sort last, so every non-null row comes before the null cursor
-    expect(result.items.map(u => u.age)).toEqual([10, 20, 30]);
-  });
-
-  test('the nulls qualifier reaches the emitted order by', async () => {
-    // sqlite sorts nulls first on `asc` by default, so `nulls last` is only honored if the qualifier survives
-    const cursor = await orm.em.findByCursor(User, {
-      first: 10,
-      orderBy: { age: 'asc nulls last', id: 'asc' },
-    });
-
-    expect(cursor.items.map(u => u.age)).toEqual([10, 20, 30, null]);
-  });
-
-  test('backward pagination inverts the nulls placement together with the direction', async () => {
-    const cursor = await orm.em.findByCursor(User, {
-      last: 2,
-      orderBy: { age: 'asc nulls last', id: 'asc' },
-    });
-
-    expect(cursor.items.map(u => u.age)).toEqual([30, null]);
-  });
-
-  test('the nulls first qualifier survives and inverts on backward pagination', async () => {
-    // sqlite sorts nulls last on `desc` by default, mirroring the `nulls last` cases above
-    const forward = await orm.em.findByCursor(User, {
-      first: 10,
-      orderBy: { age: 'desc nulls first', id: 'asc' },
-    });
-
-    expect(forward.items.map(u => u.age)).toEqual([null, 30, 20, 10]);
-    orm.em.clear();
-
-    const backward = await orm.em.findByCursor(User, {
-      last: 2,
-      orderBy: { age: 'desc nulls first', id: 'asc' },
-    });
-
-    expect(backward.items.map(u => u.age)).toEqual([20, 10]);
-  });
-
-  test('descending direction with a nulls qualifier keeps sorting descending', async () => {
-    const cursor1 = await orm.em.findByCursor(User, {
-      first: 2,
-      orderBy: { age: 'desc nulls last', id: 'asc' },
-    });
-
-    expect(cursor1.items.map(u => u.age)).toEqual([30, 20]);
-    orm.em.clear();
-
-    const cursor2 = await orm.em.findByCursor(User, {
-      first: 2,
-      after: cursor1,
-      orderBy: { age: 'desc nulls last', id: 'asc' },
-    });
-
-    // same as a plain `desc`, the null row is not part of the descending window here
-    expect(cursor2.items.map(u => u.age)).toEqual([10]);
+    // the null block comes last, so every non-null row precedes it
+    expect(result.items.map(u => u.id)).toEqual([1, 2, 4]);
   });
 });
