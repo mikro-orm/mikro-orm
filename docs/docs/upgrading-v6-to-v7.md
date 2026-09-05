@@ -131,25 +131,7 @@ Also, the `checkDuplicateEntities` discovery option is removed, since it is no l
 
 ## TypeScript support in CLI
 
-TypeScript support was previously provided by `ts-node`. In v7, the CLI supports various TS loaders:
-
-- `oxc` via `@oxc-node/core`, supports metadata reflection
-- `swc` via `@swc-node/register`, supports metadata reflection
-- `tsx`
-- `jiti`
-- `tsimp`
-
-The default is `auto`, which means it goes through all those options sequentially and picks the first one available in the project dependencies.
-
-To pick a loader explicitly, use the `tsLoader` setting in your `package.json`:
-
-```json
-"mikro-orm": {
-  "tsLoader": "jiti"
-}
-```
-
-Or override it via `MIKRO_ORM_CLI_TS_LOADER` env var.
+TypeScript support was previously provided by `ts-node`. In v7, the CLI supports various TS loaders (`oxc`, `swc`, `tsx`, `jiti`, `tsimp` and, from v7.2, `nub`), picking the first one available in your dependencies. See [TypeScript loaders in CLI](./typescript-loaders.md) for the full list and how to select one explicitly.
 
 ```diff
 -npm install ts-node

@@ -334,13 +334,14 @@ export class CLIHelper {
   }
 
   /**
-   * Tries to register TS support in the following order: oxc, swc, tsx, jiti, tsimp
+   * Tries to register TS support in the following order: oxc, swc, tsx, jiti, tsimp, nub
    * Use `MIKRO_ORM_CLI_TS_LOADER` env var to set the loader explicitly.
+   * `nub` is skipped when a custom tsconfig path is used, and it supports only the legacy decorators.
    * This method is used only in CLI context.
    */
   static async registerTypeScriptSupport(
     configPath = 'tsconfig.json',
-    tsLoader?: 'oxc' | 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'auto',
+    tsLoader?: 'oxc' | 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'nub' | 'auto',
   ): Promise<boolean> {
     /* v8 ignore if */
     if (process.versions.bun) {
@@ -352,20 +353,31 @@ export class CLIHelper {
     process.env.MIKRO_ORM_CLI_ALWAYS_ALLOW_TS ??= '1';
 
     const explicitLoader = tsLoader ?? process.env.MIKRO_ORM_CLI_TS_LOADER ?? 'auto';
+    const usesDefaultTsConfig = fs.absolutePath(configPath) === fs.absolutePath('tsconfig.json');
     const setEsmImportProvider = () => {
       return ((globalThis as any).dynamicImportProvider = (id: string) => import(id).then(mod => mod?.default ?? mod));
     };
+    if (explicitLoader === 'nub' && !usesDefaultTsConfig) {
+      throw new Error(
+        'The `nub` loader does not support a custom tsconfig path. Use the project tsconfig.json or select another loader.',
+      );
+    }
     const loaders = {
       oxc: { esm: '@oxc-node/core/register', cjs: '@oxc-node/core/register' },
       swc: { esm: '@swc-node/register/esm-register', cjs: '@swc-node/register' },
       tsx: { esm: 'tsx/esm/api', cjs: 'tsx/cjs/api', cb: (tsx: any) => tsx.register({ tsconfig: configPath }) },
       jiti: { cjs: 'jiti/register', cb: setEsmImportProvider },
       tsimp: { cjs: 'tsimp/import', cb: setEsmImportProvider },
+      nub: { esm: '@nubjs/loader', cjs: '@nubjs/loader' },
     } as const;
 
     const errors: Error[] = [];
 
     for (const loader of Utils.keys(loaders)) {
+      if (loader === 'nub' && !usesDefaultTsConfig) {
+        continue;
+      }
+
       if (explicitLoader !== 'auto' && loader !== explicitLoader) {
         continue;
       }
@@ -402,9 +414,13 @@ export class CLIHelper {
       throw new Error(errors.map(e => e.message).join('\n'), { cause: errors[0] });
     }
 
+    const loadersMessage = usesDefaultTsConfig
+      ? '`oxc`, `swc`, `tsx`, `jiti`, `tsimp` nor `nub`'
+      : '`oxc`, `swc`, `tsx`, `jiti` nor `tsimp`';
+    const nubHint = usesDefaultTsConfig ? '' : ' The `nub` loader was skipped as a custom tsconfig path is configured.';
     // eslint-disable-next-line no-console
     console.warn(
-      'Neither `oxc`, `swc`, `tsx`, `jiti` nor `tsimp` found in the project dependencies, support for working with TypeScript files might not work. To use `oxc`, install `@oxc-node/core`. To use `swc`, install both `@swc-node/register` and `@swc/core`.',
+      `Neither ${loadersMessage} found in the project dependencies, support for working with TypeScript files might not work.${nubHint} To use \`oxc\`, install \`@oxc-node/core\`. To use \`swc\`, install both \`@swc-node/register\` and \`@swc/core\`.`,
     );
 
     return false;
@@ -426,7 +442,7 @@ export class CLIHelper {
 export interface Settings {
   verbose?: boolean;
   preferTs?: boolean;
-  tsLoader?: 'oxc' | 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'auto';
+  tsLoader?: 'oxc' | 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'nub' | 'auto';
   tsConfigPath?: string;
   configPaths?: string[];
 }

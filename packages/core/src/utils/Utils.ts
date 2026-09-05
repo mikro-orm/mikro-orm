@@ -793,7 +793,8 @@ export class Utils {
           arg.includes('ts-node') || // check for ts-node loader
           arg.includes('@swc-node/register') || // check for swc-node/register loader
           arg.includes('node_modules/tsx/') || // check for tsx loader
-          arg.includes('@oxc-node/core') // check for oxc-node loader
+          arg.includes('@oxc-node/core') || // check for oxc-node loader
+          arg.includes('@nubjs/loader') // check for Nub loader
         );
       })
     );

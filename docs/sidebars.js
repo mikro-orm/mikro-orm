@@ -134,6 +134,7 @@ module.exports = {
         'deployment',
         'define-entity',
         'using-decorators',
+        'typescript-loaders',
         'folder-based-discovery',
         'metadata-providers',
         'metadata-cache',
