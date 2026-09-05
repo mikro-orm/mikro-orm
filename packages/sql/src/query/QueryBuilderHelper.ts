@@ -923,10 +923,10 @@ export class QueryBuilderHelper {
   }
 
   private getOperatorReplacement(op: string, value: Dictionary): string {
-    // `$all` is a mongo array operator with no SQL equivalent
+    // collection properties expand `$all` into `$some` sub-queries in `ObjectCriteriaNode`, nothing else has a SQL equivalent
     if (op === '$all') {
       throw new Error(
-        'The `$all` operator is not supported by SQL drivers, use `$contains` for array columns instead.',
+        'The `$all` operator is supported only on collection properties in SQL drivers, use `$contains` for array columns instead.',
       );
     }
 
