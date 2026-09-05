@@ -142,7 +142,7 @@ describe('polymorphic embeddables in mongo', () => {
     const mock = mockLogger(orm, ['query']);
     await orm.em.persist([ent1, ent2, ent3]).flush();
     expect(mock.mock.calls[0][0]).toMatch(
-      `db.getCollection('owner').insertMany([ { _id: ObjectId('600000000000000000000002'), name: 'o2', pet_type: 0, pet_name: 'c1', pet_canMeow: true, pet_food_mice: 2, pet2: { canBark: true, type: 1, name: 'd4', food: { cats: 10 } } }, { _id: ObjectId('600000000000000000000003'), name: 'o3', pet_canBark: true, pet_type: 1, pet_name: 'd2', pet_food_cats: 10, pet2: { type: 0, name: 'c4', canMeow: true, food: { mice: 2 } } }, { _id: ObjectId('600000000000000000000001'), name: 'o1', pet_canBark: true, pet_type: 1, pet_name: 'd1', pet_food_cats: 10, pet2: { type: 0, name: 'c3', canMeow: true, food: { mice: 2 } } } ], {});`,
+      `db.getCollection('owner').insertMany([ { _id: ObjectId('600000000000000000000002'), name: 'o2', pet_food_mice: 2, pet_type: 0, pet_name: 'c1', pet_canMeow: true, pet2: { canBark: true, food: { cats: 10 }, type: 1, name: 'd4' } }, { _id: ObjectId('600000000000000000000003'), name: 'o3', pet_canBark: true, pet_food_cats: 10, pet_type: 1, pet_name: 'd2', pet2: { food: { mice: 2 }, type: 0, name: 'c4', canMeow: true } }, { _id: ObjectId('600000000000000000000001'), name: 'o1', pet_canBark: true, pet_food_cats: 10, pet_type: 1, pet_name: 'd1', pet2: { food: { mice: 2 }, type: 0, name: 'c3', canMeow: true } } ], {});`,
     );
     orm.em.clear();
 
@@ -174,7 +174,7 @@ describe('polymorphic embeddables in mongo', () => {
     await orm.em.flush();
     expect(mock.mock.calls).toHaveLength(1);
     expect(mock.mock.calls[0][0]).toMatch(
-      `bulk = db.getCollection('owner').initializeUnorderedBulkOp({});bulk.find({ _id: ObjectId('600000000000000000000001') }).update({ '$set': { pet_type: 0, pet_name: 'c2', pet_canMeow: true, pet_food_mice: 2 }, '$unset': { pet_canBark: '', pet_food_cats: '' } });bulk.find({ _id: ObjectId('600000000000000000000002') }).update({ '$set': { pet_canBark: true, pet_food_cats: 10, pet_type: 1, pet_name: 'd3' }, '$unset': { pet_canMeow: '', pet_food_mice: '' } });bulk.find({ _id: ObjectId('600000000000000000000003') }).update({ '$set': { pet_name: 'old dog' } });bulk.execute()`,
+      `bulk = db.getCollection('owner').initializeUnorderedBulkOp({});bulk.find({ _id: ObjectId('600000000000000000000001') }).update({ '$set': { pet_type: 0, pet_food_mice: 2, pet_name: 'c2', pet_canMeow: true }, '$unset': { pet_canBark: '', pet_food_cats: '' } });bulk.find({ _id: ObjectId('600000000000000000000002') }).update({ '$set': { pet_canBark: true, pet_food_cats: 10, pet_type: 1, pet_name: 'd3' }, '$unset': { pet_food_mice: '', pet_canMeow: '' } });bulk.find({ _id: ObjectId('600000000000000000000003') }).update({ '$set': { pet_name: 'old dog' } });bulk.execute()`,
     );
     orm.em.clear();
 
@@ -252,7 +252,7 @@ describe('polymorphic embeddables in mongo', () => {
     const mock = mockLogger(orm, ['query']);
     await orm.em.persist(owner).flush();
     expect(mock.mock.calls[0][0]).toMatch(
-      `db.getCollection('owner').insertMany([ { _id: ObjectId('600000000000000000000004'), name: 'o1', pet_type: 0, pet_name: 'cat', pet_canMeow: true, pet_food_mice: 2, pet2: { canBark: true, type: 1, name: 'dog', food: { cats: 10 } } } ], {});`,
+      `db.getCollection('owner').insertMany([ { _id: ObjectId('600000000000000000000004'), name: 'o1', pet_food_mice: 2, pet_type: 0, pet_name: 'cat', pet_canMeow: true, pet2: { canBark: true, food: { cats: 10 }, type: 1, name: 'dog' } } ], {});`,
     );
 
     orm.em.assign(owner, {
@@ -261,7 +261,7 @@ describe('polymorphic embeddables in mongo', () => {
     });
     await orm.em.persist(owner).flush();
     expect(mock.mock.calls[1][0]).toMatch(
-      `db.getCollection('owner').updateMany({ _id: ObjectId('600000000000000000000004') }, { '$set': { pet_name: 'cat name', pet2: { canBark: true, type: 1, name: 'dog name', food: { cats: 10 } } } }, {});`,
+      `db.getCollection('owner').updateMany({ _id: ObjectId('600000000000000000000004') }, { '$set': { pet_name: 'cat name', pet2: { canBark: true, food: { cats: 10 }, type: 1, name: 'dog name' } } }, {});`,
     );
 
     expect(wrap(owner).toObject()).toEqual({

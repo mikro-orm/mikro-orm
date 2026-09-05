@@ -2,6 +2,7 @@ import { clone } from './clone.js';
 import type {
   CompiledFunctions,
   Dictionary,
+  EntityCtor,
   EntityData,
   EntityDictionary,
   EntityKey,
@@ -17,6 +18,19 @@ import { Reference, ScalarReference } from '../entity/Reference.js';
 import { Collection } from '../entity/Collection.js';
 import { EntityHelper } from '../entity/EntityHelper.js';
 import { Raw, isRaw, type RawQueryFragmentSymbol } from './RawQueryFragment.js';
+
+/**
+ * List of property names that could lead to prototype pollution vulnerabilities.
+ * These names should never be used as entity property names because they could
+ * allow malicious code to modify object prototypes when property values are assigned.
+ *
+ * - `__proto__`: Could modify the prototype chain
+ * - `constructor`: Could modify the constructor property
+ * - `prototype`: Could modify the prototype object
+ *
+ * @internal
+ */
+export const DANGEROUS_PROPERTY_NAMES: readonly string[] = ['__proto__', 'constructor', 'prototype'];
 
 function compareConstructors(a: any, b: any) {
   if (a.constructor === b.constructor) {
@@ -85,13 +99,13 @@ export function compareObjects(a: any, b: any): boolean {
     return false;
   }
 
-  for (let i = length; i-- !== 0; ) {
+  for (let i = length; i-- !== 0;) {
     if (!Object.hasOwn(b, keys[i])) {
       return false;
     }
   }
 
-  for (let i = length; i-- !== 0; ) {
+  for (let i = length; i-- !== 0;) {
     const key = keys[i];
 
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -111,7 +125,7 @@ export function compareArrays(a: any[] | string, b: any[] | string): boolean {
     return false;
   }
 
-  for (let i = length; i-- !== 0; ) {
+  for (let i = length; i-- !== 0;) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     if (!equals(a[i], b[i])) {
       return false;
@@ -137,7 +151,7 @@ export function compareBuffers(a: Uint8Array, b: Uint8Array): boolean {
     return false;
   }
 
-  for (let i = length; i-- !== 0; ) {
+  for (let i = length; i-- !== 0;) {
     if ((a as unknown as unknown[])[i] !== (b as unknown as unknown[])[i]) {
       return false;
     }
@@ -266,9 +280,13 @@ export class Utils {
   /**
    * Gets array without duplicates.
    */
-  static unique<T = string>(items: T[]): T[] {
+  static unique<T = string>(items: T[], equals?: (a: T, b: T) => boolean): T[] {
     if (items.length < 2) {
       return items;
+    }
+
+    if (equals) {
+      return items.filter((a, idx) => items.findIndex(b => equals(a, b)) === idx);
     }
 
     return [...new Set(items)];
@@ -300,7 +318,7 @@ export class Utils {
 
     if (Utils.isObject(target) && Utils.isPlainObject(source)) {
       for (const [key, value] of Object.entries(source)) {
-        if (['__proto__', 'constructor', 'prototype'].includes(key)) {
+        if (DANGEROUS_PROPERTY_NAMES.includes(key)) {
           continue;
         }
 
@@ -509,7 +527,8 @@ export class Utils {
     let pks = this.getCompositeKeyValue(data, meta, convertCustomTypes, platform);
 
     if (flat) {
-      pks = Utils.flatten(pks as unknown[][]) as Primary<T>;
+      // deep flatten, nested composite PKs produce nested arrays that would be comma-joined by the hash
+      pks = Utils.flatten(pks as unknown[][], true) as Primary<T>;
     }
 
     return Utils.getPrimaryKeyHash(pks as string[]);
@@ -589,7 +608,9 @@ export class Utils {
 
   static getPrimaryKeyCond<T>(entity: T, primaryKeys: EntityKey<T>[]): Record<string, Primary<T>> | null {
     const cond = primaryKeys.reduce((o, pk) => {
-      o[pk] = Utils.extractPK(entity[pk]);
+      const value = entity[pk];
+      // FKs pointing to a composite PK are arrays, which `extractPK` rejects
+      o[pk] = Utils.isPrimaryKey(value, true) ? value : Utils.extractPK(value);
       return o;
     }, {} as any);
 
@@ -722,6 +743,23 @@ export class Utils {
     }
 
     return classOrName.name as string;
+  }
+
+  /**
+   * Normalizes an entity reference for identity-safe matching: keeps class references
+   * (minifiers can mangle two classes to the same name) and falls back to the class name otherwise.
+   */
+  static classOrName<T>(classOrName: string | EntityName<T>): EntityCtor<T> | string {
+    return typeof classOrName === 'function' ? (classOrName as EntityCtor<T>) : Utils.className(classOrName);
+  }
+
+  /**
+   * Checks whether the given entity reference points at the given metadata,
+   * comparing classes by identity and strings by class name.
+   */
+  static matchesEntity<T>(classOrName: string | EntityName<T>, meta: EntityMetadata<any>): boolean {
+    const ref = Utils.classOrName(classOrName);
+    return typeof ref === 'function' ? (ref as unknown) === meta.class : ref === meta.className;
   }
 
   static extractChildElements(items: readonly string[], prefix: string, allSymbol?: string): string[] {
@@ -1081,7 +1119,12 @@ export class Utils {
     try {
       return await import(module);
     } catch (err: any) {
-      if (warning && err.code === 'ERR_MODULE_NOT_FOUND') {
+      // only a missing module is expected here, anything else is a real failure inside the module
+      if (!['ERR_MODULE_NOT_FOUND', 'MODULE_NOT_FOUND'].includes(err.code)) {
+        throw err;
+      }
+
+      if (warning) {
         // eslint-disable-next-line no-console
         console.warn(warning);
       }

@@ -19,3 +19,9 @@ exports[`comment diffing in mysql > schema orm.schema updates comments 3`] = `
 alter table \`book\` comment = '';
 "
 `;
+
+exports[`comment diffing in mysql > schema orm.schema updates comments 4`] = `
+"alter table \`book\` add \`description\` varchar(255) null comment 'comment of a newly added column';
+alter table \`book\` modify \`name\` varchar(100) not null comment 'new comment';
+"
+`;

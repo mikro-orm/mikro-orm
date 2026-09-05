@@ -440,6 +440,42 @@ describe('InferKyselyDB', () => {
     }>();
   });
 
+  test('infer columns inherited via extends (GH #7937)', async () => {
+    const BaseEntity = defineEntity({
+      abstract: true,
+      name: 'BaseEntity7937',
+      properties: {
+        id: p.integer().autoincrement().primary(),
+        createdAt: p.datetime().fieldName('created_at'),
+      },
+    });
+
+    const Book = defineEntity({
+      name: 'Book7937',
+      tableName: 'books7937',
+      extends: BaseEntity,
+      properties: p => ({
+        title: p.string(),
+      }),
+    });
+
+    const orm = new MikroORM({
+      entities: [Book],
+      dbName: ':memory:',
+    });
+
+    type KyselyDB = InferKyselyDB<typeof Book, {}>;
+    type BookTable = KyselyDB['books7937'];
+    expectTypeOf<BookTable>().toEqualTypeOf<{
+      id: Generated<number>;
+      created_at: Date;
+      title: string;
+    }>();
+
+    const kysely = orm.em.getKysely();
+    kysely.selectFrom('books7937').select(['id', 'created_at', 'title']);
+  });
+
   test('use InferKyselyTable manually', async () => {
     const User = defineEntity({
       name: 'User',
@@ -545,6 +581,97 @@ describe('InferKyselyDB', () => {
     expectTypeOf<ManualDB['comment']>().toEqualTypeOf<ManualCommentTable>();
 
     expectTypeOf<AutoInferredDB>().toEqualTypeOf<ManualDatabase>();
+  });
+
+  test('infer columns inherited via extends, including multi-level chains (GH #7937)', () => {
+    const Base = defineEntity({
+      name: 'Base7937',
+      abstract: true,
+      properties: {
+        id: p.integer().primary().autoincrement(),
+        createdAt: p.datetime().fieldName('created_at_col'),
+      },
+    });
+
+    const Middle = defineEntity({
+      name: 'Middle7937',
+      extends: Base,
+      abstract: true,
+      properties: {
+        mid: p.string(),
+      },
+    });
+
+    // single-level child of Base
+    const Animal = defineEntity({
+      name: 'Animal7937',
+      tableName: 'animal',
+      extends: Base,
+      properties: {
+        species: p.string(),
+      },
+    });
+
+    // multi-level child: Base -> Middle -> Cat
+    const Cat = defineEntity({
+      name: 'Cat7937',
+      tableName: 'cat',
+      extends: Middle,
+      properties: {
+        lives: p.integer(),
+      },
+    });
+
+    type DB = InferKyselyDB<typeof Animal | typeof Cat, {}>;
+
+    // single-level: own + grandparent-less base columns (builder metadata like fieldName propagates)
+    expectTypeOf<DB['animal']>().toEqualTypeOf<{
+      id: Generated<number>;
+      created_at_col: Date;
+      species: string;
+    }>();
+
+    // multi-level: own + parent + grandparent columns
+    expectTypeOf<DB['cat']>().toEqualTypeOf<{
+      id: Generated<number>;
+      created_at_col: Date;
+      mid: string;
+      lives: number;
+    }>();
+  });
+
+  test('infer columns with a default value as Generated (GH #8113)', () => {
+    const Probe = defineEntity({
+      name: 'Probe8113',
+      tableName: 'probe',
+      properties: {
+        id: p.uuid().primary().defaultRaw('uuidv7()'),
+        createdAt: p.datetime().defaultRaw('now()'),
+        enabled: p.boolean().default(true),
+        disabled: p.boolean().default(false),
+        count: p.integer().default(0),
+        name: p.string(),
+      },
+    });
+
+    const orm = new MikroORM({
+      entities: [Probe],
+      dbName: ':memory:',
+    });
+
+    type DB = InferKyselyDB<typeof Probe, {}>;
+
+    expectTypeOf<DB['probe']>().toEqualTypeOf<{
+      id: Generated<string>;
+      created_at: Generated<Date>;
+      enabled: Generated<boolean>;
+      disabled: Generated<boolean>;
+      count: Generated<number>;
+      name: string;
+    }>();
+
+    const kysely = orm.em.getKysely();
+    kysely.insertInto('probe').values({ name: 'foo' });
   });
 });
 
@@ -803,6 +930,51 @@ describe('InferClassEntityDB', () => {
 
     type DBEntity = InferClassEntityDB<typeof Foo7423, { tableNamingStrategy: 'entity' }>;
     expectTypeOf<DBEntity>().toHaveProperty('Foo7423');
+  });
+
+  test('nullable m:1 FK columns keep null in class inference (GH #7962)', async () => {
+    const Address = defineEntity({
+      name: 'Address7962',
+      properties: {
+        id: p.uuid().primary(),
+      },
+    });
+
+    const UserSchema = defineEntity({
+      name: 'User7962',
+      properties: {
+        id: p.integer().primary(),
+        address: () => p.manyToOne(Address).nullable(),
+      },
+    });
+
+    class User7962 extends UserSchema.class {}
+    UserSchema.setClass(User7962);
+
+    // nullable FK column must stay nullable on the class-based inference path,
+    // matching the schema-based path
+    type DB = InferClassEntityDB<typeof User7962>;
+    expectTypeOf<DB['user7962']['address_id']>().toEqualTypeOf<string | null>();
+
+    type DBProp = InferClassEntityDB<typeof User7962, { columnNamingStrategy: 'property' }>;
+    expectTypeOf<DBProp['user7962']['address']>().toEqualTypeOf<string | null>();
+
+    // the type surfaces through getKysely() the same as a class-less schema, so `null` is accepted
+    const orm = await MikroORM.init({
+      entities: [User7962, Address],
+      dbName: ':memory:',
+    });
+    await orm.schema.create();
+
+    const kysely = orm.em.getKysely();
+    type KyselyDB = InferDBFromKysely<typeof kysely>;
+    expectTypeOf<KyselyDB['user7962']['address_id']>().toEqualTypeOf<string | null>();
+
+    await kysely.insertInto('user7962').values({ id: 1, address_id: null }).execute();
+    const rows = await kysely.selectFrom('user7962').select(['id', 'address_id']).execute();
+    expect(rows).toEqual([{ id: 1, address_id: null }]);
+
+    await orm.close();
   });
 
   test('scalar array properties are inferred as columns (GH #7751)', () => {

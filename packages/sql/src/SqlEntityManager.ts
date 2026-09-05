@@ -184,8 +184,7 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
     options: CountByOptions<Entity> = {},
   ): Promise<Dictionary<number>> {
     const em = this.getContext(false) as SqlEntityManager;
-    options = { ...options };
-    em.prepareOptions(options);
+    options = em.prepareOptions(options);
     const meta = em.getMetadata().find(entityName)!;
     const fields = Utils.asArray(groupBy);
     const { where: rawWhere, ...countOptions } = options;
@@ -193,7 +192,9 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
     await em.tryFlush(entityName, options);
     const where = await em.processWhere(entityName, rawWhere ?? ({} as FilterQuery<Entity>), options as any, 'read');
 
-    const qb = em.createQueryBuilder(meta.class);
+    // match `em.count()` semantics: an active transaction always wins over the requested connection type
+    const connectionType = em.getTransactionContext() ? 'write' : options.connectionType;
+    const qb = em.createQueryBuilder(meta.class, undefined, connectionType);
 
     (qb as any)
       .select([...fields, raw('count(*) as cnt')])

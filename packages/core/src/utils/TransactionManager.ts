@@ -7,7 +7,7 @@ import { ChangeSetType } from '../unit-of-work/ChangeSet.js';
 import { TransactionStateError } from '../errors.js';
 import type { Transaction } from '../connections/Connection.js';
 import { helper } from '../entity/wrap.js';
-import type { Dictionary } from '../typings.js';
+import type { Dictionary, EntityProperty } from '../typings.js';
 
 /**
  * Manages transaction lifecycle and propagation for EntityManager.
@@ -212,7 +212,7 @@ export class TransactionManager {
     for (const entity of fork.getUnitOfWork(false).getIdentityMap()) {
       const wrapped = helper(entity);
       const meta = wrapped.__meta;
-      const parentEntity = parentUoW.getById(meta.class, wrapped.getPrimaryKey(), parent.schema, true);
+      const parentEntity = parentUoW.getIdentityMap().getByEntity(entity);
 
       if (parentEntity && parentEntity !== entity) {
         const parentWrapped = helper(parentEntity);
@@ -221,17 +221,56 @@ export class TransactionManager {
         if (!wrapped.__initialized && parentWrapped.__initialized) {
           continue;
         }
-        parentWrapped.__data = wrapped.__data;
-        parentWrapped.__originalEntityData = wrapped.__originalEntityData;
+        const parentData = parentWrapped.__data;
+        const parentSnapshot = parentWrapped.__originalEntityData;
+        parentWrapped.__data = { ...wrapped.__data };
+        const originalEntityData = { ...wrapped.__originalEntityData } as Dictionary;
 
         for (const prop of meta.hydrateProps) {
+          const tracked = this.getTrackedValues(prop, entity[prop.name]);
+
+          // the fork entity can be partially loaded, and propagating a property it does not know about
+          // would clobber the parent state, so we restore both its value and its snapshot entries
+          if (!tracked.every(([key, value]) => value !== undefined || wrapped.__loadedProperties.has(key))) {
+            this.restore(parentWrapped.__data, parentData, prop.name);
+            tracked.forEach(([key]) => this.restore(originalEntityData, parentSnapshot, key));
+
+            continue;
+          }
+
           if (prop.kind === ReferenceKind.SCALAR) {
             (parentEntity as Dictionary)[prop.name] = entity[prop.name];
           }
         }
+
+        if (wrapped.__originalEntityData) {
+          parentWrapped.__originalEntityData = originalEntityData;
+        }
       } else {
         parentUoW.merge(entity, new Set([entity]));
       }
+    }
+  }
+
+  /**
+   * Returns the property names a given property is tracked and snapshotted under, paired with their values.
+   * Inlined embeddables are hydrated as a single object, so only their leaves tell whether it is complete.
+   */
+  private getTrackedValues(prop: EntityProperty, value: unknown): [string, unknown][] {
+    if (prop.kind === ReferenceKind.EMBEDDED && !prop.object) {
+      return Object.values(prop.embeddedProps).flatMap(child => {
+        return this.getTrackedValues(child, (value as Dictionary)?.[child.embedded![1]]);
+      });
+    }
+
+    return [[prop.name, value]];
+  }
+
+  private restore(target: Dictionary, source: Dictionary | undefined, key: string): void {
+    if (source && key in source) {
+      target[key] = source[key];
+    } else {
+      delete target[key];
     }
   }
 

@@ -3,6 +3,54 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.15](https://github.com/mikro-orm/mikro-orm/compare/v7.1.14...v7.1.15) (2026-09-03)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+## [7.1.14](https://github.com/mikro-orm/mikro-orm/compare/v7.1.13...v7.1.14) (2026-08-26)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+## [7.1.13](https://github.com/mikro-orm/mikro-orm/compare/v7.1.12...v7.1.13) (2026-08-20)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+## [7.1.12](https://github.com/mikro-orm/mikro-orm/compare/v7.1.11...v7.1.12) (2026-08-17)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+## [7.1.11](https://github.com/mikro-orm/mikro-orm/compare/v7.1.10...v7.1.11) (2026-08-06)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+## [7.1.10](https://github.com/mikro-orm/mikro-orm/compare/v7.1.9...v7.1.10) (2026-08-04)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+## [7.1.9](https://github.com/mikro-orm/mikro-orm/compare/v7.1.8...v7.1.9) (2026-07-30)
+
+### Bug Fixes
+
+- **sql:** apply query cancellation strategies inside transactions ([#8067](https://github.com/mikro-orm/mikro-orm/issues/8067)) ([11525e3](https://github.com/mikro-orm/mikro-orm/commit/11525e36bb0d3f13921059d64fe1c5ffe4125c36))
+
+## [7.1.8](https://github.com/mikro-orm/mikro-orm/compare/v7.1.7...v7.1.8) (2026-07-28)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+## [7.1.7](https://github.com/mikro-orm/mikro-orm/compare/v7.1.6...v7.1.7) (2026-07-17)
+
+### Bug Fixes
+
+- **mariadb:** keep JSON columns as strings on mysql2 3.23+ ([#7994](https://github.com/mikro-orm/mikro-orm/issues/7994)) ([0154130](https://github.com/mikro-orm/mikro-orm/commit/015413015b465b7d3f4a65d1b7a58f33f1da0f5b)), closes [#7981](https://github.com/mikro-orm/mikro-orm/issues/7981)
+
+## [7.1.6](https://github.com/mikro-orm/mikro-orm/compare/v7.1.5...v7.1.6) (2026-07-13)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+## [7.1.5](https://github.com/mikro-orm/mikro-orm/compare/v7.1.4...v7.1.5) (2026-06-26)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
 ## [7.1.4](https://github.com/mikro-orm/mikro-orm/compare/v7.1.3...v7.1.4) (2026-06-06)
 
 **Note:** Version bump only for package @mikro-orm/mysql

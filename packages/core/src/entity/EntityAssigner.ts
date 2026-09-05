@@ -15,7 +15,7 @@ import type {
   Primary,
   RequiredEntityData,
 } from '../typings.js';
-import { Utils } from '../utils/Utils.js';
+import { DANGEROUS_PROPERTY_NAMES, Utils } from '../utils/Utils.js';
 import { Reference } from './Reference.js';
 import { ReferenceKind, SCALAR_TYPES } from '../enums.js';
 import { validateProperty } from './validators.js';
@@ -74,6 +74,11 @@ export class EntityAssigner {
     data: Dictionary,
     options: InternalAssignOptions<C>,
   ) {
+    // needs to happen before the `props` lookup, as those keys resolve to inherited accessors
+    if (DANGEROUS_PROPERTY_NAMES.includes(propName)) {
+      return;
+    }
+
     let value = data[propName];
 
     const onlyProperties = options.onlyProperties && !(propName in props);
@@ -295,7 +300,9 @@ export class EntityAssigner {
         const pk = Utils.extractPK(item, prop.targetMeta);
 
         if (pk && EntityAssigner.validateEM(em)) {
-          const ref = em.getUnitOfWork().getById(prop.targetMeta!.class, pk as Primary<U>, options.schema);
+          const ref = em
+            .getUnitOfWork()
+            .getById(prop.targetMeta!.class, pk as Primary<U>, options.schema, options.convertCustomTypes);
 
           if (ref) {
             return EntityAssigner.assign(ref, item as any, options);

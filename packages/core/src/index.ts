@@ -55,6 +55,7 @@ export type {
   FilterObject,
   IndexFilterQuery,
   ExtractIndexHints,
+  ExtractDefineEntityProperties,
   IndexName,
   IndexColumns,
   WithUsingOptions,

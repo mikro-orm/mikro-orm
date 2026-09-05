@@ -304,6 +304,8 @@ export class DatabaseTable {
           skippedColumnNames.includes(index.columnNames[0]) || // Non-composite indexes for skipped columns are to be mapped as entity decorators.
           index.deferMode ||
           index.expression ||
+          index.where ||
+          this.hasAdvancedIndexOptions(index) ||
           !(index.columnNames[0] in columnFks)) && // Trivial non-composite indexes for scalar props are to be mapped to the column.
         // ignore indexes that don't have all column names (this can happen in sqlite where there is no way to infer this for expressions)
         !(index.columnNames.some(col => !col) && !index.expression),
@@ -344,15 +346,7 @@ export class DatabaseTable {
       }
 
       // An index is trivial if it has no special options that require entity-level declaration
-      const hasAdvancedOptions =
-        index.columns?.length ||
-        index.include?.length ||
-        index.fillFactor ||
-        index.type ||
-        index.invisible ||
-        index.disabled ||
-        index.clustered;
-      const isTrivial = !index.deferMode && !index.expression && !index.where && !hasAdvancedOptions;
+      const isTrivial = !index.deferMode && !index.expression && !index.where && !this.hasAdvancedIndexOptions(index);
 
       if (isTrivial) {
         // Index is for FK. Map to the FK prop and move on.
@@ -395,6 +389,23 @@ export class DatabaseTable {
         continue;
       }
       schema.addIndex(ret);
+    }
+
+    for (const check of this.getChecks()) {
+      // skip checks that were consumed by enum conversion — the enum property recreates an
+      // equivalent check under the conventional name during discovery (only on platforms that
+      // emulate enums via check constraints; mysql/mariadb enums are native and recreate nothing)
+      const enumItems = check.columnName ? this.getColumn(check.columnName)?.enumItems : undefined;
+      if (
+        this.#platform.usesEnumCheckConstraints() &&
+        enumItems?.length &&
+        (check.expression === this.#platform.getEnumCheckConstraintExpression(check.columnName!, enumItems) ||
+          check.name === this.#platform.getIndexName(this.name, [check.columnName!], 'check'))
+      ) {
+        continue;
+      }
+
+      schema.meta.checks.push({ name: check.name, expression: check.expression as string });
     }
 
     const addedStandaloneFkPropsBasedOnColumn = new Set<string>();
@@ -680,6 +691,8 @@ export class DatabaseTable {
     const fkColumnsLength = currentFk.columnNames.length;
     const possibleIndexes = this.#indexes.filter(index => {
       return (
+        !index.where &&
+        !this.hasAdvancedIndexOptions(index) &&
         index.columnNames.length === fkColumnsLength &&
         !currentFk.columnNames.some((columnName, i) => index.columnNames[i] !== columnName)
       );
@@ -699,6 +712,19 @@ export class DatabaseTable {
     return possibleIndexes.at(0);
   }
 
+  /** Advanced options require an entity-level declaration, as the property-level `index`/`unique` cannot carry them. */
+  private hasAdvancedIndexOptions(index: IndexDef): boolean {
+    return !!(
+      index.columns?.length ||
+      index.include?.length ||
+      index.fillFactor ||
+      index.type ||
+      index.invisible ||
+      index.disabled ||
+      index.clustered
+    );
+  }
+
   private getIndexProperties(
     index: IndexDef,
     columnFks: Record<string, ForeignKey[]>,
@@ -706,13 +732,24 @@ export class DatabaseTable {
     fksOnStandaloneProps: Map<string, { fkIndex?: IndexDef; currentFk: ForeignKey }>,
     namingStrategy: NamingStrategy,
   ) {
-    const propBaseNames = new Set<string>();
+    const propBaseNames = new Map<string, { first: number; last: number }>();
     const columnNames = index.columnNames;
     const l = columnNames.length;
 
     if (columnNames.some(col => !col)) {
       return;
     }
+
+    const addPropBaseName = (baseName: string, position: number) => {
+      const positions = propBaseNames.get(baseName);
+
+      if (positions) {
+        positions.last = position;
+        return;
+      }
+
+      propBaseNames.set(baseName, { first: position, last: position });
+    };
 
     for (let i = 0; i < l; ++i) {
       const columnName = columnNames[i];
@@ -725,7 +762,7 @@ export class DatabaseTable {
         }
         // It has a prop named after it.
         // Add it and move on.
-        propBaseNames.add(columnName);
+        addPropBaseName(columnName, i);
         continue;
       }
 
@@ -733,7 +770,7 @@ export class DatabaseTable {
       // include this prop and move on.
       const columnPropFk = fksOnColumnProps.get(columnName);
       if (columnPropFk && !columnPropFk.columnNames.some(fkColumnName => !columnNames.includes(fkColumnName))) {
-        propBaseNames.add(columnName);
+        addPropBaseName(columnName, i);
         continue;
       }
 
@@ -747,7 +784,7 @@ export class DatabaseTable {
         }
 
         if (!fk.columnNames.some(fkColumnName => !columnNames.includes(fkColumnName))) {
-          propBaseNames.add(propName);
+          addPropBaseName(propName, i);
           propAdded = true;
         }
       }
@@ -761,9 +798,10 @@ export class DatabaseTable {
       return;
     }
 
-    return Array.from(propBaseNames).map(baseName =>
-      this.getPropertyName(namingStrategy, baseName, fksOnColumnProps.get(baseName)),
-    );
+    // Props sharing their first column would otherwise follow FK discovery order, so break ties on the last one.
+    return Array.from(propBaseNames)
+      .sort(([, a], [, b]) => a.first - b.first || a.last - b.last)
+      .map(([baseName]) => this.getPropertyName(namingStrategy, baseName, fksOnColumnProps.get(baseName)));
   }
 
   private getSafeBaseNameForFkProp(
@@ -941,10 +979,26 @@ export class DatabaseTable {
     const persist = !(column.name in columnFks && typeof fk === 'undefined');
     const index =
       compositeFkIndexes[prop] ||
-      this.#indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && !idx.unique && !idx.primary);
+      this.#indexes.find(
+        idx =>
+          idx.columnNames[0] === column.name &&
+          !idx.composite &&
+          !idx.unique &&
+          !idx.primary &&
+          !idx.where &&
+          !this.hasAdvancedIndexOptions(idx),
+      );
     const unique =
       compositeFkUniques[prop] ||
-      this.#indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && idx.unique && !idx.primary);
+      this.#indexes.find(
+        idx =>
+          idx.columnNames[0] === column.name &&
+          !idx.composite &&
+          idx.unique &&
+          !idx.primary &&
+          !idx.where &&
+          !this.hasAdvancedIndexOptions(idx),
+      );
 
     const kind = this.getReferenceKind(fk, unique);
     const runtimeType = this.getPropertyTypeForColumn(namingStrategy, column, fk);
@@ -1347,8 +1401,13 @@ export class DatabaseTable {
       // mysql stores decimal defaults padded to scale (`0` → `0.00`); collapse to canonical numeric form
       // so the metadata-side (`0`) and introspection-side (`0.00`) snapshots agree
       let defaultValue: string | null = c.default ?? null;
-      if (defaultValue != null && c.mappedType instanceof DecimalType && Number.isFinite(+defaultValue)) {
-        defaultValue = this.#platform.formatDecimal(defaultValue, c.scale).toString();
+      if (defaultValue != null && c.mappedType instanceof DecimalType) {
+        // string defaults like `default: '0.00'` are quoted in metadata, so strip the quotes first
+        const unquoted = defaultValue.replace(/^'(.*)'$/, '$1');
+
+        if (Number.isFinite(+unquoted)) {
+          defaultValue = this.#platform.formatDecimal(unquoted, c.scale).toString();
+        }
       }
       const normalized: Dictionary = {
         name: c.name,

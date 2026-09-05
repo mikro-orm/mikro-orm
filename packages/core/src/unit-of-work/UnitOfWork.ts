@@ -177,7 +177,6 @@ export class UnitOfWork {
       return entity;
     }
 
-    const forceUndefined = this.#em.config.get('forceUndefined');
     const wrapped = helper(entity);
 
     if (options?.loaded && wrapped.__initialized && !wrapped.__onLoadFired) {
@@ -326,6 +325,7 @@ export class UnitOfWork {
     where: FilterQuery<T>,
     schema?: string,
     strict = true,
+    convertCustomTypes?: boolean,
   ): T | null {
     const pk = Utils.extractPK(where, this.#metadata.find<T>(entityName), strict);
 
@@ -333,7 +333,7 @@ export class UnitOfWork {
       return null;
     }
 
-    return this.getById<T>(entityName, pk as Primary<T>, schema)!;
+    return this.getById<T>(entityName, pk as Primary<T>, schema, convertCustomTypes)!;
   }
 
   /**
@@ -468,6 +468,7 @@ export class UnitOfWork {
 
           if (!parentCs) {
             parentCs = new ChangeSet(entity, changeSet.type, {} as EntityDictionary<T>, current as EntityMetadata<T>);
+            parentCs.originalEntity = changeSet.originalEntity;
             changeSet.tptChangeSets.splice(idx, 0, parentCs);
           }
 
@@ -710,6 +711,9 @@ export class UnitOfWork {
         ) {
           if (prop.formula) {
             delete referrer[prop.name];
+          } else if (prop.primary) {
+            // the referrer's primary key contains the removed entity, so its identity cannot survive the removal
+            this.unsetIdentity(referrer);
           } else {
             delete helper(referrer).__data[prop.name];
           }
@@ -935,7 +939,8 @@ export class UnitOfWork {
         }
       }
 
-      if (!isCreate && Object.keys(payload).length === 0) {
+      // the table declaring the version property or a concurrency check still needs its bump and lock check
+      if (!isCreate && Object.keys(payload).length === 0 && !current.hasOptimisticLock()) {
         current = current.tptParent;
         continue;
       }
@@ -946,9 +951,9 @@ export class UnitOfWork {
         payload as EntityDictionary<T>,
         current as EntityMetadata<T>,
       );
+      cs.originalEntity = originalChangeSet.originalEntity;
 
       if (current === meta) {
-        cs.originalEntity = originalChangeSet.originalEntity;
         leafCs = cs;
       } else {
         parentChangeSets.push(cs);
@@ -1621,7 +1626,8 @@ export class UnitOfWork {
       // Skip stub TPT changesets with empty payload (e.g. leaf with no own-property changes on UPDATE)
       if (
         (cs.type === ChangeSetType.UPDATE || cs.type === ChangeSetType.UPDATE_EARLY) &&
-        !Utils.hasObjectKeys(cs.payload)
+        !Utils.hasObjectKeys(cs.payload) &&
+        !cs.meta.hasOptimisticLock()
       ) {
         return;
       }

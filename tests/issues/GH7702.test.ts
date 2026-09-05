@@ -1,6 +1,6 @@
 // GH #7702 - `LockMode.NONE` should behave like `lockMode: undefined`
 import { defineEntity, LockMode, MikroORM, p } from '@mikro-orm/sqlite';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../helpers.js';
 
 const User = defineEntity({
   name: 'User7702',

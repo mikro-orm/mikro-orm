@@ -1,6 +1,6 @@
 import {
   Collection,
-  EntityData,
+  Dictionary,
   IDatabaseDriver,
   MikroORM,
   Opt,
@@ -18,7 +18,6 @@ import {
   OneToMany,
   PrimaryKey,
   Property,
-  Unique,
   ManyToMany,
   ReflectMetadataProvider,
 } from '@mikro-orm/decorators/legacy';
@@ -696,6 +695,25 @@ describe('clone unit tests', () => {
     const { sql } = nqb.compile();
     expect(sql).toMatch(/insert into/i);
     expect(sql).toMatch(/select a, b from source/i);
+  });
+
+  test('does not let an own `__proto__` key replace the clone prototype', () => {
+    // `JSON.parse` creates a literal own key, unlike the `{ __proto__: x }` literal syntax
+    const copy = Utils.copy(JSON.parse('{"a":1,"__proto__":{"polluted":true}}'));
+
+    expect(Object.getPrototypeOf(copy)).toBe(Object.prototype);
+    expect((copy as Dictionary).polluted).toBeUndefined();
+    expect(({} as Dictionary).polluted).toBeUndefined();
+    expect(copy).toEqual({ a: 1 });
+  });
+
+  test('does not let a nested own `__proto__` key through `Utils.merge`', () => {
+    const target: Dictionary = {};
+    Utils.merge(target, JSON.parse('{"nested":{"__proto__":{"polluted":true}}}'));
+
+    expect(Object.getPrototypeOf(target.nested)).toBe(Object.prototype);
+    expect(target.nested.polluted).toBeUndefined();
+    expect(({} as Dictionary).polluted).toBeUndefined();
   });
 
   test('DatabaseDriver.nativeClone throws by default', async () => {

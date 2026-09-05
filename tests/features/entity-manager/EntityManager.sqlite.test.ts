@@ -20,7 +20,7 @@ import {
 } from '@mikro-orm/core';
 import { MikroORM as SqliteMikroORM } from '@mikro-orm/sqlite';
 import { MikroORM as LibSqlMikroORM } from '@mikro-orm/libsql';
-import { SqliteDriver as GenericSqliteDriver, BaseSqliteConnection } from '@mikro-orm/sql';
+import { BaseSqliteConnection } from '@mikro-orm/sql';
 import { initORMSqlite, mockLogger } from '../../bootstrap.js';
 import {
   Author4,

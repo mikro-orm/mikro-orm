@@ -19,7 +19,6 @@ import {
   type NativeInsertUpdateOptions,
   PolymorphicRef,
   type PopulateOptions,
-  type PopulatePath,
   type QueryResult,
   ReferenceKind,
   type StreamOptions,

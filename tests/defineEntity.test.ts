@@ -42,6 +42,7 @@ enum Status7446 {
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 namespace Status7446 {
+  // eslint-disable-next-line no-inner-declarations
   export function isComplete(status: Status7446): boolean {
     return status === Status7446.Success || status === Status7446.Error;
   }
@@ -350,6 +351,32 @@ describe('defineEntity', () => {
     >(true);
   });
 
+  it('should infer `string` for time type properties', () => {
+    const p = defineEntity.properties;
+
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: {
+        id: p.integer().primary(),
+        viaBuilder: p.time(),
+        viaTypeString: p.type('time'),
+      },
+    });
+
+    type IFoo = InferEntity<typeof Foo>;
+    assert<
+      IsExact<
+        Omit<IFoo, typeof IndexHints>,
+        {
+          id: number;
+          viaBuilder: string;
+          viaTypeString: string;
+          [PrimaryKeyProp]?: 'id';
+        }
+      >
+    >(true);
+  });
+
   it('should define entity with class constructor as extends', () => {
     class BaseEntity {
       id!: number;
@@ -381,6 +408,25 @@ describe('defineEntity', () => {
 
     expect(UserSchema.meta.extends).toBe(BaseEntity);
     expect(UserSchema.meta.className).toBe('User');
+  });
+
+  it('should keep primary key optional in em.create() when extending a plain class', () => {
+    abstract class BaseEntity {
+      id!: number;
+    }
+
+    const TagSchema = defineEntity({
+      name: 'Tag',
+      extends: BaseEntity,
+      properties: {
+        name: p.string(),
+      },
+    });
+
+    type ITag = InferEntity<typeof TagSchema>;
+    assert<IsExact<Primary<ITag>, number>>(true);
+    const data: RequiredEntityData<ITag> = { name: 'ts' };
+    expect(data.name).toBe('ts');
   });
 
   it('should inherit property initializers from parent class via extends', () => {

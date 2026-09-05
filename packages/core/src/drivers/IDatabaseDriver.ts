@@ -528,6 +528,7 @@ export interface CountByOptions<T extends object> {
   filters?: FilterOptions;
   having?: FilterQuery<T>;
   schema?: string;
+  connectionType?: ConnectionType;
   flushMode?: FlushMode | `${FlushMode}`;
   loggerContext?: LogContext;
   logging?: LoggingOptions;

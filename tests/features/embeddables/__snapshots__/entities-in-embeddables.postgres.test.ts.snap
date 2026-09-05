@@ -55,6 +55,7 @@ exports[`embedded entities in postgres > diffing 1`] = `
       
       }
 
+      if (entity.profile1.identity.links === null) ret.profile1_identity_links = null;
       if (Array.isArray(entity.profile1.identity.links)) {
         ret.profile1_identity_links = [];
         entity.profile1.identity.links.forEach((_, idx_0) => {
@@ -82,6 +83,7 @@ exports[`embedded entities in postgres > diffing 1`] = `
             
             }
 
+            if (entity.profile1.identity.links[idx_0].metas === null) ret.profile1_identity_links[idx_0].metas = null;
             if (Array.isArray(entity.profile1.identity.links[idx_0].metas)) {
               ret.profile1_identity_links[idx_0].metas = [];
               entity.profile1.identity.links[idx_0].metas.forEach((_, idx_1) => {
@@ -171,6 +173,7 @@ exports[`embedded entities in postgres > diffing 1`] = `
       
       }
 
+      if (entity.profile2.identity.links === null) ret.profile2.identity.links = null;
       if (Array.isArray(entity.profile2.identity.links)) {
         ret.profile2.identity.links = [];
         entity.profile2.identity.links.forEach((_, idx_2) => {
@@ -198,6 +201,7 @@ exports[`embedded entities in postgres > diffing 1`] = `
             
             }
 
+            if (entity.profile2.identity.links[idx_2].metas === null) ret.profile2.identity.links[idx_2].metas = null;
             if (Array.isArray(entity.profile2.identity.links[idx_2].metas)) {
               ret.profile2.identity.links[idx_2].metas = [];
               entity.profile2.identity.links[idx_2].metas.forEach((_, idx_3) => {
@@ -445,6 +449,8 @@ exports[`embedded entities in postgres > diffing 2`] = `
                   entity.profile1.identity.links[idx_16].metas[idx_25] = null;
                 }
               });
+            } else if (data.profile1_identity_links[idx_16].metas === null) {
+              entity.profile1.identity.links[idx_16].metas = null;
             }
             if (data.profile1_identity_links[idx_16].source === null) {
     entity.profile1.identity.links[idx_16].source = null;
@@ -459,6 +465,8 @@ exports[`embedded entities in postgres > diffing 2`] = `
             entity.profile1.identity.links[idx_16] = null;
           }
         });
+      } else if (data.profile1_identity_links === null) {
+        entity.profile1.identity.links = null;
       }
       if (data.profile1_identity_source === null) {
     entity.profile1.identity.source = null;
@@ -622,6 +630,8 @@ exports[`embedded entities in postgres > diffing 2`] = `
                   entity.profile1.identity.links[idx_47].metas[idx_56] = null;
                 }
               });
+            } else if (data.profile1_identity.links[idx_47].metas === null) {
+              entity.profile1.identity.links[idx_47].metas = null;
             }
             if (data.profile1_identity.links[idx_47].source === null) {
     entity.profile1.identity.links[idx_47].source = null;
@@ -636,6 +646,8 @@ exports[`embedded entities in postgres > diffing 2`] = `
             entity.profile1.identity.links[idx_47] = null;
           }
         });
+      } else if (data.profile1_identity.links === null) {
+        entity.profile1.identity.links = null;
       }
       if (data.profile1_identity.source === null) {
     entity.profile1.identity.source = null;
@@ -826,6 +838,8 @@ exports[`embedded entities in postgres > diffing 2`] = `
                   entity.profile1.identity.links[idx_82].metas[idx_91] = null;
                 }
               });
+            } else if (data.profile1_identity_links[idx_82].metas === null) {
+              entity.profile1.identity.links[idx_82].metas = null;
             }
             if (data.profile1_identity_links[idx_82].source === null) {
     entity.profile1.identity.links[idx_82].source = null;
@@ -840,6 +854,8 @@ exports[`embedded entities in postgres > diffing 2`] = `
             entity.profile1.identity.links[idx_82] = null;
           }
         });
+      } else if (data.profile1_identity_links === null) {
+        entity.profile1.identity.links = null;
       }
       if (data.profile1_identity_source === null) {
     entity.profile1.identity.source = null;
@@ -1003,6 +1019,8 @@ exports[`embedded entities in postgres > diffing 2`] = `
                   entity.profile1.identity.links[idx_113].metas[idx_122] = null;
                 }
               });
+            } else if (data.profile1.identity.links[idx_113].metas === null) {
+              entity.profile1.identity.links[idx_113].metas = null;
             }
             if (data.profile1.identity.links[idx_113].source === null) {
     entity.profile1.identity.links[idx_113].source = null;
@@ -1017,6 +1035,8 @@ exports[`embedded entities in postgres > diffing 2`] = `
             entity.profile1.identity.links[idx_113] = null;
           }
         });
+      } else if (data.profile1.identity.links === null) {
+        entity.profile1.identity.links = null;
       }
       if (data.profile1.identity.source === null) {
     entity.profile1.identity.source = null;
@@ -1171,6 +1191,8 @@ exports[`embedded entities in postgres > diffing 2`] = `
                   entity.profile2.identity.links[idx_143].metas[idx_152] = null;
                 }
               });
+            } else if (data.profile2.identity.links[idx_143].metas === null) {
+              entity.profile2.identity.links[idx_143].metas = null;
             }
             if (data.profile2.identity.links[idx_143].source === null) {
     entity.profile2.identity.links[idx_143].source = null;
@@ -1185,6 +1207,8 @@ exports[`embedded entities in postgres > diffing 2`] = `
             entity.profile2.identity.links[idx_143] = null;
           }
         });
+      } else if (data.profile2.identity.links === null) {
+        entity.profile2.identity.links = null;
       }
       if (data.profile2.identity.source === null) {
     entity.profile2.identity.source = null;

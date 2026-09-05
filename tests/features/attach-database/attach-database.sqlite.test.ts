@@ -363,6 +363,15 @@ class RemoteTestEntity {
   id!: number;
 }
 
+@Entity({ schema: 'lifetime_db' })
+class LifetimeTestEntity {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  value!: string;
+}
+
 describe('ATTACH DATABASE - relative path resolution', () => {
   const tempDir = join(tmpdir(), `mikro-orm-attach-relpath-${Date.now()}`);
   let orm: MikroORM<SqliteDriver>;
@@ -410,6 +419,85 @@ describe('ATTACH DATABASE - relative path resolution', () => {
     const databases = await connection.execute<{ name: string }[]>('pragma database_list');
     const dbNames = databases.map(d => d.name);
     expect(dbNames).toContain('attached_db');
+  });
+});
+
+describe('ATTACH DATABASE - libSQL connection lifetime', () => {
+  const tempDir = join(tmpdir(), `mikro-orm-attach-lifetime-${Date.now()}`);
+  let orm: MikroORM<LibSqlDriver>;
+
+  beforeAll(async () => {
+    if (!existsSync(tempDir)) {
+      mkdirSync(tempDir, { recursive: true });
+    }
+
+    orm = await MikroORM.init({
+      entities: [LifetimeTestEntity],
+      dbName: join(tempDir, 'main.db'),
+      driver: LibSqlDriver,
+      metadataProvider: ReflectMetadataProvider,
+      logger: i => i,
+      loggerFactory: SimpleLogger.create,
+      attachDatabases: [{ name: 'lifetime_db', path: join(tempDir, 'lifetime.db') }],
+    });
+    await orm.schema.create();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  afterAll(async () => {
+    await orm?.close(true);
+    // Clean up temp directory - ignore errors on Windows where files may still be locked
+    try {
+      rmSync(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+    } catch {
+      // noop
+    }
+  });
+
+  test('attached databases survive a long-lived connection', async () => {
+    const connection = orm.em.getConnection();
+    expect((await connection.execute<{ name: string }[]>('pragma database_list')).map(d => d.name)).toContain(
+      'lifetime_db',
+    );
+
+    // the connection used to be recycled after 10s, silently dropping the attached databases
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(Date.now() + 60_000);
+
+    expect((await connection.execute<{ name: string }[]>('pragma database_list')).map(d => d.name)).toContain(
+      'lifetime_db',
+    );
+    await orm.em.insert(LifetimeTestEntity, { value: 'foo' });
+    expect(await orm.em.count(LifetimeTestEntity)).toBe(1);
+  });
+
+  test('the connection setup SQL covers the pragmas and the attached databases', async () => {
+    const connection = orm.em.getConnection() as any;
+    // the paths are normalized to forward slashes, so compare them that way to stay portable
+    const setupSql = ((await connection.getConnectionSetupSql()) as string[]).map(sql => sql.replaceAll('\\', '/'));
+
+    expect(setupSql).toEqual([
+      'pragma foreign_keys = on',
+      `attach database '${join(tempDir, 'lifetime.db').replaceAll('\\', '/')}' as \`lifetime_db\``,
+    ]);
+  });
+
+  test('replaying the setup restores the state a recycled connection lost', async () => {
+    const connection = orm.em.getConnection();
+    // a recycled connection comes back blank, which detaching reproduces without a Turso endpoint
+    await connection.execute('detach database lifetime_db');
+    await connection.execute('pragma foreign_keys = off');
+
+    await (connection as any).replayConnectionSetup();
+
+    expect((await connection.execute<{ name: string }[]>('pragma database_list')).map(d => d.name)).toContain(
+      'lifetime_db',
+    );
+    expect(await connection.execute<{ foreign_keys: number }[]>('pragma foreign_keys')).toEqual([{ foreign_keys: 1 }]);
+    await expect(orm.em.fork().count(LifetimeTestEntity)).resolves.toBeGreaterThanOrEqual(0);
   });
 });
 

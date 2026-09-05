@@ -633,6 +633,34 @@ describe('composite keys in sqlite', () => {
     }
   });
 
+  test('batch updates reload the version value', async () => {
+    const param1 = new FooParam12(new FooBar12('bar 1'), new FooBaz12('baz 1'), 'val 1');
+    const param2 = new FooParam12(new FooBar12('bar 2'), new FooBaz12('baz 2'), 'val 1');
+    await orm.em.persist([param1, param2]).flush();
+
+    // the version is stored with second precision, so we need to move it to the past
+    // to be sure the batch update below produces a different value
+    const oldVersion = new Date('2020-01-01T00:00:00Z');
+    await orm.em.nativeUpdate(FooParam12, {}, { version: oldVersion });
+    orm.em.clear();
+
+    const [p1, p2] = await orm.em.find(FooParam12, {}, { orderBy: { bar: 'asc' } });
+    expect(p1.version).toEqual(oldVersion);
+    p1.value += ' changed!';
+    p2.value += ' changed!';
+    await orm.em.flush();
+    expect(p1.version).not.toEqual(oldVersion);
+    expect(p2.version).not.toEqual(oldVersion);
+    // the returned rows are hydrated back, so a mismatched row would rewrite the composite PK
+    expect([p1.bar.id, p1.baz.id]).toEqual([param1.bar.id, param1.baz.id]);
+    expect([p2.bar.id, p2.baz.id]).toEqual([param2.bar.id, param2.baz.id]);
+
+    // with a stale version the optimistic lock check would fail here
+    p1.value += ' changed!!';
+    p2.value += ' changed!!';
+    await expect(orm.em.flush()).resolves.toBeUndefined();
+  });
+
   test('loadCount for composite keys', async () => {
     const car = new Car12('Audi A8', 2010, 200_000);
     const user = new User12('John', 'Doe');

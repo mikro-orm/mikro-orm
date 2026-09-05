@@ -251,5 +251,32 @@ describe('QueryBuilder type safety', () => {
         qb.where({ $or: [{ 'a.name': { $badOp: 'test' } }] });
       }
     });
+
+    test('should accept aliased keys in nested $and/$or groups', async () => {
+      const qb = orm.em.createQueryBuilder(Author2, 'a').select('*').leftJoin('a.books', 'b');
+
+      qb.where({ $or: [{ $and: [{ 'a.name': 'x' }] }, { $and: [{ 'b.title': 'y' }] }] });
+
+      expect(qb.getFormattedQuery()).toBe(
+        'select `a`.* from `author2` as `a` ' +
+          'left join `book2` as `b` on `a`.`id` = `b`.`author_id` ' +
+          "where ((`a`.`name` = 'x') or (`b`.`title` = 'y'))",
+      );
+
+      // Type-only checks - nested groups keep validating aliases, properties and value types
+      if (false as boolean) {
+        qb.where({ $and: [{ $or: [{ $and: [{ 'b.title': { $like: '%y%' } }] }] }] });
+        qb.where({ $not: { $or: [{ 'a.name': 'x' }] } });
+
+        // @ts-expect-error - 'unknown' is not a valid alias
+        qb.where({ $or: [{ $and: [{ 'unknown.name': 'x' }] }] });
+
+        // @ts-expect-error - 'a.invalidProp' does not exist on Author2
+        qb.where({ $or: [{ $and: [{ 'a.invalidProp': 'x' }] }] });
+
+        // @ts-expect-error - 'a.name' is a string property
+        qb.where({ $or: [{ $and: [{ 'a.name': 123 }] }] });
+      }
+    });
   });
 });

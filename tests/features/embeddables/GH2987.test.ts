@@ -170,13 +170,13 @@ test('2987', async () => {
   await orm.em.flush();
   expect(mock.mock.calls[0][0]).toMatch('begin');
   expect(mock.mock.calls[1][0]).toMatch(
-    `insert into \`user\` (\`id\`, \`email1\`, \`email2_type\`, \`email2_sent_emails_due_date\`, \`email2_sent_emails_sender_email\`, \`email2_sent_emails_sent_date\`) values (1, '{"type":"DUE_DATE","sent_emails":{"dueDate":"2024-07-01T20:20:00.000Z","sender_email":"foo1"}}', 'DUE_DATE', 1719865200000, 'foo2', null), (2, '{"type":"EMAIL","sent_emails":{"sent_date":"2024-07-02T20:20:00.000Z","sender_email":"foo3"}}', 'EMAIL', null, 'foo4', 1719951600000)`,
+    `insert into \`user\` (\`id\`, \`email1\`, \`email2_sent_emails_due_date\`, \`email2_sent_emails_sender_email\`, \`email2_type\`, \`email2_sent_emails_sent_date\`) values (1, '{"type":"DUE_DATE","sent_emails":{"due_date":"2024-07-01T20:20:00.000Z","sender_email":"foo1"}}', 1719865200000, 'foo2', 'DUE_DATE', null), (2, '{"type":"EMAIL","sent_emails":{"sender_email":"foo3","sent_date":"2024-07-02T20:20:00.000Z"}}', null, 'foo4', 'EMAIL', 1719951600000)`,
   );
   expect(mock.mock.calls[2][0]).toMatch('commit');
   expect(mock.mock.calls[3][0]).toMatch('select `u0`.* from `user` as `u0` order by `u0`.`id` asc');
   expect(mock.mock.calls[4][0]).toMatch('begin');
   expect(mock.mock.calls[5][0]).toMatch(
-    'update `user` set `email1` = case when (`id` = 1) then \'{"type":"DUE_DATE","sent_emails":{"dueDate":"2024-07-03T20:20:00.000Z","sender_email":"foo1"}}\' when (`id` = 2) then \'{"type":"EMAIL","sent_emails":{"sent_date":"2024-07-04T20:20:00.000Z","sender_email":"foo3"}}\' else `email1` end, `email2_sent_emails_due_date` = case when (`id` = 1) then 1720038000000 else `email2_sent_emails_due_date` end, `email2_sent_emails_sent_date` = case when (`id` = 2) then 1720124400000 else `email2_sent_emails_sent_date` end where `id` in (1, 2)',
+    'update `user` set `email1` = case when (`id` = 1) then \'{"type":"DUE_DATE","sent_emails":{"due_date":"2024-07-03T20:20:00.000Z","sender_email":"foo1"}}\' when (`id` = 2) then \'{"type":"EMAIL","sent_emails":{"sender_email":"foo3","sent_date":"2024-07-04T20:20:00.000Z"}}\' else `email1` end, `email2_sent_emails_due_date` = case when (`id` = 1) then 1720038000000 else `email2_sent_emails_due_date` end, `email2_sent_emails_sent_date` = case when (`id` = 2) then 1720124400000 else `email2_sent_emails_sent_date` end where `id` in (1, 2)',
   );
   expect(mock.mock.calls[6][0]).toMatch('commit');
 });

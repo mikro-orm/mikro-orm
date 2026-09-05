@@ -32,7 +32,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
   /**
    * creates new database and connects to it
    */
-  override async createDatabase(name?: string): Promise<void> {
+  override async createDatabase(name?: string, options?: { skipOnConnect?: boolean }): Promise<void> {
     name ??= this.config.get('user')!;
     /* v8 ignore next: tableSpace fallback */
     const tableSpace = this.config.get('schemaGenerator').tableSpace ?? 'mikro_orm';
@@ -58,15 +58,26 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     await this.execute(`grant connect, resource to ${this.platform.quoteIdentifier(name)}`);
 
     this.config.set('user', name);
-    await this.driver.reconnect();
+    await this.driver.reconnect(options);
   }
 
+  /**
+   * Drops the user representing the database. When dropping the user we are connected as, we stay
+   * connected as the management user, as the dropped one can no longer authenticate.
+   */
   override async dropDatabase(name?: string): Promise<void> {
     name ??= this.config.get('dbName')!;
+    const originalUser = this.getOriginalUser();
     this.config.set('user', this.helper.getManagementDbName());
-    await this.driver.reconnect();
+    await this.driver.reconnect({ skipOnConnect: true });
     await this.execute(this.helper.getDropDatabaseSQL(name));
-    this.config.set('user', name);
+    // the dropped user is gone, so a cached `ensureDatabase` result for it is stale
+    this.lastEnsuredDatabase = undefined;
+
+    if (originalUser !== name) {
+      this.config.set('user', originalUser);
+      await this.driver.reconnect({ skipOnConnect: true });
+    }
   }
 
   /**
@@ -117,7 +128,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     } catch (e: any) {
       if (e.code === 'ORA-01017' && this.config.get('user') !== this.helper.getManagementDbName()) {
         this.config.set('user', this.helper.getManagementDbName());
-        await this.driver.reconnect();
+        await this.driver.reconnect({ skipOnConnect: true });
         const result = await this.ensureDatabase();
 
         // Restore connection to the original user (createDatabase does this
@@ -125,7 +136,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
         // the user already exists and ensureDatabase returned early)
         if (this.config.get('user') !== dbName) {
           this.config.set('user', dbName);
-          await this.driver.reconnect();
+          await this.driver.reconnect({ skipOnConnect: true });
         }
 
         return result;
@@ -138,8 +149,8 @@ export class OracleSchemaGenerator extends SchemaGenerator {
 
     if (!exists) {
       this.config.set('user', this.helper.getManagementDbName());
-      await this.driver.reconnect();
-      await this.createDatabase(dbName);
+      await this.driver.reconnect({ skipOnConnect: true });
+      await this.createDatabase(dbName, { skipOnConnect: true });
 
       if (options?.create) {
         await this.create(options);
@@ -180,7 +191,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
 
     const originalUser = this.getOriginalUser();
     this.config.set('user', this.helper.getManagementDbName());
-    await this.driver.reconnect();
+    await this.driver.reconnect({ skipOnConnect: true });
 
     return originalUser;
   }
@@ -194,7 +205,7 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     }
 
     this.config.set('user', originalUser);
-    await this.driver.reconnect();
+    await this.driver.reconnect({ skipOnConnect: true });
   }
 
   /**

@@ -48,6 +48,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
   protected readonly options: MigrationsOptions;
   protected absolutePath!: string;
   protected initialized = false;
+  #pathsEnsured = false;
   readonly #listeners = new Map<string, Set<(event: MigrationInfo) => MaybePromise<void>>>();
 
   constructor(protected readonly em: D[typeof EntityManagerType]) {
@@ -419,7 +420,8 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     await this.initPaths();
   }
 
-  protected async initPaths(): Promise<void> {
+  /** Resolves the migrations path (including source folder auto-detection) without touching the filesystem. */
+  protected async resolvePaths(): Promise<void> {
     if (this.absolutePath || this.options.migrationsList) {
       return;
     }
@@ -430,6 +432,17 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     /* v8 ignore next */
     const key = this.config.get('preferTs', Utils.detectTypeScriptSupport()) && this.options.pathTs ? 'pathTs' : 'path';
     this.absolutePath = fs.absolutePath(this.options[key]!, this.config.get('baseDir'));
+  }
+
+  protected async initPaths(): Promise<void> {
+    await this.resolvePaths();
+
+    if (this.#pathsEnsured || this.options.migrationsList) {
+      return;
+    }
+
+    this.#pathsEnsured = true;
+    const { fs } = await import('@mikro-orm/core/fs-utils');
 
     try {
       fs.ensureDir(this.absolutePath);
@@ -470,11 +483,12 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     };
   }
 
-  protected initialize(MigrationClass: Constructor<Migration>, name: string): RunnableMigration {
+  protected initialize(MigrationClass: Constructor<Migration>, name?: string): RunnableMigration {
     const instance = new MigrationClass(this.driver, this.config);
 
     return {
-      name: this.storage.getMigrationName(name),
+      // the constructor name is the last resort, minifiers can mangle it (e.g. when bundling)
+      name: this.storage.getMigrationName(name ?? instance.name ?? MigrationClass.name),
       up: afterRun => this.runner.run(instance, 'up', afterRun),
       down: afterRun => this.runner.run(instance, 'down', afterRun),
     };
@@ -532,7 +546,7 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     if (this.options.migrationsList) {
       return this.options.migrationsList.map(migration => {
         if (typeof migration === 'function') {
-          return this.initialize(migration, migration.name);
+          return this.initialize(migration);
         }
 
         return this.initialize(migration.class, migration.name);

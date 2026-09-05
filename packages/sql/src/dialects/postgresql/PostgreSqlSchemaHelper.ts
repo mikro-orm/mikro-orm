@@ -28,6 +28,9 @@ import { normalizePartitionBound, normalizePartitionDefinition } from '../../sch
 /** PostGIS system views that should be automatically ignored */
 const POSTGIS_VIEWS = ['geography_columns', 'geometry_columns'];
 
+/** Dollar-quote delimiter, e.g. `$$` or `$body$`, captured so `split` keeps it. */
+const DOLLAR_QUOTE_TAG = /(\$(?:[A-Za-z_]\w*)?\$)/;
+
 export class PostgreSqlSchemaHelper extends SchemaHelper {
   static readonly DEFAULT_VALUES = {
     'now()': ['now()', 'current_timestamp'],
@@ -696,7 +699,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       // SchemaHelper.createCheck).
       const m = /^check \(\((.*)\)\)$/is.exec(check.expression);
       const single = m ? null : /^check \((.*)\)$/is.exec(check.expression);
-      const def = m ? m[1].replace(/\((.*?)\)::\w+/g, '$1') : single ? single[1] : check.expression;
+      const def = m ? m[1].replace(/\(([^()]*)\)::\w+(?:\[\])?/g, '$1') : single ? single[1] : check.expression;
       ret[key].push({
         name: check.name,
         columnName: check.column_name,
@@ -711,7 +714,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   /** Generates SQL to create a PostgreSQL trigger and its associated function. */
   override createTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
     if (trigger.expression) {
-      return trigger.expression;
+      return this.flattenDollarQuotedBodies(trigger.expression);
     }
 
     const timing = trigger.timing.toUpperCase();
@@ -721,7 +724,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const fnName = this.getSchemaQualifiedTriggerFnName(table, trigger);
     const triggerName = this.platform.quoteIdentifier(trigger.name);
 
-    const fnSql = `create or replace function ${fnName}() returns trigger as $$ begin ${trigger.body}; end; $$ language plpgsql`;
+    const fnSql = `create or replace function ${fnName}() returns trigger as $$ begin ${this.normalizeTriggerBody(trigger.body)} end; $$ language plpgsql`;
     const triggerSql = `create trigger ${triggerName} ${timing} ${events} on ${table.getQuotedName()} for each ${forEach}${when} execute function ${fnName}()`;
 
     return `${fnSql};\n${triggerSql}`;
@@ -734,9 +737,27 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `drop trigger if exists ${triggerName} on ${table.getQuotedName()};\ndrop function if exists ${fnName}()`;
   }
 
+  /** Flattens `;\n` inside the dollar-quoted blocks of a raw DDL expression, which are not statement boundaries. */
+  private flattenDollarQuotedBodies(ddl: string): string {
+    let openTag = '';
+
+    return ddl
+      .split(DOLLAR_QUOTE_TAG)
+      .map((part, i) => {
+        // the capture group puts the delimiters on the odd indexes
+        if (i % 2 === 1) {
+          openTag = openTag === part ? '' : openTag || part;
+          return part;
+        }
+
+        return openTag ? stripStatementNewlines(part) : part;
+      })
+      .join('');
+  }
+
   override createRoutine(routine: SqlRoutineDef): string {
     if (routine.expression) {
-      return routine.expression;
+      return this.flattenDollarQuotedBodies(routine.expression);
     }
 
     const qualifiedName = this.qualifiedRoutineName(routine);
@@ -798,6 +819,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         )
         -- exclude trigger-helper functions; they're managed alongside their owning trigger.
         and p.prorettype <> 'trigger'::regtype
+      order by n.nspname, p.proname
     `;
     const rows = await connection.execute<
       {
@@ -1071,7 +1093,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         left join pg_enum e on t.oid = e.enumtypid
         join pg_catalog.pg_namespace n on n.oid = t.typnamespace
         where t.typtype = 'e' and n.nspname in (${Array(uniqueSchemas.length).fill('?').join(', ')})
-        group by t.typname, n.nspname`,
+        group by t.typname, n.nspname
+        order by n.nspname, t.typname`,
       uniqueSchemas,
       'all',
       ctx,
@@ -1538,6 +1561,16 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       .join(', ');
   }
 
+  /** Non-default index access methods (gin, gist, brin, hash, ...), normalized to lower case. */
+  override getIndexAccessMethod(index: IndexDef): string {
+    // `fulltext` is a cross-dialect alias handled via `getFullTextIndexExpression`, not a pg access method
+    if (typeof index.type !== 'string' || ['', 'btree', 'fulltext'].includes(index.type.toLowerCase())) {
+      return '';
+    }
+
+    return index.type.toLowerCase();
+  }
+
   /**
    * PostgreSQL-specific index options like fill factor.
    */
@@ -1604,7 +1637,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       join pg_namespace nsp on nsp.oid = pgc.connamespace
       join pg_class cls on pgc.conrelid = cls.oid
       where pgc.contype = 'x' and (${excludeFilter})
-      order by name`;
+      order by schema_name, table_name, name, column_name`;
   }
 
   override inferLengthFromColumnType(type: string): number | undefined {

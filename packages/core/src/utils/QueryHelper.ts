@@ -1,5 +1,5 @@
 import { Reference } from '../entity/Reference.js';
-import { Utils } from './Utils.js';
+import { DANGEROUS_PROPERTY_NAMES, Utils } from './Utils.js';
 import type {
   Dictionary,
   EntityKey,
@@ -8,7 +8,6 @@ import type {
   EntityProperty,
   EntityValue,
   FilterDef,
-  FilterKey,
   FilterQuery,
 } from '../typings.js';
 import { ARRAY_OPERATORS, GroupOperator, JSON_KEY_OPERATORS, type QueryOrderMap, ReferenceKind } from '../enums.js';
@@ -326,18 +325,31 @@ export class QueryHelper {
 
       if (prop?.customType && convertCustomTypes && !isRaw(value)) {
         value = QueryHelper.processCustomType<T>(prop, value, platform, undefined, true);
+      } else if (
+        !prop &&
+        meta?.compositePK &&
+        convertCustomTypes &&
+        Array.isArray(value) &&
+        key === Utils.getPrimaryKeyHash(meta.primaryKeys)
+      ) {
+        value = QueryHelper.processCompositeCustomTypes(value, meta, platform) as typeof value;
       }
 
       // oxfmt-ignore
       const isJsonProperty = prop?.customType instanceof JsonType && !isRaw(value) && (Utils.isPlainObject(value) ? !['$eq', '$elemMatch'].includes(Object.keys(value)[0]) : !Array.isArray(value));
 
       if (isJsonProperty && prop?.kind !== ReferenceKind.EMBEDDED) {
+        // an explicit alias prefix (e.g. `a.meta`) has to survive, otherwise the condition falls back to the root alias
+        const explicitAlias = (key as string).includes('.')
+          ? (key as string).split('.').slice(0, -1).join('.')
+          : undefined;
+
         return this.processJsonCondition<T>(
           o as FilterQuery<T>,
           value as EntityValue<T>,
           [prop.fieldNames[0]] as EntityKey<T>[],
           platform,
-          aliased,
+          aliased && explicitAlias != null ? explicitAlias : aliased,
         );
       }
 
@@ -379,7 +391,11 @@ export class QueryHelper {
     if (Array.isArray(options)) {
       options.forEach(filter => (opts[filter] = true));
     } else if (Utils.isPlainObject(options)) {
-      Object.keys(options).forEach(filter => (opts[filter] = options[filter]));
+      Object.keys(options).forEach(filter => {
+        if (!DANGEROUS_PROPERTY_NAMES.includes(filter)) {
+          opts[filter] = options[filter];
+        }
+      });
     }
 
     return Object.keys(filters)
@@ -421,7 +437,7 @@ export class QueryHelper {
     filter: FilterDef,
     options: Dictionary<boolean | Dictionary>,
   ): boolean {
-    if (filter.entity && !(filter.entity as string[]).includes(meta.className)) {
+    if (filter.entity && !Utils.asArray(filter.entity).some(e => Utils.matchesEntity(e, meta))) {
       return false;
     }
 
@@ -468,6 +484,34 @@ export class QueryHelper {
     return prop.customType!.convertToDatabaseValue(cond, platform, { fromQuery, key, mode: 'query' });
   }
 
+  /**
+   * Composite PK conditions are keyed by a hash of all the PK names, which `findProperty` cannot
+   * resolve, so the custom types have to be applied positionally instead.
+   */
+  private static processCompositeCustomTypes<T extends object>(
+    value: unknown[],
+    meta: EntityMetadata<T>,
+    platform: Platform,
+  ): unknown[] {
+    const props = meta.primaryKeys.map(pk => meta.properties[pk]);
+
+    if (!props.some(prop => prop.customType)) {
+      return value;
+    }
+
+    // the tuple can be longer than the PK when the user passes a malformed condition
+    const convert = (tuple: unknown[]) =>
+      tuple.map((val, idx) => {
+        if (!props[idx]?.customType) {
+          return val;
+        }
+
+        return QueryHelper.processCustomType(props[idx], val as FilterQuery<T>, platform, undefined, true);
+      });
+
+    return value.every(val => Array.isArray(val)) ? value.map(val => convert(val as unknown[])) : convert(value);
+  }
+
   private static isSupportedOperator(key: string): boolean {
     return !!QueryHelper.SUPPORTED_OPERATORS.find(op => key === op);
   }
@@ -477,7 +521,7 @@ export class QueryHelper {
     value: EntityValue<T>,
     path: EntityKey<T>[],
     platform: Platform,
-    alias: boolean,
+    alias: boolean | string,
   ) {
     return platform.processJsonCondition(o, value, path, alias);
   }

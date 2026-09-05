@@ -16,7 +16,8 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
     let migrationName = `Migration${timestamp}`;
 
     if (customMigrationName) {
-      migrationName += `_${customMigrationName}`;
+      // the name becomes part of a class identifier
+      migrationName += `_${customMigrationName.replace(/[^$\p{ID_Continue}]+/gu, '_')}`;
     }
 
     return migrationName;

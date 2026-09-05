@@ -19,7 +19,7 @@ bench('defineEntity with relations', () => {
       strictNullRef: () => p.oneToOne(Foo).strictNullable(),
     },
   });
-}).types([7590, 'instantiations']);
+}).types([3601, 'instantiations']);
 
 bench('defineEntity with ref and nullable', () => {
   const Foo = defineEntity({
@@ -36,7 +36,7 @@ bench('defineEntity with ref and nullable', () => {
       scalarRefNullable: p.string().ref().nullable(),
     },
   });
-}).types([7080, 'instantiations']);
+}).types([3073, 'instantiations']);
 
 bench('defineEntity only with ref and nullable', () => {
   const Foo = defineEntity({
@@ -46,7 +46,7 @@ bench('defineEntity only with ref and nullable', () => {
       toOneRefNullable: () => p.oneToOne(Foo).ref().nullable(),
     },
   });
-}).types([1861, 'instantiations']);
+}).types([1914, 'instantiations']);
 
 bench('defineEntity only with nullable and ref', () => {
   const Foo = defineEntity({
@@ -56,7 +56,7 @@ bench('defineEntity only with nullable and ref', () => {
       toOneRefNullable: () => p.oneToOne(Foo).nullable().ref(),
     },
   });
-}).types([1864, 'instantiations']);
+}).types([1917, 'instantiations']);
 
 bench('defineEntity with relations using class', () => {
   class Foo {
@@ -88,7 +88,7 @@ bench('defineEntity with relations using class', () => {
       scalarRefNullable: p.string().ref().nullable(),
     },
   });
-}).types([7573, 'instantiations']);
+}).types([3630, 'instantiations']);
 
 bench('defineEntity with ref and nullable using class', () => {
   class Foo {
@@ -120,7 +120,7 @@ bench('defineEntity with ref and nullable using class', () => {
       scalarRefNullable: p.string().ref().nullable(),
     },
   });
-}).types([7573, 'instantiations']);
+}).types([3630, 'instantiations']);
 
 bench('defineEntity only with ref and nullable using class', () => {
   class Foo {
@@ -138,7 +138,7 @@ bench('defineEntity only with ref and nullable using class', () => {
       toOneRefNullable: () => p.oneToOne(Foo).ref().nullable(),
     },
   });
-}).types([2379, 'instantiations']);
+}).types([2496, 'instantiations']);
 
 bench('defineEntity only with nullable and ref using class', () => {
   class Foo {
@@ -156,7 +156,7 @@ bench('defineEntity only with nullable and ref using class', () => {
       toOneRefNullable: () => p.oneToOne(Foo).nullable().ref(),
     },
   });
-}).types([2382, 'instantiations']);
+}).types([2499, 'instantiations']);
 
 bench('EntitySchema', () => {
   interface IFoo {
@@ -205,7 +205,7 @@ bench('EntitySchema', () => {
       },
     } as any,
   });
-}).types([344, 'instantiations']);
+}).types([374, 'instantiations']);
 
 bench('defineEntity with setClass pattern (circular relations)', () => {
   const AuthorSchema = defineEntity({
@@ -241,7 +241,7 @@ bench('defineEntity with setClass pattern (circular relations)', () => {
 
   AuthorSchema.setClass(Author);
   BookSchema.setClass(Book);
-}).types([6036, 'instantiations']);
+}).types([1983, 'instantiations']);
 
 bench('defineEntity with indexes', () => {
   const Bar = defineEntity({
@@ -255,4 +255,22 @@ bench('defineEntity with indexes', () => {
     },
     indexes: [{ name: 'idx_status_views', properties: ['status', 'views'] }],
   });
-}).types([1938, 'instantiations']);
+}).types([1991, 'instantiations']);
+
+// a generic builder call (`fieldName`, `index`, ...) ending an arrow-defined relation chain makes TS infer from the chain's return type and measure variance of the whole entity type
+bench('defineEntity relation chain ending with a generic builder call', () => {
+  const Bar = defineEntity({
+    name: 'Bar',
+    properties: {
+      id: p.integer().primary(),
+    },
+  });
+
+  const Foo = defineEntity({
+    name: 'Foo',
+    properties: {
+      id: p.integer().primary(),
+      bar: () => p.oneToOne(Bar).lazy().fieldName('bar_id'),
+    },
+  });
+}).types([10994, 'instantiations']);

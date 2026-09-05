@@ -70,6 +70,7 @@ test('em.transactional with "cancel query" rolls back the partial transaction', 
   const ac = new AbortController();
   setTimeout(() => ac.abort(new Error('tx-cancel')), 200);
 
+  const start = Date.now();
   await expect(
     orm.em.transactional(
       async em => {
@@ -79,6 +80,10 @@ test('em.transactional with "cancel query" rolls back the partial transaction', 
       { signal: ac.signal, inflightQueryAbortStrategy: 'cancel query' },
     ),
   ).rejects.toThrow('tx-cancel');
+
+  // the cancel has to travel over a pooled connection — the transaction's own connection is busy
+  // running `pg_sleep(30)`, so routing it there would only cancel once the sleep finished anyway.
+  expect(Date.now() - start).toBeLessThan(5000);
 
   const fresh = orm.em.fork();
   await expect(fresh.count(CancellationUser, { name: 'stays-rolled-back' })).resolves.toBe(0);

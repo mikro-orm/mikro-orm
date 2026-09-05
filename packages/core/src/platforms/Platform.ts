@@ -546,7 +546,8 @@ export abstract class Platform {
     return path;
   }
 
-  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean, value?: unknown): string | Raw {
+  /** When `aliased` is a string, it holds an explicit alias the key was prefixed with. */
+  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean | string, value?: unknown): string | Raw {
     return path.join('.');
   }
 
@@ -554,7 +555,7 @@ export abstract class Platform {
     o: FilterQuery<T>,
     value: EntityValue<T>,
     path: EntityKey<T>[],
-    alias: boolean,
+    alias: boolean | string,
   ): FilterQuery<T> {
     if (Utils.isPlainObject<T>(value) && !Object.keys(value).some(k => Utils.isOperator(k))) {
       Utils.keys(value).forEach(k => {
@@ -565,7 +566,8 @@ export abstract class Platform {
     }
 
     if (path.length === 1) {
-      o[path[0] as FilterKey<T>] = value as any;
+      const key = typeof alias === 'string' ? `${alias}.${path[0]}` : path[0];
+      o[key as FilterKey<T>] = value as any;
       return o;
     }
 
@@ -621,6 +623,11 @@ export abstract class Platform {
   /** Whether the driver automatically parses JSON columns into JS objects. */
   convertsJsonAutomatically(): boolean {
     return true;
+  }
+
+  /** Whether date values inside JSON documents keep their native type (e.g. BSON dates), instead of being serialized to ISO strings. */
+  preservesDatesInsideJson(): boolean {
+    return false;
   }
 
   /** Converts a JS value to its JSON database representation (typically JSON.stringify). */

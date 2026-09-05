@@ -33,7 +33,6 @@ import { EntityComparator } from './utils/EntityComparator.js';
 import type { EntityManager } from './EntityManager.js';
 import type { EventSubscriber } from './events/EventSubscriber.js';
 import type { FilterOptions, FindOneOptions, FindOptions, LoadHint } from './drivers/IDatabaseDriver.js';
-import { BaseEntity } from './entity/BaseEntity.js';
 
 export type { Raw };
 
@@ -239,12 +238,23 @@ export type ExtractIndexHints<T> = T extends { [IndexHints]?: infer H }
  * Checks `.index('name')` and `.unique('name')` on each property in a single pass.
  */
 export type InferPropertyIndexMap<Properties extends Record<string, any>> = {
-  [K in keyof Properties as MaybeReturnType<Properties[K]> extends { '~options': { index: infer N extends string } }
-    ? N
-    : MaybeReturnType<Properties[K]> extends { '~options': { unique: infer N extends string } }
+  [
+    K in keyof Properties as MaybeReturnType<Properties[K]> extends { '~options': { index: infer N extends string } }
       ? N
-      : never]: K & string;
+      : MaybeReturnType<Properties[K]> extends { '~options': { unique: infer N extends string } }
+        ? N
+        : never
+  ]: K & string;
 };
+
+/**
+ * Extracts the raw `defineEntity` property builders that `[IndexHints]` carries as a `[Properties]`
+ * tuple. Used to recover a base entity's own builders so that columns inherited via `extends` can be
+ * mapped (e.g. for the Kysely table type). Returns `never` for decorator entities (object-shaped hints).
+ */
+export type ExtractDefineEntityProperties<T> = T extends { [IndexHints]?: [infer P extends Record<string, any>] }
+  ? P
+  : never;
 
 /** Union of declared index names on an entity. Falls back to `string` when no `[IndexHints]` are declared. */
 export type IndexName<T> = [ExtractIndexHints<T>] extends [never]
@@ -703,7 +713,7 @@ export type EntityDataProp<T, C extends boolean> = T extends Date
             : T extends CollectionShape<infer U>
               ? U | U[] | EntityDataNested<U & object, C> | EntityDataNested<U & object, C>[]
               : T extends readonly (infer U)[]
-                ? U extends NonArrayObject
+                ? [U] extends [NonArrayObject]
                   ? U | U[] | EntityDataNested<U, C> | EntityDataNested<U, C>[]
                   : U[] | EntityDataNested<U, C>[]
                 : EntityDataNested<T, C>;
@@ -728,7 +738,7 @@ export type RequiredEntityDataProp<T, O, C extends boolean> = T extends Date
               : T extends CollectionShape<infer U>
                 ? U | U[] | RequiredEntityDataNested<U & object, O, C> | RequiredEntityDataNested<U & object, O, C>[]
                 : T extends readonly (infer U)[]
-                  ? U extends NonArrayObject
+                  ? [U] extends [NonArrayObject]
                     ? U | U[] | RequiredEntityDataNested<U, O, C> | RequiredEntityDataNested<U, O, C>[]
                     : U[] | RequiredEntityDataNested<U, O, C>[]
                   : RequiredEntityDataNested<T, O, C>;
@@ -1044,12 +1054,12 @@ export type SerializeDTO<
           | Extract<T[K], null | undefined>;
       }
     : {
-        [K in keyof T as ExcludeHidden<T, K> &
-          CleanKeys<T, K> &
-          (IsNever<E> extends true ? K : Exclude<K, E>) &
-          SerializeFieldsFilter<T, K, F, KeepPK>]:
-          | SerializePropValueWithFields<T, K, H, C, F, KeepPK>
-          | Extract<T[K], null | undefined>;
+        [
+          K in keyof T as ExcludeHidden<T, K> &
+            CleanKeys<T, K> &
+            (IsNever<E> extends true ? K : Exclude<K, E>) &
+            SerializeFieldsFilter<T, K, F, KeepPK>
+        ]: SerializePropValueWithFields<T, K, H, C, F, KeepPK> | Extract<T[K], null | undefined>;
       };
 
 type TargetKeys<T> = T extends EntityClass<infer P> ? keyof P : keyof T;
@@ -1593,6 +1603,31 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
     }
   }
 
+  /** For TPT entities, the version column exists only on the table of the entity that declares it. */
+  ownsVersionProperty(): boolean {
+    if (!this.versionProperty) {
+      return false;
+    }
+
+    return this.inheritanceType !== 'tpt' || !this.ownProps || this.ownProps.some(p => p.name === this.versionProperty);
+  }
+
+  /** For TPT entities, concurrency check columns exist only on the table of the entity that declares them. */
+  getOwnConcurrencyCheckKeys(): EntityKey<Entity>[] {
+    const keys = [...this.concurrencyCheckKeys];
+
+    if (this.inheritanceType !== 'tpt' || !this.ownProps) {
+      return keys;
+    }
+
+    return keys.filter(key => this.ownProps!.some(p => p.name === key));
+  }
+
+  /** Whether updates of this table are guarded by a version property or concurrency check columns it owns. */
+  hasOptimisticLock(): boolean {
+    return this.ownsVersionProperty() || this.getOwnConcurrencyCheckKeys().length > 0;
+  }
+
   getPrimaryProps(flatten = false): EntityProperty<Entity>[] {
     const pks = this.primaryKeys.map(pk => this.properties[pk]);
 
@@ -1773,7 +1808,12 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
       const platform = config.getPlatform();
 
       for (const prop of this.props) {
-        if (prop.enum && !prop.nativeEnumName && prop.items?.every(item => typeof item === 'string')) {
+        if (
+          prop.enum &&
+          !prop.nativeEnumName &&
+          prop.items?.every(item => typeof item === 'string') &&
+          !['json', 'jsonb'].includes(prop.columnTypes?.[0])
+        ) {
           const name = platform.getIndexName(this.tableName, prop.fieldNames, 'check');
           const exists = this.checks.findIndex(check => check.name === name);
 
@@ -2310,6 +2350,8 @@ export interface IMigrationGenerator {
 
 /** Interface that all migration classes must implement. */
 export interface Migration {
+  /** Stable migration name, used instead of the class name (which minifiers can mangle). */
+  name?: string;
   up(): Promise<void> | void;
   down(): Promise<void> | void;
   isTransactional(): boolean;

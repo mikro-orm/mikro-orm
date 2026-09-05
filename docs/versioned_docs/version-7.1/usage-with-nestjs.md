@@ -78,6 +78,45 @@ export class MyService {
 >
 > In case you have `@mikro-orm/sql` installed as a dependency, you can also import the `EntityManager` from there.
 
+## Defining entities
+
+Entities can be defined either via decorators or via the [`defineEntity` helper](./define-entity.md). Since NestJS itself is decorator-based, decorators are a natural fit, and the examples on this page use them.
+
+Since v7, decorators are no longer exported from `@mikro-orm/core` — they live in the `@mikro-orm/decorators` package (see the [v6 to v7 upgrading guide](./upgrading-v6-to-v7.md)). Install it next to the other packages:
+
+```bash npm2yarn
+npm install @mikro-orm/decorators
+```
+
+NestJS projects have `experimentalDecorators` and `emitDecoratorMetadata` enabled by default and already depend on `reflect-metadata`, so the legacy decorators combined with the `ReflectMetadataProvider` work out of the box:
+
+```ts title="./author.entity.ts"
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+
+@Entity()
+export class Author {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+}
+```
+
+```ts title="./mikro-orm.config.ts"
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { defineConfig } from '@mikro-orm/sqlite';
+
+export default defineConfig({
+  metadataProvider: ReflectMetadataProvider,
+  // ...
+});
+```
+
+Other exports used in the examples below (e.g. the `EntityRepositoryType` symbol) still come from `@mikro-orm/core`. See the [Using Decorators guide](./using-decorators.md) for a complete overview of the decorator types and metadata providers, and the [Defining Entities section](./defining-entities.md) for the other ways to define your entities.
+
 ## Repositories
 
 MikroORM supports the repository design pattern. For every entity you can create a repository. Read the complete [documentation on repositories here](./repositories.md). To define which repositories shall be registered in the current scope you can use the `forFeature()` method. For example, in this way:
@@ -210,7 +249,7 @@ Run `npx mikro-orm discovery:export` to generate the file. See [Folder-based Dis
 
 ## Request scoped handlers in queues
 
-> `@CreateRequestContext()` decorator is available in `@mikro-orm/core` package.
+> `@CreateRequestContext()` decorator is available in the `@mikro-orm/decorators` package (in `@mikro-orm/core` before v7).
 
 > Before v6, `@CreateRequestContext()` was called `@UseRequestContext()`.
 

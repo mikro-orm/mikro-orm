@@ -1,0 +1,120 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`GH8116: index column order is kept when columns are shared between relations 1`] = `
+[
+  "import { Collection, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
+import { RoleGrants } from './RoleGrants';
+
+export class OrgNodes {
+  [PrimaryKeyProp]?: ['tenantId', 'id'];
+  tenantId!: number;
+  id!: number;
+  roleGrantsCollection = new Collection<RoleGrants>(this);
+}
+
+export const OrgNodesSchema = defineEntity({
+  class: OrgNodes,
+  properties: {
+    tenantId: p.integer().primary(),
+    id: p.integer().primary(),
+    roleGrantsCollection: () => p.oneToMany(RoleGrants).mappedBy('orgNode'),
+  },
+});
+",
+  "import { type Ref, defineEntity, p } from '@mikro-orm/core';
+import { OrgNodes } from './OrgNodes';
+import { Roles } from './Roles';
+import { Tenants } from './Tenants';
+import { Users } from './Users';
+
+export class RoleGrants {
+  id!: number;
+  tenant!: Ref<Tenants>;
+  tenantId!: number;
+  user!: Ref<Users>;
+  userId!: number;
+  role!: Ref<Roles>;
+  roleId!: number;
+  orgNode!: Ref<OrgNodes>;
+  orgNodeId!: number;
+  coverage!: string;
+}
+
+export const RoleGrantsSchema = defineEntity({
+  class: RoleGrants,
+  uniques: [
+    {
+      name: 'uq_role_grants_anchored',
+      properties: ['tenantId', 'userId', 'roleId', 'orgNodeId', 'coverage'],
+    },
+  ],
+  properties: {
+    id: p.integer().primary(),
+    tenant: () => p.manyToOne(Tenants).ref().updateRule('no action').deleteRule('no action'),
+    tenantId: p.integer().persist(false),
+    user: () => p.manyToOne(Users).ref().fieldNames('tenant_id','user_id').updateRule('no action').deleteRule('no action'),
+    userId: p.integer().persist(false),
+    role: () => p.manyToOne(Roles).ref().fieldNames('tenant_id','role_id').updateRule('no action').deleteRule('no action'),
+    roleId: p.integer().persist(false),
+    orgNode: () => p.manyToOne(OrgNodes).ref().fieldNames('tenant_id','org_node_id').updateRule('no action').deleteRule('no action'),
+    orgNodeId: p.integer().persist(false),
+    coverage: p.string().length(64),
+  },
+});
+",
+  "import { Collection, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
+import { RoleGrants } from './RoleGrants';
+
+export class Roles {
+  [PrimaryKeyProp]?: ['tenantId', 'id'];
+  tenantId!: number;
+  id!: number;
+  roleGrantsCollection = new Collection<RoleGrants>(this);
+}
+
+export const RolesSchema = defineEntity({
+  class: Roles,
+  properties: {
+    tenantId: p.integer().primary(),
+    id: p.integer().primary(),
+    roleGrantsCollection: () => p.oneToMany(RoleGrants).mappedBy('role'),
+  },
+});
+",
+  "import { Collection, defineEntity, p } from '@mikro-orm/core';
+import { RoleGrants } from './RoleGrants';
+
+export class Tenants {
+  id!: number;
+  roleGrantsCollection = new Collection<RoleGrants>(this);
+}
+
+export const TenantsSchema = defineEntity({
+  class: Tenants,
+  properties: {
+    id: p.integer().primary().autoincrement(false),
+    roleGrantsCollection: () => p.oneToMany(RoleGrants).mappedBy('tenant'),
+  },
+});
+",
+  "import { Collection, PrimaryKeyProp, defineEntity, p } from '@mikro-orm/core';
+import { RoleGrants } from './RoleGrants';
+
+export class Users {
+  [PrimaryKeyProp]?: ['tenantId', 'id'];
+  tenantId!: number;
+  id!: number;
+  roleGrantsCollection = new Collection<RoleGrants>(this);
+}
+
+export const UsersSchema = defineEntity({
+  class: Users,
+  properties: {
+    tenantId: p.integer().primary(),
+    id: p.integer().primary(),
+    roleGrantsCollection: () => p.oneToMany(RoleGrants).mappedBy('user'),
+  },
+});
+",
+]
+`;

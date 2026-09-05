@@ -13,6 +13,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     };
     const options = this.mapOptions(poolOverrides);
     const pool = new Pool(options);
+    this.handlePoolErrors(pool);
     void onPoolCreated?.(pool);
     return new PostgresDialect({
       pool,
@@ -22,9 +23,27 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     });
   }
 
+  /**
+   * Keeps a connection dropped by the server from taking the process down. `pg` reports such a drop
+   * as an `'error'` event, and an `'error'` event without a listener is a fatal uncaught exception.
+   *
+   * Both of the paths that emit one are unguarded by default: `pg-pool` removes its own listener
+   * from a client while that client is checked out, deliberately leaving errors to whoever holds it,
+   * and it re-emits errors of idle clients on the pool itself. The query in flight still rejects on
+   * its own, so there is nothing to do here beyond logging — the pool has already discarded the
+   * broken client by the time we see it.
+   */
+  private handlePoolErrors(pool: Pool): void {
+    pool.on('connect', client => {
+      client.on('error', e => this.logger.warn('info', `PostgreSQL connection error: ${e.message}`));
+    });
+    pool.on('error', e => this.logger.warn('info', `PostgreSQL pool error: ${e.message}`));
+  }
+
   mapOptions(overrides: PoolConfig): PoolConfig {
     const ret = { ...this.getConnectionOptions() } as PoolConfig;
     const pool = this.config.get('pool');
+    Utils.defaultValue(ret, 'min', pool?.min);
     Utils.defaultValue(ret, 'max', pool?.max);
     Utils.defaultValue(ret, 'idleTimeoutMillis', pool?.idleTimeoutMillis);
 

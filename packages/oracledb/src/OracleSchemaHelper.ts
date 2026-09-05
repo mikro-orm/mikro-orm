@@ -430,9 +430,6 @@ export class OracleSchemaHelper extends SchemaHelper {
     const ret = {} as Dictionary;
 
     for (const fk of allFks) {
-      // Oracle returns schema names in uppercase - normalize to lowercase for consistency
-      fk.schema_name = fk.schema_name?.toLowerCase();
-      fk.referenced_schema_name = fk.referenced_schema_name?.toLowerCase();
       const key = this.getTableKey(fk);
       ret[key] ??= [];
       ret[key].push(fk);
@@ -567,7 +564,6 @@ export class OracleSchemaHelper extends SchemaHelper {
     const schemaName = parts.pop();
     const name =
       (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
-    const quotedName = this.quote(name);
 
     // indexes need to be first dropped to be able to change a column type
     const changedTypes = Object.values(tableDiff.changedColumns).filter(col => col.changedProperties.has('type'));
@@ -956,6 +952,7 @@ export class OracleSchemaHelper extends SchemaHelper {
       from USER_PROCEDURES p
       where p.OBJECT_TYPE in ('PROCEDURE', 'FUNCTION')
         and p.PROCEDURE_NAME is null
+      order by p.OBJECT_NAME
     `;
 
     const [rows, paramsAndReturns] = await Promise.all([

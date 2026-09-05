@@ -8,6 +8,7 @@ import {
   isRaw,
 } from '@mikro-orm/core';
 import {
+  type BinaryOperationNode,
   type CommonTableExpressionNameNode,
   type DeleteQueryNode,
   type InsertQueryNode,
@@ -575,6 +576,73 @@ export class MikroTransformer extends OperationNodeTransformer {
     };
   }
 
+  override transformBinaryOperation(node: BinaryOperationNode, queryId: QueryId): BinaryOperationNode {
+    const transformed = super.transformBinaryOperation(node, queryId);
+
+    if (!this.#options.convertValues) {
+      return transformed;
+    }
+
+    const resolved = this.resolveOperandProperty(transformed.leftOperand);
+
+    if (!resolved) {
+      return transformed;
+    }
+
+    const { prop, fieldName } = resolved;
+    const right = transformed.rightOperand;
+
+    if (ValueNode.is(right)) {
+      const converted = this.processInputValueNode(prop, fieldName, right);
+      return converted === right ? transformed : { ...transformed, rightOperand: converted };
+    }
+
+    if (PrimitiveValueListNode.is(right)) {
+      // upgrade to ValueListNode when the type needs SQL-side wrapping, since
+      // PrimitiveValueListNode can only hold primitives
+      if (prop.hasConvertToDatabaseValueSQL) {
+        const values = right.values.map(value => this.processInputValueNode(prop, fieldName, ValueNode.create(value)));
+        return { ...transformed, rightOperand: ValueListNode.create(values) };
+      }
+
+      const values = right.values.map(value => this.prepareInputValue(prop, value, true));
+      return values.every((value, idx) => value === right.values[idx])
+        ? transformed
+        : { ...transformed, rightOperand: PrimitiveValueListNode.create(values) };
+    }
+
+    if (ValueListNode.is(right)) {
+      let changed = false;
+      const values = right.values.map(valueNode => {
+        if (!ValueNode.is(valueNode)) {
+          return valueNode;
+        }
+        const converted = this.processInputValueNode(prop, fieldName, valueNode);
+        if (converted !== valueNode) {
+          changed = true;
+        }
+        return converted;
+      });
+      return changed ? { ...transformed, rightOperand: ValueListNode.create(values) } : transformed;
+    }
+
+    return transformed;
+  }
+
+  /** Resolve the entity property a comparison's left operand refers to, so its value operand can be converted. */
+  resolveOperandProperty(operand: OperationNode): { prop: EntityProperty; fieldName: string } | undefined {
+    if (!ReferenceNode.is(operand) || !ColumnNode.is(operand.column)) {
+      return undefined;
+    }
+
+    const tableName = operand.table ? this.getTableName(operand.table) : undefined;
+    const meta = this.findOwnerMeta(tableName);
+    const fieldName = this.normalizeColumnName(operand.column.column);
+    const prop = this.findProperty(meta, fieldName);
+
+    return prop ? { prop, fieldName } : undefined;
+  }
+
   processInputValueNode(
     prop: EntityProperty | undefined,
     fieldName: string | undefined,
@@ -692,8 +760,15 @@ export class MikroTransformer extends OperationNodeTransformer {
     if (name) {
       return this.lookupInContextStack(name) ?? this.#subqueryAliasMap.get(name) ?? this.findEntityMetadata(name);
     }
+    // the stack can be empty when transforming a raw root node with embedded expressions
+    const context = this.#contextStack[this.#contextStack.length - 1];
+
+    if (!context) {
+      return undefined;
+    }
+
     let single: EntityMetadata | undefined;
-    for (const meta of this.#contextStack[this.#contextStack.length - 1].values()) {
+    for (const meta of context.values()) {
       if (!meta) {
         continue;
       }
