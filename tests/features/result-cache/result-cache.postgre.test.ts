@@ -277,4 +277,11 @@ describe('result cache (postgres)', () => {
 
     vi.useRealTimers();
   });
+
+  test('cache key falls back to the entity name when the metadata is unknown', () => {
+    class NotDiscovered {}
+
+    const key = orm.em.cacheKey(NotDiscovered, {}, 'em.find', {});
+    expect(key).toEqual(['NotDiscovered', 'em.find', {}, {}]);
+  });
 });

@@ -189,9 +189,13 @@ export class Collection<T extends object, O extends object = object> {
         options.filters ?? {},
         'read',
       )) as FilterQuery<T>;
-      const map = await em
-        .getDriver()
-        .loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], cond, opts.orderBy, ctx, options);
+      // fall back to the ambient transaction context, or `withSessionContext` would wrap the pivot load in a
+      // second concurrent transaction (a deadlock with a single-connection pool) instead of joining the open one
+      const map = await em.withSessionContext(ctx ?? em.getTransactionContext(), trx =>
+        em
+          .getDriver()
+          .loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], cond, opts.orderBy, trx, options),
+      );
       items = map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<TT>) =>
         em.merge(this.property.targetMeta!.class, item, { convertCustomTypes: true }),
       ) as any;
