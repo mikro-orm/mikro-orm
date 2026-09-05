@@ -1403,6 +1403,7 @@ export interface EntityMetadataWithProperties<
     entity?: EntityName<any> | EntityName<any>[];
     args?: boolean;
     strict?: boolean;
+    rls?: boolean | { setting?: string };
   }>;
   forceObject?: TForceObject;
   // Captured as a literal so `NarrowDiscriminator` can keep the discriminator required for
