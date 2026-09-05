@@ -4,7 +4,7 @@ import type { Dictionary, FilterDef } from '../typings.js';
 import { QueryHelper } from './QueryHelper.js';
 import { Utils } from './Utils.js';
 
-/** An `rls`-flagged filter definition together with the entity it is declared on. */
+/** An `rls`-flagged filter definition together with the entity it is declared on. @internal */
 export interface RlsFilterEntry {
   filter: FilterDef;
   entityName: string;
@@ -17,6 +17,7 @@ const rlsFilterDefs = new WeakMap<MetadataStorage, Map<string, RlsFilterEntry[]>
  * Collects all `rls`-flagged filter definitions with the given name (only entity-scoped filters can be `rls`).
  * The full name -> defs lookup is built once and cached on the shared (immutable) MetadataStorage, so repeated
  * `setFilterParams` calls and forks reuse it instead of walking every entity each time.
+ * @internal
  */
 export function findRlsFilterDefs(metadata: MetadataStorage, name: string): RlsFilterEntry[] {
   let cache = rlsFilterDefs.get(metadata);
@@ -62,6 +63,7 @@ export function clearRlsFilterDefsCache(metadata: MetadataStorage): void {
 /**
  * Computes the `rls` session variables a set of same-named filter defs stages for the given args, mirroring the
  * policy compilation (`current_setting` names and custom `setting` binding). Shared by staging and `fork({ session })`.
+ * @internal
  */
 export function computeRlsFilterVariables(
   filters: RlsFilterEntry[],
@@ -112,6 +114,7 @@ export function computeRlsFilterVariables(
  * this filter that the new args no longer set, minus any variable another filter's current params still stage
  * (a custom `setting` name can be shared by differently named filters). Recomputing from the old args rather than
  * matching by prefix keeps a filter named `tenant` from also pruning a `tenant.x` filter's `mikro.tenant.x.*` variables.
+ * @internal
  */
 export function computeRemovedRlsVariables(
   metadata: MetadataStorage,
