@@ -596,6 +596,214 @@ export class BookTag {
 
 Again, more information about how collections work can be found on [collections page](./collections.md).
 
+## To-one relations through another entity
+
+Sometimes the link to a single related entity is not stored as a foreign key on the owning table. Typical cases are a pivot entity carrying the link together with extra columns, or a to-many relation from which you want to expose just one item, e.g. the latest one. Both can be modeled as a read-only `ManyToOne` or `OneToOne` relation with the `through` option, which resolves the target via a correlated subquery instead of a foreign key column.
+
+The `through` entity needs a `ManyToOne` property pointing to the owning entity. When it differs from the target, it also needs a `ManyToOne` property pointing to the target entity, this is the pivot entity case. When `through` is the target entity itself, its primary key is selected directly, this is how you pick a single item out of a `OneToMany` relation. The `where` and `orderBy` options apply to the `through` entity and the first matching row is used.
+
+<Tabs
+  groupId="entity-def"
+  defaultValue="define-entity-class"
+  values={[
+    {label: 'defineEntity + class', value: 'define-entity-class'},
+    {label: 'defineEntity', value: 'define-entity'},
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+]
+  }
+>
+  <TabItem value="define-entity-class">
+
+```ts
+import { defineEntity, p } from '@mikro-orm/core';
+
+const CustomerSchema = defineEntity({
+  name: 'Customer',
+  properties: {
+    id: p.integer().primary(),
+    edges: () => p.oneToMany(Edge).mappedBy('start'),
+    // the account linked via an edge in the `cleared` state
+    account: () => p.manyToOne(Account).through(() => Edge).where({ state: 'cleared' }).ref().nullable(),
+    // the newest edge of this customer, picked out of the `edges` collection
+    latestEdge: () => p.oneToOne(Edge).through(() => Edge).orderBy({ id: 'desc' }).ref().nullable(),
+  },
+});
+
+export class Customer extends CustomerSchema.class {}
+CustomerSchema.setClass(Customer);
+
+const EdgeSchema = defineEntity({
+  name: 'Edge',
+  properties: {
+    id: p.integer().primary(),
+    start: () => p.manyToOne(Customer),
+    end: () => p.manyToOne(Account),
+    state: p.string(),
+  },
+});
+
+export class Edge extends EdgeSchema.class {}
+EdgeSchema.setClass(Edge);
+```
+
+  </TabItem>
+
+  <TabItem value="define-entity">
+
+```ts
+import { defineEntity, InferEntity, p } from '@mikro-orm/core';
+
+export const Customer = defineEntity({
+  name: 'Customer',
+  properties: {
+    id: p.integer().primary(),
+    edges: () => p.oneToMany(Edge).mappedBy('start'),
+    // the account linked via an edge in the `cleared` state
+    account: () => p.manyToOne(Account).through(() => Edge).where({ state: 'cleared' }).ref().nullable(),
+    // the newest edge of this customer, picked out of the `edges` collection
+    latestEdge: () => p.oneToOne(Edge).through(() => Edge).orderBy({ id: 'desc' }).ref().nullable(),
+  },
+});
+
+export interface ICustomer extends InferEntity<typeof Customer> {}
+
+export const Edge = defineEntity({
+  name: 'Edge',
+  properties: {
+    id: p.integer().primary(),
+    start: () => p.manyToOne(Customer),
+    end: () => p.manyToOne(Account),
+    state: p.string(),
+  },
+});
+
+export interface IEdge extends InferEntity<typeof Edge> {}
+```
+
+  </TabItem>
+
+  <TabItem value="reflect-metadata">
+
+```ts
+@Entity()
+export class Customer {
+
+  @PrimaryKey()
+  id!: number;
+
+  @OneToMany(() => Edge, e => e.start)
+  edges = new Collection<Edge>(this);
+
+  // the account linked via an edge in the `cleared` state
+  @ManyToOne(() => Account, { through: () => Edge, where: { state: 'cleared' }, ref: true, nullable: true })
+  account?: Ref<Account>;
+
+  // the newest edge of this customer, picked out of the `edges` collection
+  @OneToOne(() => Edge, { through: () => Edge, orderBy: { id: 'desc' }, ref: true, nullable: true })
+  latestEdge?: Ref<Edge>;
+
+}
+
+@Entity()
+export class Edge {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne(() => Customer)
+  start!: Customer;
+
+  @ManyToOne(() => Account)
+  end!: Account;
+
+  @Property()
+  state!: string;
+
+}
+```
+
+  </TabItem>
+
+  <TabItem value="ts-morph">
+
+```ts
+@Entity()
+export class Customer {
+
+  @PrimaryKey()
+  id!: number;
+
+  @OneToMany(() => Edge, e => e.start)
+  edges = new Collection<Edge>(this);
+
+  // the account linked via an edge in the `cleared` state
+  @ManyToOne({ through: () => Edge, where: { state: 'cleared' }, ref: true, nullable: true })
+  account?: Ref<Account>;
+
+  // the newest edge of this customer, picked out of the `edges` collection
+  @OneToOne({ through: () => Edge, orderBy: { id: 'desc' }, ref: true, nullable: true })
+  latestEdge?: Ref<Edge>;
+
+}
+
+@Entity()
+export class Edge {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne()
+  start!: Customer;
+
+  @ManyToOne()
+  end!: Account;
+
+  @Property()
+  state!: string;
+
+}
+```
+
+  </TabItem>
+</Tabs>
+
+When reading, such relation behaves like any other to-one relation: it can be populated with both loading strategies, used in `where` and `orderBy` conditions, combined with `ref` or `mapToPk`, and it takes part in `Loaded<>` type inference and serialization. Under the hood, the ORM selects the target primary key via a subquery on the `through` entity. For the `account` property above, the subquery goes through the pivot entity: it filters `edge` rows by the FK back to the customer and by the `where` condition, and selects the FK to the account:
+
+```sql
+select c.*, (
+  select e.end_id from edge as e
+  where e.start_id = c.id and e.state = 'cleared'
+  limit 1
+) as account_id from customer as c
+```
+
+The `latestEdge` property shows the other use: `through` is the target entity itself, so there is no pivot and the subquery selects the primary key of `edge` directly. It picks one row out of what the `edges` collection would hold, using `orderBy` to decide which one:
+
+```sql
+select c.*, (
+  select e.id from edge as e
+  where e.start_id = c.id
+  order by e.id desc
+  limit 1
+) as latest_edge_id from customer as c
+```
+
+This is the same as loading the `edges` collection and taking the newest item, without loading the whole collection. Combine it with `where` to pick e.g. the newest edge in a given state.
+
+The relation is read-only, no column or foreign key constraint is created for it and assignments to it are ignored during flush. To create or change the link, work with the `through` entity directly, e.g. via a `OneToMany` relation to it like the `edges` collection above. When several rows match, the first one is used, add a unique index on the `through` entity if you need to guarantee there is at most one.
+
+The `where` and `orderBy` options can only reference own columns of the `through` entity. If you need conditions on related entities, use the `formula` option instead and write the subquery yourself, the `through` option is just a shortcut for it:
+
+```ts
+@ManyToOne(() => Account, {
+  formula: cols => `(select e.end_id from edge e join account a on a.id = e.end_id where e.start_id = ${cols.id} and e.state = 'cleared' and a.active = 1)`,
+  ref: true,
+  nullable: true,
+})
+account?: Ref<Account>;
+```
+
 ## Referencing Non-Primary Key Columns
 
 By default, ManyToOne and OneToOne relations reference the primary key of the target entity. You can use the `targetKey` option to reference a different unique column instead.

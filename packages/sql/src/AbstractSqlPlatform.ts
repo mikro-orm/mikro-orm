@@ -2,7 +2,9 @@ import {
   type RawQueryFragment,
   type Constructor,
   type EntityManager,
+  type EntityProperty,
   type EntityRepository,
+  type FormulaColumns,
   type IDatabaseDriver,
   type IsolationLevel,
   isRaw,
@@ -11,7 +13,9 @@ import {
   Platform,
   raw,
   Utils,
+  ValidationError,
 } from '@mikro-orm/core';
+import type { AbstractSqlDriver } from './AbstractSqlDriver.js';
 import { SqlEntityRepository } from './SqlEntityRepository.js';
 import { SqlSchemaGenerator } from './schema/SqlSchemaGenerator.js';
 import { type SchemaHelper } from './schema/SchemaHelper.js';
@@ -62,6 +66,46 @@ export abstract class AbstractSqlPlatform extends Platform {
   /* v8 ignore next */
   createNativeQueryBuilder(): NativeQueryBuilder {
     return new NativeQueryBuilder(this);
+  }
+
+  /** @inheritDoc */
+  override getThroughRelationFormula(prop: EntityProperty, columns: FormulaColumns<any>): string {
+    const through = prop.through!;
+    const driver = this.config.getDriver() as AbstractSqlDriver;
+    const alias = `${prop.name}_through`;
+    const qb = driver.createQueryBuilder(through.entity, undefined, 'read', true, undefined, alias);
+    const throughMeta = driver.getMetadata().get(through.entity);
+    const ownerProp = throughMeta.properties[through.ownerProperty];
+    const ownerMeta = driver.getMetadata().get(ownerProp.target);
+
+    ownerProp.fieldNames.forEach((fieldName, idx) => {
+      const referencedColumn = ownerProp.referencedColumnNames[idx];
+      const referencedProp = ownerProp.referencedPKs
+        .map(name => ownerMeta.properties[name])
+        .find(p => p.fieldNames.includes(referencedColumn))!;
+      // the column mapping resolves the right alias even for TPT owners, only the column name may differ for composite FK properties
+      const ownerAlias = columns[referencedProp.name].slice(0, columns[referencedProp.name].lastIndexOf('.'));
+      qb.andWhere(raw('?? = ??', [`${alias}.${fieldName}`, `${ownerAlias}.${referencedColumn}`]));
+    });
+
+    if (through.where) {
+      qb.andWhere(through.where);
+    }
+
+    if (through.orderBy) {
+      qb.orderBy(through.orderBy);
+    }
+
+    qb.select(through.targetProperty ?? throughMeta.primaryKeys[0]).limit(1);
+    const sql = qb.getFormattedQuery();
+
+    if (Object.keys(qb.state.joins).length > 0) {
+      throw new ValidationError(
+        `The 'where' and 'orderBy' options of the through relation ${prop.name} can only reference own columns of ${throughMeta.className}`,
+      );
+    }
+
+    return `(${sql})`;
   }
 
   getBeginTransactionSQL(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean }): string[] {
