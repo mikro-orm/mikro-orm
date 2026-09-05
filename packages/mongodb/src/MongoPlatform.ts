@@ -92,6 +92,10 @@ export class MongoPlatform extends Platform {
     return true;
   }
 
+  override supportsNullsOrdering(): boolean {
+    return false;
+  }
+
   override convertJsonToDatabaseValue(value: unknown): unknown {
     return Utils.copy(value);
   }
