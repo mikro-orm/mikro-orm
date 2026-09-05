@@ -14,7 +14,7 @@ import { CriteriaNode } from './CriteriaNode.js';
 import type { ICriteriaNodeProcessOptions, IQueryBuilder } from '../typings.js';
 import { JoinType, QueryType } from './enums.js';
 
-const COLLECTION_OPERATORS = ['$some', '$none', '$every', '$size'];
+const COLLECTION_OPERATORS = ['$some', '$none', '$every', '$size', '$all'];
 
 /**
  * @internal
@@ -34,7 +34,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     }
 
     if (this.shouldAutoJoin(qb, nestedAlias)) {
-      if (keys.some(k => COLLECTION_OPERATORS.includes(k as string))) {
+      if (keys.some(k => this.isCollectionOperator(k))) {
         if (![ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(this.prop!.kind)) {
           // ignore collection operators when used on a non-relational property - this can happen when they get into
           // populateWhere via `infer` on m:n properties with select-in strategy
@@ -57,12 +57,27 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           return [QueryType.SELECT, QueryType.COUNT].includes(qb.type) ? `${knownKey ? alias : ownerAlias}.${pk}` : pk;
         });
 
+        const conditions: [string, any][] = [];
+        let matchNothing = false;
+
         for (const key of keys) {
           if (typeof key !== 'string' || !COLLECTION_OPERATORS.includes(key)) {
             throw new Error('Mixing collection operators with other filters is not allowed.');
           }
 
           const payload = (this.payload[key] as CriteriaNode<T>).unwrap();
+
+          // `$all` requires every listed item to be present, which is an intersection of `$some` conditions
+          if (key === '$all') {
+            // an empty `$all` matches nothing, same as in mongo
+            matchNothing ||= (payload as unknown[]).length === 0;
+            conditions.push(...(payload as unknown[]).map(item => ['$some', item] as [string, any]));
+          } else {
+            conditions.push([key, payload]);
+          }
+        }
+
+        for (const [key, payload] of conditions) {
           // entities with a fixed schema must resolve the `from` table's own schema in the subquery,
           // otherwise a nested operator inherits the root entity's schema (GH #7894); for wildcard or
           // schema-less entities the schema is resolved dynamically and needs to be carried over
@@ -96,6 +111,10 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           $and.push({
             [Utils.getPrimaryKeyHash(primaryKeys)]: { [op]: (sub as Dictionary).getNativeQuery().toRaw() },
           });
+        }
+
+        if (matchNothing) {
+          $and.push({ [Utils.getPrimaryKeyHash(primaryKeys)]: { $in: [] } });
         }
 
         if ($and.length === 1) {
@@ -194,7 +213,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     }
 
     if (this.shouldAutoJoin(qb, nestedAlias)) {
-      return !keys.some(k => COLLECTION_OPERATORS.includes(k as string));
+      return !keys.some(k => this.isCollectionOperator(k));
     }
 
     return keys.some(field => {
@@ -307,6 +326,18 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     o.$and = $and;
   }
 
+  private isCollectionOperator(key: unknown): boolean {
+    if (typeof key !== 'string' || !COLLECTION_OPERATORS.includes(key)) {
+      return false;
+    }
+
+    // `$all` is primarily a mongo array operator, in SQL it is supported only on collections
+    return (
+      key !== '$all' ||
+      (!!this.prop && [ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(this.prop.kind))
+    );
+  }
+
   private shouldAutoJoin(qb: IQueryBuilder<T>, nestedAlias: string | undefined): boolean {
     if (!this.prop || !this.parent) {
       return false;
@@ -318,7 +349,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       return false;
     }
 
-    if (keys.some(k => COLLECTION_OPERATORS.includes(k))) {
+    if (keys.some(k => this.isCollectionOperator(k))) {
       return true;
     }
 

@@ -44,8 +44,8 @@ export enum QueryOperator {
   $in = 'in',
   /** Not included in the given list. */
   $nin = 'not in',
-  /** Array contains all of the given values (MongoDB only). */
-  $all = 'all', // mongo only
+  /** Contains all of the given values, supported on collection properties and on mongo arrays. */
+  $all = 'all',
   /** Greater than. */
   $gt = '>',
   /** Greater than or equal to. */

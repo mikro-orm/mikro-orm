@@ -61,7 +61,7 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 | `$lte`         | lower or equal   | Matches values that are less than or equal to a specified value.                            |
 | `$ne`          | not equal        | Matches all values that are not equal to a specified value.                                 |
 | `$nin`         | not contains     | Matches none of the values specified in an array.                                           |
-| `$all`         | all              | Matches arrays that contain all the values specified in an array. (mongo only)              |
+| `$all`         | all              | Matches collections (and mongo arrays) that contain all the values specified in an array.   |
 | `$like`        | like             | Uses LIKE operator                                                                          |
 | `$re`          | regexp           | Uses REGEXP operator. See info [below](#regular-expressions)                                |
 | `$fulltext`    | full text        | A driver specific full text search function. See requirements [below](#full-text-searching) |
@@ -91,6 +91,7 @@ In addition to the regular operators that translate to a real SQL operator expre
 | `$none`  | Finds collections that have no records matching the condition.     |
 | `$every` | Finds collections where every record is matching the condition.    |
 | `$size`  | Finds collections based on the number of related records.          |
+| `$all`   | Finds collections that contain all of the given records.           |
 
 This will be resolved as a subquery condition:
 
@@ -110,6 +111,17 @@ const res3 = await em.find(Author, {
   books: { $every: { title: 'Foo' } },
 });
 ```
+
+The `$all` operator takes an array and requires every item to be present in the collection, each item being a primary key or a condition:
+
+```ts
+// finds all authors that have both a book called `Foo` and a book called `Bar`
+const res = await em.find(Author, {
+  books: { $all: [{ title: 'Foo' }, { title: 'Bar' }] },
+});
+```
+
+An empty array matches nothing, mirroring the MongoDB behavior. On mongo, `$all` works on array properties too, while in SQL drivers it is supported only on collection properties - use `$contains` for array columns there.
 
 The condition object can be also empty:
 
