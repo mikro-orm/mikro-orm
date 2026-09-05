@@ -620,6 +620,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         filters,
         populate: hint.children as any,
         populateWhere: PopulateHint.ALL,
+        populateFilter: undefined,
       });
 
       if (Utils.hasObjectKeys(where!)) {

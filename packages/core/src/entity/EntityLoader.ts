@@ -10,6 +10,7 @@ import type {
   EntityValue,
   FilterKey,
   FilterQuery,
+  ObjectQuery,
   PopulateHintOptions,
   PopulateOptions,
 } from '../typings.js';
@@ -46,6 +47,8 @@ export interface EntityLoaderOptions<Entity, Fields extends string = never, Excl
   where?: FilterQuery<Entity>;
   /** Controls how `where` conditions are applied to populated relations. */
   populateWhere?: PopulateHint | `${PopulateHint}`;
+  /** @see FindOptions.populateFilter */
+  populateFilter?: ObjectQuery<Entity>;
   /** Ordering for populated relations. */
   orderBy?: QueryOrderMap<Entity> | QueryOrderMap<Entity>[];
   /** Whether to reload already loaded entities. */
@@ -565,7 +568,8 @@ export class EntityLoader {
     // When targetKey is set, use it for FK lookup instead of the PK
     let fk: string | string[] = prop.targetKey ?? Utils.getPrimaryKeyHash(meta.primaryKeys);
     let schema: string | undefined = options.schema;
-    const partial = !Utils.isEmpty(prop.where) || !Utils.isEmpty(options.where);
+    const partial =
+      !Utils.isEmpty(prop.where) || !Utils.isEmpty(options.where) || !Utils.isEmpty(options.populateFilter);
     let polymorphicOwnerProp: EntityProperty | undefined;
     const ownerProp =
       prop.kind === ReferenceKind.ONE_TO_MANY || (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner)
@@ -645,6 +649,15 @@ export class EntityLoader {
       where = { $and: [where, prop.where] } as FilterQuery<Entity>;
     }
 
+    const childFilter = options.populateFilter ? await this.extractChildPopulateFilter(options, prop) : undefined;
+    // conditions on the populated entity itself have no sink in the child query (the joined strategy puts
+    // them on the join), only the nested relation ones can be forwarded as its own `populateFilter`
+    const [ownFilter, nestedFilter] = this.splitPopulateFilter(childFilter, meta);
+
+    if (ownFilter) {
+      where = { $and: [where, ownFilter] } as FilterQuery<Entity>;
+    }
+
     const orderBy = QueryHelper.mergeOrderBy(options.orderBy, prop.orderBy);
 
     const findOptions: Dictionary = {
@@ -652,6 +665,7 @@ export class EntityLoader {
       convertCustomTypes,
       lockMode,
       populateWhere,
+      populateFilter: nestedFilter,
       logging,
       orderBy,
       populate: (populate.children as never) ?? populate.all ?? [],
@@ -876,6 +890,9 @@ export class EntityLoader {
         filters,
         ignoreLazyScalarProperties,
         populateWhere,
+        populateFilter: options.populateFilter
+          ? ((await this.extractChildPopulateFilter(options, prop)) as ObjectQuery<Entity>)
+          : undefined,
         connectionType,
         logging,
         schema,
@@ -922,7 +939,7 @@ export class EntityLoader {
     const fields = this.buildFields(options.fields as any, prop) as typeof options.fields;
     // oxfmt-ignore
     const exclude = Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop.name) : options.exclude;
-    const populateFilter = (options as Dictionary).populateFilter?.[prop.name];
+    const populateFilter = options.populateFilter ? await this.extractChildPopulateFilter(options, prop) : undefined;
     const options2 = { ...options, fields, exclude, populateFilter } as unknown as FindOptions<Entity, any, any, any> &
       Dictionary;
     (['limit', 'offset', 'first', 'last', 'before', 'after', 'overfetch'] as const).forEach(
@@ -990,7 +1007,8 @@ export class EntityLoader {
     filters = false,
   ) {
     const where = options.where as Dictionary;
-    const subCond = Utils.isPlainObject(where[prop.name]) ? where[prop.name] : {};
+    // shallow copy, the operator normalization below must not mutate the caller's condition
+    const subCond = Utils.isPlainObject(where[prop.name]) ? { ...(where[prop.name] as Dictionary) } : {};
     const meta2 = prop.targetMeta!;
     const pk = Utils.getPrimaryKeyHash(meta2.primaryKeys);
 
@@ -1021,8 +1039,8 @@ export class EntityLoader {
     const operators = Object.keys(subCond).filter(key => Utils.isOperator(key, false));
 
     if (operators.length > 0) {
+      subCond[pk] = Utils.isPlainObject(subCond[pk]) ? { ...subCond[pk] } : (subCond[pk] ?? {});
       operators.forEach(op => {
-        subCond[pk] ??= {};
         subCond[pk][op] = subCond[op];
         delete subCond[op];
       });
@@ -1033,6 +1051,33 @@ export class EntityLoader {
     }
 
     return subCond;
+  }
+
+  /** Extracts the part of `options.populateFilter` that applies to the given relation. */
+  private async extractChildPopulateFilter<Entity>(
+    options: Required<EntityLoaderOptions<Entity>>,
+    prop: EntityProperty<Entity>,
+  ) {
+    const filter = await this.extractChildCondition({ ...options, where: options.populateFilter } as any, prop);
+
+    return Utils.isEmpty(filter) ? undefined : (filter as Dictionary);
+  }
+
+  /** Splits an extracted populate filter into the conditions on the populated entity and those on its own relations. */
+  private splitPopulateFilter(filter: Dictionary | undefined, meta: EntityMetadata) {
+    if (!filter) {
+      return [undefined, undefined] as const;
+    }
+
+    const own: Dictionary = {};
+    const nested: Dictionary = {};
+
+    for (const key of Object.keys(filter)) {
+      const target = meta.relations.some(rel => rel.name === key) ? nested : own;
+      target[key] = filter[key];
+    }
+
+    return [Utils.isEmpty(own) ? undefined : own, Utils.isEmpty(nested) ? undefined : nested] as const;
   }
 
   private buildFields<Entity>(

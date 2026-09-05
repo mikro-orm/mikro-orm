@@ -1941,7 +1941,7 @@ export abstract class AbstractSqlDriver<
       ],
       populateWhere: undefined,
       _populateWhere: 'infer',
-      populateFilter: this.wrapPopulateFilter(options, pivotProp2.name),
+      populateFilter: this.wrapPopulateFilter(options, pivotProp1.name),
     };
 
     if (pivotFindOptions._partitionLimit) {
