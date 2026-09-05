@@ -8,6 +8,7 @@ set -uo pipefail
 
 attempts=${PUBLISH_ATTEMPTS:-3}
 delay=${PUBLISH_RETRY_DELAY:-30}
+root=$(git rev-parse --show-toplevel)
 
 for i in $(seq 1 "$attempts"); do
   if "$@"; then
@@ -15,6 +16,10 @@ for i in $(seq 1 "$attempts"); do
   fi
 
   if [ "$i" -lt "$attempts" ]; then
+    # lerna rewrites the package.json files while packing and only restores them when the
+    # publish completes, so a failed attempt leaves the tree dirty and the next one would
+    # bail out with EUNCOMMIT before it even starts
+    git -C "$root" checkout -- .
     echo "::warning::publish attempt $i/$attempts failed, retrying in ${delay}s"
     sleep "$delay"
   fi
