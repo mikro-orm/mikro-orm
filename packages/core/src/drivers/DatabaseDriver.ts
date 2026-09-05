@@ -351,8 +351,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       nullable = false,
     ): OrderDefinition<T> => {
       const propMeta = properties[prop];
-      // a nullable relation or embeddable makes its joined columns null too
-      nullable ||= !!propMeta?.nullable;
+      // nullable relations and embeddables null out their joined columns, and a formula can yield null unannounced
+      nullable ||= !!propMeta?.nullable || !!propMeta?.formula;
 
       if (Utils.isPlainObject(direction)) {
         const childProps =
@@ -532,8 +532,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       nullable = false,
     ): Dictionary => {
       const propMeta = properties[prop];
-      // a nullable relation or embeddable makes its joined columns null too
-      nullable ||= !!propMeta?.nullable;
+      // nullable relations and embeddables null out their joined columns, and a formula can yield null unannounced
+      nullable ||= !!propMeta?.nullable || !!propMeta?.formula;
 
       if (Utils.isPlainObject(direction)) {
         if (offset === undefined) {
