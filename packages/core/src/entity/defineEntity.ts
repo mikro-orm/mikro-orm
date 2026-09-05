@@ -91,7 +91,7 @@ type HasKind<Options, K extends string> = Options extends { kind: infer X extend
   : false;
 
 /** Lightweight chain result type for property builders - reduces type instantiation cost by avoiding full class resolution. */
-export interface PropertyChain<Value, Options> {
+export interface PropertyChain<in out Value, in out Options> {
   '~type'?: { value: Value };
   '~options': Options;
 
@@ -299,10 +299,11 @@ type _AssertPropertyChainNoExtras = AssertTrue<
 // instantiating the full builder class in production builds (~680 instantiations).
 
 /** @internal */
-export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends BuilderKeys> implements Record<
-  Exclude<UniversalPropertyKeys, ExcludeKeys>,
-  any
-> {
+export class UniversalPropertyOptionsBuilder<
+  in out Value,
+  in out Options,
+  in out IncludeKeys extends BuilderKeys,
+> implements Record<Exclude<UniversalPropertyKeys, ExcludeKeys>, any> {
   '~options': Options;
 
   '~type'?: {
@@ -452,7 +453,15 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   >;
   autoincrement(
     autoincrement = true,
-  ): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'autoincrement'>, IncludeKeys>, IncludeKeys> {
+  ):
+    | Pick<
+        UniversalPropertyOptionsBuilder<Value, Omit<Options, 'autoincrement'> & { autoincrement: true }, IncludeKeys>,
+        IncludeKeys
+      >
+    | Pick<
+        UniversalPropertyOptionsBuilder<Value, Omit<Options, 'autoincrement'> & { autoincrement: false }, IncludeKeys>,
+        IncludeKeys
+      > {
     return this.assignOptions({ autoincrement });
   }
 
@@ -578,7 +587,15 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
   >;
   persist(
     persist = true,
-  ): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'persist'>, IncludeKeys>, IncludeKeys> {
+  ):
+    | Pick<
+        UniversalPropertyOptionsBuilder<Value, Omit<Options, 'persist'> & { persist: true }, IncludeKeys>,
+        IncludeKeys
+      >
+    | Pick<
+        UniversalPropertyOptionsBuilder<Value, Omit<Options, 'persist'> & { persist: false }, IncludeKeys>,
+        IncludeKeys
+      > {
     return this.assignOptions({ persist });
   }
 
@@ -1614,6 +1631,9 @@ type InferColumnType<T extends string> = T extends
 // before the Base in the intersection — TypeScript picks earlier overloads first.
 type BaseEntityMethodKeys = 'toObject' | 'toPOJO' | 'serialize' | 'assign' | 'populate' | 'init' | 'toReference';
 
+// `in out` skips variance measurement, which would otherwise structurally compare every `IWrappedEntity` method whenever two inferred entity types meet
+interface BaseEntityMethods<in out Entity extends object> extends Pick<IWrappedEntity<Entity>, BaseEntityMethodKeys> {}
+
 /** Infers the entity type from a `defineEntity()` properties map, resolving builders, base classes, and primary keys. */
 export type InferEntityFromProperties<
   Properties extends Record<string, any>,
@@ -1627,23 +1647,20 @@ export type InferEntityFromProperties<
 > = (IsNever<Base> extends true
   ? {}
   : Base extends { toObject(...args: any[]): any }
-    ? Pick<
-        IWrappedEntity<
-          {
-            -readonly [K in keyof Properties]: InferBuilderValue<MaybeReturnType<Properties[K]>>;
-          } & {
-            [PrimaryKeyProp]?: InferCombinedPrimaryKey<Properties, PK, Base>;
-          } & (IsNever<Repository> extends true
-              ? {}
-              : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository }) &
-            NarrowDiscriminator<
-              Omit<Base, typeof PrimaryKeyProp>,
-              BaseDiscriminatorColumn,
-              DiscriminatorValue,
-              Embeddable
-            >
-        >,
-        BaseEntityMethodKeys
+    ? BaseEntityMethods<
+        {
+          -readonly [K in keyof Properties]: InferBuilderValue<MaybeReturnType<Properties[K]>>;
+        } & {
+          [PrimaryKeyProp]?: InferCombinedPrimaryKey<Properties, PK, Base>;
+        } & (IsNever<Repository> extends true
+            ? {}
+            : { [EntityRepositoryType]?: Repository extends Constructor<infer R> ? R : Repository }) &
+          NarrowDiscriminator<
+            Omit<Base, typeof PrimaryKeyProp>,
+            BaseDiscriminatorColumn,
+            DiscriminatorValue,
+            Embeddable
+          >
       >
     : {}) & {
   -readonly [K in keyof Properties]: InferBuilderValue<MaybeReturnType<Properties[K]>>;
