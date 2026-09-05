@@ -62,3 +62,15 @@ test('population does not mutate reusable relation operator filters', async () =
     expect(populateFilter).toEqual({ author: { $ne: null } });
   }
 });
+
+test('population does not mutate reusable relation operator conditions', async () => {
+  const where = { books: { $ne: null } };
+
+  for (const id of [1, 2]) {
+    const em = orm.em.fork();
+    const author = await em.findOneOrFail(Author, id);
+    await em.populate([author], ['books'], { where });
+
+    expect(where).toEqual({ books: { $ne: null } });
+  }
+});

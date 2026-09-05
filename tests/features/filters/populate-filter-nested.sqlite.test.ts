@@ -155,3 +155,14 @@ test.each(Object.values(LoadStrategy))('%s populateFilter supports the inverse m
 
   expect(permission.users.getIdentifiers()).toEqual([1]);
 });
+
+test.each(Object.values(LoadStrategy))('%s populateFilter targets the populated collection itself', async strategy => {
+  const client = await orm.em.fork().findOneOrFail(Client, 1, {
+    strategy,
+    populate: ['users'],
+    populateFilter: { users: { isApproved: true } },
+    populateOrderBy: { users: { id: 'asc' } },
+  });
+
+  expect(client.users.getIdentifiers()).toEqual([1, 2, 3]);
+});
