@@ -116,7 +116,7 @@ jobs:
           fi
 
       - name: Publish to npm
-        run: yarn publish:prod ${{ steps.dist-tag.outputs.tag }} --yes
+        run: ./scripts/publish-with-retry.sh yarn publish:prod ${{ steps.dist-tag.outputs.tag }} --yes
 
       - name: Publish to JSR
         run: yarn publish:jsr
@@ -165,7 +165,7 @@ jobs:
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
 
       - name: Publish to npm
-        run: yarn lerna publish from-package --contents dist --dist-tag ${{ inputs.dist-tag }} --force-publish --yes
+        run: ./scripts/publish-with-retry.sh yarn lerna publish from-package --contents dist --dist-tag ${{ inputs.dist-tag }} --force-publish --yes
 
       - name: Create git tag
         if: inputs.dist-tag == 'rc'
