@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`View entities ('mariadb') > schema generator should create views 1`] = `
+exports[`View entities (mariadb) > schema generator should create views 1`] = `
 "set names utf8mb4;
 
 create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8mb4 engine = InnoDB;
@@ -106,7 +106,7 @@ create view \`prolific_authors_view\` as select name, book_count from author_sta
 "
 `;
 
-exports[`View entities ('mysql') > schema generator should create views 1`] = `
+exports[`View entities (mysql) > schema generator should create views 1`] = `
 "set names utf8mb4;
 
 create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8mb4 engine = InnoDB;
