@@ -462,7 +462,10 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
           );
           return o;
         }, {});
-        return { [prop]: value };
+
+        // an unconstrained group must stay unconstrained, an empty object condition would instead
+        // match only rows where every child value is null (e.g. object embeddables)
+        return Utils.hasObjectKeys(value) ? { [prop]: value } : {};
       }
 
       const dirStr = direction.toString().toLowerCase();
@@ -489,14 +492,16 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
       // Handle null offset (intentional null cursor value)
       if (offset === null) {
+        // hasItemsAfterNull: forward + nullsFirst, or backward + nullsLast
+        const hasItemsAfterNull = Utils.xor(nullsFirst, inverse);
+
         if (eq) {
-          // Equal to null
-          return { [prop]: null };
+          // the `>=` half of the keyset condition: every row when the nulls come first in this
+          // direction, only the null ones when they come last
+          return hasItemsAfterNull ? {} : { [prop]: null };
         }
 
         // Strict comparison with null cursor value
-        // hasItemsAfterNull: forward + nullsFirst, or backward + nullsLast
-        const hasItemsAfterNull = Utils.xor(nullsFirst, inverse);
         if (hasItemsAfterNull) {
           return { [prop]: { $ne: null } };
         }

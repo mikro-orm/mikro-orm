@@ -230,10 +230,7 @@ describe('cursor pagination - ordering by nullable column', () => {
       orderBy: { age: 'asc', id: 'asc' },
     });
 
-    expect(cursor.items).toHaveLength(4);
-    // Null values should be somewhere in the result set
-    const nullIndex = cursor.items.findIndex(u => u.age === null);
-    expect(nullIndex).toBeGreaterThanOrEqual(0);
+    expect(cursor.items.map(u => u.age)).toEqual([null, 10, 20, 30]);
   });
 
   test('can order by nullable column descending', async () => {
@@ -242,10 +239,7 @@ describe('cursor pagination - ordering by nullable column', () => {
       orderBy: { age: 'desc', id: 'asc' },
     });
 
-    expect(cursor.items).toHaveLength(4);
-    // Null values should be somewhere in the result set
-    const nullIndex = cursor.items.findIndex(u => u.age === null);
-    expect(nullIndex).toBeGreaterThanOrEqual(0);
+    expect(cursor.items.map(u => u.age)).toEqual([30, 20, 10, null]);
   });
 
   test('can paginate through results with null in cursor', async () => {
@@ -333,25 +327,13 @@ describe('cursor pagination - null cursor condition branches', () => {
 
   afterAll(() => orm.close(true));
 
-  test('parseDirection handles nulls first directive', async () => {
-    // This test ensures the 'nulls first' string parsing branch is covered
-    // The actual ordering may vary by database, but the code path is exercised
+  test('nulls first directive places the nulls first', async () => {
     const cursor = await orm.em.findByCursor(User, {
       first: 10,
       orderBy: { age: 'asc nulls first', id: 'asc' },
     });
 
-    expect(cursor.items).toHaveLength(4);
-  });
-
-  test('parseDirection handles nulls last directive', async () => {
-    // This test ensures the 'nulls last' string parsing branch is covered
-    const cursor = await orm.em.findByCursor(User, {
-      first: 10,
-      orderBy: { age: 'asc nulls last', id: 'asc' },
-    });
-
-    expect(cursor.items).toHaveLength(4);
+    expect(cursor.items.map(u => u.age)).toEqual([null, 10, 20, 30]);
   });
 
   test('cursor condition with null value and nulls first (forward)', async () => {
@@ -377,8 +359,8 @@ describe('cursor pagination - null cursor condition branches', () => {
       orderBy: { age: 'asc nulls first', id: 'asc' },
     });
 
-    // Result count depends on database NULLS ordering support
-    expect(result.items.length).toBeGreaterThanOrEqual(0);
+    // nulls sort first, so every non-null row comes after the null cursor
+    expect(result.items.map(u => u.age)).toEqual([10, 20, 30]);
   });
 
   test('cursor condition with null value and nulls last (forward)', async () => {
@@ -458,8 +440,8 @@ describe('cursor pagination - null cursor condition branches', () => {
       orderBy: { age: 'asc nulls last', id: 'asc' },
     });
 
-    // Result count depends on database NULLS ordering support
-    expect(result.items.length).toBeGreaterThanOrEqual(0);
+    // nulls sort last, so every non-null row comes before the null cursor
+    expect(result.items.map(u => u.age)).toEqual([10, 20, 30]);
   });
 
   test('the nulls qualifier reaches the emitted order by', async () => {
