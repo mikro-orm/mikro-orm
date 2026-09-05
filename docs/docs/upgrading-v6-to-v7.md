@@ -136,7 +136,7 @@ TypeScript support was previously provided by `ts-node`. In v7, the CLI supports
 - `oxc` via `@oxc-node/core`, supports metadata reflection
 - `swc` via `@swc-node/register`, supports metadata reflection
 - `tsx`
-- `nub` via `@nubjs/loader`, selected explicitly and using the project `tsconfig.json`
+- `nub` via `@nubjs/loader`, selected explicitly and using the project `tsconfig.json` (available from v7.2)
 - `jiti`
 - `tsimp`
 
