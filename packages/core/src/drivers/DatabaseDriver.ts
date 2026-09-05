@@ -347,9 +347,16 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         return { [prop]: value } as OrderDefinition<T>;
       }
 
-      const desc =
-        (direction as unknown) === QueryOrderNumeric.DESC || direction.toString().toLowerCase().startsWith('desc');
-      const dir = Utils.xor(desc, isLast) ? 'desc' : 'asc';
+      const dirStr = direction.toString().toLowerCase();
+      const desc = (direction as unknown) === QueryOrderNumeric.DESC || dirStr.startsWith('desc');
+      let dir = Utils.xor(desc, isLast) ? 'desc' : 'asc';
+      const nullsFirst = dirStr.includes('nulls first');
+
+      // backward pagination reverses the whole ordering, so the nulls placement flips with the direction
+      if (nullsFirst || dirStr.includes('nulls last')) {
+        dir += Utils.xor(nullsFirst, isLast) ? ' nulls first' : ' nulls last';
+      }
+
       return { [prop]: dir } as OrderDefinition<T>;
     };
 
