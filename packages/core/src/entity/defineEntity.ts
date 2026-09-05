@@ -451,7 +451,17 @@ export class UniversalPropertyOptionsBuilder<
     UniversalPropertyOptionsBuilder<Value, Omit<Options, 'autoincrement'> & { autoincrement: false }, IncludeKeys>,
     IncludeKeys
   >;
-  autoincrement(autoincrement = true): any {
+  autoincrement(
+    autoincrement = true,
+  ):
+    | Pick<
+        UniversalPropertyOptionsBuilder<Value, Omit<Options, 'autoincrement'> & { autoincrement: true }, IncludeKeys>,
+        IncludeKeys
+      >
+    | Pick<
+        UniversalPropertyOptionsBuilder<Value, Omit<Options, 'autoincrement'> & { autoincrement: false }, IncludeKeys>,
+        IncludeKeys
+      > {
     return this.assignOptions({ autoincrement });
   }
 
@@ -575,7 +585,17 @@ export class UniversalPropertyOptionsBuilder<
     UniversalPropertyOptionsBuilder<Value, Omit<Options, 'persist'> & { persist: false }, IncludeKeys>,
     IncludeKeys
   >;
-  persist(persist = true): any {
+  persist(
+    persist = true,
+  ):
+    | Pick<
+        UniversalPropertyOptionsBuilder<Value, Omit<Options, 'persist'> & { persist: true }, IncludeKeys>,
+        IncludeKeys
+      >
+    | Pick<
+        UniversalPropertyOptionsBuilder<Value, Omit<Options, 'persist'> & { persist: false }, IncludeKeys>,
+        IncludeKeys
+      > {
     return this.assignOptions({ persist });
   }
 
