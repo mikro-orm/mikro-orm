@@ -336,6 +336,7 @@ export class CLIHelper {
   /**
    * Tries to register TS support in the following order: oxc, swc, tsx, jiti, tsimp, nub
    * Use `MIKRO_ORM_CLI_TS_LOADER` env var to set the loader explicitly.
+   * `nub` is skipped when a custom tsconfig path is used, and it supports only the legacy decorators.
    * This method is used only in CLI context.
    */
   static async registerTypeScriptSupport(
@@ -416,9 +417,10 @@ export class CLIHelper {
     const loadersMessage = usesDefaultTsConfig
       ? '`oxc`, `swc`, `tsx`, `jiti`, `tsimp` nor `nub`'
       : '`oxc`, `swc`, `tsx`, `jiti` nor `tsimp`';
+    const nubHint = usesDefaultTsConfig ? '' : ' The `nub` loader was skipped as a custom tsconfig path is configured.';
     // eslint-disable-next-line no-console
     console.warn(
-      `Neither ${loadersMessage} found in the project dependencies, support for working with TypeScript files might not work. To use \`oxc\`, install \`@oxc-node/core\`. To use \`swc\`, install both \`@swc-node/register\` and \`@swc/core\`.`,
+      `Neither ${loadersMessage} found in the project dependencies, support for working with TypeScript files might not work.${nubHint} To use \`oxc\`, install \`@oxc-node/core\`. To use \`swc\`, install both \`@swc-node/register\` and \`@swc/core\`.`,
     );
 
     return false;

@@ -228,6 +228,9 @@ describe('CLIHelper', () => {
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining('Neither `oxc`, `swc`, `tsx`, `jiti` nor `tsimp` found'),
     );
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('The `nub` loader was skipped as a custom tsconfig path is configured.'),
+    );
     delete pkg['mikro-orm'].tsConfigPath;
     pkg['mikro-orm'].preferTs = false;
   });
@@ -299,7 +302,7 @@ describe('CLIHelper', () => {
     const argv = process.argv;
     const execArgv = process.execArgv;
     process.argv = ['node', 'cli.js'];
-    // these all short-circuit the detection before the `execArgv` check
+    // clear the vars that would short-circuit the detection before the `execArgv` check
     vi.stubEnv('VITEST', '');
     vi.stubEnv('TS_JEST', '');
     vi.stubEnv('MIKRO_ORM_CLI_ALWAYS_ALLOW_TS', '');
