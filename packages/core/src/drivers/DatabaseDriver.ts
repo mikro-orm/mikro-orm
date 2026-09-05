@@ -547,30 +547,45 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         insideJson ||=
           (propMeta?.kind === ReferenceKind.EMBEDDED && !!propMeta.object) || propMeta?.customType instanceof JsonType;
 
-        const children = Utils.keys(direction)
-          .map(key =>
-            createCondition(
-              key,
-              direction[key] as QueryOrderKeys<T>,
-              // a null relation offset means the whole sort key is null, propagate it to the leaves
-              offset === null ? null : offset[key],
-              eq,
-              `${path}.${key}`,
-              childProps ?? {},
-              insideJson,
-              nullable,
-            ),
-          )
-          .filter(child => Utils.hasObjectKeys(child));
+        const keys = Utils.keys(direction);
+        const child = (key: (typeof keys)[number], childEq: boolean) =>
+          createCondition(
+            key,
+            direction[key] as QueryOrderKeys<T>,
+            // a null relation offset means the whole sort key is null, propagate it to the leaves
+            offset === null ? null : offset[key],
+            childEq,
+            `${path}.${key}`,
+            childProps ?? {},
+            insideJson,
+            nullable,
+          );
 
-        // children comparing against nulls are group conditions, those cannot be merged into one object
-        const value =
-          children.length > 1 && children.some(child => '$or' in child)
-            ? { $and: children }
-            : children.reduce((o, child) => Object.assign(o, child), {} as Dictionary);
+        // the group's own keys are a keyset in their own right, so they decompose the same way the
+        // top level does; merging them into one object would compare every key independently instead
+        const lex = (index: number): Dictionary => {
+          const key = keys[index];
 
-        // an unconstrained child condition must not degrade to `{ [prop]: {} }`
-        return children.length > 0 ? { [prop]: value } : {};
+          if (index === keys.length - 1) {
+            return child(key, eq);
+          }
+
+          const atOrPast = child(key, true);
+          const tail = lex(index + 1);
+          // an unconstrained tail matches anything, leaving only the `at or past` prefix to constrain
+          const past = Utils.hasObjectKeys(tail) ? { $or: [child(key, false), tail] } : {};
+
+          if (!Utils.hasObjectKeys(past)) {
+            return atOrPast;
+          }
+
+          return Utils.hasObjectKeys(atOrPast) ? { $and: [atOrPast, past] } : past;
+        };
+
+        const value = keys.length > 0 ? lex(0) : {};
+
+        // an unconstrained group condition must not degrade to `{ [prop]: {} }`
+        return Utils.hasObjectKeys(value) ? { [prop]: value } : {};
       }
 
       const { desc: isDesc, nullsFirst } = this.parseCursorDirection(direction);
