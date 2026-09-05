@@ -125,10 +125,12 @@ A `PolicyDef` has the following shape:
 
 ```ts
 policies: [
-  {
-    name: 'owner_only',
-    using: columns => `${columns.ownerId} = current_setting('app.user')::int`,
-  },
+  // callback (preferred) — references properties, the column names come from the naming strategy
+  { name: 'owner_only', using: columns => `${columns.ownerId} = current_setting('app.user')::int` },
+  // plain string — passed to `create policy` verbatim, so it must use the physical column names
+  { name: 'tenant_only', using: `tenant_id = current_setting('app.tenant')::uuid` },
+  // raw() — also verbatim, but with parameter binding
+  { name: 'published_only', using: raw('status = ?', ['published']) },
 ],
 ```
 
