@@ -136,6 +136,7 @@ TypeScript support was previously provided by `ts-node`. In v7, the CLI supports
 - `oxc` via `@oxc-node/core`, supports metadata reflection
 - `swc` via `@swc-node/register`, supports metadata reflection
 - `tsx`
+- `nub` via `@nubjs/loader`, selected explicitly and using the project `tsconfig.json`
 - `jiti`
 - `tsimp`
 
@@ -150,6 +151,14 @@ To pick a loader explicitly, use the `tsLoader` setting in your `package.json`:
 ```
 
 Or override it via `MIKRO_ORM_CLI_TS_LOADER` env var.
+
+To use Nub, install `@nubjs/loader` and select it explicitly. Nub reads the project `tsconfig.json`.
+
+```json
+"mikro-orm": {
+  "tsLoader": "nub"
+}
+```
 
 ```diff
 -npm install ts-node

@@ -117,6 +117,7 @@ describe('CLIHelper', () => {
     ['oxc', '@oxc-node/core/register'],
     ['swc', '@swc-node/register/esm-register'],
     ['tsx', 'tsx/esm/api'],
+    ['nub', '@nubjs/loader'],
     ['jiti', 'jiti/register'],
     ['tsimp', 'tsimp/import'],
   ] as const)('configures CLI instance with TS support [%s]', async (loader, module) => {
@@ -180,6 +181,19 @@ describe('CLIHelper', () => {
     pkg['mikro-orm'].preferTs = false;
   });
 
+  test('does not select the Nub loader automatically', async () => {
+    pathExistsMock.mockReturnValue(true);
+    pkg['mikro-orm'].preferTs = true;
+    tryImportMock.mockImplementation(({ module: id }) => (id === '@nubjs/loader' ? {} : undefined));
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(i => i);
+
+    await configure();
+
+    expect(tryImportMock).not.toHaveBeenCalledWith({ module: '@nubjs/loader' });
+    expect(warnSpy).toHaveBeenCalled();
+    pkg['mikro-orm'].preferTs = false;
+  });
+
   test('reports the real error when a TS loader is installed but fails to load', async () => {
     pathExistsMock.mockReturnValue(true);
     pkg['mikro-orm'].preferTs = true;
@@ -231,6 +245,37 @@ describe('CLIHelper', () => {
     expect(tryImportMock).toHaveBeenCalledTimes(1);
     delete pkg['mikro-orm'].tsLoader;
     pkg['mikro-orm'].preferTs = false;
+  });
+
+  test.each(['./tsconfig.json', process.cwd() + '/tsconfig.json'])(
+    'accepts the default tsconfig path for the Nub loader [%s]',
+    async configPath => {
+      tryImportMock.mockReturnValueOnce({});
+
+      await expect(CLIHelper.registerTypeScriptSupport(configPath, 'nub')).resolves.toBe(true);
+      expect(tryImportMock).toHaveBeenCalledWith({ module: '@nubjs/loader' });
+    },
+  );
+
+  test('detects a preloaded Nub loader', () => {
+    const argv = process.argv;
+    const execArgv = process.execArgv;
+    process.argv = ['node', 'cli.js'];
+    process.execArgv = ['--import', '@nubjs/loader'];
+
+    try {
+      expect(Utils.detectTypeScriptSupport()).toBe(true);
+    } finally {
+      process.argv = argv;
+      process.execArgv = execArgv;
+    }
+  });
+
+  test('rejects the Nub loader when a different tsconfig path is configured', async () => {
+    await expect(CLIHelper.registerTypeScriptSupport('./tsconfig.cli.json', 'nub')).rejects.toThrow(
+      'The `nub` loader does not support a custom tsconfig path. Use the project tsconfig.json or select another loader.',
+    );
+    expect(tryImportMock).not.toHaveBeenCalled();
   });
 
   test('configures yargs instance [swc and ts-paths] without baseUrl', async () => {

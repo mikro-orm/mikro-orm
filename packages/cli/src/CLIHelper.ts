@@ -340,7 +340,7 @@ export class CLIHelper {
    */
   static async registerTypeScriptSupport(
     configPath = 'tsconfig.json',
-    tsLoader?: 'oxc' | 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'auto',
+    tsLoader?: 'oxc' | 'swc' | 'tsx' | 'nub' | 'jiti' | 'tsimp' | 'auto',
   ): Promise<boolean> {
     /* v8 ignore if */
     if (process.versions.bun) {
@@ -355,10 +355,19 @@ export class CLIHelper {
     const setEsmImportProvider = () => {
       return ((globalThis as any).dynamicImportProvider = (id: string) => import(id).then(mod => mod?.default ?? mod));
     };
+    if (
+      explicitLoader === 'nub' &&
+      fs.normalizePath(fs.absolutePath(configPath)) !== fs.normalizePath(fs.absolutePath('tsconfig.json'))
+    ) {
+      throw new Error(
+        'The `nub` loader does not support a custom tsconfig path. Use the project tsconfig.json or select another loader.',
+      );
+    }
     const loaders = {
       oxc: { esm: '@oxc-node/core/register', cjs: '@oxc-node/core/register' },
       swc: { esm: '@swc-node/register/esm-register', cjs: '@swc-node/register' },
       tsx: { esm: 'tsx/esm/api', cjs: 'tsx/cjs/api', cb: (tsx: any) => tsx.register({ tsconfig: configPath }) },
+      nub: { esm: '@nubjs/loader', cjs: '@nubjs/loader' },
       jiti: { cjs: 'jiti/register', cb: setEsmImportProvider },
       tsimp: { cjs: 'tsimp/import', cb: setEsmImportProvider },
     } as const;
@@ -366,6 +375,10 @@ export class CLIHelper {
     const errors: Error[] = [];
 
     for (const loader of Utils.keys(loaders)) {
+      if (loader === 'nub' && explicitLoader === 'auto') {
+        continue;
+      }
+
       if (explicitLoader !== 'auto' && loader !== explicitLoader) {
         continue;
       }
@@ -426,7 +439,7 @@ export class CLIHelper {
 export interface Settings {
   verbose?: boolean;
   preferTs?: boolean;
-  tsLoader?: 'oxc' | 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'auto';
+  tsLoader?: 'oxc' | 'swc' | 'tsx' | 'nub' | 'jiti' | 'tsimp' | 'auto';
   tsConfigPath?: string;
   configPaths?: string[];
 }
