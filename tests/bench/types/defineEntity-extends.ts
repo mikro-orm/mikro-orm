@@ -270,7 +270,7 @@ bench('realistic entity (~20 props, relations, extends)', () => {
       tags: () => p.manyToMany(Tag),
     },
   });
-}).types([8553, 'instantiations']);
+}).types([4367, 'instantiations']);
 
 bench('realistic entity - InferEntity usage', () => {
   const base = defineEntity({
@@ -350,7 +350,7 @@ bench('realistic entity - InferEntity usage', () => {
 
   // Force evaluation of all entity types
   const _check: [IAuthor, IBook, ITag, IPublisher] = {} as any;
-}).types([8661, 'instantiations']);
+}).types([4475, 'instantiations']);
 
 bench('realistic entity - setClass pattern', () => {
   const BaseSchema = defineEntity({
@@ -436,4 +436,4 @@ bench('realistic entity - setClass pattern', () => {
   PublisherSchema.setClass(Publisher);
   AuthorSchema.setClass(Author);
   BookSchema.setClass(Book);
-}).types([8953, 'instantiations']);
+}).types([4768, 'instantiations']);

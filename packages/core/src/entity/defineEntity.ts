@@ -91,7 +91,7 @@ type HasKind<Options, K extends string> = Options extends { kind: infer X extend
   : false;
 
 /** Lightweight chain result type for property builders - reduces type instantiation cost by avoiding full class resolution. */
-export interface PropertyChain<Value, Options> {
+export interface PropertyChain<in out Value, in out Options> {
   '~type'?: { value: Value };
   '~options': Options;
 
@@ -299,10 +299,11 @@ type _AssertPropertyChainNoExtras = AssertTrue<
 // instantiating the full builder class in production builds (~680 instantiations).
 
 /** @internal */
-export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends BuilderKeys> implements Record<
-  Exclude<UniversalPropertyKeys, ExcludeKeys>,
-  any
-> {
+export class UniversalPropertyOptionsBuilder<
+  in out Value,
+  in out Options,
+  in out IncludeKeys extends BuilderKeys,
+> implements Record<Exclude<UniversalPropertyKeys, ExcludeKeys>, any> {
   '~options': Options;
 
   '~type'?: {
@@ -450,9 +451,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
     UniversalPropertyOptionsBuilder<Value, Omit<Options, 'autoincrement'> & { autoincrement: false }, IncludeKeys>,
     IncludeKeys
   >;
-  autoincrement(
-    autoincrement = true,
-  ): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'autoincrement'>, IncludeKeys>, IncludeKeys> {
+  autoincrement(autoincrement = true): any {
     return this.assignOptions({ autoincrement });
   }
 
@@ -576,9 +575,7 @@ export class UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys extends
     UniversalPropertyOptionsBuilder<Value, Omit<Options, 'persist'> & { persist: false }, IncludeKeys>,
     IncludeKeys
   >;
-  persist(
-    persist = true,
-  ): Pick<UniversalPropertyOptionsBuilder<Value, Omit<Options, 'persist'>, IncludeKeys>, IncludeKeys> {
+  persist(persist = true): any {
     return this.assignOptions({ persist });
   }
 

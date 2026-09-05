@@ -19,7 +19,7 @@ bench('defineEntity with relations', () => {
       strictNullRef: () => p.oneToOne(Foo).strictNullable(),
     },
   });
-}).types([7758, 'instantiations']);
+}).types([3602, 'instantiations']);
 
 bench('defineEntity with ref and nullable', () => {
   const Foo = defineEntity({
@@ -36,7 +36,7 @@ bench('defineEntity with ref and nullable', () => {
       scalarRefNullable: p.string().ref().nullable(),
     },
   });
-}).types([7242, 'instantiations']);
+}).types([3074, 'instantiations']);
 
 bench('defineEntity only with ref and nullable', () => {
   const Foo = defineEntity({
@@ -88,7 +88,7 @@ bench('defineEntity with relations using class', () => {
       scalarRefNullable: p.string().ref().nullable(),
     },
   });
-}).types([7787, 'instantiations']);
+}).types([3631, 'instantiations']);
 
 bench('defineEntity with ref and nullable using class', () => {
   class Foo {
@@ -120,7 +120,7 @@ bench('defineEntity with ref and nullable using class', () => {
       scalarRefNullable: p.string().ref().nullable(),
     },
   });
-}).types([7787, 'instantiations']);
+}).types([3631, 'instantiations']);
 
 bench('defineEntity only with ref and nullable using class', () => {
   class Foo {
@@ -241,7 +241,7 @@ bench('defineEntity with setClass pattern (circular relations)', () => {
 
   AuthorSchema.setClass(Author);
   BookSchema.setClass(Book);
-}).types([6187, 'instantiations']);
+}).types([1985, 'instantiations']);
 
 bench('defineEntity with indexes', () => {
   const Bar = defineEntity({
@@ -257,8 +257,7 @@ bench('defineEntity with indexes', () => {
   });
 }).types([1982, 'instantiations']);
 
-// GH #8240: a generic builder call (`fieldName`, `index`, ...) ending an arrow-defined relation chain makes TS infer
-// from the chain's return type, which blew up to ~155k instantiations via structural variance measurement
+// a generic builder call (`fieldName`, `index`, ...) ending an arrow-defined relation chain makes TS infer from the chain's return type and measure variance of the whole entity type
 bench('defineEntity relation chain ending with a generic builder call', () => {
   const Bar = defineEntity({
     name: 'Bar',
@@ -274,4 +273,4 @@ bench('defineEntity relation chain ending with a generic builder call', () => {
       bar: () => p.oneToOne(Bar).lazy().fieldName('bar_id'),
     },
   });
-}).types([20902, 'instantiations']);
+}).types([10994, 'instantiations']);
