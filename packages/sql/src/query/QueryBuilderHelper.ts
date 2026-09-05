@@ -923,6 +923,13 @@ export class QueryBuilderHelper {
   }
 
   private getOperatorReplacement(op: string, value: Dictionary): string {
+    // collection properties expand `$all` into `$some` sub-queries in `ObjectCriteriaNode`, nothing else has a SQL equivalent
+    if (op === '$all') {
+      throw new Error(
+        'The `$all` operator is supported only on collection properties in SQL drivers, use `$contains` for array columns instead.',
+      );
+    }
+
     let replacement: string = QueryOperator[op as keyof typeof QueryOperator];
 
     if (op === '$exists') {
