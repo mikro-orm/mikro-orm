@@ -213,6 +213,11 @@ export interface PropertyChain<in out Value, in out Options> {
     discriminatorMap: Dictionary<string>,
   ): HasKind<Options, 'm:1' | '1:1' | 'm:n'> extends true ? PropertyChain<Value, Options> : never;
 
+  /** Resolve this read-only to-one relation via a subquery on another entity (see {@doclink relationships#to-one-relations-through-another-entity | To-one relations through another entity}). */
+  through(
+    through: () => EntityName,
+  ): HasKind<Options, 'm:1' | '1:1'> extends true ? PropertyChain<Value, Options> : never;
+
   // M:N-only methods (not available on other relation kinds, embedded, or scalars)
   pivotTable(pivotTable: string): HasKind<Options, 'm:n'> extends true ? PropertyChain<Value, Options> : never;
   pivotEntity(
@@ -951,6 +956,11 @@ export class UniversalPropertyOptionsBuilder<
   /** Override default name for pivot table (see {@doclink naming-strategy | Naming Strategy}). */
   pivotTable(pivotTable: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ pivotTable });
+  }
+
+  /** Resolve this read-only to-one relation via a subquery on another entity (see {@doclink relationships#to-one-relations-through-another-entity | To-one relations through another entity}). */
+  through(through: () => EntityName): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+    return this.assignOptions({ through });
   }
 
   /** Set pivot entity for this relation (see {@doclink collections#custom-pivot-table-entity | Custom pivot table entity}). */
