@@ -1,6 +1,23 @@
 import { Cursor, MikroORM, ref, Ref, SimpleLogger } from '@mikro-orm/core';
-import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { PLATFORMS } from '../../bootstrap.js';
+
+@Embeddable()
+class Meta {
+  @Property({ nullable: true, type: 'integer' })
+  score?: number | null;
+
+  @Property({ nullable: true, type: 'string' })
+  tag?: string | null;
+}
 
 @Entity()
 class Author {
@@ -24,6 +41,9 @@ class Book {
 
   @ManyToOne(() => Author, { ref: true, nullable: true })
   author?: Ref<Author> | null;
+
+  @Embedded(() => Meta, { object: true, nullable: true })
+  meta?: Meta | null;
 }
 
 describe('cursor pagination with nested null values', () => {
@@ -42,9 +62,9 @@ describe('cursor pagination with nested null values', () => {
     const author1 = orm.em.create(Author, { id: 1, name: 'Author 1', rating: 5 });
     const author2 = orm.em.create(Author, { id: 2, name: 'Author 2', rating: null });
 
-    orm.em.create(Book, { id: 1, title: 'Book 1', author: ref(author1) });
-    orm.em.create(Book, { id: 2, title: 'Book 2', author: ref(author2) });
-    orm.em.create(Book, { id: 3, title: 'Book 3', author: null });
+    orm.em.create(Book, { id: 1, title: 'Book 1', author: ref(author1), meta: { score: 5, tag: 'x' } });
+    orm.em.create(Book, { id: 2, title: 'Book 2', author: ref(author2), meta: { score: null, tag: 'y' } });
+    orm.em.create(Book, { id: 3, title: 'Book 3', author: null, meta: null });
 
     await orm.em.flush();
     orm.em.clear();
@@ -122,11 +142,27 @@ describe('cursor pagination with nested null values', () => {
       populate: ['author'],
     });
 
-    // Should get books with non-null author ratings
-    expect(result.items.length).toBeGreaterThanOrEqual(0);
+    // book 3 has no author at all, so it joins as a null rating and sorts next to book 2
+    expect(result.items.map(b => b.id)).toEqual([3, 1]);
+  });
+
+  test('paginate forward from an object embeddable with a null value', async () => {
+    orm.em.clear();
+    const orderBy = { meta: { score: 'asc nulls first' }, id: 'asc' } as const;
+    const book = await orm.em.findOneOrFail(Book, { id: 2 });
+    const cursor = await orm.em.findByCursor(Book, { first: 10, orderBy });
+    const afterCursor = cursor.from(book);
+    orm.em.clear();
+
+    const result = await orm.em.findByCursor(Book, { first: 10, after: afterCursor, orderBy });
+
+    // book 3 has no `meta` at all, so its score is null too and it sorts next to book 2
+    expect(result.items.map(b => b.id)).toEqual([3, 1]);
   });
 
   test('throws error for missing nested property when relation not populated', async () => {
+    orm.em.clear();
+
     // Get book WITHOUT populating author
     const book = await orm.em.findOneOrFail(Book, { id: 1 });
 

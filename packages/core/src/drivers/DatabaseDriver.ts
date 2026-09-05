@@ -347,8 +347,16 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         return { [prop]: value } as OrderDefinition<T>;
       }
 
-      const desc = (direction as unknown) === QueryOrderNumeric.DESC || direction.toString().toLowerCase() === 'desc';
-      const dir = Utils.xor(desc, isLast) ? 'desc' : 'asc';
+      const dirStr = direction.toString().toLowerCase();
+      const desc = (direction as unknown) === QueryOrderNumeric.DESC || dirStr.startsWith('desc');
+      let dir = Utils.xor(desc, isLast) ? 'desc' : 'asc';
+      const nullsFirst = dirStr.includes('nulls first');
+
+      // backward pagination reverses the whole ordering, so the nulls placement flips with the direction
+      if (nullsFirst || dirStr.includes('nulls last')) {
+        dir += Utils.xor(nullsFirst, isLast) ? ' nulls first' : ' nulls last';
+      }
+
       return { [prop]: dir } as OrderDefinition<T>;
     };
 
@@ -454,11 +462,14 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
           );
           return o;
         }, {});
-        return { [prop]: value };
+
+        // an unconstrained group must stay unconstrained, an empty object condition would instead
+        // match only rows where every child value is null (e.g. object embeddables)
+        return Utils.hasObjectKeys(value) ? { [prop]: value } : {};
       }
 
-      const isDesc = (direction as unknown) === QueryOrderNumeric.DESC || direction.toString().toLowerCase() === 'desc';
       const dirStr = direction.toString().toLowerCase();
+      const isDesc = (direction as unknown) === QueryOrderNumeric.DESC || dirStr.startsWith('desc');
       let nullsFirst: boolean;
 
       if (dirStr.includes('nulls first')) {
@@ -481,14 +492,16 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
       // Handle null offset (intentional null cursor value)
       if (offset === null) {
+        // hasItemsAfterNull: forward + nullsFirst, or backward + nullsLast
+        const hasItemsAfterNull = Utils.xor(nullsFirst, inverse);
+
         if (eq) {
-          // Equal to null
-          return { [prop]: null };
+          // the `>=` half of the keyset condition: every row when the nulls come first in this
+          // direction, only the null ones when they come last
+          return hasItemsAfterNull ? {} : { [prop]: null };
         }
 
         // Strict comparison with null cursor value
-        // hasItemsAfterNull: forward + nullsFirst, or backward + nullsLast
-        const hasItemsAfterNull = Utils.xor(nullsFirst, inverse);
         if (hasItemsAfterNull) {
           return { [prop]: { $ne: null } };
         }
