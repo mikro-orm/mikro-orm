@@ -92,12 +92,12 @@ describe('QueryHelper', () => {
     });
     expect(
       QueryHelper.processWhere({
-        where: { favouriteBook: { $all: ['1', '2'] } },
+        where: { identities: { $all: ['foo', 'bar'] } },
         entityName: Author2,
         metadata: orm.getMetadata(),
         platform: orm.em.getDriver().getPlatform(),
       }),
-    ).toEqual({ favouriteBook: { $all: ['1', '2'] } });
+    ).toEqual({ identities: { $all: ['foo', 'bar'] } });
   });
 
   test('mergePropertyFilters', async () => {

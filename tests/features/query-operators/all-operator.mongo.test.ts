@@ -1,4 +1,6 @@
 import {
+  Embeddable,
+  Embedded,
   Entity,
   ManyToMany,
   PrimaryKey,
@@ -20,10 +22,8 @@ class Label {
   @Property()
   name!: string;
 
-  constructor(name?: string) {
-    if (name !== undefined) {
-      this.name = name;
-    }
+  constructor(name: string) {
+    this.name = name;
   }
 }
 
@@ -41,10 +41,8 @@ class Item {
   @ManyToMany(() => Label)
   labels = new Collection<Label, Item>(this);
 
-  constructor(name?: string) {
-    if (name !== undefined) {
-      this.name = name;
-    }
+  constructor(name: string) {
+    this.name = name;
   }
 }
 
@@ -62,15 +60,35 @@ class Article {
   @Property()
   keywords!: string[];
 
-  constructor(title?: string, keywords?: string[]) {
-    if (title !== undefined) {
-      this.title = title;
-    }
-
-    if (keywords !== undefined) {
-      this.keywords = keywords;
-    }
+  constructor(title: string, keywords: string[]) {
+    this.title = title;
+    this.keywords = keywords;
   }
+}
+
+@Embeddable()
+class Tag {
+  @Property()
+  name!: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+}
+
+@Entity()
+class Product {
+  @PrimaryKey({ type: 'ObjectId' })
+  _id!: ObjectId;
+
+  @SerializedPrimaryKey()
+  id!: string;
+
+  @Property()
+  name!: string;
+
+  @Embedded(() => Tag, { array: true, object: true })
+  tags!: Tag[];
 }
 
 describe('$all operator in mongo', () => {
@@ -83,8 +101,9 @@ describe('$all operator in mongo', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [Label, Item, Article],
-      clientUrl: `${process.env.MONGO_URI}/mikro-orm-test-all-operator`,
+      entities: [Label, Item, Article, Tag, Product],
+      dbName: 'mikro_orm_test_all_operator',
+      clientUrl: 'mongodb://localhost:27017',
     });
     await orm.schema.clear();
 
@@ -100,6 +119,9 @@ describe('$all operator in mongo', () => {
     orm.em.create(Article, { title: 'article1', keywords: ['foo', 'bar', 'baz'] });
     orm.em.create(Article, { title: 'article2', keywords: ['foo', 'bar'] });
     orm.em.create(Article, { title: 'article3', keywords: ['foo'] });
+
+    orm.em.create(Product, { name: 'product1', tags: [{ name: 'x' }, { name: 'y' }] });
+    orm.em.create(Product, { name: 'product2', tags: [{ name: 'x' }] });
 
     await orm.em.flush();
     orm.em.clear();
@@ -161,5 +183,24 @@ describe('$all operator in mongo', () => {
   test('$all accepts string ids for m:n collection', async () => {
     const items = await orm.em.find(Item, { labels: { $all: [labelA.id, labelB.id] } });
     expect(items.map(i => i.name).sort()).toEqual(['item1', 'item2']);
+  });
+
+  test('an empty $all matches nothing', async () => {
+    const articles = await orm.em.find(Article, { keywords: { $all: [] } });
+    expect(articles).toHaveLength(0);
+  });
+
+  test('$all on an object embeddable array is passed through to mongo', async () => {
+    const mock = mockLogger(orm, ['query']);
+
+    const both = await orm.em.find(Product, { tags: { $all: [{ name: 'x' }, { name: 'y' }] } });
+    expect(both.map(p => p.name)).toEqual(['product1']);
+
+    const single = await orm.em.fork().find(Product, { tags: { $all: [{ name: 'x' }] } });
+    expect(single.map(p => p.name).sort()).toEqual(['product1', 'product2']);
+
+    expect(mock.mock.calls[0][0]).toMatch(
+      /db\.getCollection\('product'\)\.find\({ tags: { '\$all': \[ { name: 'x' }, { name: 'y' } ] } }, {}\)\.toArray\(\);/,
+    );
   });
 });
