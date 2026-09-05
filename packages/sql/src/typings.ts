@@ -141,6 +141,16 @@ export interface CheckDef<T = unknown> {
   columnName?: string;
 }
 
+/** Resolved row level security policy for schema operations (all callbacks resolved to strings). */
+export interface SqlPolicyDef {
+  name: string;
+  command: 'select' | 'insert' | 'update' | 'delete' | 'all';
+  type: 'permissive' | 'restrictive';
+  roles: string[];
+  using?: string;
+  check?: string;
+}
+
 /** Resolved trigger definition for schema operations (all callbacks resolved to strings). */
 export interface SqlTriggerDef {
   name: string;
@@ -217,6 +227,13 @@ export interface TableDifference {
   addedTriggers: Dictionary<SqlTriggerDef>;
   changedTriggers: Dictionary<SqlTriggerDef>;
   removedTriggers: Dictionary<SqlTriggerDef>;
+  addedPolicies: Dictionary<SqlPolicyDef>;
+  /** Changed policies surface as `removedPolicies` + `addedPolicies` pairs (drop + recreate). */
+  removedPolicies: Dictionary<SqlPolicyDef>;
+  /** New RLS enable state, present only when it changed. */
+  changedRlsEnabled?: boolean;
+  /** New RLS force state, present only when it changed. */
+  changedRlsForced?: boolean;
   addedForeignKeys: Dictionary<ForeignKey>;
   changedForeignKeys: Dictionary<ForeignKey>;
   removedForeignKeys: Dictionary<ForeignKey>;

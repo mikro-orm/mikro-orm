@@ -5,15 +5,20 @@ import {
   type Dictionary,
   type EntityMetadata,
   type EntityProperty,
+  type FilterDef,
+  MetadataError,
+  QueryHelper,
   type Routine,
   type Transaction,
   type Type,
+  Utils,
   isRaw,
 } from '@mikro-orm/core';
 import { DatabaseTable } from './DatabaseTable.js';
 import { normalizeViewDefinition } from './SchemaHelper.js';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
-import type { DatabaseView, SqlRoutineDef } from '../typings.js';
+import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
+import type { DatabaseView, SqlPolicyDef, SqlRoutineDef } from '../typings.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import { getTablePartitioning } from './partitioning.js';
 
@@ -381,9 +386,146 @@ export class DatabaseSchema {
           expression: trigger.expression,
         });
       }
+
+      // non-empty policies imply RLS; `rowLevelSecurity: 'force'` enforces it for the table owner too, but an
+      // explicit `rowLevelSecurity: false` keeps RLS disabled even when policies are staged (they stay dormant)
+      table.rlsEnabled = meta.rowLevelSecurity !== false && (meta.policies.length > 0 || !!meta.rowLevelSecurity);
+      table.rlsForced = meta.rowLevelSecurity === 'force';
+      const usedPolicyNames = new Set<string>();
+      const resolve = (raw: unknown): string | undefined => {
+        if (raw == null) {
+          return undefined;
+        }
+
+        return isRaw(raw) ? platform.formatQuery(raw.sql, raw.params) : (raw as string);
+      };
+
+      for (const policy of meta.policies) {
+        const command = policy.command ?? 'all';
+        // deterministic default name derived from table + command + collision index, truncated the
+        // same way check names are, so the introspected (engine-truncated) name matches metadata
+        const max = platform.getMaxIdentifierLength();
+        let name = policy.name;
+
+        if (!name) {
+          name = this.uniquePolicyName(`${meta.collection}_${command}_policy`, platform, usedPolicyNames);
+        } else {
+          name = name.substring(0, max);
+
+          // explicit names skip the collision suffixing, so a duplicate would otherwise die with a raw pg error
+          // on create or be silently swallowed by the name-keyed diff dictionaries — reject it up front
+          if (usedPolicyNames.has(name)) {
+            throw MetadataError.duplicatePolicyName(meta, name);
+          }
+
+          usedPolicyNames.add(name);
+        }
+
+        table.addPolicy({
+          name,
+          command,
+          type: policy.type ?? 'permissive',
+          roles: policy.roles ?? [],
+          using: resolve(policy.using),
+          check: resolve(policy.check),
+        });
+      }
+
+      // rls-flagged filters materialize as additional permissive policies (app-level WHERE + DB-level policy);
+      // filters inherited from a TPT parent are skipped — the policy already lives on the parent table, and the
+      // child table may not even have the referenced columns
+      const rlsFilters = Object.values(meta.filters).filter(
+        filter => filter.rls && !(meta.tptParent && Object.values(meta.tptParent.filters).includes(filter)),
+      );
+
+      if (rlsFilters.length > 0) {
+        // an explicit `rowLevelSecurity: false` still stages the filter's policy but keeps RLS off (dormant)
+        table.rlsEnabled = meta.rowLevelSecurity !== false;
+
+        for (const filter of rlsFilters) {
+          table.addPolicy(this.compileRlsFilterPolicy(meta, filter, table, platform, usedPolicyNames));
+        }
+      }
     }
 
     return schema;
+  }
+
+  /** Compiles an `rls`-flagged filter's condition into a resolved policy backed by `current_setting()` lookups. */
+  private static compileRlsFilterPolicy(
+    meta: EntityMetadata,
+    filter: FilterDef,
+    table: DatabaseTable,
+    platform: AbstractSqlPlatform,
+    usedPolicyNames: Set<string>,
+  ): SqlPolicyDef {
+    const accessed = new Set<string>();
+    const cond = QueryHelper.resolveRlsFilterCond(filter, accessed, meta.className);
+    const setting = typeof filter.rls === 'object' ? filter.rls.setting : undefined;
+
+    if (setting && accessed.size > 1) {
+      throw MetadataError.rlsFilterMultiArgSetting(filter.name, [...accessed]);
+    }
+
+    // the config-bound driver is always an `AbstractSqlDriver` here, like in `DatabaseTable.processIndexWhere`
+    const driver = platform.getConfig().getDriver() as AbstractSqlDriver;
+    let sql = driver.renderPartialIndexWhere(meta.class, cond);
+    const prefix = QueryHelper.RLS_SENTINEL_PREFIX;
+    const suffix = QueryHelper.RLS_SENTINEL_SUFFIX;
+    // match `"<column>" <op> '<sentinel>'` — the LHS is always a quoted column emitted from this entity's own
+    // where; group 1 keeps the column + operator so only the sentinel literal is swapped for the session lookup
+    const re = new RegExp(`("([^"]+)"\\s*(?:!=|>=|<=|=|>|<)\\s*)'${prefix}(\\w+)${suffix}'`, 'g');
+
+    sql = sql.replace(re, (_whole: string, lhs: string, column: string, arg: string) => {
+      const col = table.getColumn(column);
+
+      // the condition can reference a property that renders a field name without a managed column
+      // (`persist: false`, `skipColumns`) — fail with a descriptive error instead of a crash
+      if (!col) {
+        throw MetadataError.rlsFilterUnmanagedColumn(filter.name, column);
+      }
+      // native enum columns compare against the enum type itself, `current_setting()` text won't coerce implicitly
+      const cast = col.nativeEnumName
+        ? `::${platform.quoteIdentifier(col.nativeEnumName)}`
+        : platform.getCurrentSettingCast(col.mappedType);
+
+      if (cast === null) {
+        throw MetadataError.rlsFilterUncastableType(filter.name, col.type);
+      }
+
+      // a sentinel implies the arg was accessed, and multi-arg custom settings were already rejected above
+      const name = setting || Utils.getRlsSettingName(filter.name, arg);
+
+      return `${lhs}current_setting(${platform.quoteValue(name)})${cast}`;
+    });
+
+    // a leftover sentinel means an argument appeared somewhere other than a direct comparison, which we can't compile
+    if (sql.includes(prefix)) {
+      throw MetadataError.rlsFilterUnsupportedCond(filter.name);
+    }
+
+    return {
+      name: this.uniquePolicyName(`${meta.collection}_${filter.name}_policy`, platform, usedPolicyNames),
+      command: 'all',
+      type: 'permissive',
+      roles: [],
+      using: sql,
+    };
+  }
+
+  /** Truncates the base first so the collision suffix survives the identifier limit. */
+  private static uniquePolicyName(base: string, platform: AbstractSqlPlatform, used: Set<string>): string {
+    const max = platform.getMaxIdentifierLength();
+    let name = base.substring(0, max);
+
+    for (let i = 2; used.has(name); i++) {
+      const suffix = `_${i}`;
+      name = base.substring(0, max - suffix.length) + suffix;
+    }
+
+    used.add(name);
+
+    return name;
   }
 
   /** Separate from {@link fromMetadata} so the comparator only walks routines when the user defined any. */
