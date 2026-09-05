@@ -136,11 +136,11 @@ TypeScript support was previously provided by `ts-node`. In v7, the CLI supports
 - `oxc` via `@oxc-node/core`, supports metadata reflection
 - `swc` via `@swc-node/register`, supports metadata reflection
 - `tsx`
-- `nub` via `@nubjs/loader`, supports metadata reflection (available from v7.2)
 - `jiti`
 - `tsimp`
+- `nub` via `@nubjs/loader`, supports metadata reflection and is available from v7.2 as the final automatic fallback when using the project `tsconfig.json`
 
-The default is `auto`, which means it goes through all those options sequentially and picks the first one available in the project dependencies. `nub` is skipped there, it is always opt-in.
+The default is `auto`, which means it goes through all those options sequentially and picks the first one available in the project dependencies. Nub runs last and only when the project `tsconfig.json` is used.
 
 To pick a loader explicitly, use the `tsLoader` setting in your `package.json`:
 
@@ -152,7 +152,7 @@ To pick a loader explicitly, use the `tsLoader` setting in your `package.json`:
 
 Or override it via `MIKRO_ORM_CLI_TS_LOADER` env var.
 
-To use Nub, install `@nubjs/loader` and select it explicitly:
+To select Nub explicitly, install `@nubjs/loader`.
 
 ```json
 "mikro-orm": {

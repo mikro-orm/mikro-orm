@@ -159,6 +159,7 @@ describe('CLIHelper', () => {
     expect(cli.$0).toBe('mikro-orm');
     expect(tryImportMock).toHaveBeenCalledTimes(2);
     expect(tryImportMock).toHaveBeenCalledWith({ module: '@swc-node/register/esm-register' });
+    delete pkg['mikro-orm'].tsConfigPath;
     pkg['mikro-orm'].preferTs = false;
   });
 
@@ -169,19 +170,20 @@ describe('CLIHelper', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(i => i);
     const cli = (await configure()) as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(tryImportMock).toHaveBeenCalledTimes(5);
+    expect(tryImportMock).toHaveBeenCalledTimes(6);
     expect(tryImportMock).toHaveBeenCalledWith({ module: '@oxc-node/core/register' });
     expect(tryImportMock).toHaveBeenCalledWith({ module: '@swc-node/register/esm-register' });
     expect(tryImportMock).toHaveBeenCalledWith({ module: 'tsx/esm/api' });
     expect(tryImportMock).toHaveBeenCalledWith({ module: 'jiti/register' });
     expect(tryImportMock).toHaveBeenCalledWith({ module: 'tsimp/import' });
+    expect(tryImportMock).toHaveBeenCalledWith({ module: '@nubjs/loader' });
     const warning =
-      'Neither `oxc`, `swc`, `tsx`, `jiti` nor `tsimp` found in the project dependencies, support for working with TypeScript files might not work. To use `oxc`, install `@oxc-node/core`. To use `swc`, install both `@swc-node/register` and `@swc/core`.';
+      'Neither `oxc`, `swc`, `tsx`, `jiti`, `tsimp` nor `nub` found in the project dependencies, support for working with TypeScript files might not work. To use `oxc`, install `@oxc-node/core`. To use `swc`, install both `@swc-node/register` and `@swc/core`.';
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining(warning));
     pkg['mikro-orm'].preferTs = false;
   });
 
-  test('does not select the Nub loader automatically', async () => {
+  test('selects the Nub loader as the final automatic fallback', async () => {
     pathExistsMock.mockReturnValue(true);
     pkg['mikro-orm'].preferTs = true;
     tryImportMock.mockImplementation(({ module: id }) => (id === '@nubjs/loader' ? {} : undefined));
@@ -189,8 +191,44 @@ describe('CLIHelper', () => {
 
     await configure();
 
+    expect(tryImportMock).toHaveBeenCalledTimes(6);
+    expect(tryImportMock).toHaveBeenLastCalledWith({ module: '@nubjs/loader' });
+    expect(warnSpy).not.toHaveBeenCalled();
+    expect(process.env.MIKRO_ORM_CLI_TS_LOADER).toBe('nub');
+    pkg['mikro-orm'].preferTs = false;
+  });
+
+  test('keeps existing loaders ahead of the Nub automatic fallback', async () => {
+    pathExistsMock.mockReturnValue(true);
+    pkg['mikro-orm'].preferTs = true;
+    tryImportMock.mockImplementation(({ module: id }) =>
+      id === '@oxc-node/core/register' || id === '@nubjs/loader' ? {} : undefined,
+    );
+
+    await configure();
+
+    expect(tryImportMock).toHaveBeenCalledTimes(1);
+    expect(tryImportMock).toHaveBeenCalledWith({ module: '@oxc-node/core/register' });
     expect(tryImportMock).not.toHaveBeenCalledWith({ module: '@nubjs/loader' });
-    expect(warnSpy).toHaveBeenCalled();
+    expect(process.env.MIKRO_ORM_CLI_TS_LOADER).toBe('oxc');
+    pkg['mikro-orm'].preferTs = false;
+  });
+
+  test('skips the Nub automatic fallback with a custom tsconfig path', async () => {
+    pathExistsMock.mockReturnValue(true);
+    pkg['mikro-orm'].preferTs = true;
+    pkg['mikro-orm'].tsConfigPath = './tsconfig.cli.json';
+    tryImportMock.mockImplementation(({ module: id }) => (id === '@nubjs/loader' ? {} : undefined));
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(i => i);
+
+    await configure();
+
+    expect(tryImportMock).toHaveBeenCalledTimes(5);
+    expect(tryImportMock).not.toHaveBeenCalledWith({ module: '@nubjs/loader' });
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Neither `oxc`, `swc`, `tsx`, `jiti` nor `tsimp` found'),
+    );
+    delete pkg['mikro-orm'].tsConfigPath;
     pkg['mikro-orm'].preferTs = false;
   });
 
