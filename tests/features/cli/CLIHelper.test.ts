@@ -117,9 +117,9 @@ describe('CLIHelper', () => {
     ['oxc', '@oxc-node/core/register'],
     ['swc', '@swc-node/register/esm-register'],
     ['tsx', 'tsx/esm/api'],
-    ['nub', '@nubjs/loader'],
     ['jiti', 'jiti/register'],
     ['tsimp', 'tsimp/import'],
+    ['nub', '@nubjs/loader'],
   ] as const)('configures CLI instance with TS support [%s]', async (loader, module) => {
     pathExistsMock.mockImplementation(path => (path as string).endsWith('package.json'));
     pkg['mikro-orm'].preferTs = true;

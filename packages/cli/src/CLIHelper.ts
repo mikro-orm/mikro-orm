@@ -340,7 +340,7 @@ export class CLIHelper {
    */
   static async registerTypeScriptSupport(
     configPath = 'tsconfig.json',
-    tsLoader?: 'oxc' | 'swc' | 'tsx' | 'nub' | 'jiti' | 'tsimp' | 'auto',
+    tsLoader?: 'oxc' | 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'nub' | 'auto',
   ): Promise<boolean> {
     /* v8 ignore if */
     if (process.versions.bun) {
@@ -373,7 +373,7 @@ export class CLIHelper {
     const errors: Error[] = [];
 
     for (const loader of Utils.keys(loaders)) {
-      if (loader === 'nub' && explicitLoader === 'auto' && !usesDefaultTsConfig) {
+      if (loader === 'nub' && !usesDefaultTsConfig) {
         continue;
       }
 
@@ -440,7 +440,7 @@ export class CLIHelper {
 export interface Settings {
   verbose?: boolean;
   preferTs?: boolean;
-  tsLoader?: 'oxc' | 'swc' | 'tsx' | 'nub' | 'jiti' | 'tsimp' | 'auto';
+  tsLoader?: 'oxc' | 'swc' | 'tsx' | 'jiti' | 'tsimp' | 'nub' | 'auto';
   tsConfigPath?: string;
   configPaths?: string[];
 }
