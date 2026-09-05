@@ -1,4 +1,4 @@
-import { Cursor, Reference, ScalarReference, Type } from '@mikro-orm/core';
+import { BigIntType, Cursor, CursorError, DateTimeType, Reference, ScalarReference, Type } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 import {
   Embeddable,
@@ -103,6 +103,85 @@ class PointInTimeEpochType extends Type<PointInTime | null, number | null> {
   }
 }
 
+/**
+ * Temporal-style wrapper over a datetime column: the DB form is the ISO string with full
+ * sub-millisecond precision, while a `Date` input can only carry millisecond precision.
+ */
+class PointInTimeDateTimeType extends Type<PointInTime | null, string | null> {
+  override convertToDatabaseValue(value: PointInTime | string | null): string | null {
+    if (value == null || typeof value === 'string') {
+      return value;
+    }
+
+    if (!(value instanceof PointInTime)) {
+      throw new Error(`Expected PointInTime, got ${typeof value}`);
+    }
+
+    return value.iso;
+  }
+
+  override convertToJSValue(value: PointInTime | Date | string | null): PointInTime | null {
+    if (value == null) {
+      return null;
+    }
+
+    if (value instanceof PointInTime) {
+      return value;
+    }
+
+    // like `Temporal.Instant.fromEpochMilliseconds`, a `Date` only carries ms precision
+    return new PointInTime(value instanceof Date ? value.toISOString() : value);
+  }
+
+  override getColumnType(): string {
+    return 'datetime';
+  }
+
+  override compareAsType(): string {
+    return 'date';
+  }
+}
+
+/** Owns its cursor JSON round trip: `toJSON` seals the value and only `fromJSON` can unseal it. */
+class SealedPointInTimeType extends Type<PointInTime | null, string | null> {
+  override convertToDatabaseValue(value: PointInTime | string | null): string | null {
+    if (value == null || typeof value === 'string') {
+      return value;
+    }
+
+    return value.iso;
+  }
+
+  override convertToJSValue(value: PointInTime | string | null): PointInTime | null {
+    if (value == null) {
+      return null;
+    }
+
+    return value instanceof PointInTime ? value : new PointInTime(value);
+  }
+
+  override toJSON(value: PointInTime | null): string | null {
+    return value == null ? null : `sealed:${value.iso}`;
+  }
+
+  override fromJSON(value: string): PointInTime {
+    // a type may reject client input with a `CursorError` of its own
+    if (!value.startsWith('sealed:')) {
+      throw CursorError.invalidCursor('Job', new Error(`Expected sealed value, got '${value}'`));
+    }
+
+    return new PointInTime(value.slice('sealed:'.length));
+  }
+
+  override getColumnType(): string {
+    return 'varchar(255)';
+  }
+
+  override compareAsType(): string {
+    return 'string';
+  }
+}
+
 /** Degenerate but valid custom type over a datetime column: both converters are the default identity. */
 class TaggedDateType extends Type<Date, Date> {
   override getColumnType(): string {
@@ -110,7 +189,22 @@ class TaggedDateType extends Type<Date, Date> {
   }
 }
 
-/** Enforces the documented converter contracts: both converters only ever accept a `Date`. */
+/** JS value is a `Date`, but the database form is an ISO string rather than a `Date`. */
+class IsoDateType extends Type<Date, string> {
+  override convertToDatabaseValue(value: Date | string): string {
+    return value instanceof Date ? value.toISOString() : value;
+  }
+
+  override convertToJSValue(value: Date | string): Date {
+    return value instanceof Date ? value : new Date(value);
+  }
+
+  override getColumnType(): string {
+    return 'datetime';
+  }
+}
+
+/** Enforces the documented converter contracts: both converters only ever accept a valid `Date`. */
 class StrictDateType extends Type<Date | null, Date | null> {
   override convertToDatabaseValue(value: Date | null): Date | null {
     if (value != null && !(value instanceof Date)) {
@@ -123,6 +217,10 @@ class StrictDateType extends Type<Date | null, Date | null> {
   override convertToJSValue(value: Date | null): Date | null {
     if (value != null && !(value instanceof Date)) {
       throw new Error(`Expected Date, got ${typeof value}`);
+    }
+
+    if (value != null && Number.isNaN(value.getTime())) {
+      throw new Error('Expected a valid Date');
     }
 
     return value;
@@ -249,6 +347,12 @@ class Audit {
 
   @Property({ type: PointInTimeEpochType })
   epochAt!: PointInTime;
+
+  @Property({ type: new DateTimeType() })
+  loggedIn!: Date;
+
+  @Property({ type: IsoDateType })
+  isoAt!: Date;
 }
 
 @Entity()
@@ -274,8 +378,17 @@ class Job {
   @Property({ type: PointInTimeEpochType })
   startedAtEpoch!: PointInTime;
 
-  @Property({ type: TaggedDateType })
-  taggedAt!: Date;
+  @Property({ type: PointInTimeDateTimeType })
+  recordedAt!: PointInTime;
+
+  @Property({ type: SealedPointInTimeType })
+  sealedAt!: PointInTime;
+
+  @Property({ type: new BigIntType() })
+  serial!: bigint;
+
+  @Property({ type: new DateTimeType() })
+  loggedAt!: Date;
 
   @Property({ type: StrictDateType })
   strictAt!: Date;
@@ -340,7 +453,10 @@ beforeAll(async () => {
       id,
       startedAt: new PointInTime(iso),
       startedAtEpoch: new PointInTime(iso),
-      taggedAt: new Date(`2024-05-${day(id)}T00:00:00.000Z`),
+      recordedAt: new PointInTime(iso),
+      sealedAt: new PointInTime(iso),
+      serial: BigInt(1000 + id),
+      loggedAt: new Date(`2024-12-${day(id)}T00:00:00.000Z`),
       strictAt: new Date(`2024-06-${day(id)}T00:00:00.000Z`),
       stampedAt: new Stamp(new Date(`2024-07-${day(id)}T00:00:00.000Z`)),
       code: `c${day(id)}`,
@@ -352,6 +468,8 @@ beforeAll(async () => {
         changedAt: new Date(`2024-04-${day(id)}T00:00:00.000Z`),
         auditedAt: new Date(`2024-08-${day(id)}T00:00:00.000Z`),
         epochAt: new PointInTime(`2024-11-${day(id)}T00:00:00.000Z`),
+        loggedIn: new Date(`2025-01-${day(id)}T00:00:00.000Z`),
+        isoAt: new Date(`2025-02-${day(id)}T00:00:00.000Z`),
       },
       ticksAt: new Ticks(Date.parse(`2024-09-${day(id)}T00:00:00.000Z`)),
       owner: { id, name: `Owner ${id}`, since: new Date(`2024-03-${day(id)}T00:00:00.000Z`) },
@@ -410,26 +528,105 @@ test('custom type with distinct JSON and DB forms with string cursor', async () 
   expect(cursor2.items[0].startedAtEpoch.iso).toBe('2024-01-01T00:00:00.123500Z');
 });
 
-test('custom type with distinct JSON and DB forms with POJO `after`', async () => {
-  const job3 = await orm.em.findOneOrFail(Job, { id: 3 });
-
-  const cursor = await orm.em.findByCursor(Job, {
+test('sub-millisecond precision survives a string cursor on a datetime column', async () => {
+  const cursor1 = await orm.em.findByCursor(Job, {
     first: 3,
-    after: { startedAtEpoch: job3.startedAtEpoch, id: job3.id },
-    orderBy: { startedAtEpoch: 'asc', id: 'asc' },
+    orderBy: { recordedAt: 'asc', id: 'asc' },
   });
-  expect(cursor.items).toMatchObject([{ id: 4 }, { id: 5 }, { id: 6 }]);
+  expect(cursor1.items).toMatchObject([{ id: 1 }, { id: 2 }, { id: 3 }]);
+
+  // jobs 2-4 share the same millisecond, so healing the offset through `Date` would skip job 4
+  const cursor2 = await orm.em.findByCursor(Job, {
+    first: 3,
+    after: cursor1.endCursor!,
+    orderBy: { recordedAt: 'asc', id: 'asc' },
+  });
+  expect(cursor2.items).toMatchObject([{ id: 4 }, { id: 5 }, { id: 6 }]);
+  expect(cursor2.items[0].recordedAt.iso).toBe('2024-01-01T00:00:00.123500Z');
 });
 
-test('identity custom type over a datetime column with POJO `after`', async () => {
-  const job3 = await orm.em.findOneOrFail(Job, { id: 3 });
-
-  const cursor = await orm.em.findByCursor(Job, {
+test('custom type owning its cursor JSON round trip via toJSON/fromJSON', async () => {
+  const cursor1 = await orm.em.findByCursor(Job, {
     first: 3,
-    after: { taggedAt: job3.taggedAt, id: job3.id },
-    orderBy: { taggedAt: 'asc', id: 'asc' },
+    orderBy: { sealedAt: 'asc', id: 'asc' },
   });
-  expect(cursor.items).toMatchObject([{ id: 4 }, { id: 5 }, { id: 6 }]);
+  expect(cursor1.items).toMatchObject([{ id: 1 }, { id: 2 }, { id: 3 }]);
+
+  // the cursor payload carries the type's own serialized form
+  expect(Cursor.decode(cursor1.endCursor!)).toEqual(['sealed:2024-01-01T00:00:00.123450Z', 3]);
+
+  const cursor2 = await orm.em.findByCursor(Job, {
+    first: 3,
+    after: cursor1.endCursor!,
+    orderBy: { sealedAt: 'asc', id: 'asc' },
+  });
+  expect(cursor2.items).toMatchObject([{ id: 4 }, { id: 5 }, { id: 6 }]);
+
+  // POJO values are JS values and never reach `fromJSON`
+  const cursor3 = await orm.em.findByCursor(Job, {
+    first: 3,
+    after: { sealedAt: new PointInTime('2024-01-01T00:00:00.123450Z'), id: 3 },
+    orderBy: { sealedAt: 'asc', id: 'asc' },
+  });
+  expect(cursor3.items).toMatchObject([{ id: 4 }, { id: 5 }, { id: 6 }]);
+});
+
+test('bigint cursor member survives the JSON round trip', async () => {
+  const cursor1 = await orm.em.findByCursor(Job, {
+    first: 3,
+    orderBy: { serial: 'asc', id: 'asc' },
+  });
+  expect(cursor1.items).toMatchObject([{ id: 1 }, { id: 2 }, { id: 3 }]);
+
+  // `JSON.stringify` cannot serialize a bigint, `BigIntType.toJSON` makes it JSON-safe
+  expect(Cursor.decode(cursor1.endCursor!)).toEqual(['1003', 3]);
+
+  const cursor2 = await orm.em.findByCursor(Job, {
+    first: 3,
+    after: cursor1.endCursor!,
+    orderBy: { serial: 'asc', id: 'asc' },
+  });
+  expect(cursor2.items).toMatchObject([{ id: 4 }, { id: 5 }, { id: 6 }]);
+
+  const cursor3 = await orm.em.findByCursor(Job, {
+    first: 3,
+    after: { serial: BigInt(1003), id: 3 },
+    orderBy: { serial: 'asc', id: 'asc' },
+  });
+  expect(cursor3.items).toMatchObject([{ id: 4 }, { id: 5 }, { id: 6 }]);
+
+  // tampered cursors fail loudly instead of restoring garbage
+  await expect(
+    orm.em.findByCursor(Job, {
+      first: 3,
+      after: Cursor.encode([{ nested: true }, 3]),
+      orderBy: { serial: 'asc', id: 'asc' },
+    }),
+  ).rejects.toThrow("Could not convert JSON value '[object Object]' of type 'object' to type BigIntType");
+});
+
+test('explicit datetime type instance restores dates via its own fromJSON', async () => {
+  const cursor1 = await orm.em.findByCursor(Job, {
+    first: 3,
+    orderBy: { loggedAt: 'asc', id: 'asc' },
+  });
+  expect(cursor1.items).toMatchObject([{ id: 1 }, { id: 2 }, { id: 3 }]);
+
+  const cursor2 = await orm.em.findByCursor(Job, {
+    first: 3,
+    after: cursor1.endCursor!,
+    orderBy: { loggedAt: 'asc', id: 'asc' },
+  });
+  expect(cursor2.items).toMatchObject([{ id: 4 }, { id: 5 }, { id: 6 }]);
+
+  // tampered cursors fail loudly instead of restoring an invalid date
+  await expect(
+    orm.em.findByCursor(Job, {
+      first: 3,
+      after: Cursor.encode(['not a date', 3]),
+      orderBy: { loggedAt: 'asc', id: 'asc' },
+    }),
+  ).rejects.toThrow("Could not convert JSON value 'not a date' of type 'string' to type DateTimeType");
 });
 
 test('contract-strict custom type over a datetime column', async () => {
@@ -485,34 +682,12 @@ test('wrapper-typed field over a datetime column', async () => {
 });
 
 test('hand-written ISO string for a custom-typed datetime cursor member heals to Date', async () => {
-  const cursor1 = await orm.em.findByCursor(Job, {
-    first: 3,
-    after: { taggedAt: '2024-05-03T00:00:00.000Z', id: 3 },
-    orderBy: { taggedAt: 'asc', id: 'asc' },
-  });
-  expect(cursor1.items).toMatchObject([{ id: 4 }, { id: 5 }, { id: 6 }]);
-
-  const cursor2 = await orm.em.findByCursor(Job, {
+  const cursor = await orm.em.findByCursor(Job, {
     first: 3,
     after: { strictAt: '2024-06-03T00:00:00.000Z', id: 3 },
     orderBy: { strictAt: 'asc', id: 'asc' },
   });
-  expect(cursor2.items).toMatchObject([{ id: 4 }, { id: 5 }, { id: 6 }]);
-});
-
-test('identity custom type over a datetime column with string cursor', async () => {
-  const cursor1 = await orm.em.findByCursor(Job, {
-    first: 3,
-    orderBy: { taggedAt: 'asc', id: 'asc' },
-  });
-  expect(cursor1.items).toMatchObject([{ id: 1 }, { id: 2 }, { id: 3 }]);
-
-  const cursor2 = await orm.em.findByCursor(Job, {
-    first: 3,
-    after: cursor1.endCursor!,
-    orderBy: { taggedAt: 'asc', id: 'asc' },
-  });
-  expect(cursor2.items).toMatchObject([{ id: 4 }, { id: 5 }, { id: 6 }]);
+  expect(cursor.items).toMatchObject([{ id: 4 }, { id: 5 }, { id: 6 }]);
 });
 
 test('native Date cursor member still rehydrates', async () => {
@@ -679,6 +854,29 @@ test('custom type whose JSON form is not a string', async () => {
   expect(cursor2.items).toMatchObject([{ id: 4 }, { id: 5 }, { id: 6 }]);
 });
 
+test('fromJSON type inside object-mode embeddable stays in JSON space', async () => {
+  const cursor1 = await orm.em.findByCursor(Job, {
+    first: 3,
+    orderBy: { audit: { loggedIn: 'asc' }, id: 'asc' },
+  });
+  expect(cursor1.items).toMatchObject([{ id: 1 }, { id: 2 }, { id: 3 }]);
+
+  // the restored `Date` must be compared in its JSON form, matching the stored document
+  const cursor2 = await orm.em.findByCursor(Job, {
+    first: 3,
+    after: cursor1.endCursor!,
+    orderBy: { audit: { loggedIn: 'asc' }, id: 'asc' },
+  });
+  expect(cursor2.items).toMatchObject([{ id: 4 }, { id: 5 }, { id: 6 }]);
+
+  const cursor3 = await orm.em.findByCursor(Job, {
+    first: 3,
+    after: cursor2.endCursor!,
+    orderBy: { audit: { loggedIn: 'asc' }, id: 'asc' },
+  });
+  expect(cursor3.items).toMatchObject([{ id: 7 }, { id: 8 }, { id: 9 }]);
+});
+
 test('custom-typed Date inside object-mode embeddable stays in JSON space', async () => {
   const cursor1 = await orm.em.findByCursor(Job, {
     first: 3,
@@ -725,6 +923,43 @@ test('custom type with distinct JSON and DB forms inside object-mode embeddable'
   expect(cursor3.items).toMatchObject([{ id: 4 }, { id: 5 }, { id: 6 }]);
 });
 
+test('custom type with a string database form inside object-mode embeddable', async () => {
+  const cursor1 = await orm.em.findByCursor(Job, {
+    first: 3,
+    orderBy: { audit: { isoAt: 'asc' }, id: 'asc' },
+  });
+  expect(cursor1.items).toMatchObject([{ id: 1 }, { id: 2 }, { id: 3 }]);
+
+  // the restored `Date` is not the database form, so it stays a JS value for `processWhere`
+  const cursor2 = await orm.em.findByCursor(Job, {
+    first: 3,
+    after: cursor1.endCursor!,
+    orderBy: { audit: { isoAt: 'asc' }, id: 'asc' },
+  });
+  expect(cursor2.items).toMatchObject([{ id: 4 }, { id: 5 }, { id: 6 }]);
+});
+
+test('POJO cursor value the type rejects keeps the raw error', async () => {
+  // POJO values are not client supplied, so the type's own error is not wrapped as a `CursorError`
+  const failing = orm.em.findByCursor(Job, {
+    first: 3,
+    after: { strictAt: 'not a date', id: 3 },
+    orderBy: { strictAt: 'asc', id: 'asc' },
+  });
+  await expect(failing).rejects.toThrow('Expected a valid Date');
+  await expect(failing).rejects.not.toBeInstanceOf(CursorError);
+});
+
+test('a `CursorError` from the type is not wrapped again', async () => {
+  await expect(
+    orm.em.findByCursor(Job, {
+      first: 3,
+      after: Cursor.encode(['nope', 3]),
+      orderBy: { sealedAt: 'asc', id: 'asc' },
+    }),
+  ).rejects.toThrow("Invalid cursor for entity Job: Expected sealed value, got 'nope'");
+});
+
 test('validating custom type keeps its own error message', async () => {
   const cursor1 = await orm.em.findByCursor(Job, {
     first: 3,
@@ -743,7 +978,7 @@ test('validating custom type keeps its own error message', async () => {
   await expect(
     orm.em.findByCursor(Job, {
       first: 3,
-      after: { code: '2024', id: 3 },
+      after: Cursor.encode(['2024', 3]),
       orderBy: { code: 'asc', id: 'asc' },
     }),
   ).rejects.toThrow("unknown code '2024'");
@@ -753,7 +988,7 @@ test('validating custom type keeps its own error message', async () => {
   await expect(
     orm.em.findByCursor(Job, {
       first: 3,
-      after: { code: '2024-01-05T00:00:00.000Z', id: 3 },
+      after: Cursor.encode(['2024-01-05T00:00:00.000Z', 3]),
       orderBy: { code: 'asc', id: 'asc' },
     }),
   ).rejects.toThrow("unknown code '2024-01-05T00:00:00.000Z'");
@@ -820,6 +1055,46 @@ test('scalar value where a nested cursor object is expected', async () => {
       orderBy: { owner: { since: 'asc' }, id: 'asc' },
     }),
   ).rejects.toThrow("value for 'Job.owner.since' is missing");
+});
+
+test('invalid string cursors surface as CursorError', async () => {
+  // undecodable payload
+  await expect(
+    orm.em.findByCursor(Job, {
+      first: 3,
+      after: '!!not a cursor!!',
+      orderBy: { id: 'asc' },
+    }),
+  ).rejects.toThrow(CursorError);
+
+  // decodable payload the type cannot restore, original error kept on the cause chain
+  const tampered = orm.em.findByCursor(Job, {
+    first: 3,
+    after: Cursor.encode(['nope', 3]),
+    orderBy: { loggedAt: 'asc', id: 'asc' },
+  });
+  await expect(tampered).rejects.toThrow(CursorError);
+  await expect(tampered).rejects.toThrow(
+    "Invalid cursor for entity Job: Could not convert JSON value 'nope' of type 'string' to type DateTimeType",
+  );
+});
+
+test('`BigIntType.fromJSON` restores all three modes', () => {
+  expect(new BigIntType().fromJSON('1003')).toBe(BigInt(1003));
+  expect(new BigIntType('number').fromJSON(2003)).toBe(2003);
+  expect(new BigIntType('string').fromJSON('3003')).toBe('3003');
+
+  // `number` mode cannot represent values past `MAX_SAFE_INTEGER` without rounding
+  expect(() => new BigIntType('number').fromJSON('9007199254740993')).toThrow(
+    "Could not convert JSON value '9007199254740993' of type 'string' to type BigIntType",
+  );
+  expect(new BigIntType().fromJSON('9007199254740993')).toBe(9007199254740993n);
+});
+
+test('`Cursor.for` keeps non-object values under a nested direction', () => {
+  const meta = orm.getMetadata().get(Job);
+  const encoded = Cursor.for(meta, { owner: null, id: 3 } as never, { owner: { since: 'asc' }, id: 'asc' });
+  expect(Cursor.decode(encoded)).toEqual([null, 3]);
 });
 
 test('`Cursor.decode` returns raw JSON values', () => {
