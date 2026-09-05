@@ -2,7 +2,7 @@
 title: TypeScript loaders in CLI
 ---
 
-The CLI needs to be able to `import()` your TypeScript files, both the ORM config and the entities it discovers from it. Node.js cannot do that on its own, so the CLI registers one of the supported TypeScript loaders before it loads your config.
+The CLI needs to be able to `import()` your TypeScript files, both the ORM config and the entities it discovers from it. Node.js can run TypeScript on its own nowadays, but only by stripping the types away, so files using enums or decorators still fail to parse. Entities defined with decorators are the common case, hence the CLI registers one of the supported TypeScript loaders before it loads your config. When it cannot find any, it falls back to the compiled JavaScript config and ignores the TypeScript one.
 
 ## Detection
 
