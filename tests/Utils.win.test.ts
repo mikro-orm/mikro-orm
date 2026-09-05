@@ -445,6 +445,17 @@ describe('Utils', () => {
     ];
     expect(lookupPathFromDecorator('Customer', stack5)).toBe('Customer');
 
+    // @oxc-node/core injects its own `__decorate` helper, which needs to be skipped like tslib
+    const stack6 = [
+      '    at lookupPathFromDecorator (/usr/local/var/www/my-project/node_modules/@mikro-orm/decorators/utils.js:170:23)',
+      '    at <anonymous> (/usr/local/var/www/my-project/node_modules/@mikro-orm/decorators/legacy/Entity.js:8:49)',
+      '    at __decorate (/usr/local/var/www/my-project/node_modules/@oxc-node/core/src/helpers/decorate.js:17:22)',
+      '    at <anonymous> (/usr/local/var/www/my-project/src/entities/Customer.ts:7:16)',
+      '    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)',
+      '    at async node:internal/modules/esm/loader:650:26',
+    ];
+    expect(lookupPathFromDecorator('Customer', stack6)).toBe('/usr/local/var/www/my-project/src/entities/Customer.ts');
+
     // unknown type of stack trace fallback
     expect(
       lookupPathFromDecorator('Customer', [
