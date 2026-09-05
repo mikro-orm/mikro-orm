@@ -121,11 +121,12 @@ describe.each([
 });
 
 describe('cursor pagination ordered by a nullable relation', () => {
+  // book 3 has no author, so its sort key is null; sqlite sorts that lowest on an unqualified `asc`
   test('a missing relation sorts as null even for a non-nullable column', async () => {
     const orderBy = { author: { name: QueryOrder.ASC }, id: QueryOrder.ASC } as QueryOrderMap<Book>;
 
-    expect(await walk(Book, orderBy)).toEqual([1, 2, 3]);
-    expect(await walk(Book, orderBy, true)).toEqual([3, 2, 1]);
+    expect(await walk(Book, orderBy)).toEqual([3, 1, 2]);
+    expect(await walk(Book, orderBy, true)).toEqual([2, 1, 3]);
   });
 
   test('several nullable columns of the same relation', async () => {
@@ -134,7 +135,8 @@ describe('cursor pagination ordered by a nullable relation', () => {
       id: QueryOrder.ASC,
     } as QueryOrderMap<Book>;
 
-    expect(await walk(Book, orderBy)).toEqual([1, 2, 3]);
-    expect(await walk(Book, orderBy, true)).toEqual([3, 2, 1]);
+    // book 2's author has a null rating, book 3 has no author at all
+    expect(await walk(Book, orderBy)).toEqual([3, 2, 1]);
+    expect(await walk(Book, orderBy, true)).toEqual([1, 2, 3]);
   });
 });

@@ -96,13 +96,20 @@ describe.each(['sqlite', 'mysql', 'postgresql', 'mssql'] as const)(
       expect(orm.getMetadata().get(User).properties.bigAgeNullable.nullable).toBe(true);
     });
 
-    // the cursor default is nulls last for asc and nulls first for desc
+    // an unqualified direction follows the platform's own placement, the same one a plain `em.find` gets
+    const nullsLowest = type !== 'postgresql';
+    const nonNull = { asc: [2, 5], desc: [5, 2] };
+    const nulls = [1, 3, 4];
+    const order = (dir: 'asc' | 'desc') =>
+      nullsLowest === (dir === 'asc') ? [...nulls, ...nonNull[dir]] : [...nonNull[dir], ...nulls];
+
     describe.each([
-      ['bigAge', 'asc', [2, 5, 1, 3, 4]],
-      ['bigAge', 'desc', [1, 3, 4, 5, 2]],
-      ['bigAgeNullable', 'asc', [2, 5, 1, 3, 4]],
-      ['bigAgeNullable', 'desc', [1, 3, 4, 5, 2]],
-    ] as const)('ordered by %s %s', (prop, dir, expected) => {
+      ['bigAge', 'asc'],
+      ['bigAge', 'desc'],
+      ['bigAgeNullable', 'asc'],
+      ['bigAgeNullable', 'desc'],
+    ] as const)('ordered by %s %s', (prop, dir) => {
+      const expected = order(dir);
       const orderBy = { [prop]: dir, id: 'asc' } as QueryOrderMap<User>;
 
       test('a single page returns every row', async () => {

@@ -31,6 +31,11 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
     [QueryOrder.desc_nulls_last]: 'is null',
   } as const;
 
+  /** mysql and mariadb treat null as the lowest value when no placement is requested. */
+  override sortsNullsLowest(): boolean {
+    return true;
+  }
+
   override supportsMultiColumnCountDistinct(): boolean {
     return true;
   }

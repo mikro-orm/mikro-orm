@@ -348,11 +348,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       prop: string,
       direction: QueryOrderKeys<T>,
       properties: Dictionary<EntityProperty> = meta.properties as Dictionary<EntityProperty>,
-      nullable = false,
     ): OrderDefinition<T> => {
       const propMeta = properties[prop];
-      // nullable relations and embeddables null out their joined columns, and a formula can yield null unannounced
-      nullable ||= !!propMeta?.nullable || !!propMeta?.formula;
 
       if (Utils.isPlainObject(direction)) {
         const childProps =
@@ -360,18 +357,19 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         const value = Utils.getObjectQueryKeys(direction).reduce((o, key) => {
           Object.assign(
             o,
-            createOrderBy(key as string, direction[key] as unknown as QueryOrderKeys<T>, childProps ?? {}, nullable),
+            createOrderBy(key as string, direction[key] as unknown as QueryOrderKeys<T>, childProps ?? {}),
           );
           return o;
         }, {});
         return { [prop]: value } as OrderDefinition<T>;
       }
 
-      const { desc, nullsFirst } = this.parseCursorDirection(direction);
+      const { desc, nullsFirst, explicit } = this.parseCursorDirection(direction);
       const dir = Utils.xor(desc, isLast) ? 'desc' : 'asc';
 
-      // the condition assumes a placement, spell it out instead of taking the database default
-      if (nullable && this.platform.supportsNullsOrdering()) {
+      // only a requested placement is spelled out, an unqualified direction already lands where the
+      // condition expects it; backward pagination reverses the ordering, so the placement flips too
+      if (explicit) {
         const nulls = Utils.xor(nullsFirst, isLast) ? 'first' : 'last';
         return { [prop]: `${dir} nulls ${nulls}` } as OrderDefinition<T>;
       }
@@ -397,27 +395,21 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   /**
    * Resolves a leaf `orderBy` direction into the two flags the rewritten `orderBy` and the cursor
-   * condition have to agree on, or pagination skips rows at the null boundary. Platforms that cannot
-   * order nulls explicitly sort them as the lowest value, elsewhere the requested placement wins,
-   * defaulting to nulls last for `asc` and nulls first for `desc`.
+   * condition have to agree on, or pagination skips rows at the null boundary. A placement the caller
+   * asked for wins where the platform can honor it, anything else follows the platform's own default,
+   * which is what the untouched `orderBy` will get.
    */
-  private parseCursorDirection(direction: unknown): { desc: boolean; nullsFirst: boolean } {
+  private parseCursorDirection(direction: unknown): { desc: boolean; nullsFirst: boolean; explicit: boolean } {
     const dir = ('' + direction).toLowerCase();
     const desc = direction === QueryOrderNumeric.DESC || dir.startsWith('desc');
+    const nullsFirst = dir.includes('nulls first');
+    const explicit = (nullsFirst || dir.includes('nulls last')) && this.platform.supportsNullsOrdering();
 
-    if (!this.platform.supportsNullsOrdering()) {
-      return { desc, nullsFirst: !desc };
+    if (!explicit) {
+      return { desc, nullsFirst: this.platform.sortsNullsLowest() ? !desc : desc, explicit };
     }
 
-    if (dir.includes('nulls first')) {
-      return { desc, nullsFirst: true };
-    }
-
-    if (dir.includes('nulls last')) {
-      return { desc, nullsFirst: false };
-    }
-
-    return { desc, nullsFirst: desc };
+    return { desc, nullsFirst, explicit };
   }
 
   /**

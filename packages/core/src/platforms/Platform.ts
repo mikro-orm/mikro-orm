@@ -631,9 +631,14 @@ export abstract class Platform {
     return false;
   }
 
-  /** Whether `nulls first`/`nulls last` can be requested in an `orderBy`. Platforms returning `false` always sort nulls as the lowest value. */
+  /** Whether `nulls first`/`nulls last` can be requested in an `orderBy`. */
   supportsNullsOrdering(): boolean {
     return true;
+  }
+
+  /** Where nulls land when an `orderBy` requests no explicit placement: lowest (`asc` puts them first) or highest. */
+  sortsNullsLowest(): boolean {
+    return false;
   }
 
   /** Converts a JS value to its JSON database representation (typically JSON.stringify). */
