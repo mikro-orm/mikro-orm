@@ -5,7 +5,6 @@ import {
   BooleanType,
   DateTimeType,
   DateType,
-  type Dictionary,
   type EntityProperty,
   EnumType,
   IntegerType,

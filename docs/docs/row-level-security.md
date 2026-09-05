@@ -38,8 +38,8 @@ import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
   policies: [
     {
       name: 'article_tenant',
-      using: `tenant_id = current_setting('app.tenant')::uuid`,
-      check: `tenant_id = current_setting('app.tenant')::uuid`,
+      using: columns => `${columns.tenantId} = current_setting('app.tenant')::uuid`,
+      check: columns => `${columns.tenantId} = current_setting('app.tenant')::uuid`,
     },
   ],
 })
@@ -91,8 +91,8 @@ export const Article = new EntitySchema({
   policies: [
     {
       name: 'article_tenant',
-      using: `tenant_id = current_setting('app.tenant')::uuid`,
-      check: `tenant_id = current_setting('app.tenant')::uuid`,
+      using: columns => `${columns.tenantId} = current_setting('app.tenant')::uuid`,
+      check: columns => `${columns.tenantId} = current_setting('app.tenant')::uuid`,
     },
   ],
 });
@@ -121,7 +121,7 @@ A `PolicyDef` has the following shape:
 | `using` | The `using` expression that decides which existing rows are visible (reads, updates, deletes). |
 | `check` | The `with check` expression that validates rows being written (inserts, updates). |
 
-`using` and `check` accept a plain SQL string, a `raw()` fragment, or a callback `(columns, table) => string` that receives the property-to-column-name mapping (the same shape used by [check constraints](./defining-entities.md#check-constraints)). The callback form keeps the expression correct if you later rename a physical column:
+`using` and `check` accept a callback `(columns, table) => string` that receives the property-to-column-name mapping (the same shape used by [check constraints](./defining-entities.md#check-constraints)), a plain SQL string, or a `raw()` fragment. Prefer the callback — column names are usually computed by the naming strategy, so it lets you reference properties instead of hand-writing the physical names, and the expression stays correct if a column is later renamed. With `defineEntity` the `columns` object is fully typed from the inferred properties; with decorators or an untyped `EntitySchema` the keys are not checked, but the runtime mapping works the same. Plain strings are passed to `create policy` verbatim and must use the physical column names:
 
 ```ts
 policies: [
@@ -139,10 +139,10 @@ Permissive policies are combined with `OR` — a row is visible if **any** permi
 ```ts
 policies: [
   // permissive: either your own rows or rows shared with you
-  { name: 'own_rows', using: `owner_id = current_setting('app.user')::int` },
-  { name: 'shared_rows', using: `is_shared = true` },
+  { name: 'own_rows', using: columns => `${columns.ownerId} = current_setting('app.user')::int` },
+  { name: 'shared_rows', using: columns => `${columns.isShared} = true` },
   // restrictive: but never across tenants, regardless of the above
-  { name: 'tenant_guard', type: 'restrictive', using: `tenant_id = current_setting('app.tenant')::uuid` },
+  { name: 'tenant_guard', type: 'restrictive', using: columns => `${columns.tenantId} = current_setting('app.tenant')::uuid` },
 ],
 ```
 
@@ -152,8 +152,8 @@ Split read and write rules by setting `command`. A `select` policy uses `using`;
 
 ```ts
 policies: [
-  { name: 'reader', command: 'select', roles: ['app_reader'], using: `tenant_id = current_setting('app.tenant')::uuid` },
-  { name: 'writer', command: 'insert', roles: ['app_writer'], check: `tenant_id = current_setting('app.tenant')::uuid` },
+  { name: 'reader', command: 'select', roles: ['app_reader'], using: columns => `${columns.tenantId} = current_setting('app.tenant')::uuid` },
+  { name: 'writer', command: 'insert', roles: ['app_writer'], check: columns => `${columns.tenantId} = current_setting('app.tenant')::uuid` },
 ],
 ```
 
@@ -506,7 +506,7 @@ The default fail-closed behavior means a policy referencing `current_setting('ap
 policies: [
   {
     name: 'tenant_optional',
-    using: `tenant_id = nullif(current_setting('app.tenant', true), '')::uuid`,
+    using: columns => `${columns.tenantId} = nullif(current_setting('app.tenant', true), '')::uuid`,
   },
 ],
 ```
