@@ -4,7 +4,6 @@ title: 'MikroORM 7.2: Trust Issues'
 authors: [B4nan]
 tags: [typescript, javascript, node, sql]
 image: './img/og-v7-2.png'
-draft: true
 ---
 
 import Tabs from '@theme/Tabs';
@@ -111,7 +110,7 @@ The design is fail-closed throughout. Setting a session context with `implicitTr
 
 ### The filter bridge
 
-If you already model tenancy as an entity [filter](/docs/next/filters), you don't have to write the policy twice. Flag the filter with `rls: true` and the same declaration drives both layers:
+If you already model tenancy as an entity [filter](/docs/filters), you don't have to write the policy twice. Flag the filter with `rls: true` and the same declaration drives both layers:
 
 ```ts
 filters: {
@@ -134,7 +133,7 @@ await em.execute('select * from "order"');           // still only this tenant's
 
 One declaration, two enforcement layers. Conditions that can't compile to a static policy (touching `em` or find options, `async`, an argument used outside a direct comparison, a column type with no cast) fail loudly at schema build rather than silently producing a policy that does less than the filter.
 
-This is PostgreSQL only — `postgresql` and `pglite`, with pglite limited to the `'transaction'` strategy since it has no pool to hook. Other drivers reject RLS metadata at discovery. If your database already has hand-written policies, read the [adoption section](/docs/next/row-level-security#adopting-on-a-database-with-hand-written-policies) before running any schema tooling after the upgrade — the schema generator can see them now, and a live-introspection diff will propose dropping them unless you adopt them into metadata or set `schemaGenerator: { ignorePolicies: true }`. The [row level security guide](/docs/next/row-level-security) covers the whole thing, including the operational caveats around owner bypass, role grants and pgBouncer modes.
+This is PostgreSQL only — `postgresql` and `pglite`, with pglite limited to the `'transaction'` strategy since it has no pool to hook. Other drivers reject RLS metadata at discovery. If your database already has hand-written policies, read the [adoption section](/docs/row-level-security#adopting-on-a-database-with-hand-written-policies) before running any schema tooling after the upgrade — the schema generator can see them now, and a live-introspection diff will propose dropping them unless you adopt them into metadata or set `schemaGenerator: { ignorePolicies: true }`. The [row level security guide](/docs/row-level-security) covers the whole thing, including the operational caveats around owner bypass, role grants and pgBouncer modes.
 
 ## To-one relations through another entity
 
@@ -209,13 +208,13 @@ select c.*, (
 
 When `through` points at the target entity itself there is no pivot, and the subquery selects that entity's primary key directly — the `latestEdge` case above. It's the same result as loading the whole `edges` collection and taking the newest item, without loading the collection.
 
-Under the hood this is the existing non-persistent formula relation, so there are no new code paths: both loading strategies, `Loaded<>` inference, serialization, `mapToPk` and conditions on the relation all work as they do for any other to-one. The relation is read-only — no column, no FK constraint, assignments ignored during flush; you write through the `through` entity. If you need conditions that reach past the `through` entity's own columns, the docs also cover writing the subquery by hand with `formula`, which is all `through` is a shortcut for. See [to-one relations through another entity](/docs/next/relationships#to-one-relations-through-another-entity) for the full reference.
+Under the hood this is the existing non-persistent formula relation, so there are no new code paths: both loading strategies, `Loaded<>` inference, serialization, `mapToPk` and conditions on the relation all work as they do for any other to-one. The relation is read-only — no column, no FK constraint, assignments ignored during flush; you write through the `through` entity. If you need conditions that reach past the `through` entity's own columns, the docs also cover writing the subquery by hand with `formula`, which is all `through` is a shortcut for. See [to-one relations through another entity](/docs/relationships#to-one-relations-through-another-entity) for the full reference.
 
 ![Roll Safe: can't load a whole collection just to take the newest row if you never load the collection](./img/v7-2/through-rollsafe.jpg)
 
 ## Cursor pagination, reworked
 
-[Cursor-based pagination](/docs/next/entity-manager#cursor-based-pagination) had two categories of input where it quietly returned the wrong page. Both are fixed in v7.2.
+[Cursor-based pagination](/docs/entity-manager#cursor-based-pagination) had two categories of input where it quietly returned the wrong page. Both are fixed in v7.2.
 
 The first is **custom types over datetime columns**. The decode path healed every string offset through `new Date()`, which truncates sub-millisecond precision, so boundary rows were silently skipped for Temporal-style wrapper types. Rather than widening the shape heuristics further, the type is now the authority over its own cursor wire format via a new optional `Type.fromJSON()`, paired with the existing `toJSON`:
 
@@ -266,7 +265,7 @@ const db = await orm.em.getConnection().getNativeClient();
 const data = db.export(); // Uint8Array, the SQLite file image
 ```
 
-Keep in mind the database lives and dies with the connection. `orm.close()` frees the WASM database, and reconnecting starts from an empty one (or from `driverOptions.data`), so the schema has to be created again. See [usage with sql.js](/docs/next/usage-with-sql-js) for the setup details.
+Keep in mind the database lives and dies with the connection. `orm.close()` frees the WASM database, and reconnecting starts from an empty one (or from `driverOptions.data`), so the schema has to be created again. See [usage with sql.js](/docs/usage-with-sql-js) for the setup details.
 
 The driver also powers something more visible. The getting-started guide used to embed StackBlitz; those are gone, replaced by a playground that runs in the page itself — Monaco for editing, sucrase for transpiling, a Web Worker for execution — so the guide's code runs against a real database while you read it. It is wired into checkpoints 1 and 2, with a QueryBuilder companion in chapter 4.
 
@@ -290,7 +289,7 @@ The same works in the `raw()` helper, where parameters may repeat:
 const fragment = raw('select :col: from geo_seed where city = :city or region = :city', { col: 'city', city: 'Brno' });
 ```
 
-This also fixes the named parameter translation in `raw()` itself, which used to bind values in object-key order rather than SQL-placeholder order, replace only the first occurrence of a repeated token, and corrupt the query when one key was a prefix of another (`:city` vs `:cityCode`). It is now a single left-to-right scan that leaves PostgreSQL `::` casts and unmatched tokens alone. See [named parameters](/docs/next/raw-queries#named-parameters) for the details.
+This also fixes the named parameter translation in `raw()` itself, which used to bind values in object-key order rather than SQL-placeholder order, replace only the first occurrence of a repeated token, and corrupt the query when one key was a prefix of another (`:city` vs `:cityCode`). It is now a single left-to-right scan that leaves PostgreSQL `::` casts and unmatched tokens alone. See [named parameters](/docs/raw-queries#named-parameters) for the details.
 
 ## String normalization
 
@@ -315,7 +314,7 @@ Decorators and `EntitySchema` configure the mapped type directly:
 currency!: string;
 ```
 
-Normalization runs when values are written to the database or used as ORM query parameters, so the value you search by and the value you stored agree. It is deliberately **not** a property setter: direct assignment, `em.create()` and `em.assign()` keep the assigned value in memory, and the flush writes the normalized form without mutating the property. `p.string()` with no options keeps the existing fast path, and the type benchmarks show no regression. Existing columns holding non-normalized data want a migration before you enable this. See [normalizing string properties](/docs/next/custom-types#normalizing-string-properties).
+Normalization runs when values are written to the database or used as ORM query parameters, so the value you search by and the value you stored agree. It is deliberately **not** a property setter: direct assignment, `em.create()` and `em.assign()` keep the assigned value in memory, and the flush writes the normalized form without mutating the property. `p.string()` with no options keeps the existing fast path, and the type benchmarks show no regression. Existing columns holding non-normalized data want a migration before you enable this. See [normalizing string properties](/docs/custom-types#normalizing-string-properties).
 
 ## Accessing the native client
 
