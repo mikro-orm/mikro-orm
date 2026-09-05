@@ -186,7 +186,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
       for (const order of orderBy) {
         for (const [key, dir] of Object.entries(order)) {
-          sortSpec[key] = dir === 'ASC' || dir === 'asc' || dir === 1 ? 1 : -1;
+          sortSpec[key] =
+            typeof dir === 'string' || typeof dir === 'number' ? MongoConnection.getSortDirection(dir) : dir;
         }
       }
 
