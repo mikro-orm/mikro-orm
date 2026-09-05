@@ -335,7 +335,7 @@ export class CLIHelper {
 
   /**
    * Tries to register TS support in the following order: oxc, swc, tsx, jiti, tsimp
-   * Use `MIKRO_ORM_CLI_TS_LOADER` env var to set the loader explicitly.
+   * Use `MIKRO_ORM_CLI_TS_LOADER` env var to set the loader explicitly, `nub` is available only that way.
    * This method is used only in CLI context.
    */
   static async registerTypeScriptSupport(
@@ -355,10 +355,7 @@ export class CLIHelper {
     const setEsmImportProvider = () => {
       return ((globalThis as any).dynamicImportProvider = (id: string) => import(id).then(mod => mod?.default ?? mod));
     };
-    if (
-      explicitLoader === 'nub' &&
-      fs.normalizePath(fs.absolutePath(configPath)) !== fs.normalizePath(fs.absolutePath('tsconfig.json'))
-    ) {
+    if (explicitLoader === 'nub' && fs.absolutePath(configPath) !== fs.absolutePath('tsconfig.json')) {
       throw new Error(
         'The `nub` loader does not support a custom tsconfig path. Use the project tsconfig.json or select another loader.',
       );
@@ -375,6 +372,7 @@ export class CLIHelper {
     const errors: Error[] = [];
 
     for (const loader of Utils.keys(loaders)) {
+      // nub is opt-in only, it is never part of the automatic detection
       if (loader === 'nub' && explicitLoader === 'auto') {
         continue;
       }

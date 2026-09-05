@@ -261,11 +261,19 @@ describe('CLIHelper', () => {
     const argv = process.argv;
     const execArgv = process.execArgv;
     process.argv = ['node', 'cli.js'];
-    process.execArgv = ['--import', '@nubjs/loader'];
+    // these all short-circuit the detection before the `execArgv` check
+    vi.stubEnv('VITEST', '');
+    vi.stubEnv('TS_JEST', '');
+    vi.stubEnv('MIKRO_ORM_CLI_ALWAYS_ALLOW_TS', '');
 
     try {
+      process.execArgv = ['--import', '@nubjs/loader'];
       expect(Utils.detectTypeScriptSupport()).toBe(true);
+
+      process.execArgv = ['--import', '@some/other-loader'];
+      expect(Utils.detectTypeScriptSupport()).toBe(false);
     } finally {
+      vi.unstubAllEnvs();
       process.argv = argv;
       process.execArgv = execArgv;
     }

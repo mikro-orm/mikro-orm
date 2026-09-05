@@ -136,11 +136,11 @@ TypeScript support was previously provided by `ts-node`. In v7, the CLI supports
 - `oxc` via `@oxc-node/core`, supports metadata reflection
 - `swc` via `@swc-node/register`, supports metadata reflection
 - `tsx`
-- `nub` via `@nubjs/loader`, selected explicitly and using the project `tsconfig.json` (available from v7.2)
+- `nub` via `@nubjs/loader`, supports metadata reflection (available from v7.2)
 - `jiti`
 - `tsimp`
 
-The default is `auto`, which means it goes through all those options sequentially and picks the first one available in the project dependencies.
+The default is `auto`, which means it goes through all those options sequentially and picks the first one available in the project dependencies. `nub` is skipped there, it is always opt-in.
 
 To pick a loader explicitly, use the `tsLoader` setting in your `package.json`:
 
@@ -152,13 +152,15 @@ To pick a loader explicitly, use the `tsLoader` setting in your `package.json`:
 
 Or override it via `MIKRO_ORM_CLI_TS_LOADER` env var.
 
-To use Nub, install `@nubjs/loader` and select it explicitly. Nub reads the project `tsconfig.json`.
+To use Nub, install `@nubjs/loader` and select it explicitly:
 
 ```json
 "mikro-orm": {
   "tsLoader": "nub"
 }
 ```
+
+Nub reads the `tsconfig.json` it discovers on its own (the nearest one relative to each imported file), it cannot be pointed at a custom path, so combining it with the `tsConfigPath` option is not supported. Decorator metadata requires `experimentalDecorators: true`, the TC39 decorators are not supported yet.
 
 ```diff
 -npm install ts-node
