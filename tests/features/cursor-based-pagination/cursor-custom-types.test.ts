@@ -165,8 +165,9 @@ class SealedPointInTimeType extends Type<PointInTime | null, string | null> {
   }
 
   override fromJSON(value: string): PointInTime {
+    // a type may reject client input with a `CursorError` of its own
     if (!value.startsWith('sealed:')) {
-      throw new Error(`Expected sealed value, got '${value}'`);
+      throw CursorError.invalidCursor('Job', new Error(`Expected sealed value, got '${value}'`));
     }
 
     return new PointInTime(value.slice('sealed:'.length));
@@ -188,7 +189,22 @@ class TaggedDateType extends Type<Date, Date> {
   }
 }
 
-/** Enforces the documented converter contracts: both converters only ever accept a `Date`. */
+/** JS value is a `Date`, but the database form is an ISO string rather than a `Date`. */
+class IsoDateType extends Type<Date, string> {
+  override convertToDatabaseValue(value: Date | string): string {
+    return value instanceof Date ? value.toISOString() : value;
+  }
+
+  override convertToJSValue(value: Date | string): Date {
+    return value instanceof Date ? value : new Date(value);
+  }
+
+  override getColumnType(): string {
+    return 'datetime';
+  }
+}
+
+/** Enforces the documented converter contracts: both converters only ever accept a valid `Date`. */
 class StrictDateType extends Type<Date | null, Date | null> {
   override convertToDatabaseValue(value: Date | null): Date | null {
     if (value != null && !(value instanceof Date)) {
@@ -201,6 +217,10 @@ class StrictDateType extends Type<Date | null, Date | null> {
   override convertToJSValue(value: Date | null): Date | null {
     if (value != null && !(value instanceof Date)) {
       throw new Error(`Expected Date, got ${typeof value}`);
+    }
+
+    if (value != null && Number.isNaN(value.getTime())) {
+      throw new Error('Expected a valid Date');
     }
 
     return value;
@@ -330,6 +350,9 @@ class Audit {
 
   @Property({ type: new DateTimeType() })
   loggedIn!: Date;
+
+  @Property({ type: IsoDateType })
+  isoAt!: Date;
 }
 
 @Entity()
@@ -446,6 +469,7 @@ beforeAll(async () => {
         auditedAt: new Date(`2024-08-${day(id)}T00:00:00.000Z`),
         epochAt: new PointInTime(`2024-11-${day(id)}T00:00:00.000Z`),
         loggedIn: new Date(`2025-01-${day(id)}T00:00:00.000Z`),
+        isoAt: new Date(`2025-02-${day(id)}T00:00:00.000Z`),
       },
       ticksAt: new Ticks(Date.parse(`2024-09-${day(id)}T00:00:00.000Z`)),
       owner: { id, name: `Owner ${id}`, since: new Date(`2024-03-${day(id)}T00:00:00.000Z`) },
@@ -897,6 +921,43 @@ test('custom type with distinct JSON and DB forms inside object-mode embeddable'
     orderBy: { audit: { epochAt: 'asc' }, id: 'asc' },
   });
   expect(cursor3.items).toMatchObject([{ id: 4 }, { id: 5 }, { id: 6 }]);
+});
+
+test('custom type with a string database form inside object-mode embeddable', async () => {
+  const cursor1 = await orm.em.findByCursor(Job, {
+    first: 3,
+    orderBy: { audit: { isoAt: 'asc' }, id: 'asc' },
+  });
+  expect(cursor1.items).toMatchObject([{ id: 1 }, { id: 2 }, { id: 3 }]);
+
+  // the restored `Date` is not the database form, so it stays a JS value for `processWhere`
+  const cursor2 = await orm.em.findByCursor(Job, {
+    first: 3,
+    after: cursor1.endCursor!,
+    orderBy: { audit: { isoAt: 'asc' }, id: 'asc' },
+  });
+  expect(cursor2.items).toMatchObject([{ id: 4 }, { id: 5 }, { id: 6 }]);
+});
+
+test('POJO cursor value the type rejects keeps the raw error', async () => {
+  // POJO values are not client supplied, so the type's own error is not wrapped as a `CursorError`
+  const failing = orm.em.findByCursor(Job, {
+    first: 3,
+    after: { strictAt: 'not a date', id: 3 },
+    orderBy: { strictAt: 'asc', id: 'asc' },
+  });
+  await expect(failing).rejects.toThrow('Expected a valid Date');
+  await expect(failing).rejects.not.toBeInstanceOf(CursorError);
+});
+
+test('a `CursorError` from the type is not wrapped again', async () => {
+  await expect(
+    orm.em.findByCursor(Job, {
+      first: 3,
+      after: Cursor.encode(['nope', 3]),
+      orderBy: { sealedAt: 'asc', id: 'asc' },
+    }),
+  ).rejects.toThrow("Invalid cursor for entity Job: Expected sealed value, got 'nope'");
 });
 
 test('validating custom type keeps its own error message', async () => {
