@@ -17,7 +17,7 @@ import { MetadataProvider } from './MetadataProvider.js';
 import type { NamingStrategy } from '../naming-strategy/NamingStrategy.js';
 import { MetadataStorage } from './MetadataStorage.js';
 import { EntitySchema } from './EntitySchema.js';
-import { Cascade, ReferenceKind } from '../enums.js';
+import { Cascade, type QueryOrderMap, ReferenceKind } from '../enums.js';
 import { MetadataError } from '../errors.js';
 import type { Platform } from '../platforms/Platform.js';
 import { t, Type } from '../types/index.js';
@@ -222,10 +222,11 @@ export class MetadataDiscovery {
     filtered.forEach(meta => Object.entries(meta.filters).forEach(([key, filter]) => (filter.name ??= key)));
     filtered.forEach(meta => this.initPolicies(meta));
 
-    forEachProp((_m, p) => {
+    forEachProp((m, p) => {
       this.initDefaultValue(p);
       this.inferTypeFromDefault(p);
       this.initRelation(p);
+      this.initThroughRelation(m, p);
       this.initColumnType(p);
     });
 
@@ -291,12 +292,14 @@ export class MetadataDiscovery {
     const missing: EntityClass[] = [];
     this.#discovered.forEach(meta =>
       Object.values(meta.properties).forEach(prop => {
-        if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.pivotEntity) {
-          const pivotEntity = prop.pivotEntity as unknown as EntityClass | (() => EntityClass);
+        const indirect = (prop.kind === ReferenceKind.MANY_TO_MANY ? prop.pivotEntity : prop.through) as unknown as
+          | EntityClass
+          | (() => EntityClass)
+          | undefined;
+
+        if (indirect) {
           const target =
-            typeof pivotEntity === 'function' && !pivotEntity.prototype
-              ? (pivotEntity as () => EntityClass)()
-              : pivotEntity;
+            typeof indirect === 'function' && !indirect.prototype ? (indirect as () => EntityClass)() : indirect;
 
           if (!this.#discovered.find(m => m.className === Utils.className(target)) || !discoveredByIdentity(target)) {
             missing.push(target);
@@ -2666,6 +2669,72 @@ export class MetadataDiscovery {
         prop.formula = table => `${table}.${this.#platform.quoteIdentifier(prop.fieldNames[0])}`;
       }
     }
+  }
+
+  /** Resolves the `through` option of a virtual to-one relation into a read-only formula property. */
+  private initThroughRelation(meta: EntityMetadata, prop: EntityProperty): void {
+    // already resolved, or not a through relation at all
+    if (prop.through?.ownerProperty || !prop.through) {
+      return;
+    }
+
+    if (![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
+      throw MetadataError.throughRelationInvalidKind(meta, prop);
+    }
+
+    const targetMeta = prop.targetMeta!;
+
+    // the subquery selects a single column
+    if (targetMeta.compositePK) {
+      throw MetadataError.throughRelationCompositeTarget(meta, prop);
+    }
+
+    const through = prop.through as unknown as EntityClass | (() => EntityClass);
+    const throughMeta = this.#metadata.get(!through.prototype ? (through as () => EntityClass)() : through);
+    // a property is considered to point at an entity when it targets it or one of its parents
+    const pointsTo = (p: EntityProperty, m: EntityMetadata) => {
+      const candidate = this.#metadata.find(p.target);
+
+      /* v8 ignore next 3 */
+      if (!candidate) {
+        return false;
+      }
+
+      return candidate.class === m.class || m.class.prototype instanceof candidate.class;
+    };
+    const fks = Object.values(throughMeta.properties).filter(p => p.kind === ReferenceKind.MANY_TO_ONE);
+    const ownerProp = fks.find(p => pointsTo(p, meta));
+
+    if (!ownerProp) {
+      throw MetadataError.throughRelationMissingProperty(meta, prop, throughMeta, 'owner');
+    }
+
+    let targetProperty: string | undefined;
+    const selectsTarget =
+      throughMeta.class === targetMeta.class || throughMeta.class.prototype instanceof targetMeta.class;
+
+    if (!selectsTarget) {
+      const targetProp = fks.find(p => p !== ownerProp && pointsTo(p, targetMeta));
+
+      if (!targetProp) {
+        throw MetadataError.throughRelationMissingProperty(meta, prop, throughMeta, 'target');
+      }
+
+      targetProperty = targetProp.name;
+    }
+
+    prop.through = {
+      entity: throughMeta.class,
+      where: prop.where,
+      orderBy: prop.orderBy ? (Utils.asArray(prop.orderBy) as QueryOrderMap<any>[]) : undefined,
+      ownerProperty: ownerProp.name,
+      targetProperty,
+    };
+    // the condition and ordering apply to the `through` entity, not to the target, so they must not leak into the target joins
+    delete prop.where;
+    delete prop.orderBy;
+    prop.persist = false;
+    prop.formula = columns => this.#platform.getThroughRelationFormula(prop, columns);
   }
 
   private initColumnType(prop: EntityProperty): void {

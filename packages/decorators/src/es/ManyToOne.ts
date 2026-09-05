@@ -11,9 +11,9 @@ import {
 import { prepareMetadataContext, processDecoratorParameters } from '../utils.js';
 
 /** Defines a many-to-one relationship (TC39 decorator). */
-export function ManyToOne<Target extends object, Owner extends object>(
-  entity: ManyToOneOptions<Owner, Target> | ((e?: Owner) => EntityName<Target> | EntityName[]) = {},
-  options: Partial<ManyToOneOptions<Owner, Target>> = {},
+export function ManyToOne<Target extends object, Owner extends object, Through extends object = Target>(
+  entity: ManyToOneOptions<Owner, Target, Through> | ((e?: Owner) => EntityName<Target> | EntityName[]) = {},
+  options: Partial<ManyToOneOptions<Owner, Target, Through>> = {},
 ): (
   _: unknown,
   context: ClassFieldDecoratorContext<Owner, Target | Primary<Target> | undefined | null | Ref<Target>>,
@@ -23,7 +23,7 @@ export function ManyToOne<Target extends object, Owner extends object>(
     context: ClassFieldDecoratorContext<Owner, Target | Primary<Target> | undefined | null | Ref<Target>>,
   ): void {
     const meta = prepareMetadataContext(context, ReferenceKind.MANY_TO_ONE);
-    options = processDecoratorParameters<ManyToOneOptions<Owner, Target>>({ entity, options });
+    options = processDecoratorParameters<ManyToOneOptions<Owner, Target, Through>>({ entity, options });
     const property = { name: context.name, kind: ReferenceKind.MANY_TO_ONE } as EntityProperty<Target>;
     meta.properties[context.name as EntityKey<Owner>] = Utils.mergeConfig(
       meta.properties[context.name as EntityKey<Owner>] ?? {},
