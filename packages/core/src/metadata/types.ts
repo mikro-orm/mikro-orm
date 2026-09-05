@@ -15,6 +15,7 @@ import type {
   Raw,
   SchemaColumns,
   TriggerDef,
+  PolicyDef,
 } from '../typings.js';
 import type { Cascade, LoadStrategy, DeferMode, QueryOrderMap, EmbeddedPrefixMode } from '../enums.js';
 import type { Type, types } from '../types/index.js';
@@ -129,6 +130,10 @@ export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   hasTriggers?: boolean;
   /** Database triggers to create for this entity's table. (SQL drivers only) */
   triggers?: TriggerDef<E>[];
+  /** PostgreSQL row level security policies for this entity's table. Declaring policies implicitly enables RLS. */
+  policies?: PolicyDef<E>[];
+  /** Enables PostgreSQL row level security on this entity's table. `'force'` also enforces it for the table owner. Set to `false` to keep declared policies staged while leaving RLS disabled. */
+  rowLevelSecurity?: boolean | 'force';
   /**
    * PostgreSQL partitioning definition for this table.
    *

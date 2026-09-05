@@ -1762,7 +1762,11 @@ export const BaseUser2Type = {
 
 export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
-@Entity({ abstract: true, discriminator: 'type', discriminatorMap: { employee: 'Employee2', manager: 'Manager2' } })
+@Entity({
+  abstract: true,
+  discriminator: 'type',
+  discriminatorMap: { employee: 'Employee2', manager: 'Manager2' },
+})
 export abstract class BaseUser2 extends CustomBase2 {
 
   @PrimaryKey()
@@ -2302,7 +2306,11 @@ export class User2 {
 import { Entity, Property } from '@mikro-orm/decorators/legacy';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ expression: 'SELECT name, email FROM author2', comment: 'test', virtual: true })
+@Entity({
+  expression: 'SELECT name, email FROM author2',
+  comment: 'test',
+  virtual: true,
+})
 export class AuthorPartialView {
 
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
@@ -2317,7 +2325,12 @@ export class AuthorPartialView {
 import { Entity, Property } from '@mikro-orm/decorators/legacy';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ tableName: 'author_partial_view', expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]), comment: 'test', virtual: true })
+@Entity({
+  tableName: 'author_partial_view',
+  expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]),
+  comment: 'test',
+  virtual: true,
+})
 export class AuthorPartialView2 {
 
   @Property({ onUpdate: (owner) => {
@@ -4164,7 +4177,11 @@ export const BaseUser2Type = {
 
 export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
-@Entity({ abstract: true, discriminator: 'type', discriminatorMap: { employee: 'Employee2', manager: 'Manager2' } })
+@Entity({
+  abstract: true,
+  discriminator: 'type',
+  discriminatorMap: { employee: 'Employee2', manager: 'Manager2' },
+})
 export abstract class BaseUser2 extends CustomBase2 {
 
   @PrimaryKey()
@@ -4706,7 +4723,11 @@ export class User2 {
 import { Entity, Property } from '@mikro-orm/decorators/legacy';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ expression: 'SELECT name, email FROM author2', comment: 'test', virtual: true })
+@Entity({
+  expression: 'SELECT name, email FROM author2',
+  comment: 'test',
+  virtual: true,
+})
 export class AuthorPartialView {
 
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
@@ -4721,7 +4742,12 @@ export class AuthorPartialView {
 import { Entity, Property } from '@mikro-orm/decorators/legacy';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ tableName: 'author_partial_view', expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]), comment: 'test', virtual: true })
+@Entity({
+  tableName: 'author_partial_view',
+  expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]),
+  comment: 'test',
+  virtual: true,
+})
 export class AuthorPartialView2 {
 
   @Property({ onUpdate: (owner) => {
@@ -6541,7 +6567,11 @@ export const BaseUser2Type = {
 
 export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
-@Entity({ abstract: true, discriminator: 'type', discriminatorMap: { employee: 'Employee2', manager: 'Manager2' } })
+@Entity({
+  abstract: true,
+  discriminator: 'type',
+  discriminatorMap: { employee: 'Employee2', manager: 'Manager2' },
+})
 export abstract class BaseUser2 extends CustomBase2 {
 
   @PrimaryKey()
@@ -7081,7 +7111,11 @@ export class User2 {
 import { Entity, Property } from '@mikro-orm/decorators/legacy';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ expression: 'SELECT name, email FROM author2', comment: 'test', virtual: true })
+@Entity({
+  expression: 'SELECT name, email FROM author2',
+  comment: 'test',
+  virtual: true,
+})
 export class AuthorPartialView {
 
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
@@ -7096,7 +7130,12 @@ export class AuthorPartialView {
 import { Entity, Property } from '@mikro-orm/decorators/legacy';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ tableName: 'author_partial_view', expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]), comment: 'test', virtual: true })
+@Entity({
+  tableName: 'author_partial_view',
+  expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]),
+  comment: 'test',
+  virtual: true,
+})
 export class AuthorPartialView2 {
 
   @Property({ onUpdate: (owner) => {
@@ -8943,7 +8982,11 @@ export const BaseUser2Type = {
 
 export type TBaseUser2Type = (typeof BaseUser2Type)[keyof typeof BaseUser2Type];
 
-@Entity({ abstract: true, discriminator: 'type', discriminatorMap: { employee: 'Employee2', manager: 'Manager2' } })
+@Entity({
+  abstract: true,
+  discriminator: 'type',
+  discriminatorMap: { employee: 'Employee2', manager: 'Manager2' },
+})
 export abstract class BaseUser2 extends CustomBase2 {
 
   @PrimaryKey()
@@ -9485,7 +9528,11 @@ export class User2 {
 import { Entity, Property } from '@mikro-orm/decorators/legacy';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ expression: 'SELECT name, email FROM author2', comment: 'test', virtual: true })
+@Entity({
+  expression: 'SELECT name, email FROM author2',
+  comment: 'test',
+  virtual: true,
+})
 export class AuthorPartialView {
 
   @Property({ comment: 'author name', index: 'custom_idx_name_123' })
@@ -9500,7 +9547,12 @@ export class AuthorPartialView {
 import { Entity, Property } from '@mikro-orm/decorators/legacy';
 import Email from './../runtimeTypes/Email';
 
-@Entity({ tableName: 'author_partial_view', expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]), comment: 'test', virtual: true })
+@Entity({
+  tableName: 'author_partial_view',
+  expression: (em) => em.createQueryBuilder((0,__vite_ssr_import_4__.Author2)).select(["name", "email"]),
+  comment: 'test',
+  virtual: true,
+})
 export class AuthorPartialView2 {
 
   @Property({ onUpdate: (owner) => {

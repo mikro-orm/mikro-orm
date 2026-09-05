@@ -1,0 +1,30 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`rls policies [postgres] > create schema SQL for policies [postgres] 1`] = `
+"create table "audit" ("id" serial primary key, "actor" varchar(255) not null);
+
+create table "docs" ("id" serial primary key, "owner_id" uuid not null);
+
+create table "locked" ("id" serial primary key);
+
+create table "multi" ("id" serial primary key, "val" int not null);
+
+create table "posts" ("id" serial primary key, "tenant_id" uuid not null);
+
+create table "secrets" ("id" serial primary key, "tenant_id" uuid not null);
+
+alter table "audit" enable row level security;
+create policy "audit_ins" on "audit" for insert to public with check (actor = current_user);
+alter table "docs" enable row level security;
+create policy "docs_read" on "docs" as restrictive for select to "app_reader", "app_writer" using (owner_id = current_setting('app.user')::uuid);
+alter table "locked" enable row level security;
+alter table "multi" enable row level security;
+create policy "multi_all_policy" on "multi" using (val > 0);
+create policy "multi_all_policy_2" on "multi" using (val < 100);
+alter table "posts" enable row level security;
+create policy "posts_all_policy" on "posts" using (tenant_id = current_setting('app.tenant')::uuid) with check (tenant_id = current_setting('app.tenant')::uuid);
+alter table "secrets" enable row level security;
+alter table "secrets" force row level security;
+create policy "secrets_upd" on "secrets" for update using (tenant_id = current_setting('app.tenant')::uuid) with check (tenant_id = current_setting('app.tenant')::uuid);
+"
+`;

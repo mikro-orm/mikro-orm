@@ -9,6 +9,7 @@ import type {
   MaybePromise,
   Primary,
   RoutineProperty,
+  SessionContext,
 } from '../typings.js';
 import type { Routine } from '../metadata/Routine.js';
 import type { Platform } from '../platforms/Platform.js';
@@ -137,6 +138,7 @@ export abstract class Connection {
       ctx?: Transaction;
       eventBroadcaster?: TransactionEventBroadcaster;
       loggerContext?: LogContext;
+      sessionContext?: SessionContext;
     },
   ): Promise<T> {
     throw new Error(`Transactions are not supported by current driver`);
@@ -149,6 +151,7 @@ export abstract class Connection {
     ctx?: Transaction;
     eventBroadcaster?: TransactionEventBroadcaster;
     loggerContext?: LogContext;
+    sessionContext?: SessionContext;
   }): Promise<Transaction> {
     throw new Error(`Transactions are not supported by current driver`);
   }

@@ -23,6 +23,7 @@ import {
   Utils,
   inspect,
 } from '@mikro-orm/core';
+import { DatabaseTable } from '@mikro-orm/sql';
 import { parse, relative } from 'node:path';
 import { POSSIBLE_TYPE_IMPORTS } from './CoreImportsHelper.js';
 
@@ -51,10 +52,12 @@ export class SourceFile {
     if (this.meta.embeddable || this.meta.collection) {
       if (this.meta.embeddable) {
         const options = this.getEmbeddableDeclOptions();
-        ret += `@${this.referenceDecoratorImport('Embeddable')}(${Utils.hasObjectKeys(options) ? this.serializeObject(options) : ''})\n`;
+        const decl = `@${this.referenceDecoratorImport('Embeddable')}(`;
+        ret += `${decl}${Utils.hasObjectKeys(options) ? this.serializeObject(options, 80 - decl.length, 0) : ''})\n`;
       } else {
         const options = this.getEntityDeclOptions();
-        ret += `@${this.referenceDecoratorImport('Entity')}(${Utils.hasObjectKeys(options) ? this.serializeObject(options) : ''})\n`;
+        const decl = `@${this.referenceDecoratorImport('Entity')}(`;
+        ret += `${decl}${Utils.hasObjectKeys(options) ? this.serializeObject(options, 80 - decl.length, 0) : ''})\n`;
       }
     }
 
@@ -669,6 +672,23 @@ export class SourceFile {
       options.partitionBy = this.getPartitionByDecl(this.meta.partitionBy) as EntityPartitionBy<unknown>;
     }
 
+    // policies imply RLS on reload, so only emit `rowLevelSecurity` when it adds information:
+    // `'force'` always, plain `true` only for a deny-all table (enabled with no policies),
+    // and explicit `false` only when policies are staged but RLS is disabled
+    if (this.meta.rowLevelSecurity === 'force') {
+      options.rowLevelSecurity = this.quote('force') as EntityOptions<unknown>['rowLevelSecurity'];
+    } else if (this.meta.rowLevelSecurity === true && this.meta.policies.length === 0) {
+      options.rowLevelSecurity = true;
+    } else if (this.meta.rowLevelSecurity === false && this.meta.policies.length > 0) {
+      options.rowLevelSecurity = false;
+    }
+
+    if (this.meta.policies.length > 0) {
+      options.policies = this.meta.policies.map(policy =>
+        this.getPolicyDecl(policy),
+      ) as EntityOptions<unknown>['policies'];
+    }
+
     if (this.meta.readonly && !this.meta.virtual) {
       options.readonly = this.meta.readonly;
     }
@@ -722,6 +742,35 @@ export class SourceFile {
         entry.values = this.quote(partition.values);
         return entry;
       });
+    }
+
+    return result;
+  }
+
+  protected getPolicyDecl(policy: EntityMetadata['policies'][number]): Dictionary {
+    // introspected names are always explicit; the rest is emitted only when it differs from the default
+    const result: Dictionary = { name: this.quote(policy.name!) };
+
+    if (policy.command && policy.command !== 'all') {
+      result.command = this.quote(policy.command);
+    }
+
+    if (policy.type && policy.type !== 'permissive') {
+      result.type = this.quote(policy.type);
+    }
+
+    const roles = policy.roles;
+
+    if (roles && !DatabaseTable.isDefaultPolicyRoles(roles)) {
+      result.roles = roles.map(role => this.quote(role));
+    }
+
+    if (typeof policy.using === 'string') {
+      result.using = this.quote(policy.using);
+    }
+
+    if (typeof policy.check === 'string') {
+      result.check = this.quote(policy.check);
     }
 
     return result;
