@@ -722,6 +722,10 @@ describe('Utils', () => {
     expect(warnSpy).toHaveBeenCalledWith('not found');
   });
 
+  test('tryImport rethrows errors other than missing module', async () => {
+    await expect(Utils.tryImport({ module: 'data:text/javascript,throw new Error("boom")' })).rejects.toThrow('boom');
+  });
+
   test('getPrimaryKeyCond', () => {
     // @ts-expect-error no PK so this correctly fails compilation
     expect(Utils.getPrimaryKeyCond({ a: null }, ['a'])).toBe(null);

@@ -180,6 +180,59 @@ describe('CLIHelper', () => {
     pkg['mikro-orm'].preferTs = false;
   });
 
+  test('reports the real error when a TS loader is installed but fails to load', async () => {
+    pathExistsMock.mockReturnValue(true);
+    pkg['mikro-orm'].preferTs = true;
+    tryImportMock.mockImplementation(({ module: id }) => {
+      if (id === '@swc-node/register/esm-register') {
+        throw new TypeError(`Cannot read properties of undefined (reading 'Js')`);
+      }
+
+      return undefined;
+    });
+    await expect(configure()).rejects.toThrow(
+      "Failed to load TypeScript loader `swc` (@swc-node/register/esm-register): Cannot read properties of undefined (reading 'Js')",
+    );
+    pkg['mikro-orm'].preferTs = false;
+  });
+
+  test('falls back to the next TS loader in auto mode when one fails to load', async () => {
+    pathExistsMock.mockReturnValue(true);
+    pkg['mikro-orm'].preferTs = true;
+    const registerMock = vi.fn();
+    tryImportMock.mockImplementation(({ module: id }) => {
+      if (id === '@swc-node/register/esm-register') {
+        throw new TypeError(`Cannot read properties of undefined (reading 'Js')`);
+      }
+
+      if (id === 'tsx/esm/api') {
+        return { register: registerMock };
+      }
+
+      return undefined;
+    });
+    const cli = (await configure()) as any;
+    expect(cli.$0).toBe('mikro-orm');
+    expect(registerMock).toHaveBeenCalledTimes(1);
+    expect(process.env.MIKRO_ORM_CLI_TS_LOADER).toBe('tsx');
+    pkg['mikro-orm'].preferTs = false;
+  });
+
+  test('fails immediately when an explicitly configured TS loader fails to load', async () => {
+    pathExistsMock.mockReturnValue(true);
+    pkg['mikro-orm'].preferTs = true;
+    pkg['mikro-orm'].tsLoader = 'swc';
+    tryImportMock.mockImplementation(() => {
+      throw new TypeError(`Cannot read properties of undefined (reading 'Js')`);
+    });
+    await expect(configure()).rejects.toThrow(
+      "Failed to load TypeScript loader `swc` (@swc-node/register/esm-register): Cannot read properties of undefined (reading 'Js')",
+    );
+    expect(tryImportMock).toHaveBeenCalledTimes(1);
+    delete pkg['mikro-orm'].tsLoader;
+    pkg['mikro-orm'].preferTs = false;
+  });
+
   test('configures yargs instance [swc and ts-paths] without baseUrl', async () => {
     pathExistsMock.mockReturnValue(true);
     pkg['mikro-orm'].preferTs = true;

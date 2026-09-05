@@ -1119,7 +1119,12 @@ export class Utils {
     try {
       return await import(module);
     } catch (err: any) {
-      if (warning && err.code === 'ERR_MODULE_NOT_FOUND') {
+      // only a missing module is expected here, anything else is a real failure inside the module
+      if (!['ERR_MODULE_NOT_FOUND', 'MODULE_NOT_FOUND'].includes(err.code)) {
+        throw err;
+      }
+
+      if (warning) {
         // eslint-disable-next-line no-console
         console.warn(warning);
       }
