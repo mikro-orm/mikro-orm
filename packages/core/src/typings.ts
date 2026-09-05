@@ -1064,6 +1064,17 @@ export type SerializeDTO<
 
 type TargetKeys<T> = T extends EntityClass<infer P> ? keyof P : keyof T;
 type PropertyName<T> = IsUnknown<T> extends false ? TargetKeys<T> : string;
+/** Resolved `through` option of a virtual to-one relation, populated during discovery. */
+export interface ThroughRelation {
+  entity: EntityClass;
+  where?: FilterQuery<any>;
+  orderBy?: QueryOrderMap<any>[];
+  /** M:1 property on the `through` entity pointing back to the owner. */
+  ownerProperty: string;
+  /** M:1 property on the `through` entity pointing to the target, undefined when the target is selected directly. */
+  targetProperty?: string;
+}
+
 /** Table reference object passed to formula callbacks, including alias and schema information. */
 export type FormulaTable = {
   alias: string;
@@ -1556,6 +1567,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   fixedOrderColumn?: string;
   pivotTable: string;
   pivotEntity: EntityClass<Target>;
+  through?: ThroughRelation;
   joinColumns: string[];
   ownColumns: string[];
   inverseJoinColumns: string[];
