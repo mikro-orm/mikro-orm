@@ -5,6 +5,7 @@ import {
   getWhereCondition,
   resetUntouchedCollections,
 } from './utils/upsert-utils.js';
+import { computeRemovedRlsVariables, computeRlsFilterVariables, findRlsFilterDefs } from './utils/rls-utils.js';
 import { Utils } from './utils/Utils.js';
 import { Cursor } from './utils/Cursor.js';
 import { QueryHelper } from './utils/QueryHelper.js';
@@ -109,11 +110,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   declare readonly '~entities'?: unknown;
 
   static #counter = 1;
-  /** Lazily-built `rls` filter lookup keyed by the shared (immutable) MetadataStorage, so forks reuse it. */
-  static readonly #rlsFilterDefs = new WeakMap<
-    MetadataStorage,
-    Map<string, { filter: FilterDef; entityName: string }[]>
-  >();
   /** @internal */
   readonly _id: number = EntityManager.#counter++;
   /** Whether this is the global (root) EntityManager instance. */
@@ -471,7 +467,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     // `rls` filters mirror their params as session variables, so the matching DB policies see the same values;
     // the same filter name can be declared on multiple entities, so stage the union across all `rls`-flagged defs
-    const filters = em.findRlsFilterDefs(name);
+    const filters = findRlsFilterDefs(em.metadata, name);
 
     if (filters.length === 0) {
       em.#filterParams[name] = args;
@@ -482,38 +478,24 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     // the filter params and the session context untouched
     em.validateSessionContextStaging();
 
-    const variables = em.computeRlsFilterVariables(filters, args);
+    const variables = computeRlsFilterVariables(filters, args);
     const previousArgs = em.#filterParams[name];
     em.#filterParams[name] = args;
 
     // this call replaces the filter's params, so drop the exact variables a previous call for this filter staged but
-    // this one no longer sets — recompute them from the OLD args rather than matching by prefix, so a filter named
-    // `tenant` does not also prune a `tenant.x` filter's `mikro.tenant.x.*` variables
+    // this one no longer sets (unless another filter's current params still stage them)
     const staged = em.#sessionContext?.variables;
 
     if (staged && previousArgs) {
-      const removed = Object.keys(em.computeRlsFilterVariables(filters, previousArgs)).filter(
-        key => !(key in variables),
-      );
-
-      // a custom `setting` name can be shared by differently named filters — a variable another filter's current
-      // params still stage must survive the prune
-      const keptByOthers = new Set<string>();
-
-      for (const otherName of removed.length > 0 ? Object.keys(em.#filterParams) : []) {
-        if (otherName !== name) {
-          for (const key of Object.keys(
-            em.computeRlsFilterVariables(em.findRlsFilterDefs(otherName), em.#filterParams[otherName]),
-          )) {
-            keptByOthers.add(key);
-          }
-        }
-      }
-
-      for (const key of removed) {
-        if (!keptByOthers.has(key)) {
-          delete staged[key];
-        }
+      for (const key of computeRemovedRlsVariables(
+        em.metadata,
+        name,
+        filters,
+        previousArgs,
+        variables,
+        em.#filterParams,
+      )) {
+        delete staged[key];
       }
 
       // pruning may have emptied the whole context — drop it, so it does not keep forcing the implicit
@@ -527,100 +509,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     if (Object.keys(variables).length > 0) {
       em.mergeSessionContext({ variables });
     }
-  }
-
-  /**
-   * Computes the `rls` session variables a set of same-named filter defs stages for the given args, mirroring the
-   * policy compilation (`current_setting` names and custom `setting` binding). Shared by staging and `fork({ session })`.
-   */
-  private computeRlsFilterVariables(
-    filters: { filter: FilterDef; entityName: string }[],
-    args: Dictionary,
-  ): Dictionary<string | number | boolean | Date> {
-    const variables: Dictionary<string | number | boolean | Date> = {};
-
-    for (const { filter, entityName } of filters) {
-      const setting = typeof filter.rls === 'object' ? filter.rls.setting : undefined;
-      let settingArg: string | undefined;
-
-      if (setting) {
-        // mirror the policy compilation — a custom `setting` binds the single argument the condition accesses
-        const accessed = new Set<string>();
-        QueryHelper.resolveRlsFilterCond(filter, accessed, entityName);
-
-        if (accessed.size > 1) {
-          throw MetadataError.rlsFilterMultiArgSetting(filter.name, [...accessed]);
-        }
-
-        settingArg = [...accessed][0];
-      }
-
-      for (const key of Object.keys(args)) {
-        const value = args[key];
-
-        // treat `undefined` like an omitted arg — staging it would serialize as the literal string 'undefined'
-        if (value === undefined) {
-          continue;
-        }
-
-        // a non-scalar arg has no equivalent in the compiled `= current_setting(...)` comparison — the app-level
-        // filter would apply `$in`/`is null` semantics while the policy compares against `String(value)`
-        if (value === null || (typeof value === 'object' && !(value instanceof Date))) {
-          throw ValidationError.cannotStageNonScalarSessionVariable(filter.name, key);
-        }
-
-        const settingName = key === settingArg ? setting! : Utils.getRlsSettingName(filter.name, key);
-        variables[settingName] = value;
-      }
-    }
-
-    return variables;
-  }
-
-  /**
-   * Collects all `rls`-flagged filter definitions with the given name (only entity-scoped filters can be `rls`).
-   * The full name -> defs lookup is built once and cached on the shared (immutable) MetadataStorage, so repeated
-   * `setFilterParams` calls and forks reuse it instead of walking every entity each time.
-   */
-  private findRlsFilterDefs(name: string): { filter: FilterDef; entityName: string }[] {
-    let cache = EntityManager.#rlsFilterDefs.get(this.metadata);
-
-    if (!cache) {
-      cache = new Map();
-
-      for (const meta of this.metadata) {
-        for (const filterName of Object.keys(meta.filters)) {
-          const filter = meta.filters[filterName];
-
-          if (!filter.rls) {
-            continue;
-          }
-
-          const defs = cache.get(filterName) ?? [];
-
-          // inheritance shares the same filter object across base and child metadata — keep a single entry
-          if (!defs.some(d => d.filter === filter)) {
-            defs.push({ filter, entityName: meta.className });
-          }
-
-          cache.set(filterName, defs);
-        }
-      }
-
-      EntityManager.#rlsFilterDefs.set(this.metadata, cache);
-    }
-
-    return cache.get(name) ?? [];
-  }
-
-  /**
-   * Drops the cached `rls` filter lookup — `MikroORM.discoverEntity()` mutates the shared MetadataStorage,
-   * so a lookup built before the call would miss the newly discovered filters.
-   *
-   * @internal
-   */
-  clearRlsFilterDefsCache(): void {
-    EntityManager.#rlsFilterDefs.delete(this.metadata);
   }
 
   /**
@@ -2902,7 +2790,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       for (const name of Object.keys(fork.#filterParams)) {
         Object.assign(
           variables,
-          fork.computeRlsFilterVariables(fork.findRlsFilterDefs(name), fork.#filterParams[name]),
+          computeRlsFilterVariables(findRlsFilterDefs(fork.metadata, name), fork.#filterParams[name]),
         );
       }
 

@@ -4,6 +4,7 @@ import { MetadataDiscovery } from './metadata/MetadataDiscovery.js';
 import { MetadataStorage } from './metadata/MetadataStorage.js';
 import { Configuration, type Options } from './utils/Configuration.js';
 import { loadEnvironmentVars } from './utils/env-vars.js';
+import { clearRlsFilterDefsCache } from './utils/rls-utils.js';
 import { Utils } from './utils/Utils.js';
 import { type Logger } from './logging/Logger.js';
 import { colors } from './logging/colors.js';
@@ -267,7 +268,7 @@ export class MikroORM<
 
     this.#metadata.decorate(this.em);
     // the newly discovered entities may declare `rls` filters the cached lookup was built without
-    this.em.clearRlsFilterDefsCache();
+    clearRlsFilterDefsCache(this.#metadata);
   }
 
   /**
