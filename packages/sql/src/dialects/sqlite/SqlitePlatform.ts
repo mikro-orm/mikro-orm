@@ -8,6 +8,11 @@ export class SqlitePlatform extends AbstractSqlPlatform {
   protected override readonly schemaHelper: SqliteSchemaHelper = new SqliteSchemaHelper(this);
   protected override readonly exceptionConverter: SqliteExceptionConverter = new SqliteExceptionConverter();
 
+  /** sqlite treats null as the lowest value when no placement is requested. */
+  override sortsNullsLowest(): boolean {
+    return true;
+  }
+
   /** @internal */
   override createNativeQueryBuilder(): SqliteNativeQueryBuilder {
     return new SqliteNativeQueryBuilder(this);

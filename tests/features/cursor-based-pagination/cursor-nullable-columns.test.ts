@@ -230,9 +230,7 @@ describe('cursor pagination - ordering by nullable column', () => {
       orderBy: { age: 'asc', id: 'asc' },
     });
 
-    // an unqualified direction on a nullable column is spelled out as `asc nulls last`, so the
-    // placement no longer follows the database default
-    expect(cursor.items.map(u => u.age)).toEqual([10, 20, 30, null]);
+    expect(cursor.items.map(u => u.age)).toEqual([null, 10, 20, 30]);
   });
 
   test('can order by nullable column descending', async () => {
@@ -241,7 +239,7 @@ describe('cursor pagination - ordering by nullable column', () => {
       orderBy: { age: 'desc', id: 'asc' },
     });
 
-    expect(cursor.items.map(u => u.age)).toEqual([null, 30, 20, 10]);
+    expect(cursor.items.map(u => u.age)).toEqual([30, 20, 10, null]);
   });
 
   test('can paginate through results with null in cursor', async () => {

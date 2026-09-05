@@ -36,6 +36,11 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     boolean: 'bit',
   };
 
+  /** mssql treats null as the lowest value when no placement is requested. */
+  override sortsNullsLowest(): boolean {
+    return true;
+  }
+
   override formatIndexHint(indexNames: string[]): string {
     return `with (index(${indexNames.join(', ')}))`;
   }

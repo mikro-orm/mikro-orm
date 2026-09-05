@@ -27,6 +27,11 @@ import { MongoSchemaGenerator } from './MongoSchemaGenerator.js';
 export class MongoPlatform extends Platform {
   protected override readonly exceptionConverter: MongoExceptionConverter = new MongoExceptionConverter();
 
+  /** Mongo always sorts null and missing values lowest, and cannot be asked for anything else. */
+  override sortsNullsLowest(): boolean {
+    return true;
+  }
+
   override setConfig(config: Configuration) {
     config.set('autoJoinOneToOneOwner', false);
     config.set('loadStrategy', 'select-in');
