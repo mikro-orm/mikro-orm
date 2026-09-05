@@ -52,10 +52,12 @@ export class SourceFile {
     if (this.meta.embeddable || this.meta.collection) {
       if (this.meta.embeddable) {
         const options = this.getEmbeddableDeclOptions();
-        ret += `@${this.referenceDecoratorImport('Embeddable')}(${Utils.hasObjectKeys(options) ? this.serializeObject(options) : ''})\n`;
+        const decl = `@${this.referenceDecoratorImport('Embeddable')}(`;
+        ret += `${decl}${Utils.hasObjectKeys(options) ? this.serializeObject(options, 80 - decl.length, 0) : ''})\n`;
       } else {
         const options = this.getEntityDeclOptions();
-        ret += `@${this.referenceDecoratorImport('Entity')}(${Utils.hasObjectKeys(options) ? this.serializeObject(options) : ''})\n`;
+        const decl = `@${this.referenceDecoratorImport('Entity')}(`;
+        ret += `${decl}${Utils.hasObjectKeys(options) ? this.serializeObject(options, 80 - decl.length, 0) : ''})\n`;
       }
     }
 
