@@ -61,6 +61,7 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 | `$lte`         | lower or equal   | Matches values that are less than or equal to a specified value.                            |
 | `$ne`          | not equal        | Matches all values that are not equal to a specified value.                                 |
 | `$nin`         | not contains     | Matches none of the values specified in an array.                                           |
+| `$all`         | all              | Matches arrays that contain all the values specified in an array. (mongo only)              |
 | `$like`        | like             | Uses LIKE operator                                                                          |
 | `$re`          | regexp           | Uses REGEXP operator. See info [below](#regular-expressions)                                |
 | `$fulltext`    | full text        | A driver specific full text search function. See requirements [below](#full-text-searching) |

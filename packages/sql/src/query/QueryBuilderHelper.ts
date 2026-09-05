@@ -923,6 +923,13 @@ export class QueryBuilderHelper {
   }
 
   private getOperatorReplacement(op: string, value: Dictionary): string {
+    // `$all` is a mongo array operator with no SQL equivalent
+    if (op === '$all') {
+      throw new Error(
+        'The `$all` operator is not supported by SQL drivers, use `$contains` for array columns instead.',
+      );
+    }
+
     let replacement: string = QueryOperator[op as keyof typeof QueryOperator];
 
     if (op === '$exists') {
