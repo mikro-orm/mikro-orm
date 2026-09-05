@@ -59,3 +59,25 @@ test('virtual expression callback inherits the caller filter params', async () =
 
   await orm.close(true);
 });
+
+test('cached virtual entity queries key by the entity name (no table name in the metadata)', async () => {
+  const orm = await MikroORM.init({
+    entities: [Book, BookView],
+    dbName: ':memory:',
+    driver: SqliteDriver,
+  });
+  await orm.schema.create();
+  await orm.em.insert(Book, { id: 1, tenantId: 1, title: 'a' });
+
+  const em = orm.em.fork();
+  em.setFilterParams('tenant', { tenantId: 1 });
+  const first = await em.find(BookView, {}, { cache: 1000 });
+  expect(first).toEqual([{ id: 1, tenantId: 1, title: 'a' }]);
+
+  // the second query is served from the result cache, so the row inserted in between stays invisible
+  await orm.em.insert(Book, { id: 2, tenantId: 1, title: 'b' });
+  const second = await em.find(BookView, {}, { cache: 1000 });
+  expect(second).toEqual(first);
+
+  await orm.close(true);
+});
