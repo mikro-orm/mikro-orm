@@ -164,6 +164,54 @@ describe('rls policies [postgres]', () => {
     await orm.close(true);
   });
 
+  test('dotted role and policy names are quoted as whole identifiers [postgres]', async () => {
+    const Rls = new EntitySchema({
+      name: 'RlsDotted',
+      tableName: 'rls_dotted',
+      properties: {
+        id: idColumn(),
+        tenantId: { type: 'string', name: 'tenantId', fieldName: 'tenant_id', columnType: 'uuid' },
+      },
+      policies: [
+        {
+          name: 'rls.dotted.policy',
+          roles: ['mikro_orm.rls.reader'],
+          using: `tenant_id = current_setting('app.tenant')::uuid`,
+        },
+      ],
+    });
+    const orm = await MikroORM.init({ entities: [Rls], dbName: 'mikro_orm_test_rls_dotted_ident' });
+    await orm.schema.ensureDatabase();
+    // a crashed prior run can leave the role referenced by leftover policies, which block a plain `drop role`
+    await orm.em.getConnection().execute(`do $$ begin
+      if exists (select from pg_roles where rolname = 'mikro_orm.rls.reader') then
+        execute 'drop owned by "mikro_orm.rls.reader"';
+        execute 'drop role "mikro_orm.rls.reader"';
+      end if;
+    end $$;`);
+    await orm.em.getConnection().execute(`create role "mikro_orm.rls.reader"`);
+
+    // a dot inside a role or policy name must stay inside one quoted identifier — `quoteIdentifier`
+    // would split it into a schema-qualified pair, which `create policy` rejects
+    const create = await orm.schema.getCreateSchemaSQL({ wrap: false });
+    expect(create).toContain(`create policy "rls.dotted.policy" on "rls_dotted" to "mikro_orm.rls.reader"`);
+
+    await orm.schema.refresh();
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+
+    const meta = orm.getMetadata(Rls);
+    meta.policies = [];
+    meta.rowLevelSecurity = false;
+    const drop = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(drop).toContain(`drop policy "rls.dotted.policy" on "rls_dotted"`);
+    await orm.schema.execute(drop);
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.em.getConnection().execute(`drop role if exists "mikro_orm.rls.reader"`);
+    await orm.close();
+  });
+
   test('dropping a policy together with the column it references [postgres]', async () => {
     const dbName = 'mikro_orm_test_rls_drop_col';
     const V1 = new EntitySchema({
@@ -711,6 +759,7 @@ describe('rls policies [postgres]', () => {
     const orm1 = await MikroORM.init({ entities: [makeEntity()], dbName, schemaGenerator: { ignorePolicies: true } });
     await orm1.schema.refresh();
     await orm1.em.execute(`alter table "rls_partition_ignore" enable row level security`);
+    await orm1.em.execute(`alter table "rls_partition_ignore" force row level security`);
     await orm1.em.execute(
       `create policy "manual_tenant" on "rls_partition_ignore" using (tenant_id = current_setting('app.tenant')::uuid)`,
     );
@@ -728,13 +777,15 @@ describe('rls policies [postgres]', () => {
     const diff = await orm2.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toContain('set schema "mikro_orm_partition_swap"');
     expect(diff).toContain('enable row level security');
+    expect(diff).toContain('force row level security');
     expect(diff).toContain('create policy "manual_tenant"');
     await orm2.schema.execute(diff);
 
-    const rls = await orm2.em.execute<{ relrowsecurity: boolean }[]>(
-      `select relrowsecurity from pg_class where relname = 'rls_partition_ignore'`,
+    const rls = await orm2.em.execute<{ relrowsecurity: boolean; relforcerowsecurity: boolean }[]>(
+      `select relrowsecurity, relforcerowsecurity from pg_class where relname = 'rls_partition_ignore'`,
     );
     expect(rls[0].relrowsecurity).toBe(true);
+    expect(rls[0].relforcerowsecurity).toBe(true);
     const policies = await orm2.em.execute<{ policyname: string }[]>(
       `select policyname from pg_policies where tablename = 'rls_partition_ignore'`,
     );

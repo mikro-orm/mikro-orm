@@ -261,6 +261,19 @@ describe('row level security end-to-end under a non-owner role [postgres]', () =
     expect(await okEm.count(Author, {})).toBe(1);
   });
 
+  test('42501 maps via the locale-independent routine field when the message is localized', () => {
+    const converter = app.em.getPlatform().getExceptionConverter();
+    const localized = Object.assign(new Error('neue zeile verletzt die richtlinie'), {
+      code: '42501',
+      routine: 'ExecWithCheckOptions',
+    });
+    expect(converter.convertException(localized)).toBeInstanceOf(RowLevelSecurityViolationException);
+
+    // a plain permission error shares the code but not the routine — it must stay a generic DriverException
+    const denied = Object.assign(new Error('zugriff verweigert'), { code: '42501', routine: 'aclcheck_error' });
+    expect(converter.convertException(denied)).not.toBeInstanceOf(RowLevelSecurityViolationException);
+  });
+
   test('fail closed: no session context leaves the GUC unset and the query errors', async () => {
     // with no session context the read runs outside a transaction, so `app.tenant` is never set.
     // it fails closed with a driver error rather than returning an empty set: a pristine connection raises

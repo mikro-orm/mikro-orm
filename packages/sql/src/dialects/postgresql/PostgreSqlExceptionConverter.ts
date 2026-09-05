@@ -51,8 +51,9 @@ export class PostgreSqlExceptionConverter extends ExceptionConverter {
       case '23514':
         return new CheckConstraintViolationException(exception);
       case '42501':
-        // 42501 is generic insufficient_privilege; only RLS write violations carry this message
-        if (exception.message.includes('row-level security policy')) {
+        // 42501 is generic insufficient_privilege; only RLS write violations carry this message — the `routine`
+        // field covers servers with a non-english `lc_messages`, where the message check cannot match
+        if (exception.message.includes('row-level security policy') || exception.routine === 'ExecWithCheckOptions') {
           return new RowLevelSecurityViolationException(exception);
         }
 

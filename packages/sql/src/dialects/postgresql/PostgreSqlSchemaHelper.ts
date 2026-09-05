@@ -820,8 +820,16 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
+  /**
+   * Quotes a policy or role name as a single identifier. Unlike `quote()`/`platform.quoteIdentifier`, which treat
+   * a dot as a schema qualifier, these names are never schema-qualified, so `my.role` must render as `"my.role"`.
+   */
+  private quoteUnqualified(name: string): string {
+    return `"${name.replaceAll('"', '""')}"`;
+  }
+
   private createPolicy(table: DatabaseTable, policy: SqlPolicyDef): string {
-    const parts = [`create policy ${this.quote(policy.name)} on ${table.getQuotedName()}`];
+    const parts = [`create policy ${this.quoteUnqualified(policy.name)} on ${table.getQuotedName()}`];
 
     if (policy.type === 'restrictive') {
       parts.push('as restrictive');
@@ -847,12 +855,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   private dropPolicy(table: DatabaseTable, policy: SqlPolicyDef): string {
-    return `drop policy ${this.quote(policy.name)} on ${table.getQuotedName()}`;
+    return `drop policy ${this.quoteUnqualified(policy.name)} on ${table.getQuotedName()}`;
   }
 
   // `public` is a keyword and must stay unquoted; other roles are quoted like any identifier
   private formatPolicyRoles(roles: string[]): string {
-    return roles.map(role => (role === 'public' ? 'public' : this.quote(role))).join(', ');
+    return roles.map(role => (role === 'public' ? 'public' : this.quoteUnqualified(role))).join(', ');
   }
 
   override createRoutine(routine: SqlRoutineDef): string {
