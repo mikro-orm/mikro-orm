@@ -461,4 +461,23 @@ describe('cursor pagination - null cursor condition branches', () => {
     // Result count depends on database NULLS ordering support
     expect(result.items.length).toBeGreaterThanOrEqual(0);
   });
+
+  test('descending direction with a nulls qualifier keeps sorting descending', async () => {
+    const cursor1 = await orm.em.findByCursor(User, {
+      first: 2,
+      orderBy: { age: 'desc nulls last', id: 'asc' },
+    });
+
+    expect(cursor1.items.map(u => u.age)).toEqual([30, 20]);
+    orm.em.clear();
+
+    const cursor2 = await orm.em.findByCursor(User, {
+      first: 2,
+      after: cursor1,
+      orderBy: { age: 'desc nulls last', id: 'asc' },
+    });
+
+    // same as a plain `desc`, the null row is not part of the descending window here
+    expect(cursor2.items.map(u => u.age)).toEqual([10]);
+  });
 });

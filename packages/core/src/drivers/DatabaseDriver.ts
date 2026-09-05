@@ -347,7 +347,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         return { [prop]: value } as OrderDefinition<T>;
       }
 
-      const desc = (direction as unknown) === QueryOrderNumeric.DESC || direction.toString().toLowerCase() === 'desc';
+      const desc =
+        (direction as unknown) === QueryOrderNumeric.DESC || direction.toString().toLowerCase().startsWith('desc');
       const dir = Utils.xor(desc, isLast) ? 'desc' : 'asc';
       return { [prop]: dir } as OrderDefinition<T>;
     };
@@ -457,8 +458,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         return { [prop]: value };
       }
 
-      const isDesc = (direction as unknown) === QueryOrderNumeric.DESC || direction.toString().toLowerCase() === 'desc';
       const dirStr = direction.toString().toLowerCase();
+      const isDesc = (direction as unknown) === QueryOrderNumeric.DESC || dirStr.startsWith('desc');
       let nullsFirst: boolean;
 
       if (dirStr.includes('nulls first')) {
