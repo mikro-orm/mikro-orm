@@ -311,7 +311,6 @@ module.exports = {
               '@mikro-orm/decorators/legacy': orm('decorators/src/legacy/index.ts'),
               '@mikro-orm/core': orm('core/src'),
               '@mikro-orm/sql': orm('sql/src'),
-              '@mikro-orm/sqlite': orm('sqlite/src'),
               '@mikro-orm/sql-js': orm('sql-js/src'),
             },
             // that source uses `.js` specifiers pointing at `.ts` files

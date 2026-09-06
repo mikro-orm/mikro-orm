@@ -166,6 +166,19 @@ test('parameters sql.js cannot bind natively are coerced', async () => {
   await orm.close(true);
 });
 
+test('a failing write rejects and leaves the connection usable', async () => {
+  const orm = await initORM();
+  const connection = orm.em.getConnection();
+
+  await expect(connection.execute(`insert into "user" ("name") values (null)`)).rejects.toThrow(
+    'NOT NULL constraint failed: user.name',
+  );
+
+  await connection.execute(`insert into "user" ("name") values ('Jon Snow')`);
+  expect(await orm.em.find(UserSchema, {})).toMatchObject([{ name: 'Jon Snow' }]);
+  await orm.close(true);
+});
+
 test('the published sql.js build has no FTS5 module', async () => {
   const orm = await initORM();
   await expect(orm.schema.execute('create virtual table book using fts5(title)')).rejects.toThrow(

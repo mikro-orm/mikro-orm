@@ -47,8 +47,8 @@
     ]
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "3.10.1",
-    "@docusaurus/types": "3.10.1",
+    "@docusaurus/module-type-aliases": "3.10.2",
+    "@docusaurus/types": "3.10.2",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
     "prettier": "^3.5.3"

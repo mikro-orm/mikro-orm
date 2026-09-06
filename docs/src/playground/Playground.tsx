@@ -21,29 +21,30 @@ function loadTypes(typesUrl: string): Promise<Record<string, string>> {
 }
 
 export default function Playground({ project }: PlaygroundProps): React.ReactElement {
-  const definition = projects[project];
+  // an unknown project renders an error below, but only after every hook has run
+  const definition = projects[project] as PlaygroundProject | undefined;
 
-  if (!definition) {
-    return <div className={styles.error}>Unknown playground project: {project}</div>;
-  }
-
-  const paths = useMemo(() => Object.keys(definition.files), [definition]);
+  const paths = useMemo(() => Object.keys(definition?.files ?? {}), [definition]);
   const modKey = typeof navigator !== 'undefined' && /Mac/i.test(navigator.platform) ? '⌘' : 'Ctrl';
   const typesUrl = useBaseUrl('/playground/mikro-orm-types.json');
 
-  const [files, setFiles] = useState<Record<string, string>>(() => ({ ...definition.files }));
-  const [activePath, setActivePath] = useState(definition.entry);
+  const [files, setFiles] = useState<Record<string, string>>(() => ({ ...definition?.files }));
+  const [activePath, setActivePath] = useState(definition?.entry ?? '');
   const [output, setOutput] = useState<OutputLine[]>([]);
   const [running, setRunning] = useState(false);
   const workerRef = useRef<Worker | null>(null);
 
   const reset = useCallback(() => {
-    setFiles({ ...definition.files });
-    setActivePath(definition.entry);
+    setFiles({ ...definition?.files });
+    setActivePath(definition?.entry ?? '');
     setOutput([]);
   }, [definition]);
 
   const run = useCallback(() => {
+    if (!definition) {
+      return;
+    }
+
     workerRef.current?.terminate();
     setOutput([]);
     setRunning(true);
@@ -64,6 +65,13 @@ export default function Playground({ project }: PlaygroundProps): React.ReactEle
         setRunning(false);
         worker.terminate();
       }
+    });
+
+    // a worker that fails to load or throws outside the message handler never posts back
+    worker.addEventListener('error', (event: ErrorEvent) => {
+      setOutput(prev => [...prev, { level: 'error', text: event.message }]);
+      setRunning(false);
+      worker.terminate();
     });
 
     const request: RunRequest = { files, entry: definition.entry };
@@ -98,7 +106,7 @@ export default function Playground({ project }: PlaygroundProps): React.ReactEle
       });
 
       // pre-create a model per project file so cross-file imports resolve in the editor
-      for (const [path, content] of Object.entries(definition.files)) {
+      for (const [path, content] of Object.entries(definition?.files ?? {})) {
         const uri = monaco.Uri.parse(`file:///${path}`);
         if (!monaco.editor.getModel(uri)) {
           monaco.editor.createModel(content, 'typescript', uri);
@@ -111,6 +119,10 @@ export default function Playground({ project }: PlaygroundProps): React.ReactEle
   const handleEditorMount = useCallback<OnMount>((editor, monaco) => {
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => runRef.current());
   }, []);
+
+  if (!definition) {
+    return <div className={styles.error}>Unknown playground project: {project}</div>;
+  }
 
   return (
     <div className={styles.playground}>

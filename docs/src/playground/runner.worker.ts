@@ -4,13 +4,13 @@ import './runner-console';
 // eslint-disable-next-line unicorn/prefer-node-protocol -- this is the `buffer` browser polyfill, not Node's builtin
 import { Buffer } from 'buffer';
 import * as core from '@mikro-orm/core';
-
-// @mikro-orm/core references the Node `Buffer` global (e.g. in clone/serialization paths).
-(globalThis as { Buffer?: typeof Buffer }).Buffer ??= Buffer;
 import initSqlJs from 'sql.js';
 import { transform } from 'sucrase';
 import * as sqlJs from '@mikro-orm/sql-js';
 import type { RunRequest, RunResponse } from './protocol';
+
+// @mikro-orm/core touches the Node `Buffer` global only at runtime (e.g. clone/serialization paths), so assigning it after the imports is enough.
+(globalThis as { Buffer?: typeof Buffer }).Buffer ??= Buffer;
 
 const ctx = self as unknown as DedicatedWorkerGlobalScope;
 

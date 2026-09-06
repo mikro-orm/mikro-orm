@@ -51,8 +51,12 @@ class SqlJsStatementAdapter implements SqliteStatement {
   run(parameters: readonly unknown[]): { changes: number; lastInsertRowid: number } {
     const stmt = this.#stmt;
     stmt.bind(coerceParams(parameters));
-    stmt.step();
-    stmt.free();
+
+    try {
+      stmt.step();
+    } finally {
+      stmt.free();
+    }
 
     // sql.js exposes neither of these on the statement, they are database level functions
     const changes = this.#db.getRowsModified();

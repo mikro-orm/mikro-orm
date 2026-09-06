@@ -1,6 +1,5 @@
 export * from '@mikro-orm/sql';
 export * from './SqlJsConnection.js';
-export * from './SqlJsDatabase.js';
 export * from './SqlJsDriver.js';
 export type * from './typings.js';
 export {
