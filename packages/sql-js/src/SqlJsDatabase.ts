@@ -1,11 +1,12 @@
 import type { SqliteDatabase, SqliteStatement } from 'kysely';
 import type { SqlJsNativeDatabase, SqlJsStatement, SqlValue } from './typings.js';
 
-/** sql.js binds bigints as strings and rejects `undefined`, so both need coercing first. */
+/** sql.js has no bigint support and rejects `undefined`, so both need coercing first. */
 function coerceParams(parameters: readonly unknown[]): SqlValue[] {
   return parameters.map(value => {
     if (typeof value === 'bigint') {
-      return Number(value);
+      // values beyond the safe integer range go in as strings, INTEGER column affinity converts them back
+      return Number.isSafeInteger(Number(value)) ? Number(value) : value.toString();
     }
 
     return (value ?? null) as SqlValue;
@@ -27,7 +28,12 @@ class SqlJsStatementAdapter implements SqliteStatement {
     this.#stmt = db.prepare(sql);
 
     // sql.js consumes only the first statement and drops the rest silently, so reject the input like better-sqlite3 does
-    if (sql.slice(this.#stmt.getSQL().length).replaceAll(';', '').trim()) {
+    const tail = sql
+      .slice(this.#stmt.getSQL().length)
+      .replace(/--[^\n]*|\/\*[\s\S]*?\*\//g, '')
+      .replaceAll(';', '');
+
+    if (tail.trim()) {
       this.#stmt.free();
       throw new Error('The supplied SQL string contains more than one statement');
     }

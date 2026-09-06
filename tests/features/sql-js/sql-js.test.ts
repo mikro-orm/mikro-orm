@@ -102,6 +102,19 @@ test('multi-statement SQL is rejected instead of silently running only the first
   await orm.close(true);
 });
 
+test('a tail of comments is not mistaken for a second statement', async () => {
+  const orm = await initORM();
+  const connection = orm.em.getConnection();
+
+  expect(await connection.execute(`select 1 as val; -- trailing comment`)).toEqual([{ val: 1 }]);
+  expect(await connection.execute(`select 1 as val; /* block */`)).toEqual([{ val: 1 }]);
+  await expect(connection.execute(`select 1 as val; select 2 as val`)).rejects.toThrow(
+    'The supplied SQL string contains more than one statement',
+  );
+
+  await orm.close(true);
+});
+
 test('a value sql.js cannot bind rejects with a real Error and leaves the connection usable', async () => {
   const orm = await initORM();
   const kysely = orm.em.getKysely();
@@ -179,6 +192,14 @@ test('parameters sql.js cannot bind natively are coerced', async () => {
     );
 
   expect(rows).toEqual([{ yes: 1, no: 0, big: 42, nil: null, absent: null }]);
+  await orm.close(true);
+});
+
+test('bigints beyond the safe integer range keep their precision', async () => {
+  const orm = await initORM();
+  const { rows } = await sql`select ${9007199254740993n} as val`.execute(orm.em.getKysely());
+
+  expect(String((rows[0] as { val: unknown }).val)).toBe('9007199254740993');
   await orm.close(true);
 });
 

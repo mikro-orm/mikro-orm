@@ -6,7 +6,7 @@ import { projects, type PlaygroundProject } from './projects';
 import styles from './Playground.module.css';
 
 interface OutputLine {
-  level: ConsoleLevel | 'system';
+  level: ConsoleLevel;
   text: string;
 }
 
