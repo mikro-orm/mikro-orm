@@ -3,7 +3,7 @@ title: Usage with sql.js
 sidebar_label: Usage with sql.js
 ---
 
-MikroORM supports [sql.js](https://sql.js.org) — SQLite compiled to WebAssembly, running entirely in memory in the browser, Node.js, Bun and Deno without any native bindings. The `@mikro-orm/sql-js` driver reuses the same SQLite platform as `@mikro-orm/sqlite`, so feature support matches the regular SQLite driver.
+MikroORM supports [sql.js](https://sql.js.org) — SQLite compiled to WebAssembly, running entirely in memory in the browser and in Node.js without any native bindings. The `@mikro-orm/sql-js` driver reuses the same SQLite platform as `@mikro-orm/sqlite`, so feature support matches the regular SQLite driver.
 
 ## Installation
 

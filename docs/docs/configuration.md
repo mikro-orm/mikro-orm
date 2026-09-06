@@ -158,6 +158,7 @@ To select driver, you can either use `type` option, or provide the driver class 
 | `oracledb`   | `OracleDriver`     | `oracledb`       | -                           |
 | `sqlite`     | `SqliteDriver`     | `better-sqlite3` | -                           |
 | `libsql`     | `LibSqlDriver`     | `libsql`         | -                           |
+| `sql-js`     | `SqlJsDriver`      | `sql.js`         | in-memory SQLite in WASM    |
 
 > Driver and connection implementations are not directly exported from `@mikro-orm/core` module. You can import them from the driver packages (e.g. `import { PostgreSqlDriver } from '@mikro-orm/postgresql'`).
 
@@ -218,6 +219,7 @@ const pool = await orm.em.getConnection().getNativeClient(); // pg Pool on postg
 | `sqlite`                 | `Database` from `better-sqlite3`            |
 | `libsql`                 | `Database` from `libsql`                    |
 | `pglite`                 | `PGlite` from `@electric-sql/pglite`        |
+| `sql-js`                 | `SqlJsNativeDatabase` from `@mikro-orm/sql-js` |
 | `oracledb`               | `Pool` from `oracledb`                      |
 | `mongodb`                | `MongoClient` (same as `getClient()`)       |
 

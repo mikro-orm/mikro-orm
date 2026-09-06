@@ -325,12 +325,14 @@ external: [
   '@mikro-orm/seeder',
   '@mikro-orm/sqlite',
   '@mikro-orm/libsql',
+  '@mikro-orm/sql-js',
   'better-sqlite3',
   'mysql',
   'mysql2',
   'oracledb',
   'pg-native',
   'pg-query-stream',
+  'sql.js',
   'tedious',
 ]
 ```

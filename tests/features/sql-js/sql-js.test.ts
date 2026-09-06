@@ -148,7 +148,7 @@ test('migrations work against the in-memory database', async () => {
   const orm = await MikroORM.init({
     entities: [UserSchema],
     extensions: [Migrator],
-    migrations: { path: migrationPath, snapshot: false },
+    migrations: { path: migrationPath, snapshot: false, silent: true },
   });
 
   const migration = await orm.migrator.create();
