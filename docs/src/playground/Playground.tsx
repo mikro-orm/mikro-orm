@@ -17,7 +17,13 @@ interface PlaygroundProps {
 let typesPromise: Promise<Record<string, string>> | null = null;
 
 function loadTypes(typesUrl: string): Promise<Record<string, string>> {
-  return (typesPromise ??= fetch(typesUrl).then(res => res.json()));
+  // drop the cached promise on failure, so a later editor mount can retry the fetch
+  return (typesPromise ??= fetch(typesUrl)
+    .then(res => res.json())
+    .catch(e => {
+      typesPromise = null;
+      throw e;
+    }));
 }
 
 export default function Playground({ project }: PlaygroundProps): React.ReactElement {
@@ -100,12 +106,15 @@ export default function Playground({ project }: PlaygroundProps): React.ReactEle
       });
       ts.typescriptDefaults.setEagerModelSync(true);
 
-      void loadTypes(typesUrl).then(vfs => {
-        ts.typescriptDefaults.addExtraLib('{ "type": "module" }', 'file:///package.json');
-        for (const [uri, content] of Object.entries(vfs)) {
-          ts.typescriptDefaults.addExtraLib(content, uri);
-        }
-      });
+      void loadTypes(typesUrl)
+        .then(vfs => {
+          ts.typescriptDefaults.addExtraLib('{ "type": "module" }', 'file:///package.json');
+          for (const [uri, content] of Object.entries(vfs)) {
+            ts.typescriptDefaults.addExtraLib(content, uri);
+          }
+        })
+        // the editor works without them, only IntelliSense on the ORM types is missing
+        .catch(e => console.warn('failed to load the MikroORM types for the playground', e));
 
       // a model per project file so cross-file imports resolve; all projects share the
       // same `file:///src/...` URIs, so models surviving a chapter switch need resetting

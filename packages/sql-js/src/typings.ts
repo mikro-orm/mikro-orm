@@ -10,6 +10,8 @@ export type SqlValue = number | string | Uint8Array | null;
 /** Prepared statement handle, as returned by `db.prepare()`. */
 export interface SqlJsStatement {
   bind(params?: SqlValue[]): boolean;
+  /** The single statement sql.js actually consumed from the string passed to `db.prepare()`. */
+  getSQL(): string;
   step(): boolean;
   getAsObject(): Record<string, SqlValue>;
   getColumnNames(): string[];
@@ -20,6 +22,7 @@ export interface SqlJsStatement {
 export interface SqlJsNativeDatabase {
   prepare(sql: string): SqlJsStatement;
   exec(sql: string): { columns: string[]; values: SqlValue[][] }[];
+  create_function(name: string, fn: (...args: SqlValue[]) => SqlValue | undefined): void;
   getRowsModified(): number;
   export(): Uint8Array;
   close(): void;

@@ -20,6 +20,7 @@ MikroORM can declare, invoke, and manage stored procedures and stored functions.
 | MSSQL | yes | yes | yes | Reads `sys.sql_modules`. |
 | Oracle | yes | yes | yes | Reads `USER_PROCEDURES` + `USER_SOURCE` + `USER_ARGUMENTS`. |
 | SQLite | — | yes (via `bodyJs`) | silent skip | No server-side routines. JS-fallback functions are registered as UDFs on connection open. |
+| sql.js | — | yes (via `bodyJs`) | silent skip | Same as SQLite, the UDF is registered via sql.js' `create_function()`. |
 | libSQL | — | — | silent skip | The libsql client does not implement runtime UDF registration; `em.callRoutine` throws. Schema-side still silent-skips. |
 | MongoDB | — | — | — | Calling `em.callRoutine` throws. |
 
@@ -282,7 +283,7 @@ Driver support:
 - **PostgreSQL**: full support via `refcursor` OUT params. **Must** be called inside `em.transactional`. Refcursor params are detected by `type: 'refcursor'` — non-refcursor OUT params still behave as scalar `ScalarReference` outputs.
 - **Oracle**: full support via `sys_refcursor` OUT params. **Must not** be called inside `em.transactional`.
 - **MSSQL**: result sets emitted by a procedure are not surfaced through `em.callRoutine` — tedious flattens them through the kysely wrapper without per-set boundaries. Use `em.getConnection().execute()` for raw multi-recordset access.
-- **SQLite**: no stored procedure concept, so multi-result-set calls throw. Functions are bridged via `bodyJs` UDFs — see [Cross-DB testing with SQLite](#cross-db-testing-with-sqlite).
+- **SQLite** (and **sql.js**): no stored procedure concept, so multi-result-set calls throw. Functions are bridged via `bodyJs` UDFs — see [Cross-DB testing with SQLite](#cross-db-testing-with-sqlite).
 - **libSQL**: throws unconditionally; the libsql client does not implement runtime UDF registration.
 - **Mongo**: no stored routines at all; throws.
 
@@ -294,13 +295,13 @@ Driver support:
 
 ## Cross-DB testing with SQLite
 
-A routine that supplies both `body` (SQL) and `bodyJs` (a JS fallback) can be used against PostgreSQL/MySQL/MSSQL/Oracle in production while tests run against SQLite (better-sqlite3):
+A routine that supplies both `body` (SQL) and `bodyJs` (a JS fallback) can be used against PostgreSQL/MySQL/MSSQL/Oracle in production while tests run against SQLite (better-sqlite3 or sql.js):
 
 - The schema generator silently skips SQLite — no DDL is emitted, `schema:diff` produces no changes.
-- `em.callRoutine` on a `type: 'function'` routine with `bodyJs` registers the JS implementation as a UDF via better-sqlite3's `db.function()` on first call, then dispatches `SELECT routine_name(?, ?, ...)`.
+- `em.callRoutine` on a `type: 'function'` routine with `bodyJs` registers the JS implementation as a UDF on first call (better-sqlite3's `db.function()`, or sql.js' `db.create_function()`), then dispatches `SELECT routine_name(?, ?, ...)`.
 - Calling a procedure on SQLite, or a function without `bodyJs`, throws — SQLite has no analog.
 
-libSQL is **not** a drop-in replacement: the `libsql` client does not currently expose runtime UDF registration, so `em.callRoutine` throws regardless of `bodyJs`. Use the SQLite (better-sqlite3) driver for cross-DB testing of routines.
+libSQL is **not** a drop-in replacement: the `libsql` client does not currently expose runtime UDF registration, so `em.callRoutine` throws regardless of `bodyJs`. Use the SQLite (better-sqlite3) or sql.js driver for cross-DB testing of routines.
 
 ## Limitations
 

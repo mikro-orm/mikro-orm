@@ -4,7 +4,7 @@ import initSqlJs from 'sql.js';
 import { type Generated, sql } from 'kysely';
 import { defineEntity, p } from '@mikro-orm/core';
 import { Migrator } from '@mikro-orm/migrations';
-import { defineConfig, MikroORM, type SqlJsConnection, type SqlJsStatic } from '@mikro-orm/sql-js';
+import { defineConfig, MikroORM, type SqlJsStatic } from '@mikro-orm/sql-js';
 import { TEMP_DIR } from '../../helpers.js';
 
 // spy on the real initialiser to see the config the driver passes through
@@ -89,13 +89,29 @@ test('attachDatabases is rejected, as there is no filesystem to attach from', as
   await orm.close(true);
 });
 
-test('stored routines cannot be invoked', async () => {
+test('multi-statement SQL is rejected instead of silently running only the first statement', async () => {
   const orm = await initORM();
-  const routine = { name: 'my_fn', type: 'function', params: [] } as any;
+  const connection = orm.em.getConnection();
 
-  await expect((orm.em.getConnection() as SqlJsConnection).callRoutine(routine)).rejects.toThrow(
-    'Stored routines are not supported on sql.js',
+  await expect(
+    connection.execute(`insert into "user" ("name") values ('Jon Snow'); insert into "user" ("name") values ('Arya')`),
+  ).rejects.toThrow('The supplied SQL string contains more than one statement');
+
+  await connection.execute(`insert into "user" ("name") values ('Jon Snow');`);
+  expect(await orm.em.find(UserSchema, {})).toMatchObject([{ name: 'Jon Snow' }]);
+  await orm.close(true);
+});
+
+test('a value sql.js cannot bind rejects with a real Error and leaves the connection usable', async () => {
+  const orm = await initORM();
+  const kysely = orm.em.getKysely();
+
+  await expect(sql`select ${new Date()} as val`.execute(kysely)).rejects.toThrow(
+    /tried to bind a value of an unknown type/,
   );
+
+  await orm.em.getConnection().execute(`insert into "user" ("name") values ('Jon Snow')`);
+  expect(await orm.em.find(UserSchema, {})).toMatchObject([{ name: 'Jon Snow' }]);
   await orm.close(true);
 });
 

@@ -6,7 +6,7 @@ import { type Dialect, SqliteDialect } from 'kysely';
 import type { Routine, Transaction } from '@mikro-orm/core';
 import initSqlJs from 'sql.js';
 import { SqlJsDatabase } from './SqlJsDatabase.js';
-import type { InitSqlJs, SqlJsConfig, SqlJsNativeDatabase, SqlJsStatic } from './typings.js';
+import type { InitSqlJs, SqlJsConfig, SqlJsNativeDatabase, SqlJsStatic, SqlValue } from './typings.js';
 
 // the ambient `sql.js` declaration is intentionally loose, our own types describe what we actually use
 const init = initSqlJs as InitSqlJs;
@@ -27,6 +27,8 @@ type SqlJsDriverOptions = SqlJsConfig & {
 /** In-memory SQLite connection backed by sql.js (SQLite compiled to WebAssembly). */
 export class SqlJsConnection extends BaseSqliteConnection {
   #database?: SqlJsNativeDatabase;
+  // Routine name → registered `bodyJs` ref. Reference compare to detect HMR swaps and re-register.
+  readonly #registeredRoutines = new Map<string, (params: Record<string, unknown>) => unknown>();
 
   override async connect(options?: { skipOnConnect?: boolean }): Promise<void> {
     this.validateAttachSupport();
@@ -41,6 +43,8 @@ export class SqlJsConnection extends BaseSqliteConnection {
       database: async () => {
         const SQL = typeof sqlJs === 'function' ? await sqlJs() : (sqlJs ?? (await init(config)));
         this.#database = new SQL.Database(data);
+        // fresh Database = fresh function table; clear cached registrations
+        this.#registeredRoutines.clear();
         return new SqlJsDatabase(this.#database);
       },
       onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
@@ -68,11 +72,39 @@ export class SqlJsConnection extends BaseSqliteConnection {
     return this.requireNativeClient(this.#database);
   }
 
-  /** sql.js exposes no user-defined-function registration, so `bodyJs` fallbacks cannot be bridged. */
-  override async callRoutine<T>(routine: Routine, _args: Record<string, unknown> = {}, _ctx?: Transaction): Promise<T> {
-    throw new Error(
-      `Stored routines are not supported on sql.js. The sql.js build exposes no user-defined-function registration, so routine ${routine.name} cannot be invoked here. Use the better-sqlite3 driver for cross-DB testing, or call against a server-side database.`,
-    );
+  /** SQLite has no procedures; functions bridge via `bodyJs` registered as a UDF. */
+  override async callRoutine<T>(routine: Routine, args: Record<string, unknown> = {}, ctx?: Transaction): Promise<T> {
+    if (routine.type === 'procedure') {
+      throw new Error(
+        `Stored procedures are not supported on SQLite. Routine ${routine.name} cannot be invoked here — define a separate code path for SQLite or call it only against a server-side database.`,
+      );
+    }
+
+    if (!routine.bodyJs) {
+      throw new Error(
+        `Function ${routine.name} cannot be invoked on SQLite without a 'bodyJs' fallback. Add a JS implementation to the Routine declaration to enable cross-DB testing.`,
+      );
+    }
+
+    const db = await this.getNativeClient();
+    const fn = routine.bodyJs as (params: Record<string, unknown>) => unknown;
+
+    // Re-register on reference mismatch (HMR or a re-bound closure); sql.js replaces silently.
+    if (this.#registeredRoutines.get(routine.name) !== fn) {
+      const udf = (...positional: SqlValue[]) => {
+        const named: Record<string, unknown> = {};
+        routine.params.forEach((p, i) => {
+          named[p.name as string] = positional[i];
+        });
+        return fn(named) as SqlValue;
+      };
+      // sql.js derives the SQL arity from the callback's declared parameter count, which rest args report as 0
+      Object.defineProperty(udf, 'length', { value: routine.params.length });
+      db.create_function(routine.name, udf);
+      this.#registeredRoutines.set(routine.name, fn);
+    }
+
+    return this.callRoutineFunction(routine, args, ctx);
   }
 
   private validateAttachSupport(): void {

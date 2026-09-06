@@ -89,11 +89,10 @@ Its lifecycle stays with the ORM — let `orm.close()` close it rather than call
 
 ## Schema, migrations, and queries
 
-sql.js is a regular SQLite build, so the [Schema Generator](./schema-generator.md), [Migrations](./migrations.md), [QueryBuilder](./query-builder.md), [Kysely integration](./kysely.md) and [streaming](./streaming.md) all work the same way as with `@mikro-orm/sqlite`.
+sql.js is a regular SQLite build, so the [Schema Generator](./schema-generator.md), [Migrations](./migrations.md), [QueryBuilder](./query-builder.md), [Kysely integration](./kysely.md) and [streaming](./streaming.md) all work the same way as with `@mikro-orm/sqlite`. [Stored routines](./stored-routines.md) with a `bodyJs` fallback are supported too — the JS implementation is registered as a user-defined function via sql.js' `create_function()`.
 
 ## Limitations
 
 - **In-memory only** — there is no filesystem, so `dbName` has no effect and the data is gone once the connection closes. Persist it yourself via `db.export()` and `driverOptions.data`.
 - **No attached databases** — the [`attachDatabases`](./multiple-schemas.md) option throws, as there are no database files to attach.
-- **No stored routines** — sql.js exposes no user-defined-function registration, so `em.callRoutine()` and the `bodyJs` fallback used by the `@mikro-orm/sqlite` driver are not available.
 - **No FTS5** — the published sql.js build is compiled without the FTS5 module, so `$fulltext` queries require a custom build.

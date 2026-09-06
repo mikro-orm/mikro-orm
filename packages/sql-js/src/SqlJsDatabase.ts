@@ -12,6 +12,11 @@ function coerceParams(parameters: readonly unknown[]): SqlValue[] {
   });
 }
 
+/** sql.js rejects unbindable values by throwing plain strings, which would leave the driver exception without a message. */
+function toError(e: unknown): unknown {
+  return typeof e === 'string' ? new Error(e) : e;
+}
+
 /** Wraps a sql.js statement in the better-sqlite3 shaped interface kysely expects. */
 class SqlJsStatementAdapter implements SqliteStatement {
   readonly #db: SqlJsNativeDatabase;
@@ -20,6 +25,12 @@ class SqlJsStatementAdapter implements SqliteStatement {
   constructor(db: SqlJsNativeDatabase, sql: string) {
     this.#db = db;
     this.#stmt = db.prepare(sql);
+
+    // sql.js consumes only the first statement and drops the rest silently, so reject the input like better-sqlite3 does
+    if (sql.slice(this.#stmt.getSQL().length).replaceAll(';', '').trim()) {
+      this.#stmt.free();
+      throw new Error('The supplied SQL string contains more than one statement');
+    }
   }
 
   /** Only statements producing a result set have columns, which is what `reader` means for kysely. */
@@ -33,12 +44,15 @@ class SqlJsStatementAdapter implements SqliteStatement {
 
   *iterate(parameters: readonly unknown[]): IterableIterator<unknown> {
     const stmt = this.#stmt;
-    stmt.bind(coerceParams(parameters));
 
     try {
+      stmt.bind(coerceParams(parameters));
+
       while (stmt.step()) {
         yield stmt.getAsObject();
       }
+    } catch (e) {
+      throw toError(e);
     } finally {
       stmt.free();
     }
@@ -46,10 +60,12 @@ class SqlJsStatementAdapter implements SqliteStatement {
 
   run(parameters: readonly unknown[]): { changes: number; lastInsertRowid: number } {
     const stmt = this.#stmt;
-    stmt.bind(coerceParams(parameters));
 
     try {
+      stmt.bind(coerceParams(parameters));
       stmt.step();
+    } catch (e) {
+      throw toError(e);
     } finally {
       stmt.free();
     }
