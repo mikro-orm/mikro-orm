@@ -38,7 +38,7 @@ BookSchema.setClass(Book);
 const orm = await MikroORM.init({
   entities: [Author, Book],
 });
-await orm.schema.createSchema();
+await orm.schema.create();
 
 const author = orm.em.create(Author, { name: 'Jon Snow' });
 orm.em.create(Book, { title: 'My Life on The Wall', author });

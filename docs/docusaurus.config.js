@@ -97,6 +97,9 @@ const renames = {
 
 const docsRouteRegex = /^\/docs\/([^\/]+\/|)([^\/]*)$/;
 
+/** @param {string} p */
+const orm = p => path.resolve(__dirname, '../packages', p);
+
 if (!!process.env.MIKRO_ORM_DOCS_TESTING) {
   // Always include the latest version, and the earliest version.
   const includedVersions = new Set([
@@ -297,11 +300,31 @@ module.exports = {
         return {
           resolve: {
             alias: {
-              // the playground runs the driver from the monorepo source on purpose, so every docs build tests it end to end
-              '@mikro-orm/sql-js': path.resolve(__dirname, '../packages/sql-js/src'),
+              // the playground runs the ORM from the monorepo sources on purpose, so every docs build tests it end to end
+              // the subpath exports have to be listed before the package roots, the first matching alias wins
+              '@mikro-orm/core/file-discovery': orm('core/src/not-supported.ts'),
+              '@mikro-orm/core/fs-utils': orm('core/src/not-supported.ts'),
+              '@mikro-orm/core/migrations': orm('core/src/utils/AbstractMigrator.ts'),
+              '@mikro-orm/core/schema': orm('core/src/utils/AbstractSchemaGenerator.ts'),
+              '@mikro-orm/core/dataloader': orm('core/src/utils/DataloaderUtils.ts'),
+              '@mikro-orm/decorators/es': orm('decorators/src/es/index.ts'),
+              '@mikro-orm/decorators/legacy': orm('decorators/src/legacy/index.ts'),
+              '@mikro-orm/core': orm('core/src'),
+              '@mikro-orm/sql': orm('sql/src'),
+              '@mikro-orm/sqlite': orm('sqlite/src'),
+              '@mikro-orm/sql-js': orm('sql-js/src'),
             },
             // that source uses `.js` specifiers pointing at `.ts` files
             extensionAlias: { '.js': ['.ts', '.js'] },
+          },
+          module: {
+            rules: [
+              {
+                enforce: 'pre',
+                test: /packages[\\/]core[\\/]src[\\/]utils[\\/]Utils\.ts$/,
+                use: require.resolve('./plugins/orm-version-loader'),
+              },
+            ],
           },
           ignoreWarnings: [
             /Critical dependency: the request of a dependency is an expression/,

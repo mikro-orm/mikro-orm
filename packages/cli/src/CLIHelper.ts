@@ -241,13 +241,9 @@ export class CLIHelper {
       case 'libsql':
         ret.driver ??= await import('@mikro-orm/libsql').then(m => m.LibSqlDriver);
         break;
-      case 'sql-js': {
-        // Variable specifier for the same reason as `pglite` above — `sql.js`'s
-        // d.ts pulls in the Emscripten/DOM ambient globals we don't have in lib.
-        const name = '@mikro-orm/sql-js';
-        ret.driver ??= (await import(name)).SqlJsDriver;
+      case 'sql-js':
+        ret.driver ??= await import('@mikro-orm/sql-js').then(m => m.SqlJsDriver);
         break;
-      }
       case 'oracledb':
         ret.driver ??= await import('@mikro-orm/oracledb').then(m => m.OracleDriver);
         break;

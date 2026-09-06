@@ -1517,7 +1517,6 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.1.15"
     "@mikro-orm/sql": "npm:7.1.15"
-    "@types/sql.js": "npm:1.4.11"
     kysely: "npm:0.29.5"
     sql.js: "npm:1.14.2"
   peerDependencies:
@@ -3200,13 +3199,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/emscripten@npm:*":
-  version: 1.41.6
-  resolution: "@types/emscripten@npm:1.41.6"
-  checksum: 10/d497bd30d078dec05f0e2860a242091201532dd343d532459fc9bbdaea9c0e8bf0c5c515e5b2b0a3bfa886c3e4d83183c7e8091005ca0592b30c0d49f2526f28
-  languageName: node
-  linkType: hard
-
 "@types/estree@npm:^1.0.0":
   version: 1.0.8
   resolution: "@types/estree@npm:1.0.8"
@@ -3302,16 +3294,6 @@ __metadata:
   version: 7.8.0
   resolution: "@types/semver@npm:7.8.0"
   checksum: 10/bbb33a88cdbc72759cf6b2750f1a28468f4470a61a1543061f494c21a53ad53bb85976e5282d79c811579e7073db0ecb6643ee0bcbf0466e8b5b3cb57ea97de0
-  languageName: node
-  linkType: hard
-
-"@types/sql.js@npm:1.4.11":
-  version: 1.4.11
-  resolution: "@types/sql.js@npm:1.4.11"
-  dependencies:
-    "@types/emscripten": "npm:*"
-    "@types/node": "npm:*"
-  checksum: 10/eea452c384bdec2cd5647c1c3c2ac13cc0f6794d42ae709ba1ce41954753a6f29145a5e2d98f08eabd56291986f88f3ed8e162a3601e37bc3831aaed2e384d1e
   languageName: node
   linkType: hard
 

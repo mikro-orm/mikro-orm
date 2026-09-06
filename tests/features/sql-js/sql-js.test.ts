@@ -1,10 +1,10 @@
 import { readFile, rm } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import initSqlJs from 'sql.js';
-import type { Generated } from 'kysely';
+import { type Generated, sql } from 'kysely';
 import { defineEntity, p } from '@mikro-orm/core';
 import { Migrator } from '@mikro-orm/migrations';
-import { defineConfig, MikroORM, type SqlJsConnection } from '@mikro-orm/sql-js';
+import { defineConfig, MikroORM, type SqlJsConnection, type SqlJsStatic } from '@mikro-orm/sql-js';
 import { TEMP_DIR } from '../../helpers.js';
 
 // spy on the real initialiser to see the config the driver passes through
@@ -54,7 +54,7 @@ test('the database image can be exported and reopened via driverOptions.data', a
 
 test('driverOptions.sqlJs is used instead of initializing sql.js again', async () => {
   let calls = 0;
-  const SQL = await initSqlJs();
+  const SQL = (await initSqlJs()) as SqlJsStatic;
   const orm = await initORM({
     sqlJs: () => {
       calls++;
@@ -151,6 +151,18 @@ test('kysely queries run through the sql.js connection', async () => {
   await kysely.insertInto('user').values({ name: 'Jon Snow' }).execute();
   const rows = await kysely.selectFrom('user').selectAll().execute();
   expect(rows).toEqual([{ id: 1, name: 'Jon Snow' }]);
+  await orm.close(true);
+});
+
+test('parameters sql.js cannot bind natively are coerced', async () => {
+  // the ORM normalizes such values on its own, but kysely binds whatever the user passes
+  const orm = await initORM();
+  const { rows } =
+    await sql`select ${true} as yes, ${false} as no, ${42n} as big, ${null} as nil, ${undefined} as absent`.execute(
+      orm.em.getKysely(),
+    );
+
+  expect(rows).toEqual([{ yes: 1, no: 0, big: 42, nil: null, absent: null }]);
   await orm.close(true);
 });
 

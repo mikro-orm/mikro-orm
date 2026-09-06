@@ -1,5 +1,5 @@
 import type { SqliteDatabase, SqliteStatement } from 'kysely';
-import type { Database, SqlValue, Statement } from 'sql.js';
+import type { SqlJsNativeDatabase, SqlJsStatement, SqlValue } from './typings.js';
 
 /** sql.js binds positional params natively, but rejects booleans, bigints and `undefined`. */
 function coerceParams(parameters: readonly unknown[]): SqlValue[] {
@@ -18,10 +18,10 @@ function coerceParams(parameters: readonly unknown[]): SqlValue[] {
 
 /** Wraps a sql.js statement in the better-sqlite3 shaped interface kysely expects. */
 class SqlJsStatementAdapter implements SqliteStatement {
-  readonly #db: Database;
-  readonly #stmt: Statement;
+  readonly #db: SqlJsNativeDatabase;
+  readonly #stmt: SqlJsStatement;
 
-  constructor(db: Database, sql: string) {
+  constructor(db: SqlJsNativeDatabase, sql: string) {
     this.#db = db;
     this.#stmt = db.prepare(sql);
   }
@@ -56,7 +56,7 @@ class SqlJsStatementAdapter implements SqliteStatement {
 
     // sql.js exposes neither of these on the statement, they are database level functions
     const changes = this.#db.getRowsModified();
-    const lastInsertRowid = Number(this.#db.exec('select last_insert_rowid()')[0]?.values[0]?.[0] ?? 0);
+    const lastInsertRowid = Number(this.#db.exec('select last_insert_rowid()')[0].values[0][0]);
 
     return { changes, lastInsertRowid };
   }
@@ -64,9 +64,9 @@ class SqlJsStatementAdapter implements SqliteStatement {
 
 /** Kysely compatible `SqliteDatabase` backed by an in-memory sql.js instance. */
 export class SqlJsDatabase implements SqliteDatabase {
-  readonly #db: Database;
+  readonly #db: SqlJsNativeDatabase;
 
-  constructor(db: Database) {
+  constructor(db: SqlJsNativeDatabase) {
     this.#db = db;
   }
 

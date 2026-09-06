@@ -1,9 +1,15 @@
+// the ambient declaration has to be pulled in explicitly, consumers compile our sources via the `exports` map
+// eslint-disable-next-line typescript/triple-slash-reference
+/// <reference path="./sql-js.d.ts" />
 import { BaseSqliteConnection, type Dictionary } from '@mikro-orm/sql';
 import { type Dialect, SqliteDialect } from 'kysely';
 import type { Routine, Transaction } from '@mikro-orm/core';
 import initSqlJs from 'sql.js';
-import type { Database, SqlJsConfig, SqlJsStatic } from 'sql.js';
 import { SqlJsDatabase } from './SqlJsDatabase.js';
+import type { InitSqlJs, SqlJsConfig, SqlJsNativeDatabase, SqlJsStatic } from './typings.js';
+
+// the ambient `sql.js` declaration is intentionally loose, our own types describe what we actually use
+const init = initSqlJs as InitSqlJs;
 
 /**
  * Driver-specific options accepted via the `driverOptions` config key.
@@ -23,7 +29,7 @@ type SqlJsDriverOptions = SqlJsConfig & {
 
 /** In-memory SQLite connection backed by sql.js (SQLite compiled to WebAssembly). */
 export class SqlJsConnection extends BaseSqliteConnection {
-  #database?: Database;
+  #database?: SqlJsNativeDatabase;
 
   override async connect(options?: { skipOnConnect?: boolean }): Promise<void> {
     this.validateAttachSupport();
@@ -31,12 +37,12 @@ export class SqlJsConnection extends BaseSqliteConnection {
   }
 
   override createKyselyDialect(options: Dictionary): Dialect {
-    const { sqlJs, data, ...config } = (options ?? {}) as SqlJsDriverOptions;
+    const { sqlJs, data, ...config } = options as SqlJsDriverOptions;
 
     return new SqliteDialect({
       // sql.js loads its WASM module asynchronously, so the database can only be built inside the async factory
       database: async () => {
-        const SQL = typeof sqlJs === 'function' ? await sqlJs() : (sqlJs ?? (await initSqlJs(config)));
+        const SQL = typeof sqlJs === 'function' ? await sqlJs() : (sqlJs ?? (await init(config)));
         this.#database = new SQL.Database(data);
         return new SqlJsDatabase(this.#database);
       },
@@ -60,7 +66,7 @@ export class SqlJsConnection extends BaseSqliteConnection {
    * Returns the sql.js `Database` backing this connection, e.g. to persist it via `db.export()`.
    * It is closed together with the ORM, so do not hold on to the returned handle across `orm.close()`.
    */
-  override async getNativeClient(): Promise<Database> {
+  override async getNativeClient(): Promise<SqlJsNativeDatabase> {
     await this.ensureConnection();
     return this.requireNativeClient(this.#database);
   }

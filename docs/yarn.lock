@@ -3439,42 +3439,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/core@npm:7.2.0-dev.21":
-  version: 7.2.0-dev.21
-  resolution: "@mikro-orm/core@npm:7.2.0-dev.21"
-  peerDependencies:
-    dataloader: 2.2.3
-  peerDependenciesMeta:
-    dataloader:
-      optional: true
-  checksum: 10/08d0bfe233ad510e2dfd93599dfb056a9d1cc8584ebe14f40abed6ed63846aa8f279ac15912cdeb443a18893b5b8753ab40655cb077a04ed2220f9b7252710d5
-  languageName: node
-  linkType: hard
-
-"@mikro-orm/sql@npm:7.2.0-dev.21":
-  version: 7.2.0-dev.21
-  resolution: "@mikro-orm/sql@npm:7.2.0-dev.21"
-  dependencies:
-    kysely: "npm:0.29.5"
-  peerDependencies:
-    "@mikro-orm/core": 7.2.0-dev.21
-  checksum: 10/58fcf49f02c607239ba4b76c2ac9eac8d32a4f93d62930e4f4277d9dc7993d34282df403bfdca87555ac5f15c77dcf88f8ca3a87ec02a95a9dcf732d4071191f
-  languageName: node
-  linkType: hard
-
-"@mikro-orm/sqlite@npm:7.2.0-dev.21":
-  version: 7.2.0-dev.21
-  resolution: "@mikro-orm/sqlite@npm:7.2.0-dev.21"
-  dependencies:
-    "@mikro-orm/sql": "npm:7.2.0-dev.21"
-    better-sqlite3: "npm:13.0.3"
-    kysely: "npm:0.29.5"
-  peerDependencies:
-    "@mikro-orm/core": 7.2.0-dev.21
-  checksum: 10/70a70c5fd2d05e01b4a1221675a02dbeddc6e2b8eff569d7012e334c85551d31220b7e87b6a892fcd71972409ed1a5096818d1d0c3eb67ee7e57b0e26caefc17
-  languageName: node
-  linkType: hard
-
 "@module-federation/error-codes@npm:0.22.0":
   version: 0.22.0
   resolution: "@module-federation/error-codes@npm:0.22.0"
@@ -4832,13 +4796,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/emscripten@npm:*":
-  version: 1.41.6
-  resolution: "@types/emscripten@npm:1.41.6"
-  checksum: 10/d497bd30d078dec05f0e2860a242091201532dd343d532459fc9bbdaea9c0e8bf0c5c515e5b2b0a3bfa886c3e4d83183c7e8091005ca0592b30c0d49f2526f28
-  languageName: node
-  linkType: hard
-
 "@types/eslint-scope@npm:^3.7.7":
   version: 3.7.7
   resolution: "@types/eslint-scope@npm:3.7.7"
@@ -5209,16 +5166,6 @@ __metadata:
   dependencies:
     "@types/node": "npm:*"
   checksum: 10/b4b5381122465d80ea8b158537c00bc82317222d3fb31fd7229ff25b31fa89134abfbab969118da55622236bf3d8fee75759f3959908b5688991f492008f29bc
-  languageName: node
-  linkType: hard
-
-"@types/sql.js@npm:1.4.11":
-  version: 1.4.11
-  resolution: "@types/sql.js@npm:1.4.11"
-  dependencies:
-    "@types/emscripten": "npm:*"
-    "@types/node": "npm:*"
-  checksum: 10/eea452c384bdec2cd5647c1c3c2ac13cc0f6794d42ae709ba1ce41954753a6f29145a5e2d98f08eabd56291986f88f3ed8e162a3601e37bc3831aaed2e384d1e
   languageName: node
   linkType: hard
 
@@ -5865,16 +5812,6 @@ __metadata:
   version: 2.0.3
   resolution: "bcp-47-match@npm:2.0.3"
   checksum: 10/fb47d31946268865c45df4c5d447964656ea357871bbd6969dc4ea2fb6b581fda385174ed43bc1dc1a7ed75c1a93a51fef18eec0fbd24352725dfceb2246cf2e
-  languageName: node
-  linkType: hard
-
-"better-sqlite3@npm:13.0.3":
-  version: 13.0.3
-  resolution: "better-sqlite3@npm:13.0.3"
-  dependencies:
-    node-addon-api: "npm:^8.0.0"
-    node-gyp: "npm:latest"
-  checksum: 10/035f8fa70784762fd73e1dbeb6f157186abb97705ff759b312cfb0dc1c675fd1c6b5378d2c036758000ce9da1d49bf61689531aa2718a7e32dc272c114a4c71f
   languageName: node
   linkType: hard
 
@@ -7586,23 +7523,17 @@ __metadata:
     "@docusaurus/types": "npm:3.10.1"
     "@giscus/react": "npm:^3.1.0"
     "@mdx-js/react": "npm:3.1.1"
-    "@mikro-orm/core": "npm:7.2.0-dev.21"
-    "@mikro-orm/sql": "npm:7.2.0-dev.21"
-    "@mikro-orm/sqlite": "npm:7.2.0-dev.21"
     "@monaco-editor/react": "npm:4.7.0"
     "@signalwire/docusaurus-plugin-llms-txt": "npm:^1.2.2"
     "@types/react": "npm:^19.1.6"
     "@types/react-dom": "npm:^19.1.5"
-    "@types/sql.js": "npm:1.4.11"
     buffer: "npm:6.0.3"
     classnames: "npm:^2.5.1"
-    kysely: "npm:0.29.5"
     marked: "npm:18.0.11"
     prettier: "npm:^3.5.3"
     prism-react-renderer: "npm:^2.4.1"
     react: "npm:^19.2.4"
     react-dom: "npm:^19.2.4"
-    sql.js: "npm:1.14.2"
     sucrase: "npm:3.35.1"
     typescript: "npm:6.0.3"
   languageName: unknown
@@ -9982,13 +9913,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"kysely@npm:0.29.5":
-  version: 0.29.5
-  resolution: "kysely@npm:0.29.5"
-  checksum: 10/f62218965838cbc1900ad6364757d0fa5537089c5d0627af9f3cff08eb719b8d81840b5f5d22cdd3b41e4255c1b60ec50a602b589b07439d7485f05feceb5f4a
-  languageName: node
-  linkType: hard
-
 "latest-version@npm:^7.0.0":
   version: 7.0.0
   resolution: "latest-version@npm:7.0.0"
@@ -11475,15 +11399,6 @@ __metadata:
     lower-case: "npm:^2.0.2"
     tslib: "npm:^2.0.3"
   checksum: 10/0b2ebc113dfcf737d48dde49cfebf3ad2d82a8c3188e7100c6f375e30eafbef9e9124aadc3becef237b042fd5eb0aad2fd78669c20972d045bbe7fea8ba0be5c
-  languageName: node
-  linkType: hard
-
-"node-addon-api@npm:^8.0.0":
-  version: 8.9.2
-  resolution: "node-addon-api@npm:8.9.2"
-  dependencies:
-    node-gyp: "npm:latest"
-  checksum: 10/5354f9b53631d99a952408112d795f36782fd41c0ac073bd91814805fe931b619c743689d0cedcc310c0ae8392fc9b104b2852d28cce294236407ca57d01743e
   languageName: node
   linkType: hard
 
@@ -14269,13 +14184,6 @@ __metadata:
     select-hose: "npm:^2.0.0"
     spdy-transport: "npm:^3.0.0"
   checksum: 10/d29b89e48e7d762e505a2f83b1bc2c92268bd518f1b411864ab42a9e032e387d10467bbce0d8dbf8647bf4914a063aa1d303dff85e248f7a57f81a7b18ac34ef
-  languageName: node
-  linkType: hard
-
-"sql.js@npm:1.14.2":
-  version: 1.14.2
-  resolution: "sql.js@npm:1.14.2"
-  checksum: 10/5bf36353beb9255dc73e4a485b02b8d0363df75ba3e5336de3263fddd9e124c05ed9d43f190521bdb2fb49ce1269c1a33bf77f4a9ed8988db609ff7d497b8688
   languageName: node
   linkType: hard
 
