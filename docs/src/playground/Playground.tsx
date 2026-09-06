@@ -1,8 +1,8 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Editor, { type BeforeMount, type OnMount } from '@monaco-editor/react';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import type { ConsoleLevel, RunRequest, RunResponse } from './protocol';
-import { projects } from './projects';
+import { projects, type PlaygroundProject } from './projects';
 import styles from './Playground.module.css';
 
 interface OutputLine {
@@ -33,6 +33,8 @@ export default function Playground({ project }: PlaygroundProps): React.ReactEle
   const [output, setOutput] = useState<OutputLine[]>([]);
   const [running, setRunning] = useState(false);
   const workerRef = useRef<Worker | null>(null);
+
+  useEffect(() => () => workerRef.current?.terminate(), []);
 
   const reset = useCallback(() => {
     setFiles({ ...definition?.files });
@@ -105,10 +107,15 @@ export default function Playground({ project }: PlaygroundProps): React.ReactEle
         }
       });
 
-      // pre-create a model per project file so cross-file imports resolve in the editor
+      // a model per project file so cross-file imports resolve; all projects share the
+      // same `file:///src/...` URIs, so models surviving a chapter switch need resetting
       for (const [path, content] of Object.entries(definition?.files ?? {})) {
         const uri = monaco.Uri.parse(`file:///${path}`);
-        if (!monaco.editor.getModel(uri)) {
+        const model = monaco.editor.getModel(uri);
+
+        if (model) {
+          model.setValue(content);
+        } else {
           monaco.editor.createModel(content, 'typescript', uri);
         }
       }

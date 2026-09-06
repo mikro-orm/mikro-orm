@@ -1,13 +1,9 @@
 import type { SqliteDatabase, SqliteStatement } from 'kysely';
 import type { SqlJsNativeDatabase, SqlJsStatement, SqlValue } from './typings.js';
 
-/** sql.js binds positional params natively, but rejects booleans, bigints and `undefined`. */
+/** sql.js binds bigints as strings and rejects `undefined`, so both need coercing first. */
 function coerceParams(parameters: readonly unknown[]): SqlValue[] {
   return parameters.map(value => {
-    if (typeof value === 'boolean') {
-      return value ? 1 : 0;
-    }
-
     if (typeof value === 'bigint') {
       return Number(value);
     }

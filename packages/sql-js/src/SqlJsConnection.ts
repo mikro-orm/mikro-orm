@@ -15,9 +15,6 @@ const init = initSqlJs as InitSqlJs;
  * Driver-specific options accepted via the `driverOptions` config key.
  * Everything but `sqlJs` and `data` is forwarded to `initSqlJs()`, so bundler
  * specific knobs like `locateFile` or `wasmBinary` work as documented by sql.js.
- *
- * @internal — kept module-local; `driverOptions` is untyped at the config level
- * anyway, so exporting this would only widen the API surface.
  */
 type SqlJsDriverOptions = SqlJsConfig & {
   /** Pre-initialised sql.js module, to skip the `initSqlJs()` call (e.g. when the bundle already loaded the WASM). */

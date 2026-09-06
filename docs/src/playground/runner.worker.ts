@@ -93,11 +93,10 @@ async function runProject(files: Record<string, string>, entry: string): Promise
     compiled.set(path, transpile(source, path));
   }
 
-  async function loadModule(path: string): Promise<unknown> {
-    if (cache.has(path)) {
-      return cache.get(path);
-    }
-
+  // the cache is populated before the factory runs, so circular imports see a partial namespace;
+  // non-entry modules are plain synchronous functions, so their errors propagate into the entry
+  // instead of becoming stray rejections (a top-level await there is a SyntaxError)
+  function loadModule(path: string, isEntry = false): unknown {
     const module = { exports: {} as Record<string, unknown> };
     cache.set(path, module.exports);
 
@@ -105,20 +104,22 @@ async function runProject(files: Record<string, string>, entry: string): Promise
       if (spec in externals) {
         return externals[spec];
       }
+
       const resolved = resolvePath(path, spec, files);
-      // Non-entry project files have no top-level await, so their AsyncFunction
-      // body runs to completion synchronously and exports are populated here.
-      void loadModule(resolved);
+
+      if (!cache.has(resolved)) {
+        loadModule(resolved);
+      }
+
       return cache.get(resolved);
     };
 
-    const factory = new AsyncFunction('exports', 'require', 'module', compiled.get(path)!);
-    await factory(module.exports, require, module);
-    cache.set(path, module.exports);
-    return module.exports;
+    const Factory = isEntry ? AsyncFunction : Function;
+    return new Factory('exports', 'require', 'module', compiled.get(path)!)(module.exports, require, module);
   }
 
-  await loadModule(entry);
+  // only the entry may use top-level await
+  await loadModule(entry, true);
 }
 
 function post(message: RunResponse): void {
