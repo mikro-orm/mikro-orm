@@ -28,16 +28,19 @@ The data is lost when the connection is closed — `orm.close()` frees the WASM 
 
 ### Driver options
 
-Anything passed under `driverOptions` other than `sqlJs` and `data` is forwarded to [`initSqlJs()`](https://sql.js.org/documentation/global.html#initSqlJs), which is how the WASM binary is located. Bundlers usually need `locateFile`:
+Anything passed under `driverOptions` other than `sqlJs` and `data` is forwarded to [`initSqlJs()`](https://sql.js.org/documentation/global.html#initSqlJs), which is how the WASM binary is located. In Node.js the file is found automatically. Bundlers need `locateFile` to point at the asset URL they emit for `sql.js/dist/sql-wasm.wasm` (the path is part of the package `exports`, and this is the setup sql.js itself documents):
 
 ```ts
 import { defineConfig } from '@mikro-orm/sql-js';
-import wasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
+
+// webpack/rspack: emits the wasm as an asset and resolves its URL
+const wasmUrl = new URL('sql.js/dist/sql-wasm.wasm', import.meta.url);
+// vite: import wasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
 
 export default defineConfig({
   entities: [...],
   driverOptions: {
-    locateFile: () => wasmUrl,
+    locateFile: () => wasmUrl.href,
   },
 });
 ```
