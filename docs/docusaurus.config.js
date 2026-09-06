@@ -297,7 +297,7 @@ module.exports = {
         return {
           resolve: {
             alias: {
-              // `@mikro-orm/sql-js` is not published yet, so the playground consumes it from source
+              // the playground runs the driver from the monorepo source on purpose, so every docs build tests it end to end
               '@mikro-orm/sql-js': path.resolve(__dirname, '../packages/sql-js/src'),
             },
             // that source uses `.js` specifiers pointing at `.ts` files

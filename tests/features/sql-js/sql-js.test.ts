@@ -1,6 +1,17 @@
+import { readFile, rm } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import initSqlJs from 'sql.js';
+import type { Generated } from 'kysely';
 import { defineEntity, p } from '@mikro-orm/core';
+import { Migrator } from '@mikro-orm/migrations';
 import { defineConfig, MikroORM, type SqlJsConnection } from '@mikro-orm/sql-js';
+import { TEMP_DIR } from '../../helpers.js';
+
+// spy on the real initialiser to see the config the driver passes through
+vi.mock('sql.js', async importOriginal => {
+  const mod = await importOriginal<{ default: typeof initSqlJs }>();
+  return { default: vi.fn(mod.default) };
+});
 
 const UserSchema = defineEntity({
   name: 'User',
@@ -100,5 +111,53 @@ test('reconnecting after close creates a fresh empty database', async () => {
   await orm.schema.create();
   expect(await orm.em.fork().count(UserSchema)).toBe(0);
 
+  await orm.close(true);
+});
+
+test('driverOptions are forwarded to initSqlJs', async () => {
+  // sql.js initialises once per process and ignores later configs, so assert on what the driver hands over
+  const wasmPath = fileURLToPath(import.meta.resolve('sql.js/dist/sql-wasm.wasm'));
+  const locateFile = () => wasmPath;
+  const wasmBinary = await readFile(wasmPath);
+  const orm = await initORM({ locateFile, wasmBinary, data: null });
+
+  expect(vi.mocked(initSqlJs)).toHaveBeenLastCalledWith({ locateFile, wasmBinary });
+  expect(await orm.em.count(UserSchema)).toBe(0);
+  await orm.close(true);
+});
+
+test('migrations work against the in-memory database', async () => {
+  const migrationPath = TEMP_DIR + '/migrations-sql-js';
+  await rm(migrationPath, { recursive: true, force: true });
+  const orm = await MikroORM.init({
+    entities: [UserSchema],
+    extensions: [Migrator],
+    migrations: { path: migrationPath, snapshot: false },
+  });
+
+  const migration = await orm.migrator.create();
+  expect(migration.code).toContain('create table \\`user\\`');
+  await orm.migrator.up();
+  expect(await orm.migrator.getPending()).toHaveLength(0);
+  expect(await orm.em.count(UserSchema)).toBe(0);
+
+  await orm.close(true);
+  await rm(migrationPath, { recursive: true, force: true });
+});
+
+test('kysely queries run through the sql.js connection', async () => {
+  const orm = await initORM();
+  const kysely = orm.em.getKysely<{ user: { id: Generated<number>; name: string } }>();
+  await kysely.insertInto('user').values({ name: 'Jon Snow' }).execute();
+  const rows = await kysely.selectFrom('user').selectAll().execute();
+  expect(rows).toEqual([{ id: 1, name: 'Jon Snow' }]);
+  await orm.close(true);
+});
+
+test('the published sql.js build has no FTS5 module', async () => {
+  const orm = await initORM();
+  await expect(orm.schema.execute('create virtual table book using fts5(title)')).rejects.toThrow(
+    'no such module: fts5',
+  );
   await orm.close(true);
 });

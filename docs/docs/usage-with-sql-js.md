@@ -47,6 +47,8 @@ export default defineConfig({
 
 Alternatively, pass the compiled binary directly via `wasmBinary`.
 
+Note that sql.js initialises its WASM module only once per process and ignores the config of any later `initSqlJs()` call, so these options take effect for the first ORM instance created in a process. To control the module explicitly, initialise it yourself and pass it via `sqlJs` (below).
+
 ### Reusing a pre-initialised sql.js module
 
 Pass the resolved `SqlJsStatic` (or a factory returning it) under `driverOptions.sqlJs` when your app already initialised sql.js — e.g. to share the WASM module with non-ORM code or to control when it is loaded.
