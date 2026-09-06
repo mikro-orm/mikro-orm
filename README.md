@@ -24,6 +24,7 @@ npm install @mikro-orm/mysql        # MySQL
 npm install @mikro-orm/mariadb      # MariaDB
 npm install @mikro-orm/sqlite       # SQLite
 npm install @mikro-orm/libsql       # libSQL / Turso
+npm install @mikro-orm/sql-js       # sql.js (in-memory SQLite in WASM)
 npm install @mikro-orm/mongodb      # MongoDB
 npm install @mikro-orm/mssql        # MS SQL Server
 npm install @mikro-orm/oracledb     # Oracle
