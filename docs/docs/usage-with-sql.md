@@ -23,6 +23,9 @@ npm install @mikro-orm/sqlite
 # for libsql/turso
 npm install @mikro-orm/libsql
 
+# for sql.js (in-memory SQLite in WASM, works in the browser)
+npm install @mikro-orm/sql-js
+
 # for mssql
 npm install @mikro-orm/mssql
 

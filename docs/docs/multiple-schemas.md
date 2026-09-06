@@ -281,5 +281,6 @@ await orm.schema.update();
 ### Limitations
 
 - **libSQL remote connections**: ATTACH DATABASE is not supported when using remote libSQL URLs (`libsql://`, `https://`). Only local file-based databases can be attached.
+- **sql.js**: the `@mikro-orm/sql-js` driver runs entirely in memory with no filesystem, so `attachDatabases` throws there.
 - **Cross-database foreign keys**: While SQLite allows foreign keys between attached databases within the same connection, the referenced table name in the SQL syntax cannot include a schema prefix. MikroORM handles this automatically.
 - **Transactions**: All attached databases share the same transaction scope within a connection.

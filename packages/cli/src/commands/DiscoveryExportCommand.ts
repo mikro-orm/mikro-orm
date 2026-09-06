@@ -21,6 +21,7 @@ const driverPackageMap: Record<string, string> = {
   MariaDbDriver: '@mikro-orm/mariadb',
   SqliteDriver: '@mikro-orm/sqlite',
   LibSqlDriver: '@mikro-orm/libsql',
+  SqlJsDriver: '@mikro-orm/sql-js',
   MsSqlDriver: '@mikro-orm/mssql',
   OracleDriver: '@mikro-orm/oracledb',
   MongoDriver: '@mikro-orm/mongodb',

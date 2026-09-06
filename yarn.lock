@@ -1511,6 +1511,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mikro-orm/sql-js@workspace:packages/sql-js":
+  version: 0.0.0-use.local
+  resolution: "@mikro-orm/sql-js@workspace:packages/sql-js"
+  dependencies:
+    "@mikro-orm/core": "npm:^7.1.15"
+    "@mikro-orm/sql": "npm:7.1.15"
+    kysely: "npm:0.29.5"
+    sql.js: "npm:1.14.2"
+  peerDependencies:
+    "@mikro-orm/core": 7.1.15
+  languageName: unknown
+  linkType: soft
+
 "@mikro-orm/sql@npm:7.1.15, @mikro-orm/sql@npm:^7.1.15, @mikro-orm/sql@workspace:*, @mikro-orm/sql@workspace:packages/sql":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/sql@workspace:packages/sql"
@@ -8743,6 +8756,13 @@ __metadata:
   version: 1.5.1
   resolution: "sql-escaper@npm:1.5.1"
   checksum: 10/787ff7b829152380ac996bdba29a631f2005b772c302426d4676b24246ee47787cbdf9b0e565060851e078e2d15f7a014d6c48e637ec9a0127f0cbb436743ef4
+  languageName: node
+  linkType: hard
+
+"sql.js@npm:1.14.2":
+  version: 1.14.2
+  resolution: "sql.js@npm:1.14.2"
+  checksum: 10/5bf36353beb9255dc73e4a485b02b8d0363df75ba3e5336de3263fddd9e124c05ed9d43f190521bdb2fb49ce1269c1a33bf77f4a9ed8988db609ff7d497b8688
   languageName: node
   linkType: hard
 

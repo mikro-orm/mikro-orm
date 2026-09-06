@@ -54,6 +54,14 @@ export default defineConfig({
 });
 ```
 
+## Using sql.js
+
+The `@mikro-orm/sql-js` package runs SQLite compiled to WebAssembly entirely in memory, in the browser as well as in Node.js, without native bindings. See [Usage with sql.js](./usage-with-sql-js.md).
+
+```bash npm2yarn
+npm install @mikro-orm/core @mikro-orm/sql-js
+```
+
 ## Using `node:sqlite`
 
 The `@mikro-orm/sql` package provides a generic `SqliteDriver` and a built-in `NodeSqliteDialect` that uses the `node:sqlite` module — no native dependencies required. This works on Node.js 22.5+ and Deno 2.2+.
