@@ -95,4 +95,5 @@ sql.js is a regular SQLite build, so the [Schema Generator](./schema-generator.m
 
 - **In-memory only** — there is no filesystem, so `dbName` has no effect and the data is gone once the connection closes. Persist it yourself via `db.export()` and `driverOptions.data`.
 - **No attached databases** — the [`attachDatabases`](./multiple-schemas.md) option throws, as there are no database files to attach.
+- **One statement per query** — sql.js prepares only the first statement of a string and would silently drop the rest, so the driver rejects multi-statement SQL the same way better-sqlite3 does. Use `executeDump()` for scripts.
 - **No FTS5** — the published sql.js build is compiled without the FTS5 module, so `$fulltext` queries require a custom build.
