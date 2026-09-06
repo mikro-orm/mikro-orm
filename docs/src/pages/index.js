@@ -204,6 +204,7 @@ const driverPackages = [
   '@mikro-orm/sqlite',
   '@mikro-orm/mongodb',
   '@mikro-orm/libsql',
+  '@mikro-orm/sql-js',
   '@mikro-orm/mssql',
   '@mikro-orm/oracledb',
 ];

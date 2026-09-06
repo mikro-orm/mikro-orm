@@ -20,6 +20,7 @@ import {
 } from '@mikro-orm/core';
 import { MikroORM as SqliteMikroORM } from '@mikro-orm/sqlite';
 import { MikroORM as LibSqlMikroORM } from '@mikro-orm/libsql';
+import { MikroORM as SqlJsMikroORM } from '@mikro-orm/sql-js';
 import { BaseSqliteConnection } from '@mikro-orm/sql';
 import { initORMSqlite, mockLogger } from '../../bootstrap.js';
 import {
@@ -34,7 +35,7 @@ import {
 } from '../../entities-schema/index.js';
 import { Author4Schema } from '../../entities-schema/Author4.js';
 
-describe.each(['sqlite', 'libsql', 'node-sqlite'] as const)('EntityManager (%s)', driver => {
+describe.each(['sqlite', 'libsql', 'node-sqlite', 'sql-js'] as const)('EntityManager (%s)', driver => {
   let orm: SqliteMikroORM;
 
   beforeAll(async () => (orm = await initORMSqlite<any>(driver)));
@@ -42,7 +43,14 @@ describe.each(['sqlite', 'libsql', 'node-sqlite'] as const)('EntityManager (%s)'
   afterAll(async () => orm.close(true));
 
   test('isConnected()', async () => {
-    const MikroORM = driver === 'sqlite' ? SqliteMikroORM : driver === 'libsql' ? LibSqlMikroORM : BaseMikroORM;
+    const MikroORM =
+      driver === 'sqlite'
+        ? SqliteMikroORM
+        : driver === 'libsql'
+          ? LibSqlMikroORM
+          : driver === 'sql-js'
+            ? SqlJsMikroORM
+            : BaseMikroORM;
     expect(orm.driver.getORMClass()).toBe(MikroORM);
     expect(await orm.isConnected()).toBe(true);
     expect(await orm.checkConnection()).toEqual({
@@ -1784,7 +1792,8 @@ describe.each(['sqlite', 'libsql', 'node-sqlite'] as const)('EntityManager (%s)'
     expect(platform.escape(date)).toBe('1705320000000');
   });
 
-  test('fts5 table', async () => {
+  // the sql.js dist is compiled without the FTS5 module, so the virtual table cannot be created there
+  test.skipIf(driver === 'sql-js')('fts5 table', async () => {
     await orm.schema.execute('create virtual table book5 using fts5(id, title, created_at)');
     const Book5 = defineEntity({
       name: 'Book5',

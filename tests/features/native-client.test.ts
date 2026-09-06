@@ -6,6 +6,7 @@ import { SqliteDialect } from 'kysely';
 import { MikroORM } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { LibSqlDriver } from '@mikro-orm/libsql';
+import { SqlJsDriver } from '@mikro-orm/sql-js';
 import { Author4 } from '../entities-schema/index.js';
 import {
   initORMMongo,
@@ -35,6 +36,17 @@ describe('getNativeClient', () => {
     expect(db).toBeInstanceOf(LibSqlDatabase);
     // libsql tacks `_metadata` onto rows, hence the loose match
     expect(db.prepare('select 1 as a').get()).toMatchObject({ a: 1 });
+
+    await orm.close(true);
+  });
+
+  test('sql-js returns the sql.js database', async () => {
+    const orm = await initORMSqlite<SqlJsDriver>('sql-js');
+    const db = await orm.em.getConnection().getNativeClient();
+
+    // exporting the database image is a sql.js-only API with no ORM equivalent
+    expect(db.export()).toBeInstanceOf(Uint8Array);
+    expect(db.exec('select 1 as a')).toEqual([{ columns: ['a'], values: [[1]] }]);
 
     await orm.close(true);
   });

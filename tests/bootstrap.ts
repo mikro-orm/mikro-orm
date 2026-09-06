@@ -14,6 +14,7 @@ import { MySqlDriver } from '@mikro-orm/mysql';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { LibSqlDriver } from '@mikro-orm/libsql';
+import { SqlJsDriver } from '@mikro-orm/sql-js';
 import { PgliteDriver } from '@mikro-orm/pglite';
 import { MsSqlDriver } from '@mikro-orm/mssql';
 import { OracleDriver } from '@mikro-orm/oracledb';
@@ -53,6 +54,7 @@ export const PLATFORMS = {
   pglite: PgliteDriver,
   sqlite: SqliteDriver,
   libsql: LibSqlDriver,
+  'sql-js': SqlJsDriver,
   'node-sqlite': NodeSqliteDriver,
   oracledb: OracleDriver,
 };
@@ -316,7 +318,9 @@ export async function initORMOracleDb(
   return orm;
 }
 
-export async function initORMSqlite<D extends AbstractSqlDriver>(type: 'sqlite' | 'libsql' | 'node-sqlite' = 'sqlite') {
+export async function initORMSqlite<D extends AbstractSqlDriver>(
+  type: 'sqlite' | 'libsql' | 'node-sqlite' | 'sql-js' = 'sqlite',
+) {
   const orm = await MikroORM.init<D>({
     entities: ['entities-schema', '!**/User4.ts'],
     dbName: ':memory:',
