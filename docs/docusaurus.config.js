@@ -24,6 +24,7 @@ const packages = [
   'mariadb',
   'sqlite',
   'libsql',
+  'sql-js',
   'mssql',
   'oracledb',
   'mongodb',
@@ -294,6 +295,14 @@ module.exports = {
       name: 'mikro-orm-playground-webpack',
       configureWebpack() {
         return {
+          resolve: {
+            alias: {
+              // `@mikro-orm/sql-js` is not published yet, so the playground consumes it from source
+              '@mikro-orm/sql-js': path.resolve(__dirname, '../packages/sql-js/src'),
+            },
+            // that source uses `.js` specifiers pointing at `.ts` files
+            extensionAlias: { '.js': ['.ts', '.js'] },
+          },
           ignoreWarnings: [
             /Critical dependency: the request of a dependency is an expression/,
             /Accessing import\.meta directly is unsupported/,

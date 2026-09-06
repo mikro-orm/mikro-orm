@@ -1,4 +1,6 @@
 /// <reference lib="webworker" />
+// must come first, see the module for why
+import './runner-console';
 // eslint-disable-next-line unicorn/prefer-node-protocol -- this is the `buffer` browser polyfill, not Node's builtin
 import { Buffer } from 'buffer';
 import * as core from '@mikro-orm/core';
@@ -7,15 +9,38 @@ import * as core from '@mikro-orm/core';
 (globalThis as { Buffer?: typeof Buffer }).Buffer ??= Buffer;
 import initSqlJs from 'sql.js';
 import { transform } from 'sucrase';
-import * as sqlite from './sqlite-wasm';
-import { setSqlJsLoader } from './sqlite-wasm/sql-js-database';
+import * as sqlJs from '@mikro-orm/sql-js';
 import type { RunRequest, RunResponse } from './protocol';
 
 const ctx = self as unknown as DedicatedWorkerGlobalScope;
 
 // sql.js resolves its wasm relative to the worker bundle; webpack emits it as an asset.
 const wasmUrl = new URL('sql.js/dist/sql-wasm.wasm', import.meta.url);
-setSqlJsLoader(() => initSqlJs({ locateFile: () => wasmUrl.href }));
+const sqlJsPromise = initSqlJs({ locateFile: () => wasmUrl.href });
+
+type Options = Record<string, unknown>;
+
+// the guide code calls `MikroORM.init(config)` verbatim, so the playground has to inject
+// the WASM location behind its back - hand the driver the module we already loaded here
+function withSqlJs(options: Options): Options {
+  return { ...options, driverOptions: { ...(options.driverOptions as Options), sqlJs: () => sqlJsPromise } };
+}
+
+class PlaygroundMikroORM extends sqlJs.MikroORM {
+  static override async init(options: Options): Promise<any> {
+    return super.init(withSqlJs(options) as any);
+  }
+
+  constructor(options: Options) {
+    super(withSqlJs(options) as any);
+  }
+}
+
+const sqlite: Record<string, unknown> = {
+  ...sqlJs,
+  MikroORM: PlaygroundMikroORM,
+  defineConfig: (options: Options) => sqlJs.defineConfig(withSqlJs(options) as any),
+};
 
 const externals: Record<string, unknown> = {
   '@mikro-orm/core': core,
@@ -99,34 +124,6 @@ async function runProject(files: Record<string, string>, entry: string): Promise
 function post(message: RunResponse): void {
   ctx.postMessage(message);
 }
-
-function formatArg(arg: unknown): string {
-  if (typeof arg === 'string') {
-    return arg;
-  }
-  try {
-    return (
-      JSON.stringify(arg, (_key, value) => (typeof value === 'bigint' ? value.toString() : value), 2) ?? String(arg)
-    );
-  } catch {
-    return String(arg);
-  }
-}
-
-function patchConsole(): void {
-  for (const level of ['log', 'info', 'warn', 'error', 'debug'] as const) {
-    console[level] = (...args: unknown[]) => {
-      const text = args.map(formatArg).join(' ');
-      // Drop the dev server's own HMR/webpack chatter that the worker bundle emits.
-      if (text.startsWith('[HMR]') || text.startsWith('[webpack-dev-server]')) {
-        return;
-      }
-      post({ type: 'console', level, text });
-    };
-  }
-}
-
-patchConsole();
 
 ctx.addEventListener('message', async (event: MessageEvent<RunRequest>) => {
   const { files, entry } = event.data;
