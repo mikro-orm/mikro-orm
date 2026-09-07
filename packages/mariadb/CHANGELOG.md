@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.2.0](https://github.com/mikro-orm/mikro-orm/compare/v7.1.15...v7.2.0) (2026-09-07)
+
+**Note:** Version bump only for package @mikro-orm/mariadb
+
+
+
+
+
 ## [7.1.15](https://github.com/mikro-orm/mikro-orm/compare/v7.1.14...v7.1.15) (2026-09-03)
 
 **Note:** Version bump only for package @mikro-orm/mariadb

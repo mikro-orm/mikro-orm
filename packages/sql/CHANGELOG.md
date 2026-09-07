@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.2.0](https://github.com/mikro-orm/mikro-orm/compare/v7.1.15...v7.2.0) (2026-09-07)
+
+### Bug Fixes
+
+* **core:** follow the platform's own null ordering in cursor pagination ([7d1b174](https://github.com/mikro-orm/mikro-orm/commit/7d1b174d01f4c76710c46b2e075f12b6c3290151))
+* **core:** preserve nested populate filters across loading strategies ([#8243](https://github.com/mikro-orm/mikro-orm/issues/8243)) ([5b5fd36](https://github.com/mikro-orm/mikro-orm/commit/5b5fd36ec39c9a4439f717ef7dcdb015e259768e))
+
+### Features
+
+* **core:** add `getNativeClient()` to access the underlying database client ([#8148](https://github.com/mikro-orm/mikro-orm/issues/8148)) ([27634ad](https://github.com/mikro-orm/mikro-orm/commit/27634adcf8c826c1bea3eb60cc62829567e23322)), closes [#8146](https://github.com/mikro-orm/mikro-orm/issues/8146)
+* **core:** add `through` option for read-only to-one relations resolved via subquery ([#8239](https://github.com/mikro-orm/mikro-orm/issues/8239)) ([5e621e0](https://github.com/mikro-orm/mikro-orm/commit/5e621e03760dfb0e6c2d0a3aaf5c396ed5e482ac)), closes [#8238](https://github.com/mikro-orm/mikro-orm/issues/8238)
+* **core:** add native support for row level security ([#7984](https://github.com/mikro-orm/mikro-orm/issues/7984)) ([8336552](https://github.com/mikro-orm/mikro-orm/commit/8336552026ffe1125fa0e8f9ab1a3a0632a56982)), closes [#6137](https://github.com/mikro-orm/mikro-orm/issues/6137) [#6413](https://github.com/mikro-orm/mikro-orm/issues/6413) [#6493](https://github.com/mikro-orm/mikro-orm/issues/6493) [#6493](https://github.com/mikro-orm/mikro-orm/issues/6493)
+* **core:** support named parameters in `em.execute()` ([#8173](https://github.com/mikro-orm/mikro-orm/issues/8173)) ([17788fc](https://github.com/mikro-orm/mikro-orm/commit/17788fc5e0fe960173cd09e6ec45d1f2965a453a)), closes [#8093](https://github.com/mikro-orm/mikro-orm/issues/8093)
+* **mongo:** add `$all` query operator support ([#7931](https://github.com/mikro-orm/mikro-orm/issues/7931)) ([a8fb833](https://github.com/mikro-orm/mikro-orm/commit/a8fb833d4aa08ef1e0d00253b2eeb6c96f80fc7c))
+* **sql:** support the `$all` operator on collection properties ([#8248](https://github.com/mikro-orm/mikro-orm/issues/8248)) ([c987f8a](https://github.com/mikro-orm/mikro-orm/commit/c987f8a52f7555b320412783dda8bc378acd4f7a)), closes [#7931](https://github.com/mikro-orm/mikro-orm/issues/7931)
+
+
 ## [7.1.15](https://github.com/mikro-orm/mikro-orm/compare/v7.1.14...v7.1.15) (2026-09-03)
 
 ### Bug Fixes

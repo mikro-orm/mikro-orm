@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.2.0](https://github.com/mikro-orm/mikro-orm/compare/v7.1.15...v7.2.0) (2026-09-07)
+
+### Features
+
+* **core:** add native support for row level security ([#7984](https://github.com/mikro-orm/mikro-orm/issues/7984)) ([8336552](https://github.com/mikro-orm/mikro-orm/commit/8336552026ffe1125fa0e8f9ab1a3a0632a56982)), closes [#6137](https://github.com/mikro-orm/mikro-orm/issues/6137) [#6413](https://github.com/mikro-orm/mikro-orm/issues/6413) [#6493](https://github.com/mikro-orm/mikro-orm/issues/6493) [#6493](https://github.com/mikro-orm/mikro-orm/issues/6493)
+
+
 ## [7.1.15](https://github.com/mikro-orm/mikro-orm/compare/v7.1.14...v7.1.15) (2026-09-03)
 
 **Note:** Version bump only for package @mikro-orm/entity-generator

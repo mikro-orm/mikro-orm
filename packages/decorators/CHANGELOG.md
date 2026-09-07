@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.2.0](https://github.com/mikro-orm/mikro-orm/compare/v7.1.15...v7.2.0) (2026-09-07)
+
+### Bug Fixes
+
+* **decorators:** skip `@oxc-node/core` helper frames when resolving entity path ([#8246](https://github.com/mikro-orm/mikro-orm/issues/8246)) ([11f79e7](https://github.com/mikro-orm/mikro-orm/commit/11f79e76bb190f307e6875812b6249696f46d9ec))
+
+### Features
+
+* **core:** add `through` option for read-only to-one relations resolved via subquery ([#8239](https://github.com/mikro-orm/mikro-orm/issues/8239)) ([5e621e0](https://github.com/mikro-orm/mikro-orm/commit/5e621e03760dfb0e6c2d0a3aaf5c396ed5e482ac)), closes [#8238](https://github.com/mikro-orm/mikro-orm/issues/8238)
+
+
 ## [7.1.15](https://github.com/mikro-orm/mikro-orm/compare/v7.1.14...v7.1.15) (2026-09-03)
 
 **Note:** Version bump only for package @mikro-orm/decorators
