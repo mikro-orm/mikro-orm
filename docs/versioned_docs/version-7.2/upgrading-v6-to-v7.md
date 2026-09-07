@@ -434,7 +434,7 @@ The mechanism for processing serialized primary keys in MongoDB driver has chang
 
 ## Default propagation in `@Transactional` is `REQUIRED`
 
-The default [propagation mode](./transactions.md#transaction-propagation) of the `@Transactional` decorator is now `REQUIRED`, which means that if there is an ongoing transaction, the decorated method will join it; otherwise, a new transaction will be started. The previous default was `REQUIRES_NEW`, which always started a new transaction. `REQUIRES_NEW` remains the default for the `em.transactional` method.
+The default [propagation mode](./transactions.md#transaction-propagation) of the `@Transactional` decorator is now `REQUIRED`, which means that if there is an ongoing transaction, the decorated method will join it; otherwise, a new transaction will be started. The previous default was `REQUIRES_NEW`, which always started a new transaction. `NESTED` remains the default for the `em.transactional` method, which creates a savepoint when a transaction is already active.
 
 ## `dataloader` dependency
 
