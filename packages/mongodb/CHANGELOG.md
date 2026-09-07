@@ -7,14 +7,13 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **core:** follow the platform's own null ordering in cursor pagination ([7d1b174](https://github.com/mikro-orm/mikro-orm/commit/7d1b174d01f4c76710c46b2e075f12b6c3290151))
-* **core:** handle `orderBy` directions carrying a nulls qualifier ([#8247](https://github.com/mikro-orm/mikro-orm/issues/8247)) ([8f4ae39](https://github.com/mikro-orm/mikro-orm/commit/8f4ae39994809166de2e380844b7c6beef5181a2))
+- **core:** follow the platform's own null ordering in cursor pagination ([7d1b174](https://github.com/mikro-orm/mikro-orm/commit/7d1b174d01f4c76710c46b2e075f12b6c3290151))
+- **core:** handle `orderBy` directions carrying a nulls qualifier ([#8247](https://github.com/mikro-orm/mikro-orm/issues/8247)) ([8f4ae39](https://github.com/mikro-orm/mikro-orm/commit/8f4ae39994809166de2e380844b7c6beef5181a2))
 
 ### Features
 
-* **core:** add `getNativeClient()` to access the underlying database client ([#8148](https://github.com/mikro-orm/mikro-orm/issues/8148)) ([27634ad](https://github.com/mikro-orm/mikro-orm/commit/27634adcf8c826c1bea3eb60cc62829567e23322)), closes [#8146](https://github.com/mikro-orm/mikro-orm/issues/8146)
-* **core:** rework cursor pagination for custom types and nullable columns ([#8103](https://github.com/mikro-orm/mikro-orm/issues/8103)) ([35a1455](https://github.com/mikro-orm/mikro-orm/commit/35a1455ccd5acb6c3574bd99294c8e30af6a5239)), closes [#8097](https://github.com/mikro-orm/mikro-orm/issues/8097)
-
+- **core:** add `getNativeClient()` to access the underlying database client ([#8148](https://github.com/mikro-orm/mikro-orm/issues/8148)) ([27634ad](https://github.com/mikro-orm/mikro-orm/commit/27634adcf8c826c1bea3eb60cc62829567e23322)), closes [#8146](https://github.com/mikro-orm/mikro-orm/issues/8146)
+- **core:** rework cursor pagination for custom types and nullable columns ([#8103](https://github.com/mikro-orm/mikro-orm/issues/8103)) ([35a1455](https://github.com/mikro-orm/mikro-orm/commit/35a1455ccd5acb6c3574bd99294c8e30af6a5239)), closes [#8097](https://github.com/mikro-orm/mikro-orm/issues/8097)
 
 ## [7.1.15](https://github.com/mikro-orm/mikro-orm/compare/v7.1.14...v7.1.15) (2026-09-03)
 

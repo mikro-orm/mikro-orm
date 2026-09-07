@@ -7,10 +7,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package @mikro-orm/migrations-mongodb
 
-
-
-
-
 ## [7.1.15](https://github.com/mikro-orm/mikro-orm/compare/v7.1.14...v7.1.15) (2026-09-03)
 
 **Note:** Version bump only for package @mikro-orm/migrations-mongodb

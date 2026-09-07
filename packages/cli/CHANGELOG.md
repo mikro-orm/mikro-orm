@@ -7,15 +7,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **cli:** surface the real error when a TypeScript loader fails to load ([#8245](https://github.com/mikro-orm/mikro-orm/issues/8245)) ([28bdfd2](https://github.com/mikro-orm/mikro-orm/commit/28bdfd2ae06a085cd7f03d0e4c3d1d38bc538297))
+- **cli:** surface the real error when a TypeScript loader fails to load ([#8245](https://github.com/mikro-orm/mikro-orm/issues/8245)) ([28bdfd2](https://github.com/mikro-orm/mikro-orm/commit/28bdfd2ae06a085cd7f03d0e4c3d1d38bc538297))
 
 ### Features
 
-* **cli:** add a "-q" param, to suppress informational output ([#7886](https://github.com/mikro-orm/mikro-orm/issues/7886)) ([1450d3f](https://github.com/mikro-orm/mikro-orm/commit/1450d3fa339460fc12845c3caa90735c1630761e))
-* **cli:** add Nub TypeScript loader option ([#8253](https://github.com/mikro-orm/mikro-orm/issues/8253)) ([7196a72](https://github.com/mikro-orm/mikro-orm/commit/7196a723f22fe189fd3f1f49f2de54d041184482))
-* **cli:** the "--combined" argument of cache:generate can optionally be a path to the cache file ([#7963](https://github.com/mikro-orm/mikro-orm/issues/7963)) ([6dbe55d](https://github.com/mikro-orm/mikro-orm/commit/6dbe55d09e2af1b6a595fbdd1f144d529a96c32f))
-* **sql-js:** add sql.js driver for in-memory SQLite in WebAssembly ([#7783](https://github.com/mikro-orm/mikro-orm/issues/7783)) ([c168a0f](https://github.com/mikro-orm/mikro-orm/commit/c168a0fe742d1b9af65f0719a72008492622023f))
-
+- **cli:** add a "-q" param, to suppress informational output ([#7886](https://github.com/mikro-orm/mikro-orm/issues/7886)) ([1450d3f](https://github.com/mikro-orm/mikro-orm/commit/1450d3fa339460fc12845c3caa90735c1630761e))
+- **cli:** add Nub TypeScript loader option ([#8253](https://github.com/mikro-orm/mikro-orm/issues/8253)) ([7196a72](https://github.com/mikro-orm/mikro-orm/commit/7196a723f22fe189fd3f1f49f2de54d041184482))
+- **cli:** the "--combined" argument of cache:generate can optionally be a path to the cache file ([#7963](https://github.com/mikro-orm/mikro-orm/issues/7963)) ([6dbe55d](https://github.com/mikro-orm/mikro-orm/commit/6dbe55d09e2af1b6a595fbdd1f144d529a96c32f))
+- **sql-js:** add sql.js driver for in-memory SQLite in WebAssembly ([#7783](https://github.com/mikro-orm/mikro-orm/issues/7783)) ([c168a0f](https://github.com/mikro-orm/mikro-orm/commit/c168a0fe742d1b9af65f0719a72008492622023f))
 
 ## [7.1.15](https://github.com/mikro-orm/mikro-orm/compare/v7.1.14...v7.1.15) (2026-09-03)
 

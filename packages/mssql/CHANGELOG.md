@@ -7,12 +7,11 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **core:** follow the platform's own null ordering in cursor pagination ([7d1b174](https://github.com/mikro-orm/mikro-orm/commit/7d1b174d01f4c76710c46b2e075f12b6c3290151))
+- **core:** follow the platform's own null ordering in cursor pagination ([7d1b174](https://github.com/mikro-orm/mikro-orm/commit/7d1b174d01f4c76710c46b2e075f12b6c3290151))
 
 ### Features
 
-* **core:** add `getNativeClient()` to access the underlying database client ([#8148](https://github.com/mikro-orm/mikro-orm/issues/8148)) ([27634ad](https://github.com/mikro-orm/mikro-orm/commit/27634adcf8c826c1bea3eb60cc62829567e23322)), closes [#8146](https://github.com/mikro-orm/mikro-orm/issues/8146)
-
+- **core:** add `getNativeClient()` to access the underlying database client ([#8148](https://github.com/mikro-orm/mikro-orm/issues/8148)) ([27634ad](https://github.com/mikro-orm/mikro-orm/commit/27634adcf8c826c1bea3eb60cc62829567e23322)), closes [#8146](https://github.com/mikro-orm/mikro-orm/issues/8146)
 
 ## [7.1.15](https://github.com/mikro-orm/mikro-orm/compare/v7.1.14...v7.1.15) (2026-09-03)
 

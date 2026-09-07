@@ -7,4 +7,4 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Features
 
-* **sql-js:** add sql.js driver for in-memory SQLite in WebAssembly ([#7783](https://github.com/mikro-orm/mikro-orm/issues/7783)) ([c168a0f](https://github.com/mikro-orm/mikro-orm/commit/c168a0fe742d1b9af65f0719a72008492622023f))
+- **sql-js:** add sql.js driver for in-memory SQLite in WebAssembly ([#7783](https://github.com/mikro-orm/mikro-orm/issues/7783)) ([c168a0f](https://github.com/mikro-orm/mikro-orm/commit/c168a0fe742d1b9af65f0719a72008492622023f))

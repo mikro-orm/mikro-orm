@@ -7,8 +7,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Features
 
-* **core:** add `getNativeClient()` to access the underlying database client ([#8148](https://github.com/mikro-orm/mikro-orm/issues/8148)) ([27634ad](https://github.com/mikro-orm/mikro-orm/commit/27634adcf8c826c1bea3eb60cc62829567e23322)), closes [#8146](https://github.com/mikro-orm/mikro-orm/issues/8146)
-
+- **core:** add `getNativeClient()` to access the underlying database client ([#8148](https://github.com/mikro-orm/mikro-orm/issues/8148)) ([27634ad](https://github.com/mikro-orm/mikro-orm/commit/27634adcf8c826c1bea3eb60cc62829567e23322)), closes [#8146](https://github.com/mikro-orm/mikro-orm/issues/8146)
 
 ## [7.1.15](https://github.com/mikro-orm/mikro-orm/compare/v7.1.14...v7.1.15) (2026-09-03)
 
