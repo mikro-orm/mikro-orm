@@ -91,7 +91,12 @@ import {
   type TransactionOptions,
 } from './enums.js';
 import type { MetadataStorage } from './metadata/MetadataStorage.js';
-import type { AbortQueryOptions, InflightQueryAbortStrategy, Transaction } from './connections/Connection.js';
+import type {
+  AbortQueryOptions,
+  Connection,
+  InflightQueryAbortStrategy,
+  Transaction,
+} from './connections/Connection.js';
 import { EventManager } from './events/EventManager.js';
 import { TransactionEventBroadcaster } from './events/TransactionEventBroadcaster.js';
 import type { EntityComparator } from './utils/EntityComparator.js';
@@ -608,7 +613,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
    *
    * @internal
    */
-  async withSessionContext<T>(ctx: Transaction | undefined, cb: (ctx?: Transaction) => Promise<T>): Promise<T> {
+  async withSessionContext<T>(
+    ctx: Transaction | undefined,
+    cb: (ctx?: Transaction) => Promise<T>,
+    connection?: Connection,
+  ): Promise<T> {
     const em = this.getContext(false);
     const sessionContext = ctx ? undefined : em.getTransactionSessionContext();
 
@@ -616,7 +625,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return cb(ctx);
     }
 
-    return em.getConnection('write').transactional(trx => cb(trx), { sessionContext, loggerContext: em.loggerContext });
+    return (connection ?? em.getConnection('write')).transactional(trx => cb(trx), {
+      sessionContext,
+      loggerContext: em.loggerContext,
+    });
   }
 
   /**

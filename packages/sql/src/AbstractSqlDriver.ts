@@ -2361,8 +2361,9 @@ export abstract class AbstractSqlDriver<
     method: 'all' | 'get' | 'run' = 'all',
     ctx?: Transaction,
     loggerContext?: LoggingOptions,
+    connection: AbstractSqlConnection = this.connection,
   ): Promise<T> {
-    return this.rethrow(this.connection.execute(query, params, method, ctx, loggerContext));
+    return this.rethrow(connection.execute(query, params, method, ctx, loggerContext));
   }
 
   async *stream<T extends object>(

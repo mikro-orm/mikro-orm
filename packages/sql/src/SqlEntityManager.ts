@@ -28,6 +28,8 @@ import { MikroKyselyPlugin, type MikroKyselyPluginOptions } from './plugin/index
 
 /** Options for the modern signature of `SqlEntityManager.execute()`. */
 export interface EmExecuteOptions extends AbortQueryOptions {
+  /** Connection to use outside a transaction. Defaults to 'write'; an active transaction always takes precedence. */
+  connectionType?: ConnectionType;
   /** Result shape — `'all'` for rows, `'get'` for a single row, `'run'` for affected count. Defaults to `'all'`. */
   method?: 'all' | 'get' | 'run';
   /** Logger context payload forwarded to `Logger.logQuery`. */
@@ -137,8 +139,8 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
     loggerContext?: LoggingOptions,
   ): Promise<T>;
   /**
-   * Executes a raw SQL query with an options bag carrying `method`, `loggerContext`, `signal`
-   * and `inflightQueryAbortStrategy`. Per-call `signal` / `inflightQueryAbortStrategy` override
+   * Executes a raw SQL query with an options bag carrying `method`, `loggerContext`, `signal`,
+   * `connectionType` and `inflightQueryAbortStrategy`. Per-call `signal` / `inflightQueryAbortStrategy` override
    * the fork-level defaults set via `em.fork({ signal })`. The current transaction context is
    * applied automatically.
    */
@@ -166,8 +168,13 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
       merged.signal = opts.signal ?? fork?.signal;
       merged.inflightQueryAbortStrategy = opts.inflightQueryAbortStrategy ?? fork?.inflightQueryAbortStrategy;
     }
-    return context.withSessionContext(context.getTransactionContext(), ctx =>
-      this.getDriver().execute(query, params, opts.method ?? 'all', ctx, merged),
+    const transaction = context.getTransactionContext();
+    // Resolve once so implicit RLS transactions and query execution use the same replica.
+    const connection = context.getConnection(transaction ? 'write' : (opts.connectionType ?? 'write'));
+    return context.withSessionContext(
+      transaction,
+      ctx => this.getDriver().execute(query, params, opts.method ?? 'all', ctx, merged, connection),
+      connection,
     ) as Promise<T>;
   }
 
