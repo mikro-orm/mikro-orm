@@ -66,17 +66,12 @@ jobs:
           ref: ${{ inputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
+      # corepack must be enabled before setup-node so its yarn cache step can find yarn
+      - run: corepack enable
+
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
-          package-manager-cache: false
-
-      - run: |
-          corepack enable
-          corepack prepare yarn@stable --activate
-
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
           cache: yarn
           registry-url: 'https://registry.npmjs.org'
           always-auth: false
@@ -133,17 +128,12 @@ jobs:
           ref: ${{ inputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
+      # corepack must be enabled before setup-node so its yarn cache step can find yarn
+      - run: corepack enable
+
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
-          package-manager-cache: false
-
-      - run: |
-          corepack enable
-          corepack prepare yarn@stable --activate
-
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
           cache: yarn
           registry-url: 'https://registry.npmjs.org'
           always-auth: false
@@ -188,20 +178,14 @@ jobs:
           ref: ${{ inputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
+      # corepack must be enabled before setup-node so its yarn cache step can find yarn
+      - name: Enable corepack
+        run: corepack enable
+
       - name: Use Node.js 24
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
-          package-manager-cache: false
-
-      - name: Enable corepack
-        run: |
-          corepack enable
-          corepack prepare yarn@stable --activate
-
-      - name: Activate cache for Node.js 24
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
           cache: yarn
           cache-dependency-path: docs/yarn.lock
           registry-url: 'https://registry.npmjs.org'
