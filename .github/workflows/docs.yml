@@ -21,23 +21,15 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # needed for the last update time
-      - name: Use Node.js 22
+      # corepack must be enabled before setup-node so its yarn cache step can find yarn
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Use Node.js 24
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           token: ${{ secrets.GH_TOKEN }}
-          package-manager-cache: false
-
-      - name: Enable corepack
-        run: |
-          corepack enable
-          corepack prepare yarn@stable --activate
-
-      # Yarn dependencies cannot be cached until yarn is installed
-      # WORKAROUND: https://github.com/actions/setup-node/issues/531
-      - name: Extract cached dependencies
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
           cache: yarn
 
       - name: Install
@@ -47,11 +39,6 @@ jobs:
         run: |
           git config --global user.name "Martin Adámek"
           git config --global user.email "banan23@gmail.com"
-
-      - name: Install
-        run: |
-          corepack prepare yarn@stable --activate
-          yarn
 
       - name: Build docs
         run: |

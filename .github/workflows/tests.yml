@@ -19,22 +19,14 @@ jobs:
       - name: Checkout Source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Use Node.js 22
+      # corepack must be enabled before setup-node so its yarn cache step can find yarn
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Use Node.js 24
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
-          package-manager-cache: false
-
-      - name: Enable corepack
-        run: |
-          corepack enable
-          corepack prepare yarn@stable --activate
-
-      # Yarn dependencies cannot be cached until yarn is installed
-      # WORKAROUND: https://github.com/actions/setup-node/issues/531
-      - name: Extract cached dependencies
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
           cache: yarn
 
       - name: Install
@@ -54,22 +46,14 @@ jobs:
       - name: Checkout Source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Use Node.js 22
+      # corepack must be enabled before setup-node so its yarn cache step can find yarn
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Use Node.js 24
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
-          package-manager-cache: false
-
-      - name: Enable corepack
-        run: |
-          corepack enable
-          corepack prepare yarn@stable --activate
-
-      # Yarn dependencies cannot be cached until yarn is installed
-      # WORKAROUND: https://github.com/actions/setup-node/issues/531
-      - name: Extract cached dependencies
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
           cache: yarn
 
       - name: Install
@@ -100,22 +84,14 @@ jobs:
       - name: Checkout Source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Use Node.js 22
+      # corepack must be enabled before setup-node so its yarn cache step can find yarn
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Use Node.js 24
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
-          package-manager-cache: false
-
-      - name: Enable corepack
-        run: |
-          corepack enable
-          corepack prepare yarn@stable --activate
-
-      # Yarn dependencies cannot be cached until yarn is installed
-      # WORKAROUND: https://github.com/actions/setup-node/issues/531
-      - name: Extract cached dependencies
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
           cache: yarn
 
       - name: Install
@@ -141,23 +117,16 @@ jobs:
       - name: Checkout Source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: ${{ matrix.node-version }}
-          package-manager-cache: false
-
+      # corepack must be enabled before setup-node so its yarn cache step can find yarn
       - name: Enable corepack
         run: |
           npm install -g corepack@latest --force
           corepack enable
-          corepack prepare yarn@stable --activate
 
-      # Yarn dependencies cannot be cached until yarn is installed
-      # WORKAROUND: https://github.com/actions/setup-node/issues/531
-      - name: Extract cached dependencies
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
+          node-version: ${{ matrix.node-version }}
           cache: yarn
 
       - name: Install & pull docker images
@@ -258,22 +227,14 @@ jobs:
       - name: Checkout Source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # corepack must be enabled before setup-node so its yarn cache step can find yarn
+      - name: Enable corepack
+        run: corepack enable
+
       - name: Use Node.js 24
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
-          package-manager-cache: false
-
-      - name: Enable corepack
-        run: |
-          corepack enable
-          corepack prepare yarn@stable --activate
-
-      # Yarn dependencies cannot be cached until yarn is installed
-      # WORKAROUND: https://github.com/actions/setup-node/issues/531
-      - name: Extract cached dependencies
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
           cache: yarn
 
       - name: Install
@@ -290,22 +251,14 @@ jobs:
       - name: Checkout Source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # corepack must be enabled before setup-node so its yarn cache step can find yarn
+      - name: Enable corepack
+        run: corepack enable
+
       - name: Use Node.js 24
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
-          package-manager-cache: false
-
-      - name: Enable corepack
-        run: |
-          corepack enable
-          corepack prepare yarn@stable --activate
-
-      # Yarn dependencies cannot be cached until yarn is installed
-      # WORKAROUND: https://github.com/actions/setup-node/issues/531
-      - name: Extract cached dependencies
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
           cache: yarn
 
       - name: Install
@@ -336,9 +289,10 @@ jobs:
         run: |
           npm install -g corepack@latest --force
           corepack enable
-          corepack prepare yarn@stable --activate
 
-      # Yarn dependencies cannot be cached until yarn is installed
+      # Yarn dependencies cannot be cached until yarn is installed, and unlike the linux jobs
+      # we cannot enable corepack before setup-node here: corepack's windows shim hardcodes
+      # the node.exe next to it, so yarn (and the tests) would run on the preinstalled node.
       # WORKAROUND: https://github.com/actions/setup-node/issues/531
       - name: Extract cached dependencies
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -359,22 +313,14 @@ jobs:
       - name: Checkout Source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # corepack must be enabled before setup-node so its yarn cache step can find yarn
+      - name: Enable corepack
+        run: corepack enable
+
       - name: Use Node.js 24
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
-          package-manager-cache: false
-
-      - name: Enable corepack
-        run: |
-          corepack enable
-          corepack prepare yarn@stable --activate
-
-      # Yarn dependencies cannot be cached until yarn is installed
-      # WORKAROUND: https://github.com/actions/setup-node/issues/531
-      - name: Extract cached dependencies
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
           cache: yarn
 
       - name: Install & build & pull docker images
