@@ -54,6 +54,8 @@ export class EntityFactory {
   private readonly eventManager: EventManager;
   private readonly comparator: EntityComparator;
 
+  private recomputeSnapshot = false;
+
   constructor(private readonly em: EntityManager) {
     this.driver = this.em.getDriver();
     this.platform = this.driver.getPlatform();
@@ -67,6 +69,8 @@ export class EntityFactory {
   create<T extends object, P extends string = string>(entityName: EntityName<T>, data: EntityData<T>, options: FactoryOptions = {}): New<T, P> {
     data = Reference.unwrapReference(data as T);
     options.initialized ??= true;
+    // nested relations created by the hydrator need the same DB-form snapshot as the root (GH #8268)
+    options.recomputeSnapshot ??= this.recomputeSnapshot;
 
     if (EntityHelper.isEntity(data)) {
       return data as New<T, P>;
@@ -355,10 +359,17 @@ export class EntityFactory {
   }
 
   private hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): void {
-    if (options.initialized) {
-      this.hydrator.hydrate(entity, meta, data, this, 'full', options.newEntity, options.convertCustomTypes, options.schema, this.driver.getSchemaName(meta, options), options.normalizeAccessors);
-    } else {
-      this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes, options.schema, this.driver.getSchemaName(meta, options), options.normalizeAccessors);
+    const recomputeSnapshot = this.recomputeSnapshot;
+    this.recomputeSnapshot = !!options.recomputeSnapshot;
+
+    try {
+      if (options.initialized) {
+        this.hydrator.hydrate(entity, meta, data, this, 'full', options.newEntity, options.convertCustomTypes, options.schema, this.driver.getSchemaName(meta, options), options.normalizeAccessors);
+      } else {
+        this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes, options.schema, this.driver.getSchemaName(meta, options), options.normalizeAccessors);
+      }
+    } finally {
+      this.recomputeSnapshot = recomputeSnapshot;
     }
 
     Utils.keys(data).forEach(key => {
