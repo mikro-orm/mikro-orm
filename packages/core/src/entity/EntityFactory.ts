@@ -69,6 +69,7 @@ export class EntityFactory {
   readonly #eventManager: EventManager;
   readonly #comparator: EntityComparator;
   readonly #em: EntityManager;
+  #recomputeSnapshot = false;
 
   constructor(em: EntityManager) {
     this.#em = em;
@@ -89,6 +90,8 @@ export class EntityFactory {
   ): New<T, P> {
     data = Reference.unwrapReference(data as T);
     options.initialized ??= true;
+    // nested relations created by the hydrator need the same DB-form snapshot as the root (GH #8268)
+    options.recomputeSnapshot ??= this.#recomputeSnapshot;
 
     if (EntityHelper.isEntity(data)) {
       return data as New<T, P>;
@@ -533,30 +536,37 @@ export class EntityFactory {
     data: EntityData<T>,
     options: FactoryOptions,
   ): void {
-    if (options.initialized) {
-      this.#hydrator.hydrate(
-        entity,
-        meta,
-        data,
-        this,
-        'full',
-        options.newEntity,
-        options.convertCustomTypes,
-        options.schema,
-        this.#driver.getSchemaName(meta, options),
-        options.normalizeAccessors,
-      );
-    } else {
-      this.#hydrator.hydrateReference(
-        entity,
-        meta,
-        data,
-        this,
-        options.convertCustomTypes,
-        options.schema,
-        this.#driver.getSchemaName(meta, options),
-        options.normalizeAccessors,
-      );
+    const recomputeSnapshot = this.#recomputeSnapshot;
+    this.#recomputeSnapshot = !!options.recomputeSnapshot;
+
+    try {
+      if (options.initialized) {
+        this.#hydrator.hydrate(
+          entity,
+          meta,
+          data,
+          this,
+          'full',
+          options.newEntity,
+          options.convertCustomTypes,
+          options.schema,
+          this.#driver.getSchemaName(meta, options),
+          options.normalizeAccessors,
+        );
+      } else {
+        this.#hydrator.hydrateReference(
+          entity,
+          meta,
+          data,
+          this,
+          options.convertCustomTypes,
+          options.schema,
+          this.#driver.getSchemaName(meta, options),
+          options.normalizeAccessors,
+        );
+      }
+    } finally {
+      this.#recomputeSnapshot = recomputeSnapshot;
     }
 
     Utils.keys(data).forEach(key => {
