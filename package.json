@@ -152,7 +152,7 @@
     "jsr": "0.14.3",
     "knex": "3.3.0",
     "lerna": "10.0.1",
-    "lint-staged": "17.5.0",
+    "lint-staged": "17.5.1",
     "mongodb-memory-server-core": "11.2.0",
     "oxfmt": "0.67.0",
     "oxlint": "1.82.0",
@@ -164,7 +164,7 @@
     "typescript": "7.0.2",
     "unplugin-swc": "1.6.0",
     "uuid": "14.0.2",
-    "vite": "8.2.2",
+    "vite": "8.3.0",
     "vitest": "5.0.0"
   },
   "resolutions": {
