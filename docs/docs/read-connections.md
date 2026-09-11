@@ -52,3 +52,19 @@ await em.transactional(async em => {
 const res5 = await em.findOne(Author, 1); // write connection - even for a read operation
 const res6 = await em.findOne(Author, 1, { connectionType: 'read' }); // unless explicitly asking for a read replica
 ```
+
+## Raw SQL queries
+
+`em.execute()` defaults to the writer because raw SQL can contain reads or writes, regardless of its result shape. To explicitly route a query to a read replica while retaining EntityManager session context and cancellation options, pass `connectionType` in the options bag:
+
+```ts
+const rows = await em.execute('select * from author where age > ?', [18], {
+  connectionType: 'read',
+});
+const author = await em.execute('select * from author where id = ?', [1], {
+  method: 'get',
+  connectionType: 'read',
+});
+```
+
+An active transaction always takes precedence over `connectionType`, keeping the query on its pinned connection. With transaction-scoped row-level security, the implicit transaction and session settings are applied on the selected replica. With no configured replica, an explicit read falls back to the writer. Only request a read connection for SQL that is safe to execute there; MikroORM does not parse the statement to determine this.
