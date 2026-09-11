@@ -134,7 +134,7 @@
     "@swc-node/register": "1.12.1",
     "@swc/core": "1.16.2",
     "@types/better-sqlite3": "9.6.0",
-    "@types/node": "24.13.3",
+    "@types/node": "24.13.4",
     "@types/oracledb": "7.0.3",
     "@types/pg": "8.23.1",
     "@types/pg-cursor": "2.7.2",
