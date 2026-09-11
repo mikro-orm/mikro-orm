@@ -539,35 +539,33 @@ export class EntityFactory {
     const recomputeSnapshot = this.#recomputeSnapshot;
     this.#recomputeSnapshot = !!options.recomputeSnapshot;
 
-    try {
-      if (options.initialized) {
-        this.#hydrator.hydrate(
-          entity,
-          meta,
-          data,
-          this,
-          'full',
-          options.newEntity,
-          options.convertCustomTypes,
-          options.schema,
-          this.#driver.getSchemaName(meta, options),
-          options.normalizeAccessors,
-        );
-      } else {
-        this.#hydrator.hydrateReference(
-          entity,
-          meta,
-          data,
-          this,
-          options.convertCustomTypes,
-          options.schema,
-          this.#driver.getSchemaName(meta, options),
-          options.normalizeAccessors,
-        );
-      }
-    } finally {
-      this.#recomputeSnapshot = recomputeSnapshot;
+    if (options.initialized) {
+      this.#hydrator.hydrate(
+        entity,
+        meta,
+        data,
+        this,
+        'full',
+        options.newEntity,
+        options.convertCustomTypes,
+        options.schema,
+        this.#driver.getSchemaName(meta, options),
+        options.normalizeAccessors,
+      );
+    } else {
+      this.#hydrator.hydrateReference(
+        entity,
+        meta,
+        data,
+        this,
+        options.convertCustomTypes,
+        options.schema,
+        this.#driver.getSchemaName(meta, options),
+        options.normalizeAccessors,
+      );
     }
+
+    this.#recomputeSnapshot = recomputeSnapshot;
 
     Utils.keys(data).forEach(key => {
       helper(entity)?.__loadedProperties.add(key);
