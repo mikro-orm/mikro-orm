@@ -2606,6 +2606,8 @@ export abstract class AbstractSqlDriver<
     if (options.parentJoinPath) {
       // alias all fields in the primary table
       meta.props
+        // flattened children of inline embeddables are expanded via their parent, iterating them too would select the columns twice
+        .filter(prop => !prop.embedded)
         .filter(prop => this.shouldHaveColumn(meta, prop, populate, options.explicitFields, options.exclude))
         .forEach(prop =>
           fields.push(
@@ -2816,7 +2818,7 @@ export abstract class AbstractSqlDriver<
       // Add fields from this child (only ownProps, skip PKs)
       const schema = childMeta.schema === '*' ? '*' : this.getSchemaName(childMeta);
       childMeta
-        .ownProps!.filter(p => !p.primary && this.platform.shouldHaveColumn(p, []))
+        .ownProps!.filter(p => !p.primary && !p.embedded && this.platform.shouldHaveColumn(p, []))
         .forEach(prop =>
           fields.push(...(this.mapPropToFieldNames(qb, prop, childAlias, childMeta, schema) as InternalField<T>[])),
         );
