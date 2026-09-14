@@ -818,6 +818,21 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       Utils.merge(ret, userFilter);
     }
 
+    for (const hint of options.populate as unknown as PopulateOptions<Entity>[]) {
+      const [field, ref] = hint.field.split(':') as [EntityKey<Entity>, string | undefined];
+
+      // Filtered M:N references need the target join and its PKs, not just pivot FKs.
+      // A normal populate hint inferred from nested fields already handles this.
+      if (
+        ref &&
+        meta.properties[field].kind === ReferenceKind.MANY_TO_MANY &&
+        ret[field] &&
+        !(options.populate as unknown as PopulateOptions<Entity>[]).some(other => other.field === field)
+      ) {
+        hint.filter = true;
+      }
+    }
+
     return Utils.hasObjectKeys(ret) ? ret : undefined;
   }
 
