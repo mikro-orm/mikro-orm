@@ -763,8 +763,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const ret = {} as ObjectQuery<Entity>;
+    const populate = options.populate as unknown as PopulateOptions<Entity>[];
 
-    for (const hint of options.populate as unknown as PopulateOptions<Entity>[]) {
+    for (const hint of populate) {
       const field = hint.field.split(':')[0] as EntityKey<Entity>;
       const prop = meta.properties[field];
       const strategy = getLoadingStrategy(
@@ -818,16 +819,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       Utils.merge(ret, userFilter);
     }
 
-    for (const hint of options.populate as unknown as PopulateOptions<Entity>[]) {
+    for (const hint of populate) {
       const [field, ref] = hint.field.split(':') as [EntityKey<Entity>, string | undefined];
 
-      // Filtered M:N references need the target join and its PKs, not just pivot FKs.
-      // A normal populate hint inferred from nested fields already handles this.
+      // Filtered M:N refs need the target join and its PKs (unless a plain hint for the field already provides them).
       if (
         ref &&
         meta.properties[field].kind === ReferenceKind.MANY_TO_MANY &&
         ret[field] &&
-        !(options.populate as unknown as PopulateOptions<Entity>[]).some(other => other.field === field)
+        !populate.some(other => other.field === field)
       ) {
         hint.filter = true;
       }

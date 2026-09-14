@@ -1,4 +1,4 @@
-import { defineEntity, MikroORM, p, wrap } from '@mikro-orm/postgresql';
+import { defineEntity, MikroORM, p, wrap } from '@mikro-orm/sqlite';
 
 enum Platform {
   Web = 'web',
@@ -20,12 +20,10 @@ const Permission = defineEntity({
   },
 });
 
-const Client = defineEntity({ name: 'Client', properties: { id: p.string().primary() } });
 const ClientUser = defineEntity({
   name: 'ClientUser',
   properties: {
     id: p.string().primary(),
-    client: () => p.manyToOne(Client),
     permissions: () =>
       p
         .manyToMany(Permission)
@@ -39,19 +37,18 @@ const ClientUser = defineEntity({
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = await MikroORM.init({ entities: [ClientUser], dbName: 'mikro_orm_populate_ref_many_to_many' });
+  orm = await MikroORM.init({ entities: [ClientUser], dbName: ':memory:' });
   await orm.schema.refresh();
   orm.em.create(ClientUser, {
     id: 'user',
-    client: { id: 'client' },
     permissions: [
       { id: 'web', platform: Platform.Web },
       { id: 'mobile', platform: Platform.Mobile },
     ],
   });
   await orm.em.flush();
-  orm.em.create(ClientUser, { id: 'filtered', client: 'client', permissions: ['mobile'] });
-  orm.em.create(ClientUser, { id: 'empty', client: 'client', permissions: [] });
+  orm.em.create(ClientUser, { id: 'filtered', permissions: ['mobile'] });
+  orm.em.create(ClientUser, { id: 'empty', permissions: [] });
   await orm.em.flush();
   orm.em.clear();
 });
@@ -71,7 +68,7 @@ describe.each(['balanced', 'joined', 'select-in'] as const)('%s', strategy => {
         for (const { id, permissions } of owners) {
           const em = orm.em.fork();
           const user = await em.getRepository(ClientUser).findOneOrFail(
-            { id, client: 'client' },
+            { id },
             {
               fields: field ? [field] : undefined,
               populate: [ref ? 'permissions:ref' : 'permissions'],
