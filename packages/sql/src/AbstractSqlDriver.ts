@@ -614,6 +614,16 @@ export abstract class AbstractSqlDriver<
         return;
       }
 
+      // A condition can join the target without selecting its columns. Keep the FK
+      // already mapped from the root row for reference-only owning to-one relations.
+      if (
+        ref &&
+        !hint.filter &&
+        (prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner))
+      ) {
+        return;
+      }
+
       // Polymorphic to-one: iterate targets, find the matching one, build entity from its columns.
       // Skip :ref hints — no JOINs were created, so the FK reference is already set by the result mapper.
       if (
@@ -675,7 +685,7 @@ export abstract class AbstractSqlDriver<
         return;
       }
 
-      const pivotRefJoin = prop.kind === ReferenceKind.MANY_TO_MANY && ref;
+      const pivotRefJoin = prop.kind === ReferenceKind.MANY_TO_MANY && ref && !hint.filter;
       const meta2 = prop.targetMeta as EntityMetadata<T>;
       let path = parentJoinPath ? `${parentJoinPath}.${prop.name}` : `${meta.name}.${prop.name}`;
 
@@ -2700,7 +2710,7 @@ export abstract class AbstractSqlDriver<
       }
 
       const meta2 = prop.targetMeta as EntityMetadata<T>;
-      const pivotRefJoin = prop.kind === ReferenceKind.MANY_TO_MANY && ref;
+      const pivotRefJoin = prop.kind === ReferenceKind.MANY_TO_MANY && ref && !hint.filter;
       const tableAlias = qb.getNextAlias(prop.name);
       const field = `${options.parentTableAlias}.${prop.name}`;
       let path = options.parentJoinPath ? `${options.parentJoinPath}.${prop.name}` : `${meta.name}.${prop.name}`;
@@ -2715,7 +2725,7 @@ export abstract class AbstractSqlDriver<
         ? JoinType.pivotJoin
         : hint.joinType
           ? (hint.joinType as JoinType)
-          : (hint.filter && !prop.nullable) || mandatoryToOneProperty
+          : (hint.filter && !prop.nullable && prop.kind !== ReferenceKind.MANY_TO_MANY) || mandatoryToOneProperty
             ? JoinType.innerJoin
             : JoinType.leftJoin;
       const schema =
