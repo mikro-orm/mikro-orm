@@ -2370,7 +2370,7 @@ export class QueryBuilder<
         .filter(
           prop => meta.inheritanceType !== 'tpt' || prop.primary || meta.ownProps!.some(p => p.name === prop.name),
         )
-        .filter(prop => !data || !(prop.name in data));
+        .filter(prop => prop.returning || !data || !(prop.name in data));
 
       if (returningProps.length > 0) {
         qb.returning(Utils.flatten(returningProps.map(prop => prop.fieldNames)));
