@@ -3,6 +3,7 @@ import {
   EntityRepository,
   EntitySchema,
   OptionalProps,
+  FilterQueryOverride,
   IType,
   ref,
   wrap,
@@ -311,6 +312,34 @@ describe('check typings', () => {
     assert<IsAssignable<FilterQuery<Author2>, { books: { tags: bigint[] } }>>(true);
     assert<IsAssignable<FilterQuery<Author2>, { books: { tags: string[] } }>>(true);
     assert<IsAssignable<FilterQuery<Author2>, { books: { tags: boolean[] } }>>(false);
+  });
+
+  test('FilterQueryOverride keys are accepted as filters (GH #5971)', async () => {
+    class Publisher {
+      id!: number;
+      name!: string;
+      readonly [FilterQueryOverride]?: { genre: string };
+    }
+
+    const em = {} as EntityManager;
+
+    if (false as boolean) {
+      // declared override keys are accepted as filters on the object query
+      await em.find(Publisher, { genre: 'non-fiction' });
+      await em.find(Publisher, { genre: { $in: ['non-fiction', 'fiction'] } });
+      await em.find(Publisher, { name: 'Foo', genre: 'non-fiction' });
+
+      // @ts-expect-error unknown keys are still rejected
+      await em.find(Publisher, { unknownProp: 'x' });
+      // @ts-expect-error wrong value types are rejected
+      await em.find(Publisher, { genre: 123 });
+    }
+
+    assert<IsAssignable<FilterQuery<Publisher>, { genre: string }>>(true);
+    assert<IsAssignable<FilterQuery<Publisher>, { genre: { $in: string[] } }>>(true);
+    assert<IsAssignable<FilterQuery<Publisher>, { name: string; genre: string }>>(true);
+    // entities without an override are unaffected
+    assert<IsAssignable<FilterQuery<Author2>, { genre: string }>>(false);
   });
 
   test('assignment to naked relation, generic reference and identified reference', async () => {
