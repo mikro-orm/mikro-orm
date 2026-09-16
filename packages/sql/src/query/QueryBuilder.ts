@@ -4514,7 +4514,7 @@ export class QueryBuilder<
   }
 
   private wrapModifySubQuery(meta: EntityMetadata): void {
-    const subQuery = this.clone();
+    const subQuery = this.clone(['returning']);
     subQuery.#state.finalized = true;
 
     // wrap one more time to get around MySQL limitations
