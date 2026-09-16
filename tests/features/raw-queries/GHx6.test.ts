@@ -212,3 +212,34 @@ test('plain objects with __raw should not be treated as RawQueryFragment in nati
 
   expect(RawQueryFragment.checkCacheSize()).toBe(0);
 });
+
+test('raw fragments with ? in parameters in where and andWhere', async () => {
+  const job = orm.em.create(Job, {});
+  orm.em.create(Tag, { name: 'what? 1', job });
+  orm.em.create(Tag, { name: 'what? 2', job });
+  orm.em.create(Tag, { name: 'what?? 3\\?', job });
+  await orm.em.flush();
+  orm.em.clear();
+
+  const qb = orm.em.createQueryBuilder(Tag)
+    .where(raw('name = ? or name = ?', ['what? 1', 'what? 2']))
+    .andWhere(raw('name != ?', ['what?? 3\\?']));
+
+  expect(qb.getQuery()).toBe('select `t0`.* from `tag` as `t0` where (name = ? or name = ?) and (name != ?)');
+  expect(qb.getParams()).toEqual(['what? 1', 'what? 2', 'what?? 3\\?']);
+
+  const res = await qb;
+  expect(res).toHaveLength(2);
+  expect(res.map((r: Tag) => r.name).sort()).toEqual(['what? 1', 'what? 2']);
+
+  const qb2 = orm.em.createQueryBuilder(Tag)
+    .where(raw('name = ?', ['what?? 3\\?']));
+  expect(qb2.getQuery()).toBe('select `t0`.* from `tag` as `t0` where (name = ?)');
+  expect(qb2.getParams()).toEqual(['what?? 3\\?']);
+
+  const res2 = await qb2;
+  expect(res2).toHaveLength(1);
+  expect(res2[0].name).toBe('what?? 3\\?');
+
+  expect(RawQueryFragment.checkCacheSize()).toBe(0);
+});
