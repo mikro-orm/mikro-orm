@@ -109,14 +109,14 @@ export class EntityComparator {
       meta.primaryKeys.forEach(pk => {
         if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
           lines.push(
-            `    ${pk}: (entity${this.wrap(pk)} != null && isEntityOrRef(entity${this.wrap(pk)})) ? entity${this.wrap(pk)}.__helper.getPrimaryKey() : entity${this.wrap(pk)},`,
+            `    ${this.objectKey(pk)}: (entity${this.wrap(pk)} != null && isEntityOrRef(entity${this.wrap(pk)})) ? entity${this.wrap(pk)}.__helper.getPrimaryKey() : entity${this.wrap(pk)},`,
           );
         } else {
-          lines.push(`    ${pk}: entity${this.wrap(pk)},`);
+          lines.push(`    ${this.objectKey(pk)}: entity${this.wrap(pk)},`);
         }
       });
       lines.push(`  };`);
-      lines.push(`  if (${meta.primaryKeys.map(pk => `cond.${pk} == null`).join(' || ')}) return null;`);
+      lines.push(`  if (${meta.primaryKeys.map(pk => `cond${this.wrap(pk)} == null`).join(' || ')}) return null;`);
       lines.push(`  return cond;`);
     } else {
       const pk = meta.primaryKeys[0];
@@ -173,19 +173,19 @@ export class EntityComparator {
       meta.primaryKeys.forEach(pk => {
         if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
           lines.push(
-            `    ${pk}: (entity${this.wrap(pk)} != null && isEntityOrRef(entity${this.wrap(pk)})) ? entity${this.wrap(pk)}.__helper.getPrimaryKey(true) : entity${this.wrap(pk)},`,
+            `    ${this.objectKey(pk)}: (entity${this.wrap(pk)} != null && isEntityOrRef(entity${this.wrap(pk)})) ? entity${this.wrap(pk)}.__helper.getPrimaryKey(true) : entity${this.wrap(pk)},`,
           );
         } else {
           if (meta.properties[pk].customType) {
             const convertorKey = this.registerCustomType(meta.properties[pk], context);
-            lines.push(`    ${pk}: convertToDatabaseValue_${convertorKey}(entity${this.wrap(pk)}),`);
+            lines.push(`    ${this.objectKey(pk)}: convertToDatabaseValue_${convertorKey}(entity${this.wrap(pk)}),`);
           } else {
-            lines.push(`    ${pk}: entity${this.wrap(pk)},`);
+            lines.push(`    ${this.objectKey(pk)}: entity${this.wrap(pk)},`);
           }
         }
       });
       lines.push(`  };`);
-      lines.push(`  if (${meta.primaryKeys.map(pk => `cond.${pk} == null`).join(' || ')}) return null;`);
+      lines.push(`  if (${meta.primaryKeys.map(pk => `cond${this.wrap(pk)} == null`).join(' || ')}) return null;`);
       lines.push(`  return cond;`);
     } else {
       const pk = meta.primaryKeys[0];
@@ -872,6 +872,8 @@ export class EntityComparator {
       } else if (prop.targetKey) {
         // When targetKey is set, extract that property value instead of the PK
         const targetProp = prop.targetMeta?.properties[prop.targetKey];
+        // `wrap()` yields `.name` or `['name']`, optional chaining needs the dot in both forms
+        const targetAccess = `?${this.wrap(prop.targetKey).replace(/^\[/, '.[')}`;
         ret += `    if (entity${entityKey} === null) {\n`;
         ret += `      ret${dataKey} = null;\n`;
         ret += `    } else if (typeof entity${entityKey} !== 'undefined') {\n`;
@@ -880,9 +882,9 @@ export class EntityComparator {
         if (targetProp?.customType) {
           // If targetKey property has a custom type, convert to database value
           const convertorKey = this.registerCustomType(targetProp, context);
-          ret += `      ret${dataKey} = convertToDatabaseValue_${convertorKey}(val${level}?.${prop.targetKey});\n`;
+          ret += `      ret${dataKey} = convertToDatabaseValue_${convertorKey}(val${level}${targetAccess});\n`;
         } else {
-          ret += `      ret${dataKey} = val${level}?.${prop.targetKey};\n`;
+          ret += `      ret${dataKey} = val${level}${targetAccess};\n`;
         }
 
         ret += `    }\n`;
@@ -1078,6 +1080,11 @@ export class EntityComparator {
   /** Renders a key as a single-quoted JS string literal, safe to embed in generated code. */
   private quote(key: string): string {
     return `'${key.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+  }
+
+  /** Renders a key as an object literal key, quoted unless it is a plain identifier. */
+  private objectKey(key: string): string {
+    return /^\w+$/.exec(key) ? key : this.quote(key);
   }
 
   private safeKey(key: string): string {
