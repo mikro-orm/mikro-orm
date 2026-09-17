@@ -363,3 +363,46 @@ test('sibling module fragment drives SQL assembly through em.nativeUpdate end-to
   // no '?' parameter placeholder), proving `isRaw` recognised it across copies.
   expect(updateQuery).toContain(`'rewritten-by-sibling'`);
 });
+
+test('raw fragments with ? in parameters in where and andWhere', async () => {
+  const job = orm.em.create(Job, {});
+  orm.em.create(Tag, { name: 'what? 1', job });
+  orm.em.create(Tag, { name: 'what? 2', job });
+  orm.em.create(Tag, { name: 'what?? 3\\?', job });
+  await orm.em.flush();
+  orm.em.clear();
+
+  const qb = orm.em
+    .createQueryBuilder(Tag)
+    .where(raw('name = ? or name = ?', ['what? 1', 'what? 2']))
+    .andWhere(raw('name != ?', ['what?? 3\\?']));
+
+  // v7 inlines raw fragment params (safely escaped) into the SQL instead of
+  // keeping `?` bindings like v6 did, so we assert the inlined form and that
+  // no stray bindings remain.
+  expect(qb.getQuery()).toBe(
+    "select `t0`.* from `tag` as `t0` where (name = 'what? 1' or name = 'what? 2') and (name != 'what?? 3\\?')",
+  );
+  expect(qb.getParams()).toEqual([]);
+
+  const res = await qb.getResult();
+  expect(res).toHaveLength(2);
+  expect(res.map((r: Tag) => r.name).sort()).toEqual(['what? 1', 'what? 2']);
+
+  const qb2 = orm.em.createQueryBuilder(Tag).where(raw('name = ?', ['what?? 3\\?']));
+  expect(qb2.getQuery()).toBe("select `t0`.* from `tag` as `t0` where (name = 'what?? 3\\?')");
+  expect(qb2.getParams()).toEqual([]);
+
+  const res2 = await qb2.getResult();
+  expect(res2).toHaveLength(1);
+  expect(res2[0].name).toBe('what?? 3\\?');
+
+  // v6 asserted `checkCacheSize() === 0` (leak check for the strong fragment
+  // cache); v7 replaced it with a WeakMap registry that cannot leak, so we
+  // assert the registry recognises the fragments used by the query instead.
+  const registry: WeakMap<symbol, unknown> = (globalThis as any)[
+    Symbol.for('@mikro-orm/core/RawQueryFragment.references')
+  ];
+  expect(registry).toBeInstanceOf(WeakMap);
+  expect(RawQueryFragment.hasObjectFragments({ [raw('name = ?', ['what? 1'])]: [] })).toBe(true);
+});
