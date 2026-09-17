@@ -4027,17 +4027,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bson@npm:7.3.3":
+"bson@npm:7.3.3, bson@npm:^7.2.0":
   version: 7.3.3
   resolution: "bson@npm:7.3.3"
   checksum: 10/27f90714578b84999cd79dd53aede2fd09118371af453f2a0b47ed07e50ab9514c1b2d5acd3d85e805172c32b963f3c3a457a34dd6ff7d0eb0d9e20910735f8f
-  languageName: node
-  linkType: hard
-
-"bson@npm:^7.2.0":
-  version: 7.3.2
-  resolution: "bson@npm:7.3.2"
-  checksum: 10/c7d3fa5f8c738f51b28692eb479dcbeb9c8e6148d3098cfcf84015101d77fb89b7c8b511aeea3f2bb8556d75fb29b46d095a77e5a0b52b3d4977143830fd557c
   languageName: node
   linkType: hard
 

@@ -1,8 +1,7 @@
 import type { EntityData, MikroORM } from '@mikro-orm/core';
 import { assign, wrap } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
-import { ObjectId as BsonObjectId } from 'bson';
-import { ObjectId as MongoObjectId } from '@mikro-orm/mongodb';
+import { ObjectId } from '@mikro-orm/mongodb';
 import { Author, Book, BookTag } from '../../entities/index.js';
 import { initORMMongo } from '../../bootstrap.js';
 
@@ -85,9 +84,9 @@ describe('EntityAssignerMongo', () => {
 
   test('#assign() should merge references', async () => {
     const jon = new Author('Jon Snow', 'snow@wall.st');
-    orm.em.assign(jon, { favouriteBook: { _id: MongoObjectId.createFromTime(1), title: 'b1' } }, { merge: false });
+    orm.em.assign(jon, { favouriteBook: { _id: ObjectId.createFromTime(1), title: 'b1' } }, { merge: false });
     expect(wrap(jon.favouriteBook!, true).__em).toBeUndefined();
-    orm.em.assign(jon, { favouriteBook: { _id: MongoObjectId.createFromTime(1), title: 'b1' } }, { merge: true });
+    orm.em.assign(jon, { favouriteBook: { _id: ObjectId.createFromTime(1), title: 'b1' } }, { merge: true });
     expect(wrap(jon.favouriteBook!, true).__em).not.toBeUndefined();
   });
 
@@ -95,13 +94,13 @@ describe('EntityAssignerMongo', () => {
     const jon = new Author('Jon Snow', 'snow@wall.st');
     orm.em.assign(
       jon,
-      { books: [{ _id: MongoObjectId.createFromTime(1), title: 'b1' }] },
+      { books: [{ _id: ObjectId.createFromTime(1), title: 'b1' }] },
       { merge: false, updateNestedEntities: false },
     );
     expect(wrap(jon.books[0], true).__em).toBeUndefined();
     orm.em.assign(
       jon,
-      { books: [{ _id: MongoObjectId.createFromTime(2), title: 'b2' }] },
+      { books: [{ _id: ObjectId.createFromTime(2), title: 'b2' }] },
       { merge: true, updateNestedEntities: false },
     );
     expect(wrap(jon.books[0], true).__em).not.toBeUndefined();
@@ -134,7 +133,7 @@ describe('EntityAssignerMongo', () => {
   test('#assign() should ignore nested entities when onlyOwnProperties : true (#5327)', async () => {
     const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
     const book = new Book('Book2', jon);
-    book._id = new MongoObjectId();
+    book._id = new ObjectId();
     assign<any>(jon, { books: [book], name: 'Jon SnowOwn2' }, { onlyOwnProperties: true });
     expect((jon as any).books.length).toBe(0);
     expect(jon.name).toBe('Jon SnowOwn2');
@@ -150,7 +149,7 @@ describe('EntityAssignerMongo', () => {
     await em.persist(jon).flush();
     const ref = orm.em.getReference(Author, jon._id);
     const book = new Book('Book2', jon);
-    book._id = new MongoObjectId();
+    book._id = new ObjectId();
     assign<any>(ref, { books: [book], name: 'Jon SnowOwn2' }, { em: orm.em, onlyOwnProperties: true });
     expect((ref as any).books).toBeUndefined();
     expect(ref.name).toBe('Jon SnowOwn2');
@@ -172,7 +171,7 @@ describe('EntityAssignerMongo', () => {
     const book = new Book('Book2', new Author('Temp Author', 'tempmail@wall.st'));
 
     const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
-    jon._id = new BsonObjectId();
+    jon._id = new ObjectId();
     assign<any>(book, { author: jon, title: 'GreatBook' }, { em: orm.em, onlyOwnProperties: true });
     expect(book.title).toBe('GreatBook');
     await orm.em.persist(book).flush();
@@ -184,13 +183,13 @@ describe('EntityAssignerMongo', () => {
 
   test('#assign() should not create nested owned entity when onlyOwnProperties : true (reference) (#5327)', async () => {
     const book = new Book('Book2', new Author('Temp Author', 'tempmail@wall.st'));
-    book._id = new MongoObjectId();
+    book._id = new ObjectId();
     const em = orm.em.fork();
     await em.persist(book).flush();
 
     const ref = orm.em.getReference(Book, book._id);
     const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
-    jon._id = new BsonObjectId();
+    jon._id = new ObjectId();
     assign<any>(ref, { author: jon, title: 'GreatBook' }, { em: orm.em, onlyOwnProperties: true });
     expect(ref.title).toBe('GreatBook');
     await orm.em.persist(ref).flush();
@@ -203,7 +202,7 @@ describe('EntityAssignerMongo', () => {
   test('#assign() should not update nested owned entity when onlyOwnProperties : true (#5327)', async () => {
     const em = orm.em.fork();
     const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
-    jon._id = new BsonObjectId();
+    jon._id = new ObjectId();
     await em.persist([jon]).flush();
 
     expect(jon.termsAccepted).toBe(false);
@@ -214,7 +213,7 @@ describe('EntityAssignerMongo', () => {
     };
 
     const book = new Book('Book2', new Author('Temp Author', 'tempmail@wall.st'));
-    book._id = new MongoObjectId();
+    book._id = new ObjectId();
 
     assign<any>(book, { author: payloadJon, title: 'GreatBook' }, { em: orm.em, onlyOwnProperties: true });
     expect(book.title).toBe('GreatBook');
@@ -228,10 +227,10 @@ describe('EntityAssignerMongo', () => {
 
   test('#assign() should not update nested owned entity when onlyOwnProperties : true (reference) (#5327)', async () => {
     const book = new Book('Book2', new Author('Temp Author', 'tempmail@wall.st'));
-    book._id = new MongoObjectId();
+    book._id = new ObjectId();
     const em = orm.em.fork();
     const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
-    jon._id = new BsonObjectId();
+    jon._id = new ObjectId();
     await em.persist([book, jon]).flush();
 
     expect(jon.termsAccepted).toBe(false);
@@ -255,7 +254,7 @@ describe('EntityAssignerMongo', () => {
 
   test('#assign() should add nested PrimaryKey when onlyOwnProperties : true (#5327)', async () => {
     const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
-    jon._id = new BsonObjectId();
+    jon._id = new ObjectId();
     const em = orm.em.fork();
     await em.persist(jon).flush();
     const book = new Book('Book2');
@@ -266,8 +265,8 @@ describe('EntityAssignerMongo', () => {
   test('#assign() should add nested PrimaryKey when onlyOwnProperties : true (reference) (#5327)', async () => {
     const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
     const book = new Book('Book2', new Author('Temp Author', 'tempmail@wall.st'));
-    book._id = new MongoObjectId();
-    jon._id = new BsonObjectId();
+    book._id = new ObjectId();
+    jon._id = new ObjectId();
     const em = orm.em.fork();
     await em.persist([jon, book]).flush();
     const ref = orm.em.getReference(Book, book._id);
@@ -279,10 +278,10 @@ describe('EntityAssignerMongo', () => {
     const jon = new Author('Jon SnowOwn', 'snowown@wall.st');
     const friend1 = new Author('Jon SnowOwn Friend 1', 'friend1@wall.st');
     friend1.age = 55;
-    friend1._id = new BsonObjectId();
+    friend1._id = new ObjectId();
     const friend2 = new Author('Jon SnowOwn Friend 2', 'friend2@wall.st');
     friend2.age = 60;
-    friend2._id = new BsonObjectId();
+    friend2._id = new ObjectId();
     const newFriends = [friend1, friend2];
 
     assign<any>(jon, { friends: newFriends }, { em: orm.em.fork(), onlyOwnProperties: true });
@@ -299,9 +298,9 @@ describe('EntityAssignerMongo', () => {
     const merlin = new Book('Merlin The Enchantor');
     const tag = new BookTag('medieval');
 
-    jonbio._id = new MongoObjectId();
-    merlin._id = new MongoObjectId();
-    tag._id = new BsonObjectId();
+    jonbio._id = new ObjectId();
+    merlin._id = new ObjectId();
+    tag._id = new ObjectId();
 
     const newBooks = [jonbio, merlin];
 
