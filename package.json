@@ -134,7 +134,7 @@
     "@swc-node/register": "1.12.1",
     "@swc/core": "1.16.2",
     "@types/better-sqlite3": "9.6.0",
-    "@types/node": "24.13.4",
+    "@types/node": "24.13.5",
     "@types/oracledb": "7.0.3",
     "@types/pg": "8.23.1",
     "@types/pg-cursor": "2.7.2",
@@ -143,8 +143,8 @@
     "@types/sqlstring": "2.3.2",
     "@types/uuid": "11.0.0",
     "@types/yargs": "17.0.35",
-    "@vitest/coverage-v8": "5.0.0",
-    "bson": "7.3.2",
+    "@vitest/coverage-v8": "5.0.1",
+    "bson": "7.3.3",
     "conditional-type-checks": "1.0.6",
     "dataloader": "2.2.3",
     "husky": "9.1.7",
@@ -165,7 +165,7 @@
     "unplugin-swc": "1.6.0",
     "uuid": "14.0.2",
     "vite": "8.3.0",
-    "vitest": "5.0.0"
+    "vitest": "5.0.1"
   },
   "resolutions": {
     "js-yaml": "4.3.2",

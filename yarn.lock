@@ -1287,7 +1287,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.0"
     "@mikro-orm/sql": "npm:7.2.0"
-    kysely: "npm:0.29.5"
+    kysely: "npm:0.29.6"
     libsql: "npm:0.5.29"
   peerDependencies:
     "@mikro-orm/core": 7.2.0
@@ -1300,7 +1300,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.0"
     "@mikro-orm/mysql": "npm:7.2.0"
-    kysely: "npm:0.29.5"
+    kysely: "npm:0.29.6"
   peerDependencies:
     "@mikro-orm/core": 7.2.0
   languageName: unknown
@@ -1355,7 +1355,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.0"
     "@mikro-orm/sql": "npm:7.2.0"
-    kysely: "npm:0.29.5"
+    kysely: "npm:0.29.6"
     tarn: "npm:3.1.2"
     tedious: "npm:20.0.0"
     tsqlstring: "npm:1.0.1"
@@ -1370,7 +1370,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.0"
     "@mikro-orm/sql": "npm:7.2.0"
-    kysely: "npm:0.29.5"
+    kysely: "npm:0.29.6"
     mysql2: "npm:3.24.4"
     sqlstring: "npm:2.3.3"
   peerDependencies:
@@ -1384,7 +1384,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.0"
     "@mikro-orm/sql": "npm:7.2.0"
-    kysely: "npm:0.29.5"
+    kysely: "npm:0.29.6"
     oracledb: "npm:7.0.1"
   peerDependencies:
     "@mikro-orm/core": 7.2.0
@@ -1398,7 +1398,7 @@ __metadata:
     "@electric-sql/pglite": "npm:0.5.8"
     "@mikro-orm/core": "npm:^7.2.0"
     "@mikro-orm/sql": "npm:7.2.0"
-    kysely: "npm:0.29.5"
+    kysely: "npm:0.29.6"
     postgres-array: "npm:3.0.4"
     postgres-date: "npm:2.1.0"
     postgres-interval: "npm:4.1.0"
@@ -1413,7 +1413,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.0"
     "@mikro-orm/sql": "npm:7.2.0"
-    kysely: "npm:0.29.5"
+    kysely: "npm:0.29.6"
     pg: "npm:8.23.0"
     pg-cursor: "npm:2.22.0"
     postgres-array: "npm:3.0.4"
@@ -1446,7 +1446,7 @@ __metadata:
     "@swc-node/register": "npm:1.12.1"
     "@swc/core": "npm:1.16.2"
     "@types/better-sqlite3": "npm:9.6.0"
-    "@types/node": "npm:24.13.4"
+    "@types/node": "npm:24.13.5"
     "@types/oracledb": "npm:7.0.3"
     "@types/pg": "npm:8.23.1"
     "@types/pg-cursor": "npm:2.7.2"
@@ -1455,8 +1455,8 @@ __metadata:
     "@types/sqlstring": "npm:2.3.2"
     "@types/uuid": "npm:11.0.0"
     "@types/yargs": "npm:17.0.35"
-    "@vitest/coverage-v8": "npm:5.0.0"
-    bson: "npm:7.3.2"
+    "@vitest/coverage-v8": "npm:5.0.1"
+    bson: "npm:7.3.3"
     conditional-type-checks: "npm:1.0.6"
     dataloader: "npm:2.2.3"
     husky: "npm:9.1.7"
@@ -1477,7 +1477,7 @@ __metadata:
     unplugin-swc: "npm:1.6.0"
     uuid: "npm:14.0.2"
     vite: "npm:8.3.0"
-    vitest: "npm:5.0.0"
+    vitest: "npm:5.0.1"
   dependenciesMeta:
     "@swc/core":
       built: true
@@ -1517,7 +1517,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.0"
     "@mikro-orm/sql": "npm:7.2.0"
-    kysely: "npm:0.29.5"
+    kysely: "npm:0.29.6"
     sql.js: "npm:1.14.2"
   peerDependencies:
     "@mikro-orm/core": 7.2.0
@@ -1529,7 +1529,7 @@ __metadata:
   resolution: "@mikro-orm/sql@workspace:packages/sql"
   dependencies:
     "@mikro-orm/core": "npm:^7.2.0"
-    kysely: "npm:0.29.5"
+    kysely: "npm:0.29.6"
   peerDependencies:
     "@mikro-orm/core": 7.2.0
   languageName: unknown
@@ -1542,7 +1542,7 @@ __metadata:
     "@mikro-orm/core": "npm:^7.2.0"
     "@mikro-orm/sql": "npm:7.2.0"
     better-sqlite3: "npm:13.0.3"
-    kysely: "npm:0.29.5"
+    kysely: "npm:0.29.6"
   peerDependencies:
     "@mikro-orm/core": 7.2.0
   languageName: unknown
@@ -3215,12 +3215,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:24.13.4":
-  version: 24.13.4
-  resolution: "@types/node@npm:24.13.4"
+"@types/node@npm:24.13.5":
+  version: 24.13.5
+  resolution: "@types/node@npm:24.13.5"
   dependencies:
     undici-types: "npm:~7.18.0"
-  checksum: 10/e0f13f5b40384287df3d8be1b68ecc0a43b030330343d60d2e6a191890f10c2e1bfe37a1274b7a105a1576c455373d6c508fb99e0528ffc02726ebed156c4d00
+  checksum: 10/47b45ee7fe7c617b254faae60033cb98a9dd4e4776324e1b717661c7f34402f349f26463f51f4d364f794703f22ab313a3c43e2ea4d08ed993f41c3dfc805454
   languageName: node
   linkType: hard
 
@@ -3527,9 +3527,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/coverage-v8@npm:5.0.0":
-  version: 5.0.0
-  resolution: "@vitest/coverage-v8@npm:5.0.0"
+"@vitest/coverage-v8@npm:5.0.1":
+  version: 5.0.1
+  resolution: "@vitest/coverage-v8@npm:5.0.1"
   dependencies:
     "@bcoe/v8-coverage": "npm:^1.0.2"
     "@vitest/istanbul-lib-coverage": "npm:^1.0.0"
@@ -3540,12 +3540,12 @@ __metadata:
     std-env: "npm:^4.2.0"
     tinyrainbow: "npm:^3.1.1"
   peerDependencies:
-    "@vitest/browser": 5.0.0
-    vitest: 5.0.0
+    "@vitest/browser": 5.0.1
+    vitest: 5.0.1
   peerDependenciesMeta:
     "@vitest/browser":
       optional: true
-  checksum: 10/4c2354618f74c4375ac5e73a548155b9d9e19b1a01b7de3b3ab403986c10f77cad9ec677f1b9e283bdc4844fd34ed17ee8661afd8e52d1d8999ed72e2fb55e00
+  checksum: 10/38f043fe3ce255ea42ad85c89ab58f27b393238b136c5e5048966c3a47b182645df904cf0e96aa4cf49727990048e8c855fca8cee58a3376e73b235dcc1c0197
   languageName: node
   linkType: hard
 
@@ -3565,12 +3565,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/mocker@npm:5.0.0":
-  version: 5.0.0
-  resolution: "@vitest/mocker@npm:5.0.0"
+"@vitest/mocker@npm:5.0.1":
+  version: 5.0.1
+  resolution: "@vitest/mocker@npm:5.0.1"
   dependencies:
     "@jridgewell/trace-mapping": "npm:0.3.31"
-    "@vitest/spy": "npm:5.0.0"
+    "@vitest/spy": "npm:5.0.1"
     estree-walker: "npm:^3.0.3"
     magic-string: "npm:^1.2.3"
   peerDependencies:
@@ -3581,14 +3581,14 @@ __metadata:
       optional: true
     vite:
       optional: true
-  checksum: 10/57a1e55c18946c8977d304dfc8a1b5551331c7fc240a97034e497708d1d9520305193346ff96ff629e951c7c538ee649bba71bf074b29f53e0b95419126896af
+  checksum: 10/0afae20082a525eb8105ad9bf6534dbfd3aaec679b0258bfb33a89667a218a1e579dea2858dd47d798f086f4ae25915ddda73e4583304c5f505ac3d72b11566a
   languageName: node
   linkType: hard
 
-"@vitest/spy@npm:5.0.0":
-  version: 5.0.0
-  resolution: "@vitest/spy@npm:5.0.0"
-  checksum: 10/71ab66f41517078d25af58b60d3792c0ba3d4bece080f496994662e803cd0a2d8c56b073165bf8028f3970d388704e5f1d869378bcfd99a5a17664cfb2f24355
+"@vitest/spy@npm:5.0.1":
+  version: 5.0.1
+  resolution: "@vitest/spy@npm:5.0.1"
+  checksum: 10/12f882632c0d7a0f2516a3580947dde5513007155fabadc231ec8076d6994cb515a8e6a62b72c74a90e64d9bb5055eced4f112d6ee1613be514b05376c4b14c2
   languageName: node
   linkType: hard
 
@@ -4027,10 +4027,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bson@npm:7.3.2, bson@npm:^7.2.0":
-  version: 7.3.2
-  resolution: "bson@npm:7.3.2"
-  checksum: 10/c7d3fa5f8c738f51b28692eb479dcbeb9c8e6148d3098cfcf84015101d77fb89b7c8b511aeea3f2bb8556d75fb29b46d095a77e5a0b52b3d4977143830fd557c
+"bson@npm:7.3.3, bson@npm:^7.2.0":
+  version: 7.3.3
+  resolution: "bson@npm:7.3.3"
+  checksum: 10/27f90714578b84999cd79dd53aede2fd09118371af453f2a0b47ed07e50ab9514c1b2d5acd3d85e805172c32b963f3c3a457a34dd6ff7d0eb0d9e20910735f8f
   languageName: node
   linkType: hard
 
@@ -6064,10 +6064,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"kysely@npm:0.29.5":
-  version: 0.29.5
-  resolution: "kysely@npm:0.29.5"
-  checksum: 10/f62218965838cbc1900ad6364757d0fa5537089c5d0627af9f3cff08eb719b8d81840b5f5d22cdd3b41e4255c1b60ec50a602b589b07439d7485f05feceb5f4a
+"kysely@npm:0.29.6":
+  version: 0.29.6
+  resolution: "kysely@npm:0.29.6"
+  checksum: 10/14025c7db15e9ed1cbd2de6ec6a5dc099859c60c1d5bcf57d3890535ba000e92cb29244d8d3fc9bf52347ca57c004f5a8432108e1693b50cc3be63786e3596aa
   languageName: node
   linkType: hard
 
@@ -9609,12 +9609,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:5.0.0":
-  version: 5.0.0
-  resolution: "vitest@npm:5.0.0"
+"vitest@npm:5.0.1":
+  version: 5.0.1
+  resolution: "vitest@npm:5.0.1"
   dependencies:
     "@types/chai": "npm:^5.2.2"
-    "@vitest/mocker": "npm:5.0.0"
+    "@vitest/mocker": "npm:5.0.1"
     chai: "npm:^6.2.2"
     es-module-lexer: "npm:^2.3.2"
     expect-type: "npm:^1.4.0"
@@ -9630,12 +9630,12 @@ __metadata:
     "@edge-runtime/vm": "*"
     "@opentelemetry/api": ^1.9.0
     "@types/node": ^22.0.0 || >=24.0.0
-    "@vitest/browser-playwright": 5.0.0
-    "@vitest/browser-preview": 5.0.0
+    "@vitest/browser-playwright": 5.0.1
+    "@vitest/browser-preview": 5.0.1
     "@vitest/browser-webdriverio": ^5.0.0-beta.5 || >=5.0.0
-    "@vitest/coverage-istanbul": 5.0.0
-    "@vitest/coverage-v8": 5.0.0
-    "@vitest/ui": 5.0.0
+    "@vitest/coverage-istanbul": 5.0.1
+    "@vitest/coverage-v8": 5.0.1
+    "@vitest/ui": 5.0.1
     happy-dom: "*"
     jsdom: "*"
     vite: ^6.4.0 || ^7.0.0 || ^8.0.0
@@ -9666,7 +9666,7 @@ __metadata:
       optional: false
   bin:
     vitest: ./vitest.mjs
-  checksum: 10/66a8272ba5d102c97954e54c048a105e27d061729511a8a21e0189b38858058264c02835d6fa4aaa674455b58cfd74c798c04bc70e4072f3126559054696a9ee
+  checksum: 10/c17cfa6c93426b3880b7c7067158093b6b5377b9cf38748ba7bf388c1b75eb41b213267aee3709ca77e39ed711c8acb696d69003e7b4c978fa8b4a54e6f0d950
   languageName: node
   linkType: hard
 
