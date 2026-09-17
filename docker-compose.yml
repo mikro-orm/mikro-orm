@@ -33,7 +33,7 @@ services:
       start_period: 30s
 
   mariadb:
-    image: mariadb:12
+    image: mariadb:13
     ports:
       - "3309:3306"
     environment:
