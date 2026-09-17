@@ -543,8 +543,7 @@ export class QueryBuilder<
     const rawField = RawQueryFragment.getKnownFragment(cond as string);
 
     if (rawField) {
-      const sql = this.platform.formatQuery(rawField.sql, rawField.params);
-      cond = { [raw(`(${sql})`)]: Utils.asArray(params) };
+      cond = { [raw(`(${rawField.sql})`, rawField.params)]: Utils.asArray(params) };
       operator ??= '$and';
     } else if (Utils.isString(cond)) {
       cond = { [raw(`(${cond})`, Utils.asArray(params))]: [] };
