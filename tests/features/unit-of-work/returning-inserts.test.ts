@@ -18,9 +18,9 @@ const Customer = defineEntity({
 });
 
 const options = {
-  postgresql: { dbName: 'returning_inserts' },
+  postgresql: { dbName: 'mikro_orm_returning_inserts' },
   sqlite: { dbName: ':memory:' },
-  mssql: { dbName: 'returning_inserts', password: 'Root.Root' },
+  mssql: { dbName: 'mikro_orm_returning_inserts', password: 'Root.Root' },
 };
 
 const input = {
@@ -54,7 +54,13 @@ describe.each(Utils.keys(options))('returning properties on insert [%s]', type =
     await orm.schema.refresh();
   });
 
-  beforeEach(() => orm.schema.clear());
+  let useBatchInserts: boolean;
+
+  beforeEach(() => {
+    useBatchInserts = orm.config.get('useBatchInserts');
+    return orm.schema.clear();
+  });
+  afterEach(() => orm.config.set('useBatchInserts', useBatchInserts));
   afterAll(() => orm.close(true));
 
   const returning = {

@@ -1206,11 +1206,12 @@ export abstract class AbstractSqlDriver<
         : `(${this.platform.quoteIdentifier(pks[0])})`;
 
     if (this.platform.usesOutputStatement()) {
-      const returningProps = this.getTableProps(meta)
-        .filter(
-          prop => prop.returning || (prop.persist !== false && prop.defaultRaw) || prop.autoincrement || prop.generated,
-        )
-        .filter(prop => prop.returning || !(prop.name in data[0]) || isRaw(data[0][prop.name]));
+      const returningProps = this.getTableProps(meta).filter(
+        prop =>
+          prop.returning ||
+          (((prop.persist !== false && prop.defaultRaw) || prop.autoincrement || prop.generated) &&
+            (!(prop.name in data[0]) || isRaw(data[0][prop.name]))),
+      );
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       sql +=
         returningFields.length > 0
@@ -1345,11 +1346,12 @@ export abstract class AbstractSqlDriver<
     }
 
     if (meta && this.platform.usesReturningStatement()) {
-      const returningProps = this.getTableProps(meta)
-        .filter(
-          prop => prop.returning || (prop.persist !== false && prop.defaultRaw) || prop.autoincrement || prop.generated,
-        )
-        .filter(prop => prop.returning || !(prop.name in data[0]) || isRaw(data[0][prop.name]));
+      const returningProps = this.getTableProps(meta).filter(
+        prop =>
+          prop.returning ||
+          (((prop.persist !== false && prop.defaultRaw) || prop.autoincrement || prop.generated) &&
+            (!(prop.name in data[0]) || isRaw(data[0][prop.name]))),
+      );
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       /* v8 ignore next */
       sql +=
