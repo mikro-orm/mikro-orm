@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ntext-type 1`] = `
+[
+  "import { defineEntity, p } from '@mikro-orm/core';
+
+export class Test {
+  id!: number;
+  content?: string;
+  content2?: string;
+}
+
+export const TestSchema = defineEntity({
+  class: Test,
+  properties: {
+    id: p.integer().primary(),
+    content: p.text().columnType('ntext').nullable(),
+    content2: p.text().nullable(),
+  },
+});
+",
+]
+`;
