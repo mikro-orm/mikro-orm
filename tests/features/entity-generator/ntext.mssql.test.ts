@@ -6,7 +6,8 @@ const schema = `
   CREATE TABLE [test] (
     [id] int identity(1,1) not null primary key,
     [content] ntext,
-    [content2] text
+    [content2] text,
+    [img] image
     );
 `;
 

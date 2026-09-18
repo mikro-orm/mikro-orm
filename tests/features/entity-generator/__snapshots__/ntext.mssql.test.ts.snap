@@ -8,6 +8,7 @@ export class Test {
   id!: number;
   content?: string;
   content2?: string;
+  img?: Buffer;
 }
 
 export const TestSchema = defineEntity({
@@ -16,6 +17,7 @@ export const TestSchema = defineEntity({
     id: p.integer().primary(),
     content: p.text().columnType('ntext').nullable(),
     content2: p.text().nullable(),
+    img: p.blob().columnType('image').nullable(),
   },
 });
 ",
