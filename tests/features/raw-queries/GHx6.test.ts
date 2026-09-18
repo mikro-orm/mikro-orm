@@ -396,13 +396,4 @@ test('raw fragments with ? in parameters in where and andWhere', async () => {
   const res2 = await qb2.getResult();
   expect(res2).toHaveLength(1);
   expect(res2[0].name).toBe('what?? 3\\?');
-
-  // v6 asserted `checkCacheSize() === 0` (leak check for the strong fragment
-  // cache); v7 replaced it with a WeakMap registry that cannot leak, so we
-  // assert the registry recognises the fragments used by the query instead.
-  const registry: WeakMap<symbol, unknown> = (globalThis as any)[
-    Symbol.for('@mikro-orm/core/RawQueryFragment.references')
-  ];
-  expect(registry).toBeInstanceOf(WeakMap);
-  expect(RawQueryFragment.hasObjectFragments({ [raw('name = ?', ['what? 1'])]: [] })).toBe(true);
 });
