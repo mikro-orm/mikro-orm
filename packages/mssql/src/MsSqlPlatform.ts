@@ -196,6 +196,8 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       real: 'float',
       uniqueidentifier: 'uuid',
       varbinary: 'blob',
+      image: 'blob',
+      ntext: 'text',
       datetime2: 'datetime',
       smalldatetime: 'datetime',
     } as Dictionary;
