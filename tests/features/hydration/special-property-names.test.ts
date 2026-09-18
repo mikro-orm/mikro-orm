@@ -1,4 +1,4 @@
-import { Collection, type Dictionary, EntitySchema, MikroORM } from '@mikro-orm/sqlite';
+import { Collection, type Dictionary, EntitySchema, helper, MikroORM } from '@mikro-orm/sqlite';
 
 interface IFoo {
   id: number;
@@ -49,10 +49,6 @@ test('property names with special characters do not corrupt generated hydrator c
 
   await orm.close(true);
 });
-
-// The remaining interpolation sites in the generated hydrator and comparator: an inline embeddable's
-// child names become object literal keys, `targetKey` becomes a string literal and a member access,
-// composite primary keys become object literal keys, and the 1:1 back-reference is written by name.
 
 class Address {
   ["street'quote"]?: string;
@@ -209,6 +205,33 @@ test('a quote in the inverse side of a 1:1 does not mangle the back-reference', 
   const found = await orm.em.fork().findOneOrFail(Owner, { id: 1 }, { populate: ['target'] });
   expect(found.target["owner'quote"]).toBe(found);
   expect((found.target as Dictionary).owner_quote).toBeUndefined();
+
+  await orm.close(true);
+});
+
+class Doc {
+  _id!: number;
+  ["ser'id"]?: string;
+}
+
+test('a quote in the serialized primary key name does not corrupt the generated pk serializer', async () => {
+  const doc = new EntitySchema({
+    class: Doc,
+    properties: {
+      _id: { primary: true, type: 'number' },
+      ["ser'id"]: { type: 'string', serializedPrimaryKey: true, persist: false },
+    },
+  });
+
+  const orm = await MikroORM.init({ dbName: ':memory:', entities: [doc] });
+  await orm.schema.create();
+
+  const em = orm.em.fork();
+  em.create(Doc, { _id: 1 });
+  await em.flush();
+
+  const found = await orm.em.fork().findOneOrFail(Doc, { _id: 1 });
+  expect(helper(found).getSerializedPrimaryKey()).toBe('1');
 
   await orm.close(true);
 });

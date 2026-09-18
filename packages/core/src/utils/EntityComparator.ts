@@ -266,7 +266,7 @@ export class EntityComparator {
       const serializedPrimaryKey = meta.props.find(p => p.serializedPrimaryKey);
 
       if (serializedPrimaryKey) {
-        lines.push(`  return '' + entity.${serializedPrimaryKey.name};`);
+        lines.push(`  return '' + entity${this.wrap(serializedPrimaryKey.name)};`);
       } else if (prop.customType) {
         const convertorKey = this.registerCustomType(meta.properties[pk], context);
         const idx = this.#tmpIndex++;
