@@ -7,8 +7,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **mssql:** map legacy `ntext` and `image` column types ([#8288](https://github.com/mikro-orm/mikro-orm/issues/8288)) ([e46eddf](https://github.com/mikro-orm/mikro-orm/commit/e46eddf66a03e09b8736aa8ec27298de6ae2370a)), closes [#8287](https://github.com/mikro-orm/mikro-orm/issues/8287)
-
+- **mssql:** map legacy `ntext` and `image` column types ([#8288](https://github.com/mikro-orm/mikro-orm/issues/8288)) ([e46eddf](https://github.com/mikro-orm/mikro-orm/commit/e46eddf66a03e09b8736aa8ec27298de6ae2370a)), closes [#8287](https://github.com/mikro-orm/mikro-orm/issues/8287)
 
 # [7.2.0](https://github.com/mikro-orm/mikro-orm/compare/v7.1.15...v7.2.0) (2026-09-07)
 
