@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.1](https://github.com/mikro-orm/mikro-orm/compare/v7.2.0...v7.2.1) (2026-09-19)
+
+### Bug Fixes
+
+* **core:** escape the remaining property names in generated code ([#8289](https://github.com/mikro-orm/mikro-orm/issues/8289)) ([e15eb04](https://github.com/mikro-orm/mikro-orm/commit/e15eb04b9ad7b41403e480662e99eb62df70054d)), closes [#8221](https://github.com/mikro-orm/mikro-orm/issues/8221)
+* **core:** keep populated relations clean after a result cache hit ([#8269](https://github.com/mikro-orm/mikro-orm/issues/8269)) ([86fd18f](https://github.com/mikro-orm/mikro-orm/commit/86fd18f59be05b2896b38b5f2fe5659b3e1f711b)), closes [#8268](https://github.com/mikro-orm/mikro-orm/issues/8268)
+* **sql:** preserve filtered many-to-many references ([#8273](https://github.com/mikro-orm/mikro-orm/issues/8273)) ([c7a9f49](https://github.com/mikro-orm/mikro-orm/commit/c7a9f49573952606cbec7e99b08aa101dd01e5b9))
+
+### Features
+
+* **sql:** support read-replica routing in em.execute ([#8262](https://github.com/mikro-orm/mikro-orm/issues/8262)) ([b164e20](https://github.com/mikro-orm/mikro-orm/commit/b164e20c682de6eb341f391668041a6425383eb1))
+
+
 # [7.2.0](https://github.com/mikro-orm/mikro-orm/compare/v7.1.15...v7.2.0) (2026-09-07)
 
 ### Bug Fixes
