@@ -30,6 +30,9 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
 
     if (this.options.onConflict && !Utils.isEmpty(Utils.asArray(this.options.data)[0])) {
       this.compileUpsert();
+      if (suffix) {
+        this.parts.push(suffix);
+      }
     } else {
       switch (this.type) {
         case QueryType.SELECT:
@@ -87,15 +90,18 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
 
     const parts = this.processInsertData();
 
-    if (this.options.flags?.has(QueryFlag.OUTPUT_TABLE)) {
-      this.parts[this.parts.length - 2] += ' into #out ';
-    }
-
     this.parts.push(parts.join(', '));
   }
 
+  protected override addOutputClause(type: 'inserted' | 'deleted') {
+    super.addOutputClause(type);
+    if (this.options.returning?.length && this.options.flags?.has(QueryFlag.OUTPUT_TABLE)) {
+      this.parts[this.parts.length - 1] += ' into #out';
+    }
+  }
+
   private appendOutputTable() {
-    if (!this.options.flags?.has(QueryFlag.OUTPUT_TABLE)) {
+    if (!this.options.flags?.has(QueryFlag.OUTPUT_TABLE) || !this.options.returning?.length) {
       return { prefix: '', suffix: '' };
     }
 
@@ -104,7 +110,7 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
 
     return {
       prefix: `select top(0) ${selections} into #out from ${this.getTableName()} as t left join ${this.getTableName()} on 0 = 1;`,
-      suffix: `select ${selections} from #out as t; drop table #out`,
+      suffix: `select ${selections} from #out as t; select @@rowcount as [__mikro_orm_row_count__]; drop table #out`,
     };
   }
 
