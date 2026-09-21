@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
 import { Entity, Index, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 import { Migrator } from '@mikro-orm/migrations';
@@ -26,8 +27,9 @@ class Place8279 {
 
 const path = BASE_DIR + '/../temp/migrations-gh8279';
 const dbName = 'mikro_orm_test_gh8279';
+const snapshotPath = path + '/.snapshot-' + dbName + '.json';
 
-describe('GH #8279: PostGIS type comparison', () => {
+describe('GH #8279: backport PostGIS type comparison and snapshot preservation', () => {
 
   let orm: MikroORM;
 
@@ -73,6 +75,23 @@ describe('GH #8279: PostGIS type comparison', () => {
     expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe(
       `alter table "place8279" alter column "${column}" type ${targetType} using ("${column}"::${targetType});\n\n`,
     );
+  });
+
+  test('applying a migration preserves its snapshot and produces no follow-up migration', async () => {
+    const migration = await orm.migrator.createMigration();
+    expect(migration.diff.up.length).toBeGreaterThan(0);
+    const snapshot = readFileSync(snapshotPath, 'utf8');
+
+    await orm.migrator.up();
+
+    expect(readFileSync(snapshotPath, 'utf8')).toBe(snapshot);
+    expect(await orm.migrator.checkMigrationNeeded()).toBe(false);
+    expect((await orm.migrator.createMigration()).diff).toEqual({ up: [], down: [] });
+
+    // A real rollback must still replace the snapshot with the changed database schema.
+    await orm.migrator.down();
+    expect(readFileSync(snapshotPath, 'utf8')).not.toBe(snapshot);
+    expect(await orm.migrator.checkMigrationNeeded()).toBe(true);
   });
 
 });

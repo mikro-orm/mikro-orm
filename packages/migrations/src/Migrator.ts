@@ -20,6 +20,7 @@ import {
 import {
   DatabaseSchema,
   DatabaseTable,
+  SchemaComparator,
   SqlSchemaGenerator,
   type EntityManager,
   type AbstractSqlDriver,
@@ -453,6 +454,13 @@ export class Migrator implements IMigrator {
         ctx,
       );
 
+      // Keep the metadata snapshot when introspection differs only in representation.
+      const existing = this.getSchemaFromSnapshot();
+
+      if (existing && !await this.snapshotDiffers(existing, schema)) {
+        return result;
+      }
+
       try {
         await this.storeCurrentSchema(schema);
       } catch {
@@ -461,6 +469,13 @@ export class Migrator implements IMigrator {
     }
 
     return result;
+  }
+
+  private async snapshotDiffers(snapshot: DatabaseSchema, schema: DatabaseSchema): Promise<boolean> {
+    const comparator = new SchemaComparator(this.driver.getPlatform());
+    const diff = comparator.compare(snapshot, schema);
+    const sql = await this.schemaGenerator.diffToSQL(diff, { wrap: false, safe: false, dropTables: true });
+    return sql.trim().length > 0;
   }
 
   private async runInTransaction(trx: Transaction, method: 'up' | 'down', options: string | string[] | undefined | MigrateOptions) {
