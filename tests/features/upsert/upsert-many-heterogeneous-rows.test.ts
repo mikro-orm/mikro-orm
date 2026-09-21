@@ -90,4 +90,33 @@ describe.each(Utils.keys(options))('em.upsertMany with heterogeneous rows [%s]',
     const rows = await orm.em.fork().findAll(Currency, { orderBy: { id: 'asc' } });
     expect(rows.map(r => ({ id: r.id, name: r.name, code: r.code ?? null }))).toEqual(expected);
   });
+
+  test.runIf(['sqlite', 'postgresql'].includes(type))(
+    'maps rows of a split batch with a suppressed conflict',
+    async () => {
+      await orm.em.insertMany(Currency, [
+        { id: 1, name: 'keep', code: 'USD' },
+        { id: 2, name: 'old 2', code: 'USD' },
+      ]);
+
+      const res = await orm.em.fork().upsertMany(
+        Currency,
+        [
+          { id: 1, name: 'a' },
+          { id: 2, name: 'b', code: 'EUR' },
+          { id: 3, name: 'c' },
+        ],
+        { onConflictWhere: { name: { $ne: 'keep' } } },
+      );
+      const expected = [
+        { id: 1, name: 'keep', code: 'USD' },
+        { id: 2, name: 'b', code: 'EUR' },
+        { id: 3, name: 'c', code: null },
+      ];
+      expect(res.map(r => ({ id: r.id, name: r.name, code: r.code ?? null }))).toEqual(expected);
+
+      const rows = await orm.em.fork().findAll(Currency, { orderBy: { id: 'asc' } });
+      expect(rows.map(r => ({ id: r.id, name: r.name, code: r.code ?? null }))).toEqual(expected);
+    },
+  );
 });

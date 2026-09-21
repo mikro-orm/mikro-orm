@@ -50,6 +50,30 @@ describe('Output statements [mssql]', () => {
 
   afterAll(() => orm.close(true));
 
+  test('OUTPUT rows and row counts are separated without triggers', async () => {
+    const inserted = await orm.em.createQueryBuilder(WithoutTriggers).insert({ value: 'Initial' }).execute('run');
+    expect(inserted.affectedRows).toBe(1);
+    expect(inserted.rows).toEqual([{ id: expect.any(Number) }]);
+
+    const updated = await orm.em
+      .createQueryBuilder(WithoutTriggers)
+      .update({ value: 'Updated' })
+      .where({ id: inserted.row!.id })
+      .returning(['id', 'value'])
+      .execute('run');
+    expect(updated.affectedRows).toBe(1);
+    expect(updated.rows).toEqual([{ id: inserted.row!.id, value: 'Updated' }]);
+
+    const missing = await orm.em
+      .createQueryBuilder(WithoutTriggers)
+      .update({ value: 'Missing' })
+      .where({ id: -1 })
+      .returning('value')
+      .execute('run');
+    expect(missing).toMatchObject({ affectedRows: 0, rows: [] });
+    expect(missing.row).toBeUndefined();
+  });
+
   test(`insert`, async () => {
     const mock = mockLogger(orm, ['query', 'query-params']);
 
@@ -77,7 +101,7 @@ describe('Output statements [mssql]', () => {
     const withTriggersReselected = await orm.em.findOne(WithTriggers, { value: 'entity with triggers' });
 
     expect(mock.mock.calls[0][0]).toMatch(
-      "[query] select top(0) [t].[id] into #out from [with_triggers] as t left join [with_triggers] on 0 = 1; insert into [with_triggers] ([value]) output inserted.[id] into #out values (N'entity with triggers'); select [t].[id] from #out as t; drop table #out",
+      "[query] select top(0) [t].[id] into #out from [with_triggers] as t left join [with_triggers] on 0 = 1; insert into [with_triggers] ([value]) output inserted.[id] into #out values (N'entity with triggers'); select [t].[id] from #out as t; select @@rowcount as [__mikro_orm_row_count__]; drop table #out",
     );
     expect(mock.mock.calls[1][0]).toMatch(
       "[query] insert into [without_triggers] ([value]) output inserted.[id] values (N'entity without triggers')",
@@ -106,7 +130,7 @@ describe('Output statements [mssql]', () => {
       .execute();
 
     expect(mock.mock.calls[0][0]).toMatch(
-      "[query] select top(0) [t].[id] into #out from [with_triggers] as t left join [with_triggers] on 0 = 1; insert into [with_triggers] ([value]) output inserted.[id] into #out values (N'entity with triggers'); select [t].[id] from #out as t; drop table #out",
+      "[query] select top(0) [t].[id] into #out from [with_triggers] as t left join [with_triggers] on 0 = 1; insert into [with_triggers] ([value]) output inserted.[id] into #out values (N'entity with triggers'); select [t].[id] from #out as t; select @@rowcount as [__mikro_orm_row_count__]; drop table #out",
     );
     expect(mock.mock.calls[1][0]).toMatch(
       "[query] insert into [without_triggers] ([value]) output inserted.[id] values (N'entity with triggers')",

@@ -1530,6 +1530,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       options.onConflictFields ??
       ((Utils.isPlainObject(where) ? Object.keys(where) : meta.primaryKeys) as (keyof Entity)[]);
     const returning = getOnConflictReturningFields(meta, data, uniqueFields, options) as string[];
+    if (options.onConflictWhere && !ret.row) {
+      returning.push(...Object.keys(data));
+    }
 
     if (
       options.onConflictAction === 'ignore' ||
@@ -1760,15 +1763,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const loadPK = new Map<Entity, FilterQuery<Entity>>();
 
     allData.forEach((row, i) => {
-      em.#unitOfWork
-        .getChangeSetPersister()
-        .mapReturnedValues(
-          Utils.isEntity(data[i]) ? (data[i] as Entity) : null,
-          Utils.isEntity(data[i]) ? {} : data[i],
-          res.rows?.[i],
-          meta,
-          true,
-        );
+      em.#unitOfWork.getChangeSetPersister().mapReturnedValues(
+        Utils.isEntity(data[i]) ? (data[i] as Entity) : null,
+        Utils.isEntity(data[i]) ? {} : data[i],
+        // A suppressed conflict omits its row; positional mapping would hydrate a different entity.
+        res.rows?.length === allData.length ? res.rows[i] : undefined,
+        meta,
+        true,
+      );
       const entity = Utils.isEntity(data[i])
         ? (data[i] as Entity)
         : em.#entityFactory.create(entityName, row, {
@@ -1794,6 +1796,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       meta.comparableProps.filter(p => data.every(row => p.name in row)).map(p => [p.name, true]),
     ) as EntityData<Entity>;
     const returning = getOnConflictReturningFields(meta, shared, uniqueFields, options) as string[];
+    if (options.onConflictWhere && res.rows?.length !== allData.length) {
+      returning.push(...meta.comparableProps.filter(p => !p.lazy && !p.embeddable).map(p => p.name));
+    }
     const reloadFields =
       returning.length > 0 && !(this.getPlatform().usesReturningStatement() && res.rows?.length === data.length);
 
@@ -1836,8 +1841,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         const row = data2.find(row => {
           const tmp: Dictionary = {};
           add.forEach(k => {
-            if (!meta.properties[k]?.primary) {
-              tmp[k] = row[k];
+            const prop = meta.properties[k];
+
+            if (!prop?.primary) {
+              tmp[k] = prop?.customType ? prop.customType.convertToDatabaseValue(row[k], this.getPlatform()) : row[k];
             }
           });
           return this.#comparator.matching<any>(entityName, cond as EntityKey, tmp);
