@@ -1829,8 +1829,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         const row = data2.find(row => {
           const tmp: Dictionary = {};
           add.forEach(k => {
-            if (!meta.properties[k]?.primary) {
-              const prop = meta.properties[k];
+            const prop = meta.properties[k];
+
+            if (!prop?.primary) {
               tmp[k] = prop?.customType ? prop.customType.convertToDatabaseValue(row[k], this.getPlatform()) : row[k];
             }
           });

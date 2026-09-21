@@ -59,7 +59,7 @@ beforeAll(async () => {
   await orm.schema.create();
 });
 
-beforeAll(async () => {
+beforeEach(async () => {
   await orm.schema.clear();
 });
 
@@ -101,6 +101,7 @@ test('4786 (em.upsert)', async () => {
 
 test('4786 (em.upsertMany)', async () => {
   orm.em.create(InternalRole, { id: 1, name: 'role' });
+  orm.em.create(InternalRolePermission, { subject: 'User', action: 'read', internalRole: 1 });
   await orm.em.flush();
   orm.em.clear();
 
