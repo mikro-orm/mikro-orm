@@ -1648,6 +1648,34 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return ret;
     }
 
+    // merge fields are derived from the first row, rows of a different shape need their own statement
+    if (!options.onConflictMergeFields && options.onConflictAction !== 'ignore') {
+      const pks = this.metadata.get<Entity>(entityName).primaryKeys as string[];
+      const shapes = new Map<string, number[]>();
+      data.forEach((row, i) => {
+        const shape = Object.keys(row)
+          .filter(key => !pks.includes(key))
+          .sort()
+          .join();
+        shapes.set(shape, (shapes.get(shape) ?? []).concat(i));
+      });
+
+      if (shapes.size > 1) {
+        const ret: Entity[] = [];
+
+        for (const idx of shapes.values()) {
+          const res = await this.upsertMany(
+            entityName,
+            idx.map(i => data![i]),
+            options,
+          );
+          idx.forEach((i, j) => (ret[i] = res[j]));
+        }
+
+        return ret;
+      }
+    }
+
     // the rows are replaced with their processed copies below, keep the caller's array intact
     data = [...data];
     const meta = this.metadata.get<Entity>(entityName);
@@ -1791,11 +1819,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     // (onConflictWhere can suppress writes, leaving some rows out)
     // oxfmt-ignore
     const uniqueFields = options.onConflictFields ?? ((Utils.isPlainObject(allWhere[0]) ? Object.keys(allWhere[0]).flatMap(key => Utils.splitPrimaryKeys(key)) : meta.primaryKeys) as (keyof Entity)[]);
-    // a column only some rows provide is not returned by the statements of the other rows
-    const shared = Object.fromEntries(
-      meta.comparableProps.filter(p => data.every(row => p.name in row)).map(p => [p.name, true]),
-    ) as EntityData<Entity>;
-    const returning = getOnConflictReturningFields(meta, shared, uniqueFields, options) as string[];
+    const returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options) as string[];
     if (options.onConflictWhere && res.rows?.length !== allData.length) {
       returning.push(...meta.comparableProps.filter(p => !p.lazy && !p.embeddable).map(p => p.name));
     }
