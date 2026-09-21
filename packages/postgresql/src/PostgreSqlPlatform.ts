@@ -166,6 +166,11 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return this.getIntervalTypeDeclarationSQL(options);
     }
 
+    // PostGIS reports modifiers without spaces, unlike user-supplied declarations.
+    if (['geometry', 'geography'].includes(simpleType)) {
+      return type.toLowerCase().replace(/\s+/g, '');
+    }
+
     // TimeType.getColumnType drops the timezone qualifier, so detect tz aliases from the original column type.
     const originalType = options.columnTypes?.[0]?.toLowerCase() ?? type;
     if (/^timetz\b/.test(originalType) || /^time\s+with\s+time\s+zone\b/.test(originalType)) {
