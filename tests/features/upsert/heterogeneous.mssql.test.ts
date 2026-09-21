@@ -20,10 +20,23 @@ const DefaultCustomer = defineEntity({
   },
 });
 
+const TriggerCustomer = defineEntity({
+  name: 'HeterogeneousTriggerCustomer',
+  properties: {
+    id: p.integer().primary().autoincrement(),
+    name: p.string(),
+    code: p.string().default('DEFAULT'),
+    createdAt: p.datetime().defaultRaw('current_timestamp'),
+  },
+  triggers: [
+    { name: 'heterogeneous_customer_audit', timing: 'after', events: ['insert', 'update'], body: 'SET NOCOUNT ON' },
+  ],
+});
+
 let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [Customer, DefaultCustomer],
+    entities: [Customer, DefaultCustomer, TriggerCustomer],
     dbName: 'mikro_orm_test_heterogeneous_upsert',
     password: 'Root.Root',
   });
@@ -82,4 +95,35 @@ test('QueryBuilder applies defaults without mutating heterogeneous inputs', asyn
     { id: 1, code: 'DEFAULT' },
     { id: 2, code: 'EUR' },
   ]);
+});
+
+test('inlined defaults keep OUTPUT INTO aligned on tables with triggers and supplied identity', async () => {
+  const rows = await orm.em.fork().upsertMany(TriggerCustomer, [
+    { id: 1, name: 'First' },
+    { id: 2, name: 'Second', code: 'EUR', createdAt: new Date(0) },
+  ]);
+  expect(rows).toMatchObject([
+    { id: 1, name: 'First', code: 'DEFAULT' },
+    { id: 2, name: 'Second', code: 'EUR', createdAt: new Date(0) },
+  ]);
+  const result = await orm.em
+    .fork()
+    .createQueryBuilder(TriggerCustomer)
+    .insert([
+      { id: 1, name: 'Updated' },
+      { id: 3, name: 'Third', code: 'USD' },
+    ])
+    .onConflict('id')
+    .merge(['name'])
+    .returning(['id', 'name', 'code', 'createdAt'])
+    .execute('run');
+  expect(result.rows).toHaveLength(2);
+  const found = await orm.em.fork().find(TriggerCustomer, {}, { orderBy: { id: 'asc' } });
+  expect(found).toMatchObject([
+    { id: 1, name: 'Updated', code: 'DEFAULT' },
+    { id: 2, name: 'Second', code: 'EUR' },
+    { id: 3, name: 'Third', code: 'USD' },
+  ]);
+  expect(found[0].createdAt.getTime()).toBeGreaterThan(1e12);
+  expect(found[2].createdAt.getTime()).toBeGreaterThan(1e12);
 });
