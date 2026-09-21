@@ -53,6 +53,7 @@ const User = defineEntity({
     password: p.embedded(Password).prefix(''),
     credentials: p.embedded(Credentials).prefix(''),
     address: p.embedded(Address),
+    city: p.string().fieldName('address'),
     vault: p.embedded(Vault).prefix(''),
   },
 });
@@ -82,6 +83,7 @@ beforeAll(async () => {
       password: { value: 'hash' },
       credentials: { value: 'token', salt: 'pepper' },
       address: { city: 'London', street: 'Baker' },
+      city: 'Paris',
       vault: { secret: { value: 'key' }, hint: 'none' },
     },
   });
@@ -97,9 +99,11 @@ test('GH #8292 joined populate of an inline embeddable whose column matches the 
   const profile = await em.findOneOrFail(Profile, 1, { populate: ['user'] });
   expect(profile.user.password).toEqual({ value: 'hash' });
   expect(profile.user.credentials).toEqual({ value: 'token', salt: 'pepper' });
+  expect(profile.user.address).toEqual({ city: 'London', street: 'Baker' });
+  expect(profile.user.city).toBe('Paris');
   expect(profile.user.vault).toEqual({ secret: { value: 'key' }, hint: 'none' });
   expect(mock.mock.calls[0][0]).toMatch(
-    'select `p0`.*, `u1`.`id` as `u1__id`, `u1`.`password` as `u1__password`, `u1`.`credentials` as `u1__credentials`, `u1`.`salt` as `u1__salt`, `u1`.`address_city` as `u1__address_city`, `u1`.`address_street` as `u1__address_street`, `u1`.`vault` as `u1__vault`, `u1`.`hint` as `u1__hint` from `profile` as `p0` inner join `user` as `u1` on `p0`.`user_id` = `u1`.`id` where `p0`.`id` = 1',
+    'select `p0`.*, `u1`.`id` as `u1__id`, `u1`.`password` as `u1__password`, `u1`.`credentials` as `u1__credentials`, `u1`.`salt` as `u1__salt`, `u1`.`address_city` as `u1__address_city`, `u1`.`address_street` as `u1__address_street`, `u1`.`address` as `u1__address`, `u1`.`vault` as `u1__vault`, `u1`.`hint` as `u1__hint` from `profile` as `p0` inner join `user` as `u1` on `p0`.`user_id` = `u1`.`id` where `p0`.`id` = 1',
   );
 
   profile.nickname = 'bar';

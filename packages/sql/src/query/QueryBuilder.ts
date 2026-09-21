@@ -3331,11 +3331,13 @@ export class QueryBuilder<
         return;
       }
 
-      // with an empty prefix, a column can share the embedded property name, the joined strategy selects such column with an alias
+      // the joined strategy selects by column name, which can collide with an inline embedded property name
       const shadowed =
         customAlias &&
         prop?.kind === ReferenceKind.EMBEDDED &&
-        (this.#state.aliases[a]?.meta ?? this.mainAlias.meta).props.some(p => p.embedded && p.fieldNames?.[0] === f);
+        (this.#state.aliases[a]?.meta ?? this.mainAlias.meta).props.some(
+          p => (p.kind !== ReferenceKind.EMBEDDED || p.object) && p.fieldNames?.includes(f),
+        );
 
       if (prop?.kind === ReferenceKind.EMBEDDED && !shadowed) {
         if (customAlias) {
