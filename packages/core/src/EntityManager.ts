@@ -1390,11 +1390,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       const key = options.strict ? 'findExactlyOneOrFailHandler' : 'findOneOrFailHandler';
       const failHandler = options.failHandler ?? this.config.get(key);
       const name = Utils.className(entityName);
-      /* v8 ignore next 3 */
-      where = Utils.isEntity(where)
-        ? (helper(where).getPrimaryKey() as any)
-        : (QueryHelper.processParams(where) ?? where);
-      throw failHandler(name, where);
+      /* v8 ignore next */
+      where = Utils.isEntity(where) ? (helper(where).getPrimaryKey() as any) : where;
+      throw failHandler(name, QueryHelper.processParams(QueryHelper.cloneWhere(where)));
     }
 
     return entity;
@@ -1659,9 +1657,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     for (let i = 0; i < data.length; i++) {
       let row = data[i];
       let where: FilterQuery<Entity>;
-      const wasEntity = Utils.isEntity(row);
 
-      if (wasEntity) {
+      if (Utils.isEntity(row)) {
         const entity = row as Entity;
 
         if (helper(entity).__managed && helper(entity).__em === em && !this.config.get('upsertManaged')) {
@@ -1716,11 +1713,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         platform: this.getPlatform(),
       });
       row = QueryHelper.processObjectParams(row);
-
-      if (!wasEntity) {
-        data[i] = row;
-      }
-
       validateParams(row, 'insert data');
       allData.push(row);
       allWhere.push(where);

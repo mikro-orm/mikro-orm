@@ -82,19 +82,18 @@ export class QueryHelper {
     }
 
     if (Utils.isPlainObject(params)) {
-      return QueryHelper.processObjectParams(params);
+      QueryHelper.processObjectParams(params);
     }
 
     return params;
   }
 
   static processObjectParams<T extends Dictionary>(params: T = {} as T): T {
-    const ret = (Array.isArray(params) ? [...params] : { ...params }) as T;
     Utils.getObjectQueryKeys(params).forEach(k => {
-      ret[k as keyof T] = QueryHelper.processParams(params[k as keyof T]);
+      params[k as keyof T] = QueryHelper.processParams(params[k as keyof T]);
     });
 
-    return ret;
+    return params;
   }
 
   /**
@@ -245,25 +244,22 @@ export class QueryHelper {
   }
 
   /**
-   * Copies the plain-object/array skeleton of `where` (leaf values, including entities, are kept
-   * by reference) so the pre-processParams helpers in processWhere can rewrite it in place without
-   * mutating the object the caller passed in.
+   * Copies the plain object and array structure of the condition, keeping the leaf values (e.g. entities) by reference.
+   * @internal
    */
-  private static cloneWhereStructure(where: unknown): unknown {
+  static cloneWhere<T>(where: T): T {
     if (Array.isArray(where)) {
-      return where.map(item => QueryHelper.cloneWhereStructure(item));
+      return where.map(item => QueryHelper.cloneWhere(item)) as T;
     }
 
     if (!Utils.isPlainObject<Dictionary>(where)) {
       return where;
     }
 
-    const ret: Dictionary = { ...where };
-    Utils.getObjectQueryKeys(where).forEach(k => {
-      ret[k as keyof Dictionary] = QueryHelper.cloneWhereStructure(where[k as keyof Dictionary]);
-    });
+    const ret: Dictionary = {};
+    Utils.getObjectQueryKeys(where).forEach(k => (ret[k as string] = QueryHelper.cloneWhere(where[k as string])));
 
-    return ret;
+    return ret as T;
   }
 
   static processWhere<T extends object>(options: ProcessWhereOptions<T>): FilterQuery<T> {
@@ -271,12 +267,9 @@ export class QueryHelper {
     let { where, entityName, metadata, platform, aliased = true, convertCustomTypes = true, root = true } = options;
     const meta = metadata.find<T>(entityName);
 
-    // structural-only copy of the caller's where, so liftGroupOperators/inlinePrimaryKeyObjects/
-    // convertCompositeEntityRefs/dropUndefinedProperties below can freely mutate the tree without
-    // touching the object the caller passed in (they don't go through processParams below, which
-    // already builds a fresh value on its own)
+    // the condition is normalized in place, so work on a copy to keep the one the caller passed in intact
     if (root) {
-      where = QueryHelper.cloneWhereStructure(where) as FilterQuery<T>;
+      where = QueryHelper.cloneWhere(where);
     }
 
     // inline PK-only objects in M:N queries, so we don't join the target entity when not needed

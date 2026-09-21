@@ -96,3 +96,60 @@ test("em.find() does not mutate the caller's where object for a composite-PK rel
 
   expect(where.author).toBe(author);
 });
+
+test("em.find() does not mutate entities nested in operators of the caller's where object", async () => {
+  const em = orm.em.fork();
+  const author = await em.findOneOrFail(Author, { name: 'Jon' });
+  const where = { $or: [{ author: { $in: [author] } }, { $and: [{ author }] }] };
+
+  await expect(em.find(Book, where)).resolves.toHaveLength(1);
+
+  expect(where).toEqual({ $or: [{ author: { $in: [author] } }, { $and: [{ author }] }] });
+  expect(where.$or[0].author!.$in![0]).toBe(author);
+});
+
+test("em.findOneOrFail() reports primary keys without mutating the caller's where object", async () => {
+  const em = orm.em.fork();
+  const author = await em.findOneOrFail(Author, { name: 'Jon' });
+  const where = { author, title: 'nope' };
+
+  await expect(em.findOneOrFail(Book, where)).rejects.toThrow("Book not found ({ author: 1, title: 'nope' })");
+
+  expect(where.author).toBe(author);
+});
+
+test("qb.where() does not mutate the caller's where object", async () => {
+  const em = orm.em.fork();
+  const author = await em.findOneOrFail(Author, { name: 'Jon' });
+  const where = { author };
+
+  await expect(em.qb(Book).where(where).getResultList()).resolves.toHaveLength(1);
+
+  expect(where.author).toBe(author);
+});
+
+test("em.find() does not lift group operators in the caller's where object", async () => {
+  const em = orm.em.fork();
+  const where = { author: { $or: [{ id: 1 }, { id: 2 }] } };
+
+  await expect(em.find(Book, where)).resolves.toHaveLength(1);
+
+  expect(where).toEqual({ author: { $or: [{ id: 1 }, { id: 2 }] } });
+});
+
+test("em.find() does not drop undefined properties from the caller's where object", async () => {
+  const orm2 = await MikroORM.init({
+    dbName: ':memory:',
+    entities: [Author, Book],
+    metadataProvider: ReflectMetadataProvider,
+    ignoreUndefinedInQuery: true,
+  });
+  await orm2.schema.create();
+  const where = { title: undefined, author: { name: undefined } };
+
+  await orm2.em.fork().find(Book, where);
+
+  expect(Object.keys(where)).toEqual(['title', 'author']);
+  expect(Object.keys(where.author)).toEqual(['name']);
+  await orm2.close(true);
+});

@@ -3884,12 +3884,9 @@ export class QueryBuilder<
         .forEach(field => this.#state.fields!.push(raw(field)));
     }
 
-    if (this.#state.data) {
-      this.#state.data = QueryHelper.processObjectParams(this.#state.data);
-    }
-
-    this.#state.cond = QueryHelper.processObjectParams(this.#state.cond);
-    this.#state.having = QueryHelper.processObjectParams(this.#state.having);
+    QueryHelper.processObjectParams(this.#state.data);
+    QueryHelper.processObjectParams(this.#state.cond);
+    QueryHelper.processObjectParams(this.#state.having);
 
     // automatically enable paginate flag when we detect to-many joins, but only if there is no `group by` clause
     if (
