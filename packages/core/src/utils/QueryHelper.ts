@@ -82,18 +82,19 @@ export class QueryHelper {
     }
 
     if (Utils.isPlainObject(params)) {
-      QueryHelper.processObjectParams(params);
+      return QueryHelper.processObjectParams(params);
     }
 
     return params;
   }
 
   static processObjectParams<T extends Dictionary>(params: T = {} as T): T {
+    const ret = (Array.isArray(params) ? [...params] : { ...params }) as T;
     Utils.getObjectQueryKeys(params).forEach(k => {
-      params[k as keyof T] = QueryHelper.processParams(params[k as keyof T]);
+      ret[k as keyof T] = QueryHelper.processParams(params[k as keyof T]);
     });
 
-    return params;
+    return ret;
   }
 
   /**
