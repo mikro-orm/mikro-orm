@@ -3331,7 +3331,15 @@ export class QueryBuilder<
         return;
       }
 
-      if (prop?.kind === ReferenceKind.EMBEDDED) {
+      // the joined strategy selects by column name, which can collide with an inline embedded property name
+      const shadowed =
+        customAlias &&
+        prop?.kind === ReferenceKind.EMBEDDED &&
+        (this.#state.aliases[a]?.meta ?? this.mainAlias.meta).props.some(
+          p => (p.kind !== ReferenceKind.EMBEDDED || p.object) && p.fieldNames?.includes(f),
+        );
+
+      if (prop?.kind === ReferenceKind.EMBEDDED && !shadowed) {
         if (customAlias) {
           throw new Error(
             `Cannot use 'as ${customAlias}' alias on embedded property '${field}' because it expands to multiple columns. Alias individual fields instead (e.g. '${field}.propertyName as ${customAlias}').`,
@@ -3340,12 +3348,13 @@ export class QueryBuilder<
 
         const nest = (prop: EntityProperty): void => {
           for (const childProp of Object.values(prop.embeddedProps)) {
-            if (
-              childProp.fieldNames &&
-              (childProp.kind !== ReferenceKind.EMBEDDED || childProp.object) &&
-              childProp.persist !== false
-            ) {
-              ret.push(getFieldName(childProp.fieldNames[0]));
+            if (childProp.persist === false) {
+              continue;
+            }
+
+            if (childProp.fieldNames && (childProp.kind !== ReferenceKind.EMBEDDED || childProp.object)) {
+              const name = childProp.fieldNames[0];
+              ret.push(getFieldName(this.#state.aliases[a] ? `${a}.${name}` : name));
             } else {
               nest(childProp);
             }
@@ -3884,9 +3893,12 @@ export class QueryBuilder<
         .forEach(field => this.#state.fields!.push(raw(field)));
     }
 
-    QueryHelper.processObjectParams(this.#state.data);
-    QueryHelper.processObjectParams(this.#state.cond);
-    QueryHelper.processObjectParams(this.#state.having);
+    if (this.#state.data) {
+      this.#state.data = QueryHelper.processObjectParams(this.#state.data);
+    }
+
+    this.#state.cond = QueryHelper.processObjectParams(this.#state.cond);
+    this.#state.having = QueryHelper.processObjectParams(this.#state.having);
 
     // automatically enable paginate flag when we detect to-many joins, but only if there is no `group by` clause
     if (

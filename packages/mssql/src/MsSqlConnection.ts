@@ -200,22 +200,25 @@ export class MsSqlConnection extends AbstractSqlConnection {
   }
 
   protected override transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T {
+    const lastRow = res.rows.at(-1);
+    const hasOutputCount = lastRow && '__mikro_orm_row_count__' in lastRow && Object.keys(lastRow).length === 1;
+    const outputRows = hasOutputCount ? res.rows.slice(0, -1) : res.rows;
     if (method === 'get') {
-      return res.rows[0];
+      return outputRows[0];
     }
 
     if (method === 'all') {
-      return res.rows;
+      return outputRows;
     }
 
-    const rowCount = res.rows.length;
-    const hasEmptyCount = rowCount === 1 && '' in res.rows[0];
-    const emptyRow = hasEmptyCount && Number(res.rows[0]['']);
+    const hasEmptyCount = lastRow && Object.keys(lastRow).length === 1 && '' in lastRow;
+    const count = hasOutputCount ? lastRow.__mikro_orm_row_count__ : hasEmptyCount ? lastRow[''] : res.numAffectedRows;
+    const rows = hasEmptyCount ? outputRows.slice(0, -1) : outputRows;
 
     return {
-      affectedRows: hasEmptyCount ? emptyRow : Number(res.numAffectedRows),
-      row: res.rows[0],
-      rows: res.rows,
+      affectedRows: Number(count),
+      row: rows[0],
+      rows,
     } as unknown as T;
   }
 }
