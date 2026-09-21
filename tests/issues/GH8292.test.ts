@@ -25,6 +25,7 @@ const Address = defineEntity({
   properties: {
     city: p.string(),
     street: p.string(),
+    label: p.string().persist(false),
   },
 });
 
