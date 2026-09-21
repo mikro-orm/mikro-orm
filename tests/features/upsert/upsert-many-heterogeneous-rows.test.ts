@@ -91,6 +91,60 @@ describe.each(Utils.keys(options))('em.upsertMany with heterogeneous rows [%s]',
     expect(rows.map(r => ({ id: r.id, name: r.name, code: r.code ?? null }))).toEqual(expected);
   });
 
+  test('does not merge an explicit `undefined` into rows that omit the column', async () => {
+    await orm.em.insertMany(Currency, [
+      { id: 1, name: 'old 1', code: 'USD' },
+      { id: 2, name: 'old 2', code: 'USD' },
+    ]);
+
+    await orm.em.fork().upsertMany(Currency, [
+      { id: 1, name: 'a', code: undefined },
+      { id: 2, name: 'b' },
+    ]);
+
+    const rows = await orm.em.fork().findAll(Currency, { orderBy: { id: 'asc' } });
+    expect(rows.map(r => ({ id: r.id, name: r.name, code: r.code ?? null }))).toEqual([
+      { id: 1, name: 'a', code: null },
+      { id: 2, name: 'b', code: 'USD' },
+    ]);
+  });
+
+  test('merges columns set only on some of the entity instances', async () => {
+    await orm.em.insertMany(Currency, [
+      { id: 1, name: 'old 1', code: 'USD' },
+      { id: 2, name: 'old 2', code: 'USD' },
+    ]);
+
+    const em = orm.em.fork();
+    await em.upsertMany([
+      em.create(Currency, { id: 1, name: 'a' }, { persist: false }),
+      em.create(Currency, { id: 2, name: 'b', code: 'EUR' }, { persist: false }),
+    ]);
+
+    const rows = await orm.em.fork().findAll(Currency, { orderBy: { id: 'asc' } });
+    expect(rows.map(r => ({ id: r.id, name: r.name, code: r.code ?? null }))).toEqual([
+      { id: 1, name: 'a', code: 'USD' },
+      { id: 2, name: 'b', code: 'EUR' },
+    ]);
+  });
+
+  // postgres rejects a statement that touches the same row twice
+  test.runIf(type !== 'postgresql')('returns an entity matched by several rows of a split batch once', async () => {
+    await orm.em.insertMany(Currency, [{ id: 1, name: 'old 1', code: 'USD' }]);
+
+    const em = orm.em.fork();
+    await em.findAll(Currency);
+    const res = await em.upsertMany(Currency, [
+      { id: 1, name: 'a' },
+      { id: 2, name: 'b', code: 'EUR' },
+      { id: 1, name: 'c' },
+    ]);
+    expect(res.map(r => ({ id: r.id, name: r.name, code: r.code ?? null }))).toEqual([
+      { id: 1, name: 'c', code: 'USD' },
+      { id: 2, name: 'b', code: 'EUR' },
+    ]);
+  });
+
   test.runIf(['sqlite', 'postgresql'].includes(type))(
     'maps rows of a split batch with a suppressed conflict',
     async () => {

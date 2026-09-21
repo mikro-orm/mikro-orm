@@ -1653,11 +1653,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       const pks = this.metadata.get<Entity>(entityName).primaryKeys as string[];
       const shapes = new Map<string, number[]>();
       data.forEach((row, i) => {
+        // entity instances carry their unset properties as `undefined` keys, while in plain rows those are merged as `null`
         const shape = Object.keys(row)
-          .filter(key => !pks.includes(key))
+          .filter(key => !pks.includes(key) && !(Utils.isEntity(row) && (row as Dictionary)[key] === undefined))
           .sort()
           .join();
-        shapes.set(shape, (shapes.get(shape) ?? []).concat(i));
+        const idx = shapes.get(shape) ?? [];
+        shapes.set(shape, idx);
+        idx.push(i);
       });
 
       if (shapes.size > 1) {
@@ -1672,7 +1675,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           idx.forEach((i, j) => (ret[i] = res[j]));
         }
 
-        return ret;
+        // rows resolving to the same entity are returned once, as in the single statement path
+        return [...new Set(ret.filter(entity => entity))];
       }
     }
 
