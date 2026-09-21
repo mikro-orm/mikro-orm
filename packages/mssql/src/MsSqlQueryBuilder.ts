@@ -1,4 +1,4 @@
-import { type AnyEntity, QueryFlag, type EntityData, type RequiredEntityData, Utils } from '@mikro-orm/core';
+import { type AnyEntity, QueryFlag, type EntityData, type RequiredEntityData, Utils, raw } from '@mikro-orm/core';
 import { type InsertQueryBuilder, type UpdateQueryBuilder, QueryBuilder } from '@mikro-orm/sql';
 
 /** Query builder with MSSQL-specific behavior such as identity insert handling. */
@@ -11,6 +11,7 @@ export class MsSqlQueryBuilder<
   override insert(
     data: RequiredEntityData<Entity> | RequiredEntityData<Entity>[],
   ): InsertQueryBuilder<Entity, RootAlias, Context> {
+    data = this.applyInsertDefaults(data);
     this.checkIdentityInsert(data);
 
     if (this.mainAlias.meta?.hasTriggers) {
@@ -25,6 +26,36 @@ export class MsSqlQueryBuilder<
       this.setFlag(QueryFlag.OUTPUT_TABLE);
     }
     return super.update(data);
+  }
+
+  private applyInsertDefaults(data: RequiredEntityData<Entity> | RequiredEntityData<Entity>[]) {
+    if (!Array.isArray(data) || data.length < 2) {
+      return data;
+    }
+
+    const meta = this.mainAlias.meta;
+    const keys = Utils.unique(data.flatMap(row => Utils.keys(row))).filter(key => meta.properties[key]?.defaultRaw);
+    if (keys.length === 0) {
+      return data;
+    }
+
+    const schemaHelper = this.platform.getSchemaHelper()!;
+
+    // MERGE uses a derived VALUES table, where DEFAULT is not allowed.
+    return data.map(row => {
+      let copy = row;
+      for (const key of keys) {
+        if (row[key] === undefined) {
+          if (copy === row) {
+            copy = { ...row };
+          }
+          const prop = meta.properties[key];
+          // same normalization as the DDL, e.g. `true` is not a valid MSSQL literal
+          copy[key] = raw(`${schemaHelper.normalizeDefaultValue(prop.defaultRaw!, prop.length)}`) as never;
+        }
+      }
+      return copy;
+    });
   }
 
   private checkIdentityInsert(data: RequiredEntityData<Entity> | RequiredEntityData<Entity>[]) {

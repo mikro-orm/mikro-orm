@@ -117,13 +117,13 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
   private compileUpsert() {
     const clause = this.options.onConflict!;
     const dataAsArray = Utils.asArray(this.options.data);
-    const keys = Object.keys(dataAsArray[0]);
+    const keys = [...new Set(dataAsArray.flatMap(data => Object.keys(data!)))];
     const values = keys.map(() => '?');
     const parts = [];
 
     for (const data of dataAsArray) {
       for (const key of keys) {
-        this.params.push(data![key]);
+        this.params.push(data![key] ?? null);
       }
 
       parts.push(`(${values.join(', ')})`);
