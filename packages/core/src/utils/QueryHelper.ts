@@ -82,18 +82,19 @@ export class QueryHelper {
     }
 
     if (Utils.isPlainObject(params)) {
-      QueryHelper.processObjectParams(params);
+      return QueryHelper.processObjectParams(params);
     }
 
     return params;
   }
 
   static processObjectParams<T extends Dictionary>(params: T = {} as T): T {
+    const ret = (Array.isArray(params) ? [...params] : { ...params }) as T;
     Utils.getObjectQueryKeys(params).forEach(k => {
-      params[k as keyof T] = QueryHelper.processParams(params[k as keyof T]);
+      ret[k as keyof T] = QueryHelper.processParams(params[k as keyof T]);
     });
 
-    return params;
+    return ret;
   }
 
   /**
@@ -243,10 +244,31 @@ export class QueryHelper {
     return false;
   }
 
+  /** Copies the plain object and array structure of the condition, keeping the leaf values (e.g. entities) by reference. */
+  private static cloneWhere<T>(where: T): T {
+    if (Array.isArray(where)) {
+      return where.map(item => QueryHelper.cloneWhere(item)) as T;
+    }
+
+    if (!Utils.isPlainObject<Dictionary>(where)) {
+      return where;
+    }
+
+    const ret: Dictionary = {};
+    Utils.getObjectQueryKeys(where).forEach(k => (ret[k as string] = QueryHelper.cloneWhere(where[k as string])));
+
+    return ret as T;
+  }
+
   static processWhere<T extends object>(options: ProcessWhereOptions<T>): FilterQuery<T> {
     // eslint-disable-next-line prefer-const
     let { where, entityName, metadata, platform, aliased = true, convertCustomTypes = true, root = true } = options;
     const meta = metadata.find<T>(entityName);
+
+    // the condition is normalized in place, so work on a copy to keep the one the caller passed in intact
+    if (root) {
+      where = QueryHelper.cloneWhere(where);
+    }
 
     // inline PK-only objects in M:N queries, so we don't join the target entity when not needed
     if (meta && root) {
