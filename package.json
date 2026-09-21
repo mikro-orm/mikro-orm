@@ -127,14 +127,14 @@
     }
   },
   "devDependencies": {
-    "@commitlint/cli": "21.2.2",
-    "@commitlint/config-conventional": "21.2.2",
+    "@commitlint/cli": "21.2.3",
+    "@commitlint/config-conventional": "21.2.3",
     "@mikro-orm/mongo-highlighter": "1.0.0",
     "@mikro-orm/sql-highlighter": "1.0.1",
     "@swc-node/register": "1.12.1",
     "@swc/core": "1.16.2",
     "@types/better-sqlite3": "9.6.0",
-    "@types/node": "24.13.5",
+    "@types/node": "24.13.6",
     "@types/oracledb": "7.0.3",
     "@types/pg": "8.23.1",
     "@types/pg-cursor": "2.7.2",
