@@ -29,6 +29,23 @@ const Address = defineEntity({
   },
 });
 
+const Secret = defineEntity({
+  name: 'Secret',
+  embeddable: true,
+  properties: {
+    value: p.string().fieldName('vault'),
+  },
+});
+
+const Vault = defineEntity({
+  name: 'Vault',
+  embeddable: true,
+  properties: {
+    secret: p.embedded(Secret).prefix(''),
+    hint: p.string(),
+  },
+});
+
 const User = defineEntity({
   name: 'User',
   properties: {
@@ -36,6 +53,7 @@ const User = defineEntity({
     password: p.embedded(Password).prefix(''),
     credentials: p.embedded(Credentials).prefix(''),
     address: p.embedded(Address),
+    vault: p.embedded(Vault).prefix(''),
   },
 });
 
@@ -52,7 +70,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [Profile, User, Password, Credentials, Address],
+    entities: [Profile, User, Password, Credentials, Address, Vault, Secret],
     dbName: ':memory:',
   });
   await orm.schema.create();
@@ -64,6 +82,7 @@ beforeAll(async () => {
       password: { value: 'hash' },
       credentials: { value: 'token', salt: 'pepper' },
       address: { city: 'London', street: 'Baker' },
+      vault: { secret: { value: 'key' }, hint: 'none' },
     },
   });
   await orm.em.flush();
@@ -78,8 +97,9 @@ test('GH #8292 joined populate of an inline embeddable whose column matches the 
   const profile = await em.findOneOrFail(Profile, 1, { populate: ['user'] });
   expect(profile.user.password).toEqual({ value: 'hash' });
   expect(profile.user.credentials).toEqual({ value: 'token', salt: 'pepper' });
+  expect(profile.user.vault).toEqual({ secret: { value: 'key' }, hint: 'none' });
   expect(mock.mock.calls[0][0]).toMatch(
-    'select `p0`.*, `u1`.`id` as `u1__id`, `u1`.`password` as `u1__password`, `u1`.`credentials` as `u1__credentials`, `u1`.`salt` as `u1__salt`, `u1`.`address_city` as `u1__address_city`, `u1`.`address_street` as `u1__address_street` from `profile` as `p0` inner join `user` as `u1` on `p0`.`user_id` = `u1`.`id` where `p0`.`id` = 1',
+    'select `p0`.*, `u1`.`id` as `u1__id`, `u1`.`password` as `u1__password`, `u1`.`credentials` as `u1__credentials`, `u1`.`salt` as `u1__salt`, `u1`.`address_city` as `u1__address_city`, `u1`.`address_street` as `u1__address_street`, `u1`.`vault` as `u1__vault`, `u1`.`hint` as `u1__hint` from `profile` as `p0` inner join `user` as `u1` on `p0`.`user_id` = `u1`.`id` where `p0`.`id` = 1',
   );
 
   profile.nickname = 'bar';
@@ -102,4 +122,10 @@ test('GH #8292 columns of a multi-column inline embeddable are qualified with th
   expect(qb.getFormattedQuery()).toBe(
     'select `p`.`id`, `u`.`address_city`, `u`.`address_street` from `profile` as `p` left join `user` as `u` on `p`.`user_id` = `u`.`id`',
   );
+});
+
+test('GH #8292 unaliased select of an inline embeddable sharing its name with one of its columns', async () => {
+  const qb = orm.em.qb(User, 'u').select(['u.id', 'u.credentials']);
+  expect(qb.getFormattedQuery()).toBe('select `u`.`id`, `u`.`credentials`, `u`.`salt` from `user` as `u`');
+  await expect(qb.getSingleResult()).resolves.toMatchObject({ credentials: { value: 'token', salt: 'pepper' } });
 });
