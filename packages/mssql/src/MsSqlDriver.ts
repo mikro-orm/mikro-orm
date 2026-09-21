@@ -71,7 +71,8 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
 
     return super.nativeInsertMany(entityName, data, options, sql => {
       if (meta.hasTriggers) {
-        const returning = this.getTableProps(meta).filter(
+        // must match the OUTPUT columns of the parent implementation, which resolves STI children to the root
+        const returning = this.getTableProps(meta.inheritanceType === 'tpt' ? meta : meta.root).filter(
           prop =>
             prop.returning ||
             (((prop.persist !== false && prop.defaultRaw) || prop.autoincrement || prop.generated) &&

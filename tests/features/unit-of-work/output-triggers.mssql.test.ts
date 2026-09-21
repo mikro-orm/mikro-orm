@@ -11,10 +11,32 @@ const Customer = defineEntity({
   triggers: [{ name: 'output_customer_audit', timing: 'after', events: ['insert', 'update'], body: 'SET NOCOUNT ON' }],
 });
 
+const Person = defineEntity({
+  name: 'OutputTriggerPerson',
+  discriminatorColumn: 'type',
+  properties: {
+    id: p.integer().primary().autoincrement(),
+    type: p.string(),
+  },
+  triggers: [{ name: 'output_person_audit', timing: 'after', events: ['insert'], body: 'SET NOCOUNT ON' }],
+});
+const Employee = defineEntity({
+  name: 'OutputTriggerEmployee',
+  extends: Person,
+  discriminatorValue: 'employee',
+  properties: { name: p.string().nullable() },
+});
+const Manager = defineEntity({
+  name: 'OutputTriggerManager',
+  extends: Person,
+  discriminatorValue: 'manager',
+  properties: { promotedAt: p.datetime().nullable().defaultRaw('current_timestamp') },
+});
+
 let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [Customer],
+    entities: [Customer, Person, Employee, Manager],
     dbName: 'mikro_orm_test_output_triggers',
     password: 'Root.Root',
   });
@@ -104,4 +126,11 @@ test('get does not expose the count row for a non-matching update', async () => 
     .returning('name')
     .execute('get');
   expect(row).toBeNull();
+});
+
+test('STI child inserts keep OUTPUT INTO columns aligned with sibling defaults', async () => {
+  const em = orm.em.fork();
+  const employee = em.create(Employee, { type: 'employee', name: 'Employee' });
+  await em.flush();
+  expect(employee.id).toEqual(expect.any(Number));
 });
