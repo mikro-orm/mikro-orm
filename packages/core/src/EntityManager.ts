@@ -1392,7 +1392,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       const name = Utils.className(entityName);
       /* v8 ignore next */
       where = Utils.isEntity(where) ? (helper(where).getPrimaryKey() as any) : where;
-      throw failHandler(name, QueryHelper.processParams(QueryHelper.cloneWhere(where)));
+      throw failHandler(name, QueryHelper.processParams(where));
     }
 
     return entity;
@@ -1645,6 +1645,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return ret;
     }
 
+    // the rows are replaced with their processed copies below, keep the caller's array intact
+    data = [...data];
     const meta = this.metadata.get<Entity>(entityName);
     const convertCustomTypes = !Utils.isEntity(data[0]);
     const generatedFields = new Set<EntityKey<Entity>>();
@@ -1713,6 +1715,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         platform: this.getPlatform(),
       });
       row = QueryHelper.processObjectParams(row);
+
+      // hooks and the result merging need `data[i]` to be the same object as the processed row
+      if (!Utils.isEntity(data[i])) {
+        data[i] = row;
+      }
+
       validateParams(row, 'insert data');
       allData.push(row);
       allWhere.push(where);

@@ -82,18 +82,19 @@ export class QueryHelper {
     }
 
     if (Utils.isPlainObject(params)) {
-      QueryHelper.processObjectParams(params);
+      return QueryHelper.processObjectParams(params);
     }
 
     return params;
   }
 
   static processObjectParams<T extends Dictionary>(params: T = {} as T): T {
+    const ret = (Array.isArray(params) ? [...params] : { ...params }) as T;
     Utils.getObjectQueryKeys(params).forEach(k => {
-      params[k as keyof T] = QueryHelper.processParams(params[k as keyof T]);
+      ret[k as keyof T] = QueryHelper.processParams(params[k as keyof T]);
     });
 
-    return params;
+    return ret;
   }
 
   /**
@@ -243,11 +244,8 @@ export class QueryHelper {
     return false;
   }
 
-  /**
-   * Copies the plain object and array structure of the condition, keeping the leaf values (e.g. entities) by reference.
-   * @internal
-   */
-  static cloneWhere<T>(where: T): T {
+  /** Copies the plain object and array structure of the condition, keeping the leaf values (e.g. entities) by reference. */
+  private static cloneWhere<T>(where: T): T {
     if (Array.isArray(where)) {
       return where.map(item => QueryHelper.cloneWhere(item)) as T;
     }

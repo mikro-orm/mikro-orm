@@ -153,3 +153,27 @@ test("em.find() does not drop undefined properties from the caller's where objec
   expect(Object.keys(where.author)).toEqual(['name']);
   await orm2.close(true);
 });
+
+test("write methods do not mutate the caller's data", async () => {
+  const em = orm.em.fork();
+  const author = await em.findOneOrFail(Author, { name: 'Jon' });
+  const data = () => ({ title: 'b', author });
+  const rows = [data(), data(), data(), data(), data(), data(), data(), data()];
+  const [create, insert, many1, many2, update, upsert, upsertMany, qb] = rows;
+
+  em.create(Book, create);
+  await em.insert(Book, insert);
+  await em.insertMany(Book, [many1, many2]);
+  await em.nativeUpdate(Book, { title: 'nope' }, update);
+  await em.upsert(Book, upsert);
+  const upsertManyRows = [upsertMany];
+  await em.upsertMany(Book, upsertManyRows);
+  expect(upsertManyRows[0]).toBe(upsertMany);
+  await em.qb(Book).insert(qb).execute();
+  await em.qb(Book).update(qb).where({ title: 'nope' }).execute();
+
+  for (const row of rows) {
+    expect(row).toEqual({ title: 'b', author });
+    expect(row.author).toBe(author);
+  }
+});
