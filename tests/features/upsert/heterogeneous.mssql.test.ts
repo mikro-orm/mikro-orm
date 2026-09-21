@@ -16,6 +16,7 @@ const DefaultCustomer = defineEntity({
     name: p.string(),
     code: p.string().default('DEFAULT'),
     note: p.string().nullable().default('Default note'),
+    active: p.boolean().default(true),
   },
 });
 
@@ -61,11 +62,11 @@ test('keeps excluded conflict fields while inserting a later row', async () => {
 test('preserves defaults for missing fields and keeps explicit null values', async () => {
   await orm.em.fork().upsertMany(DefaultCustomer, [
     { id: 1, name: 'First' },
-    { id: 2, name: 'Second', code: 'EUR', note: null },
+    { id: 2, name: 'Second', code: 'EUR', note: null, active: false },
   ]);
   expect(await orm.em.fork().find(DefaultCustomer, {}, { orderBy: { id: 'asc' } })).toMatchObject([
-    { id: 1, name: 'First', code: 'DEFAULT', note: 'Default note' },
-    { id: 2, name: 'Second', code: 'EUR', note: null },
+    { id: 1, name: 'First', code: 'DEFAULT', note: 'Default note', active: true },
+    { id: 2, name: 'Second', code: 'EUR', note: null, active: false },
   ]);
 });
 

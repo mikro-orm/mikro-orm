@@ -36,6 +36,8 @@ export class MsSqlQueryBuilder<
       return data;
     }
 
+    const schemaHelper = this.platform.getSchemaHelper()!;
+
     // MERGE uses a derived VALUES table, where DEFAULT is not allowed.
     return data.map(row => {
       let copy = row;
@@ -44,7 +46,9 @@ export class MsSqlQueryBuilder<
           if (copy === row) {
             copy = { ...row };
           }
-          copy[key] = raw(meta.properties[key].defaultRaw!) as never;
+          const prop = meta.properties[key];
+          // same normalization as the DDL, e.g. `true` is not a valid MSSQL literal
+          copy[key] = raw(`${schemaHelper.normalizeDefaultValue(prop.defaultRaw!, prop.length!)}`) as never;
         }
       }
       return copy;
