@@ -1648,6 +1648,38 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return ret;
     }
 
+    // merge fields are derived from the first row, rows of a different shape need their own statement
+    if (!options.onConflictMergeFields && options.onConflictAction !== 'ignore') {
+      const pks = this.metadata.get<Entity>(entityName).primaryKeys as string[];
+      const shapes = new Map<string, number[]>();
+      data.forEach((row, i) => {
+        // entity instances carry their unset properties as `undefined` keys, while in plain rows those are merged as `null`
+        const shape = Object.keys(row)
+          .filter(key => !pks.includes(key) && !(Utils.isEntity(row) && (row as Dictionary)[key] === undefined))
+          .sort()
+          .join();
+        const idx = shapes.get(shape) ?? [];
+        shapes.set(shape, idx);
+        idx.push(i);
+      });
+
+      if (shapes.size > 1) {
+        const ret: Entity[] = [];
+
+        for (const idx of shapes.values()) {
+          const res = await this.upsertMany(
+            entityName,
+            idx.map(i => data![i]),
+            options,
+          );
+          idx.forEach((i, j) => (ret[i] = res[j]));
+        }
+
+        // rows resolving to the same entity are returned once, as in the single statement path
+        return [...new Set(ret.filter(entity => entity))];
+      }
+    }
+
     // the rows are replaced with their processed copies below, keep the caller's array intact
     data = [...data];
     const meta = this.metadata.get<Entity>(entityName);
