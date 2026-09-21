@@ -1789,7 +1789,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     // (onConflictWhere can suppress writes, leaving some rows out)
     // oxfmt-ignore
     const uniqueFields = options.onConflictFields ?? ((Utils.isPlainObject(allWhere[0]) ? Object.keys(allWhere[0]).flatMap(key => Utils.splitPrimaryKeys(key)) : meta.primaryKeys) as (keyof Entity)[]);
-    const returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options) as string[];
+    // a column only some rows provide is not returned by the statements of the other rows
+    const shared = Object.fromEntries(
+      meta.comparableProps.filter(p => data.every(row => p.name in row)).map(p => [p.name, true]),
+    ) as EntityData<Entity>;
+    const returning = getOnConflictReturningFields(meta, shared, uniqueFields, options) as string[];
     const reloadFields =
       returning.length > 0 && !(this.getPlatform().usesReturningStatement() && res.rows?.length === data.length);
 

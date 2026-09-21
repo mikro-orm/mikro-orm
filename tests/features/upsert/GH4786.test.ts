@@ -59,7 +59,7 @@ beforeAll(async () => {
   await orm.schema.create();
 });
 
-beforeAll(async () => {
+beforeEach(async () => {
   await orm.schema.clear();
 });
 

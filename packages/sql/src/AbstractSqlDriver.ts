@@ -1479,6 +1479,52 @@ export abstract class AbstractSqlDriver<
     const meta = this.metadata.get<T>(entityName);
 
     if (options.upsert) {
+      const conflictFields =
+        options.onConflictFields ??
+        ((Utils.isPlainObject(where[0])
+          ? Object.keys(where[0]).flatMap(key => Utils.splitPrimaryKeys(key))
+          : meta.primaryKeys) as (keyof T)[]);
+      const shapes = new Map<string, number[]>();
+
+      // explicit merge fields and the ignore action do not depend on the row keys
+      if ((!options.onConflictAction || options.onConflictAction === 'merge') && !options.onConflictMergeFields) {
+        data.forEach((row, i) => {
+          const shape = Object.keys(row)
+            .filter(key => !Array.isArray(conflictFields) || !conflictFields.includes(key as keyof T))
+            .sort()
+            .join();
+          const idx = shapes.get(shape) ?? [];
+          idx.push(i);
+          shapes.set(shape, idx);
+        });
+      }
+
+      // a statement has one merge clause, a column only some rows provide would be skipped or reset for the rest
+      if (shapes.size > 1) {
+        const res: QueryResult<T> = { affectedRows: 0, insertId: undefined as never, rows: [] };
+        const results: [number[], QueryResult<T>][] = [];
+
+        // the conflict target is inferred from the first row of the whole batch
+        options = { ...options, onConflictFields: conflictFields };
+
+        for (const idx of shapes.values()) {
+          const where2 = idx.map(i => where[i]);
+          const data2 = idx.map(i => data[i]);
+          results.push([idx, await this.nativeUpdateMany(entityName, where2, data2, options, transform)]);
+        }
+
+        const complete = results.every(([idx, r]) => r.rows?.length === idx.length);
+
+        for (const [idx, r] of results) {
+          res.affectedRows += r.affectedRows;
+          res.insertId ??= r.insertId;
+          // keep the rows aligned with the input, a partial result gets reloaded by the caller
+          (r.rows ?? []).forEach((row, j) => (complete ? (res.rows![idx[j]] = row) : res.rows!.push(row)));
+        }
+
+        return res;
+      }
+
       if (meta.tptParent) {
         // TPT parent tables go first, the PK they provide is the conflict target of this table
         await this.nativeUpdateMany(meta.tptParent.class, where, data, options);
@@ -1498,11 +1544,7 @@ export abstract class AbstractSqlDriver<
         options = { ...options, onConflictFields: meta.primaryKeys, onConflictWhere: undefined };
       }
 
-      const uniqueFields =
-        options.onConflictFields ??
-        ((Utils.isPlainObject(where[0])
-          ? Object.keys(where[0]).flatMap(key => Utils.splitPrimaryKeys(key))
-          : meta.primaryKeys) as (keyof T)[]);
+      const uniqueFields = options.onConflictFields ?? conflictFields;
       const qb = this.createQueryBuilder<T>(
         entityName,
         options.ctx,
