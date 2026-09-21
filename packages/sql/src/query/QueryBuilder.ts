@@ -3335,11 +3335,11 @@ export class QueryBuilder<
         const columns: string[] = [];
         const nest = (prop: EntityProperty): void => {
           for (const childProp of Object.values(prop.embeddedProps)) {
-            if (
-              childProp.fieldNames &&
-              (childProp.kind !== ReferenceKind.EMBEDDED || childProp.object) &&
-              childProp.persist !== false
-            ) {
+            if (childProp.persist === false) {
+              continue;
+            }
+
+            if (childProp.fieldNames && (childProp.kind !== ReferenceKind.EMBEDDED || childProp.object)) {
               columns.push(childProp.fieldNames[0]);
             } else {
               nest(childProp);
@@ -3349,9 +3349,12 @@ export class QueryBuilder<
 
         nest(prop);
 
-        if (columns.length === 1) {
-          const aliased = this.#state.aliases[a] ? `${a}.${columns[0]}` : columns[0];
-          ret.push(getFieldName(aliased, customAlias));
+        // the name can also be one of the embeddable's own columns, e.g. with an empty prefix it can shadow the property itself
+        const shadowed = columns.includes(f);
+
+        if (shadowed || columns.length === 1) {
+          const column = shadowed ? f : columns[0];
+          ret.push(getFieldName(this.#state.aliases[a] ? `${a}.${column}` : column, customAlias));
           return;
         }
 
@@ -3361,7 +3364,7 @@ export class QueryBuilder<
           );
         }
 
-        ret.push(...columns.map(column => getFieldName(column)));
+        ret.push(...columns.map(column => getFieldName(this.#state.aliases[a] ? `${a}.${column}` : column)));
         return;
       }
 
