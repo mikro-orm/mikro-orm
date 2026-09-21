@@ -3332,12 +3332,7 @@ export class QueryBuilder<
       }
 
       if (prop?.kind === ReferenceKind.EMBEDDED) {
-        if (customAlias) {
-          throw new Error(
-            `Cannot use 'as ${customAlias}' alias on embedded property '${field}' because it expands to multiple columns. Alias individual fields instead (e.g. '${field}.propertyName as ${customAlias}').`,
-          );
-        }
-
+        const columns: string[] = [];
         const nest = (prop: EntityProperty): void => {
           for (const childProp of Object.values(prop.embeddedProps)) {
             if (
@@ -3345,7 +3340,7 @@ export class QueryBuilder<
               (childProp.kind !== ReferenceKind.EMBEDDED || childProp.object) &&
               childProp.persist !== false
             ) {
-              ret.push(getFieldName(childProp.fieldNames[0]));
+              columns.push(childProp.fieldNames[0]);
             } else {
               nest(childProp);
             }
@@ -3353,6 +3348,20 @@ export class QueryBuilder<
         };
 
         nest(prop);
+
+        if (columns.length === 1) {
+          const aliased = this.#state.aliases[a] ? `${a}.${columns[0]}` : columns[0];
+          ret.push(getFieldName(aliased, customAlias));
+          return;
+        }
+
+        if (customAlias) {
+          throw new Error(
+            `Cannot use 'as ${customAlias}' alias on embedded property '${field}' because it expands to multiple columns. Alias individual fields instead (e.g. '${field}.propertyName as ${customAlias}').`,
+          );
+        }
+
+        ret.push(...columns.map(column => getFieldName(column)));
         return;
       }
 
