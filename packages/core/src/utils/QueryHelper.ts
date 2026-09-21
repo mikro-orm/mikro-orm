@@ -244,10 +244,40 @@ export class QueryHelper {
     return false;
   }
 
+  /**
+   * Copies the plain-object/array skeleton of `where` (leaf values, including entities, are kept
+   * by reference) so the pre-processParams helpers in processWhere can rewrite it in place without
+   * mutating the object the caller passed in.
+   */
+  private static cloneWhereStructure(where: unknown): unknown {
+    if (Array.isArray(where)) {
+      return where.map(item => QueryHelper.cloneWhereStructure(item));
+    }
+
+    if (!Utils.isPlainObject<Dictionary>(where)) {
+      return where;
+    }
+
+    const ret: Dictionary = { ...where };
+    Utils.getObjectQueryKeys(where).forEach(k => {
+      ret[k as keyof Dictionary] = QueryHelper.cloneWhereStructure(where[k as keyof Dictionary]);
+    });
+
+    return ret;
+  }
+
   static processWhere<T extends object>(options: ProcessWhereOptions<T>): FilterQuery<T> {
     // eslint-disable-next-line prefer-const
     let { where, entityName, metadata, platform, aliased = true, convertCustomTypes = true, root = true } = options;
     const meta = metadata.find<T>(entityName);
+
+    // structural-only copy of the caller's where, so liftGroupOperators/inlinePrimaryKeyObjects/
+    // convertCompositeEntityRefs/dropUndefinedProperties below can freely mutate the tree without
+    // touching the object the caller passed in (they don't go through processParams below, which
+    // already builds a fresh value on its own)
+    if (root) {
+      where = QueryHelper.cloneWhereStructure(where) as FilterQuery<T>;
+    }
 
     // inline PK-only objects in M:N queries, so we don't join the target entity when not needed
     if (meta && root) {

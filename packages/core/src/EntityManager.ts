@@ -1390,7 +1390,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       const key = options.strict ? 'findExactlyOneOrFailHandler' : 'findOneOrFailHandler';
       const failHandler = options.failHandler ?? this.config.get(key);
       const name = Utils.className(entityName);
-      /* v8 ignore next */
+      /* v8 ignore next 3 */
       where = Utils.isEntity(where)
         ? (helper(where).getPrimaryKey() as any)
         : (QueryHelper.processParams(where) ?? where);
