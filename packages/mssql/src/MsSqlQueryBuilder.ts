@@ -1,5 +1,5 @@
-import { type AnyEntity, QueryFlag, type RequiredEntityData, Utils } from '@mikro-orm/core';
-import { type InsertQueryBuilder, QueryBuilder } from '@mikro-orm/sql';
+import { type AnyEntity, QueryFlag, type EntityData, type RequiredEntityData, Utils } from '@mikro-orm/core';
+import { type InsertQueryBuilder, type UpdateQueryBuilder, QueryBuilder } from '@mikro-orm/sql';
 
 /** Query builder with MSSQL-specific behavior such as identity insert handling. */
 export class MsSqlQueryBuilder<
@@ -13,15 +13,18 @@ export class MsSqlQueryBuilder<
   ): InsertQueryBuilder<Entity, RootAlias, Context> {
     this.checkIdentityInsert(data);
 
-    if (!this.hasFlag(QueryFlag.IDENTITY_INSERT) && this.metadata.has(this.mainAlias.entityName)) {
-      const meta = this.mainAlias.meta;
-
-      if (meta.hasTriggers) {
-        this.setFlag(QueryFlag.OUTPUT_TABLE);
-      }
+    if (this.mainAlias.meta?.hasTriggers) {
+      this.setFlag(QueryFlag.OUTPUT_TABLE);
     }
 
     return super.insert(data);
+  }
+
+  override update(data: EntityData<Entity>): UpdateQueryBuilder<Entity, RootAlias, Context> {
+    if (this.mainAlias.meta?.hasTriggers) {
+      this.setFlag(QueryFlag.OUTPUT_TABLE);
+    }
+    return super.update(data);
   }
 
   private checkIdentityInsert(data: RequiredEntityData<Entity> | RequiredEntityData<Entity>[]) {

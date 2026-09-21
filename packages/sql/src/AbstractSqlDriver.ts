@@ -130,7 +130,7 @@ export abstract class AbstractSqlDriver<
   }
 
   /** For TPT entities, returns ownProps (columns in this table); otherwise returns all props. */
-  private getTableProps<T extends object>(meta: EntityMetadata<T>): EntityProperty<T>[] {
+  protected getTableProps<T extends object>(meta: EntityMetadata<T>): EntityProperty<T>[] {
     return meta.inheritanceType === 'tpt' && meta.ownProps ? meta.ownProps : meta.props;
   }
 

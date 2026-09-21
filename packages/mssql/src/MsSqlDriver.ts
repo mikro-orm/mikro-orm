@@ -44,7 +44,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
 
     // Is this en empty insert... this is rather hard in mssql (especially with an insert many)
     if (!hasFields) {
-      const returningProps = meta.props.filter(prop => prop.primary || prop.defaultRaw);
+      const returningProps = this.getTableProps(meta).filter(prop => prop.returning || prop.primary || prop.defaultRaw);
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       const using2 = `select * from (values ${data.map((x, i) => `(${i})`).join(',')}) v (id) where 1 = 1`;
       /* v8 ignore next */
@@ -52,7 +52,10 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
         returningFields.length > 0
           ? `output ${returningFields.map(field => 'inserted.' + this.platform.quoteIdentifier(field)).join(', ')}`
           : '';
-      const sql = `merge into ${tableName} using (${using2}) s on 1 = 0 when not matched then insert default values ${output};`;
+      let sql = `merge into ${tableName} using (${using2}) s on 1 = 0 when not matched then insert default values ${output};`;
+      if (meta.hasTriggers) {
+        sql = this.appendOutputTable(entityName, returningFields, sql, sql.length - 1, options);
+      }
 
       const res = await this.execute<QueryResult<T>>(sql, [], 'run', options.ctx);
       const pks = this.getPrimaryKeyFields(meta);
@@ -66,16 +69,28 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
       return res;
     }
 
-    // For TPT child entities, the parent table owns the identity column, not the child table
-    if (props.some(prop => prop.autoincrement && (!meta.ownProps || meta.ownProps.includes(prop)))) {
-      return super.nativeInsertMany(entityName, data, options, sql => {
-        return `set identity_insert ${tableName} on; ${sql}; set identity_insert ${tableName} off`;
-      });
-    }
-
-    return super.nativeInsertMany(entityName, data, options, sql =>
-      meta.hasTriggers ? this.appendOutputTable(entityName, data, sql) : sql,
-    );
+    return super.nativeInsertMany(entityName, data, options, sql => {
+      if (meta.hasTriggers) {
+        const returning = this.getTableProps(meta).filter(
+          prop =>
+            prop.returning ||
+            (((prop.persist !== false && prop.defaultRaw) || prop.autoincrement || prop.generated) &&
+              (!(prop.name in data[0]) || isRaw(data[0][prop.name]))),
+        );
+        sql = this.appendOutputTable(
+          entityName,
+          returning.flatMap(p => p.fieldNames),
+          sql,
+          sql.indexOf(' values '),
+          options,
+        );
+      }
+      // For TPT children, the parent table owns the identity column.
+      if (props.some(prop => prop.autoincrement && (!meta.ownProps || meta.ownProps.includes(prop)))) {
+        sql = `set identity_insert ${tableName} on; ${sql}; set identity_insert ${tableName} off`;
+      }
+      return sql;
+    });
   }
 
   override createQueryBuilder<T extends AnyEntity<T>>(
@@ -111,31 +126,27 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
 
   private appendOutputTable<T extends AnyEntity<T>>(
     entityName: EntityName<T>,
-    data: EntityDictionary<T>[],
+    returningFields: string[],
     sql: string,
+    position: number,
+    options: NativeInsertUpdateManyOptions<T>,
   ) {
     const meta = this.metadata.get<T>(entityName);
-    const returningProps = meta.props
-      .filter(prop => (prop.persist !== false && prop.defaultRaw) || prop.autoincrement || prop.generated)
-      .filter(prop => !(prop.name in data[0]) || isRaw(data[0][prop.name]));
-    const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
-
     /* v8 ignore next */
     if (returningFields.length === 0) {
       return sql;
     }
 
-    const tableName = this.getTableName(meta, {}, true);
+    const tableName = this.getTableName(meta, options, true);
 
     const selections = returningFields.map((field: string) => `[t].${this.platform.quoteIdentifier(field)}`).join(',');
 
-    const position = sql.indexOf(' values ');
     const sqlBeforeValues = sql.substring(0, position);
-    const sqlAfterValues = sql.substring(position + 1);
+    const sqlAfterValues = sql.substring(position);
 
     let outputSql = `select top(0) ${selections} into #out from ${tableName} as t left join ${tableName} on 0 = 1; `;
-    outputSql += `${sqlBeforeValues} into #out ${sqlAfterValues}; `;
-    outputSql += `select ${selections} from #out as t; `;
+    outputSql += `${sqlBeforeValues} into #out${sqlAfterValues}; `;
+    outputSql += `select ${selections} from #out as t; select @@rowcount as [__mikro_orm_row_count__]; `;
     outputSql += `drop table #out`;
 
     return outputSql;
