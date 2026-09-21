@@ -27,7 +27,10 @@ export class MsSqlQueryBuilder<
   private checkIdentityInsert(data: RequiredEntityData<Entity> | RequiredEntityData<Entity>[]) {
     const meta = this.mainAlias.meta;
     const dataKeys = Utils.unique(Utils.asArray(data).flatMap(d => Utils.keys(d)));
-    const hasAutoincrement = dataKeys.some(x => meta.properties[x]?.autoincrement);
+    const hasAutoincrement = dataKeys.some(x => {
+      const prop = meta.properties[x];
+      return prop?.autoincrement && (!meta.ownProps || meta.ownProps.includes(prop));
+    });
 
     if (hasAutoincrement) {
       this.setFlag(QueryFlag.IDENTITY_INSERT);
