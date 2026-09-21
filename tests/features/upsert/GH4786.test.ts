@@ -106,7 +106,7 @@ test('4786 (em.upsertMany)', async () => {
 
   const mock = mockLogger(orm);
   let role = await orm.em.findOneOrFail(InternalRole, 1);
-  await orm.em.upsertMany(InternalRolePermission, [
+  const permissions = await orm.em.upsertMany(InternalRolePermission, [
     { subject: 'User', action: 'read', internalRole: role },
     { subject: 'User', action: 'update', internalRole: role },
   ]);
@@ -116,7 +116,19 @@ test('4786 (em.upsertMany)', async () => {
     [
       "[query] insert into `internal_role_permission` (`subject`, `action`, `internal_role_id`) values ('User', 'read', 1), ('User', 'update', 1) on conflict (`subject`, `action`, `internal_role_id`) do nothing returning `id`, `created_at`, `updated_at`",
     ],
+    [
+      "[query] select `i0`.`id`, `i0`.`created_at`, `i0`.`updated_at`, `i0`.`subject`, `i0`.`action`, `i0`.`internal_role_id` from `internal_role_permission` as `i0` where ((`i0`.`subject` = 'User' and `i0`.`action` = 'read' and `i0`.`internal_role_id` = 1) or (`i0`.`subject` = 'User' and `i0`.`action` = 'update' and `i0`.`internal_role_id` = 1))",
+    ],
   ]);
+
+  // The existing 'read' row is omitted from RETURNING; it must not receive the new row's ID.
+  expect(permissions.map(permission => permission.action)).toEqual(['read', 'update']);
+  expect(new Set(permissions.map(permission => permission.id)).size).toBe(2);
+  for (const permission of permissions) {
+    expect(await orm.em.fork().findOneOrFail(InternalRolePermission, permission.id)).toMatchObject({
+      action: permission.action,
+    });
+  }
 
   mock.mockReset();
   orm.em.clear();
