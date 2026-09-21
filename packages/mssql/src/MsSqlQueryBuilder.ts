@@ -48,7 +48,7 @@ export class MsSqlQueryBuilder<
           }
           const prop = meta.properties[key];
           // same normalization as the DDL, e.g. `true` is not a valid MSSQL literal
-          copy[key] = raw(`${schemaHelper.normalizeDefaultValue(prop.defaultRaw!, prop.length!)}`) as never;
+          copy[key] = raw(`${schemaHelper.normalizeDefaultValue(prop.defaultRaw!, prop.length)}`) as never;
         }
       }
       return copy;

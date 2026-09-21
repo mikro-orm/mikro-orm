@@ -76,7 +76,7 @@ test('QueryBuilder applies defaults without mutating heterogeneous inputs', asyn
     { id: 2, name: 'Second', code: 'EUR' },
   ];
   const snapshot = structuredClone(input);
-  await orm.em.createQueryBuilder(DefaultCustomer).insert(input).onConflict('id').merge(['name']).execute();
+  await orm.em.fork().createQueryBuilder(DefaultCustomer).insert(input).onConflict('id').merge(['name']).execute();
   expect(input).toEqual(snapshot);
   expect(await orm.em.fork().find(DefaultCustomer, {}, { orderBy: { id: 'asc' } })).toMatchObject([
     { id: 1, code: 'DEFAULT' },
