@@ -5,6 +5,8 @@ import { Utils } from './Utils.js';
 import { ReferenceKind } from '../enums.js';
 import { Collection } from '../entity/Collection.js';
 import { helper } from '../entity/wrap.js';
+import type { Platform } from '../platforms/Platform.js';
+import { isReturningProperty } from './returning-utils.js';
 
 function expandEmbeddedProperties<T>(prop: EntityProperty<T>, key?: string): (keyof T)[] {
   if (prop.object) {
@@ -128,11 +130,19 @@ export function getOnConflictReturningFields<T, P extends string>(
   data: EntityData<T>,
   uniqueFields: (keyof T)[] | Raw,
   options: UpsertOptions<T, P>,
+  platform?: Platform,
 ): (keyof T)[] | '*' {
   /* v8 ignore next */
   if (!meta) {
     return '*';
   }
+
+  const returning =
+    platform && (platform.usesReturningStatement() || platform.usesOutputStatement())
+      ? meta.props.filter(isReturningProperty).map(p => p.name as keyof T)
+      : [];
+  const includeReturning = (fields: (keyof T)[]) =>
+    returning.length > 0 ? Utils.unique([...fields, ...returning]) : fields;
 
   const keys = meta.comparableProps
     .filter(p => {
@@ -156,20 +166,20 @@ export function getOnConflictReturningFields<T, P extends string>(
   }
 
   if (options.onConflictAction === 'ignore') {
-    return keys;
+    return includeReturning(keys);
   }
 
   if (options.onConflictMergeFields) {
     const onConflictMergeFields = expandFields(meta, options.onConflictMergeFields as (keyof T)[]);
-    return keys.filter(key => !onConflictMergeFields.includes(key as never));
+    return includeReturning(keys.filter(key => !onConflictMergeFields.includes(key as never)));
   }
 
   if (options.onConflictExcludeFields) {
     const onConflictExcludeFields = expandFields(meta, options.onConflictExcludeFields as (keyof T)[]);
-    return [...new Set(keys.concat(...onConflictExcludeFields))];
+    return includeReturning([...new Set(keys.concat(...onConflictExcludeFields))]);
   }
 
-  return keys.filter(key => !(key in data));
+  return includeReturning(keys.filter(key => !(key in data)));
 }
 
 function getPropertyValue(obj: Dictionary, key: string) {

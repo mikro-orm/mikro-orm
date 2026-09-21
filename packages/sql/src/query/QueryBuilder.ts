@@ -24,6 +24,7 @@ import {
   helper,
   inspect,
   isRaw,
+  isReturningProperty,
   type Loaded,
   LoadStrategy,
   LockMode,
@@ -2364,7 +2365,8 @@ export class QueryBuilder<
       const returningProps = meta.hydrateProps
         .filter(
           prop =>
-            prop.returning || (prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw)),
+            isReturningProperty(prop) ||
+            (prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw)),
         )
         // a TPT table can only return its own columns
         .filter(
@@ -2380,21 +2382,26 @@ export class QueryBuilder<
     }
 
     if (this.type === QueryType.UPDATE && data) {
-      const returningProps = meta.hydrateProps.filter(prop => prop.fieldNames && isRaw(data[prop.fieldNames[0]]));
+      const returningProps = meta.props
+        .filter(
+          prop =>
+            isReturningProperty(prop) ||
+            (prop.fieldNames && isRaw(data[prop.fieldNames[0]]) && meta.hydrateProps.includes(prop)),
+        )
+        .filter(prop => meta.inheritanceType !== 'tpt' || prop.primary || meta.ownProps!.includes(prop));
 
       if (returningProps.length > 0) {
         qb.returning(
-          returningProps.flatMap((prop): (string | Raw)[] => {
-            if (prop.hasConvertToJSValueSQL) {
-              const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
-              const sql =
-                prop.customType!.convertToJSValueSQL!(aliased, this.platform) +
-                ' as ' +
-                this.platform.quoteIdentifier(prop.fieldNames[0]);
-              return [raw(sql)];
-            }
-            return prop.fieldNames;
-          }) as any,
+          returningProps.flatMap(prop =>
+            prop.fieldNames.map((field, index): string | Raw => {
+              const customType = prop.customTypes?.[index] ?? prop.customType;
+              if (prop.hasConvertToJSValueSQL && customType?.convertToJSValueSQL) {
+                const quoted = this.platform.quoteIdentifier(field);
+                return raw(`${customType.convertToJSValueSQL(quoted, this.platform)} as ${quoted}`);
+              }
+              return field;
+            }),
+          ) as any,
         );
       }
     }
