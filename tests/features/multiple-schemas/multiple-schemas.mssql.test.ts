@@ -170,11 +170,11 @@ describe('multiple connected schemas in mssql', () => {
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
     expect(mock.mock.calls[1][0]).toMatch(
-      `update [n2].[book_tag] set [name] = case when ([id] = 1) then N'new name 1' when ([id] = 4) then N'new name 2' when ([id] = 7) then N'new name 3' else [name] end where [id] in (1, 4, 7)`,
+      `update [n2].[book_tag] set [name] = case when ([id] = 1) then N'new name 1' when ([id] = 4) then N'new name 2' when ([id] = 7) then N'new name 3' else [name] end output inserted.[id] where [id] in (1, 4, 7)`,
     );
     expect(mock.mock.calls[2][0]).toMatch(`update [n1].[author] set [name] = N'new name' where [id] = 1`);
     expect(mock.mock.calls[3][0]).toMatch(
-      `update [n2].[book] set [name] = case when ([id] = 1) then N'new name 1' when ([id] = 2) then N'new name 2' when ([id] = 3) then N'new name 3' else [name] end where [id] in (1, 2, 3)`,
+      `update [n2].[book] set [name] = case when ([id] = 1) then N'new name 1' when ([id] = 2) then N'new name 2' when ([id] = 3) then N'new name 3' else [name] end output inserted.[id] where [id] in (1, 2, 3)`,
     );
     expect(mock.mock.calls[4][0]).toMatch(`commit`);
     mock.mockReset();
@@ -317,7 +317,7 @@ describe('multiple connected schemas in mssql', () => {
       `update [n4].[book_tag] set [name] = N'new name 2' where [id] = 1; select @@rowcount;`,
     );
     expect(mock.mock.calls[3][0]).toMatch(
-      `update [n5].[book_tag] set [name] = case when ([id] = 1) then N'new name 3' when ([id] = 4) then N'new name 4' else [name] end where [id] in (1, 4)`,
+      `update [n5].[book_tag] set [name] = case when ([id] = 1) then N'new name 3' when ([id] = 4) then N'new name 4' else [name] end output inserted.[id] where [id] in (1, 4)`,
     );
     expect(mock.mock.calls[4][0]).toMatch(
       `update [n1].[author] set [name] = N'new name' where [id] = 1; select @@rowcount;`,
@@ -329,7 +329,7 @@ describe('multiple connected schemas in mssql', () => {
       `update [n4].[book] set [name] = N'new name 2' where [id] = 1; select @@rowcount;`,
     );
     expect(mock.mock.calls[7][0]).toMatch(
-      `update [n5].[book] set [name] = case when ([id] = 1) then N'new name 3' when ([id] = 2) then N'new name 4' else [name] end where [id] in (1, 2)`,
+      `update [n5].[book] set [name] = case when ([id] = 1) then N'new name 3' when ([id] = 2) then N'new name 4' else [name] end output inserted.[id] where [id] in (1, 2)`,
     );
     expect(mock.mock.calls[8][0]).toMatch(`commit`);
     mock.mockReset();

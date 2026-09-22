@@ -9,7 +9,6 @@ import {
   type EntityName,
   type EntityProperty,
   type FilterQuery,
-  isRaw,
   type LoggingOptions,
   type NativeInsertUpdateManyOptions,
   type Primary,
@@ -99,6 +98,18 @@ export class OracleDriver extends AbstractSqlDriver<OracleConnection, OraclePlat
     return res;
   }
 
+  protected override getReturningFieldSQL(prop: EntityProperty, fieldName: string, index: number): string {
+    // the value lands in a named OUT bind, and `returning ... into` does not allow column aliases
+    const quoted = this.platform.quoteIdentifier(fieldName);
+    const customType = prop.customTypes?.[index] ?? prop.customType;
+
+    if (prop.hasConvertToJSValueSQL && customType?.convertToJSValueSQL) {
+      return customType.convertToJSValueSQL(quoted, this.platform);
+    }
+
+    return quoted;
+  }
+
   override async nativeUpdateMany<T extends object>(
     entityName: EntityName<T>,
     where: FilterQuery<T>[],
@@ -106,23 +117,10 @@ export class OracleDriver extends AbstractSqlDriver<OracleConnection, OraclePlat
     options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {},
   ): Promise<QueryResult<T>> {
     const meta = this.metadata.get<T>(entityName);
-    const returning = new Set<EntityKey<T>>();
     const into: string[] = [];
     const outBindingsMap: Dictionary<string> = {};
 
-    for (const row of data) {
-      for (const k of Utils.keys(row)) {
-        if (isRaw(row[k])) {
-          returning.add(k);
-        }
-      }
-    }
-
-    // reload generated columns and version fields
-    meta.props.filter(prop => prop.generated || prop.version || prop.primary).forEach(prop => returning.add(prop.name));
-
-    for (const propName of returning) {
-      const prop = meta.properties[propName];
+    for (const prop of this.getUpdateReturningProperties(meta, data)) {
       // the parent builds the `returning` list from all field names, so every column needs its own OUT bind
       const runtimeTypes = this.getOutBindTypes(prop);
 

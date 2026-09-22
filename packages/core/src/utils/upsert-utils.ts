@@ -5,6 +5,7 @@ import { Utils } from './Utils.js';
 import { ReferenceKind } from '../enums.js';
 import { Collection } from '../entity/Collection.js';
 import { helper } from '../entity/wrap.js';
+import type { Platform } from '../platforms/Platform.js';
 
 function expandEmbeddedProperties<T>(prop: EntityProperty<T>, key?: string): (keyof T)[] {
   if (prop.object) {
@@ -128,12 +129,18 @@ export function getOnConflictReturningFields<T, P extends string>(
   data: EntityData<T>,
   uniqueFields: (keyof T)[] | Raw,
   options: UpsertOptions<T, P>,
+  platform?: Platform,
 ): (keyof T)[] | '*' {
   /* v8 ignore next */
   if (!meta) {
     return '*';
   }
 
+  // props with explicit `returning` hint are reloaded even when supplied, as the database might normalize them
+  const returning =
+    platform?.usesReturningStatement() || platform?.usesOutputStatement()
+      ? meta.props.filter(p => p.returning).map(p => p.name as keyof T)
+      : [];
   const keys = meta.comparableProps
     .filter(p => {
       if (p.lazy || p.embeddable) {
@@ -156,20 +163,20 @@ export function getOnConflictReturningFields<T, P extends string>(
   }
 
   if (options.onConflictAction === 'ignore') {
-    return keys;
+    return Utils.unique([...keys, ...returning]);
   }
 
   if (options.onConflictMergeFields) {
     const onConflictMergeFields = expandFields(meta, options.onConflictMergeFields as (keyof T)[]);
-    return keys.filter(key => !onConflictMergeFields.includes(key as never));
+    return Utils.unique([...keys.filter(key => !onConflictMergeFields.includes(key as never)), ...returning]);
   }
 
   if (options.onConflictExcludeFields) {
     const onConflictExcludeFields = expandFields(meta, options.onConflictExcludeFields as (keyof T)[]);
-    return [...new Set(keys.concat(...onConflictExcludeFields))];
+    return Utils.unique([...keys, ...onConflictExcludeFields, ...returning]);
   }
 
-  return keys.filter(key => !(key in data));
+  return Utils.unique([...keys.filter(key => !(key in data)), ...returning]);
 }
 
 function getPropertyValue(obj: Dictionary, key: string) {

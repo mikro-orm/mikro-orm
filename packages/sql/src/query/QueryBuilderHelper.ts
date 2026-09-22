@@ -222,17 +222,11 @@ export class QueryBuilderHelper {
       return raw(`${value}${as}`);
     }
 
-    if (prop?.hasConvertToJSValueSQL && type !== QueryType.UPSERT) {
-      let valueSQL: string;
+    const customType = prop?.customTypes?.[fkIdx] ?? prop?.customType;
 
-      if (prop.fieldNames.length > 1 && fkIdx !== -1) {
-        const fk = prop.targetMeta!.getPrimaryProps()[fkIdx];
-        const prefixed = this.prefix(field, isTableNameAliasRequired, true, fkIdx);
-        valueSQL = fk.customType!.convertToJSValueSQL!(prefixed, this.#platform);
-      } else {
-        const prefixed = this.prefix(field, isTableNameAliasRequired, true);
-        valueSQL = prop.customType!.convertToJSValueSQL!(prefixed, this.#platform);
-      }
+    if (prop?.hasConvertToJSValueSQL && customType?.convertToJSValueSQL && type !== QueryType.UPSERT) {
+      const prefixed = this.prefix(field, isTableNameAliasRequired, true, fkIdx);
+      const valueSQL = customType.convertToJSValueSQL(prefixed, this.#platform);
 
       if (alias === null) {
         return raw(valueSQL);
