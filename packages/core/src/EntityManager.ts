@@ -1529,7 +1529,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const uniqueFields =
       options.onConflictFields ??
       ((Utils.isPlainObject(where) ? Object.keys(where) : meta.primaryKeys) as (keyof Entity)[]);
-    const returning = getOnConflictReturningFields(meta, data, uniqueFields, options) as string[];
+    const platform = this.getPlatform();
+    const returning = getOnConflictReturningFields(meta, data, uniqueFields, options, platform) as string[];
     if (options.onConflictWhere && !ret.row) {
       returning.push(...Object.keys(data));
     }
@@ -1537,7 +1538,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     if (
       options.onConflictAction === 'ignore' ||
       !helper(entity).hasPrimaryKey() ||
-      (returning.length > 0 && !(this.getPlatform().usesReturningStatement() && ret.row))
+      (returning.length > 0 && !((platform.usesReturningStatement() || platform.usesOutputStatement()) && ret.row))
     ) {
       const where = {} as FilterQuery<Entity>;
 
@@ -1823,12 +1824,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     // (onConflictWhere can suppress writes, leaving some rows out)
     // oxfmt-ignore
     const uniqueFields = options.onConflictFields ?? ((Utils.isPlainObject(allWhere[0]) ? Object.keys(allWhere[0]).flatMap(key => Utils.splitPrimaryKeys(key)) : meta.primaryKeys) as (keyof Entity)[]);
-    const returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options) as string[];
+    const platform = this.getPlatform();
+    const returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options, platform) as string[];
     if (options.onConflictWhere && res.rows?.length !== allData.length) {
       returning.push(...meta.comparableProps.filter(p => !p.lazy && !p.embeddable).map(p => p.name));
     }
     const reloadFields =
-      returning.length > 0 && !(this.getPlatform().usesReturningStatement() && res.rows?.length === data.length);
+      returning.length > 0 &&
+      !((platform.usesReturningStatement() || platform.usesOutputStatement()) && res.rows?.length === data.length);
 
     if (options.onConflictAction === 'ignore' || (!res.rows?.length && loadPK.size > 0) || reloadFields) {
       const unique = meta.hydrateProps.filter(p => !p.lazy).map(p => p.name);

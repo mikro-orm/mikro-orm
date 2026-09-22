@@ -14,6 +14,8 @@ import {
   Utils,
   isRaw,
   type Constructor,
+  type FilterQuery,
+  type UpsertManyOptions,
 } from '@mikro-orm/core';
 import { AbstractSqlDriver, type SqlEntityManager } from '@mikro-orm/sql';
 import { MsSqlConnection } from './MsSqlConnection.js';
@@ -91,6 +93,25 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
         sql = `set identity_insert ${tableName} on; ${sql}; set identity_insert ${tableName} off`;
       }
       return sql;
+    });
+  }
+
+  override async nativeUpdateMany<T extends object>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>[],
+    data: EntityDictionary<T>[],
+    options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {},
+  ): Promise<QueryResult<T>> {
+    const meta = this.metadata.get<T>(entityName);
+
+    return super.nativeUpdateMany(entityName, where, data, options, sql => {
+      if (!meta.hasTriggers) {
+        return sql;
+      }
+
+      const fields = this.getUpdateReturningProperties(meta, data).flatMap(prop => prop.fieldNames);
+
+      return this.appendOutputTable(entityName, fields, sql, sql.lastIndexOf(' where '), options);
     });
   }
 

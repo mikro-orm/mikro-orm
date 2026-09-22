@@ -134,6 +134,42 @@ export abstract class AbstractSqlDriver<
     return meta.inheritanceType === 'tpt' && meta.ownProps ? meta.ownProps : meta.props;
   }
 
+  /** Columns reloaded by UPDATE: raw values, PKs, generated/version columns and explicit `returning` hints. */
+  protected getUpdateReturningProperties<T extends object>(
+    meta: EntityMetadata<T>,
+    data: EntityDictionary<T>[],
+  ): EntityProperty<T>[] {
+    const returning = new Set<EntityProperty<T>>();
+
+    for (const row of data) {
+      for (const k of Utils.keys(row) as EntityKey<T>[]) {
+        if (isRaw(row[k])) {
+          returning.add(meta.properties[k] ?? meta.root.properties[k]);
+        }
+      }
+    }
+
+    meta.getPrimaryProps().forEach(prop => returning.add(prop));
+    // a mixed STI batch shares one table, so the child columns live on the root
+    this.getTableProps(meta.root.discriminatorColumn ? meta.root : meta)
+      .filter(prop => prop.generated || prop.version || prop.returning)
+      .forEach(prop => returning.add(prop));
+
+    return [...returning];
+  }
+
+  /** Column expression for the `returning` clause of batch updates, applying `convertToJSValueSQL` of custom types. */
+  protected getReturningFieldSQL(prop: EntityProperty, fieldName: string, index: number): string {
+    const quoted = this.platform.quoteIdentifier(fieldName);
+    const customType = prop.customTypes?.[index] ?? prop.customType;
+
+    if (prop.hasConvertToJSValueSQL && customType?.convertToJSValueSQL) {
+      return `${customType.convertToJSValueSQL(quoted, this.platform)} as ${quoted}`;
+    }
+
+    return quoted;
+  }
+
   /** Creates a FormulaTable object for use in formula callbacks. */
   private createFormulaTable(alias: string, meta: EntityMetadata, schema?: string): FormulaTable {
     const effectiveSchema = schema ?? (meta.schema !== '*' ? meta.schema : undefined);
@@ -1429,7 +1465,7 @@ export abstract class AbstractSqlDriver<
         const uniqueFields =
           options.onConflictFields ??
           ((Utils.isPlainObject(where) ? (Utils.keys(where) as EntityKey<T>[]) : meta.primaryKeys) as (keyof T)[]);
-        const returning = getOnConflictReturningFields(meta, data, uniqueFields, options);
+        const returning = getOnConflictReturningFields(meta, data, uniqueFields, options, this.platform);
         qb.insert(data as T)
           .onConflict(uniqueFields as any)
           .returning(returning as any);
@@ -1449,11 +1485,10 @@ export abstract class AbstractSqlDriver<
       } else {
         qb.update(data).where(where as any);
 
-        // reload generated columns and version fields
         const returning: string[] = [];
         this.getTableProps(meta)
-          .filter(prop => (prop.generated && !prop.primary) || prop.version)
-          .forEach(prop => returning.push(prop.name));
+          .filter(prop => (prop.generated && !prop.primary) || prop.version || prop.returning || isRaw(data[prop.name]))
+          .forEach(prop => returning.push(...prop.fieldNames));
 
         qb.returning(returning as any);
       }
@@ -1511,7 +1546,7 @@ export abstract class AbstractSqlDriver<
         options.loggerContext,
       ).withSchema(this.getSchemaName(meta, options));
       qb.setAbortOptions(pickAbortOptions(options));
-      let returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options);
+      let returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options, this.platform);
 
       if (meta.inheritanceType === 'tpt') {
         // each TPT table only carries its own columns, the entity is reloaded instead of mapping the returned rows
@@ -1551,23 +1586,13 @@ export abstract class AbstractSqlDriver<
     const collections = options.processCollections ? data.map(d => this.extractManyToMany(meta, d)) : [];
     const keys = new Set<EntityKey<T>>();
     const fields = new Set<string>();
-    const returning = new Set<EntityKey<T>>();
+    const returning = this.getUpdateReturningProperties(meta, data);
 
     for (const row of data) {
       for (const k of Utils.keys(row)) {
         keys.add(k as EntityKey<T>);
-
-        if (isRaw(row[k])) {
-          returning.add(k);
-        }
       }
     }
-
-    // reload generated columns and version fields
-    meta.getPrimaryProps().forEach(prop => returning.add(prop.name));
-    this.getTableProps(meta)
-      .filter(prop => prop.generated || prop.version)
-      .forEach(prop => returning.add(prop.name));
 
     const pkCond = Utils.flatten(meta.primaryKeys.map(pk => meta.properties[pk].fieldNames))
       .map(pk => `${this.platform.quoteIdentifier(pk)} = ?`)
@@ -1652,7 +1677,14 @@ export abstract class AbstractSqlDriver<
       sql += `, `;
     }
 
-    sql = sql.substring(0, sql.length - 2) + ' where ';
+    sql = sql.substring(0, sql.length - 2);
+
+    if (this.platform.usesOutputStatement() && returning.length > 0) {
+      const fields = returning.flatMap(prop => prop.fieldNames);
+      sql += ` output ${fields.map(field => 'inserted.' + this.platform.quoteIdentifier(field)).join(', ')}`;
+    }
+
+    sql += ' where ';
     const pkProps = meta.primaryKeys.concat(...meta.getOwnConcurrencyCheckKeys());
     const pks = Utils.flatten(pkProps.map(pk => meta.properties[pk].fieldNames));
 
@@ -1693,15 +1725,11 @@ export abstract class AbstractSqlDriver<
       sql += conds.join(' or ');
     }
 
-    if (this.platform.usesReturningStatement() && returning.size > 0) {
-      const returningFields = Utils.flatten(
-        [...returning].map(prop => (meta.properties[prop] ?? meta.root.properties[prop]).fieldNames),
+    if (this.platform.usesReturningStatement() && returning.length > 0) {
+      const returningFields = returning.flatMap(prop =>
+        prop.fieldNames.map((field, idx) => this.getReturningFieldSQL(prop, field, idx)),
       );
-      /* v8 ignore next */
-      sql +=
-        returningFields.length > 0
-          ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}`
-          : '';
+      sql += ` returning ${returningFields.join(', ')}`;
     }
 
     if (transform) {

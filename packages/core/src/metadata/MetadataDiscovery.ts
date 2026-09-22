@@ -228,6 +228,7 @@ export class MetadataDiscovery {
       this.initRelation(p);
       this.initThroughRelation(m, p);
       this.initColumnType(p);
+      this.initReturning(p);
     });
 
     forEachProp((m, p) => this.initIndexes(m, p));
@@ -2735,6 +2736,19 @@ export class MetadataDiscovery {
     delete prop.orderBy;
     prop.persist = false;
     prop.formula = columns => this.#platform.getThroughRelationFormula(prop, columns);
+  }
+
+  /** `returning` is only honoured for physical columns that can be hydrated back into the entity. */
+  private initReturning(prop: EntityProperty): void {
+    const owning =
+      prop.kind === ReferenceKind.SCALAR ||
+      prop.kind === ReferenceKind.MANY_TO_ONE ||
+      (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner) ||
+      (prop.kind === ReferenceKind.EMBEDDED && prop.object);
+
+    if (prop.returning && (!owning || prop.persist === false || prop.hydrate === false || prop.formula)) {
+      prop.returning = false;
+    }
   }
 
   private initColumnType(prop: EntityProperty): void {

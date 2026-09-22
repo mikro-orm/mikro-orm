@@ -215,7 +215,7 @@ export interface PropertyOptions<Owner> {
    */
   autoincrement?: boolean;
   /**
-   * Add the property to the `returning` statement.
+   * Add the property to the `returning` clause of inserts, updates and upserts, reloading the database value into the entity.
    */
   returning?: boolean;
   /**

@@ -2380,22 +2380,16 @@ export class QueryBuilder<
     }
 
     if (this.type === QueryType.UPDATE && data) {
-      const returningProps = meta.hydrateProps.filter(prop => prop.fieldNames && isRaw(data[prop.fieldNames[0]]));
+      const returningProps = meta.hydrateProps
+        .filter(prop => prop.returning || (prop.fieldNames && isRaw(data[prop.fieldNames[0]])))
+        // a TPT table can only return its own columns
+        .filter(
+          prop => meta.inheritanceType !== 'tpt' || prop.primary || meta.ownProps!.some(p => p.name === prop.name),
+        );
 
       if (returningProps.length > 0) {
-        qb.returning(
-          returningProps.flatMap((prop): (string | Raw)[] => {
-            if (prop.hasConvertToJSValueSQL) {
-              const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
-              const sql =
-                prop.customType!.convertToJSValueSQL!(aliased, this.platform) +
-                ' as ' +
-                this.platform.quoteIdentifier(prop.fieldNames[0]);
-              return [raw(sql)];
-            }
-            return prop.fieldNames;
-          }) as any,
-        );
+        const fields = returningProps.flatMap(prop => prop.fieldNames);
+        qb.returning(fields.map(field => this.helper.mapper(field, this.type)));
       }
     }
   }

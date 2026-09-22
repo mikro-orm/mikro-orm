@@ -471,7 +471,7 @@ export class UniversalPropertyOptionsBuilder<
   }
 
   /**
-   * Add the property to the `returning` statement.
+   * Add the property to the `returning` clause of inserts, updates and upserts, reloading the database value into the entity.
    */
   returning(returning = true): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ returning });
