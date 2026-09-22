@@ -24,7 +24,6 @@ import {
   helper,
   inspect,
   isRaw,
-  isReturningProperty,
   type Loaded,
   LoadStrategy,
   LockMode,
@@ -2365,8 +2364,7 @@ export class QueryBuilder<
       const returningProps = meta.hydrateProps
         .filter(
           prop =>
-            isReturningProperty(prop) ||
-            (prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw)),
+            prop.returning || (prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw)),
         )
         // a TPT table can only return its own columns
         .filter(
@@ -2382,27 +2380,16 @@ export class QueryBuilder<
     }
 
     if (this.type === QueryType.UPDATE && data) {
-      const returningProps = meta.props
+      const returningProps = meta.hydrateProps
+        .filter(prop => prop.returning || (prop.fieldNames && isRaw(data[prop.fieldNames[0]])))
+        // a TPT table can only return its own columns
         .filter(
-          prop =>
-            isReturningProperty(prop) ||
-            (prop.fieldNames && isRaw(data[prop.fieldNames[0]]) && meta.hydrateProps.includes(prop)),
-        )
-        .filter(prop => meta.inheritanceType !== 'tpt' || prop.primary || meta.ownProps!.includes(prop));
+          prop => meta.inheritanceType !== 'tpt' || prop.primary || meta.ownProps!.some(p => p.name === prop.name),
+        );
 
       if (returningProps.length > 0) {
-        qb.returning(
-          returningProps.flatMap(prop =>
-            prop.fieldNames.map((field, index): string | Raw => {
-              const customType = prop.customTypes?.[index] ?? prop.customType;
-              if (prop.hasConvertToJSValueSQL && customType?.convertToJSValueSQL) {
-                const quoted = this.platform.quoteIdentifier(field);
-                return raw(`${customType.convertToJSValueSQL(quoted, this.platform)} as ${quoted}`);
-              }
-              return field;
-            }),
-          ) as any,
-        );
+        const fields = returningProps.flatMap(prop => prop.fieldNames);
+        qb.returning(fields.map(field => this.helper.mapper(field, this.type)));
       }
     }
   }

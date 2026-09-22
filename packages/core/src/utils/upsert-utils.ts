@@ -6,7 +6,6 @@ import { ReferenceKind } from '../enums.js';
 import { Collection } from '../entity/Collection.js';
 import { helper } from '../entity/wrap.js';
 import type { Platform } from '../platforms/Platform.js';
-import { isReturningProperty } from './returning-utils.js';
 
 function expandEmbeddedProperties<T>(prop: EntityProperty<T>, key?: string): (keyof T)[] {
   if (prop.object) {
@@ -137,13 +136,11 @@ export function getOnConflictReturningFields<T, P extends string>(
     return '*';
   }
 
+  // props with explicit `returning` hint are reloaded even when supplied, as the database might normalize them
   const returning =
-    platform && (platform.usesReturningStatement() || platform.usesOutputStatement())
-      ? meta.props.filter(isReturningProperty).map(p => p.name as keyof T)
+    platform?.usesReturningStatement() || platform?.usesOutputStatement()
+      ? meta.props.filter(p => p.returning).map(p => p.name as keyof T)
       : [];
-  const includeReturning = (fields: (keyof T)[]) =>
-    returning.length > 0 ? Utils.unique([...fields, ...returning]) : fields;
-
   const keys = meta.comparableProps
     .filter(p => {
       if (p.lazy || p.embeddable) {
@@ -166,20 +163,20 @@ export function getOnConflictReturningFields<T, P extends string>(
   }
 
   if (options.onConflictAction === 'ignore') {
-    return includeReturning(keys);
+    return Utils.unique([...keys, ...returning]);
   }
 
   if (options.onConflictMergeFields) {
     const onConflictMergeFields = expandFields(meta, options.onConflictMergeFields as (keyof T)[]);
-    return includeReturning(keys.filter(key => !onConflictMergeFields.includes(key as never)));
+    return Utils.unique([...keys.filter(key => !onConflictMergeFields.includes(key as never)), ...returning]);
   }
 
   if (options.onConflictExcludeFields) {
     const onConflictExcludeFields = expandFields(meta, options.onConflictExcludeFields as (keyof T)[]);
-    return includeReturning([...new Set(keys.concat(...onConflictExcludeFields))]);
+    return Utils.unique([...keys, ...onConflictExcludeFields, ...returning]);
   }
 
-  return includeReturning(keys.filter(key => !(key in data)));
+  return Utils.unique([...keys.filter(key => !(key in data)), ...returning]);
 }
 
 function getPropertyValue(obj: Dictionary, key: string) {

@@ -99,12 +99,15 @@ export class OracleDriver extends AbstractSqlDriver<OracleConnection, OraclePlat
   }
 
   protected override getReturningFieldSQL(prop: EntityProperty, fieldName: string, index: number): string {
-    // Oracle maps results through OUT binds and does not allow aliases in RETURNING expressions.
+    // the value lands in a named OUT bind, and `returning ... into` does not allow column aliases
     const quoted = this.platform.quoteIdentifier(fieldName);
     const customType = prop.customTypes?.[index] ?? prop.customType;
-    return prop.hasConvertToJSValueSQL && customType?.convertToJSValueSQL
-      ? customType.convertToJSValueSQL(quoted, this.platform)
-      : quoted;
+
+    if (prop.hasConvertToJSValueSQL && customType?.convertToJSValueSQL) {
+      return customType.convertToJSValueSQL(quoted, this.platform);
+    }
+
+    return quoted;
   }
 
   override async nativeUpdateMany<T extends object>(
@@ -114,11 +117,10 @@ export class OracleDriver extends AbstractSqlDriver<OracleConnection, OraclePlat
     options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {},
   ): Promise<QueryResult<T>> {
     const meta = this.metadata.get<T>(entityName);
-    const returning = this.getUpdateReturningProperties(meta, data);
     const into: string[] = [];
     const outBindingsMap: Dictionary<string> = {};
 
-    for (const prop of returning) {
+    for (const prop of this.getUpdateReturningProperties(meta, data)) {
       // the parent builds the `returning` list from all field names, so every column needs its own OUT bind
       const runtimeTypes = this.getOutBindTypes(prop);
 

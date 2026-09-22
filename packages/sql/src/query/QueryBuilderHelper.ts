@@ -223,6 +223,7 @@ export class QueryBuilderHelper {
     }
 
     const customType = prop?.customTypes?.[fkIdx] ?? prop?.customType;
+
     if (prop?.hasConvertToJSValueSQL && customType?.convertToJSValueSQL && type !== QueryType.UPSERT) {
       const prefixed = this.prefix(field, isTableNameAliasRequired, true, fkIdx);
       const valueSQL = customType.convertToJSValueSQL(prefixed, this.#platform);

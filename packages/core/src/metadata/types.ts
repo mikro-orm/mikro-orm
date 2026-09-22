@@ -215,11 +215,7 @@ export interface PropertyOptions<Owner> {
    */
   autoincrement?: boolean;
   /**
-   * Include this persisted, hydratable property in automatic INSERT, UPDATE and upsert
-   * `RETURNING`/`OUTPUT` clauses on supporting SQL platforms, even when its value is supplied.
-   * During `flush()`, returned values update the managed entity and its snapshot.
-   * Explicit non-empty QueryBuilder returning lists take precedence. This does not
-   * synchronize managed entities for native writes or add reloads on unsupported platforms.
+   * Add the property to the `returning` clause of inserts, updates and upserts, reloading the database value into the entity.
    */
   returning?: boolean;
   /**

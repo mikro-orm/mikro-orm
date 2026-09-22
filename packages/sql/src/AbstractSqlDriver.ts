@@ -32,7 +32,6 @@ import {
   getOnConflictReturningFields,
   helper,
   isRaw,
-  isReturningProperty,
   LoadStrategy,
   type LockOptions,
   type LoggingOptions,
@@ -135,31 +134,40 @@ export abstract class AbstractSqlDriver<
     return meta.inheritanceType === 'tpt' && meta.ownProps ? meta.ownProps : meta.props;
   }
 
+  /** Columns reloaded by UPDATE: raw values, PKs, generated/version columns and explicit `returning` hints. */
   protected getUpdateReturningProperties<T extends object>(
     meta: EntityMetadata<T>,
     data: EntityDictionary<T>[],
   ): EntityProperty<T>[] {
     const returning = new Set<EntityProperty<T>>();
+
     for (const row of data) {
-      for (const key of Utils.keys(row)) {
-        if (isRaw(row[key])) {
-          returning.add(meta.properties[key as EntityKey<T>] ?? meta.root.properties[key as EntityKey<T>]);
+      for (const k of Utils.keys(row) as EntityKey<T>[]) {
+        if (isRaw(row[k])) {
+          returning.add(meta.properties[k] ?? meta.root.properties[k]);
         }
       }
     }
+
     meta.getPrimaryProps().forEach(prop => returning.add(prop));
+    // a mixed STI batch shares one table, so the child columns live on the root
     this.getTableProps(meta.root.discriminatorColumn ? meta.root : meta)
-      .filter(prop => isReturningProperty(prop) || prop.generated || prop.version)
+      .filter(prop => prop.generated || prop.version || prop.returning)
       .forEach(prop => returning.add(prop));
+
     return [...returning];
   }
 
+  /** Column expression for the `returning` clause of batch updates, applying `convertToJSValueSQL` of custom types. */
   protected getReturningFieldSQL(prop: EntityProperty, fieldName: string, index: number): string {
     const quoted = this.platform.quoteIdentifier(fieldName);
     const customType = prop.customTypes?.[index] ?? prop.customType;
-    return prop.hasConvertToJSValueSQL && customType?.convertToJSValueSQL
-      ? `${customType.convertToJSValueSQL(quoted, this.platform)} as ${quoted}`
-      : quoted;
+
+    if (prop.hasConvertToJSValueSQL && customType?.convertToJSValueSQL) {
+      return `${customType.convertToJSValueSQL(quoted, this.platform)} as ${quoted}`;
+    }
+
+    return quoted;
   }
 
   /** Creates a FormulaTable object for use in formula callbacks. */
@@ -1236,7 +1244,7 @@ export abstract class AbstractSqlDriver<
     if (this.platform.usesOutputStatement()) {
       const returningProps = this.getTableProps(meta).filter(
         prop =>
-          isReturningProperty(prop) ||
+          prop.returning ||
           (((prop.persist !== false && prop.defaultRaw) || prop.autoincrement || prop.generated) &&
             (!(prop.name in data[0]) || isRaw(data[0][prop.name]))),
       );
@@ -1376,7 +1384,7 @@ export abstract class AbstractSqlDriver<
     if (meta && this.platform.usesReturningStatement()) {
       const returningProps = this.getTableProps(meta).filter(
         prop =>
-          isReturningProperty(prop) ||
+          prop.returning ||
           (((prop.persist !== false && prop.defaultRaw) || prop.autoincrement || prop.generated) &&
             (!(prop.name in data[0]) || isRaw(data[0][prop.name]))),
       );
@@ -1477,13 +1485,9 @@ export abstract class AbstractSqlDriver<
       } else {
         qb.update(data).where(where as any);
 
-        // Include explicitly requested values even when they were supplied in the payload.
         const returning: string[] = [];
         this.getTableProps(meta)
-          .filter(
-            prop =>
-              isReturningProperty(prop) || (prop.generated && !prop.primary) || prop.version || isRaw(data[prop.name]),
-          )
+          .filter(prop => (prop.generated && !prop.primary) || prop.version || prop.returning || isRaw(data[prop.name]))
           .forEach(prop => returning.push(...prop.fieldNames));
 
         qb.returning(returning as any);
@@ -1582,7 +1586,7 @@ export abstract class AbstractSqlDriver<
     const collections = options.processCollections ? data.map(d => this.extractManyToMany(meta, d)) : [];
     const keys = new Set<EntityKey<T>>();
     const fields = new Set<string>();
-    const returning = new Set(this.getUpdateReturningProperties(meta, data).map(prop => prop.name));
+    const returning = this.getUpdateReturningProperties(meta, data);
 
     for (const row of data) {
       for (const k of Utils.keys(row)) {
@@ -1674,10 +1678,12 @@ export abstract class AbstractSqlDriver<
     }
 
     sql = sql.substring(0, sql.length - 2);
-    if (this.platform.usesOutputStatement() && returning.size > 0) {
-      const fields = [...returning].flatMap(key => (meta.properties[key] ?? meta.root.properties[key]).fieldNames);
+
+    if (this.platform.usesOutputStatement() && returning.length > 0) {
+      const fields = returning.flatMap(prop => prop.fieldNames);
       sql += ` output ${fields.map(field => 'inserted.' + this.platform.quoteIdentifier(field)).join(', ')}`;
     }
+
     sql += ' where ';
     const pkProps = meta.primaryKeys.concat(...meta.getOwnConcurrencyCheckKeys());
     const pks = Utils.flatten(pkProps.map(pk => meta.properties[pk].fieldNames));
@@ -1719,13 +1725,11 @@ export abstract class AbstractSqlDriver<
       sql += conds.join(' or ');
     }
 
-    if (this.platform.usesReturningStatement() && returning.size > 0) {
-      const returningFields = [...returning].flatMap(key => {
-        const prop = meta.properties[key] ?? meta.root.properties[key];
-        return prop.fieldNames.map((field, index) => this.getReturningFieldSQL(prop, field, index));
-      });
-      /* v8 ignore next */
-      sql += returningFields.length > 0 ? ` returning ${returningFields.join(', ')}` : '';
+    if (this.platform.usesReturningStatement() && returning.length > 0) {
+      const returningFields = returning.flatMap(prop =>
+        prop.fieldNames.map((field, idx) => this.getReturningFieldSQL(prop, field, idx)),
+      );
+      sql += ` returning ${returningFields.join(', ')}`;
     }
 
     if (transform) {

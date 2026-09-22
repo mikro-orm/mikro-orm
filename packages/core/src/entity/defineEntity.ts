@@ -471,9 +471,7 @@ export class UniversalPropertyOptionsBuilder<
   }
 
   /**
-   * Include the property in automatic INSERT, UPDATE and upsert `RETURNING`/`OUTPUT` clauses.
-   * During `flush()`, returned values update the entity and its snapshot on supporting SQL platforms.
-   * Explicit non-empty QueryBuilder returning lists take precedence.
+   * Add the property to the `returning` clause of inserts, updates and upserts, reloading the database value into the entity.
    */
   returning(returning = true): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ returning });

@@ -49,7 +49,7 @@ describe.each(Utils.keys(options))('returning properties on upsert [%s]', type =
       const mock = mockLogger(orm);
       const customer = many ? (await em.upsertMany(Customer, [data]))[0] : await em.upsert(Customer, data);
       expect(customer).toMatchObject({ name: `Customer ${revision}`, code: 'EUR', revision });
-      expect(mock.mock.calls.some(([query]) => /\b(insert|merge) into\b/.test(query as string))).toBe(true);
+      expect(mock.mock.calls.some(([query]) => /(insert|merge) into\b/.test(query as string))).toBe(true);
       expect(mock.mock.calls.filter(([query]) => /\bselect\b/.test(query as string))).toEqual([]);
       mock.mockClear();
       await em.flush();

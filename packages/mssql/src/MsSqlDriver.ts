@@ -13,10 +13,9 @@ import {
   type Transaction,
   Utils,
   isRaw,
-  isReturningProperty,
+  type Constructor,
   type FilterQuery,
   type UpsertManyOptions,
-  type Constructor,
 } from '@mikro-orm/core';
 import { AbstractSqlDriver, type SqlEntityManager } from '@mikro-orm/sql';
 import { MsSqlConnection } from './MsSqlConnection.js';
@@ -47,9 +46,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
 
     // Is this en empty insert... this is rather hard in mssql (especially with an insert many)
     if (!hasFields) {
-      const returningProps = this.getTableProps(meta).filter(
-        prop => isReturningProperty(prop) || prop.primary || prop.defaultRaw,
-      );
+      const returningProps = this.getTableProps(meta).filter(prop => prop.returning || prop.primary || prop.defaultRaw);
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       const using2 = `select * from (values ${data.map((x, i) => `(${i})`).join(',')}) v (id) where 1 = 1`;
       /* v8 ignore next */
@@ -79,7 +76,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
         // must match the OUTPUT columns of the parent implementation, which resolves STI children to the root
         const returning = this.getTableProps(meta.inheritanceType === 'tpt' ? meta : meta.root).filter(
           prop =>
-            isReturningProperty(prop) ||
+            prop.returning ||
             (((prop.persist !== false && prop.defaultRaw) || prop.autoincrement || prop.generated) &&
               (!(prop.name in data[0]) || isRaw(data[0][prop.name]))),
         );
@@ -105,12 +102,15 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     data: EntityDictionary<T>[],
     options: NativeInsertUpdateManyOptions<T> & UpsertManyOptions<T> = {},
   ): Promise<QueryResult<T>> {
-    const meta = this.metadata.get(entityName);
+    const meta = this.metadata.get<T>(entityName);
+
     return super.nativeUpdateMany(entityName, where, data, options, sql => {
       if (!meta.hasTriggers) {
         return sql;
       }
+
       const fields = this.getUpdateReturningProperties(meta, data).flatMap(prop => prop.fieldNames);
+
       return this.appendOutputTable(entityName, fields, sql, sql.lastIndexOf(' where '), options);
     });
   }
