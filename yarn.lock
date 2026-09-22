@@ -1474,7 +1474,7 @@ __metadata:
     tsimp: "npm:2.0.12"
     tsx: "npm:4.23.15"
     typescript: "npm:7.0.2"
-    unplugin-swc: "npm:1.6.0"
+    unplugin-swc: "npm:2.0.0"
     uuid: "npm:14.0.2"
     vite: "npm:8.3.0"
     vitest: "npm:5.0.1"
@@ -9457,16 +9457,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unplugin-swc@npm:1.6.0":
-  version: 1.6.0
-  resolution: "unplugin-swc@npm:1.6.0"
+"unplugin-swc@npm:2.0.0":
+  version: 2.0.0
+  resolution: "unplugin-swc@npm:2.0.0"
   dependencies:
     "@rollup/pluginutils": "npm:^5.4.0"
     load-tsconfig: "npm:^0.2.5"
     unplugin: "npm:^3.3.0"
   peerDependencies:
     "@swc/core": ^1.2.108
-  checksum: 10/25d711e6e65df8568dd49ca8950628e7ad06866200bcc082c2f793ac7c92931d11d090277ab810d2e18da1bdb7ff76bffb3eb0712bb4819e9d2226e3d1440038
+  checksum: 10/b56578eb2b1063160bec8f602ae4cc571a590bab792248c6befc6a15aba0fab9ee0bbef3240e34cdb11ff34b804c050874a4c5f2b43c3356fd9b56a24a4ab923
   languageName: node
   linkType: hard
 
