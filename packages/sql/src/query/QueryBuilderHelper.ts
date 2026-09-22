@@ -196,7 +196,7 @@ export class QueryBuilderHelper {
     const fkIdx2 = prop?.fieldNames.findIndex(name => name === f) ?? -1;
     const fkIdx = fkIdx2 === -1 ? 0 : fkIdx2;
 
-    if (a === prop?.embedded?.[0]) {
+    if (a === prop?.embedded?.[0] && !prop.formula) {
       return aliasPrefix + prop.fieldNames[fkIdx];
     }
 
@@ -207,12 +207,13 @@ export class QueryBuilderHelper {
     }
 
     if (prop?.formula) {
-      const alias2 = this.#platform.quoteIdentifier(a).toString();
+      const formulaAlias = isTableAlias ? a : this.#alias;
+      const alias2 = this.#platform.quoteIdentifier(formulaAlias).toString();
       const aliasName = alias === undefined ? prop.fieldNames[0] : alias;
       const as = aliasName === null ? '' : ` as ${this.#platform.quoteIdentifier(aliasName)}`;
       const meta = this.#aliasMap[a]?.meta ?? this.#metadata.get(this.#entityName);
       const table = this.createFormulaTable(alias2, meta, schema);
-      const columns = meta.createColumnMappingObject(p => this.getTPTAliasForProperty(p.name, a), alias2);
+      const columns = meta.createColumnMappingObject(p => this.getTPTAliasForProperty(p.name, formulaAlias), alias2);
       let value = this.#driver.evaluateFormula(prop.formula, columns, table);
 
       if (!this.isTableNameAliasRequired(type)) {
