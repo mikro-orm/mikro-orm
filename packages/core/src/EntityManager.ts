@@ -1688,6 +1688,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const generatedFields = new Set<EntityKey<Entity>>();
     const allData: EntityData<Entity>[] = [];
     const allWhere: FilterQuery<Entity>[] = [];
+    const dataIndexes: number[] = [];
+    const result: Entity[] = [];
     const entities = new Map<Entity, EntityData<Entity>>();
     const entitiesByData = new Map<EntityData<Entity>, Entity>();
     const entitiesByAllDataIdx = new Map<number, Entity>();
@@ -1701,8 +1703,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
         if (helper(entity).__managed && helper(entity).__em === em && !this.config.get('upsertManaged')) {
           em.#entityFactory.mergeData(meta, entity, row, { initialized: true });
-          entities.set(entity, row);
-          entitiesByData.set(row, entity);
+          result[i] = entity;
           continue;
         }
 
@@ -1720,8 +1721,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
           if (exists) {
             em.assign(exists, row as any);
-            entities.set(exists, row);
-            entitiesByData.set(row, exists);
+            result[i] = exists;
             continue;
           }
         }
@@ -1760,10 +1760,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       validateParams(row, 'insert data');
       allData.push(row);
       allWhere.push(where);
+      dataIndexes.push(i);
     }
 
-    if (entities.size === data.length) {
-      return [...entities.keys()];
+    if (allData.length === 0) {
+      return [...new Set(result)];
     }
 
     // `onCreate` generated values are for the insert clause only, they must not overwrite existing rows
@@ -1772,8 +1773,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (em.eventManager.hasListeners(EventType.beforeUpsert, meta)) {
-      for (const dto of data) {
-        const entity = entitiesByData.get(dto) ?? (dto as Entity);
+      for (const index of dataIndexes) {
+        const entity = data[index] as Entity;
         await em.eventManager.dispatchEvent(EventType.beforeUpsert, { entity, em, meta }, meta);
       }
 
@@ -1791,21 +1792,22 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }),
     );
 
-    entities.clear();
-    entitiesByData.clear();
     const loadPK = new Map<Entity, FilterQuery<Entity>>();
 
     allData.forEach((row, i) => {
+      // Managed inputs skipped by the SQL batch still occupy positions in `data`.
+      const index = dataIndexes[i];
+      const item = data[index];
       em.#unitOfWork.getChangeSetPersister().mapReturnedValues(
-        Utils.isEntity(data[i]) ? (data[i] as Entity) : null,
-        Utils.isEntity(data[i]) ? {} : data[i],
+        Utils.isEntity(item) ? (item as Entity) : null,
+        Utils.isEntity(item) ? {} : item,
         // A suppressed conflict omits its row; positional mapping would hydrate a different entity.
         res.rows?.length === allData.length ? res.rows[i] : undefined,
         meta,
         true,
       );
-      const entity = Utils.isEntity(data[i])
-        ? (data[i] as Entity)
+      const entity = Utils.isEntity(item)
+        ? (item as Entity)
         : em.#entityFactory.create(entityName, row, {
             refresh: true,
             initialized: true,
@@ -1818,6 +1820,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
       entities.set(entity, row);
       entitiesByData.set(row, entity);
+      result[index] = entity;
     });
 
     // skip the reload only when RETURNING brought back a row for every input
@@ -1825,13 +1828,19 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     // oxfmt-ignore
     const uniqueFields = options.onConflictFields ?? ((Utils.isPlainObject(allWhere[0]) ? Object.keys(allWhere[0]).flatMap(key => Utils.splitPrimaryKeys(key)) : meta.primaryKeys) as (keyof Entity)[]);
     const platform = this.getPlatform();
-    const returning = getOnConflictReturningFields(meta, data[0], uniqueFields, options, platform) as string[];
+    const returning = getOnConflictReturningFields(
+      meta,
+      data[dataIndexes[0]],
+      uniqueFields,
+      options,
+      platform,
+    ) as string[];
     if (options.onConflictWhere && res.rows?.length !== allData.length) {
       returning.push(...meta.comparableProps.filter(p => !p.lazy && !p.embeddable).map(p => p.name));
     }
     const reloadFields =
       returning.length > 0 &&
-      !((platform.usesReturningStatement() || platform.usesOutputStatement()) && res.rows?.length === data.length);
+      !((platform.usesReturningStatement() || platform.usesOutputStatement()) && res.rows?.length === allData.length);
 
     if (options.onConflictAction === 'ignore' || (!res.rows?.length && loadPK.size > 0) || reloadFields) {
       const unique = meta.hydrateProps.filter(p => !p.lazy).map(p => p.name);
@@ -1847,7 +1856,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
       const where = { $or: [] as Dictionary[] };
 
-      data.forEach((item, idx) => {
+      dataIndexes.forEach((index, idx) => {
+        const item = data[index];
         where.$or[idx] = {};
         const props = Array.isArray(uniqueFields) ? uniqueFields : Object.keys(item);
         props.forEach(prop => {
@@ -1930,7 +1940,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    return [...entities.keys()];
+    return [...new Set(result)];
   }
 
   /**
