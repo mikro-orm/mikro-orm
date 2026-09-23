@@ -1,4 +1,4 @@
-import { defineEntity, MikroORM, p } from '@mikro-orm/sqlite';
+import { defineEntity, MikroORM, p, SimpleLogger } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
 const User = defineEntity({
@@ -20,6 +20,7 @@ beforeAll(async () => {
     entities: [User],
     dbName: ':memory:',
     upsertManaged: false,
+    loggerFactory: SimpleLogger.create,
     subscribers: [{ beforeUpsert, afterUpsert }],
   });
   await orm.schema.create();
