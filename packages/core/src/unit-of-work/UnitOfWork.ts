@@ -641,7 +641,10 @@ export class UnitOfWork {
       const groups = this.getChangeSetGroups();
       const platform = this.#em.getPlatform();
       const runInTransaction =
-        !this.#em.isInTransaction() && platform.supportsTransactions() && this.#em.config.get('implicitTransactions');
+        !this.#em.isInTransaction() &&
+        !this.#em.isTransactionDisabled() &&
+        platform.supportsTransactions() &&
+        this.#em.config.get('implicitTransactions');
 
       if (runInTransaction) {
         const loggerContext = Utils.merge(

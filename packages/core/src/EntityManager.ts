@@ -2969,6 +2969,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
+   * Checks whether transactions are disabled for this EntityManager.
+   * @internal
+   */
+  isTransactionDisabled(): boolean {
+    return !!this.getContext(false).#disableTransactions;
+  }
+
+  /**
    * Gets the transaction context (driver dependent object used to make sure queries are executed on same connection).
    */
   getTransactionContext<T extends Transaction = Transaction>(): T | undefined {
