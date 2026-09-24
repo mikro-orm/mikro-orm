@@ -43,7 +43,7 @@ export class MariaDbQueryBuilder<
 
           // virtual fields (e.g. `qb.as(...)`) have no column to reference inside `min()`; inline their expression
           const virtual =
-            !prop?.persist && !prop?.formula && !pks.includes(fieldName)
+            (!prop || prop.persist === false) && !prop?.formula && !pks.includes(fieldName)
               ? this.resolveVirtualField(f, fieldName)
               : undefined;
           const expr = virtual ? virtual.expr : this.platform.quoteIdentifier(fieldName);
