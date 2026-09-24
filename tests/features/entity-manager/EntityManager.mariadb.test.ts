@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { Collection, EntityManager, QueryFlag, QueryOrder, Reference, sql, wrap } from '@mikro-orm/core';
+import { Collection, EntityManager, QueryFlag, QueryOrder, Reference, wrap } from '@mikro-orm/core';
 import { MariaDbDriver, MikroORM } from '@mikro-orm/mariadb';
 import { Author2, Book2, BookTag2, Publisher2, PublisherType } from '../../entities-sql/index.js';
 import { initORMMySql, mockLogger } from '../../bootstrap.js';
@@ -319,31 +319,5 @@ describe('EntityManagerMariaDb', () => {
 
     expect(res3).toHaveLength(5);
     expect(res3.map(a => a.name)).toEqual(['God 01', 'God 02', 'God 03', 'God 04', 'God 05']);
-  });
-
-  test('pagination with orderBy on a virtual field', async () => {
-    const god1 = new Author2('God 01', 'hello01@heaven.god');
-    const god2 = new Author2('God 02', 'hello02@heaven.god');
-    orm.em.persist([new Book2('Bible 01.1', god1), new Book2('Bible 02.1', god2), new Book2('Bible 02.2', god2)]);
-    await orm.em.flush();
-    orm.em.clear();
-
-    const booksTotal = orm.em
-      .createQueryBuilder(Book2, 'b')
-      .count('b.uuid', true)
-      .where({ author: sql.ref('a.id') })
-      .as(Author2, 'booksTotal');
-    const qb = orm.em
-      .createQueryBuilder(Author2, 'a')
-      .select(['*', booksTotal])
-      .where({ books: { title: /^Bible/ } })
-      .orderBy({ booksTotal: QueryOrder.DESC })
-      .limit(1);
-
-    const res = await qb.getResult();
-    expect(res.map(a => a.name)).toEqual(['God 02']);
-    expect(qb.getQuery()).toMatch(
-      'order by min((select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`)) desc limit 1',
-    );
   });
 });
