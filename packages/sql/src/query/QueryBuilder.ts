@@ -3319,7 +3319,7 @@ export class QueryBuilder<
       }
 
       if (prop?.embedded || (prop?.kind === ReferenceKind.EMBEDDED && prop.object)) {
-        const name = prop.embeddedPath?.join('.') ?? prop.fieldNames[0];
+        const name = prop.formula ? prop.name : (prop.embeddedPath?.join('.') ?? prop.fieldNames[0]);
         const aliased = this.#state.aliases[a] ? `${a}.${name}` : name;
         ret.push(getFieldName(aliased, customAlias));
         return;
@@ -3342,12 +3342,12 @@ export class QueryBuilder<
 
         const nest = (prop: EntityProperty): void => {
           for (const childProp of Object.values(prop.embeddedProps)) {
-            if (childProp.persist === false) {
+            if (childProp.persist === false && !childProp.formula) {
               continue;
             }
 
             if (childProp.fieldNames && (childProp.kind !== ReferenceKind.EMBEDDED || childProp.object)) {
-              const name = childProp.fieldNames[0];
+              const name = childProp.formula ? childProp.name : childProp.fieldNames[0];
               ret.push(getFieldName(this.#state.aliases[a] ? `${a}.${name}` : name));
             } else {
               nest(childProp);
@@ -3453,7 +3453,8 @@ export class QueryBuilder<
           }
         }
 
-        return `${currentAlias}.${embeddedProp?.fieldNames?.[0] ?? propName}`;
+        const name = embeddedProp?.formula ? embeddedProp.name : (embeddedProp?.fieldNames?.[0] ?? propName);
+        return `${currentAlias}.${name}`;
       }
 
       // Handle relations - auto-join if not the last part
