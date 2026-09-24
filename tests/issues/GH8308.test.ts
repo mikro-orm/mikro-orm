@@ -31,6 +31,7 @@ const Task = defineEntity({
     id: p.integer().primary(),
     questionnaire: () => p.manyToOne(Questionnaire),
     contributingEntity: () => p.manyToOne(ContributingEntity),
+    contributingEntityId: p.integer().persist(false),
     assignedContributors: () => p.manyToMany(Contributor),
   },
 });
@@ -75,4 +76,19 @@ test('GH #8308 paginated orderBy on a relation next to a populated relation with
   );
   expect(tasks.map(t => t.id)).toEqual([1]);
   expect(mock.mock.calls[0][0]).toMatch('order by min(`c3`.`name`) asc limit 1');
+});
+
+test('GH #8308 paginated orderBy on a persist(false) property mapped to a relation column', async () => {
+  const mock = mockLogger(orm);
+  const tasks = await orm.em.fork().find(
+    Task,
+    { assignedContributors: { id: { $in: [1] } } },
+    {
+      limit: 1,
+      orderBy: { contributingEntityId: 'DESC' },
+      populate: ['questionnaire'],
+    },
+  );
+  expect(tasks.map(t => t.id)).toEqual([2]);
+  expect(mock.mock.calls[0][0]).toMatch('order by min(`contributing_entity_id`) desc limit 1');
 });
