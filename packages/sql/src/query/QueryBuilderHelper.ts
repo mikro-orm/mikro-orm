@@ -784,17 +784,17 @@ export class QueryBuilderHelper {
       Array.isArray(value[op]) &&
       value[op].every((v: unknown) => Array.isArray(v));
 
-    if (fields.length > 1 && Array.isArray(value[op])) {
+    if (fields.length > 1 && Array.isArray(value[op]) && value[op].length > 0) {
       const singleTuple = !value[op].every((v: unknown) => Array.isArray(v));
 
       if (!this.#platform.allowsComparingTuples()) {
         const mapped = fields.map(f => this.mapper(f, type));
 
-        if (op === '$in') {
+        if (op === '$in' || op === '$nin') {
           const conds = value[op].map(() => {
             return `(${mapped.map(field => `${this.#platform.quoteIdentifier(field)} = ?`).join(' and ')})`;
           });
-          parts.push(`(${conds.join(' or ')})`);
+          parts.push(`${op === '$nin' ? 'not ' : ''}(${conds.join(' or ')})`);
           params.push(...Utils.flatten(value[op]));
           return { sql: parts.join(' and '), params };
         }

@@ -88,6 +88,7 @@ import {
   QueryFlag,
   ReferenceKind,
   SCALAR_TYPES,
+  type QueryOrderMap,
   type TransactionOptions,
 } from './enums.js';
 import type { MetadataStorage } from './metadata/MetadataStorage.js';
@@ -213,6 +214,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
   /**
    * Finds all entities matching your `where` query. You can pass additional options via the `options` parameter.
+   *
+   * With `selection`, selected entities are returned first, outside `limit` and `offset`.
+   * Both groups respect `where` and enabled filters; `selection.match` applies only to the regular page.
+   * Both groups use the same ordering, with missing primary-key terms appended as ascending tie-breakers.
+   * Nonempty selections require a mapped primary key and cannot be combined with cursor options
+   * (`first`, `last`, `before`, `after`).
    */
   async find<
     Entity extends object,
@@ -250,6 +257,36 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const meta = this.metadata.get<Entity>(entityName);
     em.validateIndexUsage(meta, where, options);
     await em.tryFlush(entityName, options);
+
+    if (options.selection) {
+      const { selection, ...findOptions } = options;
+      const { where: pageWhere, selectedWhere } = QueryHelper.processSelection<Entity>(where, meta, selection);
+
+      if (selectedWhere && [options.first, options.last, options.before, options.after].some(v => v != null)) {
+        throw new ValidationError('Selection pagination supports limit and offset, not cursor options');
+      }
+
+      findOptions.flushMode = 'commit'; // the selection and page queries share the flush above
+      findOptions.orderBy = QueryHelper.mergeOrderBy(
+        options.orderBy,
+        meta.orderBy,
+        meta.primaryKeys.map(pk => ({ [pk]: 'asc' }) as QueryOrderMap<Entity>),
+      );
+      const [selected, entities] = await Promise.all([
+        selectedWhere
+          ? em.find(entityName, selectedWhere as any, {
+              ...findOptions,
+              limit: undefined,
+              offset: undefined,
+              cache: Array.isArray(options.cache) ? false : options.cache,
+            })
+          : [],
+        em.find(entityName, pageWhere as any, findOptions),
+      ]);
+
+      return [...selected, ...entities];
+    }
+
     where = await em.processWhere(entityName, where, options, 'read');
     validateParams(where);
     if (meta.orderBy) {
@@ -1016,6 +1053,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
    * where the first element is the array of entities, and the second is the count.
+   *
+   * Supports the same `selection` option as `em.find()`. The count includes only unselected entities
+   * matching both `where` and `selection.match`.
    */
   async findAndCount<
     Entity extends object,
@@ -2620,6 +2660,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
   /**
    * Returns total number of entities matching your `where` query.
+   * With `selection`, counts only unselected entities matching both `where` and `selection.match`.
    */
   async count<Entity extends object, Hint extends string = never>(
     entityName: EntityName<Entity>,
@@ -2629,6 +2670,19 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const em = this.getContext(false);
 
     options = em.prepareOptions(options);
+
+    if (options.selection) {
+      const { selection, ...countOptions } = options;
+      where = QueryHelper.processSelection<Entity>(where, em.metadata.get(entityName), selection).where;
+      // Projection and population options can introduce joins that the selection count does not need.
+      options = {
+        ...countOptions,
+        fields: undefined,
+        exclude: undefined,
+        populate: undefined,
+        cache: Array.isArray(options.cache) ? false : options.cache,
+      } as CountOptions<Entity, Hint>;
+    }
 
     await em.tryFlush(entityName, options);
     where = await em.processWhere(entityName, where, options as FindOptions<Entity, Hint>, 'read');
