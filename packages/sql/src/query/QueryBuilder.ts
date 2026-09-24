@@ -4282,7 +4282,10 @@ export class QueryBuilder<
           // virtual fields (e.g. `qb.as(...)`) have no column to reference inside `min()`; inline their
           // expression instead, as a select alias is not resolvable there on some dialects (e.g. PostgreSQL)
           const virtual =
-            !prop?.persist && !prop?.formula && !prop?.hasConvertToJSValueSQL && !pks.includes(fieldName)
+            (!prop || prop.persist === false) &&
+            !prop?.formula &&
+            !prop?.hasConvertToJSValueSQL &&
+            !pks.includes(fieldName)
               ? this.resolveVirtualField(f, fieldName)
               : undefined;
           const expr = virtual ? virtual.expr : this.platform.quoteIdentifier(fieldName);
