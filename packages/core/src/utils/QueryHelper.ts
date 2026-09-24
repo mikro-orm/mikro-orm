@@ -17,7 +17,7 @@ import { JsonType } from '../types/JsonType.js';
 import { helper } from '../entity/wrap.js';
 import { isRaw, isSubquery, Raw } from './RawQueryFragment.js';
 import { MetadataError, ValidationError } from '../errors.js';
-import type { FilterOptions } from '../drivers/IDatabaseDriver.js';
+import type { FilterOptions, FindOptions } from '../drivers/IDatabaseDriver.js';
 
 /** @internal */
 export class QueryHelper {
@@ -307,6 +307,31 @@ export class QueryHelper {
     Utils.getObjectQueryKeys(where).forEach(k => (ret[k as string] = QueryHelper.cloneWhere(where[k as string])));
 
     return ret as T;
+  }
+
+  /** Builds selection predicates while keeping the original scope on both groups. */
+  static processSelection<T>(
+    where: FilterQuery<NoInfer<T>>,
+    meta: EntityMetadata<T>,
+    { ids, match }: NonNullable<FindOptions<T>['selection']>,
+  ): { where: FilterQuery<NoInfer<T>>; selectedWhere?: FilterQuery<T> } {
+    let selectedWhere: FilterQuery<T> | undefined;
+
+    if (ids.length) {
+      if (!meta.primaryKeys.length) {
+        throw new ValidationError(`Selection pagination requires a primary key on '${meta.className}'`);
+      }
+
+      const primaryKey = Utils.getPrimaryKeyHash(meta.primaryKeys);
+      selectedWhere = { $and: [where, { [primaryKey]: { $in: ids } }] } as FilterQuery<T>;
+      where = { $and: [where, { [primaryKey]: { $nin: ids } }] } as FilterQuery<NoInfer<T>>;
+    }
+
+    if (match) {
+      where = { $and: [where, match] } as FilterQuery<NoInfer<T>>;
+    }
+
+    return { where, selectedWhere };
   }
 
   static processWhere<T extends object>(options: ProcessWhereOptions<T>): FilterQuery<T> {

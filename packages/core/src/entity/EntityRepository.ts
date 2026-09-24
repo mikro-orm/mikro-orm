@@ -146,7 +146,7 @@ export class EntityRepository<Entity extends object> {
   }
 
   /**
-   * Finds all entities matching your `where` query. You can pass additional options via the `options` parameter.
+   * @inheritDoc EntityManager.find
    */
   async find<
     Hint extends string = never,
@@ -161,8 +161,7 @@ export class EntityRepository<Entity extends object> {
   }
 
   /**
-   * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
-   * where first element is the array of entities, and the second is the count.
+   * @inheritDoc EntityManager.findAndCount
    */
   async findAndCount<
     Hint extends string = never,
@@ -428,7 +427,7 @@ export class EntityRepository<Entity extends object> {
   }
 
   /**
-   * Returns total number of entities matching your `where` query.
+   * @inheritDoc EntityManager.count
    */
   async count<Hint extends string = never>(
     where: FilterQuery<Entity> = {} as FilterQuery<Entity>,
