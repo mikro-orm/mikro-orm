@@ -145,6 +145,39 @@ describe.each(Utils.keys(options))('em.upsertMany with heterogeneous rows [%s]',
     ]);
   });
 
+  test.runIf(type !== 'postgresql')('keeps the input order when a split group contains duplicate rows', async () => {
+    await orm.em.insertMany(Currency, [{ id: 1, name: 'old 1', code: 'USD' }]);
+
+    const em = orm.em.fork();
+    await em.findAll(Currency);
+    const res = await em.upsertMany(Currency, [
+      { id: 1, name: 'a' },
+      { id: 1, name: 'b' },
+      { id: 3, name: 'c', code: 'EUR' },
+      { id: 2, name: 'd' },
+    ]);
+    expect(res.map(r => ({ id: r.id, name: r.name, code: r.code ?? null }))).toEqual([
+      { id: 1, name: 'b', code: 'USD' },
+      { id: 3, name: 'c', code: 'EUR' },
+      { id: 2, name: 'd', code: null },
+    ]);
+  });
+
+  test.runIf(type !== 'postgresql')(
+    'keeps the input order when a split group contains the same entity twice',
+    async () => {
+      await orm.em.insertMany(Currency, [{ id: 1, name: 'old 1', code: 'USD' }]);
+
+      const em = orm.em.fork();
+      const a = await em.findOneOrFail(Currency, 1);
+      const b = em.create(Currency, { id: 2, name: 'b' }, { persist: false });
+      const c = em.create(Currency, { id: 3, name: 'c', code: 'EUR' }, { persist: false });
+      const res = await em.upsertMany([a, a, b, c]);
+      expect(res).toHaveLength(3);
+      [a, b, c].forEach((entity, i) => expect(res[i]).toBe(entity));
+    },
+  );
+
   test.runIf(['sqlite', 'postgresql'].includes(type))(
     'maps rows of a split batch with a suppressed conflict',
     async () => {

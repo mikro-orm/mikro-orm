@@ -266,6 +266,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       cacheKey,
       options.refresh,
       true,
+      options.schema,
     );
 
     if (cached?.data) {
@@ -1291,6 +1292,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       cacheKey,
       options.refresh,
       true,
+      options.schema,
     );
 
     if (cached?.data !== undefined) {
@@ -1673,7 +1675,20 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
             idx.map(i => data![i]),
             options,
           );
-          idx.forEach((i, j) => (ret[i] = res[j]));
+          const seen = new Set<unknown>();
+          let j = 0;
+
+          // `res` holds every entity once, so skip the rows resolving to an entity an earlier row already took
+          for (const i of idx) {
+            const row = data[i];
+            const entity = Utils.isEntity(row)
+              ? row
+              : em.#unitOfWork.tryGetById(entityName, row, options.schema, false);
+
+            if (!seen.has(entity)) {
+              seen.add((ret[i] = res[j++]));
+            }
+          }
         }
 
         // rows resolving to the same entity are returned once, as in the single statement path
@@ -2979,6 +2994,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
+   * Checks whether transactions are disabled for this EntityManager.
+   * @internal
+   */
+  isTransactionDisabled(): boolean {
+    return !!this.getContext(false).#disableTransactions;
+  }
+
+  /**
    * Gets the transaction context (driver dependent object used to make sure queries are executed on same connection).
    */
   getTransactionContext<T extends Transaction = Transaction>(): T | undefined {
@@ -3490,6 +3513,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     key: unknown,
     refresh?: boolean,
     merge?: boolean,
+    schema?: string,
   ): Promise<{ data?: R | null; key: string } | undefined> {
     config ??= this.config.get('resultCache').global;
 
@@ -3516,6 +3540,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       merge: true,
       convertCustomTypes: false,
       refresh,
+      schema,
       recomputeSnapshot: true,
     };
 

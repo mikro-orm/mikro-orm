@@ -1,0 +1,87 @@
+import { defineEntity, p } from '@mikro-orm/core';
+import { AbstractSqlDriver, MikroORM } from '@mikro-orm/sql';
+import { PLATFORMS } from '../bootstrap.js';
+import { mockLogger } from '../helpers.js';
+
+const Questionnaire = defineEntity({
+  name: 'Questionnaire',
+  properties: {
+    id: p.integer().primary(),
+    name: p.json<{ en: string }>(),
+  },
+});
+
+const ContributingEntity = defineEntity({
+  name: 'ContributingEntity',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+  },
+});
+
+const Contributor = defineEntity({
+  name: 'Contributor',
+  properties: {
+    id: p.integer().primary(),
+  },
+});
+
+const Task = defineEntity({
+  name: 'Task',
+  properties: {
+    id: p.integer().primary(),
+    questionnaire: () => p.manyToOne(Questionnaire),
+    contributingEntity: () => p.manyToOne(ContributingEntity),
+    assignedContributors: () => p.manyToMany(Contributor),
+  },
+});
+
+const options = {
+  sqlite: { dbName: ':memory:' },
+  mariadb: { dbName: 'mikro_orm_test_gh_8308', port: 3309 },
+};
+
+describe.each(['sqlite', 'mariadb'] as const)('GH #8308 [%s]', type => {
+  let orm: MikroORM<AbstractSqlDriver>;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init<AbstractSqlDriver>({
+      entities: [Task, Questionnaire, ContributingEntity, Contributor],
+      driver: PLATFORMS[type],
+      ...options[type],
+    });
+    await orm.schema.refresh();
+    const contributor = orm.em.create(Contributor, { id: 1 });
+    orm.em.create(Task, {
+      id: 1,
+      questionnaire: { id: 1, name: { en: 'b' } },
+      contributingEntity: { id: 1, name: 'a' },
+      assignedContributors: [contributor],
+    });
+    orm.em.create(Task, {
+      id: 2,
+      questionnaire: { id: 2, name: { en: 'a' } },
+      contributingEntity: { id: 2, name: 'b' },
+      assignedContributors: [contributor],
+    });
+    await orm.em.flush();
+    orm.em.clear();
+  });
+
+  afterAll(() => orm.close(true));
+
+  test('GH #8308 paginated orderBy on a relation next to a populated relation with a same-named json property', async () => {
+    const mock = mockLogger(orm);
+    const tasks = await orm.em.fork().find(
+      Task,
+      { assignedContributors: { id: { $in: [1] } } },
+      {
+        limit: 1,
+        orderBy: { contributingEntity: { name: 'ASC' } },
+        populate: ['questionnaire'],
+      },
+    );
+    expect(tasks.map(t => t.id)).toEqual([1]);
+    expect(mock.mock.calls[0][0]).toMatch('order by min(`c3`.`name`) asc limit 1');
+  });
+});
