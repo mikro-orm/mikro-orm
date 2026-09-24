@@ -157,9 +157,17 @@ export class QueryHelper {
 
       if (op) {
         delete where[k];
-        where[op] = value[op].map((v: any) => {
+        const group = value[op].map((v: any) => {
           return { [k]: v };
         });
+
+        if (op in where) {
+          // Sibling groups are conjunctive, even when both use `$or`.
+          where.$and ??= [];
+          where.$and.push({ [op]: group });
+        } else {
+          where[op] = group;
+        }
       }
     }
 
