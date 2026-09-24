@@ -303,6 +303,36 @@ console.log(authors.length); // based on limit parameter, e.g. 10
 console.log(count); // total count, e.g. 1327
 ```
 
+#### Keeping selected entities visible
+
+For a selection list, pass `selection.ids` to `em.find()` or `em.findAndCount()` to keep existing selected entities at the start of every page. The first `where` argument is the mandatory scope for both selected and regular results. Put search conditions that selected entities may bypass in `selection.match`:
+
+```ts
+const [customers, availableCount] = await em.findAndCount(
+  Customer,
+  { tenant: tenantId },
+  {
+    selection: {
+      ids: selectedCustomerIds,
+      match: { name: { $ilike: '%smith%' } },
+    },
+    orderBy: [{ name: 'asc' }, { id: 'asc' }],
+    limit: 10,
+    offset: 20,
+  },
+);
+```
+
+Selected customers appear first, even if they do not match the search. A selected customer from another tenant cannot appear. Selected customers appear only once and are excluded from the regular page and `availableCount`, which counts unselected matching customers before `limit` and `offset`. The result can contain more than `limit` entities. Missing selected entities are omitted.
+
+Use `em.find()` with the same arguments when you only need the entities, or `em.count()` with the same `where` and `selection` when you only need the unselected matching count. The corresponding repository methods support the same option.
+
+Automatic result-cache keys keep the queries separate. When using a named key (`cache: ['customers', 1000]`), only the regular page is cached; selected entities and counts are read fresh. `em.clearCache('customers')` invalidates that cached page.
+
+Each group follows `orderBy`. The primary key is appended as an ascending tie-breaker unless it is explicitly ordered; with no order, primary key ascending is used. Composite primary keys are supported as tuples in metadata key order. Pinning requires a mapped primary key. `fields`, formulas, and population work as in an ordinary `em.find()` call.
+
+When `selection.ids` is empty, no selected-entity query is needed; `selection.match` still applies to the page and count. With selected IDs, `find()` executes two queries and `findAndCount()` adds a count query. Use a transaction with an appropriate isolation level if these reads must see one database snapshot. Cursor options (`first`, `last`, `before`, `after`) cannot be combined with selected IDs. IDs follow the same rules as primary-key values passed to `em.find()`: use valid values for the mapped type and complete tuples for composite keys. Ad hoc `QueryBuilder` select aliases are outside this API; define computed fields as entity formulas or use a custom query for those projections.
+
 ### Cursor-based pagination
 
 As an alternative to the offset based pagination with `limit` and `offset`, you can paginate based on a cursor. A cursor is an opaque string that defines specific place in ordered entity graph. You can use `em.findByCursor()` to access those options. Under the hood, it will call `em.find()` and `em.count()` just like the `em.findAndCount()` method, but will use the cursor options instead.
