@@ -1,7 +1,6 @@
 import { AbstractSqlDriver, MikroORM, Opt } from '@mikro-orm/sql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { PgliteDriver } from '@mikro-orm/pglite';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 import {
   Embeddable,
@@ -63,9 +62,9 @@ class Payment {
 }
 
 describe.each([
-  { driver: SqliteDriver, balance: 75 },
-  { driver: PgliteDriver, balance: '75.000' },
-])('$driver.name', ({ driver, balance }) => {
+  { driver: SqliteDriver, balance: 75, quote: '`' },
+  { driver: PgliteDriver, balance: '75.000', quote: '"' },
+])('$driver.name', ({ driver, balance, quote }) => {
   let orm: MikroORM<AbstractSqlDriver>;
 
   beforeAll(async () => {
@@ -173,20 +172,11 @@ describe.each([
     const rows = await orm.em.qb(Invoice, 'inv').select('inv.priceBreakdown.unsettledAmount as balance').execute();
     expect(rows).toEqual([{ balance }]);
   });
-});
 
-test('PostgreSQL selects the formula with the table and column aliases', async () => {
-  const orm = await MikroORM.init({
-    entities: [Invoice],
-    metadataProvider: ReflectMetadataProvider,
-    driver: PostgreSqlDriver,
-    dbName: 'embedded_formula_fields',
-  });
-  try {
-    expect(orm.em.qb(Invoice, 'inv').select(['invoiceSequence', 'priceBreakdown.unsettledAmount']).getQuery()).toBe(
+  test('query builder selects the formula with the table and column aliases', () => {
+    const sql = orm.em.qb(Invoice, 'inv').select(['invoiceSequence', 'priceBreakdown.unsettledAmount']).getQuery();
+    expect(sql.replaceAll(quote, '"')).toBe(
       'select "inv"."invoice_sequence", round("inv".final_price - "inv".settled_amount, 3) as "unsettled_amount" from "invoice" as "inv"',
     );
-  } finally {
-    await orm.close(true);
-  }
+  });
 });
