@@ -266,6 +266,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       cacheKey,
       options.refresh,
       true,
+      options.schema,
     );
 
     if (cached?.data) {
@@ -1291,6 +1292,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       cacheKey,
       options.refresh,
       true,
+      options.schema,
     );
 
     if (cached?.data !== undefined) {
@@ -3493,6 +3495,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     key: unknown,
     refresh?: boolean,
     merge?: boolean,
+    schema?: string,
   ): Promise<{ data?: R | null; key: string } | undefined> {
     config ??= this.config.get('resultCache').global;
 
@@ -3519,6 +3522,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       merge: true,
       convertCustomTypes: false,
       refresh,
+      schema,
       recomputeSnapshot: true,
     };
 
