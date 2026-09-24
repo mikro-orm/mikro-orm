@@ -1692,7 +1692,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const result: Entity[] = [];
     const entities = new Map<Entity, EntityData<Entity>>();
     const entitiesByData = new Map<EntityData<Entity>, Entity>();
-    const entitiesByAllDataIdx = new Map<number, Entity>();
 
     for (let i = 0; i < data.length; i++) {
       let row = data[i];
@@ -1710,7 +1709,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         where = helper(entity).getPrimaryKey() as FilterQuery<Entity>;
         getOnCreateGeneratedFields(meta, entity).forEach(field => generatedFields.add(field));
         em.#entityFactory.assignDefaultValues(entity, meta);
-        entitiesByAllDataIdx.set(allData.length, entity);
         row = em.#comparator.prepareEntity(entity);
       } else {
         row = data[i] = Utils.copy(QueryHelper.processParams(row));
@@ -1778,9 +1776,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         await em.eventManager.dispatchEvent(EventType.beforeUpsert, { entity, em, meta }, meta);
       }
 
-      for (const [idx, entity] of entitiesByAllDataIdx) {
-        allData[idx] = em.#comparator.prepareEntity(entity);
-      }
+      dataIndexes.forEach((index, idx) => {
+        if (Utils.isEntity(data[index])) {
+          allData[idx] = em.#comparator.prepareEntity(data[index] as Entity);
+        }
+      });
     }
 
     const res = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
