@@ -106,7 +106,7 @@ export class TransactionManager {
     options: TransactionOptions,
   ): Promise<T> {
     const suspended = this.suspendTransaction(em);
-    const fork = this.createFork(em, options, true);
+    const fork = this.createFork(em, { ...options, disableTransactions: true } as TransactionOptions);
     const propagateToUpperContext = this.shouldPropagateToUpperContext(em);
 
     try {
@@ -174,16 +174,12 @@ export class TransactionManager {
   /**
    * Creates a fork of the EntityManager with the given options.
    */
-  private createFork(
-    em: EntityManager,
-    options: TransactionOptions,
-    disableTransactions = options.ignoreNestedTransactions,
-  ): EntityManager {
+  private createFork(em: EntityManager, options: TransactionOptions): EntityManager {
     return em.fork({
       clear: options.clear ?? false,
       flushMode: options.flushMode,
       cloneEventManager: true,
-      disableTransactions,
+      disableTransactions: options.ignoreNestedTransactions,
       loggerContext: options.loggerContext,
       signal: options.signal,
       inflightQueryAbortStrategy: options.inflightQueryAbortStrategy,

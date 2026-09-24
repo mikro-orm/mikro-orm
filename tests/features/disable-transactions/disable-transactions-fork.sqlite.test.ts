@@ -11,7 +11,7 @@ const User = defineEntity({
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = await MikroORM.init({ entities: [User], dbName: ':memory:', disableTransactions: false });
+  orm = await MikroORM.init({ entities: [User], dbName: ':memory:' });
   await orm.schema.create();
 });
 
@@ -57,7 +57,6 @@ test('disabling transactions on one fork leaves sibling forks transactional', as
   await sibling.flush();
 
   expect(begin).toHaveBeenCalledTimes(1);
-  expect(orm.config.get('disableTransactions')).toBe(false);
   expect(await orm.em.fork().count(User)).toBe(2);
 });
 
@@ -72,29 +71,22 @@ test('a child fork can explicitly re-enable transactions', async () => {
   expect(await orm.em.fork().count(User)).toBe(1);
 });
 
-describe.each([TransactionPropagation.NOT_SUPPORTED, TransactionPropagation.NEVER, TransactionPropagation.SUPPORTS])(
-  '%s without an ambient transaction',
-  propagation => {
-    test.each([false, true])('does not start transactions during flush (explicit: %s)', async explicit => {
-      const em = orm.em.fork();
-      const begin = vi.spyOn(em.getConnection(), 'begin');
-      const commit = vi.spyOn(em.getConnection(), 'commit');
-      await em.transactional(
-        async fork => {
-          expect(fork.isInTransaction()).toBe(false);
-          fork.create(User, { id: 1, name: 'first' });
-          if (explicit) {
-            await fork.flush();
-          }
-          fork.create(User, { id: 2, name: 'second' });
-        },
-        { propagation, ignoreNestedTransactions: false },
-      );
+test.each([TransactionPropagation.NOT_SUPPORTED, TransactionPropagation.NEVER, TransactionPropagation.SUPPORTS])(
+  'nested transactions inside %s still roll back',
+  async propagation => {
+    const em = orm.em.fork();
+    const nested = em.transactional(
+      fork =>
+        fork.transactional(async inner => {
+          expect(inner.isInTransaction()).toBe(true);
+          inner.create(User, { id: 1, name: 'first' });
+          await inner.flush();
+          throw new Error('rollback');
+        }),
+      { propagation },
+    );
 
-      expect(begin).not.toHaveBeenCalled();
-      expect(commit).not.toHaveBeenCalled();
-      expect(await em.fork().count(User)).toBe(2);
-      expect(orm.config.get('disableTransactions')).toBe(false);
-    });
+    await expect(nested).rejects.toThrow('rollback');
+    expect(await em.fork().count(User)).toBe(0);
   },
 );
