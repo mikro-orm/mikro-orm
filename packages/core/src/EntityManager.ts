@@ -1673,7 +1673,20 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
             idx.map(i => data![i]),
             options,
           );
-          idx.forEach((i, j) => (ret[i] = res[j]));
+          const seen = new Set<unknown>();
+          let j = 0;
+
+          // `res` holds every entity once, so skip the rows resolving to an entity an earlier row already took
+          for (const i of idx) {
+            const row = data[i];
+            const entity = Utils.isEntity(row)
+              ? row
+              : em.#unitOfWork.tryGetById(entityName, row, options.schema, false);
+
+            if (!seen.has(entity)) {
+              seen.add((ret[i] = res[j++]));
+            }
+          }
         }
 
         // rows resolving to the same entity are returned once, as in the single statement path
