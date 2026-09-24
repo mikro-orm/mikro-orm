@@ -976,7 +976,10 @@ export class QueryBuilder<
   count<F extends Field<Entity, RootAlias, Context>>(field?: F | F[], distinct = false): CountQueryBuilder<Entity> {
     if (field) {
       this.#state.fields = Utils.asArray(field as string);
-    } else if (distinct || this.hasToManyJoins()) {
+    } else if (this.#state.distinctOn) {
+      this.#state.fields = this.#state.distinctOn;
+      distinct = true;
+    } else if (distinct || this.#state.flags.has(QueryFlag.DISTINCT) || this.hasToManyJoins()) {
       this.#state.fields = this.mainAlias.meta.primaryKeys;
     } else {
       this.#state.fields = [raw('*')];
@@ -3569,6 +3572,11 @@ export class QueryBuilder<
           this.helper.mapper(f as string, this.type, undefined, undefined, schema),
         );
         qb.count(fields, this.#state.flags.has(QueryFlag.DISTINCT));
+
+        if (this.#state.distinctOn && this.#state.flags.has(QueryFlag.DISTINCT)) {
+          qb.distinctOn(this.prepareFields(this.#state.distinctOn, 'where', schema) as string[]);
+        }
+
         this.helper.processJoins(qb, this.#state.joins, joinSchema, schemaOverride);
         break;
       }

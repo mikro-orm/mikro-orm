@@ -484,13 +484,13 @@ export class NativeQueryBuilder implements Subquery {
     }
   }
 
-  /** Whether this COUNT query needs a subquery wrapper for multi-column distinct. */
+  /** Whether this COUNT query needs a subquery wrapper: multi-column distinct, or `distinct on` (keeps the null group). */
   protected needsCountSubquery(): boolean {
     return (
       this.type === QueryType.COUNT &&
       !!this.options.distinct &&
-      this.options.select!.length > 1 &&
-      !this.platform.supportsMultiColumnCountDistinct()
+      ((this.options.select!.length > 1 && !this.platform.supportsMultiColumnCountDistinct()) ||
+        !!this.options.distinctOn)
     );
   }
 
