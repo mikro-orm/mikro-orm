@@ -90,3 +90,22 @@ test.each([TransactionPropagation.NOT_SUPPORTED, TransactionPropagation.NEVER, T
     expect(await em.fork().count(User)).toBe(0);
   },
 );
+
+test.each([TransactionPropagation.NOT_SUPPORTED, TransactionPropagation.NEVER, TransactionPropagation.SUPPORTS])(
+  'flush inside %s still runs in an implicit transaction',
+  async propagation => {
+    const em = orm.em.fork();
+    const begin = vi.spyOn(em.getConnection(), 'begin');
+    await em.transactional(
+      async fork => {
+        expect(fork.isInTransaction()).toBe(false);
+        fork.create(User, { id: 1, name: 'first' });
+        await fork.flush();
+      },
+      { propagation },
+    );
+
+    expect(begin).toHaveBeenCalledTimes(1);
+    expect(await em.fork().count(User)).toBe(1);
+  },
+);
