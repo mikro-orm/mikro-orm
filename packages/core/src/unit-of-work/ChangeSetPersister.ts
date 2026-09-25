@@ -333,7 +333,7 @@ export class ChangeSetPersister {
     for (const key of keys) {
       cond[key] = changeSet.originalEntity![key];
 
-      if (changeSet.payload[key]) {
+      if (Object.hasOwn(changeSet.payload, key)) {
         tmp.push(key);
       }
     }
@@ -493,13 +493,16 @@ export class ChangeSetPersister {
 
     // skip entity references as they don't have version values loaded
     changeSets = changeSets.filter(cs => helper(cs.entity).__initialized);
-    const primaryKeys = meta.primaryKeys.concat(...concurrencyCheckKeys);
+    const fields = meta.primaryKeys.concat(...concurrencyCheckKeys);
 
     const $or = changeSets.map(cs => {
-      const cond = Utils.getPrimaryKeyCond<T>(cs.originalEntity as T, primaryKeys) as FilterQuery<T>;
+      const cond = Utils.getPrimaryKeyCond<T>(cs.originalEntity as T, meta.primaryKeys) as Dictionary;
+
+      for (const key of concurrencyCheckKeys) {
+        cond[key] = cs.originalEntity![key];
+      }
 
       if (meta.ownsVersionProperty()) {
-        // @ts-ignore
         cond[meta.versionProperty] = this.#platform.convertVersionValue(
           cs.entity[meta.versionProperty] as unknown as Date,
           meta.properties[meta.versionProperty],
@@ -510,7 +513,7 @@ export class ChangeSetPersister {
     });
 
     options = this.prepareOptions(meta, options, {
-      fields: primaryKeys,
+      fields,
       orderBy: meta.primaryKeys.reduce((o, pk) => {
         o[pk] = 'asc';
         return o;
@@ -523,8 +526,8 @@ export class ChangeSetPersister {
     if (res.length !== changeSets.length) {
       // a FK pointing to a composite PK is an array, so the values need to be compared deeply
       const compare = (a: Dictionary, b: Dictionary, keys: string[]) => keys.every(k => equals(a[k], b[k]));
-      const entity = changeSets.find(cs => {
-        return !res.some(row => compare(Utils.getPrimaryKeyCond(cs.entity, primaryKeys)!, row, primaryKeys));
+      const entity = changeSets.find((_, index) => {
+        return !res.some(row => compare($or[index], row, meta.primaryKeys));
       })!.entity;
       throw OptimisticLockError.lockFailed(entity);
     }

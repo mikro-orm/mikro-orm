@@ -110,7 +110,9 @@ export class TransactionManager {
     const propagateToUpperContext = this.shouldPropagateToUpperContext(em);
 
     try {
-      return await this.executeTransactionFlow(fork, cb, propagateToUpperContext, em);
+      return await TransactionContext.create(fork, () =>
+        this.executeTransactionFlow(fork, cb, propagateToUpperContext, em),
+      );
     } finally {
       this.resumeTransaction(em, suspended);
     }
