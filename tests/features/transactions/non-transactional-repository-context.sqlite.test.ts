@@ -7,6 +7,7 @@ import {
   TransactionPropagation,
   UniqueConstraintViolationException,
 } from '@mikro-orm/sqlite';
+import { Transactional } from '@mikro-orm/decorators/legacy';
 
 const User = defineEntity({
   name: 'User',
@@ -45,6 +46,20 @@ describe.each([TransactionPropagation.NOT_SUPPORTED, TransactionPropagation.NEVE
       expect(await orm.em.fork().findOneOrFail(User, 1)).toMatchObject({ name: result.name });
       expect(TransactionContext.getEntityManager()).toBeUndefined();
       expect(orm.em.getContext(false)).toBe(orm.em);
+    });
+
+    test('flushes changes made through an injected repository in a `@Transactional()` method', async () => {
+      class UserService {
+        readonly repository = orm.em.getRepository(User);
+
+        @Transactional({ context: () => orm, propagation })
+        async create() {
+          this.repository.create({ id: 1, name: 'created in the method' });
+        }
+      }
+
+      await new UserService().create();
+      expect(await orm.em.fork().count(User)).toBe(1);
     });
 
     test.each([false, true])('restores a surrounding request context (callback fails: %s)', async fails => {
