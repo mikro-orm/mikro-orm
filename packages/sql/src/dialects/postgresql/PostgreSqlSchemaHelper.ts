@@ -603,7 +603,13 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         type = col.format_type;
       }
 
-      if (type === 'vector' && col.length == null && col.custom_length != null && col.custom_length !== -1) {
+      // pgvector stores the dimension in atttypmod for all three of its vector types
+      if (
+        ['vector', 'halfvec', 'sparsevec'].includes(type) &&
+        col.length == null &&
+        col.custom_length != null &&
+        col.custom_length !== -1
+      ) {
         col.length = col.custom_length;
       }
 
