@@ -164,12 +164,12 @@
     "typescript": "7.0.2",
     "unplugin-swc": "2.0.0",
     "uuid": "14.0.2",
-    "vite": "8.3.0",
+    "vite": "8.3.1",
     "vitest": "5.0.1"
   },
   "resolutions": {
     "js-yaml": "4.3.2",
     "tar": "7.5.22"
   },
-  "packageManager": "yarn@4.18.0"
+  "packageManager": "yarn@4.18.1"
 }
