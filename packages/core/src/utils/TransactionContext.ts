@@ -4,6 +4,7 @@ import { createAsyncContext } from './AsyncContext.js';
 /** Uses `AsyncLocalStorage` to maintain a transaction-scoped EntityManager context across async operations. */
 export class TransactionContext {
   private static storage = createAsyncContext<TransactionContext>();
+  readonly #parent = TransactionContext.currentTransactionContext();
   readonly id: number;
 
   constructor(readonly em: EntityManager) {
@@ -29,7 +30,12 @@ export class TransactionContext {
    * Returns current EntityManager (if available).
    */
   static getEntityManager(name = 'default'): EntityManager | undefined {
-    const context = TransactionContext.currentTransactionContext();
-    return context?.em.name === name ? context.em : undefined;
+    let context = TransactionContext.currentTransactionContext();
+
+    while (context && context.em.name !== name) {
+      context = context.#parent;
+    }
+
+    return context?.em;
   }
 }
