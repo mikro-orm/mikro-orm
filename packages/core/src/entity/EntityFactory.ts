@@ -354,8 +354,11 @@ export class EntityFactory {
     const meta = this.#metadata.get<T>(entityName);
     const schema = this.#driver.getSchemaName(meta, options);
 
+    // targetKey === single PK is redundant; use the PK identity map, not the alternate-key index.
+    const isOwnPrimaryKey = meta.primaryKeys.length === 1 && meta.primaryKeys[0] === options.key;
+
     // Handle alternate key lookup
-    if (options.key) {
+    if (options.key && !isOwnPrimaryKey) {
       const value =
         '' + (Array.isArray(id) ? id[0] : Utils.isPlainObject(id) ? (id as Record<string, any>)[options.key] : id);
       const exists = this.unitOfWork.getByKey(entityName, options.key, value, schema, options.convertCustomTypes);
