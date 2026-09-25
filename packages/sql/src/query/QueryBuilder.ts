@@ -977,7 +977,7 @@ export class QueryBuilder<
     if (field) {
       this.#state.fields = Utils.asArray(field as string);
     } else if (distinct || this.hasToManyJoins()) {
-      this.#state.fields = this.mainAlias.meta.primaryKeys;
+      this.#state.fields = this.mainAlias.meta.getPrimaryProps().flatMap(prop => prop.fieldNames);
     } else {
       this.#state.fields = [raw('*')];
     }
@@ -4244,7 +4244,15 @@ export class QueryBuilder<
     });
   }
 
-  protected wrapPaginateSubQuery(meta: EntityMetadata): void {
+  /** @internal Returns one row per root entity, with ordering and pagination applied before population. */
+  getRootEntityQuery(): NativeQueryBuilder {
+    const qb = this.clone();
+    qb.setFlag(QueryFlag.DISABLE_PAGINATE);
+    qb.finalize();
+    return qb.hasToManyJoins() ? qb.createPaginateSubQuery(qb.mainAlias.meta) : qb.getNativeQuery();
+  }
+
+  private createPaginateSubQuery(meta: EntityMetadata): NativeQueryBuilder {
     const schema = this.getSchema(this.mainAlias);
     const pks = this.prepareFields(meta.primaryKeys, 'sub-query', schema) as string[];
     const subQuery = this.clone(['orderBy', 'fields', 'lockMode', 'lockTables'])
@@ -4267,9 +4275,11 @@ export class QueryBuilder<
       const orderBy = [];
 
       for (const orderMap of this.#state.orderBy) {
-        for (const field of Utils.getObjectQueryKeys(orderMap)) {
-          const direction = orderMap[field as EntityKey<Entity>];
-
+        const entries = Utils.getObjectQueryKeys(orderMap).flatMap(key => {
+          const fields = RawQueryFragment.isKnownFragmentSymbol(key) ? [key] : Utils.splitPrimaryKeys(key);
+          return fields.map(field => [field, orderMap[key as EntityKey<Entity>]] as const);
+        });
+        for (const [field, direction] of entries) {
           if (RawQueryFragment.isKnownFragmentSymbol(field)) {
             orderBy.push({ [field]: direction });
             continue;
@@ -4298,7 +4308,13 @@ export class QueryBuilder<
     }
 
     subQuery.#state.finalized = true;
-    const innerQuery = subQuery.as(this.mainAlias.aliasName).clear('select').select(pks);
+    return subQuery.getNativeQuery();
+  }
+
+  protected wrapPaginateSubQuery(meta: EntityMetadata): void {
+    const schema = this.getSchema(this.mainAlias);
+    const pks = this.prepareFields(meta.primaryKeys, 'sub-query', schema) as string[];
+    const innerQuery = this.createPaginateSubQuery(meta).as(this.mainAlias.aliasName).clear('select').select(pks);
 
     // multiple sub-queries are needed to get around mysql limitations with order by + limit + where in + group by (o.O)
     // https://stackoverflow.com/questions/17892762/mysql-this-version-of-mysql-doesnt-yet-support-limit-in-all-any-some-subqu

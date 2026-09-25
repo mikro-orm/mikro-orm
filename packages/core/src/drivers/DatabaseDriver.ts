@@ -2,6 +2,7 @@ import {
   type CountOptions,
   type DeleteOptions,
   type DriverMethodOptions,
+  type DriverFindOptions,
   EntityManagerType,
   type FindOneOptions,
   type FindOptions,
@@ -65,7 +66,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   abstract find<T extends object, P extends string = never, F extends string = never, E extends string = never>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
-    options?: FindOptions<T, P, F, E>,
+    options?: DriverFindOptions<T, P, F, E>,
   ): Promise<EntityData<T>[]>;
 
   abstract findOne<T extends object, P extends string = never, F extends string = never, E extends string = never>(

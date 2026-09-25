@@ -11,6 +11,7 @@ import {
   type DeleteOptions,
   type Dictionary,
   type DriverMethodOptions,
+  type DriverFindOptions,
   type EntityData,
   type EntityDataValue,
   type EntityDictionary,
@@ -288,7 +289,7 @@ export abstract class AbstractSqlDriver<
   async find<T extends object, P extends string = never, F extends string = never, E extends string = never>(
     entityName: EntityName<T>,
     where: ObjectQuery<T>,
-    options: FindOptions<T, P, F, E> = {},
+    options: DriverFindOptions<T, P, F, E> = {},
   ): Promise<EntityData<T>[]> {
     options = { populate: [], orderBy: [], ...options };
     const meta = this.metadata.get(entityName);
@@ -301,7 +302,9 @@ export abstract class AbstractSqlDriver<
       where = await this.applyUnionWhere(meta, where, options);
     }
 
-    const qb = await this.createQueryBuilderFromOptions(meta, where, options);
+    const qb = options.selection
+      ? await this.createSelectionQuery(meta, where, options)
+      : await this.createQueryBuilderFromOptions(meta, where, options);
     const result = await this.rethrow(qb.execute('all'));
 
     if (options.last && !options.first) {
@@ -309,6 +312,74 @@ export abstract class AbstractSqlDriver<
     }
 
     return result;
+  }
+
+  private async createSelectionQuery<T extends object>(
+    meta: EntityMetadata<T>,
+    where: FilterQuery<T>,
+    options: DriverFindOptions<T, any, any, any>,
+  ): Promise<AnyQueryBuilder<T>> {
+    const { ids, match = {} } = options.selection!;
+    const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
+    const primaryKeyWhere = (operator: '$in' | '$nin') =>
+      QueryHelper.processWhere({
+        where: { [pk]: { [operator]: ids } } as FilterQuery<T>,
+        entityName: meta.class,
+        metadata: this.metadata,
+        platform: this.platform,
+        convertCustomTypes: options.convertCustomTypes,
+      });
+    const pageWhere = { $and: [where, match, primaryKeyWhere('$nin')] } as FilterQuery<T>;
+
+    if (ids.length === 0) {
+      return this.createQueryBuilderFromOptions(meta, pageWhere, options);
+    }
+
+    const keyOptions = { ...options, fields: meta.primaryKeys, exclude: undefined, populate: [] };
+    const selected = await this.createQueryBuilderFromOptions(
+      meta,
+      { $and: [where, primaryKeyWhere('$in')] } as FilterQuery<T>,
+      { ...keyOptions, orderBy: [], limit: undefined, offset: undefined },
+    );
+    const page = await this.createQueryBuilderFromOptions(meta, pageWhere, keyOptions);
+    const qb = await this.createQueryBuilderFromOptions(meta, where, {
+      ...options,
+      limit: undefined,
+      offset: undefined,
+    });
+    const alias = qb.getNextAlias('selection');
+    const columns = meta.getPrimaryProps().flatMap(prop => prop.fieldNames);
+    let bucket = '__selection_bucket';
+    while (columns.includes(bucket)) {
+      bucket += '_';
+    }
+
+    // Keep each branch at one row per primary key before limiting or joining populated relations.
+    const branches = [selected, page].map((branch, index) => {
+      const keys = branch.getRootEntityQuery();
+      if (index === 0 || (options.limit == null && !options.offset)) {
+        keys.clear('orderBy');
+      }
+
+      return this.platform
+        .createNativeQueryBuilder()
+        .select([...columns.map(column => `${alias}.${column}`), raw(`? as ??`, [index, bucket])])
+        .from(keys.as(alias))
+        .compile();
+    });
+    const union = raw(
+      branches.map(branch => branch.sql).join(' union all '),
+      branches.flatMap(branch => branch.params),
+    );
+    const condition = columns.map(column => raw('?? = ??', [`${alias}.${column}`, `${qb.alias}.${column}`]));
+    const on = raw(
+      condition.map(part => part.sql).join(' and '),
+      condition.flatMap(part => [...part.params]),
+    );
+    qb.innerJoin(union, alias, { [on]: [] });
+    qb.state.orderBy.unshift({ [raw('??', [`${alias}.${bucket}`])]: QueryOrder.ASC } as QueryOrderMap<T>);
+
+    return qb;
   }
 
   async findOne<T extends object, P extends string = never, F extends string = never, E extends string = never>(
