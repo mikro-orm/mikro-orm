@@ -13,6 +13,7 @@ import type {
   AutoPath,
   ObjectQuery,
   FilterObject,
+  Loaded,
   Populate,
   EntityName,
   PopulateHintOptions,
@@ -68,7 +69,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   find<T extends object, P extends string = never, F extends string = never, E extends string = never>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
-    options?: FindOptions<T, P, F, E>,
+    options?: DriverFindOptions<T, P, F, E>,
   ): Promise<EntityData<T>[]>;
 
   /**
@@ -240,7 +241,7 @@ export interface StreamOptions<
   Exclude extends string = never,
 > extends Omit<
   FindAllOptions<Entity, Populate, Fields, Exclude>,
-  'cache' | 'before' | 'after' | 'first' | 'last' | 'overfetch' | 'strategy' | 'selection'
+  'cache' | 'before' | 'after' | 'first' | 'last' | 'overfetch' | 'strategy'
 > {
   /**
    * How many rows to fetch in one round-trip.
@@ -333,19 +334,6 @@ export interface FindOptions<
   /** Ordering of the results.Can be an object or array of objects, keys are property names, values are ordering (asc/desc) */
   orderBy?: OrderDefinition<Entity>;
 
-  /**
-   * Pins existing, in-scope entities ahead of the regular page, outside `limit` and `offset`.
-   * `where` remains the mandatory scope for both groups. `match` applies only to the regular page.
-   * `findAndCount()` counts only unselected entities matching both `where` and `match`.
-   * Named result-cache keys cache only the regular page; selected entities and counts are read fresh.
-   */
-  selection?: {
-    /** Primary-key values, using the same representation as `em.find()`. */
-    ids: readonly Primary<Entity>[];
-    /** Additional conditions for the regular page and count, which selected entities may bypass. */
-    match?: FilterQuery<Entity>;
-  };
-
   /** Control result caching for this query. Result cache is by default disabled, not to be confused with the identity map. */
   cache?: boolean | number | [string, number];
 
@@ -428,6 +416,51 @@ export interface FindOptions<
   em?: EntityManager;
 }
 
+/** Selected primary keys and the additional conditions applied only to the regular page. */
+export interface SelectionOptions<T> {
+  ids: readonly Primary<T>[];
+  match?: FilterQuery<T>;
+}
+
+/** Options for `em.findWithSelection()` (SQL drivers only). */
+export interface FindWithSelectionOptions<
+  T,
+  P extends string = never,
+  F extends string = never,
+  E extends string = never,
+  I extends boolean = true,
+> extends Omit<
+  FindOptions<T, P, F, E>,
+  'first' | 'last' | 'before' | 'after' | 'overfetch' | 'groupBy' | 'having' | 'lockMode'
+> {
+  /** Existing, in-scope entities returned before the page, outside its limit and offset. */
+  selection: SelectionOptions<T>;
+  /** Count unselected matches before applying limit and offset. Defaults to true. */
+  includeCount?: I;
+}
+
+/** Result of `em.findWithSelection()`. The count excludes selected entities. */
+export interface SelectionResult<
+  T,
+  P extends string = never,
+  F extends string = never,
+  E extends string = never,
+  I extends boolean = true,
+> {
+  items: Loaded<T, P, F, E>[];
+  totalCount: I extends true ? number : undefined;
+}
+
+/** @internal */
+export interface DriverFindOptions<
+  T,
+  P extends string = never,
+  F extends string = never,
+  E extends string = never,
+> extends FindOptions<T, P, F, E> {
+  selection?: SelectionOptions<T>;
+}
+
 /** Options for cursor-based pagination via `em.findByCursor()`. */
 export interface FindByCursorOptions<
   T extends object,
@@ -435,7 +468,7 @@ export interface FindByCursorOptions<
   F extends string = never,
   E extends string = never,
   I extends boolean = true,
-> extends Omit<FindAllOptions<T, P, F, E>, 'limit' | 'offset' | 'selection'> {
+> extends Omit<FindAllOptions<T, P, F, E>, 'limit' | 'offset'> {
   includeCount?: I;
 }
 
@@ -445,7 +478,7 @@ export interface FindOneOptions<
   P extends string = never,
   F extends string = never,
   E extends string = never,
-> extends Omit<FindOptions<T, P, F, E>, 'limit' | 'lockMode' | 'selection'> {
+> extends Omit<FindOptions<T, P, F, E>, 'limit' | 'lockMode'> {
   lockMode?: LockMode;
   lockVersion?: number | Date;
 }
@@ -504,11 +537,6 @@ export interface UpsertManyOptions<Entity, Fields extends string = never> extend
 
 /** Options for `em.count()` queries. */
 export interface CountOptions<T extends object, P extends string = never> extends AbortQueryOptions {
-  /**
-   * Counts unselected entities matching `where` and `selection.match`.
-   * @see FindOptions.selection
-   */
-  selection?: FindOptions<T>['selection'];
   filters?: FilterOptions;
   schema?: string;
   groupBy?: string | readonly string[];

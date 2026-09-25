@@ -483,6 +483,10 @@ export abstract class Platform {
     return false;
   }
 
+  supportsSelectionPagination(): boolean {
+    return false;
+  }
+
   /** Returns the SQL type declaration used for array storage. */
   getArrayDeclarationSQL(): string {
     return 'text';

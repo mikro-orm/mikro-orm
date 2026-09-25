@@ -32,6 +32,8 @@ import type {
   FindOneOptions,
   FindOneOrFailOptions,
   FindOptions,
+  FindWithSelectionOptions,
+  SelectionResult,
   GetReferenceOptions,
   NativeInsertUpdateOptions,
   StreamOptions,
@@ -146,7 +148,7 @@ export class EntityRepository<Entity extends object> {
   }
 
   /**
-   * @inheritDoc EntityManager.find
+   * Finds all entities matching your `where` query. You can pass additional options via the `options` parameter.
    */
   async find<
     Hint extends string = never,
@@ -161,7 +163,8 @@ export class EntityRepository<Entity extends object> {
   }
 
   /**
-   * @inheritDoc EntityManager.findAndCount
+   * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
+   * where first element is the array of entities, and the second is the count.
    */
   async findAndCount<
     Hint extends string = never,
@@ -173,6 +176,21 @@ export class EntityRepository<Entity extends object> {
     options?: FindOptions<Entity, Hint, Fields, Excludes> & { using?: Using | Using[] },
   ): Promise<[Loaded<Entity, Hint, Fields, Excludes>[], number]> {
     return this.getEntityManager().findAndCount(this.entityName, where as any, options as any);
+  }
+
+  /**
+   * @inheritDoc EntityManager.findWithSelection
+   */
+  async findWithSelection<
+    Hint extends string = never,
+    Fields extends string = never,
+    Excludes extends string = never,
+    IncludeCount extends boolean = true,
+  >(
+    where: FilterQuery<Entity>,
+    options: FindWithSelectionOptions<Entity, Hint, Fields, Excludes, IncludeCount>,
+  ): Promise<SelectionResult<Entity, Hint, Fields, Excludes, IncludeCount>> {
+    return this.getEntityManager().findWithSelection(this.entityName, where as any, options);
   }
 
   /**
@@ -427,7 +445,7 @@ export class EntityRepository<Entity extends object> {
   }
 
   /**
-   * @inheritDoc EntityManager.count
+   * Returns total number of entities matching your `where` query.
    */
   async count<Hint extends string = never>(
     where: FilterQuery<Entity> = {} as FilterQuery<Entity>,

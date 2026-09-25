@@ -43,7 +43,7 @@ test('pins UUID selections and orders by a formula with a partial projection', a
   await em.flush();
   em.clear();
 
-  const [items, count] = await em.findAndCount(
+  const { items, totalCount: count } = await em.findWithSelection(
     Item,
     { tenant: 1 },
     {
@@ -69,7 +69,7 @@ test('excludes composite selected IDs from the regular count and page', async ()
   await em.flush();
   em.clear();
 
-  const [items, count] = await em.findAndCount(
+  const { items, totalCount: count } = await em.findWithSelection(
     CompositeItem,
     { tenant: 1 },
     {
