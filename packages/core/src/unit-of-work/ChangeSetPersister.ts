@@ -333,7 +333,7 @@ export class ChangeSetPersister {
     for (const key of keys) {
       cond[key] = changeSet.originalEntity![key];
 
-      if (changeSet.payload[key]) {
+      if (Object.hasOwn(changeSet.payload, key)) {
         tmp.push(key);
       }
     }
