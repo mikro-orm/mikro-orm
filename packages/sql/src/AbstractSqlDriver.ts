@@ -11,7 +11,6 @@ import {
   type DeleteOptions,
   type Dictionary,
   type DriverMethodOptions,
-  type DriverFindOptions,
   type EntityData,
   type EntityDataValue,
   type EntityDictionary,
@@ -27,6 +26,7 @@ import {
   type FindByCursorOptions,
   type FindOneOptions,
   type FindOptions,
+  type FindWithSelectionOptions,
   type FormulaTable,
   getLoadingStrategy,
   getOnConflictFields,
@@ -289,7 +289,7 @@ export abstract class AbstractSqlDriver<
   async find<T extends object, P extends string = never, F extends string = never, E extends string = never>(
     entityName: EntityName<T>,
     where: ObjectQuery<T>,
-    options: DriverFindOptions<T, P, F, E> = {},
+    options: FindOptions<T, P, F, E> = {},
   ): Promise<EntityData<T>[]> {
     options = { populate: [], orderBy: [], ...options };
     const meta = this.metadata.get(entityName);
@@ -302,9 +302,7 @@ export abstract class AbstractSqlDriver<
       where = await this.applyUnionWhere(meta, where, options);
     }
 
-    const qb = options.selection
-      ? await this.createSelectionQuery(meta, where, options)
-      : await this.createQueryBuilderFromOptions(meta, where, options);
+    const qb = await this.createQueryBuilderFromOptions(meta, where, options);
     const result = await this.rethrow(qb.execute('all'));
 
     if (options.last && !options.first) {
@@ -314,12 +312,34 @@ export abstract class AbstractSqlDriver<
     return result;
   }
 
+  override async findWithSelection<
+    T extends object,
+    P extends string = never,
+    F extends string = never,
+    E extends string = never,
+  >(
+    entityName: EntityName<T>,
+    where: ObjectQuery<T>,
+    options: Omit<FindWithSelectionOptions<T, P, F, E>, 'includeCount'>,
+  ): Promise<EntityData<T>[]> {
+    const meta = this.metadata.get(entityName);
+    options = { populate: [], orderBy: [], ...options };
+
+    if (options.unionWhere?.length) {
+      where = await this.applyUnionWhere(meta, where, options);
+    }
+
+    const qb = await this.createSelectionQuery(meta, where, options);
+
+    return this.rethrow(qb.execute('all'));
+  }
+
   private async createSelectionQuery<T extends object>(
     meta: EntityMetadata<T>,
     where: FilterQuery<T>,
-    options: DriverFindOptions<T, any, any, any>,
+    options: Omit<FindWithSelectionOptions<T, any, any, any>, 'includeCount'>,
   ): Promise<AnyQueryBuilder<T>> {
-    const { ids, match = {} } = options.selection!;
+    const { ids, match = {} } = options.selection;
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
     const primaryKeyWhere = (operator: '$in' | '$nin') =>
       QueryHelper.processWhere({
@@ -350,6 +370,7 @@ export abstract class AbstractSqlDriver<
     const alias = qb.getNextAlias('selection');
     const columns = meta.getPrimaryProps().flatMap(prop => prop.fieldNames);
     let bucket = '__selection_bucket';
+
     while (columns.includes(bucket)) {
       bucket += '_';
     }
@@ -357,6 +378,7 @@ export abstract class AbstractSqlDriver<
     // Keep each branch at one row per primary key before limiting or joining populated relations.
     const branches = [selected, page].map((branch, index) => {
       const keys = branch.getRootEntityQuery();
+
       if (index === 0 || (options.limit == null && !options.offset)) {
         keys.clear('orderBy');
       }
@@ -376,6 +398,7 @@ export abstract class AbstractSqlDriver<
       condition.map(part => part.sql).join(' and '),
       condition.flatMap(part => [...part.params]),
     );
+
     qb.innerJoin(union, alias, { [on]: [] });
     qb.state.orderBy.unshift({ [raw('??', [`${alias}.${bucket}`])]: QueryOrder.ASC } as QueryOrderMap<T>);
 

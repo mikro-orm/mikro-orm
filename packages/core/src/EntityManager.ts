@@ -24,7 +24,6 @@ import type {
   CountByOptions,
   CountOptions,
   DeleteOptions,
-  DriverFindOptions,
   EntityField,
   FilterOptions,
   FindAllOptions,
@@ -243,6 +242,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     return this.findEntities(entityName, where, options);
   }
 
+  /** Shares entity loading, hydration, population and caching between query methods. */
   protected async findEntities<
     Entity extends object,
     Hint extends string = never,
@@ -251,35 +251,31 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   >(
     entityName: EntityName<Entity>,
     where: FilterQuery<NoInfer<Entity>>,
-    options: DriverFindOptions<Entity, Hint, Fields, Excludes>,
+    options: FindOptions<Entity, Hint, Fields, Excludes>,
+    find?: (
+      where: FilterQuery<Entity>,
+      options: FindOptions<Entity, Hint, Fields, Excludes>,
+    ) => Promise<EntityData<Entity>[]>,
   ): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
     if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
       const em = this.getContext(false);
       const fork = em.fork({ keepTransactionContext: true });
-      const ret = await fork.findEntities(entityName, where, { ...options, disableIdentityMap: false });
+      const forkOptions = { ...options, disableIdentityMap: false };
+      const ret = find
+        ? await fork.findEntities(entityName, where, forkOptions, find)
+        : await fork.find(entityName, where as any, forkOptions);
       fork.clear();
 
       return ret;
     }
 
     const em = this.getContext();
+    find ??= (where, options) => em.driver.find(entityName, where, options);
     options = em.prepareOptions(options);
     const meta = this.metadata.get<Entity>(entityName);
     em.validateIndexUsage(meta, where, options);
     await em.tryFlush(entityName, options);
     where = await em.processWhere(entityName, where, options, 'read');
-    if (options.selection?.match) {
-      options.selection = {
-        ...options.selection,
-        match: QueryHelper.processWhere({
-          where: options.selection.match,
-          entityName,
-          metadata: em.metadata,
-          platform: em.driver.getPlatform(),
-          convertCustomTypes: options.convertCustomTypes,
-        }),
-      };
-    }
     validateParams(where);
     if (meta.orderBy) {
       options.orderBy = QueryHelper.mergeOrderBy(options.orderBy, meta.orderBy);
@@ -318,7 +314,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     await em.processUnionWhere(entityName, options, 'read');
 
-    const results = await em.driver.find(entityName, where, { ctx: em.#transactionContext, em, ...options });
+    const results = await find(where as FilterQuery<Entity>, { ctx: em.#transactionContext, em, ...options });
 
     if (results.length === 0) {
       await em.storeCache(options.cache, cached!, []);
@@ -1106,25 +1102,47 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       throw new ValidationError(`Selection pagination requires a mapped primary key on '${meta.className}'`);
     }
 
-    const invalidOptions = ['first', 'last', 'before', 'after', 'overfetch', 'groupBy', 'having', 'lockMode'];
-    if (invalidOptions.some(key => (options as Dictionary)[key] != null)) {
+    const invalidOptions = ['first', 'last', 'before', 'after', 'overfetch', 'groupBy', 'having', 'lockMode'] as const;
+
+    if (invalidOptions.some(key => options[key] != null)) {
       throw new ValidationError('Selection pagination supports limit and offset without grouping or locking');
     }
 
     const { selection, includeCount = true, ...findOptions } = em.prepareOptions(options);
     await em.tryFlush(entityName, findOptions);
+
     findOptions.flushMode = 'commit';
     findOptions.orderBy = QueryHelper.mergeOrderBy(
       findOptions.orderBy,
       meta.orderBy,
       meta.primaryKeys.map(pk => ({ [pk]: 'asc' }) as QueryOrderMap<Entity>),
     );
+
+    const selectionOptions: FindWithSelectionOptions<Entity, Hint, Fields, Excludes> = {
+      ...findOptions,
+      selection: {
+        ...selection,
+        match:
+          selection.match &&
+          QueryHelper.processWhere({
+            where: selection.match,
+            entityName,
+            metadata: em.metadata,
+            platform: em.driver.getPlatform(),
+            convertCustomTypes: findOptions.convertCustomTypes,
+          }),
+      },
+    };
+
     const primaryKey = Utils.getPrimaryKeyHash(meta.primaryKeys);
     const countWhere = {
       $and: [where, selection.match ?? {}, { [primaryKey]: { $nin: selection.ids } }],
     } as FilterQuery<NoInfer<Entity>>;
+
     const [items, totalCount] = await Promise.all([
-      em.findEntities(entityName, where, { ...findOptions, selection }),
+      em.findEntities(entityName, where, selectionOptions, (where, options) =>
+        em.driver.findWithSelection(entityName, where, options as typeof selectionOptions),
+      ),
       includeCount
         ? em.count(entityName, countWhere, {
             ...findOptions,
