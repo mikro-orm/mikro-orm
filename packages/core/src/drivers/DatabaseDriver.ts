@@ -2,10 +2,10 @@ import {
   type CountOptions,
   type DeleteOptions,
   type DriverMethodOptions,
-  type DriverFindOptions,
   EntityManagerType,
   type FindOneOptions,
   type FindOptions,
+  type FindWithSelectionOptions,
   type IDatabaseDriver,
   type LockOptions,
   type NativeInsertUpdateManyOptions,
@@ -66,8 +66,21 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   abstract find<T extends object, P extends string = never, F extends string = never, E extends string = never>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
-    options?: DriverFindOptions<T, P, F, E>,
+    options?: FindOptions<T, P, F, E>,
   ): Promise<EntityData<T>[]>;
+
+  async findWithSelection<
+    T extends object,
+    P extends string = never,
+    F extends string = never,
+    E extends string = never,
+  >(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    options: Omit<FindWithSelectionOptions<T, P, F, E>, 'includeCount'>,
+  ): Promise<EntityData<T>[]> {
+    throw new Error(`${this.constructor.name} does not support findWithSelection`);
+  }
 
   abstract findOne<T extends object, P extends string = never, F extends string = never, E extends string = never>(
     entityName: EntityName<T>,

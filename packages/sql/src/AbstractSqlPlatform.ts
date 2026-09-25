@@ -201,6 +201,7 @@ export abstract class AbstractSqlPlatform extends Platform {
     return true;
   }
 
+  /** Whether the platform can fetch selected entities and a page of matches in one query. */
   override supportsSelectionPagination(): boolean {
     return true;
   }

@@ -69,7 +69,14 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   find<T extends object, P extends string = never, F extends string = never, E extends string = never>(
     entityName: EntityName<T>,
     where: FilterQuery<T>,
-    options?: DriverFindOptions<T, P, F, E>,
+    options?: FindOptions<T, P, F, E>,
+  ): Promise<EntityData<T>[]>;
+
+  /** Fetches selected entities and a page of unselected matches in one query. */
+  findWithSelection<T extends object, P extends string = never, F extends string = never, E extends string = never>(
+    entityName: EntityName<T>,
+    where: FilterQuery<T>,
+    options: Omit<FindWithSelectionOptions<T, P, F, E>, 'includeCount'>,
   ): Promise<EntityData<T>[]>;
 
   /**
@@ -422,6 +429,16 @@ export interface SelectionOptions<T> {
   match?: FilterQuery<T>;
 }
 
+type UnsupportedSelectionOptions =
+  | 'first'
+  | 'last'
+  | 'before'
+  | 'after'
+  | 'overfetch'
+  | 'groupBy'
+  | 'having'
+  | 'lockMode';
+
 /** Options for `em.findWithSelection()` (SQL drivers only). */
 export interface FindWithSelectionOptions<
   T,
@@ -429,10 +446,10 @@ export interface FindWithSelectionOptions<
   F extends string = never,
   E extends string = never,
   I extends boolean = true,
-> extends Omit<
-  FindOptions<T, P, F, E>,
-  'first' | 'last' | 'before' | 'after' | 'overfetch' | 'groupBy' | 'having' | 'lockMode'
-> {
+>
+  extends
+    Omit<FindOptions<T, P, F, E>, UnsupportedSelectionOptions>,
+    Partial<Record<UnsupportedSelectionOptions, never>> {
   /** Existing, in-scope entities returned before the page, outside its limit and offset. */
   selection: SelectionOptions<T>;
   /** Count unselected matches before applying limit and offset. Defaults to true. */
@@ -449,16 +466,6 @@ export interface SelectionResult<
 > {
   items: Loaded<T, P, F, E>[];
   totalCount: I extends true ? number : undefined;
-}
-
-/** @internal */
-export interface DriverFindOptions<
-  T,
-  P extends string = never,
-  F extends string = never,
-  E extends string = never,
-> extends FindOptions<T, P, F, E> {
-  selection?: SelectionOptions<T>;
 }
 
 /** Options for cursor-based pagination via `em.findByCursor()`. */

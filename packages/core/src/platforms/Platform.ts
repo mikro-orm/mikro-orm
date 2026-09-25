@@ -483,6 +483,7 @@ export abstract class Platform {
     return false;
   }
 
+  /** Whether the platform can fetch selected entities and a page of matches in one query. */
   supportsSelectionPagination(): boolean {
     return false;
   }

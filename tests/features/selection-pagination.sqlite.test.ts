@@ -1,4 +1,15 @@
-import { Collection, defineEntity, LoadStrategy, MikroORM, p, PrimaryKeyProp, Type, Utils } from '@mikro-orm/sqlite';
+import {
+  Collection,
+  defineEntity,
+  type FindWithSelectionOptions,
+  LoadStrategy,
+  LockMode,
+  MikroORM,
+  p,
+  PrimaryKeyProp,
+  Type,
+  Utils,
+} from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers.js';
 
 const Item = defineEntity({
@@ -309,7 +320,45 @@ test('preserves an explicit primary-key direction and its priority', async () =>
   expect(count).toBe(3);
 });
 
-test('rejects cursor options when IDs are pinned', async () => {
+test('rejects unsupported options passed through variables in its types', () => {
+  type Options = FindWithSelectionOptions<{ id: number }>;
+  const selection = { ids: [1] };
+
+  expectTypeOf({ selection, limit: 1, offset: 0 }).toExtend<Options>();
+  expectTypeOf({ selection, first: 1 }).not.toExtend<Options>();
+  expectTypeOf({ selection, last: 1 }).not.toExtend<Options>();
+  expectTypeOf({ selection, before: 'cursor' }).not.toExtend<Options>();
+  expectTypeOf({ selection, after: 'cursor' }).not.toExtend<Options>();
+  expectTypeOf({ selection, overfetch: true }).not.toExtend<Options>();
+  expectTypeOf({ selection, groupBy: ['id'] }).not.toExtend<Options>();
+  expectTypeOf({ selection, having: { id: 1 } }).not.toExtend<Options>();
+  expectTypeOf({ selection, lockMode: LockMode.PESSIMISTIC_WRITE }).not.toExtend<Options>();
+});
+
+test('keeps ordinary and selection queries on their respective driver methods', async () => {
+  const em = orm.em.fork();
+  const find = vi.spyOn(em.getDriver(), 'find');
+  const findWithSelection = vi.spyOn(em.getDriver(), 'findWithSelection');
+
+  await em.find(Item, { tenant: 1 }, { limit: 1 });
+  await em.findAndCount(Item, { tenant: 1 }, { limit: 1 });
+
+  expect(find).toHaveBeenCalledTimes(2);
+  expect(findWithSelection).not.toHaveBeenCalled();
+  find.mockClear();
+
+  const { items } = await em.findWithSelection(
+    Item,
+    { tenant: 1 },
+    { selection: { ids: [1] }, limit: 1, includeCount: false },
+  );
+
+  expect(items.map(item => item.id)).toEqual([1, 2]);
+  expect(findWithSelection).toHaveBeenCalledTimes(1);
+  expect(find).not.toHaveBeenCalled();
+});
+
+test('rejects cursor options at runtime for JavaScript callers', async () => {
   await expect(
     orm.em.fork().findWithSelection(
       Item,
