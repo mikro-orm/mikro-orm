@@ -48,6 +48,20 @@ await em.execute(`
 `, { country, region, city });
 ```
 
+### Array parameters
+
+Array values (both positional and named) are expanded into a comma-separated list of escaped values, so they fit directly into an `in (...)` clause. On PostgreSQL, wrap the placeholder in an `array[...]` constructor to use it with `= any(...)`, and add a cast when the array can be empty, since PostgreSQL cannot infer the type of an empty `array[]`:
+
+```ts
+const refs = ['city:399373', 'city:395709'];
+
+// ... where ref in ('city:399373', 'city:395709')
+await em.execute('select * from cities where ref in (:refs)', { refs });
+
+// ... where ref = any(array['city:399373', 'city:395709']::text[])
+await em.execute('select * from cities where ref = any(array[:refs]::text[])', { refs });
+```
+
 ### Raw fragments in filters
 
 When using raw query fragment inside a filter, you might have to use a callback signature to create new raw instance for every filter usage - namely when you use the fragment as an object key, which requires its serialization.
