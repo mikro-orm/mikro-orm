@@ -7,6 +7,7 @@ import {
   isRaw,
   JsonType,
   type MetadataStorage,
+  QueryHelper,
   RawQueryFragment,
   type RawQueryFragmentSymbol,
   ReferenceKind,
@@ -124,8 +125,9 @@ export class CriteriaNodeFactory {
     validate = true,
   ): ICriteriaNode<T> {
     const rawField = RawQueryFragment.isKnownFragmentSymbol(key);
-    const prop = rawField ? null : meta?.properties[key];
-    const childEntity = prop && prop.kind !== ReferenceKind.SCALAR ? prop.targetMeta!.class : entityName;
+    const prop = rawField ? null : meta?.properties[QueryHelper.splitPolymorphicKey(key)[0] as EntityKey<T>];
+    const target = rawField ? undefined : QueryHelper.findTargetMeta(prop, key);
+    const childEntity = prop && prop.kind !== ReferenceKind.SCALAR ? (target ?? prop.targetMeta!).class : entityName;
     const isNotEmbedded = rawField || prop?.kind !== ReferenceKind.EMBEDDED;
     const val = payload[key as EntityKey<T>];
 
