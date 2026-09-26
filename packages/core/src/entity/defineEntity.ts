@@ -1390,6 +1390,7 @@ export interface EntityMetadataWithProperties<
   TDiscriminatorValue extends string | number | undefined = undefined,
   TBaseDiscriminatorColumn extends string | undefined = undefined,
   TEmbeddable extends boolean = false,
+  TForceUndefined extends boolean = false,
 > extends Omit<
   Partial<EntityMetadata<InferEntityFromProperties<TProperties, TPK, TBase, TRepository>>>,
   | 'properties'
@@ -1425,6 +1426,8 @@ export interface EntityMetadataWithProperties<
   // loose arm only when a repository is inferred, so non-fresh filters stay fully checked without one
   filters?: DefineEntityFilterMap | IsNever<TRepository, never, DefineEntityFilterMapLoose>;
   forceObject?: TForceObject;
+  /** Hydrate `null` as `undefined` for this entity and infer nullable properties as `T | undefined`. */
+  forceUndefined?: TForceUndefined;
   // Captured as a literal so `NarrowDiscriminator` can keep the discriminator required for
   // polymorphic embeddables, where the ORM cannot auto-fill it (the value picks the subtype).
   embeddable?: TEmbeddable;
@@ -1495,6 +1498,7 @@ export function defineEntity<
   const TDiscriminatorValue extends string | number | undefined = undefined,
   const TBaseDiscriminatorColumn extends string | undefined = undefined,
   const TEmbeddable extends boolean = false,
+  const TForceUndefined extends boolean = false,
 >(
   meta: EntityMetadataWithProperties<
     TName,
@@ -1507,24 +1511,13 @@ export function defineEntity<
     TDiscriminatorColumn,
     TDiscriminatorValue,
     TBaseDiscriminatorColumn,
-    TEmbeddable
+    TEmbeddable,
+    TForceUndefined
   >,
 ): EntitySchemaWithMeta<
   TName,
   TTableName,
-  InferEntityFromProperties<
-    TProperties,
-    TPK,
-    TBase,
-    TRepository,
-    TForceObject,
-    TBaseDiscriminatorColumn,
-    TDiscriminatorValue,
-    TEmbeddable
-  >,
-  TBase,
-  TProperties,
-  EntityCtor<
+  MaybeForceUndefined<
     InferEntityFromProperties<
       TProperties,
       TPK,
@@ -1533,7 +1526,27 @@ export function defineEntity<
       TForceObject,
       TBaseDiscriminatorColumn,
       TDiscriminatorValue,
-      TEmbeddable
+      TEmbeddable,
+      TForceUndefined
+    >,
+    EffectiveForceUndefined<TForceUndefined, TBase>
+  >,
+  TBase,
+  TProperties,
+  EntityCtor<
+    MaybeForceUndefined<
+      InferEntityFromProperties<
+        TProperties,
+        TPK,
+        TBase,
+        TRepository,
+        TForceObject,
+        TBaseDiscriminatorColumn,
+        TDiscriminatorValue,
+        TEmbeddable,
+        TForceUndefined
+      >,
+      EffectiveForceUndefined<TForceUndefined, TBase>
     >
   >,
   TDiscriminatorColumn
@@ -1705,6 +1718,33 @@ type BaseEntityMethodKeys = 'toObject' | 'toPOJO' | 'serialize' | 'assign' | 'po
 // `in out` skips variance measurement, which would otherwise structurally compare every `IWrappedEntity` method whenever two inferred entity types meet
 interface BaseEntityMethods<in out Entity extends object> extends Pick<IWrappedEntity<Entity>, BaseEntityMethodKeys> {}
 
+// Applied once on the resolved entity type: anything per property would be re-instantiated on every
+// inference round of the `defineEntity()` call and blow up the type benchmark.
+type MaybeForceUndefined<Entity, ForceUndefined> = [ForceUndefined] extends [true]
+  ? { [K in keyof Entity]: SwapNull<Entity[K]> }
+  : Entity;
+
+// `null` never appears at runtime with `forceUndefined`, so it becomes `undefined` in the inferred type,
+// including inside `ScalarReference` (which wraps the nullability) while keeping any `Opt`/`Hidden` brands.
+type SwapNull<Value> = [Value] extends [ScalarReference<infer Inner>]
+  ? [Extract<keyof Value, symbol>] extends [never]
+    ? ScalarReference<SwapNull<Inner>>
+    : ScalarReference<SwapNull<Inner>> & Pick<Value, Extract<keyof Value, symbol>>
+  : null extends Value
+    ? Exclude<Value, null> | undefined
+    : Value;
+
+// `forceUndefined` is inherited from the base entity's `[Config]`, so subclasses need not repeat it.
+type EffectiveForceUndefined<Flag, Base> = [Flag] extends [true]
+  ? true
+  : IsNever<Base> extends true
+    ? false
+    : [Base] extends [{ [Config]?: infer C }]
+      ? [NonNullable<C>] extends [{ forceUndefined: true }]
+        ? true
+        : false
+      : false;
+
 /** Infers the entity type from a `defineEntity()` properties map, resolving builders, base classes, and primary keys. */
 export type InferEntityFromProperties<
   Properties extends Record<string, any>,
@@ -1715,6 +1755,7 @@ export type InferEntityFromProperties<
   BaseDiscriminatorColumn extends string | undefined = undefined,
   DiscriminatorValue extends string | number | undefined = undefined,
   Embeddable extends boolean = false,
+  ForceUndefined extends boolean = false,
 > = (IsNever<Base> extends true
   ? {}
   : Base extends { toObject(...args: any[]): any }
@@ -1743,7 +1784,8 @@ export type InferEntityFromProperties<
   (IsNever<Base> extends true
     ? {}
     : NarrowDiscriminator<Omit<Base, typeof PrimaryKeyProp>, BaseDiscriminatorColumn, DiscriminatorValue, Embeddable>) &
-  (ForceObject extends true ? { [Config]?: DefineConfig<{ forceObject: true }> } : {}) & {
+  (ForceObject extends true ? { [Config]?: DefineConfig<{ forceObject: true }> } : {}) &
+  (ForceUndefined extends true ? { [Config]?: DefineConfig<{ forceUndefined: true }> } : {}) & {
     [IndexHints]?: [Omit<ExtractBaseProperties<Base>, keyof Properties> & Properties];
   };
 
