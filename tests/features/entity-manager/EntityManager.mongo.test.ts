@@ -753,9 +753,12 @@ describe('EntityManagerMongo', () => {
     expect(driver).toBeInstanceOf(MongoDriver);
     expect(driver.getDependencies()).toEqual(['mongodb']);
     expect(orm.config.getNamingStrategy().joinTableName('a', 'b', 'c')).toEqual('a_c');
-    expect(await driver.find(BookTag, { name: 'bar', books: ['123'] }, { orderBy: {} })).toEqual([]);
-    expect(await driver.findOne(BookTag, { name: 'bar', books: ['123'] })).toBeNull();
-    expect(await driver.findOne(BookTag, { name: 'bar', books: ['123'] }, { orderBy: {} })).toBeNull();
+    expect(await driver.find(BookTag, { name: 'bar' }, { orderBy: {} })).toEqual([]);
+    expect(await driver.findOne(BookTag, { name: 'bar' })).toBeNull();
+    expect(await driver.findOne(BookTag, { name: 'bar' }, { orderBy: {} })).toBeNull();
+    await expect(driver.find(BookTag, { name: 'bar', books: ['123'] })).rejects.toThrow(
+      'Unsupported condition on inverse side BookTag.books, query the owning side Book.tags instead.',
+    );
     expect(driver.getPlatform().usesPivotTable()).toBe(false);
     expect(driver.getPlatform().usesImplicitTransactions()).toBe(false);
     await expect(driver.loadFromPivotTable({} as any, [])).rejects.toThrow('MongoDriver does not use pivot tables');
@@ -2649,26 +2652,17 @@ describe('EntityManagerMongo', () => {
     expect(res1).not.toBeNull();
     orm.em.clear();
 
-    const res2 = await orm.em.findOne(
-      Author,
-      {
-        $and: [{ $or: [{ favouriteBook: book3.id }, { books: { tags: author.books[1].tags.getIdentifiers('id') } }] }],
-      },
-      { populate: ['books'] },
-    );
-    expect(res2).not.toBeNull();
-    orm.em.clear();
-
-    const res3 = await orm.em.findOne(
-      Author,
-      {
-        $and: [
-          { id: author.id },
-          { $or: [{ favouriteBook: book3.id }, { books: { tags: author.books[1].tags.getIdentifiers('id') } }] },
-        ],
-      },
-      { populate: ['books'] },
-    );
-    expect(res3).not.toBeNull();
+    // conditions on the inverse side need a join, which MongoDB does not support
+    await expect(
+      orm.em.findOne(
+        Author,
+        {
+          $and: [
+            { $or: [{ favouriteBook: book3.id }, { books: { tags: author.books[1].tags.getIdentifiers('id') } }] },
+          ],
+        },
+        { populate: ['books'] },
+      ),
+    ).rejects.toThrow('Unsupported condition on inverse side Author.books, query the owning side Book.author instead.');
   });
 });
