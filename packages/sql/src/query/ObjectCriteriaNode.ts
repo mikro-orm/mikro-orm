@@ -433,7 +433,10 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     } else {
       const prev = qb.state.fields?.slice();
       const toOneProperty = [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind);
-      const joinType = toOneProperty && !this.prop!.nullable ? JoinType.innerJoin : JoinType.leftJoin;
+      // ordering must not drop rows whose polymorphic relation points to another target
+      const orderByPolymorphic = this.prop!.polymorphic && options?.type === 'orderBy';
+      const joinType =
+        toOneProperty && !this.prop!.nullable && !orderByPolymorphic ? JoinType.innerJoin : JoinType.leftJoin;
       qb[method](field, nestedAlias, undefined, joinType, path);
 
       if (!qb.hasFlag(QueryFlag.INFER_POPULATE)) {
