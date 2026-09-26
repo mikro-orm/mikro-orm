@@ -689,6 +689,17 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
             copiedData[prop.fieldNames[1]] = value[1] != null ? this.convertObjectIds(value[1]) : value[1];
           } else if (value == null) {
             prop.fieldNames.forEach(f => (copiedData[f] = null));
+          } else if (
+            k === prop.fieldNames[1] &&
+            Utils.isPlainObject(value) &&
+            Object.keys(value).every(o => Utils.isOperator(o))
+          ) {
+            // the FK field is named after the property, e.g. `{ likeable: { $in: ids } }` when loading the inverse side
+            copiedData[k] = this.convertObjectIds(value);
+          } else {
+            throw new Error(
+              `Unsupported condition on polymorphic relation ${meta!.className}.${prop.name}, use an entity reference or \`null\` instead.`,
+            );
           }
 
           return;
