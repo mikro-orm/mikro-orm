@@ -28,6 +28,9 @@ class Product {
   @Property()
   price!: number;
 
+  @ManyToOne(() => Author, { nullable: true })
+  author?: Author;
+
   @OneToMany(() => Image, image => image.imageable)
   images = new Collection<Image>(this);
 }
@@ -75,7 +78,7 @@ describe('filtering by properties of polymorphic relation targets', () => {
 
     const em = orm.em.fork();
     const author = em.create(Author, { name: 'Jon' });
-    const p1 = em.create(Product, { name: 'shared', price: 20 });
+    const p1 = em.create(Product, { name: 'shared', price: 20, author });
     const p2 = em.create(Product, { name: 'cheap', price: 5 });
     const a1 = em.create(Article, { name: 'shared', title: 'foo', author });
     const a2 = em.create(Article, { name: 'other', title: 'bar' });
@@ -140,7 +143,8 @@ describe('filtering by properties of polymorphic relation targets', () => {
   });
 
   test('nested relations of a target', async () => {
-    await expect(urls({ imageable: { author: { name: 'Jon' } } })).resolves.toEqual(['a1']);
+    await expect(urls({ imageable: { author: { name: 'Jon' } } })).resolves.toEqual(['a1', 'p1']);
+    await expect(urls({ imageable: { title: 'foo', author: { name: 'Jon' } } })).resolves.toEqual(['a1']);
   });
 
   test('primary key conditions do not join', async () => {
@@ -164,6 +168,19 @@ describe('filtering by properties of polymorphic relation targets', () => {
     ]);
     await expect(em.count(Image, { imageable: { name: 'shared' } })).resolves.toBe(2);
     await expect(em.count(Image, { imageable: { title: 'foo' } })).resolves.toBe(1);
+  });
+
+  test('works with native update and delete', async () => {
+    const em = orm.em.fork();
+    await em.begin();
+
+    try {
+      await expect(em.nativeUpdate(Image, { imageable: { name: 'shared' } }, { url: 'updated' })).resolves.toBe(2);
+      await expect(em.nativeDelete(Image, { imageable: { title: 'bar' } })).resolves.toBe(1);
+      await expect(em.count(Image, { url: 'updated' })).resolves.toBe(2);
+    } finally {
+      await em.rollback();
+    }
   });
 
   test('unknown property on all targets throws', async () => {

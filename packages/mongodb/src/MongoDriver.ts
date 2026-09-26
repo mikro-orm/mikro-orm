@@ -18,6 +18,7 @@ import {
   type NativeInsertUpdateManyOptions,
   type NativeInsertUpdateOptions,
   PolymorphicRef,
+  QueryHelper,
   type PopulateOptions,
   type QueryResult,
   ReferenceKind,
@@ -648,8 +649,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         return;
       }
 
-      if (meta?.properties[k as EntityKey<T>]) {
-        const prop = meta.properties[k as EntityKey<T>];
+      // per-target polymorphic keys like `likeable[Comment]` resolve to the relation, whose conditions need joins
+      const [propName, targetName] = QueryHelper.splitPolymorphicKey(k as string);
+      const prop = meta?.properties[propName as EntityKey<T>];
+
+      if (prop && (!targetName || prop.polymorphic)) {
         let isObjectId = false;
 
         if (prop.kind === ReferenceKind.SCALAR) {
