@@ -192,7 +192,13 @@ export class WrappedEntity<Entity extends object> {
       throw ValidationError.entityNotManaged(this.entity);
     }
 
-    return this.__em.findOne(this.entity.constructor, this.entity, {
+    // a reference known only by its `targetKey` has no PK, so look it up by the key instead
+    const key = this.hasPrimaryKey()
+      ? undefined
+      : this.__meta.root.targetKeys?.find(k => (this.entity as Dictionary)[k] != null);
+    const where = key ? { [key]: (this.entity as Dictionary)[key] } : this.entity;
+
+    return this.__em.findOne(this.entity.constructor, where as any, {
       ...options,
       refresh: true,
       schema: this.__schema,

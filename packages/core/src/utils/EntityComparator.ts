@@ -895,8 +895,8 @@ export class EntityComparator {
         ret += `      const val${level} = entity${entityKey}${unwrap};\n`;
 
         if (targetProp?.customType) {
-          // If targetKey property has a custom type, convert to database value
-          const convertorKey = this.registerCustomType(targetProp, context);
+          // the relation carries the key's custom type, registering it by the relation name avoids clashing with owner props
+          const convertorKey = this.registerCustomType(prop, context);
           ret += `      ret${dataKey} = convertToDatabaseValue_${convertorKey}(val${level}${targetAccess});\n`;
         } else {
           ret += `      ret${dataKey} = val${level}${targetAccess};\n`;
