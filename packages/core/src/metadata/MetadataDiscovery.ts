@@ -1419,6 +1419,7 @@ export class MetadataDiscovery {
     });
     ownProps.forEach(prop => (meta.properties[prop.name] = prop));
     meta.filters = { ...base.filters, ...meta.filters };
+    meta.forceUndefined ??= base.forceUndefined;
 
     if (!meta.discriminatorValue) {
       Object.values(base.properties)
