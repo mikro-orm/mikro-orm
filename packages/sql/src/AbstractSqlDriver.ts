@@ -2715,10 +2715,10 @@ export abstract class AbstractSqlDriver<
             this.addTPTPolymorphicJoinsForRelation(qb, tptMeta, tableAlias, fields);
           }
 
-          if (ref) {
-            // For filter :ref hints, schedule filter check for each target (no field selection)
-            qb.scheduleFilterCheck(targetPath);
-          } else {
+          // target filters apply per target, both for filter :ref hints and populated relations
+          qb.scheduleFilterCheck(targetPath);
+
+          if (!ref) {
             // Select fields from each target table
             fields.push(
               ...this.getFieldsForJoinedLoad(qb, targetMeta as EntityMetadata<T>, {
