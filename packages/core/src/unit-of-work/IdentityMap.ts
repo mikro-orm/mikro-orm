@@ -15,14 +15,19 @@ export class IdentityMap {
   /** Stores an entity in the identity map under its primary key hash and the `targetKey` values referencing it. */
   store<T>(item: T) {
     const meta = (item as AnyEntity).__meta!.root;
-    this.getStore(meta).set(this.getPkHash(item), item);
+    const wrapped = (item as AnyEntity).__helper;
+
+    // PK-less references (known only by an alternate key) would share one slot that outlives their later removal
+    if (wrapped.hasPrimaryKey()) {
+      this.getStore(meta).set(this.getPkHash(item), item);
+    }
 
     // references resolved via `targetKey` look the entity up by that key instead of the PK
     for (const key of meta.targetKeys ?? []) {
       const value = (item as Dictionary)[key];
 
       if (value != null) {
-        const schema = (item as AnyEntity).__helper.__schema ?? meta.schema ?? this.#defaultSchema;
+        const schema = wrapped.__schema ?? meta.schema ?? this.#defaultSchema;
         this.storeByKey(item, key, '' + value, schema);
       }
     }

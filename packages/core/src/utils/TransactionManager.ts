@@ -248,6 +248,11 @@ export class TransactionManager {
         if (wrapped.__originalEntityData) {
           parentWrapped.__originalEntityData = originalEntityData;
         }
+
+        // index a merged `targetKey` value, `getByKey` ignores the old one as stale
+        if (meta.root.targetKeys) {
+          parentUoW.getIdentityMap().store(parentEntity);
+        }
       } else {
         parentUoW.merge(entity, new Set([entity]));
       }

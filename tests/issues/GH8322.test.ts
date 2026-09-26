@@ -1,4 +1,18 @@
-import { Cascade, defineEntity, MikroORM, p, UniqueConstraintViolationException } from '@mikro-orm/sqlite';
+import { Cascade, defineEntity, MikroORM, p, Type, UniqueConstraintViolationException } from '@mikro-orm/sqlite';
+
+class PrefixedType extends Type<string, string> {
+  override convertToDatabaseValue(value: string): string {
+    return value ? `custom:${value}` : value;
+  }
+
+  override convertToJSValue(value: string): string {
+    return value?.startsWith('custom:') ? value.slice(7) : value;
+  }
+
+  override getColumnType(): string {
+    return 'text';
+  }
+}
 
 const Parent = defineEntity({
   name: 'Parent',
@@ -65,11 +79,64 @@ const SlugBookmark = defineEntity({
   },
 });
 
+const NumParent = defineEntity({
+  name: 'NumParent',
+  properties: {
+    id: p.integer().primary(),
+    num: p.integer().unique(),
+  },
+});
+
+const NumChild = defineEntity({
+  name: 'NumChild',
+  properties: {
+    id: p.integer().primary(),
+    parent: () => p.manyToOne(NumParent).targetKey('num'),
+  },
+});
+
+const TypedArticle = defineEntity({
+  name: 'TypedArticle',
+  properties: {
+    id: p.integer().primary(),
+    slug: p.type(PrefixedType).unique(),
+  },
+});
+
+const TypedChild = defineEntity({
+  name: 'TypedChild',
+  properties: {
+    id: p.integer().primary(),
+    parent: () => p.manyToOne(TypedArticle).targetKey('slug'),
+  },
+});
+
+const TypedBookmark = defineEntity({
+  name: 'TypedBookmark',
+  properties: {
+    id: p.integer().primary(),
+    bookmarkable: () => p.manyToOne([TypedArticle, SlugVideo]).targetKey('slug'),
+  },
+});
+
 let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [Parent, Child, CodedParent, CodedChild, SlugArticle, SlugVideo, SlugBookmark],
+    entities: [
+      Parent,
+      Child,
+      CodedParent,
+      CodedChild,
+      SlugArticle,
+      SlugVideo,
+      SlugBookmark,
+      NumParent,
+      NumChild,
+      TypedArticle,
+      TypedChild,
+      TypedBookmark,
+    ],
     dbName: ':memory:',
   });
   await orm.schema.refresh();
@@ -86,6 +153,13 @@ beforeAll(async () => {
   const article = seed.create(SlugArticle, { slug: 'a1', title: 'A1' });
   await seed.persist(article).flush();
   await seed.persist(seed.create(SlugBookmark, { bookmarkable: article })).flush();
+
+  await seed.persist(seed.create(NumChild, { parent: seed.create(NumParent, { num: 5 }) })).flush();
+
+  const typedArticle = seed.create(TypedArticle, { slug: 't1' });
+  seed.create(TypedChild, { parent: typedArticle });
+  seed.create(TypedBookmark, { bookmarkable: typedArticle });
+  await seed.flush();
 });
 
 afterAll(() => orm.close(true));
@@ -208,6 +282,48 @@ test('GH #8322 - stale targetKey entry is ignored after the key changes in the d
   await expect(em.flush()).resolves.toBeUndefined();
 });
 
+test('GH #8322 - non-PK targetKey reference resolves by the value changed in a transaction', async () => {
+  const seed = orm.em.fork();
+  seed.create(CodedChild, { parent: seed.create(CodedParent, { code: 't1', name: 'T1' }), label: 'T1' });
+  await seed.flush();
+
+  const em = orm.em.fork();
+  const parent = await em.findOneOrFail(CodedParent, { code: 't1' });
+  await em.transactional(
+    async fork => {
+      const copy = await fork.findOneOrFail(CodedParent, { id: parent.id });
+      copy.code = 't2';
+    },
+    { clear: true },
+  );
+
+  expect(parent.code).toBe('t2');
+  const child = await em.findOneOrFail(CodedChild, { label: 'T1' });
+  expect(child.parent).toBe(parent);
+});
+
+test('GH #8322 - removing an entity keeps the targetKey entry another entity took over', async () => {
+  const seed = orm.em.fork();
+  seed.create(CodedParent, { code: 's1', name: 'S1' });
+  await seed.flush();
+
+  const em = orm.em.fork();
+  const old = await em.findOneOrFail(CodedParent, { code: 's1' });
+  await orm.em.fork().nativeUpdate(CodedParent, { code: 's1' }, { code: 's2' });
+  await em.refresh(old);
+
+  const seed2 = orm.em.fork();
+  seed2.create(CodedChild, { parent: seed2.create(CodedParent, { code: 's1', name: 'S1 new' }), label: 'S1' });
+  await seed2.flush();
+
+  const current = await em.findOneOrFail(CodedParent, { code: 's1' });
+  em.remove(old);
+  await em.flush();
+
+  const child = await em.findOneOrFail(CodedChild, { label: 'S1' });
+  expect(child.parent).toBe(current);
+});
+
 test('GH #8322 - unloaded non-PK targetKey reference is not inserted on flush', async () => {
   const em = orm.em.fork();
   const [child] = await em.find(CodedChild, {});
@@ -268,3 +384,76 @@ test.each(['refresh', 'find'] as const)(
     await expect(em.flush()).resolves.toBeUndefined();
   },
 );
+
+test.each([{ populate: [] }, { populate: ['parent'] }] as const)(
+  'GH #8322 - loaded targetKey relation is not updated on flush (populate: $populate)',
+  async ({ populate }) => {
+    const em = orm.em.fork();
+    await em.find(CodedChild, {}, { populate });
+    const uow = em.getUnitOfWork();
+    uow.computeChangeSets();
+
+    expect(uow.getChangeSets()).toHaveLength(0);
+  },
+);
+
+test('GH #8322 - loaded polymorphic targetKey relation is not updated on flush', async () => {
+  const em = orm.em.fork();
+  await em.find(SlugBookmark, {});
+  const uow = em.getUnitOfWork();
+  uow.computeChangeSets();
+
+  expect(uow.getChangeSets()).toHaveLength(0);
+});
+
+test('GH #8322 - loaded polymorphic targetKey relation with a custom type is not updated on flush', async () => {
+  const rows = await orm.em.getConnection().execute('select bookmarkable_id from typed_bookmark');
+  expect(rows).toEqual([{ bookmarkable_id: 'custom:t1' }]);
+
+  const em = orm.em.fork();
+  await em.find(TypedBookmark, {});
+  const uow = em.getUnitOfWork();
+  uow.computeChangeSets();
+
+  expect(uow.getChangeSets()).toHaveLength(0);
+});
+
+test('GH #8322 - targetKey reference with a custom type resolves to the entity with an unflushed key change', async () => {
+  const em = orm.em.fork();
+  const parent = await em.findOneOrFail(TypedArticle, { slug: 't1' });
+  parent.slug = 't2';
+  const child = await em.findOneOrFail(TypedChild, { id: 1 });
+
+  expect(child.parent).toBe(parent);
+});
+
+test('GH #8322 - removing an unloaded targetKey reference throws instead of deleting nothing', async () => {
+  const em = orm.em.fork();
+  const [child] = await em.find(CodedChild, {});
+
+  expect(() => em.remove(child.parent)).toThrow('is only known by an alternate key and has no primary key');
+});
+
+test('GH #8322 - removed entity that was a targetKey reference is not inserted again', async () => {
+  const seed = orm.em.fork();
+  seed.create(CodedChild, { parent: seed.create(CodedParent, { code: 'd1', name: 'D1' }), label: 'D1' });
+  await seed.flush();
+
+  const em = orm.em.fork();
+  const child = await em.findOneOrFail(CodedChild, { label: 'D1' });
+  const parent = await em.findOneOrFail(CodedParent, { code: 'd1' });
+  expect(child.parent).toBe(parent);
+  em.remove(child).remove(parent);
+  await em.flush();
+
+  expect(em.getUnitOfWork().getIdentityMap().values()).not.toContain(parent);
+  await em.flush();
+  expect(await orm.em.fork().count(CodedParent, { code: 'd1' })).toBe(0);
+});
+
+test('GH #8322 - unloaded targetKey reference keeps the key type', async () => {
+  const em = orm.em.fork();
+  const [child] = await em.find(NumChild, {});
+
+  expect(child.parent.num).toBe(5);
+});

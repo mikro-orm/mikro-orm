@@ -123,7 +123,7 @@ export class EntityFactory {
       wrapped.__processing = false;
 
       // index a merged `targetKey` value, `getByKey` ignores the old one as stale
-      if (meta2.root.targetKeys && wrapped.hasPrimaryKey()) {
+      if (meta2.root.targetKeys) {
         this.unitOfWork.getIdentityMap().store(exists!);
       }
 
@@ -362,8 +362,7 @@ export class EntityFactory {
 
     // Handle alternate key lookup, a `key` pointing at the single PK is a plain PK reference
     if (options.key && !(meta.primaryKeys.length === 1 && meta.primaryKeys[0] === options.key)) {
-      const value =
-        '' + (Array.isArray(id) ? id[0] : Utils.isPlainObject(id) ? (id as Record<string, any>)[options.key] : id);
+      const value = Array.isArray(id) ? id[0] : Utils.isPlainObject(id) ? (id as Record<string, any>)[options.key] : id;
       const exists = this.unitOfWork.getByKey(entityName, options.key, value, schema, options.convertCustomTypes);
 
       if (exists) {
