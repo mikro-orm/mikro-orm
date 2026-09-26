@@ -94,6 +94,12 @@ describe('polymorphic relations with composite primary keys', () => {
     orm.em.clear();
   });
 
+  test('bare values cannot address composite primary keys', async () => {
+    const error = 'Polymorphic relation recipient targets entities with a composite primary key';
+    await expect(orm.em.find(Notification, { recipient: 1 } as any)).rejects.toThrow(error);
+    await expect(orm.em.find(Notification, { recipient: { $gt: 1 } } as any)).rejects.toThrow(error);
+  });
+
   test('metadata correctly handles composite keys', async () => {
     const meta = orm.getMetadata().get(Notification);
     const recipientProp = meta.properties.recipient;

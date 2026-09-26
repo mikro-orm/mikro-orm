@@ -96,4 +96,10 @@ describe('primary key object conditions on relations', () => {
     await expect(titles({ profile: { $not: { author: { id: 1 } } } })).resolves.toEqual(['b1', 'b2']);
     await expect(titles({ profile: { $not: { author: { name: 'a3' } } } })).resolves.toEqual(['b2', 'b3']);
   });
+
+  test('negating an empty condition on a relation matches nothing', async () => {
+    expect(sql({ author: { $not: {} } })).toBe('select `b`.* from `book` as `b` where 1 = 0');
+    await expect(titles({ author: { $not: {} } })).resolves.toEqual([]);
+    await expect(titles({ $or: [{ title: 'b1' }, { author: { $not: {} } }] })).resolves.toEqual(['b1']);
+  });
 });

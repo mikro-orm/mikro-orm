@@ -97,4 +97,17 @@ describe('polymorphic relation conditions by target primary key', () => {
     await expect(urls({ imageable: { $or: [{ id: 1 }, { id: 2 }] } })).resolves.toEqual(['a1', 'a2', 'p1', 'p2']);
     await expect(urls({ imageable: { $not: { id: 1 } } })).resolves.toEqual(['a2', 'p2']);
   });
+
+  test('bare values are compared to the FK column', async () => {
+    expect(orm.em.createQueryBuilder(Image, 'i').where({ imageable: 1 }).getFormattedQuery()).toBe(
+      'select `i`.* from `image` as `i` where `i`.`imageable_id` = 1',
+    );
+    await expect(urls({ imageable: 1 })).resolves.toEqual(['a1', 'p1']);
+    await expect(urls({ imageable: { $ne: 1 } })).resolves.toEqual(['a2', 'p2']);
+    await expect(urls({ imageable: { $gte: 2 } })).resolves.toEqual(['a2', 'p2']);
+    // `[type, id]` tuples and null checks keep their meaning
+    await expect(urls({ imageable: ['article', 1] } as Dictionary)).resolves.toEqual(['a1']);
+    await expect(urls({ imageable: { $ne: null } })).resolves.toEqual(['a1', 'a2', 'p1', 'p2']);
+    await expect(urls({ imageable: null })).resolves.toEqual([]);
+  });
 });

@@ -16,7 +16,7 @@ import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import { JsonType } from '../types/JsonType.js';
 import { helper } from '../entity/wrap.js';
 import { isRaw, Raw } from './RawQueryFragment.js';
-import { MetadataError } from '../errors.js';
+import { MetadataError, ValidationError } from '../errors.js';
 import type { FilterOptions } from '../drivers/IDatabaseDriver.js';
 
 /** @internal */
@@ -229,7 +229,7 @@ export class QueryHelper {
       const meta2 = metadata.find(prop?.targetMeta?.class as any) || meta;
 
       if (prop?.polymorphic) {
-        where[k] = this.inlinePolymorphicPrimaryKeyList(where[k], meta2);
+        where[k] = this.inlinePolymorphicPrimaryKeys(where[k], meta2, prop);
       }
 
       if (this.inlinePrimaryKeyObjects(where[k], meta2, metadata, k)) {
@@ -255,28 +255,42 @@ export class QueryHelper {
   }
 
   /**
-   * A bare value on a polymorphic relation is compared to the discriminator column, so lists of PK objects
-   * are turned into a PK condition instead, e.g. `[{ id: 1 }, { id: 2 }]` becomes `{ id: { $in: [1, 2] } }`.
+   * A bare value on a polymorphic relation would be compared to the discriminator column, so PK values are turned
+   * into a PK condition instead, e.g. `1` becomes `{ id: 1 }` and `[{ id: 1 }, { id: 2 }]` becomes `{ id: { $in: [1, 2] } }`.
+   * Null checks and `[type, id]` tuples keep their meaning.
    */
-  private static inlinePolymorphicPrimaryKeyList(value: unknown, meta: EntityMetadata): unknown {
+  private static inlinePolymorphicPrimaryKeys(value: unknown, meta: EntityMetadata, prop: EntityProperty): unknown {
     const pk = meta.primaryKeys[0];
-    const isPrimaryKeyObject = (item: unknown) =>
-      Utils.isPlainObject(item) && Utils.getObjectKeysSize(item) === 1 && pk in item;
-    const toCondition = (op: string, items: unknown) =>
-      Array.isArray(items) && items.length > 0 && items.every(isPrimaryKeyObject)
-        ? { [pk]: { [op]: items.map(item => item[pk]) } }
-        : undefined;
+    const isScalar = (v: unknown) => v != null && !Array.isArray(v) && Utils.isPrimaryKey(v);
+    const isPrimaryKeyObject = (v: unknown): v is Dictionary =>
+      Utils.isPlainObject(v) && Utils.getObjectKeysSize(v) === 1 && pk in v;
+    // lists of plain values are how `[type, id]` tuples get normalized (`{ $in: [type, id] }`), so only PK objects are inlined
+    const isList = (v: unknown): v is Dictionary[] => Array.isArray(v) && v.length > 0 && v.every(isPrimaryKeyObject);
+    let cond: unknown;
 
-    if (Array.isArray(value)) {
-      return toCondition('$in', value) ?? value;
+    if (isScalar(value)) {
+      cond = value;
+    } else if (isList(value)) {
+      cond = { $in: value.map(v => v[pk]) };
+    } else if (
+      Utils.isPlainObject(value) &&
+      Utils.hasObjectKeys(value) &&
+      Object.entries(value).every(
+        ([op, v]) => Utils.isOperator(op) && !(op in GroupOperator) && op !== '$not' && (isScalar(v) || isList(v)),
+      )
+    ) {
+      cond = Object.fromEntries(Object.entries(value).map(([op, v]) => [op, isList(v) ? v.map(i => i[pk]) : v]));
+    } else {
+      return value;
     }
 
-    if (Utils.isPlainObject(value) && Utils.getObjectKeysSize(value) === 1) {
-      const [op] = Object.keys(value);
-      return (['$in', '$nin'].includes(op) && toCondition(op, value[op])) || value;
+    if (meta.compositePK) {
+      throw new ValidationError(
+        `Polymorphic relation ${prop.name} targets entities with a composite primary key, use PK objects or entity references in the condition instead.`,
+      );
     }
 
-    return value;
+    return { [pk]: cond };
   }
 
   /** Copies the plain object and array structure of the condition, keeping the leaf values (e.g. entities) by reference. */
