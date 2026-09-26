@@ -228,8 +228,8 @@ export class QueryHelper {
     }
 
     Object.keys(where).forEach(k => {
-      const prop = meta.properties[k as EntityKey<T>];
-      const meta2 = metadata.find(prop?.targetMeta?.class as any) || meta;
+      const prop = meta.properties[QueryHelper.splitPolymorphicKey(k)[0] as EntityKey<T>];
+      const meta2 = metadata.find(QueryHelper.findTargetMeta(prop, k)?.class as any) || meta;
 
       if (this.inlinePrimaryKeyObjects(where[k], meta2, metadata, k)) {
         // Skip the PK collapse when an owning M:1/1:1 relation's FK column count does not match
@@ -237,10 +237,11 @@ export class QueryHelper {
         // The criteria layer would otherwise emit a malformed predicate such as
         // `(joinCol1, joinCol2) = scalar`. Limited to owning relations — `joinColumns` on the
         // inverse side (1:m) describes the owning entity's FK columns, not the LHS tuple.
+        // Polymorphic relations are skipped too, a scalar would be compared to the discriminator column.
         if (
           prop?.owner &&
           [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
-          prop.joinColumns.length !== meta2.primaryKeys.length
+          (prop.polymorphic || prop.joinColumns.length !== meta2.primaryKeys.length)
         ) {
           return;
         }
@@ -327,6 +328,10 @@ export class QueryHelper {
       return where;
     }
 
+    if (meta && options.type !== 'orderBy') {
+      where = QueryHelper.splitPolymorphicConditions(meta, where) as FilterQuery<T>;
+    }
+
     return Utils.getObjectQueryKeys(where).reduce((o, key) => {
       let value = where[key as keyof typeof where] as unknown as FilterQuery<T>;
       const customExpression = Raw.isKnownFragmentSymbol(key);
@@ -394,10 +399,11 @@ export class QueryHelper {
       }
 
       if (Utils.isPlainObject(value)) {
+        const targetMeta = customExpression ? undefined : QueryHelper.findTargetMeta(prop, key as string);
         o[key as string] = QueryHelper.processWhere({
           ...options,
           where: value,
-          entityName: prop?.targetMeta?.class ?? entityName,
+          entityName: targetMeta?.class ?? entityName,
           root: false,
         });
       } else {
@@ -406,6 +412,79 @@ export class QueryHelper {
 
       return o;
     }, {} as Dictionary) as FilterQuery<T>;
+  }
+
+  /** @internal Splits a polymorphic target key like `imageable[Article]` into the property and target class names. */
+  static splitPolymorphicKey(key: string): [string, string?] {
+    const match = /^(\w+)\[(\w+)]$/.exec(key);
+    return match ? [match[1], match[2]] : [key];
+  }
+
+  /** @internal Resolves the target entity of a condition key, including polymorphic target keys like `imageable[Article]`. */
+  static findTargetMeta(prop: EntityProperty | null | undefined, key: string): EntityMetadata | undefined {
+    const [, targetName] = QueryHelper.splitPolymorphicKey(key);
+    return targetName ? prop?.polymorphTargets?.find(t => t.className === targetName) : prop?.targetMeta;
+  }
+
+  /**
+   * Routes conditions on polymorphic to-one relations to the targets that define all the queried properties,
+   * e.g. `{ imageable: { title } }` becomes `{ 'imageable[Article]': { title } }`, or an `$or` of such keys
+   * when more targets match. The first target alone keeps the regular relation join.
+   */
+  private static splitPolymorphicConditions(meta: EntityMetadata, payload: Dictionary): Dictionary {
+    let ret = payload;
+
+    for (const key of Object.keys(payload)) {
+      const prop = meta.properties[key as EntityKey];
+      const value = payload[key];
+
+      if (
+        !prop?.polymorphTargets ||
+        ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) ||
+        !Utils.isPlainObject(value)
+      ) {
+        continue;
+      }
+
+      const keys = this.collectConditionKeys(value);
+      const targets = prop.polymorphTargets.filter(target => keys.every(k => k in target.properties));
+      const primaryKeys = keys.every(k => targets.every(target => target.primaryKeys.includes(k)));
+
+      // PK conditions compare the FK columns without checking the type, so only when every target defines them
+      if (
+        keys.length === 0 ||
+        targets.length === 0 ||
+        (primaryKeys && targets.length === prop.polymorphTargets.length) ||
+        (!primaryKeys && targets.length === 1 && targets[0] === prop.targetMeta)
+      ) {
+        continue;
+      }
+
+      const branches = targets.map(target => ({ [`${key}[${target.className}]`]: value }));
+      ret = { ...ret };
+      delete ret[key];
+
+      if (branches.length === 1) {
+        Object.assign(ret, branches[0]);
+      } else {
+        ret.$and = [...(ret.$and ?? []), { $or: branches }];
+      }
+    }
+
+    return ret;
+  }
+
+  /** Property names used in a condition, including those nested in group operators. */
+  private static collectConditionKeys(payload: Dictionary): string[] {
+    return Object.keys(payload).flatMap(k => {
+      if (k in GroupOperator || k === '$not') {
+        return Utils.asArray(payload[k]).flatMap(item =>
+          Utils.isPlainObject(item) ? this.collectConditionKeys(item) : [],
+        );
+      }
+
+      return Utils.isOperator(k) ? [] : [k];
+    });
   }
 
   static getActiveFilters<T>(
@@ -631,7 +710,7 @@ export class QueryHelper {
 
   static findProperty<T>(fieldName: string, options: ProcessWhereOptions<T>): EntityProperty<T> | undefined {
     const parts = fieldName.split('.');
-    const propName = parts.pop() as EntityKey<T>;
+    const propName = QueryHelper.splitPolymorphicKey(parts.pop()!)[0] as EntityKey<T>;
     const alias = parts.length > 0 ? parts.join('.') : undefined;
     const entityName = alias ? options.aliasMap?.[alias] : options.entityName;
     const meta = entityName ? options.metadata.find<T>(entityName) : undefined;

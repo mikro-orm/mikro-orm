@@ -173,4 +173,24 @@ describe('polymorphic relations in mongodb', () => {
     expect(updated.likeable).toBeInstanceOf(Comment);
     expect((updated.likeable as Comment).text).toBe('New target');
   });
+
+  test('unsupported conditions on polymorphic relation throw instead of being ignored', async () => {
+    const error = 'Unsupported condition on polymorphic relation UserLike.likeable';
+    await expect(orm.em.find(UserLike, { likeable: { title: 'foo' } })).rejects.toThrow(error);
+    await expect(orm.em.count(UserLike, { likeable: { title: { $ne: null } } })).rejects.toThrow(error);
+    await expect(orm.em.nativeDelete(UserLike, { likeable: { text: 'foo' } })).rejects.toThrow(error);
+  });
+
+  test('conditions by target primary key compare the FK field', async () => {
+    const post = orm.em.create(Post, { title: 'p' });
+    const comment = orm.em.create(Comment, { text: 'c' });
+    orm.em.create(UserLike, { likeable: post });
+    orm.em.create(UserLike, { likeable: comment });
+    await orm.em.flush();
+    orm.em.clear();
+
+    await expect(orm.em.count(UserLike, { likeable: { _id: post._id } })).resolves.toBe(1);
+    await expect(orm.em.count(UserLike, { likeable: { _id: { $in: [post._id, comment._id] } } })).resolves.toBe(2);
+    await expect(orm.em.count(UserLike, { likeable: { _id: { $ne: post._id } } })).resolves.toBe(1);
+  });
 });
