@@ -1522,7 +1522,16 @@ select `u0`.* from `user_like` as `u0`
   where ((`p1`.`created_at` >= ? and `p1`.`id` is not null) or (`c2`.`created_at` >= ? and `c2`.`id` is not null))
 ```
 
-A target is considered only when it defines every property used in the condition, including those nested in `$and`, `$or` and `$not`. Conditions only on a primary key that all targets define, like `{ likeable: { id: 1 } }`, compare the FK column without a join, so they match any type. To restrict the query to a single type, combine it with a condition on the exposed discriminator (see below). Ordering by target properties supports only the first discovered target type, which is not necessarily the first one in the declaration.
+A target is considered only when it defines every property used in the condition, including those nested in `$and`, `$or` and `$not`. Conditions only on a primary key that all targets define, like `{ likeable: { id: 1 } }`, compare the FK column without a join, so they match any type. To restrict the query to a single type, combine it with a condition on the exposed discriminator (see below).
+
+Ordering works the same way. Each ordered property uses the targets that define it, and when there are more of them, rows are ordered by the first non-null value, so likes of posts and comments are sorted together:
+
+```ts
+// order by `coalesce(p1.created_at, c2.created_at)`
+const likes = await em.find(UserLike, {}, { orderBy: { likeable: { createdAt: 'desc' } } });
+```
+
+Rows pointing to targets without the property sort as `null`. Ordering by a relation or a formula of the targets uses the first target that defines it. The `orderBy` type only accepts properties that all targets define, so a property of a single target needs a cast.
 
 This is not supported in MongoDB, where conditions on polymorphic relations need to be an entity reference or `null`.
 
