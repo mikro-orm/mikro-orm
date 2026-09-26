@@ -1,6 +1,6 @@
 import type { AnyEntity, Dictionary, EntityCtor, EntityMetadata } from '../typings.js';
 
-/** @internal Stores managed entity instances keyed by their primary key hash, ensuring each row is loaded once. */
+/** @internal Stores managed entity instances keyed by their primary key hash (and `targetKey` values), ensuring each row is loaded once. */
 export class IdentityMap {
   readonly #defaultSchema?: string;
   readonly #registry = new Map<EntityCtor, Map<string, AnyEntity>>();
@@ -11,7 +11,7 @@ export class IdentityMap {
     this.#defaultSchema = defaultSchema;
   }
 
-  /** Stores an entity in the identity map under its primary key hash. */
+  /** Stores an entity in the identity map under its primary key hash and the `targetKey` values referencing it. */
   store<T>(item: T) {
     const meta = (item as AnyEntity).__meta!.root;
     this.getStore(meta).set(this.getPkHash(item), item);
@@ -56,7 +56,10 @@ export class IdentityMap {
 
     if (altKeys) {
       for (const hash of altKeys) {
-        store.delete(hash);
+        // the hash might be owned by another entity by now, e.g. after swapping unique values
+        if (store.get(hash) === item) {
+          store.delete(hash);
+        }
       }
 
       this.#alternateKeys.delete(item as AnyEntity);

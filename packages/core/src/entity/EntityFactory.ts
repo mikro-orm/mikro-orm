@@ -367,6 +367,8 @@ export class EntityFactory {
       // Create entity stub - storeByKey will set the alternate key property and store in identity map
       const entity = this.create(entityName, {} as EntityData<T>, { ...options, initialized: false }) as T;
       this.unitOfWork.storeByKey(entity, options.key, value, schema, options.convertCustomTypes);
+      // snapshot the stub like a PK reference, so flush treats it as existing instead of inserting it
+      helper(entity).__originalEntityData = this.#comparator.prepareEntity(entity);
 
       return entity;
     }

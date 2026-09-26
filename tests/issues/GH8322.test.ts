@@ -128,3 +128,32 @@ test('GH #8322 - non-PK targetKey reference resolves after the key value changes
   expect(child.parent).toBe(parent);
   await expect(em.flush()).resolves.toBeUndefined();
 });
+
+test('GH #8322 - stale targetKey entry is ignored after the key changes in the database', async () => {
+  const em = orm.em.fork();
+  em.create(CodedParent, { code: 'r1', name: 'R1' });
+  await em.flush();
+  em.clear();
+
+  const parent = await em.findOneOrFail(CodedParent, { code: 'r1' });
+  await orm.em.fork().nativeUpdate(CodedParent, { code: 'r1' }, { code: 'r2' });
+  await em.refresh(parent);
+  expect(parent.code).toBe('r2');
+
+  const seed = orm.em.fork();
+  seed.create(CodedChild, { parent: seed.create(CodedParent, { code: 'r1', name: 'R1 new' }), label: 'R1' });
+  await seed.flush();
+
+  const child = await em.findOneOrFail(CodedChild, { label: 'R1' });
+  expect(child.parent).not.toBe(parent);
+  expect(child.parent.code).toBe('r1');
+  await expect(em.flush()).resolves.toBeUndefined();
+});
+
+test('GH #8322 - unloaded non-PK targetKey reference is not inserted on flush', async () => {
+  const em = orm.em.fork();
+  const [child] = await em.find(CodedChild, {});
+
+  expect(child.parent.code).toBe('p1');
+  await expect(em.flush()).resolves.toBeUndefined();
+});

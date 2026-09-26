@@ -288,7 +288,14 @@ export class UnitOfWork {
     }
 
     const hash = this.#identityMap.getKeyHash(key, '' + value, schema);
-    return this.#identityMap.getByHash(meta, hash);
+    const entity = this.#identityMap.getByHash(meta, hash) as Dictionary | undefined;
+
+    // the entry is stale when the key changed via refresh or merge, unless only the unflushed value differs
+    if (entity && '' + entity[key] !== '' + value && '' + helper(entity).__originalEntityData?.[key] !== '' + value) {
+      return undefined;
+    }
+
+    return entity as T | undefined;
   }
 
   /**
