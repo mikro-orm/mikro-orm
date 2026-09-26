@@ -173,4 +173,11 @@ describe('polymorphic relations in mongodb', () => {
     expect(updated.likeable).toBeInstanceOf(Comment);
     expect((updated.likeable as Comment).text).toBe('New target');
   });
+
+  test('unsupported conditions on polymorphic relation throw instead of being ignored', async () => {
+    const error = 'Unsupported condition on polymorphic relation UserLike.likeable';
+    await expect(orm.em.find(UserLike, { likeable: { title: 'foo' } })).rejects.toThrow(error);
+    await expect(orm.em.count(UserLike, { likeable: { title: { $ne: null } } })).rejects.toThrow(error);
+    await expect(orm.em.nativeDelete(UserLike, { likeable: { text: 'foo' } })).rejects.toThrow(error);
+  });
 });
