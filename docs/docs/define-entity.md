@@ -223,6 +223,23 @@ const properties = {
 };
 ```
 
+### Nullable properties and `forceUndefined`
+
+`.nullable()` infers the property as `T | null | undefined`, matching what you get at runtime by default: `null` from the database, `undefined` before the entity is persisted. The `forceUndefined` entity option hydrates `null` values as `undefined` for that entity (same as the global [`forceUndefined`](./configuration.md#mapping-null-values-to-undefined) ORM option, but per entity) and drops `null` from the inferred types:
+
+```ts
+const UserSchema = defineEntity({
+  name: 'User',
+  forceUndefined: true,
+  properties: {
+    id: p.integer().primary(),
+    name: p.string().nullable(), // `string | undefined`
+  },
+});
+```
+
+It applies to every `.nullable()` and `.strictNullable()` property of the entity, including relations, and is inherited by entities that `extends` it. The same option is available for [decorators](./decorators.md#entity) and `EntitySchema`, where it affects only the runtime, as the property types are declared by hand there.
+
 ### Relation modifiers: `.ref()` and `.lazyRef()`
 
 For `m:1` / `1:1` relations, you can opt into compile-time populate-state safety:

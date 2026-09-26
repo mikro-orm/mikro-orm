@@ -44,6 +44,7 @@ For detailed information about decorator types, metadata providers, and configur
 | `forceConstructor`    | `boolean`                  | yes      | Enforce use of constructor when creating managed entity instances                  |
 | `abstract`            | `boolean`                  | yes      | Marks entity as abstract, such entities are inlined during discovery.              |
 | `readonly`            | `boolean`                  | yes      | Disables change tracking - such entities are ignored during flush.                 |
+| `forceUndefined`      | `boolean`                  | yes      | Hydrate `null` values as `undefined` for this entity, overriding the global [`forceUndefined`](./configuration.md#mapping-null-values-to-undefined) option. |
 | `orderBy`             | `QueryOrderMap` &#124; `QueryOrderMap[]` | yes      | Set default ordering for this entity. See [collections](./collections.md#entity-level-default-ordering). |
 
 ```ts
