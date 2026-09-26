@@ -237,10 +237,11 @@ export class QueryHelper {
         // The criteria layer would otherwise emit a malformed predicate such as
         // `(joinCol1, joinCol2) = scalar`. Limited to owning relations — `joinColumns` on the
         // inverse side (1:m) describes the owning entity's FK columns, not the LHS tuple.
+        // Polymorphic relations are skipped too, a scalar would be compared to the discriminator column.
         if (
           prop?.owner &&
           [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
-          prop.joinColumns.length !== meta2.primaryKeys.length
+          (prop.polymorphic || prop.joinColumns.length !== meta2.primaryKeys.length)
         ) {
           return;
         }
