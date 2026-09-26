@@ -602,6 +602,20 @@ export class EntityLoader {
 
     // for inverse sides the `targetKey` lives on the owning property, otherwise on the prop itself
     const targetKey = prop.targetKey ?? ownerProp?.targetKey;
+
+    // hydrated children resolve their owner via the alternate-key identity map, so register the owners there too
+    if (ownerProp?.targetKey) {
+      const uow = this.#em.getUnitOfWork();
+
+      for (const entity of entities) {
+        const value = (entity as Dictionary)[ownerProp.targetKey];
+
+        if (value != null) {
+          uow.storeByKey(entity, ownerProp.targetKey, value, (entity as AnyEntity).__helper.__schema);
+        }
+      }
+    }
+
     const ids = Utils.unique(children.map(e => e.__helper.getTargetKeyValue(targetKey)));
     let where: FilterQuery<Entity>;
 

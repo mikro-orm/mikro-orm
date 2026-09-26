@@ -19,11 +19,30 @@ const Child = defineEntity({
   },
 });
 
+const CodedParent = defineEntity({
+  name: 'CodedParent',
+  properties: {
+    id: p.integer().primary(),
+    code: p.string().unique(),
+    name: p.string(),
+    children: () => p.oneToMany(CodedChild).mappedBy('parent').cascade(Cascade.PERSIST),
+  },
+});
+
+const CodedChild = defineEntity({
+  name: 'CodedChild',
+  properties: {
+    id: p.integer().primary(),
+    parent: () => p.manyToOne(CodedParent).targetKey('code'),
+    label: p.string(),
+  },
+});
+
 let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [Parent, Child],
+    entities: [Parent, Child, CodedParent, CodedChild],
     dbName: ':memory:',
   });
   await orm.schema.refresh();
@@ -32,6 +51,10 @@ beforeAll(async () => {
   const parent = seed.create(Parent, { name: 'P1' });
   await seed.persist(parent).flush();
   await seed.persist(seed.create(Child, { parent, label: 'C1' })).flush();
+
+  const codedParent = seed.create(CodedParent, { code: 'p1', name: 'P1' });
+  await seed.persist(codedParent).flush();
+  await seed.persist(seed.create(CodedChild, { parent: codedParent, label: 'C1' })).flush();
 });
 
 afterAll(() => orm.close(true));
@@ -45,5 +68,16 @@ test('GH #8322 - targetKey pointing at own PK does not create a duplicate identi
   expect(parent.children[0]).toBe(child);
 
   // the implicit flush inside `find()` must not attempt to insert the already persisted `Parent`
+  await expect(em.flush()).resolves.toBeUndefined();
+});
+
+test('GH #8322 - targetKey pointing at a non-PK unique column does not create a duplicate identity map entry', async () => {
+  const em = orm.em.fork();
+  const [parent] = await em.find(CodedParent, {}, { populate: ['children'] });
+  const [child] = await em.find(CodedChild, {}, { populate: ['parent'] });
+
+  expect(child.parent).toBe(parent);
+  expect(parent.children[0]).toBe(child);
+
   await expect(em.flush()).resolves.toBeUndefined();
 });
