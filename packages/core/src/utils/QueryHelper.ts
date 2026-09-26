@@ -16,7 +16,7 @@ import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import { JsonType } from '../types/JsonType.js';
 import { helper } from '../entity/wrap.js';
 import { isRaw, Raw } from './RawQueryFragment.js';
-import { MetadataError } from '../errors.js';
+import { MetadataError, ValidationError } from '../errors.js';
 import type { FilterOptions } from '../drivers/IDatabaseDriver.js';
 
 /** @internal */
@@ -146,10 +146,7 @@ export class QueryHelper {
       const value = where[k];
       const prop = meta.properties[k as EntityKey<T>];
 
-      // Polymorphic relations use multiple columns (discriminator + FK), so they cannot
-      // participate in the standard single-column FK expansion. Query by discriminator
-      // column directly instead, e.g. { likeableType: 'post', likeableId: 1 }.
-      if (!prop || ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) || prop.polymorphic) {
+      if (!prop || ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
         continue;
       }
 
@@ -183,7 +180,7 @@ export class QueryHelper {
     if (Array.isArray(where)) {
       where.forEach((item, i) => {
         if (this.inlinePrimaryKeyObjects(item, meta, metadata, key)) {
-          where[i] = Utils.getPrimaryKeyValues(item, meta, false);
+          where[i] = Utils.getPrimaryKeyValues(item, meta, true);
         }
       });
     }
@@ -231,6 +228,10 @@ export class QueryHelper {
       const prop = meta.properties[k as EntityKey<T>];
       const meta2 = metadata.find(prop?.targetMeta?.class as any) || meta;
 
+      if (prop?.polymorphic) {
+        where[k] = this.inlinePolymorphicPrimaryKeys(where[k], meta2, prop);
+      }
+
       if (this.inlinePrimaryKeyObjects(where[k], meta2, metadata, k)) {
         // Skip the PK collapse when an owning M:1/1:1 relation's FK column count does not match
         // the target's PK column count (e.g. FK references target PK + an extra unique column).
@@ -251,6 +252,45 @@ export class QueryHelper {
     });
 
     return false;
+  }
+
+  /**
+   * A bare value on a polymorphic relation would be compared to the discriminator column, so PK values are turned
+   * into a PK condition instead, e.g. `1` becomes `{ id: 1 }` and `[{ id: 1 }, { id: 2 }]` becomes `{ id: { $in: [1, 2] } }`.
+   * Null checks and `[type, id]` tuples keep their meaning.
+   */
+  private static inlinePolymorphicPrimaryKeys(value: unknown, meta: EntityMetadata, prop: EntityProperty): unknown {
+    const pk = meta.primaryKeys[0];
+    const isScalar = (v: unknown) => v != null && !Array.isArray(v) && Utils.isPrimaryKey(v);
+    const isPrimaryKeyObject = (v: unknown): v is Dictionary =>
+      Utils.isPlainObject(v) && Utils.getObjectKeysSize(v) === 1 && pk in v;
+    // lists of plain values are how `[type, id]` tuples get normalized (`{ $in: [type, id] }`), so only PK objects are inlined
+    const isList = (v: unknown): v is Dictionary[] => Array.isArray(v) && v.length > 0 && v.every(isPrimaryKeyObject);
+    let cond: unknown;
+
+    if (isScalar(value)) {
+      cond = value;
+    } else if (isList(value)) {
+      cond = { $in: value.map(v => v[pk]) };
+    } else if (
+      Utils.isPlainObject(value) &&
+      Utils.hasObjectKeys(value) &&
+      Object.entries(value).every(
+        ([op, v]) => Utils.isOperator(op) && !(op in GroupOperator) && op !== '$not' && (isScalar(v) || isList(v)),
+      )
+    ) {
+      cond = Object.fromEntries(Object.entries(value).map(([op, v]) => [op, isList(v) ? v.map(i => i[pk]) : v]));
+    } else {
+      return value;
+    }
+
+    if (meta.compositePK) {
+      throw new ValidationError(
+        `Polymorphic relation ${prop.name} targets entities with a composite primary key, use PK objects or entity references in the condition instead.`,
+      );
+    }
+
+    return { [pk]: cond };
   }
 
   /** Copies the plain object and array structure of the condition, keeping the leaf values (e.g. entities) by reference. */
@@ -685,6 +725,8 @@ export class QueryHelper {
 
       if (expanded !== w) {
         where[k] = expanded;
+      } else if (Array.isArray(w)) {
+        where[k] = w.map(expandItem);
       } else if (Utils.isPlainObject(w)) {
         for (const op of Object.keys(w)) {
           if (!Utils.isOperator(op, false)) {

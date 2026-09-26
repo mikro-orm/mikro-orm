@@ -234,8 +234,9 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       Utils.isObject(payload) &&
       Utils.getObjectQueryKeys(payload).every(k => {
         if (k === '$not' && Utils.isPlainObject(payload[k])) {
-          // $not wrapping non-operator conditions (entity props) should be inlined
-          return Utils.getObjectQueryKeys(payload[k]).every(ik => Utils.isOperator(ik, false));
+          // $not wrapping non-operator conditions (entity props) or an empty one should be inlined
+          const inner = Utils.getObjectQueryKeys(payload[k]);
+          return inner.length > 0 && inner.every(ik => Utils.isOperator(ik, false));
         }
 
         return Utils.isOperator(k, false);
@@ -290,10 +291,13 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       } else if (
         k === '$not' &&
         Utils.isPlainObject(payload[k]) &&
-        Utils.getObjectQueryKeys(payload[k]).some(ik => !Utils.isOperator(ik, false))
+        (!Utils.hasObjectKeys(payload[k]) ||
+          Utils.getObjectQueryKeys(payload[k]).some(ik => !Utils.isOperator(ik, false)))
       ) {
-        // $not wraps entity conditions (from auto-join), inline at current level
-        this.inlineCondition(k, o, payload[k]);
+        // $not wraps entity conditions (from auto-join) or an empty one, inline at current level with the same key mapping
+        const inner: Dictionary = {};
+        this.inlineChildPayload(inner, payload[k], field, alias, childAlias);
+        this.inlineCondition(k, o, inner);
       } else if (Utils.isOperator(k, false)) {
         const tmp = payload[k];
         delete payload[k];
@@ -377,6 +381,19 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     const primaryKeys =
       knownKey &&
       keys.every(key => {
+        if (key === '$not') {
+          // e.g. `{ author: { $not: { id: 1 } } }` compares the FK column, relation PKs still need the join
+          const childPayload = (this.payload[key] as CriteriaNode<T>).payload;
+          return (
+            Utils.isPlainObject(childPayload) &&
+            Utils.getObjectQueryKeys(childPayload).every(
+              k =>
+                meta.primaryKeys.includes(k as EntityKey<T>) &&
+                meta.properties[k as EntityKey<T>].kind === ReferenceKind.SCALAR,
+            )
+          );
+        }
+
         if (typeof key !== 'string' || !meta.primaryKeys.includes(key)) {
           return false;
         }
