@@ -292,8 +292,10 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         Utils.isPlainObject(payload[k]) &&
         Utils.getObjectQueryKeys(payload[k]).some(ik => !Utils.isOperator(ik, false))
       ) {
-        // $not wraps entity conditions (from auto-join), inline at current level
-        this.inlineCondition(k, o, payload[k]);
+        // $not wraps entity conditions (from auto-join), inline at current level with the same key mapping
+        const inner: Dictionary = {};
+        this.inlineChildPayload(inner, payload[k], field, alias, childAlias);
+        this.inlineCondition(k, o, inner);
       } else if (Utils.isOperator(k, false)) {
         const tmp = payload[k];
         delete payload[k];
@@ -377,6 +379,19 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     const primaryKeys =
       knownKey &&
       keys.every(key => {
+        if (key === '$not') {
+          // e.g. `{ author: { $not: { id: 1 } } }` compares the FK column, relation PKs still need the join
+          const childPayload = (this.payload[key] as CriteriaNode<T>).payload;
+          return (
+            Utils.isPlainObject(childPayload) &&
+            Utils.getObjectQueryKeys(childPayload).every(
+              k =>
+                meta.primaryKeys.includes(k as EntityKey<T>) &&
+                meta.properties[k as EntityKey<T>].kind === ReferenceKind.SCALAR,
+            )
+          );
+        }
+
         if (typeof key !== 'string' || !meta.primaryKeys.includes(key)) {
           return false;
         }

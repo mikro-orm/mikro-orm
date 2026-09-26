@@ -146,10 +146,7 @@ export class QueryHelper {
       const value = where[k];
       const prop = meta.properties[k as EntityKey<T>];
 
-      // Polymorphic relations use multiple columns (discriminator + FK), so they cannot
-      // participate in the standard single-column FK expansion. Query by discriminator
-      // column directly instead, e.g. { likeableType: 'post', likeableId: 1 }.
-      if (!prop || ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) || prop.polymorphic) {
+      if (!prop || ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
         continue;
       }
 
@@ -183,7 +180,7 @@ export class QueryHelper {
     if (Array.isArray(where)) {
       where.forEach((item, i) => {
         if (this.inlinePrimaryKeyObjects(item, meta, metadata, key)) {
-          where[i] = Utils.getPrimaryKeyValues(item, meta, false);
+          where[i] = Utils.getPrimaryKeyValues(item, meta, true);
         }
       });
     }
@@ -231,6 +228,10 @@ export class QueryHelper {
       const prop = meta.properties[k as EntityKey<T>];
       const meta2 = metadata.find(prop?.targetMeta?.class as any) || meta;
 
+      if (prop?.polymorphic) {
+        where[k] = this.inlinePolymorphicPrimaryKeyList(where[k], meta2);
+      }
+
       if (this.inlinePrimaryKeyObjects(where[k], meta2, metadata, k)) {
         // Skip the PK collapse when an owning M:1/1:1 relation's FK column count does not match
         // the target's PK column count (e.g. FK references target PK + an extra unique column).
@@ -251,6 +252,35 @@ export class QueryHelper {
     });
 
     return false;
+  }
+
+  /**
+   * A bare value on a polymorphic relation is compared to the discriminator column, so lists of PK objects
+   * are turned into a PK condition instead, e.g. `[{ id: 1 }, { id: 2 }]` becomes `{ id: { $in: [1, 2] } }`.
+   */
+  private static inlinePolymorphicPrimaryKeyList(value: unknown, meta: EntityMetadata): unknown {
+    if (meta.compositePK) {
+      return value;
+    }
+
+    const pk = meta.primaryKeys[0];
+    const isPrimaryKeyObject = (item: unknown) =>
+      Utils.isPlainObject(item) && Utils.getObjectKeysSize(item) === 1 && pk in item;
+    const toCondition = (op: string, items: unknown) =>
+      Array.isArray(items) && items.length > 0 && items.every(isPrimaryKeyObject)
+        ? { [pk]: { [op]: items.map(item => item[pk]) } }
+        : undefined;
+
+    if (Array.isArray(value)) {
+      return toCondition('$in', value) ?? value;
+    }
+
+    if (Utils.isPlainObject(value) && Utils.getObjectKeysSize(value) === 1) {
+      const [op] = Object.keys(value);
+      return (['$in', '$nin'].includes(op) && toCondition(op, value[op])) || value;
+    }
+
+    return value;
   }
 
   /** Copies the plain object and array structure of the condition, keeping the leaf values (e.g. entities) by reference. */
