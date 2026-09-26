@@ -327,6 +327,8 @@ export type CleanTypeConfig<T> = Compute<Pick<T, Extract<keyof T, keyof TypeConf
 /** Configuration options that can be set on an entity via the `[Config]` symbol. */
 export interface TypeConfig {
   forceObject?: boolean;
+  /** Type-level counterpart of the `forceUndefined` ORM option: nullable properties infer as `T | undefined` instead of `T | null | undefined`. */
+  forceUndefined?: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
