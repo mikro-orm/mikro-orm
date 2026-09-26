@@ -44,7 +44,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
         const [name, target] = QueryHelper.splitPolymorphicKey(k);
         this.prop = meta.props.find(
           prop =>
-            (prop.name === name && (!target || !!prop.polymorphTargets?.some(t => t.className === target))) ||
+            (prop.name === name && (!target || QueryHelper.findTargetMetas(prop, k).length > 0)) ||
             (prop.fieldNames?.length === 1 && prop.fieldNames[0] === k && prop.persist !== false),
         );
         const isProp = this.prop || meta.props.find(prop => (prop.fieldNames || []).includes(k));
