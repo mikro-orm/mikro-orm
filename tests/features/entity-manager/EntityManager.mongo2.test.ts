@@ -59,12 +59,9 @@ describe('EntityManagerMongo2', () => {
     await orm.em.persist(bible).flush();
     orm.em.clear();
 
-    const book0 = await orm.em.findOne(
-      Book,
-      { author: { books: { publisher: ['1', '2'] } } },
-      { populate: ['publisher', 'tags'] },
-    );
-    expect(book0).toBeNull();
+    await expect(
+      orm.em.findOne(Book, { author: { books: { publisher: ['1', '2'] } } }, { populate: ['publisher', 'tags'] }),
+    ).rejects.toThrow('Unsupported condition on relation Book.author, MongoDB can query relations only by primary key');
 
     const book1 = await orm.em.findOneOrFail(Book, bible, { populate: ['*'] });
     expect(book1.publisher!.$.name).toBe('Publisher 123');
