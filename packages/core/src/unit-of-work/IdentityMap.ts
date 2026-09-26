@@ -6,6 +6,7 @@ export class IdentityMap {
   readonly #registry = new Map<EntityCtor, Map<string, AnyEntity>>();
   /** Tracks alternate key hashes for each entity so we can clean them up on delete */
   readonly #alternateKeys = new WeakMap<AnyEntity, Set<string>>();
+  readonly #storesWithAlternateKeys = new WeakSet<Map<string, unknown>>();
 
   constructor(defaultSchema?: string) {
     this.#defaultSchema = defaultSchema;
@@ -33,7 +34,9 @@ export class IdentityMap {
    */
   storeByKey<T>(item: T, key: string, value: string, schema?: string) {
     const hash = this.getKeyHash(key, value, schema);
-    this.getStore((item as AnyEntity).__meta!.root).set(hash, item);
+    const store = this.getStore((item as AnyEntity).__meta!.root);
+    store.set(hash, item);
+    this.#storesWithAlternateKeys.add(store);
     // Track this alternate key so we can clean it up when the entity is deleted
     let keys = this.#alternateKeys.get(item as AnyEntity);
 
@@ -103,7 +106,7 @@ export class IdentityMap {
     const ret: AnyEntity[] = [];
 
     for (const store of this.#registry.values()) {
-      for (const item of store.values()) {
+      for (const item of this.getEntities(store)) {
         ret.push(item);
       }
     }
@@ -113,10 +116,15 @@ export class IdentityMap {
 
   *[Symbol.iterator](): IterableIterator<AnyEntity> {
     for (const store of this.#registry.values()) {
-      for (const item of store.values()) {
+      for (const item of this.getEntities(store)) {
         yield item;
       }
     }
+  }
+
+  private getEntities(store: Map<string, AnyEntity>): Iterable<AnyEntity> {
+    // an entity indexed by alternate keys occupies several slots of its store
+    return this.#storesWithAlternateKeys.has(store) ? new Set(store.values()) : store.values();
   }
 
   /** Returns all hash keys currently in the identity map. */

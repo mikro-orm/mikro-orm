@@ -13,6 +13,7 @@ import { type Collection } from '../entity/Collection.js';
 import type { Platform } from '../platforms/Platform.js';
 import { ReferenceKind } from '../enums.js';
 import { isRaw } from '../utils/RawQueryFragment.js';
+import { ValidationError } from '../errors.js';
 import type { EntityManager } from '../EntityManager.js';
 
 /** @internal Computes change sets by comparing entity state against original snapshots. */
@@ -64,6 +65,11 @@ export class ChangeSetComputer {
 
       if (Utils.equals(data, wrapped.__originalEntityData)) {
         return null;
+      }
+
+      // a reference known only by its `targetKey` has no PK, so the update would have no condition
+      if (!wrapped.hasPrimaryKey()) {
+        throw ValidationError.referenceWithoutPK(entity);
       }
     }
 
@@ -218,6 +224,11 @@ export class ChangeSetComputer {
       const needsProcessing = target != null && (prop.targetKey != null || !target.__helper!.hasPrimaryKey());
 
       if (needsProcessing) {
+        // a reference known only by its `targetKey` has no PK, and is never inserted to generate one
+        if (!prop.targetKey && !target.__helper!.__initialized) {
+          throw ValidationError.referenceWithoutPK(target);
+        }
+
         let value = prop.targetKey ? target[prop.targetKey] : target.__helper!.__identifier;
 
         /* v8 ignore next */

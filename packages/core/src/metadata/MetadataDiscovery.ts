@@ -872,10 +872,15 @@ export class MetadataDiscovery {
       for (const prop2 of meta2.relations) {
         if (prop2.kind !== ReferenceKind.SCALAR && prop2.type === meta.className) {
           meta.referencingProperties.push({ meta: meta2, prop: prop2 });
+        }
 
-          if (prop2.targetKey && !meta.root.targetKeys?.includes(prop2.targetKey)) {
-            (meta.root.targetKeys ??= []).push(prop2.targetKey);
-          }
+        if (
+          prop2.targetKey &&
+          (prop2.type === meta.className || prop2.polymorphTargets?.some(t => t.className === meta.className)) &&
+          !(meta.primaryKeys.length === 1 && meta.primaryKeys[0] === prop2.targetKey) &&
+          !meta.root.targetKeys?.includes(prop2.targetKey)
+        ) {
+          (meta.root.targetKeys ??= []).push(prop2.targetKey);
         }
       }
     }

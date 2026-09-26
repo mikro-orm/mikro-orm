@@ -121,6 +121,12 @@ export class EntityFactory {
       Utils.dropUndefinedProperties(data);
       this.mergeData(meta2, exists!, data, options);
       wrapped.__processing = false;
+
+      // index a merged `targetKey` value, `getByKey` ignores the old one as stale
+      if (meta2.root.targetKeys && wrapped.hasPrimaryKey()) {
+        this.unitOfWork.getIdentityMap().store(exists!);
+      }
+
       wrapped.__initialized ||= !!options.initialized;
 
       if (wrapped.isInitialized()) {
@@ -354,8 +360,8 @@ export class EntityFactory {
     const meta = this.#metadata.get<T>(entityName);
     const schema = this.#driver.getSchemaName(meta, options);
 
-    // Handle alternate key lookup
-    if (options.key) {
+    // Handle alternate key lookup, a `key` pointing at the single PK is a plain PK reference
+    if (options.key && !(meta.primaryKeys.length === 1 && meta.primaryKeys[0] === options.key)) {
       const value =
         '' + (Array.isArray(id) ? id[0] : Utils.isPlainObject(id) ? (id as Record<string, any>)[options.key] : id);
       const exists = this.unitOfWork.getByKey(entityName, options.key, value, schema, options.convertCustomTypes);
@@ -597,7 +603,8 @@ export class EntityFactory {
     const schema = this.#driver.getSchemaName(meta, options);
     const exists = this.findEntityByPrimaryKey(data, meta, schema, options);
 
-    if (exists || Array.isArray(data)) {
+    // a new entity must not adopt a reference stub, that one is never inserted
+    if (exists || Array.isArray(data) || options.newEntity) {
       return exists;
     }
 
