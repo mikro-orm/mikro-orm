@@ -4,6 +4,8 @@ import {
   defineEntity,
   EventArgs,
   EntityData,
+  Config,
+  DefineConfig,
   EntityDTO,
   EntityMetadata,
   EntityName,
@@ -2538,6 +2540,73 @@ describe('ManyToOneOptionsBuilder', () => {
 
     type BookFoDTO = EntityDTO<InferEntity<typeof BookFo>>;
     assert<IsExact<BookFoDTO, { id: number; title: string; author: { id: number } }>>(true);
+  });
+
+  it('should support forceUndefined option', () => {
+    const Author = defineEntity({
+      name: 'FuAuthor',
+      forceUndefined: true,
+      properties: {
+        id: p.integer().primary(),
+        name: p.string().nullable(),
+        bio: p.string().strictNullable(),
+        tags: p.array().nullable(),
+        nick: p.string().nullable().ref(),
+        email: p.string().nullable().default('n/a'),
+        secret: p.string().nullable().hidden(),
+        slug: p.string().nullable().ref().default('n/a'),
+      },
+    });
+
+    type Author = InferEntity<typeof Author>;
+    assert<IsExact<Author['name'], string | undefined>>(true);
+    assert<IsExact<Author['bio'], string | undefined>>(true);
+    assert<IsExact<Author['tags'], string[] | undefined>>(true);
+    assert<IsExact<Author['nick'], ScalarReference<string | undefined>>>(true);
+    assert<IsExact<Author['email'], Opt<string> | undefined>>(true);
+    assert<IsExact<Author['secret'], Hidden<string> | undefined>>(true);
+    assert<IsExact<Author['slug'], Opt<ScalarReference<string | undefined>>>>(true);
+    assert<IsExact<Author[typeof Config], DefineConfig<{ forceUndefined: true }> | undefined>>(true);
+
+    // relations and refs drop `null` too
+    const Book = defineEntity({
+      name: 'FuBook',
+      forceUndefined: true,
+      properties: p => ({
+        id: p.integer().primary(),
+        author: () => p.manyToOne(Author).nullable(),
+        coAuthor: () => p.manyToOne(Author).ref().nullable(),
+      }),
+    });
+
+    type Book = InferEntity<typeof Book>;
+    assert<IsExact<Book['author'], Author | undefined>>(true);
+    assert<IsExact<Book['coAuthor'], Ref<Author> | undefined>>(true);
+
+    // inherited from the base entity's `[Config]`
+    const Child = defineEntity({
+      name: 'FuChild',
+      extends: Author,
+      properties: {
+        alias: p.string().nullable(),
+      },
+    });
+
+    type Child = InferEntity<typeof Child>;
+    assert<IsExact<Child['alias'], string | undefined>>(true);
+    assert<IsExact<Child['name'], string | undefined>>(true);
+
+    // without the option, `null` stays in the union
+    const Plain = defineEntity({
+      name: 'FuPlain',
+      properties: {
+        id: p.integer().primary(),
+        name: p.string().nullable(),
+      },
+    });
+
+    type Plain = InferEntity<typeof Plain>;
+    assert<IsExact<Plain['name'], string | null | undefined>>(true);
   });
 });
 

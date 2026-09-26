@@ -114,6 +114,8 @@ export class ObjectHydrator extends Hydrator {
     const lines: string[] = [];
     const context = new Map<string, any>();
     const props = this.getProperties(meta, type);
+    const forceUndefined = meta.forceUndefined ?? this.config.get('forceUndefined');
+    const nullVal = forceUndefined ? 'undefined' : 'null';
     context.set('isPrimaryKey', Utils.isPrimaryKey);
     context.set('isEntity', EntityHelper.isEntity);
     context.set('isScalarReference', ScalarReference.isScalarReference);
@@ -149,7 +151,6 @@ export class ObjectHydrator extends Hydrator {
         .join('_');
       const ret: string[] = [];
       const idx = this.#tmpIndex++;
-      const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
 
       if (prop.getter && !prop.setter && prop.persist === false) {
         return [];
@@ -237,7 +238,6 @@ export class ObjectHydrator extends Hydrator {
       const ret: string[] = [];
 
       const method = type === 'reference' ? 'createReference' : 'create';
-      const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
       ret.push(`  if (data${dataKey} === null) {\n    entity${entityKey} = ${nullVal};`);
       ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
 
@@ -498,9 +498,6 @@ export class ObjectHydrator extends Hydrator {
           });
       }
 
-      /* v8 ignore next */
-      const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
-
       if (prop.object) {
         ret.push(`  } else if (data${dataKey} === null) {`);
       } else {
@@ -526,8 +523,7 @@ export class ObjectHydrator extends Hydrator {
       ret.push(...hydrateEmbedded(prop, [...path, `[idx_${idx}]`], `${dataKey}[idx_${idx}]`).map(l => '    ' + l));
       ret.push(`    });`);
       ret.push(`  } else if (data${dataKey} === null) {`);
-      /* v8 ignore next */
-      ret.push(`    entity${entityKey} = ${this.config.get('forceUndefined') ? 'undefined' : 'null'};`);
+      ret.push(`    entity${entityKey} = ${nullVal};`);
       ret.push(`  }`);
 
       return ret;
@@ -563,7 +559,7 @@ export class ObjectHydrator extends Hydrator {
         ret.push(...hydrateScalar(prop, path, dataKey));
       }
 
-      if (this.config.get('forceUndefined')) {
+      if (forceUndefined) {
         ret.push(`  if (data${dataKey} === null) entity${entityKey} = undefined;`);
       }
 
