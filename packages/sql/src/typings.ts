@@ -4,6 +4,7 @@ import type {
   DeferMode,
   Dictionary,
   EntityName,
+  EntityMetadata,
   EntityProperty,
   EntitySchemaWithMeta,
   ExtractDefineEntityProperties,
@@ -319,6 +320,16 @@ export interface IQueryBuilder<T> {
   scheduleFilterCheck(path: string): void;
   /** @internal */
   ensureTPTJoins(): void;
+  /** @internal */
+  addPolymorphicJoin(
+    prop: EntityProperty,
+    targetMeta: EntityMetadata,
+    ownerAlias: string,
+    alias: string,
+    type: JoinType,
+    path: string,
+    schema?: string,
+  ): void;
   withSchema(schema: string): this;
 }
 
