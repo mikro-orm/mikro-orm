@@ -1,19 +1,36 @@
-import type { AnyEntity, EntityCtor, EntityMetadata } from '../typings.js';
+import type { AnyEntity, Dictionary, EntityCtor, EntityMetadata } from '../typings.js';
 
-/** @internal Stores managed entity instances keyed by their primary key hash, ensuring each row is loaded once. */
+/** @internal Stores managed entity instances keyed by their primary key hash (and `targetKey` values), ensuring each row is loaded once. */
 export class IdentityMap {
   readonly #defaultSchema?: string;
   readonly #registry = new Map<EntityCtor, Map<string, AnyEntity>>();
   /** Tracks alternate key hashes for each entity so we can clean them up on delete */
   readonly #alternateKeys = new WeakMap<AnyEntity, Set<string>>();
+  readonly #storesWithAlternateKeys = new WeakSet<Map<string, unknown>>();
 
   constructor(defaultSchema?: string) {
     this.#defaultSchema = defaultSchema;
   }
 
-  /** Stores an entity in the identity map under its primary key hash. */
+  /** Stores an entity in the identity map under its primary key hash and the `targetKey` values referencing it. */
   store<T>(item: T) {
-    this.getStore((item as AnyEntity).__meta!.root).set(this.getPkHash(item), item);
+    const meta = (item as AnyEntity).__meta!.root;
+    const wrapped = (item as AnyEntity).__helper;
+
+    // PK-less references (known only by a `targetKey`) would share one slot that outlives their later removal
+    if (!meta.targetKeys || wrapped.hasPrimaryKey()) {
+      this.getStore(meta).set(this.getPkHash(item), item);
+    }
+
+    // references resolved via `targetKey` look the entity up by that key instead of the PK
+    for (const key of meta.targetKeys ?? []) {
+      const value = (item as Dictionary)[key];
+
+      if (value != null) {
+        const schema = wrapped.__schema ?? meta.schema ?? this.#defaultSchema;
+        this.storeByKey(item, key, '' + value, schema);
+      }
+    }
   }
 
   /**
@@ -22,7 +39,9 @@ export class IdentityMap {
    */
   storeByKey<T>(item: T, key: string, value: string, schema?: string) {
     const hash = this.getKeyHash(key, value, schema);
-    this.getStore((item as AnyEntity).__meta!.root).set(hash, item);
+    const store = this.getStore((item as AnyEntity).__meta!.root);
+    store.set(hash, item);
+    this.#storesWithAlternateKeys.add(store);
     // Track this alternate key so we can clean it up when the entity is deleted
     let keys = this.#alternateKeys.get(item as AnyEntity);
 
@@ -45,7 +64,10 @@ export class IdentityMap {
 
     if (altKeys) {
       for (const hash of altKeys) {
-        store.delete(hash);
+        // the hash might be owned by another entity by now, e.g. after swapping unique values
+        if (store.get(hash) === item) {
+          store.delete(hash);
+        }
       }
 
       this.#alternateKeys.delete(item as AnyEntity);
@@ -89,7 +111,7 @@ export class IdentityMap {
     const ret: AnyEntity[] = [];
 
     for (const store of this.#registry.values()) {
-      for (const item of store.values()) {
+      for (const item of this.getEntities(store)) {
         ret.push(item);
       }
     }
@@ -99,10 +121,15 @@ export class IdentityMap {
 
   *[Symbol.iterator](): IterableIterator<AnyEntity> {
     for (const store of this.#registry.values()) {
-      for (const item of store.values()) {
+      for (const item of this.getEntities(store)) {
         yield item;
       }
     }
+  }
+
+  private getEntities(store: Map<string, AnyEntity>): Iterable<AnyEntity> {
+    // an entity indexed by alternate keys occupies several slots of its store
+    return this.#storesWithAlternateKeys.has(store) ? new Set(store.values()) : store.values();
   }
 
   /** Returns all hash keys currently in the identity map. */

@@ -1,5 +1,6 @@
 import { clone } from './clone.js';
 import type {
+  AnyEntity,
   Dictionary,
   EntityData,
   EntityDictionary,
@@ -864,9 +865,23 @@ export class EntityComparator {
         ret += `        if (discriminator !== undefined) break;\n`;
         ret += `        __cls${level} = Object.getPrototypeOf(__cls${level});\n`;
         ret += `      }\n`;
-        ret += `      const pk = val${level}?.__helper?.__identifier && !val${level}?.__helper?.hasPrimaryKey()\n`;
-        ret += `        ? val${level}.__helper.__identifier\n`;
-        ret += `        : toArray(val${level}?.__helper?.getPrimaryKey(true));\n`;
+        if (prop.targetKey) {
+          // the FK holds the `targetKey` value in the format of the actual target's column
+          const targetKey = prop.targetKey;
+          const targetKeyValueKey = `targetKeyValue_${this.safeKey(prop.name)}`;
+          context.set(targetKeyValueKey, (val: AnyEntity) => {
+            const customType = val.__meta!.properties[targetKey]?.customType;
+            const value = val[targetKey];
+            return customType
+              ? customType.convertToDatabaseValue(value, this.#platform, { mode: 'serialization' })
+              : value;
+          });
+          ret += `      const pk = ${targetKeyValueKey}(val${level});\n`;
+        } else {
+          ret += `      const pk = val${level}?.__helper?.__identifier && !val${level}?.__helper?.hasPrimaryKey()\n`;
+          ret += `        ? val${level}.__helper.__identifier\n`;
+          ret += `        : toArray(val${level}?.__helper?.getPrimaryKey(true));\n`;
+        }
         ret += `      ret${dataKey} = new PolymorphicRef(discriminator, pk);\n`;
         ret += `    }\n`;
       } else if (prop.targetKey) {
@@ -880,8 +895,8 @@ export class EntityComparator {
         ret += `      const val${level} = entity${entityKey}${unwrap};\n`;
 
         if (targetProp?.customType) {
-          // If targetKey property has a custom type, convert to database value
-          const convertorKey = this.registerCustomType(targetProp, context);
+          // keyed by the relation name to avoid clashing with a same-named owner prop, the relation itself lacks the custom type with an explicit `columnType`
+          const convertorKey = this.registerCustomType({ ...prop, customType: targetProp.customType }, context);
           ret += `      ret${dataKey} = convertToDatabaseValue_${convertorKey}(val${level}${targetAccess});\n`;
         } else {
           ret += `      ret${dataKey} = val${level}${targetAccess};\n`;

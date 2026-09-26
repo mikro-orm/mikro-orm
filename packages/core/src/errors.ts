@@ -53,6 +53,13 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`You cannot merge entity '${meta.className}' without identifier!`);
   }
 
+  static referenceWithoutPK(entity: AnyEntity): ValidationError {
+    return new ValidationError(
+      `Entity '${entity.constructor.name}' is only known by an alternate key and has no primary key, load it first`,
+      entity,
+    );
+  }
+
   static transactionRequired(): ValidationError {
     return new ValidationError('An open transaction is required for this operation');
   }

@@ -1207,6 +1207,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         .getHydrator(this.metadata)
         .hydrate(ref, helper(ref).__meta, data, em.#entityFactory, 'full', false, false);
       Utils.merge(helper(ref).__originalEntityData, this.#comparator.prepareEntity(e as Entity));
+      // index a refreshed `targetKey` value, `getByKey` ignores the old one as stale
+      if (helper(ref).__meta.root.targetKeys) {
+        em.#unitOfWork.getIdentityMap().store(ref);
+      }
       found ||= ref === entity;
     }
 

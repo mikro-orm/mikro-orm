@@ -137,7 +137,10 @@ export class UnitOfWork {
       ) {
         // Skip polymorphic relations - they use PolymorphicRef wrapper
         if (!prop.polymorphic) {
-          data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
+          // with `targetKey`, the FK holds that value instead of the PK
+          data[prop.name] = prop.targetKey
+            ? (data[prop.name] as Dictionary)[prop.targetKey]
+            : Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
         }
       } else if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name])) {
         for (const p of prop.targetMeta!.props) {
@@ -288,7 +291,21 @@ export class UnitOfWork {
     }
 
     const hash = this.#identityMap.getKeyHash(key, '' + value, schema);
-    return this.#identityMap.getByHash(meta, hash);
+    const entity = this.#identityMap.getByHash(meta, hash) as Dictionary | undefined;
+
+    // the entry is stale when the key changed via refresh or merge, unless only the unflushed value differs
+    if (entity && '' + entity[key] !== '' + value) {
+      // the snapshot holds the database value
+      const dbValue = prop?.customType
+        ? prop.customType.convertToDatabaseValue(value, this.#platform, { mode: 'serialization' })
+        : value;
+
+      if ('' + helper(entity).__originalEntityData?.[key] !== '' + dbValue) {
+        return undefined;
+      }
+    }
+
+    return entity as T | undefined;
   }
 
   /**
@@ -518,6 +535,11 @@ export class UnitOfWork {
 
   /** Marks an entity for removal, cascading to related entities. */
   remove<T extends object>(entity: T, visited?: Set<AnyEntity>, options: { cascade?: boolean } = {}): void {
+    // a reference known only by its `targetKey` has no PK, so the delete would match nothing
+    if (!helper(entity).__initialized && !helper(entity).hasPrimaryKey()) {
+      throw ValidationError.referenceWithoutPK(entity);
+    }
+
     // allow removing not managed entities if they are not part of the persist stack
     if (helper(entity).__managed || !this.#persistStack.has(entity)) {
       this.#removeStack.add(entity);
@@ -1498,6 +1520,12 @@ export class UnitOfWork {
     for (const changeSet of changeSets) {
       const wrapped = helper(changeSet.entity);
       wrapped.__originalEntityData = this.#comparator.prepareEntity(changeSet.entity);
+
+      // re-index so the entity is found by its new `targetKey` values instead of the old ones
+      if (changeSet.meta.root.targetKeys?.some(key => key in changeSet.payload)) {
+        this.#identityMap.delete(changeSet.entity);
+        this.#identityMap.store(changeSet.entity);
+      }
 
       if (!wrapped.__initialized) {
         for (const prop of changeSet.meta.relations) {

@@ -2039,6 +2039,7 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   relations: EntityProperty<Entity>[];
   bidirectionalRelations: EntityProperty<Entity>[];
   referencingProperties: { meta: EntityMetadata<Entity>; prop: EntityProperty<Entity> }[];
+  targetKeys?: EntityKey<Entity>[]; // properties other relations reference via `targetKey`, indexed in the identity map
   comparableProps: EntityProperty<Entity>[]; // for EntityComparator
   trackingProps: EntityProperty<Entity>[]; // for change-tracking and propagation
   hydrateProps: EntityProperty<Entity>[]; // for Hydrator

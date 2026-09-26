@@ -325,7 +325,7 @@ export class ObjectHydrator extends Hydrator {
 
         ret.push(`  if (data${dataKey} != null && typeof data${dataKey} !== 'object' && convertCustomTypes) {`);
         ret.push(
-          `    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}.__helper.getPrimaryKey());`,
+          `    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}.__helper.getTargetKeyValue(${prop.targetKey ? this.quote(prop.targetKey) : ''}));`,
         );
         ret.push(`  }`);
       }

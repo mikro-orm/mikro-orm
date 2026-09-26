@@ -2622,7 +2622,13 @@ export abstract class AbstractSqlDriver<
       return false;
     }
 
-    if (!fields || fields.includes('*') || prop.primary || meta.root.discriminatorColumn === prop.name) {
+    if (
+      !fields ||
+      fields.includes('*') ||
+      prop.primary ||
+      meta.root.discriminatorColumn === prop.name ||
+      meta.root.targetKeys?.includes(prop.name as EntityKey)
+    ) {
       return true;
     }
 
@@ -3616,6 +3622,8 @@ export abstract class AbstractSqlDriver<
 
       if (!options.fields.includes('*') && !options.fields.includes(`${qb.alias}.*`)) {
         ret.unshift(...meta.primaryKeys.filter(pk => !options.fields!.includes(pk)));
+        // `targetKey` values identify the entity like its PK, references resolve it by them
+        ret.push(...(meta.root.targetKeys ?? []).filter(key => meta.properties[key] && !options.fields!.includes(key)));
       }
 
       if (

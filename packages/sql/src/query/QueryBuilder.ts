@@ -2531,9 +2531,11 @@ export class QueryBuilder<
     path: string,
     schema?: string,
   ): void {
-    // Override referencedColumnNames to use the specific target's PK columns
+    // Override referencedColumnNames to use the specific target's PK (or `targetKey`) columns
     // (polymorphic targets may have different PK column names, e.g. org_id vs user_id)
-    const referencedColumnNames = targetMeta.getPrimaryProps().flatMap(pk => pk.fieldNames);
+    const referencedColumnNames = prop.targetKey
+      ? targetMeta.properties[prop.targetKey].fieldNames
+      : targetMeta.getPrimaryProps().flatMap(pk => pk.fieldNames);
     const targetProp = { ...prop, targetMeta, referencedColumnNames } as EntityProperty;
     const aliasedName = `${ownerAlias}.${prop.name}[${targetMeta.className}]#${alias}`;
     this.#state.joins[aliasedName] = this.helper.joinManyToOneReference(

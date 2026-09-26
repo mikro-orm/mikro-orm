@@ -805,6 +805,12 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       }
 
       ret.unshift(...meta.primaryKeys.filter(pk => !fields.includes(pk)));
+      // `targetKey` values identify the entity like its PK, references resolve it by them
+      for (const key of meta.root.targetKeys ?? []) {
+        if (meta.properties[key] && !fields.includes(key)) {
+          ret.push(meta.properties[key].fieldNames[0]);
+        }
+      }
     } else if (!Utils.isEmpty(exclude) || lazyProps.some(p => !p.formula)) {
       const props = meta.props.filter(prop => this.platform.shouldHaveColumn(prop, populate, exclude));
       ret.push(...Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames)));

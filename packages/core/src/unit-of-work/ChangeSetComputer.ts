@@ -13,6 +13,7 @@ import { type Collection } from '../entity/Collection.js';
 import type { Platform } from '../platforms/Platform.js';
 import { ReferenceKind } from '../enums.js';
 import { isRaw } from '../utils/RawQueryFragment.js';
+import { ValidationError } from '../errors.js';
 import type { EntityManager } from '../EntityManager.js';
 
 /** @internal Computes change sets by comparing entity state against original snapshots. */
@@ -64,6 +65,11 @@ export class ChangeSetComputer {
 
       if (Utils.equals(data, wrapped.__originalEntityData)) {
         return null;
+      }
+
+      // a reference known only by its `targetKey` has no PK, so the update would have no condition
+      if (!wrapped.hasPrimaryKey()) {
+        throw ValidationError.referenceWithoutPK(entity);
       }
     }
 
@@ -218,11 +224,16 @@ export class ChangeSetComputer {
       const needsProcessing = target != null && (prop.targetKey != null || !target.__helper!.hasPrimaryKey());
 
       if (needsProcessing) {
+        // a reference known only by its `targetKey` has no PK, and is never inserted to generate one
+        if (!prop.targetKey && !target.__helper!.__initialized) {
+          throw ValidationError.referenceWithoutPK(target);
+        }
+
         let value = prop.targetKey ? target[prop.targetKey] : target.__helper!.__identifier;
 
-        /* v8 ignore next */
-        if (prop.targetKey && prop.targetMeta) {
-          const targetProp = prop.targetMeta.properties[prop.targetKey];
+        // use the actual target's meta, a polymorphic relation has several
+        if (prop.targetKey) {
+          const targetProp = target.__meta!.properties[prop.targetKey];
 
           if (targetProp?.customType) {
             value = targetProp.customType.convertToDatabaseValue(value, this.#platform, { mode: 'serialization' });
@@ -231,16 +242,20 @@ export class ChangeSetComputer {
 
         if (prop.polymorphic) {
           const discriminator = QueryHelper.findDiscriminatorValue(prop.discriminatorMap!, target.constructor)!;
-          Utils.setPayloadProperty<T>(
-            changeSet.payload,
-            changeSet.meta,
-            prop,
-            new PolymorphicRef(discriminator, value),
-            idx,
-          );
-        } else {
-          Utils.setPayloadProperty<T>(changeSet.payload, changeSet.meta, prop, value, idx);
+          value = new PolymorphicRef(discriminator, value);
         }
+
+        // an unchanged `targetKey` FK is not part of the diff
+        if (
+          prop.targetKey &&
+          changeSet.type === ChangeSetType.UPDATE &&
+          !(prop.name in changeSet.payload) &&
+          Utils.equals(changeSet.originalEntity?.[prop.name], value)
+        ) {
+          return;
+        }
+
+        Utils.setPayloadProperty<T>(changeSet.payload, changeSet.meta, prop, value, idx);
       }
     });
   }

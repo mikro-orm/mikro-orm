@@ -361,9 +361,12 @@ export class EntityLoader {
     meta: EntityMetadata<Entity>,
     filtered: Entity[],
     options: Required<EntityLoaderOptions<Entity>>,
+    key?: string,
   ) {
-    const pk = Utils.getPrimaryKeyHash(meta.primaryKeys) as FilterKey<Entity>;
-    const ids = Utils.unique(filtered.map(e => Utils.getPrimaryKeyValues(e, meta, true)));
+    const pk = (key ?? Utils.getPrimaryKeyHash(meta.primaryKeys)) as FilterKey<Entity>;
+    const ids = Utils.unique(
+      filtered.map(e => (key ? (e as Dictionary)[key] : Utils.getPrimaryKeyValues(e, meta, true))),
+    );
     const where = this.mergePrimaryCondition<Entity>(
       ids as Entity[],
       pk,
@@ -402,7 +405,8 @@ export class EntityLoader {
     for (const entity of entities) {
       const refValue = entity[prop.name];
 
-      if (refValue && helper(refValue).hasPrimaryKey()) {
+      // a `targetKey` reference is identified by its key, it might not have the PK yet
+      if (refValue && helper(refValue).getTargetKeyValue(prop.targetKey) != null) {
         if (
           (ref && !options.refresh) || // :ref hint - already have reference
           (!ref && helper(refValue).__initialized && !options.refresh) // already loaded
@@ -429,7 +433,7 @@ export class EntityLoader {
       if (!ref) {
         for (const entity of needsFkLoad) {
           const refValue = entity[prop.name] as object | undefined;
-          if (refValue && helper(refValue).hasPrimaryKey()) {
+          if (refValue && helper(refValue).getTargetKeyValue(prop.targetKey) != null) {
             toPopulate.push(entity);
           }
         }
@@ -456,7 +460,7 @@ export class EntityLoader {
     await Promise.all(
       [...groups].map(async ([discriminator, children]) => {
         const targetMeta = this.#metadata.find(prop.discriminatorMap![discriminator])!;
-        await this.populateScalar(targetMeta, children as any[], options as any);
+        await this.populateScalar(targetMeta, children as any[], options as any, prop.targetKey);
         allItems.push(...children);
       }),
     );

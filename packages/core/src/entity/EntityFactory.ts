@@ -121,6 +121,12 @@ export class EntityFactory {
       Utils.dropUndefinedProperties(data);
       this.mergeData(meta2, exists!, data, options);
       wrapped.__processing = false;
+
+      // index a merged `targetKey` value, `getByKey` ignores the old one as stale
+      if (meta2.root.targetKeys) {
+        this.unitOfWork.getIdentityMap().store(exists!);
+      }
+
       wrapped.__initialized ||= !!options.initialized;
 
       if (wrapped.isInitialized()) {
@@ -354,10 +360,9 @@ export class EntityFactory {
     const meta = this.#metadata.get<T>(entityName);
     const schema = this.#driver.getSchemaName(meta, options);
 
-    // Handle alternate key lookup
-    if (options.key) {
-      const value =
-        '' + (Array.isArray(id) ? id[0] : Utils.isPlainObject(id) ? (id as Record<string, any>)[options.key] : id);
+    // Handle alternate key lookup, a `key` pointing at the single PK is a plain PK reference
+    if (options.key && !(meta.primaryKeys.length === 1 && meta.primaryKeys[0] === options.key)) {
+      const value = Array.isArray(id) ? id[0] : Utils.isPlainObject(id) ? (id as Record<string, any>)[options.key] : id;
       const exists = this.unitOfWork.getByKey(entityName, options.key, value, schema, options.convertCustomTypes);
 
       if (exists) {
@@ -367,6 +372,8 @@ export class EntityFactory {
       // Create entity stub - storeByKey will set the alternate key property and store in identity map
       const entity = this.create(entityName, {} as EntityData<T>, { ...options, initialized: false }) as T;
       this.unitOfWork.storeByKey(entity, options.key, value, schema, options.convertCustomTypes);
+      // snapshot the stub like a PK reference, so flush treats it as existing instead of inserting it
+      helper(entity).__originalEntityData = this.#comparator.prepareEntity(entity);
 
       return entity;
     }
@@ -470,6 +477,13 @@ export class EntityFactory {
         options.parentSchema,
       );
       this.unitOfWork.register(entity);
+
+      // relations hydrated together with this entity (joined strategy) resolve it via `targetKey` before it is hydrated
+      for (const key of meta.root.targetKeys ?? []) {
+        if (data[key] != null) {
+          this.unitOfWork.storeByKey(entity, key, data[key], schema, options.convertCustomTypes);
+        }
+      }
     }
 
     if (options.initialized) {
@@ -586,7 +600,33 @@ export class EntityFactory {
     options: FactoryOptions,
   ): T | undefined {
     const schema = this.#driver.getSchemaName(meta, options);
+    const exists = this.findEntityByPrimaryKey(data, meta, schema, options);
 
+    // a new entity must not adopt a reference stub, that one is never inserted
+    if (exists || Array.isArray(data) || options.newEntity) {
+      return exists;
+    }
+
+    // a reference created via `targetKey` is only known by that key until the entity is loaded
+    for (const key of meta.root.targetKeys ?? []) {
+      if (data[key] != null) {
+        const ref = this.unitOfWork.getByKey(meta.class, key, data[key], schema, options.convertCustomTypes);
+
+        if (ref && !helper(ref).__initialized) {
+          return ref;
+        }
+      }
+    }
+
+    return undefined;
+  }
+
+  private findEntityByPrimaryKey<T extends object>(
+    data: EntityData<T>,
+    meta: EntityMetadata<T>,
+    schema: string | undefined,
+    options: FactoryOptions,
+  ): T | undefined {
     if (meta.simplePK) {
       return this.unitOfWork.getById<T>(meta.class, data[meta.primaryKeys[0]] as Primary<T>, schema);
     }
