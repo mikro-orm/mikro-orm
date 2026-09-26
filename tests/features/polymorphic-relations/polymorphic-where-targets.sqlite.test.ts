@@ -183,6 +183,12 @@ describe('filtering by properties of polymorphic relation targets', () => {
     }
   });
 
+  test('unknown target in a target key throws', async () => {
+    await expect(urls({ 'imageable[Foo]': { name: 'x' } })).rejects.toThrow(
+      'Trying to query by not existing property Image.imageable[Foo]',
+    );
+  });
+
   test('unknown property on all targets throws', async () => {
     await expect(urls({ imageable: { foo: 'bar' } })).rejects.toThrow(
       'Trying to query by not existing property Product.foo',
