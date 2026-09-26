@@ -2,9 +2,11 @@ import {
   ALIAS_REPLACEMENT,
   type Dictionary,
   type EntityKey,
+  type EntityMetadata,
   type EntityProperty,
   GroupOperator,
   QueryFlag,
+  QueryHelper,
   raw,
   RawQueryFragment,
   ReferenceKind,
@@ -21,6 +23,12 @@ const COLLECTION_OPERATORS = ['$some', '$none', '$every', '$size', '$all'];
  */
 export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   override process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any {
+    const targets = this.isPolymorphicBranch() ? QueryHelper.findTargetMetas(this.prop, this.key as string) : [];
+
+    if (options?.type === 'orderBy' && targets.length > 1) {
+      return this.processPolymorphicOrderBy(qb, targets, options);
+    }
+
     const matchPopulateJoins =
       options?.matchPopulateJoins ||
       (this.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop.kind));
@@ -188,12 +196,44 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     }, {} as Dictionary);
 
     // the target is left joined, so its condition must only match rows that point to it
-    if (this.isPolymorphicBranch() && alias) {
+    if (this.isPolymorphicBranch() && alias && options?.type !== 'orderBy') {
       const pk = this.metadata.find(this.entityName)!.primaryKeys[0];
       this.inlineCondition(`${alias}.${pk}`, ret, { $ne: null });
     }
 
     return ret;
+  }
+
+  /** Orders by the first non-null value of the property across the joined polymorphic targets. */
+  private processPolymorphicOrderBy(
+    qb: IQueryBuilder<T>,
+    targets: EntityMetadata[],
+    options: ICriteriaNodeProcessOptions,
+  ): Dictionary {
+    const ownerAlias = options.alias || qb.alias;
+    const aliases = targets.map(target => {
+      const path = `${this.parent!.getPath()}.${this.prop!.name}[${target.className}]`;
+      const alias = qb.getAliasForJoinPath(path, { ...options, matchPopulateJoins: true });
+
+      if (alias) {
+        return alias;
+      }
+
+      const newAlias = qb.getNextAlias(target.class);
+      qb.addPolymorphicJoin(this.prop!, target, ownerAlias, newAlias, JoinType.leftJoin, path);
+
+      return newAlias;
+    });
+
+    return Utils.getObjectQueryKeys(this.payload).reduce((o, field) => {
+      const columns = targets.map(
+        (target, i) => `${aliases[i]}.${target.properties[field as EntityKey].fieldNames[0]}`,
+      );
+      o[raw(`coalesce(${columns.map(() => '??').join(', ')})`, columns) as any] = (
+        this.payload[field] as CriteriaNode<T>
+      ).payload;
+      return o;
+    }, {} as Dictionary);
   }
 
   override isStrict(): boolean {

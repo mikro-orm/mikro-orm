@@ -368,8 +368,12 @@ export class QueryHelper {
       return where;
     }
 
-    if (meta && options.type !== 'orderBy') {
-      where = QueryHelper.splitPolymorphicConditions(meta, where) as FilterQuery<T>;
+    if (meta) {
+      where = (
+        options.type === 'orderBy'
+          ? QueryHelper.splitPolymorphicOrderBy(meta, where)
+          : QueryHelper.splitPolymorphicConditions(meta, where)
+      ) as FilterQuery<T>;
     }
 
     return Utils.getObjectQueryKeys(where).reduce((o, key) => {
@@ -456,14 +460,20 @@ export class QueryHelper {
 
   /** @internal Splits a polymorphic target key like `imageable[Article]` into the property and target class names. */
   static splitPolymorphicKey(key: string): [string, string?] {
-    const match = /^(\w+)\[(\w+)]$/.exec(key);
+    const match = /^(\w+)\[([\w,]+)]$/.exec(key);
     return match ? [match[1], match[2]] : [key];
+  }
+
+  /** @internal Resolves the targets of a polymorphic target key like `imageable[Article]` or `imageable[Product,Article]`. */
+  static findTargetMetas(prop: EntityProperty | null | undefined, key: string): EntityMetadata[] {
+    const [, targetNames] = QueryHelper.splitPolymorphicKey(key);
+    const targets = targetNames?.split(',').map(name => prop?.polymorphTargets?.find(t => t.className === name));
+    return targets?.every(Boolean) ? (targets as EntityMetadata[]) : [];
   }
 
   /** @internal Resolves the target entity of a condition key, including polymorphic target keys like `imageable[Article]`. */
   static findTargetMeta(prop: EntityProperty | null | undefined, key: string): EntityMetadata | undefined {
-    const [, targetName] = QueryHelper.splitPolymorphicKey(key);
-    return targetName ? prop?.polymorphTargets?.find(t => t.className === targetName) : prop?.targetMeta;
+    return QueryHelper.splitPolymorphicKey(key)[1] ? QueryHelper.findTargetMetas(prop, key)[0] : prop?.targetMeta;
   }
 
   /**
@@ -508,6 +518,42 @@ export class QueryHelper {
         Object.assign(ret, branches[0]);
       } else {
         ret.$and = [...(ret.$and ?? []), { $or: branches }];
+      }
+    }
+
+    return ret;
+  }
+
+  /**
+   * Routes ordering by properties of polymorphic to-one relations to the targets that define them, e.g.
+   * `{ imageable: { name: 'asc' } }` becomes `{ 'imageable[Product,Article]': { name: 'asc' } }`, ordered by
+   * the first non-null value. Nested relations and formulas are ordered via the first target defining them.
+   */
+  private static splitPolymorphicOrderBy(meta: EntityMetadata, orderBy: Dictionary): Dictionary {
+    const ret: Dictionary = {};
+
+    for (const key of Utils.getObjectQueryKeys(orderBy) as string[]) {
+      const prop = meta.properties[key as EntityKey];
+      const value = orderBy[key];
+
+      if (
+        !prop?.polymorphTargets ||
+        ![ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) ||
+        !Utils.isPlainObject(value)
+      ) {
+        ret[key] = value;
+        continue;
+      }
+
+      for (const field of Utils.getObjectQueryKeys(value) as string[]) {
+        const found: EntityMetadata[] = prop.polymorphTargets.filter(target => field in target.properties);
+        const sharedPK: boolean =
+          found.length === prop.polymorphTargets.length && found.every(target => target.primaryKeys.includes(field));
+        const single = Utils.isPlainObject(value[field]) || found.some(target => target.properties[field].formula);
+        const targets = found.length === 0 ? [prop.targetMeta!] : single ? [found[0]] : found;
+        // shared PKs are ordered by the FK column without a join
+        const targetKey = sharedPK ? key : `${key}[${targets.map(target => target.className).join(',')}]`;
+        ret[targetKey] = { ...ret[targetKey], [field]: value[field] };
       }
     }
 
