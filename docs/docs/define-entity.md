@@ -225,7 +225,7 @@ const properties = {
 
 ### Nullable properties and `forceUndefined`
 
-`.nullable()` infers the property as `T | null | undefined`, matching what you get at runtime by default: `null` from the database, `undefined` before the entity is persisted. With the [`forceUndefined`](./configuration.md#mapping-null-values-to-undefined) ORM option, `null` values are hydrated as `undefined`, so `null` never shows up at runtime. Set the `forceUndefined` option on `defineEntity` as well to drop it from the inferred types:
+`.nullable()` infers the property as `T | null | undefined`, matching what you get at runtime by default: `null` from the database, `undefined` before the entity is persisted. The `forceUndefined` entity option hydrates `null` values as `undefined` for that entity (same as the global [`forceUndefined`](./configuration.md#mapping-null-values-to-undefined) ORM option, but per entity) and drops `null` from the inferred types:
 
 ```ts
 const UserSchema = defineEntity({
@@ -238,7 +238,7 @@ const UserSchema = defineEntity({
 });
 ```
 
-The option is type-only, it does not change runtime behavior, so it has to match the `forceUndefined` ORM option. It applies to every `.nullable()` and `.strictNullable()` property of the entity, including relations, and is inherited by entities that `extends` it.
+It applies to every `.nullable()` and `.strictNullable()` property of the entity, including relations, and is inherited by entities that `extends` it. The same option is available for [decorators](./decorators.md#entity) and `EntitySchema`, where it affects only the runtime, as the property types are declared by hand there.
 
 ### Relation modifiers: `.ref()` and `.lazyRef()`
 

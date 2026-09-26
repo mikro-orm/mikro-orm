@@ -727,7 +727,8 @@ export class EntityLoader {
       items.length !== children.length &&
       Utils.isEmpty(options.where)
     ) {
-      const nullVal = this.#em.config.get('forceUndefined') ? undefined : null;
+      const ownerMeta = this.#metadata.find(prop.entity())!;
+      const nullVal = (ownerMeta.forceUndefined ?? this.#em.config.get('forceUndefined')) ? undefined : null;
       const itemsMap = new Set<string>();
       const childrenMap = new Set<string>();
       // `e` may be an unresolved reference here, so read the targetKey value directly instead of

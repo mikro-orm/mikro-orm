@@ -327,7 +327,7 @@ export type CleanTypeConfig<T> = Compute<Pick<T, Extract<keyof T, keyof TypeConf
 /** Configuration options that can be set on an entity via the `[Config]` symbol. */
 export interface TypeConfig {
   forceObject?: boolean;
-  /** Type-level counterpart of the `forceUndefined` ORM option: nullable properties infer as `T | undefined` instead of `T | null | undefined`. */
+  /** Type-level marker of the `forceUndefined` entity option: `defineEntity` infers nullable properties as `T | undefined` instead of `T | null | undefined`. */
   forceUndefined?: boolean;
 }
 
@@ -2089,6 +2089,8 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   selfReferencing?: boolean;
   hasUniqueProps?: boolean;
   readonly?: boolean;
+  /** Per-entity override of the global `forceUndefined` option. */
+  forceUndefined?: boolean;
   polymorphs?: EntityMetadata[];
   root: EntityMetadata<Entity>;
   definedProperties: Dictionary;

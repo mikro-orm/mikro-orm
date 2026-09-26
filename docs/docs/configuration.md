@@ -421,7 +421,7 @@ MikroORM.init({
 });
 ```
 
-Entities defined via `defineEntity` infer nullable properties as `T | null | undefined`. To drop `null` from the inferred types, set the [`forceUndefined` option on `defineEntity`](./define-entity.md#nullable-properties-and-forceundefined) as well.
+The option can also be set per entity via `@Entity({ forceUndefined: true })`, `new EntitySchema({ forceUndefined: true })` or `defineEntity({ forceUndefined: true })`, which takes precedence over the global value. With `defineEntity`, it also [drops `null` from the inferred types](./define-entity.md#nullable-properties-and-forceundefined).
 
 ## Initializing nullable properties to `null`
 

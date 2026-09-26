@@ -291,7 +291,7 @@ export class EntityFactory {
     this.hydrate(entity, meta, diff2, initialized ? { ...options, initialized } : options);
 
     // we need to update the entity data only with keys that were not present before
-    const nullVal = this.#config.get('forceUndefined') ? undefined : null;
+    const nullVal = (meta.forceUndefined ?? this.#config.get('forceUndefined')) ? undefined : null;
     Utils.keys(diff2).forEach(key => {
       const prop = meta.properties[key];
 
@@ -502,7 +502,9 @@ export class EntityFactory {
         !prop.defaultRaw &&
         entity[prop.name] === undefined
       ) {
-        entity[prop.name] = (this.#config.get('forceUndefined') ? undefined : null) as EntityValue<T>;
+        entity[prop.name] = (
+          (meta.forceUndefined ?? this.#config.get('forceUndefined')) ? undefined : null
+        ) as EntityValue<T>;
       }
 
       if (prop.kind === ReferenceKind.EMBEDDED && entity[prop.name]) {

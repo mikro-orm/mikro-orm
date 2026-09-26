@@ -122,7 +122,7 @@ export class UnitOfWork {
    * @internal
    */
   normalizeEntityData<T extends object>(meta: EntityMetadata<T>, data: EntityData<T>): void {
-    const forceUndefined = this.#em.config.get('forceUndefined');
+    const forceUndefined = meta.forceUndefined ?? this.#em.config.get('forceUndefined');
 
     for (const key of Utils.keys(data)) {
       const prop = meta.properties[key];

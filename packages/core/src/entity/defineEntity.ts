@@ -1417,6 +1417,7 @@ export interface EntityMetadataWithProperties<
     rls?: boolean | { setting?: string };
   }>;
   forceObject?: TForceObject;
+  /** Hydrate `null` as `undefined` for this entity and infer nullable properties as `T | undefined`. */
   forceUndefined?: TForceUndefined;
   // Captured as a literal so `NarrowDiscriminator` can keep the discriminator required for
   // polymorphic embeddables, where the ORM cannot auto-fill it (the value picks the subtype).
