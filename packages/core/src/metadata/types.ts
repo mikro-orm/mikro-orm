@@ -114,6 +114,8 @@ export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   abstract?: boolean;
   /** Disables change tracking - such entities are ignored during flush. */
   readonly?: boolean;
+  /** Hydrate `null` values as `undefined` for this entity, overriding the global `forceUndefined` option. */
+  forceUndefined?: boolean;
   /** Marks entity as {@doclink virtual-entities | virtual}. This is set automatically when you use `expression` option (unless `view` is set). */
   virtual?: boolean;
   /**
