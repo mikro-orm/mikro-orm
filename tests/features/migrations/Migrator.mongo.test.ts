@@ -181,6 +181,7 @@ describe('Migrator (mongo)', () => {
     const migrator = orm.migrator;
     const path = process.cwd() + '/temp/migrations-mongo';
 
+    vi.spyOn(Date.prototype, 'toISOString').mockReturnValue('2019-10-13T21:48:13.382Z');
     const migration = await migrator.create(path, true);
     const migratorMock = vi.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => undefined);
@@ -256,6 +257,7 @@ describe('Migrator (mongo)', () => {
     migrator.options.allOrNothing = false;
     const path = process.cwd() + '/temp/migrations-mongo';
 
+    vi.spyOn(Date.prototype, 'toISOString').mockReturnValue('2019-10-13T21:48:13.382Z');
     const migration = await migrator.create(path, true);
     const migratorMock = vi.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
