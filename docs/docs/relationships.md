@@ -1500,6 +1500,32 @@ By default, the discriminator value is the table name of the target entity. In t
 - Pointing to `Post` entity → discriminator value is `'post'`
 - Pointing to `Comment` entity → discriminator value is `'comment'`
 
+### Querying by Target Properties
+
+You can filter by properties of the related entity, just like with regular relations. Only the targets that define all the queried properties are joined:
+
+```ts
+// only `Post` has a `title`, so only the `post` table is joined
+const likes = await em.find(UserLike, { likeable: { title: 'Hello' } });
+```
+
+When more targets define the queried properties, each of them is left joined and the conditions are combined with `$or`. If both `Post` and `Comment` had a `createdAt` property, this query would match likes of both:
+
+```ts
+const likes = await em.find(UserLike, { likeable: { createdAt: { $gte: since } } });
+```
+
+```sql
+select `u0`.* from `user_like` as `u0`
+  left join `post` as `p1` on `u0`.`likeable_id` = `p1`.`id` and `u0`.`likeable_type` = 'post'
+  left join `comment` as `c2` on `u0`.`likeable_id` = `c2`.`id` and `u0`.`likeable_type` = 'comment'
+  where ((`p1`.`created_at` >= ? and `p1`.`id` is not null) or (`c2`.`created_at` >= ? and `c2`.`id` is not null))
+```
+
+A target is considered only when it defines every property used in the condition, including those nested in `$and`, `$or` and `$not`. Conditions only on a primary key that all targets define, like `{ likeable: { id: 1 } }`, compare the FK column without a join, so they match any type. To restrict the query to a single type, combine it with a condition on the exposed discriminator (see below). Ordering by target properties supports only the first discovered target type, which is not necessarily the first one in the declaration.
+
+This is not supported in MongoDB, where conditions on polymorphic relations need to be an entity reference or `null`.
+
 ### Exposing the Discriminator for Querying
 
 The discriminator column is managed automatically by MikroORM, but you can expose it as a read-only property for querying purposes. Use `persist: false` to prevent it from being persisted (since the relation already handles that):
