@@ -555,6 +555,21 @@ describe('polymorphic relation with default filter on target entity (GH #7317)',
     expect(found).toBeNull();
   });
 
+  test.each(['joined', 'select-in', 'balanced'] as const)(
+    'default filter on target applies when populating the relation (%s)',
+    async strategy => {
+      const deleted = orm.em.create(EntityA, { value: 'A', deletedAt: new Date() });
+      const entityB = orm.em.create(EntityB, { value: 'B' });
+      orm.em.create(PolyOwner, { name: 'Owner A', poly: deleted });
+      orm.em.create(PolyOwner, { name: 'Owner B', poly: entityB });
+      await orm.em.flush();
+      orm.em.clear();
+
+      const owners = await orm.em.find(PolyOwner, {}, { populate: ['poly'], strategy });
+      expect(owners.map(o => [o.name, (o.poly as EntityB).value])).toEqual([['Owner B', 'B']]);
+    },
+  );
+
   test('default filter allows non-deleted entities through', async () => {
     const entityA = orm.em.create(EntityA, { value: 'A' }); // not soft-deleted
     const entityB = orm.em.create(EntityB, { value: 'B' });
