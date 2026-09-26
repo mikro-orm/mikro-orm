@@ -740,9 +740,12 @@ export class MetadataDiscovery {
     Utils.defaultValue(prop, 'referencedTableName', meta2.tableName);
 
     if (!prop.joinColumns) {
-      prop.joinColumns = fieldNames.map(fieldName =>
-        this.#namingStrategy.joinKeyColumnName(prop.name, fieldName, fieldNames.length > 1),
-      );
+      // with `targetKey`, the FK column keeps the PK based name from `initManyToOneFieldName`
+      prop.joinColumns = prop.targetKey
+        ? prop.fieldNames
+        : fieldNames.map(fieldName =>
+            this.#namingStrategy.joinKeyColumnName(prop.name, fieldName, fieldNames.length > 1),
+          );
     }
 
     if (!prop.referencedColumnNames) {
@@ -869,6 +872,10 @@ export class MetadataDiscovery {
       for (const prop2 of meta2.relations) {
         if (prop2.kind !== ReferenceKind.SCALAR && prop2.type === meta.className) {
           meta.referencingProperties.push({ meta: meta2, prop: prop2 });
+
+          if (prop2.targetKey && !meta.root.targetKeys?.includes(prop2.targetKey)) {
+            (meta.root.targetKeys ??= []).push(prop2.targetKey);
+          }
         }
       }
     }

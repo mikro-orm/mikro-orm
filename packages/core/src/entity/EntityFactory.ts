@@ -470,6 +470,13 @@ export class EntityFactory {
         options.parentSchema,
       );
       this.unitOfWork.register(entity);
+
+      // relations hydrated together with this entity (joined strategy) resolve it via `targetKey` before it is hydrated
+      for (const key of meta.root.targetKeys ?? []) {
+        if (data[key] != null) {
+          this.unitOfWork.storeByKey(entity, key, data[key], schema, options.convertCustomTypes);
+        }
+      }
     }
 
     if (options.initialized) {
@@ -586,7 +593,32 @@ export class EntityFactory {
     options: FactoryOptions,
   ): T | undefined {
     const schema = this.#driver.getSchemaName(meta, options);
+    const exists = this.findEntityByPrimaryKey(data, meta, schema, options);
 
+    if (exists || Array.isArray(data)) {
+      return exists;
+    }
+
+    // a reference created via `targetKey` is only known by that key until the entity is loaded
+    for (const key of meta.root.targetKeys ?? []) {
+      if (data[key] != null) {
+        const ref = this.unitOfWork.getByKey(meta.class, key, data[key], schema, options.convertCustomTypes);
+
+        if (ref && !helper(ref).__initialized) {
+          return ref;
+        }
+      }
+    }
+
+    return undefined;
+  }
+
+  private findEntityByPrimaryKey<T extends object>(
+    data: EntityData<T>,
+    meta: EntityMetadata<T>,
+    schema: string | undefined,
+    options: FactoryOptions,
+  ): T | undefined {
     if (meta.simplePK) {
       return this.unitOfWork.getById<T>(meta.class, data[meta.primaryKeys[0]] as Primary<T>, schema);
     }

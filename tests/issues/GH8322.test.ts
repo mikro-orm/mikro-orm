@@ -81,3 +81,33 @@ test('GH #8322 - targetKey pointing at a non-PK unique column does not create a 
 
   await expect(em.flush()).resolves.toBeUndefined();
 });
+
+test('GH #8322 - joined strategy populates the inverse side of a non-PK targetKey relation', async () => {
+  const em = orm.em.fork();
+  const [parent] = await em.find(CodedParent, {}, { populate: ['children'], strategy: 'joined' });
+
+  expect(parent.children).toHaveLength(1);
+  expect(parent.children[0].label).toBe('C1');
+  expect(parent.children[0].parent).toBe(parent);
+
+  await expect(em.flush()).resolves.toBeUndefined();
+});
+
+test('GH #8322 - non-PK targetKey reference resolves to the entity loaded before it', async () => {
+  const em = orm.em.fork();
+  const [parent] = await em.find(CodedParent, {});
+  const [child] = await em.find(CodedChild, {});
+
+  expect(child.parent).toBe(parent);
+  await expect(em.flush()).resolves.toBeUndefined();
+});
+
+test('GH #8322 - non-PK targetKey reference gets merged with the entity loaded after it', async () => {
+  const em = orm.em.fork();
+  const [child] = await em.find(CodedChild, {});
+  const [parent] = await em.find(CodedParent, {});
+
+  expect(child.parent).toBe(parent);
+  expect(parent.name).toBe('P1');
+  await expect(em.flush()).resolves.toBeUndefined();
+});

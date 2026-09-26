@@ -1,4 +1,4 @@
-import type { AnyEntity, EntityCtor, EntityMetadata } from '../typings.js';
+import type { AnyEntity, Dictionary, EntityCtor, EntityMetadata } from '../typings.js';
 
 /** @internal Stores managed entity instances keyed by their primary key hash, ensuring each row is loaded once. */
 export class IdentityMap {
@@ -13,7 +13,18 @@ export class IdentityMap {
 
   /** Stores an entity in the identity map under its primary key hash. */
   store<T>(item: T) {
-    this.getStore((item as AnyEntity).__meta!.root).set(this.getPkHash(item), item);
+    const meta = (item as AnyEntity).__meta!.root;
+    this.getStore(meta).set(this.getPkHash(item), item);
+
+    // references resolved via `targetKey` look the entity up by that key instead of the PK
+    for (const key of meta.targetKeys ?? []) {
+      const value = (item as Dictionary)[key];
+
+      if (value != null) {
+        const schema = (item as AnyEntity).__helper.__schema ?? meta.schema ?? this.#defaultSchema;
+        this.storeByKey(item, key, '' + value, schema);
+      }
+    }
   }
 
   /**
