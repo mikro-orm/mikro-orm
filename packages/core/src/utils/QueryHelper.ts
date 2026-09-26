@@ -311,10 +311,12 @@ export class QueryHelper {
       // detect tuple comparison, use `$or` in case the number of constituents don't match
       if (
         meta &&
-        !where.every(
+        !(where as FilterQuery<T>[]).every(
           c =>
             Utils.isPrimaryKey(c as unknown) ||
-            (Array.isArray(c) && c.length === meta.primaryKeys.length && c.every(i => Utils.isPrimaryKey(i))),
+            (Array.isArray(c) &&
+              (c as FilterQuery<T>[]).length === meta.primaryKeys.length &&
+              (c as FilterQuery<T>[]).every(i => Utils.isPrimaryKey(i))),
         )
       ) {
         cond = { $or: where } as FilterQuery<T>;
@@ -331,7 +333,7 @@ export class QueryHelper {
       let value = where[key as keyof typeof where] as unknown as FilterQuery<T>;
       const customExpression = Raw.isKnownFragmentSymbol(key);
 
-      if (Array.isArray(value) && value.length === 0 && customExpression) {
+      if (Array.isArray(value) && (value as FilterQuery<T>[]).length === 0 && customExpression) {
         o[key as unknown as string] = value;
         return o;
       }
@@ -387,7 +389,7 @@ export class QueryHelper {
       // oxfmt-ignore
       if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key as string) && !(customExpression && Raw.getKnownFragment(key)!.params.length > 0) && options.type !== 'orderBy') {
         // comparing single composite key - use $eq instead of $in
-        const op = composite && !value.every(v => Array.isArray(v)) ? '$eq' : '$in';
+        const op = composite && !(value as FilterQuery<T>[]).every(v => Array.isArray(v)) ? '$eq' : '$in';
         o[key as string] = { [op]: value };
 
         return o;
