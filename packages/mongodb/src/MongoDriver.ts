@@ -21,6 +21,7 @@ import {
   type NativeInsertUpdateManyOptions,
   type NativeInsertUpdateOptions,
   PolymorphicRef,
+  QueryHelper,
   type PopulateOptions,
   type QueryResult,
   ReferenceKind,
@@ -651,8 +652,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         return;
       }
 
-      if (meta?.properties[k as EntityKey<T>]) {
-        const prop = meta.properties[k as EntityKey<T>];
+      // per-target polymorphic keys like `likeable[Comment]` resolve to the relation, whose conditions need joins
+      const [propName, targetName] = QueryHelper.splitPolymorphicKey(k as string);
+      const prop = meta?.properties[propName as EntityKey<T>];
+
+      if (prop && (!targetName || prop.polymorphic)) {
         let isObjectId = false;
 
         if (prop.kind === ReferenceKind.SCALAR) {
@@ -692,6 +696,25 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
             copiedData[prop.fieldNames[1]] = value[1] != null ? this.convertObjectIds(value[1]) : value[1];
           } else if (value == null) {
             prop.fieldNames.forEach(f => (copiedData[f] = null));
+          } else if (
+            k === prop.fieldNames[1] &&
+            Utils.isPlainObject(value) &&
+            Object.keys(value).every(o => Utils.isOperator(o))
+          ) {
+            // the FK field is named after the property, e.g. `{ likeable: { $in: ids } }` when loading the inverse side
+            copiedData[k] = this.convertObjectIds(value);
+          } else if (
+            !targetName &&
+            Utils.isPlainObject(value) &&
+            Utils.getObjectKeysSize(value) === 1 &&
+            prop.targetMeta!.primaryKeys[0] in value
+          ) {
+            // PK-only condition, e.g. `{ likeable: { _id: { $in: ids } } }`, compares the FK field
+            copiedData[prop.fieldNames[1]] = this.convertObjectIds(value[prop.targetMeta!.primaryKeys[0]]);
+          } else {
+            throw new Error(
+              `Unsupported condition on polymorphic relation ${meta!.className}.${prop.name}, use an entity reference or \`null\` instead.`,
+            );
           }
 
           return;

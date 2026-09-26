@@ -720,7 +720,7 @@ export class MetadataDiscovery {
         this.#namingStrategy.joinKeyColumnName(prop.discriminator!, fieldName, fieldNames1.length > 1),
       );
       prop.fieldNames ??= [prop.discriminatorColumn!, ...idColumns];
-      prop.joinColumns ??= idColumns;
+      prop.joinColumns ??= prop.fieldNames.slice(1);
       prop.referencedColumnNames ??= fieldNames1;
       prop.referencedTableName ??= prop.targetMeta!.tableName;
       return;
@@ -1547,13 +1547,29 @@ export class MetadataDiscovery {
       return;
     }
 
+    const isToOne = [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind);
+    const isUnionTargetMN = prop.kind === ReferenceKind.MANY_TO_MANY && Array.isArray(prop.target);
+
     prop.polymorphic = true;
     prop.discriminator ??= prop.name;
+
+    // explicit `fieldNames` use the `[discriminatorColumn, ...fkIdColumns]` layout
+    if (isToOne && prop.fieldNames && prop.fieldNames.length > 1) {
+      prop.discriminatorColumn ??= prop.fieldNames[0];
+
+      // `EntitySchema` mirrors `fieldNames` into `joinColumns`, let `initManyToOneFields` derive them after embedded prefixing
+      if (Utils.equals(prop.joinColumns, prop.fieldNames)) {
+        delete (prop as Dictionary).joinColumns;
+      }
+    }
+
     prop.discriminatorColumn ??= this.#namingStrategy.discriminatorColumnName(prop.discriminator);
     prop.createForeignKeyConstraint = false;
 
-    const isToOne = [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind);
-    const isUnionTargetMN = prop.kind === ReferenceKind.MANY_TO_MANY && Array.isArray(prop.target);
+    // a single field name can only be the FK column, e.g. mirrored from `joinColumn`
+    if (isToOne && prop.fieldNames?.length === 1) {
+      prop.fieldNames = [prop.discriminatorColumn, ...prop.fieldNames];
+    }
 
     if (isToOne || isUnionTargetMN) {
       const types = prop.type.split(/ ?\| ?/);
