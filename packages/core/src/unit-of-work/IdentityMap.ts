@@ -17,8 +17,8 @@ export class IdentityMap {
     const meta = (item as AnyEntity).__meta!.root;
     const wrapped = (item as AnyEntity).__helper;
 
-    // PK-less references (known only by an alternate key) would share one slot that outlives their later removal
-    if (wrapped.hasPrimaryKey()) {
+    // PK-less references (known only by a `targetKey`) would share one slot that outlives their later removal
+    if (!meta.targetKeys || wrapped.hasPrimaryKey()) {
       this.getStore(meta).set(this.getPkHash(item), item);
     }
 

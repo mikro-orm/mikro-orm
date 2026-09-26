@@ -128,4 +128,15 @@ describe('non-PK relation target with MongoDB', () => {
     // But it won't be fully initialized since the entity doesn't exist
     expect(loadedBook.author.isInitialized()).toBe(false);
   });
+
+  test('partially loaded targetKey target is found by references to it', async () => {
+    const author = orm.em.create(Author, { uuid: 'uuid-partial-mongo', name: 'Partial Author' });
+    orm.em.create(Book, { title: 'Partial Book', author });
+    await orm.em.flush();
+
+    const em = orm.em.fork();
+    const loadedAuthor = await em.findOneOrFail(Author, { name: 'Partial Author' }, { fields: ['name'] });
+    const book = await em.findOneOrFail(Book, { title: 'Partial Book' });
+    expect(book.author.unwrap()).toBe(loadedAuthor);
+  });
 });
