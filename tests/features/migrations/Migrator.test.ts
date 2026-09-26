@@ -37,6 +37,9 @@ class MigrationTest2 extends Migration {
   }
 }
 
+// prototype spies (e.g. queued `getTables()` values) would leak into later tests when a test fails midway
+afterEach(() => vi.restoreAllMocks());
+
 describe('Migrator', () => {
   let orm: MikroORM<MySqlDriver>;
   let originalMigrationsSettings: any;

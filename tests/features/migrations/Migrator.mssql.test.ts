@@ -39,6 +39,9 @@ class MigrationTest2 extends Migration {
   }
 }
 
+// prototype spies (e.g. queued `getTables()` values) would leak into later tests when a test fails midway
+afterEach(() => vi.restoreAllMocks());
+
 describe('Migrator (mssql)', () => {
   let orm: MikroORM;
   let originalMigrationsSettings: any;
@@ -342,6 +345,7 @@ describe('Migrator (mssql)', () => {
     migrator.options.disableForeignKeys = false;
     const path = process.cwd() + '/temp/migrations-222';
 
+    vi.spyOn(Date.prototype, 'toISOString').mockReturnValue('2019-10-13T21:48:13.382Z');
     const migration = await migrator.create(path, true);
     const migratorMock = vi.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
@@ -415,6 +419,7 @@ describe('Migrator (mssql)', () => {
     migrator.options.allOrNothing = false;
     const path = process.cwd() + '/temp/migrations-222';
 
+    vi.spyOn(Date.prototype, 'toISOString').mockReturnValue('2019-10-13T21:48:13.382Z');
     const migration = await migrator.create(path, true);
     const migratorMock = vi.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
