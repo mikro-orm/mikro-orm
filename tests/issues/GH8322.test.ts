@@ -33,7 +33,7 @@ const CodedChild = defineEntity({
   name: 'CodedChild',
   properties: {
     id: p.integer().primary(),
-    parent: () => p.manyToOne(CodedParent).targetKey('code'),
+    parent: () => p.manyToOne(CodedParent).targetKey('code').updateRule('cascade'),
     label: p.string(),
   },
 });
@@ -67,7 +67,7 @@ test('GH #8322 - targetKey pointing at own PK does not create a duplicate identi
   expect(child.parent).toBe(parent);
   expect(parent.children[0]).toBe(child);
 
-  // the implicit flush inside `find()` must not attempt to insert the already persisted `Parent`
+  // the flush must not attempt to insert the already persisted `Parent`
   await expect(em.flush()).resolves.toBeUndefined();
 });
 
@@ -109,5 +109,22 @@ test('GH #8322 - non-PK targetKey reference gets merged with the entity loaded a
 
   expect(child.parent).toBe(parent);
   expect(parent.name).toBe('P1');
+  await expect(em.flush()).resolves.toBeUndefined();
+});
+
+test('GH #8322 - non-PK targetKey reference resolves after the key value changes', async () => {
+  const seed = orm.em.fork();
+  const codedParent = seed.create(CodedParent, { code: 'k1', name: 'K1' });
+  seed.create(CodedChild, { parent: codedParent, label: 'K1' });
+  await seed.flush();
+
+  const em = orm.em.fork();
+  const parent = await em.findOneOrFail(CodedParent, { code: 'k1' });
+  parent.code = 'k2';
+  await em.flush();
+  expect(em.getUnitOfWork().getByKey(CodedParent, 'code', 'k1')).toBeUndefined();
+
+  const child = await em.findOneOrFail(CodedChild, { label: 'K1' }, { refresh: true });
+  expect(child.parent).toBe(parent);
   await expect(em.flush()).resolves.toBeUndefined();
 });

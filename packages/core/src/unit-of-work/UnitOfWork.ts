@@ -1499,6 +1499,12 @@ export class UnitOfWork {
       const wrapped = helper(changeSet.entity);
       wrapped.__originalEntityData = this.#comparator.prepareEntity(changeSet.entity);
 
+      // re-index so the entity is found by its new `targetKey` values instead of the old ones
+      if (changeSet.meta.root.targetKeys?.some(key => key in changeSet.payload)) {
+        this.#identityMap.delete(changeSet.entity);
+        this.#identityMap.store(changeSet.entity);
+      }
+
       if (!wrapped.__initialized) {
         for (const prop of changeSet.meta.relations) {
           if (

@@ -740,7 +740,7 @@ export class MetadataDiscovery {
     Utils.defaultValue(prop, 'referencedTableName', meta2.tableName);
 
     if (!prop.joinColumns) {
-      // with `targetKey`, the FK column keeps the PK based name from `initManyToOneFieldName`
+      // must match the real FK columns, which ignore `targetKey` naming for simple PK targets
       prop.joinColumns = prop.targetKey
         ? prop.fieldNames
         : fieldNames.map(fieldName =>
