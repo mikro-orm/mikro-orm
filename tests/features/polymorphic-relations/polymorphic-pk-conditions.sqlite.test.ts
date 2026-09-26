@@ -82,6 +82,9 @@ describe('polymorphic relation conditions by target primary key', () => {
     // PK objects are not allowed by the `$in` type, but they work at runtime
     await expect(urls({ imageable: { $in: [{ id: 2 }] } } as Dictionary)).resolves.toEqual(['a2', 'p2']);
     await expect(urls({ imageable: { $nin: [{ id: 2 }] } } as Dictionary)).resolves.toEqual(['a1', 'p1']);
+    // entity references keep matching by type
+    const refs = [orm.em.getReference(Product, 1), orm.em.getReference(Article, 2)];
+    await expect(urls({ imageable: refs })).resolves.toEqual(['a2', 'p1']);
   });
 
   test('group operators with primary key objects match all target types', async () => {

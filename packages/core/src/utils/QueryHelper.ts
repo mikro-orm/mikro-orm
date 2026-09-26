@@ -259,10 +259,6 @@ export class QueryHelper {
    * are turned into a PK condition instead, e.g. `[{ id: 1 }, { id: 2 }]` becomes `{ id: { $in: [1, 2] } }`.
    */
   private static inlinePolymorphicPrimaryKeyList(value: unknown, meta: EntityMetadata): unknown {
-    if (meta.compositePK) {
-      return value;
-    }
-
     const pk = meta.primaryKeys[0];
     const isPrimaryKeyObject = (item: unknown) =>
       Utils.isPlainObject(item) && Utils.getObjectKeysSize(item) === 1 && pk in item;
@@ -715,6 +711,8 @@ export class QueryHelper {
 
       if (expanded !== w) {
         where[k] = expanded;
+      } else if (Array.isArray(w)) {
+        where[k] = w.map(expandItem);
       } else if (Utils.isPlainObject(w)) {
         for (const op of Object.keys(w)) {
           if (!Utils.isOperator(op, false)) {
