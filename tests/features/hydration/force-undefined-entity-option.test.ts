@@ -1,13 +1,14 @@
 import { defineEntity, EntitySchema, LoadStrategy, MikroORM, p } from '@mikro-orm/sqlite';
 import { Entity, ManyToOne, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
+// with the option, `null` never appears at runtime, so the hand-written types omit it
 @Entity({ forceUndefined: true })
 class DecoratorAuthor {
   @PrimaryKey()
   id!: number;
 
   @Property({ nullable: true })
-  name?: string | null;
+  name?: string;
 }
 
 @Entity({ forceUndefined: true })
@@ -16,7 +17,7 @@ class DecoratorBook {
   id!: number;
 
   @ManyToOne(() => DecoratorAuthor, { nullable: true })
-  author?: DecoratorAuthor | null;
+  author?: DecoratorAuthor;
 }
 
 // control entity without the option, keeps the global default (`null`)
@@ -31,7 +32,7 @@ class PlainAuthor {
 
 interface ISchemaAuthor {
   id: number;
-  name?: string | null;
+  name?: string;
 }
 
 const SchemaAuthor = new EntitySchema<ISchemaAuthor>({

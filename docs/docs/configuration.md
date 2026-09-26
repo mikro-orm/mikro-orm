@@ -421,7 +421,20 @@ MikroORM.init({
 });
 ```
 
-The option can also be set per entity via `@Entity({ forceUndefined: true })`, `new EntitySchema({ forceUndefined: true })` or `defineEntity({ forceUndefined: true })`, which takes precedence over the global value. With `defineEntity`, it also [drops `null` from the inferred types](./define-entity.md#nullable-properties-and-forceundefined).
+The option can also be set per entity via `@Entity({ forceUndefined: true })`, `new EntitySchema({ forceUndefined: true })` or `defineEntity({ forceUndefined: true })`, which takes precedence over the global value. With decorators and `EntitySchema`, you declare the property types yourself, so type such properties as `name?: string` instead of `name?: string | null`. With `defineEntity`, the option also [drops `null` from the inferred types](./define-entity.md#nullable-properties-and-forceundefined).
+
+```ts
+@Entity({ forceUndefined: true })
+class Author {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  name?: string; // hydrated as `undefined` when the column is `NULL`
+
+}
+```
 
 ## Initializing nullable properties to `null`
 
