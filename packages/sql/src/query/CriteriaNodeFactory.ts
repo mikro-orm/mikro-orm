@@ -127,7 +127,7 @@ export class CriteriaNodeFactory {
     const rawField = RawQueryFragment.isKnownFragmentSymbol(key);
     const prop = rawField ? null : meta?.properties[QueryHelper.splitPolymorphicKey(key)[0] as EntityKey<T>];
     const target = rawField ? undefined : QueryHelper.findTargetMeta(prop, key);
-    const childEntity = prop && prop.kind !== ReferenceKind.SCALAR ? (target ?? prop.targetMeta!).class : entityName;
+    const childEntity = prop && prop.kind !== ReferenceKind.SCALAR && target ? target.class : entityName;
     const isNotEmbedded = rawField || prop?.kind !== ReferenceKind.EMBEDDED;
     const val = payload[key as EntityKey<T>];
 
