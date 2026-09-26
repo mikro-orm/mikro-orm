@@ -134,7 +134,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       // with an exclusive condition on the join columns:
       // - if the owning column is null, the row is missing, we don't apply the filter
       // - if the target column is not null, the row is matched, we apply the filter
-      if (toOneProperty && this.prop.nullable && this.isStrict()) {
+      if (toOneProperty && this.prop.nullable && this.isStrict() && !this.isPolymorphicBranch()) {
         const key = this.prop.owner ? this.prop.name : this.prop.referencedPKs;
 
         qb.andWhere({
@@ -146,7 +146,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       }
     }
 
-    return keys.reduce((o, field) => {
+    const ret = keys.reduce((o, field) => {
       const childNode = this.payload[field] as CriteriaNode<T>;
       const payload = childNode.process(qb, { ...options, alias: this.prop ? alias : ownerAlias });
       const operator = Utils.isOperator(field);
@@ -186,6 +186,14 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
       return o;
     }, {} as Dictionary);
+
+    // the target is left joined, so its condition must only match rows that point to it
+    if (this.isPolymorphicBranch() && alias) {
+      const pk = this.metadata.find(this.entityName)!.primaryKeys[0];
+      this.inlineCondition(`${alias}.${pk}`, ret, { $ne: null });
+    }
+
+    return ret;
   }
 
   override isStrict(): boolean {
@@ -282,7 +290,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     alias?: string,
     childAlias?: string,
   ) {
-    const prop = this.metadata.find(this.entityName)!.properties[field];
+    const prop = (this.payload[field] as CriteriaNode<T>).prop!;
 
     for (const k of Utils.getObjectQueryKeys(payload)) {
       if (RawQueryFragment.isKnownFragmentSymbol(k)) {
@@ -413,6 +421,9 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
     if (this.prop!.kind === ReferenceKind.MANY_TO_MANY && (scalar || operator)) {
       qb.join(field, nestedAlias, undefined, JoinType.pivotJoin, path);
+    } else if (this.isPolymorphicBranch()) {
+      const targetMeta = this.metadata.find(this.entityName)!;
+      qb.addPolymorphicJoin(this.prop!, targetMeta, alias, nestedAlias, JoinType.leftJoin, path);
     } else {
       const prev = qb.state.fields?.slice();
       const toOneProperty = [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind);

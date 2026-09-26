@@ -3,6 +3,7 @@ import {
   type EntityKey,
   type EntityProperty,
   type MetadataStorage,
+  QueryHelper,
   RawQueryFragment,
   type RawQueryFragmentSymbol,
   ReferenceKind,
@@ -40,9 +41,11 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
       }
 
       for (const k of pks) {
+        const [name, target] = QueryHelper.splitPolymorphicKey(k);
         this.prop = meta.props.find(
           prop =>
-            prop.name === k || (prop.fieldNames?.length === 1 && prop.fieldNames[0] === k && prop.persist !== false),
+            (prop.name === name && (!target || !!prop.polymorphTargets?.some(t => t.className === target))) ||
+            (prop.fieldNames?.length === 1 && prop.fieldNames[0] === k && prop.persist !== false),
         );
         const isProp = this.prop || meta.props.find(prop => (prop.fieldNames || []).includes(k));
 
@@ -56,6 +59,11 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
 
   process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any {
     return this.payload;
+  }
+
+  /** Whether this node holds the condition for a single target of a polymorphic relation (e.g. `imageable[Article]`). */
+  isPolymorphicBranch(): boolean {
+    return !!this.prop?.polymorphic && typeof this.key === 'string' && this.key.endsWith(']');
   }
 
   unwrap(): any {
