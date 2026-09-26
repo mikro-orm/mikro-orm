@@ -189,3 +189,55 @@ describe('filtering by properties of polymorphic relation targets', () => {
     );
   });
 });
+
+@Entity()
+class Page {
+  @PrimaryKey()
+  id!: number;
+}
+
+@Entity()
+class Video {
+  @PrimaryKey({ autoincrement: false })
+  code!: number;
+}
+
+@Entity()
+class Thumbnail {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  url!: string;
+
+  @ManyToOne(() => [Page, Video])
+  source!: Page | Video;
+}
+
+describe('filtering by primary key of a polymorphic relation target', () => {
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      entities: [Page, Video, Thumbnail],
+      dbName: ':memory:',
+      metadataProvider: ReflectMetadataProvider,
+    });
+    await orm.schema.create();
+
+    const em = orm.em.fork();
+    em.create(Thumbnail, { url: 'page', source: em.create(Page, { id: 7 }) });
+    em.create(Thumbnail, { url: 'video', source: em.create(Video, { code: 7 }) });
+    await em.flush();
+  });
+
+  afterAll(() => orm.close(true));
+
+  test('primary key defined only on another target', async () => {
+    const videos = await orm.em.fork().find(Thumbnail, { source: { code: 7 } });
+    expect(videos.map(t => t.url)).toEqual(['video']);
+    // the FK column alone would match both, the type needs to be checked too
+    const pages = await orm.em.fork().find(Thumbnail, { source: { id: 7 } });
+    expect(pages.map(t => t.url)).toEqual(['page']);
+  });
+});

@@ -362,6 +362,11 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       return true;
     }
 
+    // the target's discriminator is checked in the join condition, so it is needed even for PK conditions
+    if (this.isPolymorphicBranch()) {
+      return !nestedAlias;
+    }
+
     const meta = this.metadata.find(this.entityName)!;
     const embeddable = this.prop.kind === ReferenceKind.EMBEDDED;
     const knownKey =
