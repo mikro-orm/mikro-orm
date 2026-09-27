@@ -480,15 +480,31 @@ export class EntityComparator {
           continue;
         }
 
+        let defined = `typeof ${this.propName(prop.fieldNames[0])} !== 'undefined'`;
+
+        // STI subtypes with conflicting columns share the property, so another subtype's null column must not override it
+        if (prop.renamedFrom) {
+          lines.push(`${padding}  ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
+          defined = `${this.propName(prop.fieldNames[0])} != null`;
+
+          // a column shared with a differently typed subtype is left for each subtype's hydrator to convert
+          if (meta.properties[prop.renamedFrom]?.fieldNames?.[0] === prop.fieldNames[0]) {
+            lines.push(`${padding}  if (${defined}) {`);
+            lines.push(`${padding}    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])};`);
+            lines.push(`${padding}  }`);
+            continue;
+          }
+        }
+
         if (prop.runtimeType === 'boolean') {
-          lines.push(`${padding}  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
+          lines.push(`${padding}  if (${defined}) {`);
           lines.push(
             `${padding}    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])} == null ? ${this.propName(prop.fieldNames[0])} : !!${this.propName(prop.fieldNames[0])};`,
           );
           lines.push(`${padding}    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
           lines.push(`${padding}  }`);
         } else if (prop.runtimeType === 'Date' && !this.#platform.isNumericProperty(prop)) {
-          lines.push(`${padding}  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
+          lines.push(`${padding}  if (${defined}) {`);
           context.set('parseDate', (value: string | number) => this.#platform.parseDate(value as string));
           parseDate('ret' + this.wrap(prop.name), this.propName(prop.fieldNames[0]), padding);
           lines.push(`${padding}    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
@@ -504,14 +520,14 @@ export class EntityComparator {
 
             return item == null ? item : this.getResultMapper(prop.targetMeta!)(item);
           });
-          lines.push(`${padding}  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
+          lines.push(`${padding}  if (${defined}) {`);
           lines.push(
             `${padding}    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])} == null ? ${this.propName(prop.fieldNames[0])} : mapEmbeddedResult_${idx}(${this.propName(prop.fieldNames[0])});`,
           );
           lines.push(`${padding}    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
           lines.push(`${padding}  }`);
         } else if (prop.kind !== ReferenceKind.EMBEDDED) {
-          lines.push(`${padding}  if (typeof ${this.propName(prop.fieldNames[0])} !== 'undefined') {`);
+          lines.push(`${padding}  if (${defined}) {`);
           lines.push(`${padding}    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])};`);
           lines.push(`${padding}    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
           lines.push(`${padding}  }`);
