@@ -39,6 +39,23 @@ import type { MikroKyselyPluginOptions } from './index.js';
 import type { SqlEntityManager } from '../SqlEntityManager.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 
+/** The maps `transformResult` reads for one shape of query, as entries in the order the merged maps iterate. */
+interface ResultMaps {
+  /** the `props` of each entity when the maps were built; re-syncing an entity replaces the array */
+  props: EntityProperty[][];
+  fields: [string, EntityProperty][];
+  relations: [string, string][];
+}
+
+/** Past this many query shapes the cache of one metadata storage starts over, so generated aliases cannot grow it. */
+const RESULT_MAPS_LIMIT = 1000;
+
+/**
+ * Result maps per query shape (the aliases and entities of its entity map). They are derived from metadata alone, so
+ * they are built once and shared by every transformer, as `getKysely()` creates a new one per call.
+ */
+const resultMapsCache = new WeakMap<MetadataStorage, Map<string, ResultMaps>>();
+
 const EXPANDABLE_KINDS: ReadonlySet<ReferenceKind> = new Set([
   ReferenceKind.SCALAR,
   ReferenceKind.EMBEDDED,
@@ -1072,12 +1089,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     if (byEntity) {
       return byEntity;
     }
-    const allMetadata = Array.from(this.#metadata);
-    const byTable = allMetadata.find(m => m.tableName === name);
-    if (byTable) {
-      return byTable;
-    }
-    return undefined;
+    return this.#metadata.getByTableName(name);
   }
 
   /**
@@ -1102,12 +1114,45 @@ export class MikroTransformer extends OperationNodeTransformer {
       return rows;
     }
 
-    // Build a global mapping from database field names to property objects
-    const fieldToPropertyMap = this.buildGlobalFieldMap(entityMap);
-    const relationFieldMap = this.buildGlobalRelationFieldMap(entityMap);
+    // The global mapping from database field names to property objects, built once per query shape
+    const { fields, relations } = this.getResultMaps(entityMap);
 
     // Transform each row
-    return rows.map(row => this.transformRow(row, fieldToPropertyMap, relationFieldMap));
+    return rows.map(row => this.mapRow(row, fields, relations));
+  }
+
+  private getResultMaps(entityMap: Map<string, EntityMetadata>): ResultMaps {
+    let byShape = resultMapsCache.get(this.#metadata);
+
+    if (!byShape) {
+      byShape = new Map();
+      resultMapsCache.set(this.#metadata, byShape);
+    }
+
+    let shape = '';
+
+    for (const [alias, meta] of entityMap) {
+      shape += `${alias}\0${meta._id}\0`;
+    }
+
+    const cached = byShape.get(shape);
+
+    if (cached && Array.from(entityMap.values()).every((meta, i) => meta.props === cached.props[i])) {
+      return cached;
+    }
+
+    if (byShape.size >= RESULT_MAPS_LIMIT) {
+      byShape.clear();
+    }
+
+    const maps: ResultMaps = {
+      props: Array.from(entityMap.values(), meta => meta.props),
+      fields: Object.entries(this.buildGlobalFieldMap(entityMap)),
+      relations: Object.entries(this.buildGlobalRelationFieldMap(entityMap)),
+    };
+    byShape.set(shape, maps);
+
+    return maps;
   }
 
   buildGlobalFieldMap(entityMap: Map<string, EntityMetadata>): Record<string, EntityProperty> {
@@ -1202,10 +1247,18 @@ export class MikroTransformer extends OperationNodeTransformer {
     fieldToPropertyMap: Record<string, EntityProperty>,
     relationFieldMap: Record<string, string>,
   ): Record<string, any> {
+    return this.mapRow(row, Object.entries(fieldToPropertyMap), Object.entries(relationFieldMap));
+  }
+
+  private mapRow(
+    row: Record<string, any>,
+    fieldEntries: [string, EntityProperty][],
+    relationEntries: [string, string][],
+  ): Record<string, any> {
     const transformed: Record<string, any> = { ...row };
 
     // First pass: map regular fields from fieldName to propertyName and convert values
-    for (const [fieldName, prop] of Object.entries(fieldToPropertyMap)) {
+    for (const [fieldName, prop] of fieldEntries) {
       if (!(fieldName in transformed)) {
         continue;
       }
@@ -1231,7 +1284,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     // Second pass: handle relation fields
     // Only run if columnNamingStrategy is 'property', as we don't want to rename FKs otherwise
     if (this.#options.columnNamingStrategy === 'property') {
-      for (const [fieldName, relationPropertyName] of Object.entries(relationFieldMap)) {
+      for (const [fieldName, relationPropertyName] of relationEntries) {
         if (fieldName in transformed && !(relationPropertyName in transformed)) {
           // Move the foreign key value to the relation property name
           transformed[relationPropertyName] = transformed[fieldName];
