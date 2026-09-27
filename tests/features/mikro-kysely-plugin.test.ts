@@ -2406,7 +2406,7 @@ describe('MikroTransformer', () => {
     test('transformRow relation mover runs when property map is empty', () => {
       const transformerWithProperty = new MikroTransformer(orm.em, { columnNamingStrategy: 'property' });
       const row = { owner_id: 55 };
-      const mapped = transformerWithProperty.transformRow(row, {}, { owner_id: 'owner' });
+      const mapped = transformerWithProperty.transformRow(row, [], [['owner_id', 'owner']]);
       expect(mapped.owner).toBe(55);
       expect(mapped.owner_id).toBeUndefined();
     });

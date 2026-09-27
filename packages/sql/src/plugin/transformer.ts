@@ -1118,7 +1118,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     const { fields, relations } = this.getResultMaps(entityMap);
 
     // Transform each row
-    return rows.map(row => this.mapRow(row, fields, relations));
+    return rows.map(row => this.transformRow(row, fields, relations));
   }
 
   private getResultMaps(entityMap: Map<string, EntityMetadata>): ResultMaps {
@@ -1243,14 +1243,6 @@ export class MikroTransformer extends OperationNodeTransformer {
    * Transform a single row by mapping column names to property names
    */
   transformRow(
-    row: Record<string, any>,
-    fieldToPropertyMap: Record<string, EntityProperty>,
-    relationFieldMap: Record<string, string>,
-  ): Record<string, any> {
-    return this.mapRow(row, Object.entries(fieldToPropertyMap), Object.entries(relationFieldMap));
-  }
-
-  private mapRow(
     row: Record<string, any>,
     fieldEntries: [string, EntityProperty][],
     relationEntries: [string, string][],
