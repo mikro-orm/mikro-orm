@@ -23,6 +23,8 @@ export class MetadataStorage {
   readonly #classNameMap: Record<string, EntityMetadata>;
   readonly #uniqueNameMap: Record<string, EntityMetadata>;
   readonly #ambiguousNames = new Set<string>();
+  /** Built on first use by `getByTableName()`, dropped whenever an entity is registered or removed. */
+  #tableNameMap?: Map<string, EntityMetadata>;
 
   constructor(metadata: Dictionary<EntityMetadata> = {}) {
     this.#idMap = {};
@@ -140,6 +142,7 @@ export class MetadataStorage {
   /** Registers metadata for the given entity. */
   set<T>(entityName: EntityName<T>, meta: EntityMetadata): EntityMetadata {
     this.#metadataMap.set(entityName, meta);
+    this.#tableNameMap = undefined;
     this.#idMap[meta._id] = meta;
     this.#uniqueNameMap[meta.uniqueName] = meta;
     const className = Utils.className(entityName);
@@ -167,6 +170,7 @@ export class MetadataStorage {
 
     if (meta) {
       this.#metadataMap.delete(meta.class);
+      this.#tableNameMap = undefined;
       delete this.#idMap[meta._id];
       delete this.#uniqueNameMap[meta.uniqueName];
       delete this.#classNameMap[meta.className];
@@ -204,6 +208,26 @@ export class MetadataStorage {
     validate = true as V,
   ): V extends true ? EntityMetadata<T> : EntityMetadata<T> | undefined {
     return this.validate(this.#classNameMap[className], className, validate);
+  }
+
+  /**
+   * Returns the first registered metadata with the given table name, in registration order (entities sharing
+   * a table, like STI children, resolve to the one registered first). The index is built on first use, as table
+   * names are only final once discovery has finished.
+   * @internal
+   */
+  getByTableName<T = any>(tableName: string): EntityMetadata<T> | undefined {
+    if (!this.#tableNameMap) {
+      this.#tableNameMap = new Map();
+
+      for (const meta of this.#metadataMap.values()) {
+        if (!this.#tableNameMap.has(meta.tableName)) {
+          this.#tableNameMap.set(meta.tableName, meta);
+        }
+      }
+    }
+
+    return this.#tableNameMap.get(tableName);
   }
 
   /** Returns metadata by unique name, optionally throwing if not found. */
