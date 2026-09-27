@@ -488,7 +488,7 @@ export class EntityComparator {
           defined = `${this.propName(prop.fieldNames[0])} != null`;
 
           // a column shared with a differently typed subtype is left for each subtype's hydrator to convert
-          if (meta.properties[prop.renamedFrom]?.fieldNames?.[0] === prop.fieldNames[0]) {
+          if (meta.props.some(p => p !== prop && p.name === prop.name && p.fieldNames?.[0] === prop.fieldNames[0])) {
             lines.push(`${padding}  if (${defined}) {`);
             lines.push(`${padding}    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])};`);
             lines.push(`${padding}  }`);
