@@ -127,26 +127,26 @@ describe('compiled functions', () => {
     const authorMeta = orm.getMetadata().get(Author);
     const bookMeta = orm.getMetadata().get(Book);
 
-    // Author functions (using uniqueName)
-    expect(keys).toContain(`hydrator-${authorMeta.uniqueName}-full-false`);
-    expect(keys).toContain(`hydrator-${authorMeta.uniqueName}-full-true`);
-    expect(keys).toContain(`hydrator-${authorMeta.uniqueName}-reference-false`);
-    expect(keys).toContain(`hydrator-${authorMeta.uniqueName}-reference-true`);
-    expect(keys).toContain(`comparator-${authorMeta.uniqueName}`);
-    expect(keys).toContain(`snapshotGenerator-${authorMeta.uniqueName}`);
-    expect(keys).toContain(`resultMapper-${authorMeta.uniqueName}`);
-    expect(keys).toContain(`pkGetter-${authorMeta.uniqueName}`);
-    expect(keys).toContain(`pkGetterConverted-${authorMeta.uniqueName}`);
-    expect(keys).toContain(`pkSerializer-${authorMeta.uniqueName}`);
+    // Author functions
+    expect(keys).toContain(`hydrator-${authorMeta.compiledName}-full-false`);
+    expect(keys).toContain(`hydrator-${authorMeta.compiledName}-full-true`);
+    expect(keys).toContain(`hydrator-${authorMeta.compiledName}-reference-false`);
+    expect(keys).toContain(`hydrator-${authorMeta.compiledName}-reference-true`);
+    expect(keys).toContain(`comparator-${authorMeta.compiledName}`);
+    expect(keys).toContain(`snapshotGenerator-${authorMeta.compiledName}`);
+    expect(keys).toContain(`resultMapper-${authorMeta.compiledName}`);
+    expect(keys).toContain(`pkGetter-${authorMeta.compiledName}`);
+    expect(keys).toContain(`pkGetterConverted-${authorMeta.compiledName}`);
+    expect(keys).toContain(`pkSerializer-${authorMeta.compiledName}`);
 
-    // Book functions (using uniqueName)
-    expect(keys).toContain(`hydrator-${bookMeta.uniqueName}-full-false`);
-    expect(keys).toContain(`comparator-${bookMeta.uniqueName}`);
-    expect(keys).toContain(`snapshotGenerator-${bookMeta.uniqueName}`);
-    expect(keys).toContain(`resultMapper-${bookMeta.uniqueName}`);
-    expect(keys).toContain(`pkGetter-${bookMeta.uniqueName}`);
-    expect(keys).toContain(`pkGetterConverted-${bookMeta.uniqueName}`);
-    expect(keys).toContain(`pkSerializer-${bookMeta.uniqueName}`);
+    // Book functions
+    expect(keys).toContain(`hydrator-${bookMeta.compiledName}-full-false`);
+    expect(keys).toContain(`comparator-${bookMeta.compiledName}`);
+    expect(keys).toContain(`snapshotGenerator-${bookMeta.compiledName}`);
+    expect(keys).toContain(`resultMapper-${bookMeta.compiledName}`);
+    expect(keys).toContain(`pkGetter-${bookMeta.compiledName}`);
+    expect(keys).toContain(`pkGetterConverted-${bookMeta.compiledName}`);
+    expect(keys).toContain(`pkSerializer-${bookMeta.compiledName}`);
   });
 
   test('compiled functions produce identical results to JIT path', async () => {
@@ -308,10 +308,10 @@ describe('compiled functions', () => {
     // Provide only partial compiled functions (missing Book)
     const allFunctions = generateCompiledFunctions(orm);
     const partialFunctions: Record<string, (...args: any[]) => any> = {};
-    const authorUniqueName = orm.getMetadata().get(Author).uniqueName;
+    const authorCompiledName = orm.getMetadata().get(Author).compiledName!;
 
     for (const [key, fn] of Object.entries(allFunctions)) {
-      if (key.includes(authorUniqueName)) {
+      if (key.includes(authorCompiledName)) {
         partialFunctions[key] = fn;
       }
     }

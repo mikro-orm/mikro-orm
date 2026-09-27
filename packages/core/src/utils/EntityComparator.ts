@@ -147,7 +147,7 @@ export class EntityComparator {
 
     const code =
       `// compiled pk getter for entity ${meta.className}\n` + `return function(entity) {\n${lines.join('\n')}\n}`;
-    const fnKey = `pkGetter-${meta.uniqueName}`;
+    const fnKey = `pkGetter-${meta.compiledName}`;
     const pkSerializer = Utils.createFunction(context, code, this.#config?.get('compiledFunctions'), fnKey);
     this.#pkGetters.set(meta, pkSerializer);
 
@@ -208,7 +208,7 @@ export class EntityComparator {
     const code =
       `// compiled pk getter (with converted custom types) for entity ${meta.className}\n` +
       `return function(entity) {\n${lines.join('\n')}\n}`;
-    const fnKey = `pkGetterConverted-${meta.uniqueName}`;
+    const fnKey = `pkGetterConverted-${meta.compiledName}`;
     const pkSerializer = Utils.createFunction(context, code, this.#config?.get('compiledFunctions'), fnKey);
     this.#pkGettersConverted.set(meta, pkSerializer);
 
@@ -280,7 +280,7 @@ export class EntityComparator {
 
     const code =
       `// compiled pk serializer for entity ${meta.className}\n` + `return function(entity) {\n${lines.join('\n')}\n}`;
-    const fnKey = `pkSerializer-${meta.uniqueName}`;
+    const fnKey = `pkSerializer-${meta.compiledName}`;
     const pkSerializer = Utils.createFunction(context, code, this.#config?.get('compiledFunctions'), fnKey);
     this.#pkSerializers.set(meta, pkSerializer);
 
@@ -323,7 +323,7 @@ export class EntityComparator {
       );
 
     const code = `return function(entity) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
-    const fnKey = `snapshotGenerator-${meta.uniqueName}`;
+    const fnKey = `snapshotGenerator-${meta.compiledName}`;
     const snapshotGenerator = Utils.createFunction(context, code, this.#config?.get('compiledFunctions'), fnKey);
     this.#snapshotGenerators.set(meta, snapshotGenerator);
 
@@ -566,7 +566,7 @@ export class EntityComparator {
     const code =
       `// compiled mapper for entity ${meta.className}\n` +
       `return function(result) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
-    const fnKey = `resultMapper-${meta.uniqueName}`;
+    const fnKey = `resultMapper-${meta.compiledName}`;
     const resultMapper = Utils.createFunction(context, code, this.#config?.get('compiledFunctions'), fnKey);
     this.#mappers.set(meta, resultMapper);
 
@@ -975,7 +975,7 @@ export class EntityComparator {
     const code =
       `// compiled comparator for entity ${meta.className}\n` +
       `return function(last, current, options) {\n  const diff = {};\n${lines.join('\n')}\n  return diff;\n}`;
-    const fnKey = `comparator-${meta.uniqueName}`;
+    const fnKey = `comparator-${meta.compiledName}`;
     const comparator = Utils.createFunction(context, code, this.#config?.get('compiledFunctions'), fnKey);
     this.#comparators.set(meta, comparator);
 

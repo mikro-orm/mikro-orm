@@ -150,6 +150,12 @@ export class MetadataStorage {
       this.#ambiguousNames.add(className);
     }
 
+    // colliding names are numbered in storage order, which follows the discovery config, not module evaluation
+    const sameName = this.#ambiguousNames.has(className)
+      ? [...new Set(this.#metadataMap.values())].filter(m => m.className === meta.className)
+      : [meta];
+    const ordinal = sameName.indexOf(meta);
+    meta.compiledName = ordinal > 0 ? `${meta.className}#${ordinal}` : meta.className;
     this.#classNameMap[className] = meta;
 
     return meta;

@@ -2120,6 +2120,8 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   orderBy?: QueryOrderMap<Entity> | QueryOrderMap<Entity>[];
   /** @internal can be used for computed numeric cache keys */
   readonly _id: number;
+  /** @internal name that does not depend on module evaluation order (unlike `_id`), used to key `compiledFunctions` */
+  compiledName?: string;
 }
 
 /** Options for `ISchemaGenerator.create()`. */

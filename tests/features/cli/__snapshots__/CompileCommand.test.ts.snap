@@ -4,7 +4,7 @@ exports[`CompileCommand > handler generates CJS output 1`] = `
 "'use strict';
 module.exports = {
   __version: '[[MIKRO_ORM_VERSION]]',
-  'hydrator-user_0-full-false': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
+  'hydrator-User-full-false': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -19,7 +19,7 @@ module.exports = {
       }
     }
   },
-  'hydrator-user_0-full-true': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
+  'hydrator-User-full-true': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -34,7 +34,7 @@ module.exports = {
       }
     }
   },
-  'comparator-user_0': function(compareArrays, compareBooleans, compareBuffers, compareObjects, equals) {
+  'comparator-User': function(compareArrays, compareBooleans, compareBuffers, compareObjects, equals) {
     // compiled comparator for entity User
     return function(last, current, options) {
       const diff = {};
@@ -63,7 +63,7 @@ module.exports = {
       return diff;
     }
   },
-  'snapshotGenerator-user_0': function(clone, cloneEmbeddable) {
+  'snapshotGenerator-User': function(clone, cloneEmbeddable) {
     return function(entity) {
       const ret = {};
       if (typeof entity.id !== 'undefined') {
@@ -77,7 +77,7 @@ module.exports = {
       return ret;
     }
   },
-  'resultMapper-user_0': function(PolymorphicRef) {
+  'resultMapper-User': function(PolymorphicRef) {
     // compiled mapper for entity User
     return function(result) {
       const ret = {};
@@ -94,7 +94,7 @@ module.exports = {
       return ret;
     }
   },
-  'hydrator-user_0-reference-false': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
+  'hydrator-User-reference-false': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -104,7 +104,7 @@ module.exports = {
       }
     }
   },
-  'hydrator-user_0-reference-true': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
+  'hydrator-User-reference-true': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -114,25 +114,25 @@ module.exports = {
       }
     }
   },
-  'pkGetter-user_0': function(isEntityOrRef) {
+  'pkGetter-User': function(isEntityOrRef) {
     // compiled pk getter for entity User
     return function(entity) {
       return entity.id;
     }
   },
-  'pkGetterConverted-user_0': function(isEntityOrRef) {
+  'pkGetterConverted-User': function(isEntityOrRef) {
     // compiled pk getter (with converted custom types) for entity User
     return function(entity) {
       return entity.id;
     }
   },
-  'pkSerializer-user_0': function(isEntityOrRef, getCompositeKeyValue, getPrimaryKeyHash) {
+  'pkSerializer-User': function(isEntityOrRef, getCompositeKeyValue, getPrimaryKeyHash) {
     // compiled pk serializer for entity User
     return function(entity) {
       return '' + entity.id;
     }
   },
-  'hydrator-undefined_1000-full-false': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
+  'hydrator-Address-full-false': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity Address ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.street === null) {
@@ -142,7 +142,7 @@ module.exports = {
       }
     }
   },
-  'hydrator-undefined_1000-full-true': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
+  'hydrator-Address-full-true': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity Address ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.street === null) {
@@ -152,7 +152,7 @@ module.exports = {
       }
     }
   },
-  'comparator-undefined_1000': function(compareArrays, compareBooleans, compareBuffers, compareObjects, equals) {
+  'comparator-Address': function(compareArrays, compareBooleans, compareBuffers, compareObjects, equals) {
     // compiled comparator for entity Address
     return function(last, current, options) {
       const diff = {};
@@ -171,7 +171,7 @@ module.exports = {
       return diff;
     }
   },
-  'snapshotGenerator-undefined_1000': function(clone, cloneEmbeddable) {
+  'snapshotGenerator-Address': function(clone, cloneEmbeddable) {
     return function(entity) {
       const ret = {};
       if (typeof entity.street !== 'undefined') {
@@ -181,7 +181,7 @@ module.exports = {
       return ret;
     }
   },
-  'resultMapper-undefined_1000': function(PolymorphicRef, knownKeys) {
+  'resultMapper-Address': function(PolymorphicRef, knownKeys) {
     // compiled mapper for entity Address
     return function(result) {
       const ret = {};
@@ -202,7 +202,7 @@ exports[`CompileCommand > handler generates CJS output 2`] = `
 "'use strict';
 module.exports = {
   __version: '[[MIKRO_ORM_VERSION]]',
-  'hydrator-user_0-full-false': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
+  'hydrator-User-full-false': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -217,7 +217,7 @@ module.exports = {
       }
     }
   },
-  'hydrator-user_0-full-true': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
+  'hydrator-User-full-true': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -232,7 +232,7 @@ module.exports = {
       }
     }
   },
-  'comparator-user_0': function(compareArrays, compareBooleans, compareBuffers, compareObjects, equals) {
+  'comparator-User': function(compareArrays, compareBooleans, compareBuffers, compareObjects, equals) {
     // compiled comparator for entity User
     return function(last, current, options) {
       const diff = {};
@@ -261,7 +261,7 @@ module.exports = {
       return diff;
     }
   },
-  'snapshotGenerator-user_0': function(clone, cloneEmbeddable) {
+  'snapshotGenerator-User': function(clone, cloneEmbeddable) {
     return function(entity) {
       const ret = {};
       if (typeof entity.id !== 'undefined') {
@@ -275,7 +275,7 @@ module.exports = {
       return ret;
     }
   },
-  'resultMapper-user_0': function(PolymorphicRef) {
+  'resultMapper-User': function(PolymorphicRef) {
     // compiled mapper for entity User
     return function(result) {
       const ret = {};
@@ -292,7 +292,7 @@ module.exports = {
       return ret;
     }
   },
-  'hydrator-user_0-reference-false': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
+  'hydrator-User-reference-false': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -302,7 +302,7 @@ module.exports = {
       }
     }
   },
-  'hydrator-user_0-reference-true': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
+  'hydrator-User-reference-true': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -312,25 +312,25 @@ module.exports = {
       }
     }
   },
-  'pkGetter-user_0': function(isEntityOrRef) {
+  'pkGetter-User': function(isEntityOrRef) {
     // compiled pk getter for entity User
     return function(entity) {
       return entity.id;
     }
   },
-  'pkGetterConverted-user_0': function(isEntityOrRef) {
+  'pkGetterConverted-User': function(isEntityOrRef) {
     // compiled pk getter (with converted custom types) for entity User
     return function(entity) {
       return entity.id;
     }
   },
-  'pkSerializer-user_0': function(isEntityOrRef, getCompositeKeyValue, getPrimaryKeyHash) {
+  'pkSerializer-User': function(isEntityOrRef, getCompositeKeyValue, getPrimaryKeyHash) {
     // compiled pk serializer for entity User
     return function(entity) {
       return '' + entity.id;
     }
   },
-  'hydrator-undefined_1000-full-false': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
+  'hydrator-Address-full-false': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity Address ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.street === null) {
@@ -340,7 +340,7 @@ module.exports = {
       }
     }
   },
-  'hydrator-undefined_1000-full-true': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
+  'hydrator-Address-full-true': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity Address ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.street === null) {
@@ -350,7 +350,7 @@ module.exports = {
       }
     }
   },
-  'comparator-undefined_1000': function(compareArrays, compareBooleans, compareBuffers, compareObjects, equals) {
+  'comparator-Address': function(compareArrays, compareBooleans, compareBuffers, compareObjects, equals) {
     // compiled comparator for entity Address
     return function(last, current, options) {
       const diff = {};
@@ -369,7 +369,7 @@ module.exports = {
       return diff;
     }
   },
-  'snapshotGenerator-undefined_1000': function(clone, cloneEmbeddable) {
+  'snapshotGenerator-Address': function(clone, cloneEmbeddable) {
     return function(entity) {
       const ret = {};
       if (typeof entity.street !== 'undefined') {
@@ -379,7 +379,7 @@ module.exports = {
       return ret;
     }
   },
-  'resultMapper-undefined_1000': function(PolymorphicRef, knownKeys) {
+  'resultMapper-Address': function(PolymorphicRef, knownKeys) {
     // compiled mapper for entity Address
     return function(result) {
       const ret = {};
@@ -399,7 +399,7 @@ module.exports = {
 exports[`CompileCommand > handler generates ESM output when project uses type=module 1`] = `
 "export default {
   __version: '[[MIKRO_ORM_VERSION]]',
-  'hydrator-user_2000-full-false': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
+  'hydrator-User-full-false': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -414,7 +414,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       }
     }
   },
-  'hydrator-user_2000-full-true': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
+  'hydrator-User-full-true': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -429,7 +429,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       }
     }
   },
-  'comparator-user_2000': function(compareArrays, compareBooleans, compareBuffers, compareObjects, equals) {
+  'comparator-User': function(compareArrays, compareBooleans, compareBuffers, compareObjects, equals) {
     // compiled comparator for entity User
     return function(last, current, options) {
       const diff = {};
@@ -458,7 +458,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       return diff;
     }
   },
-  'snapshotGenerator-user_2000': function(clone, cloneEmbeddable) {
+  'snapshotGenerator-User': function(clone, cloneEmbeddable) {
     return function(entity) {
       const ret = {};
       if (typeof entity.id !== 'undefined') {
@@ -472,7 +472,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       return ret;
     }
   },
-  'resultMapper-user_2000': function(PolymorphicRef) {
+  'resultMapper-User': function(PolymorphicRef) {
     // compiled mapper for entity User
     return function(result) {
       const ret = {};
@@ -489,7 +489,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       return ret;
     }
   },
-  'hydrator-user_2000-reference-false': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
+  'hydrator-User-reference-false': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -499,7 +499,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       }
     }
   },
-  'hydrator-user_2000-reference-true': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
+  'hydrator-User-reference-true': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity User ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.id === null) {
@@ -509,25 +509,25 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       }
     }
   },
-  'pkGetter-user_2000': function(isEntityOrRef) {
+  'pkGetter-User': function(isEntityOrRef) {
     // compiled pk getter for entity User
     return function(entity) {
       return entity.id;
     }
   },
-  'pkGetterConverted-user_2000': function(isEntityOrRef) {
+  'pkGetterConverted-User': function(isEntityOrRef) {
     // compiled pk getter (with converted custom types) for entity User
     return function(entity) {
       return entity.id;
     }
   },
-  'pkSerializer-user_2000': function(isEntityOrRef, getCompositeKeyValue, getPrimaryKeyHash) {
+  'pkSerializer-User': function(isEntityOrRef, getCompositeKeyValue, getPrimaryKeyHash) {
     // compiled pk serializer for entity User
     return function(entity) {
       return '' + entity.id;
     }
   },
-  'hydrator-undefined_3000-full-false': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
+  'hydrator-Address-full-false': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity Address ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.street === null) {
@@ -537,7 +537,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       }
     }
   },
-  'hydrator-undefined_3000-full-true': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
+  'hydrator-Address-full-true': function(isPrimaryKey, isEntity, isScalarReference, Collection, Reference, PolymorphicRef, ValidationError) {
     // compiled hydrator for entity Address ( normalized)
     return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
       if (data.street === null) {
@@ -547,7 +547,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       }
     }
   },
-  'comparator-undefined_3000': function(compareArrays, compareBooleans, compareBuffers, compareObjects, equals) {
+  'comparator-Address': function(compareArrays, compareBooleans, compareBuffers, compareObjects, equals) {
     // compiled comparator for entity Address
     return function(last, current, options) {
       const diff = {};
@@ -566,7 +566,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       return diff;
     }
   },
-  'snapshotGenerator-undefined_3000': function(clone, cloneEmbeddable) {
+  'snapshotGenerator-Address': function(clone, cloneEmbeddable) {
     return function(entity) {
       const ret = {};
       if (typeof entity.street !== 'undefined') {
@@ -576,7 +576,7 @@ exports[`CompileCommand > handler generates ESM output when project uses type=mo
       return ret;
     }
   },
-  'resultMapper-undefined_3000': function(PolymorphicRef, knownKeys) {
+  'resultMapper-Address': function(PolymorphicRef, knownKeys) {
     // compiled mapper for entity Address
     return function(result) {
       const ret = {};
