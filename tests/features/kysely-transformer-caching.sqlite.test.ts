@@ -1,5 +1,7 @@
 import { defineEntity, EntityMetadata, MetadataStorage, p } from '@mikro-orm/core';
 import { type InferKyselyTable, type Kysely, MikroORM } from '@mikro-orm/sqlite';
+import { vi } from 'vitest';
+import { MikroTransformer } from '../../packages/sql/src/plugin/transformer.js';
 
 const Person = defineEntity({
   name: 'Person',
@@ -24,6 +26,15 @@ const Toy = defineEntity({
   properties: {
     id: p.integer().primary().autoincrement(),
     toyName: p.string(),
+  },
+});
+
+// only used by the rediscovery test, which adds a property to it
+const Tag = defineEntity({
+  name: 'Tag',
+  properties: {
+    id: p.integer().primary().autoincrement(),
+    label: p.string(),
   },
 });
 
@@ -53,6 +64,7 @@ describe('kysely result mapping caches', () => {
   });
 
   afterEach(async () => {
+    vi.restoreAllMocks();
     await orm.close(true);
   });
 
@@ -79,9 +91,11 @@ describe('kysely result mapping caches', () => {
         .select(['p.petName', 'p.owner', 'o.firstName'])
         .execute();
 
+    const buildFieldMap = vi.spyOn(MikroTransformer.prototype, 'buildGlobalFieldMap');
     const first = await query();
     expect(first).toEqual([{ petName: 'Rex', owner: 1, firstName: 'John' }]);
     await expect(query()).resolves.toEqual(first);
+    expect(buildFieldMap).toHaveBeenCalledTimes(1);
   });
 
   test('does not reuse the mapping of an entity whose properties changed since', async () => {
@@ -93,6 +107,24 @@ describe('kysely result mapping caches', () => {
 
     await expect(kysely().selectFrom('person').selectAll().execute()).resolves.toEqual([
       { id: 1, firstName: 'John', last_name: 'Doe' },
+    ]);
+  });
+
+  test('does not reuse the mapping of an entity rediscovered with new properties', async () => {
+    const db = () => kysely() as Kysely<any>;
+    orm.discoverEntity(Tag);
+    await orm.schema.update();
+    await db().insertInto('tag').values({ id: 1, label: 'foo' }).execute();
+    await expect(db().selectFrom('tag').selectAll().execute()).resolves.toEqual([{ id: 1, label: 'foo' }]);
+
+    // the rediscovered metadata is a new object with the same `_id`, so the query shape stays the same
+    Tag.addProperty('nickName' as any, 'string', { nullable: true });
+    orm.discoverEntity(Tag, Tag);
+    await orm.schema.update();
+    await db().updateTable('tag').set({ nickName: 'bar' }).execute();
+
+    await expect(db().selectFrom('tag').selectAll().execute()).resolves.toEqual([
+      { id: 1, label: 'foo', nickName: 'bar' },
     ]);
   });
 

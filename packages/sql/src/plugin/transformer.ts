@@ -41,7 +41,7 @@ import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 
 /** The maps `transformResult` reads for one shape of query, as entries in the order the merged maps iterate. */
 interface ResultMaps {
-  /** the `props` of each entity when the maps were built; re-syncing an entity replaces the array */
+  /** the `props` of each entity when the maps were built; re-syncing or rediscovering (same `_id`) replaces the array */
   props: EntityProperty[][];
   fields: [string, EntityProperty][];
   relations: [string, string][];
