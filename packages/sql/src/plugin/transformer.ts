@@ -46,6 +46,33 @@ const EXPANDABLE_KINDS: ReadonlySet<ReferenceKind> = new Set([
   ReferenceKind.ONE_TO_ONE,
 ]);
 
+// keyed by metadata identity, `discoverEntity()` replaces metadata objects instead of mutating them
+const fieldMapCache = new WeakMap<EntityMetadata, Map<string, Record<string, EntityProperty>>>();
+const relationFieldMapCache = new WeakMap<EntityMetadata, Map<string, Record<string, string>>>();
+
+function cachePerAlias<T>(
+  cache: WeakMap<EntityMetadata, Map<string, T>>,
+  meta: EntityMetadata,
+  alias: string,
+  build: () => T,
+): T {
+  let byAlias = cache.get(meta);
+
+  if (!byAlias) {
+    byAlias = new Map();
+    cache.set(meta, byAlias);
+  }
+
+  let map = byAlias.get(alias);
+
+  if (!map) {
+    map = build();
+    byAlias.set(alias, map);
+  }
+
+  return map;
+}
+
 export class MikroTransformer extends OperationNodeTransformer {
   /**
    * Context stack to support nested queries (subqueries, CTEs)
@@ -1072,12 +1099,7 @@ export class MikroTransformer extends OperationNodeTransformer {
     if (byEntity) {
       return byEntity;
     }
-    const allMetadata = Array.from(this.#metadata);
-    const byTable = allMetadata.find(m => m.tableName === name);
-    if (byTable) {
-      return byTable;
-    }
-    return undefined;
+    return this.#metadata.getByTableName(name);
   }
 
   /**
@@ -1113,7 +1135,10 @@ export class MikroTransformer extends OperationNodeTransformer {
   buildGlobalFieldMap(entityMap: Map<string, EntityMetadata>): Record<string, EntityProperty> {
     const map: Record<string, EntityProperty> = {};
     for (const [alias, meta] of entityMap.entries()) {
-      Object.assign(map, this.buildFieldToPropertyMap(meta, alias));
+      Object.assign(
+        map,
+        cachePerAlias(fieldMapCache, meta, alias, () => this.buildFieldToPropertyMap(meta, alias)),
+      );
     }
     return map;
   }
@@ -1121,7 +1146,10 @@ export class MikroTransformer extends OperationNodeTransformer {
   buildGlobalRelationFieldMap(entityMap: Map<string, EntityMetadata>): Record<string, string> {
     const map: Record<string, string> = {};
     for (const [alias, meta] of entityMap.entries()) {
-      Object.assign(map, this.buildRelationFieldMap(meta, alias));
+      Object.assign(
+        map,
+        cachePerAlias(relationFieldMapCache, meta, alias, () => this.buildRelationFieldMap(meta, alias)),
+      );
     }
     return map;
   }
