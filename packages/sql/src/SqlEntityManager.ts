@@ -2,6 +2,7 @@ import {
   type AbortQueryOptions,
   type EntitySchemaWithMeta,
   EntityManager,
+  QueryFlag,
   raw,
   Utils,
   type AnyEntity,
@@ -198,6 +199,7 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
     // match `em.count()` semantics: an active transaction always wins over the requested connection type
     const connectionType = em.getTransactionContext() ? 'write' : options.connectionType;
     const qb = em.createQueryBuilder(meta.class, undefined, connectionType);
+    qb.unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
 
     (qb as any)
       .select([...fields, raw('count(*) as cnt')])
