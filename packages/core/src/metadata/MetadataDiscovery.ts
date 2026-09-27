@@ -1911,7 +1911,8 @@ export class MetadataDiscovery {
         }
 
         rootProp.stiFieldNameMap![meta.discriminatorValue!] = prop.fieldNames[0];
-        rootProp.stiFieldNames.push(...prop.fieldNames);
+        // subtypes that only differ in type share the column
+        rootProp.stiFieldNames = Utils.unique([...rootProp.stiFieldNames, ...prop.fieldNames]);
         newProp.nullable = true;
         newProp.name = name;
         newProp.hydrate = false;

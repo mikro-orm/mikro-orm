@@ -1307,9 +1307,14 @@ export abstract class AbstractSqlDriver<
           props.forEach(prop => {
             // For STI with conflicting fieldNames, use discriminator to determine which field gets value
             if (prop.stiFieldNames && prop.stiFieldNameMap && meta.discriminatorColumn) {
-              const activeField = prop.stiFieldNameMap[row[meta.discriminatorColumn]];
+              // the map misses subtypes whose props were not initialized yet during discovery (root column owner, grandchildren)
+              const discriminator = row[meta.discriminatorColumn];
+              const childClass = meta.discriminatorMap?.[discriminator];
+              const activeField =
+                prop.stiFieldNameMap[discriminator] ??
+                (childClass && this.metadata.find(childClass)?.properties[prop.name]?.fieldNames[0]);
               for (const field of prop.stiFieldNames) {
-                params.push(field === activeField ? row[prop.name] : null);
+                params.push(field === activeField ? (row[prop.name] ?? null) : null);
                 keys.push('?');
               }
               return;
