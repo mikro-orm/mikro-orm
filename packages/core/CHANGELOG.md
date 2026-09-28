@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.2](https://github.com/mikro-orm/mikro-orm/compare/v7.2.1...v7.2.2) (2026-09-28)
+
+### Bug Fixes
+
+* **core:** allow falsy values in concurrency checks ([#8318](https://github.com/mikro-orm/mikro-orm/issues/8318)) ([8f483a6](https://github.com/mikro-orm/mikro-orm/commit/8f483a6136b754abc1beb7990d408409bb40b3de))
+* **core:** compare FK column for primary key conditions on polymorphic relations ([#8328](https://github.com/mikro-orm/mikro-orm/issues/8328)) ([7ead234](https://github.com/mikro-orm/mikro-orm/commit/7ead23412326065ae037f31f4c569f5cceda16a4)), closes [#8326](https://github.com/mikro-orm/mikro-orm/issues/8326)
+* **core:** do not mutate the where condition and data passed to the EntityManager ([#8291](https://github.com/mikro-orm/mikro-orm/issues/8291)) ([6b42e5b](https://github.com/mikro-orm/mikro-orm/commit/6b42e5b39af15f9e3fc12ca4e484640ddbd44028)), closes [#8290](https://github.com/mikro-orm/mikro-orm/issues/8290)
+* **core:** handle primary key values and objects in polymorphic and relation conditions ([#8329](https://github.com/mikro-orm/mikro-orm/issues/8329)) ([cc54e42](https://github.com/mikro-orm/mikro-orm/commit/cc54e4286a168e2b9a107133d9fc56c565be8f4e)), closes [#8328](https://github.com/mikro-orm/mikro-orm/issues/8328)
+* **core:** hydrate partial upsert results without mismatching entities ([#8294](https://github.com/mikro-orm/mikro-orm/issues/8294)) ([62632c2](https://github.com/mikro-orm/mikro-orm/commit/62632c24977ac68f2fa8754f58fd488e61b91909))
+* **core:** keep entity identity for relations using `targetKey` ([#8323](https://github.com/mikro-orm/mikro-orm/issues/8323)) ([10c73e3](https://github.com/mikro-orm/mikro-orm/commit/10c73e36a57f664fd199a1ba583778523ace8da3)), closes [#8322](https://github.com/mikro-orm/mikro-orm/issues/8322)
+* **core:** keep the input order in `em.upsertMany()` when a split batch has duplicate rows ([#8310](https://github.com/mikro-orm/mikro-orm/issues/8310)) ([3625eab](https://github.com/mikro-orm/mikro-orm/commit/3625eab402ab97774bb5def3f24354acbdc8b92f))
+* **core:** make compiled function keys independent of module evaluation order ([#8339](https://github.com/mikro-orm/mikro-orm/issues/8339)) ([4e52beb](https://github.com/mikro-orm/mikro-orm/commit/4e52bebbb3b4e0f12598d79db1b473acae5dd9ce)), closes [#8335](https://github.com/mikro-orm/mikro-orm/issues/8335)
+* **core:** map upsertMany results to the corresponding SQL inputs ([#8305](https://github.com/mikro-orm/mikro-orm/issues/8305)) ([bb0a814](https://github.com/mikro-orm/mikro-orm/commit/bb0a8140a4c92fc84f9c59fa3b23eed13bad313e))
+* **core:** merge columns supplied only by some rows in `em.upsertMany()` ([#8298](https://github.com/mikro-orm/mikro-orm/issues/8298)) ([156e5ba](https://github.com/mikro-orm/mikro-orm/commit/156e5bacad9ad70e678a52b8cc652fdc606a656b))
+* **core:** preserve concurrency values in batch lock checks ([#8317](https://github.com/mikro-orm/mikro-orm/issues/8317)) ([4cd89c6](https://github.com/mikro-orm/mikro-orm/commit/4cd89c69e5729b93a2f4838eb984dedbf069c7b6))
+* **core:** preserve entity schema when restoring cached results ([#8303](https://github.com/mikro-orm/mikro-orm/issues/8303)) ([4be2efc](https://github.com/mikro-orm/mikro-orm/commit/4be2efcdca4c888c2d81b35392f60109175ef9b4))
+* **core:** preserve existing groups when lifting relation filters ([#8304](https://github.com/mikro-orm/mikro-orm/issues/8304)) ([22dc99a](https://github.com/mikro-orm/mikro-orm/commit/22dc99a193c4abaf024a7a2b29d18cac21be9d06))
+* **core:** resolve repositories in non-transactional callbacks ([#8316](https://github.com/mikro-orm/mikro-orm/issues/8316)) ([287978f](https://github.com/mikro-orm/mikro-orm/commit/287978faeeb2041890f44f62ee65c67429395b9a))
+* **core:** respect custom `fieldNames` in polymorphic relations ([#8324](https://github.com/mikro-orm/mikro-orm/issues/8324)) ([dee0655](https://github.com/mikro-orm/mikro-orm/commit/dee0655512fdaab3bcadc85032380963a6d62aec))
+* **core:** respect locally disabled transactions during flush ([#8306](https://github.com/mikro-orm/mikro-orm/issues/8306)) ([8185e4f](https://github.com/mikro-orm/mikro-orm/commit/8185e4f0a4185139a747ac5a6b32d829bd1694b6))
+* **sql:** handle STI subtypes with conflicting property columns and types ([#8340](https://github.com/mikro-orm/mikro-orm/issues/8340)) ([cbf93e0](https://github.com/mikro-orm/mikro-orm/commit/cbf93e08b7a71d3a083509030fb23ebd03e74dca))
+* **sql:** respect property returning hints on updates and upserts ([#8299](https://github.com/mikro-orm/mikro-orm/issues/8299)) ([4cb1ce3](https://github.com/mikro-orm/mikro-orm/commit/4cb1ce31f60f7a225b5462edf9db9975a8ca356a))
+
+### Performance Improvements
+
+* **sql:** cache kysely result maps and table name lookups ([#8337](https://github.com/mikro-orm/mikro-orm/issues/8337)) ([814aa8f](https://github.com/mikro-orm/mikro-orm/commit/814aa8f3adff3fc01a09c31b0de5d50b43895f8e)), closes [#8336](https://github.com/mikro-orm/mikro-orm/issues/8336)
+
+
 ## [7.2.1](https://github.com/mikro-orm/mikro-orm/compare/v7.2.0...v7.2.1) (2026-09-19)
 
 ### Bug Fixes

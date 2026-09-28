@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.2](https://github.com/mikro-orm/mikro-orm/compare/v7.2.1...v7.2.2) (2026-09-28)
+
+### Bug Fixes
+
+* **core:** compare FK column for primary key conditions on polymorphic relations ([#8328](https://github.com/mikro-orm/mikro-orm/issues/8328)) ([7ead234](https://github.com/mikro-orm/mikro-orm/commit/7ead23412326065ae037f31f4c569f5cceda16a4)), closes [#8326](https://github.com/mikro-orm/mikro-orm/issues/8326)
+* **core:** keep entity identity for relations using `targetKey` ([#8323](https://github.com/mikro-orm/mikro-orm/issues/8323)) ([10c73e3](https://github.com/mikro-orm/mikro-orm/commit/10c73e36a57f664fd199a1ba583778523ace8da3)), closes [#8322](https://github.com/mikro-orm/mikro-orm/issues/8322)
+* **mongodb:** throw on unsupported polymorphic relation conditions ([#8326](https://github.com/mikro-orm/mikro-orm/issues/8326)) ([3192a2a](https://github.com/mikro-orm/mikro-orm/commit/3192a2ab80ece7bdcc57206c801a6034d098ad08))
+
+
 ## [7.2.1](https://github.com/mikro-orm/mikro-orm/compare/v7.2.0...v7.2.1) (2026-09-19)
 
 **Note:** Version bump only for package @mikro-orm/mongodb

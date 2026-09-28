@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.2](https://github.com/mikro-orm/mikro-orm/compare/v7.2.1...v7.2.2) (2026-09-28)
+
+**Note:** Version bump only for package @mikro-orm/entity-generator
+
+
+
+
+
 ## [7.2.1](https://github.com/mikro-orm/mikro-orm/compare/v7.2.0...v7.2.1) (2026-09-19)
 
 **Note:** Version bump only for package @mikro-orm/entity-generator

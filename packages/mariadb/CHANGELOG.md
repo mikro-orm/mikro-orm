@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.2](https://github.com/mikro-orm/mikro-orm/compare/v7.2.1...v7.2.2) (2026-09-28)
+
+### Bug Fixes
+
+* **sql:** do not treat persisted properties as virtual in paginated orderBy ([#8309](https://github.com/mikro-orm/mikro-orm/issues/8309)) ([6e765dd](https://github.com/mikro-orm/mikro-orm/commit/6e765ddaf29537ddc2bd19bc961c0a20b8b33525)), closes [#8308](https://github.com/mikro-orm/mikro-orm/issues/8308)
+
+
 ## [7.2.1](https://github.com/mikro-orm/mikro-orm/compare/v7.2.0...v7.2.1) (2026-09-19)
 
 **Note:** Version bump only for package @mikro-orm/mariadb
