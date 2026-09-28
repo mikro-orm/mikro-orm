@@ -47,6 +47,7 @@ export default defineConfig({
       },
     ],
     globals: true,
+    fsModuleCache: true,
     coverage: {
       reporter: ['clover', 'json', 'lcov', 'text'],
       include: ['packages/*/src/**/*.ts'],
