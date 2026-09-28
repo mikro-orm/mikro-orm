@@ -7,8 +7,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **sql:** respect property returning hints on updates and upserts ([#8299](https://github.com/mikro-orm/mikro-orm/issues/8299)) ([4cb1ce3](https://github.com/mikro-orm/mikro-orm/commit/4cb1ce31f60f7a225b5462edf9db9975a8ca356a))
-
+- **sql:** respect property returning hints on updates and upserts ([#8299](https://github.com/mikro-orm/mikro-orm/issues/8299)) ([4cb1ce3](https://github.com/mikro-orm/mikro-orm/commit/4cb1ce31f60f7a225b5462edf9db9975a8ca356a))
 
 ## [7.2.1](https://github.com/mikro-orm/mikro-orm/compare/v7.2.0...v7.2.1) (2026-09-19)
 

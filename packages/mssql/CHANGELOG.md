@@ -7,11 +7,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **mssql:** handle OUTPUT results on tables with triggers ([#8295](https://github.com/mikro-orm/mikro-orm/issues/8295)) ([22a1b66](https://github.com/mikro-orm/mikro-orm/commit/22a1b661d64c03a22e53b46c69867cb18d35b589))
-* **mssql:** preserve columns from heterogeneous upsert inputs ([#8296](https://github.com/mikro-orm/mikro-orm/issues/8296)) ([ed463e5](https://github.com/mikro-orm/mikro-orm/commit/ed463e5751c65fc229062bd044786f0f1251a6d4))
-* **mssql:** restrict TPT identity inserts to the owning table ([#8297](https://github.com/mikro-orm/mikro-orm/issues/8297)) ([b07d131](https://github.com/mikro-orm/mikro-orm/commit/b07d13197339d1566754487b3fdcfa22b82e285f))
-* **sql:** respect property returning hints on updates and upserts ([#8299](https://github.com/mikro-orm/mikro-orm/issues/8299)) ([4cb1ce3](https://github.com/mikro-orm/mikro-orm/commit/4cb1ce31f60f7a225b5462edf9db9975a8ca356a))
-
+- **mssql:** handle OUTPUT results on tables with triggers ([#8295](https://github.com/mikro-orm/mikro-orm/issues/8295)) ([22a1b66](https://github.com/mikro-orm/mikro-orm/commit/22a1b661d64c03a22e53b46c69867cb18d35b589))
+- **mssql:** preserve columns from heterogeneous upsert inputs ([#8296](https://github.com/mikro-orm/mikro-orm/issues/8296)) ([ed463e5](https://github.com/mikro-orm/mikro-orm/commit/ed463e5751c65fc229062bd044786f0f1251a6d4))
+- **mssql:** restrict TPT identity inserts to the owning table ([#8297](https://github.com/mikro-orm/mikro-orm/issues/8297)) ([b07d131](https://github.com/mikro-orm/mikro-orm/commit/b07d13197339d1566754487b3fdcfa22b82e285f))
+- **sql:** respect property returning hints on updates and upserts ([#8299](https://github.com/mikro-orm/mikro-orm/issues/8299)) ([4cb1ce3](https://github.com/mikro-orm/mikro-orm/commit/4cb1ce31f60f7a225b5462edf9db9975a8ca356a))
 
 ## [7.2.1](https://github.com/mikro-orm/mikro-orm/compare/v7.2.0...v7.2.1) (2026-09-19)
 
