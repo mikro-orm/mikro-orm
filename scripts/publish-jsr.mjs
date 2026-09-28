@@ -11,6 +11,22 @@ const flags = dryRun ? ' --dry-run --allow-dirty' : '';
 const packagesDir = resolve(import.meta.dirname, '..', 'packages');
 const packages = new Map();
 const originals = new Map();
+const jsrDirs = readdirSync(packagesDir)
+  .map(name => resolve(packagesDir, name))
+  .filter(dir => existsSync(resolve(dir, 'jsr.json')));
+
+// The JSR registry rejects global type modifications server-side, `jsr publish --dry-run` does not check it.
+const globalTypes = /^\s*declare\s+(global\b|module\s+['"])/m;
+const offending = jsrDirs.flatMap(dir =>
+  readdirSync(resolve(dir, 'src'), { recursive: true })
+    .map(file => resolve(dir, 'src', file))
+    .filter(file => /\.[cm]?tsx?$/.test(file) && globalTypes.test(readFileSync(file, 'utf8'))),
+);
+
+if (offending.length > 0) {
+  console.error(`JSR does not allow modifying global types (\`declare global\` or \`declare module\`):\n${offending.join('\n')}`);
+  process.exit(1);
+}
 
 for (const name of readdirSync(packagesDir)) {
   const jsrPath = resolve(packagesDir, name, 'jsr.json');

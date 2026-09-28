@@ -1,14 +1,12 @@
-// the ambient declaration has to be pulled in explicitly, consumers compile our sources via the `exports` map
-// eslint-disable-next-line typescript/triple-slash-reference
-/// <reference path="./sql-js.d.ts" />
 import { BaseSqliteConnection, type Dictionary } from '@mikro-orm/sql';
 import { type Dialect, SqliteDialect } from 'kysely';
 import type { Routine, Transaction } from '@mikro-orm/core';
+// sql.js ships no types and JSR rejects ambient module declarations; `ts-ignore` (not `expect-error`) as consumers may have `@types/sql.js`
+// @ts-ignore
 import initSqlJs from 'sql.js';
 import { SqlJsDatabase } from './SqlJsDatabase.js';
 import type { InitSqlJs, SqlJsConfig, SqlJsNativeDatabase, SqlJsStatic, SqlValue } from './typings.js';
 
-// the ambient `sql.js` declaration is intentionally loose, our own types describe what we actually use
 const init = initSqlJs as InitSqlJs;
 
 /**
