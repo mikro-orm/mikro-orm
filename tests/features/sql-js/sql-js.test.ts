@@ -1,5 +1,6 @@
 import { readFile, rm } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+// @ts-ignore sql.js ships no types
 import initSqlJs from 'sql.js';
 import { type Generated, sql } from 'kysely';
 import { defineEntity, p } from '@mikro-orm/core';
