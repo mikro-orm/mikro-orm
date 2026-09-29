@@ -633,6 +633,19 @@ export abstract class SchemaHelper {
     }
 
     for (const index of Object.values(diff.changedIndexes)) {
+      const addedColumn = diff.addedColumns[index.columnNames[0]];
+
+      // an added autoincrement PK column already declares the primary key inline
+      if (
+        index.primary &&
+        !index.composite &&
+        addedColumn?.autoincrement &&
+        addedColumn.primary &&
+        !this.hasNonDefaultPrimaryKeyName(diff.toTable)
+      ) {
+        continue;
+      }
+
       ret.push(this.createIndex(index, diff.toTable, true));
     }
 
