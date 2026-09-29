@@ -86,6 +86,14 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `alter table ${this.quote(this.getTableName(tableName, schemaName))} auto_increment = ${startWith}`;
   }
 
+  override getAddColumnsSQL(table: DatabaseTable, columns: Column[]): string[] {
+    const [sql, ...rest] = super.getAddColumnsSQL(table, columns);
+    const startWith = columns.find(column => column.autoincrement)?.sequence?.startWith;
+
+    // the table option numbers the existing rows of the added column from the declared start too
+    return [startWith != null ? `${sql}, auto_increment = ${startWith}` : sql, ...rest];
+  }
+
   override finalizeTable(table: DatabaseTable, charset: string, collate?: string): string {
     let sql = ` default character set ${charset}`;
 

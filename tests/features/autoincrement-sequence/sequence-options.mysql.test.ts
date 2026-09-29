@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/mysql';
+import { MikroORM, Opt } from '@mikro-orm/mysql';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'ticket' })
@@ -17,6 +17,21 @@ class TicketChanged {
 
   @Property()
   name!: string;
+}
+
+@Entity({ tableName: 'purchase' })
+class PurchaseByCode {
+  @PrimaryKey()
+  code!: string;
+}
+
+@Entity({ tableName: 'purchase' })
+class Purchase {
+  @PrimaryKey({ autoincrement: false })
+  code!: string;
+
+  @Property({ type: 'integer', autoincrement: true, sequence: { startWith: 500 } })
+  number!: number & Opt;
 }
 
 async function bootstrap(entities: any[]) {
@@ -77,4 +92,20 @@ test('incrementBy is not supported', async () => {
   ).rejects.toThrow(
     `Invalid.id defines 'sequence.incrementBy', but MySqlPlatform does not support a per-column increment`,
   );
+});
+
+test('the options apply to an autoincrement column added to an existing table', async () => {
+  const orm = await bootstrap([PurchaseByCode]);
+  await orm.em.fork().insertMany(PurchaseByCode, [{ code: 'a' }, { code: 'b' }]);
+
+  orm.discoverEntity(Purchase, PurchaseByCode);
+  await orm.schema.update();
+
+  const em = orm.em.fork();
+  em.create(Purchase, { code: 'c' });
+  await em.flush();
+  const purchases = await orm.em.fork().find(Purchase, {}, { orderBy: { number: 1 } });
+  expect(purchases.map(p => p.number)).toEqual([500, 501, 502]);
+
+  await orm.close(true);
 });

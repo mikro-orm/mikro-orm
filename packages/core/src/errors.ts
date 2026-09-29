@@ -567,6 +567,15 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return MetadataError.fromMessage(meta, prop, `defines the 'sequence' option, but is not an autoincrement property`);
   }
 
+  /** Thrown when the `sequence` option is combined with an identity option list in `generated`. */
+  static sequenceWithIdentityOptions(meta: EntityMetadata, prop: EntityProperty): MetadataError {
+    return MetadataError.fromMessage(
+      meta,
+      prop,
+      `defines the 'sequence' option together with identity options in 'generated', use only one of them`,
+    );
+  }
+
   /** Thrown when `sequence.incrementBy` is declared on a platform without a per-column increment. */
   static sequenceIncrementNotSupported(meta: EntityMetadata, prop: EntityProperty, platform: string): MetadataError {
     return MetadataError.fromMessage(

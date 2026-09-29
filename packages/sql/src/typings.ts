@@ -66,7 +66,7 @@ export interface Column {
   mappedType: Type<unknown>;
   unsigned?: boolean;
   autoincrement?: boolean;
-  /** applied only when the table is created, never diffed */
+  /** applied only when the column is created, never diffed */
   sequence?: SequenceOptions;
   nullable?: boolean;
   length?: number;

@@ -834,7 +834,7 @@ export class UniversalPropertyOptionsBuilder<
 
   /**
    * Set the start value and increment of an autoincrement column. (SQL only)
-   * Applied only when the table is created (and by `orm.schema.clear()`), never diffed by the schema generator.
+   * Applied only when the column is created (and by `orm.schema.clear()`), never diffed by the schema generator.
    */
   sequence(sequence: SequenceOptions): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ sequence });

@@ -218,7 +218,7 @@ export interface PropertyOptions<Owner> {
   autoincrement?: boolean;
   /**
    * Start value and increment of an autoincrement column. (SQL only)
-   * Applied only when the table is created (and by `orm.schema.clear()`), never diffed by the schema generator.
+   * Applied only when the column is created (and by `orm.schema.clear()`), never diffed by the schema generator.
    * `incrementBy` is not supported on MySQL, MariaDB and SQLite.
    */
   sequence?: SequenceOptions;

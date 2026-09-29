@@ -1010,6 +1010,10 @@ export abstract class Platform {
         throw MetadataError.sequenceWithoutAutoincrement(meta, prop);
       }
 
+      if (typeof prop.generated === 'string' && /identity\s*\(/i.test(prop.generated)) {
+        throw MetadataError.sequenceWithIdentityOptions(meta, prop);
+      }
+
       if (prop.sequence.incrementBy != null && !this.supportsAutoincrementIncrement()) {
         throw MetadataError.sequenceIncrementNotSupported(meta, prop, this.constructor.name);
       }

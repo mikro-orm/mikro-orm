@@ -257,7 +257,7 @@ See the [SQL Generated columns](./defining-entities.md#sql-generated-columns) se
 
 ## Autoincrement start values
 
-The [`sequence` option](./defining-entities.md#autoincrement-start-value-and-increment) of autoincrement columns is applied only when the table is created, and `orm.schema.clear()` resets the counter back to its `startWith` value. The schema generator never diffs it, so changing it on an existing table produces no migration. Moving a live counter is a data change, so do it in an explicit migration (e.g. `alter sequence … restart with …` or `alter table … auto_increment = …`).
+The [`sequence` option](./defining-entities.md#autoincrement-start-value-and-increment) of autoincrement columns is applied only when the column is created (with a new table or as an added column), and `orm.schema.clear()` resets the counter back to its `startWith` value. The schema generator never diffs it, so changing it on an existing table produces no migration. Moving a live counter is a data change, so do it in an explicit migration (e.g. `alter sequence … restart with …` or `alter table … auto_increment = …`).
 
 ## Limitations of SQLite
 

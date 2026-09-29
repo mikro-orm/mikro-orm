@@ -1688,6 +1688,36 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
+  override getAddColumnsSQL(table: DatabaseTable, columns: Column[]): string[] {
+    const compositePK = table.getPrimaryKey()?.composite;
+    const before: string[] = [];
+    const after: string[] = [];
+    const adds = columns.map(column => {
+      const sequenceOptions = this.getSequenceOptionsSQL(column);
+
+      if (!sequenceOptions || !column.autoincrement || column.generated || compositePK) {
+        return column;
+      }
+
+      // a `serial` column numbers the existing rows right away, so expand it to a sequence created with the options upfront
+      const seqName = this.quote(
+        this.getTableName(this.platform.getIndexName(table.name, [column.name], 'sequence'), table.schema),
+      );
+      before.push(`create sequence ${seqName} ${sequenceOptions}`);
+      after.push(`alter sequence ${seqName} owned by ${table.getQuotedName()}.${this.quote(column.name)}`);
+
+      return {
+        ...column,
+        type: column.mappedType.getColumnType({ autoincrement: false } as EntityProperty, this.platform),
+        autoincrement: false,
+        nullable: false,
+        default: `nextval('${seqName}')`,
+      };
+    });
+
+    return [...before, ...super.getAddColumnsSQL(table, adds), ...after];
+  }
+
   private getAlterColumnAutoincrement(tableName: string, column: Column, schemaName?: string): string[] {
     const ret: string[] = [];
     /* v8 ignore next */
@@ -1696,8 +1726,17 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     if (column.autoincrement) {
       const seqName = this.platform.getIndexName(tableName, [column.name], 'sequence');
-      ret.push(`create sequence if not exists ${this.quote(seqName)}`);
-      ret.push(`select setval('${seqName}', (select max(${this.quote(column.name)}) from ${this.quote(name)}))`);
+      const sequenceOptions = this.getSequenceOptionsSQL(column);
+      const maxValue = `(select max(${this.quote(column.name)}) from ${this.quote(name)})`;
+      ret.push(`create sequence if not exists ${this.quote(seqName)}${sequenceOptions ? ` ${sequenceOptions}` : ''}`);
+
+      if (sequenceOptions) {
+        const { startWith = 1, incrementBy = 1 } = column.sequence!;
+        // continue after the existing values, but never below the declared start
+        ret.push(`select setval('${seqName}', greatest(${maxValue} + ${incrementBy}, ${startWith}), false)`);
+      } else {
+        ret.push(`select setval('${seqName}', ${maxValue})`);
+      }
       ret.push(
         `alter table ${this.quote(name)} alter column ${this.quote(column.name)} set default nextval('${seqName}')`,
       );

@@ -46,6 +46,36 @@ class Purchase {
   number!: number & Opt;
 }
 
+@Entity({ tableName: 'purchase' })
+class PurchaseWithoutNumber {
+  @PrimaryKey()
+  id!: number;
+}
+
+@Entity({ tableName: 'purchase' })
+class PurchaseWithPlainNumber {
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ type: 'integer', nullable: true })
+  number?: number;
+}
+
+@Entity({ tableName: 'coupon' })
+class CouponByCode {
+  @PrimaryKey()
+  code!: string;
+}
+
+@Entity({ tableName: 'coupon' })
+class Coupon {
+  @PrimaryKey({ sequence: { startWith: 100 } })
+  id!: number;
+
+  @Property()
+  code!: string;
+}
+
 async function bootstrap(entities: any[]) {
   const orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
@@ -129,4 +159,89 @@ test('sequence options require an autoincrement property', async () => {
       dbName: 'mikro_orm_test_sequence_options',
     }),
   ).rejects.toThrow(`Invalid.counter defines the 'sequence' option, but is not an autoincrement property`);
+});
+
+test('the options apply to an autoincrement column added to an existing table', async () => {
+  const orm = await bootstrap([PurchaseWithoutNumber]);
+  await orm.em.fork().insertMany(PurchaseWithoutNumber, [{ id: 101 }, { id: 102 }]);
+
+  orm.discoverEntity(Purchase, PurchaseWithoutNumber);
+  await orm.schema.update();
+  await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+
+  const em = orm.em.fork();
+  em.create(Purchase, {});
+  await em.flush();
+  const purchases = await orm.em.fork().find(Purchase, {}, { orderBy: { number: 1 } });
+  // existing rows are numbered from the declared start too
+  expect(purchases.map(p => p.number)).toEqual([500, 501, 502]);
+
+  await orm.close(true);
+});
+
+test('the options apply when an existing column becomes autoincrement', async () => {
+  const orm = await bootstrap([PurchaseWithPlainNumber]);
+  await orm.em.fork().insertMany(PurchaseWithPlainNumber, [{ id: 101, number: 10 }]);
+
+  orm.discoverEntity(Purchase, PurchaseWithPlainNumber);
+  await orm.schema.update();
+  await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+
+  const em = orm.em.fork();
+  const purchase = em.create(Purchase, {});
+  await em.flush();
+  expect(purchase.number).toBe(500);
+
+  await orm.close(true);
+});
+
+test('the options apply when an existing column with higher values becomes autoincrement', async () => {
+  const orm = await bootstrap([PurchaseWithPlainNumber]);
+  await orm.em.fork().insertMany(PurchaseWithPlainNumber, [{ id: 101, number: 700 }]);
+
+  orm.discoverEntity(Purchase, PurchaseWithPlainNumber);
+  await orm.schema.update();
+
+  const em = orm.em.fork();
+  const purchase = em.create(Purchase, {});
+  await em.flush();
+  // existing values above the declared start are never reused
+  expect(purchase.number).toBe(701);
+
+  await orm.close(true);
+});
+
+test('sequence options conflict with identity options in generated', async () => {
+  @Entity()
+  class Invalid {
+    @PrimaryKey({ generated: 'identity (start with 5)', sequence: { startWith: 10 } })
+    id!: number;
+  }
+
+  await expect(
+    MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [Invalid],
+      dbName: 'mikro_orm_test_sequence_options',
+    }),
+  ).rejects.toThrow(
+    `Invalid.id defines the 'sequence' option together with identity options in 'generated', use only one of them`,
+  );
+});
+
+test('the options apply to an autoincrement primary key added to an existing table', async () => {
+  const orm = await bootstrap([CouponByCode]);
+  await orm.em.fork().insertMany(CouponByCode, [{ code: 'a' }, { code: 'b' }]);
+
+  orm.discoverEntity(Coupon, CouponByCode);
+  await orm.schema.update();
+  await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+
+  const em = orm.em.fork();
+  em.create(Coupon, { code: 'c' });
+  await em.flush();
+  const coupons = await orm.em.fork().find(Coupon, {}, { orderBy: { id: 1 } });
+  expect(coupons.map(c => c.id)).toEqual([100, 101, 102]);
+
+  await orm.close(true);
 });
