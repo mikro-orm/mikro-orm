@@ -562,6 +562,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       data_type,
       is_identity,
       identity_generation,
+      identity_start,
+      identity_increment,
       generation_expression,
       pg_catalog.col_description(pgc.oid, cols.ordinal_position::int) column_comment,
       coll.collname as collation_name
@@ -622,6 +624,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       }
 
       const length = this.inferLengthFromColumnType(type) === -1 ? -1 : col.length;
+      // a descending sequence starts at -1 by default
+      const defaultIdentityStart = col.identity_increment?.startsWith('-') ? '-1' : '1';
+      // read back non-default identity options, so `identity (start with 1000)` does not diff against plain `identity`
+      const identityOptions = [
+        col.identity_start !== defaultIdentityStart && `start with ${col.identity_start}`,
+        col.identity_increment !== '1' && `increment by ${col.identity_increment}`,
+      ].filter(Boolean);
+      const identitySuffix = identityOptions.length > 0 ? ` (${identityOptions.join(' ')})` : '';
 
       const column: Column = {
         name: col.column_name,
@@ -636,9 +646,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         autoincrement: increments,
         generated:
           col.is_identity === 'YES'
-            ? col.identity_generation === 'BY DEFAULT'
-              ? 'by default as identity'
-              : 'identity'
+            ? (col.identity_generation === 'BY DEFAULT' ? 'by default as identity' : 'identity') + identitySuffix
             : col.generation_expression
               ? col.generation_expression + ' stored'
               : undefined,
@@ -1433,7 +1441,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         }
       }
 
-      if (column.generated === 'by default as identity') {
+      if (column.generated?.startsWith('by default as identity')) {
         columnType += ` generated ${column.generated}`;
       } else if (column.generated) {
         columnType += ` generated always as ${column.generated}`;
