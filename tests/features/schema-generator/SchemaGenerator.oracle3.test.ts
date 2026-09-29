@@ -346,7 +346,7 @@ describe('SchemaGenerator3 [oracle]', () => {
   test('OracleSchemaHelper.dropIndex generates correct SQL for primary keys', () => {
     const helper = (orm.schema as any).helper;
     expect(helper.dropIndex('my_table', { primary: true, keyName: 'pk_my_table' })).toBe(
-      'alter table "my_table" drop constraint "pk_my_table"',
+      'alter table "my_table" drop primary key',
     );
     expect(helper.dropIndex('my_table', { primary: false, keyName: 'idx_my_table' })).toBe('drop index "idx_my_table"');
   });

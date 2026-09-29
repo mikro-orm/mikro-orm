@@ -262,6 +262,7 @@ alter table "foo_bar2" drop ("baz_id");
 exports[`SchemaGenerator [oracle] > update schema [oracle] > oracle-update-schema-drop-column 1`] = `
 "alter table "author2" drop constraint "author2_favourite_book_uuid_pk_foreign";
 
+alter table "new_table" drop primary key;
 alter table "new_table" drop ("id", "updated_at");
 
 alter table "author2" drop ("favourite_book_uuid_pk");

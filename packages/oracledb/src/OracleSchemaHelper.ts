@@ -333,12 +333,6 @@ export class OracleSchemaHelper extends SchemaHelper {
       const isUniqueConstraint = index.constraint_type === 'U';
       const isConstraintIndex = isPrimary || isUniqueConstraint;
 
-      // Skip indexes that back PRIMARY KEY constraints - they're handled as part of the table definition
-      // and should not be managed as separate indexes
-      if (isPrimary) {
-        continue;
-      }
-
       const partialMatch =
         typeof index.expression === 'string' ? OracleSchemaHelper.PARTIAL_INDEX_RE.exec(index.expression) : null;
 
@@ -346,7 +340,7 @@ export class OracleSchemaHelper extends SchemaHelper {
         columnNames: [partialMatch ? partialMatch[2] : index.column_name],
         keyName: index.index_name,
         unique: index.is_unique === 'YES',
-        primary: false,
+        primary: isPrimary,
         constraint: isConstraintIndex || index.is_unique === 'YES',
       };
 
@@ -570,7 +564,8 @@ export class OracleSchemaHelper extends SchemaHelper {
 
     for (const col of changedTypes) {
       for (const index of indexes) {
-        if (index.columnNames.includes(col.column.name)) {
+        // the index backing the primary key can't be dropped, the key constraint stays in place
+        if (!index.primary && index.columnNames.includes(col.column.name)) {
           ret.push(this.getDropIndexSQL(name, index));
         }
       }
@@ -593,7 +588,7 @@ export class OracleSchemaHelper extends SchemaHelper {
 
     for (const col of changedTypes) {
       for (const index of indexes) {
-        if (index.columnNames.includes(col.column.name)) {
+        if (!index.primary && index.columnNames.includes(col.column.name)) {
           this.append(ret, this.getCreateIndexSQL(name, index));
         }
       }
@@ -625,8 +620,9 @@ export class OracleSchemaHelper extends SchemaHelper {
   }
 
   override dropIndex(table: string, index: IndexDef, oldIndexName = index.keyName): string {
+    // the primary key constraint name is system generated unless named explicitly
     if (index.primary) {
-      return `alter table ${this.quote(table)} drop constraint ${this.quote(oldIndexName)}`;
+      return `alter table ${this.quote(table)} drop primary key`;
     }
 
     return `drop index ${this.quote(oldIndexName)}`;
@@ -775,7 +771,7 @@ export class OracleSchemaHelper extends SchemaHelper {
 
   override createIndex(index: IndexDef, table: DatabaseTable, createPrimary = false): string {
     if (index.primary) {
-      return '';
+      return createPrimary ? super.createIndex(index, table, true) : '';
     }
 
     if (index.expression) {
