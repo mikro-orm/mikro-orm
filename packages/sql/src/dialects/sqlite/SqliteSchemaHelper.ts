@@ -708,7 +708,9 @@ export class SqliteSchemaHelper extends SchemaHelper {
       Utils.hasObjectKeys(diff.removedChecks) ||
       Utils.hasObjectKeys(diff.changedChecks) ||
       Utils.hasObjectKeys(diff.changedForeignKeys) ||
-      Utils.hasObjectKeys(diff.changedColumns)
+      Utils.hasObjectKeys(diff.changedColumns) ||
+      // sqlite can only add or change a primary key by rebuilding the table
+      [...Object.values(diff.addedIndexes), ...Object.values(diff.changedIndexes)].some(index => index.primary)
     ) {
       return this.getAlterTempTableSQL(diff);
     }
@@ -900,12 +902,15 @@ export class SqliteSchemaHelper extends SchemaHelper {
     ];
 
     const columns: string[] = [];
+    const renamedFrom = Object.fromEntries(
+      Object.entries(changedTable.renamedColumns).map(([oldName, column]) => [column.name, oldName]),
+    );
 
     for (const column of changedTable.toTable.getColumns()) {
-      const fromColumn = changedTable.fromTable.getColumn(column.name);
+      const fromName = renamedFrom[column.name] ?? column.name;
 
-      if (fromColumn) {
-        columns.push(this.quote(column.name));
+      if (changedTable.fromTable.getColumn(fromName)) {
+        columns.push(this.quote(fromName));
       } else {
         columns.push(`null as ${this.quote(column.name)}`);
       }
