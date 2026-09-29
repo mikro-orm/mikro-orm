@@ -37,6 +37,21 @@ class Purchase {
   number!: number & Opt;
 }
 
+@Entity({ inheritance: 'tpt' })
+abstract class Vehicle {
+  @PrimaryKey({ type: 'integer', sequence: { startWith: 100 } })
+  id!: number;
+
+  @Property({ type: 'string' })
+  name!: string;
+}
+
+@Entity()
+class Car extends Vehicle {
+  @Property({ type: 'integer' })
+  doors!: number;
+}
+
 async function bootstrap(entities: any[]) {
   const orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
@@ -125,6 +140,22 @@ test('clear() resets a non-PK autoincrement column', async () => {
   await expect(insert()).resolves.toEqual([500, 501]);
   await orm.schema.clear();
   await expect(insert()).resolves.toEqual([500, 501]);
+
+  await orm.close(true);
+});
+
+test('clear() reseeds only the root table of a TPT hierarchy', async () => {
+  const orm = await bootstrap([Vehicle, Car]);
+  const insert = async () => {
+    const em = orm.em.fork();
+    const car = em.create(Car, { name: 'car', doors: 4 });
+    await em.flush();
+    return car.id;
+  };
+
+  await expect(insert()).resolves.toBe(100);
+  await orm.schema.clear();
+  await expect(insert()).resolves.toBe(100);
 
   await orm.close(true);
 });
