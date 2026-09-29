@@ -628,11 +628,7 @@ export abstract class SchemaHelper {
       ret.push(this.createForeignKey(diff.toTable, foreignKey));
     }
 
-    for (const index of Object.values(diff.addedIndexes)) {
-      ret.push(this.createIndex(index, diff.toTable));
-    }
-
-    for (const index of Object.values(diff.changedIndexes)) {
+    for (const index of [...Object.values(diff.addedIndexes), ...Object.values(diff.changedIndexes)]) {
       const addedColumn = diff.addedColumns[index.columnNames[0]];
 
       // an added autoincrement PK column already declares the primary key inline

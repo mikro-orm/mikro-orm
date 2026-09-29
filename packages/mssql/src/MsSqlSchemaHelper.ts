@@ -1027,7 +1027,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
 
   override createIndex(index: IndexDef, table: DatabaseTable, createPrimary = false): string {
     if (index.primary) {
-      return '';
+      return createPrimary ? super.createIndex(index, table, true) : '';
     }
 
     if (index.expression) {
