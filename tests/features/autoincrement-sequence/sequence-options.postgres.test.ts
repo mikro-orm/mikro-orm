@@ -76,6 +76,15 @@ class Coupon {
   code!: string;
 }
 
+@Entity({ tableName: 'line' })
+class Line {
+  @PrimaryKey({ autoincrement: true, sequence: { startWith: 100 } })
+  id!: number;
+
+  @PrimaryKey()
+  tenant!: number;
+}
+
 async function bootstrap(entities: any[]) {
   const orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
@@ -245,6 +254,24 @@ test('the options apply to an autoincrement primary key added to an existing tab
   await expect(
     orm.em.getConnection().execute(`select contype from pg_constraint where conrelid = 'coupon'::regclass`),
   ).resolves.toEqual([{ contype: 'p' }]);
+
+  await orm.close(true);
+});
+
+test('the options apply to an autoincrement column of a composite primary key', async () => {
+  const orm = await bootstrap([Line]);
+  const insert = async () => {
+    const em = orm.em.fork();
+    const line = em.create(Line, { tenant: 1 });
+    await em.flush();
+    return line.id;
+  };
+
+  await expect(insert()).resolves.toBe(100);
+  await orm.schema.clear();
+  await expect(insert()).resolves.toBe(100);
+  // the database is shared with the other tests, only the `line` table matters here
+  await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.not.toContain('"line"');
 
   await orm.close(true);
 });

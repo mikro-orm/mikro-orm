@@ -193,11 +193,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   override createTable(table: DatabaseTable, alter?: boolean): string[] {
     const partitioning = table.getPartitioning();
     const [createTable, ...rest] = super.createTable(table, alter);
-    const compositePK = table.getPrimaryKey()?.composite;
     // `serial` columns can't declare sequence options inline, so alter the implicit sequence right after creating the table
     const sequences = table
       .getColumns()
-      .filter(column => column.autoincrement && !column.generated && !compositePK && this.getSequenceOptionsSQL(column))
+      .filter(column => column.autoincrement && !column.generated && this.getSequenceOptionsSQL(column))
       .map(column => {
         const sequence = `pg_get_serial_sequence(${this.platform.quoteValue(table.getQuotedName())}, ${this.platform.quoteValue(column.name)})`;
         return `do $$ begin execute format('alter sequence %s ${this.getSequenceOptionsSQL(column)} restart', ${sequence}); end $$`;
