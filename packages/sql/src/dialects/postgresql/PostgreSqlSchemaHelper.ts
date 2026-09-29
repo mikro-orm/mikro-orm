@@ -192,12 +192,21 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   override createTable(table: DatabaseTable, alter?: boolean): string[] {
     const partitioning = table.getPartitioning();
+    const [createTable, ...rest] = super.createTable(table, alter);
+    const compositePK = table.getPrimaryKey()?.composite;
+    // `serial` columns can't declare sequence options inline, so alter the implicit sequence right after creating the table
+    const sequences = table
+      .getColumns()
+      .filter(column => column.autoincrement && !column.generated && !compositePK && this.getSequenceOptionsSQL(column))
+      .map(column => {
+        const sequence = `pg_get_serial_sequence(${this.platform.quoteValue(table.getQuotedName())}, ${this.platform.quoteValue(column.name)})`;
+        return `do $$ begin execute format('alter sequence %s ${this.getSequenceOptionsSQL(column)} restart', ${sequence}); end $$`;
+      });
 
     if (!partitioning) {
-      return super.createTable(table, alter);
+      return [createTable, ...sequences, ...rest];
     }
 
-    const [createTable, ...rest] = super.createTable(table, alter);
     const partitions = partitioning.partitions.map(partition => {
       const partitionName = this.quote(this.getTableName(partition.name, partition.schema ?? table.schema));
       return `create table ${partitionName} partition of ${table.getQuotedName()} ${partition.bound}`;
@@ -208,7 +217,18 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     // regex replacement tokens like `$$`, `$&`, or `$1` inside user-supplied expressions (e.g., a
     // callback that returns a dollar-quoted literal) are not interpreted as back-references.
     const spliced = `${createTable.slice(0, -1)} partition by ${partitioning.definition};`;
-    return [spliced, ...rest, ...partitions];
+    return [spliced, ...sequences, ...rest, ...partitions];
+  }
+
+  override getResetSequenceSQL(
+    tableName: string,
+    schemaName: string | undefined,
+    columnName: string,
+    startWith: number,
+  ): string {
+    const table = this.platform.quoteValue(this.quote(this.getTableName(tableName, schemaName)));
+    // `truncate … restart identity` goes back to the start the sequence was created with, which the metadata may not match
+    return `select setval(pg_get_serial_sequence(${table}, ${this.platform.quoteValue(columnName)}), ${startWith}, false)`;
   }
 
   override dropMaterializedViewIfExists(name: string, schema?: string): string {
@@ -626,7 +646,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       const length = this.inferLengthFromColumnType(type) === -1 ? -1 : col.length;
       // a descending sequence starts at -1 by default
       const defaultIdentityStart = col.identity_increment?.startsWith('-') ? '-1' : '1';
-      // read back non-default identity options, so `identity (start with 1000)` does not diff against plain `identity`
+      // read back non-default identity options, so the entity generator keeps e.g. `identity (start with 1000)`
       const identityOptions = [
         col.identity_start !== defaultIdentityStart && `start with ${col.identity_start}`,
         col.identity_increment !== '1' && `increment by ${col.identity_increment}`,
@@ -1441,10 +1461,16 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         }
       }
 
-      if (column.generated?.startsWith('by default as identity')) {
-        columnType += ` generated ${column.generated}`;
-      } else if (column.generated) {
-        columnType += ` generated always as ${column.generated}`;
+      const sequenceOptions = this.getSequenceOptionsSQL(column);
+      const generated =
+        sequenceOptions && /^(by default as )?identity$/.test(column.generated ?? '')
+          ? `${column.generated} (${sequenceOptions})`
+          : column.generated;
+
+      if (generated?.startsWith('by default as identity')) {
+        columnType += ` generated ${generated}`;
+      } else if (generated) {
+        columnType += ` generated always as ${generated}`;
       }
 
       col.push(columnType);

@@ -206,6 +206,20 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
           .withSchema(schema)
           .truncate()
           .execute();
+
+        for (const prop of meta.props.filter(prop => prop.autoincrement && prop.sequence?.startWith != null)) {
+          const schemaName = this.getSchemaName(meta, { schema });
+          const sql = this.helper.getResetSequenceSQL(
+            meta.tableName,
+            schemaName,
+            prop.fieldNames[0],
+            prop.sequence!.startWith!,
+          );
+
+          if (sql) {
+            await this.execute(sql, { ctx: this.em?.getTransactionContext() });
+          }
+        }
       } catch (e) {
         if (this.platform.getExceptionConverter().convertException(e as Error) instanceof TableNotFoundException) {
           continue;

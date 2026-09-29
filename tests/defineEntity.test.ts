@@ -1641,6 +1641,7 @@ describe('PropertyOptionsBuilder', () => {
         extra: p.string().extra('VIRTUAL'),
         ignoreChanges: p.string().ignoreSchemaChanges('type', 'extra', 'default'),
         collated: p.string().collation('utf8mb4_unicode_ci'),
+        counter: p.integer().autoincrement().sequence({ startWith: 100, incrementBy: 2 }),
       }),
     });
 
@@ -1660,6 +1661,7 @@ describe('PropertyOptionsBuilder', () => {
         extra: { type: types.string, extra: 'VIRTUAL' },
         ignoreChanges: { type: types.string, ignoreSchemaChanges: ['type', 'extra', 'default'] },
         collated: { type: types.string, collation: 'utf8mb4_unicode_ci' },
+        counter: { type: types.integer, autoincrement: true, sequence: { startWith: 100, incrementBy: 2 } },
       },
     });
 

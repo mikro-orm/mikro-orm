@@ -20,6 +20,7 @@ import type {
   RawQueryFragment,
   RoutineIgnoreField,
   Scalar,
+  SequenceOptions,
   Type,
 } from '@mikro-orm/core';
 import type { JoinType, QueryType } from './query/enums.js';
@@ -65,6 +66,8 @@ export interface Column {
   mappedType: Type<unknown>;
   unsigned?: boolean;
   autoincrement?: boolean;
+  /** applied only when the table is created, never diffed */
+  sequence?: SequenceOptions;
   nullable?: boolean;
   length?: number;
   precision?: number;

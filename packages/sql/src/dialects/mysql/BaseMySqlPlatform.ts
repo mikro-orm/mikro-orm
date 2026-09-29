@@ -127,6 +127,10 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
+  override supportsAutoincrementIncrement(): boolean {
+    return false;
+  }
+
   /** MySQL/MariaDB identifier limit. */
   override getMaxIdentifierLength(): number {
     return 64;

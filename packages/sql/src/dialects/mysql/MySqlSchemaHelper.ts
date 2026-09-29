@@ -77,6 +77,15 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return 'set foreign_key_checks = 1;';
   }
 
+  override getResetSequenceSQL(
+    tableName: string,
+    schemaName: string | undefined,
+    columnName: string,
+    startWith: number,
+  ): string {
+    return `alter table ${this.quote(this.getTableName(tableName, schemaName))} auto_increment = ${startWith}`;
+  }
+
   override finalizeTable(table: DatabaseTable, charset: string, collate?: string): string {
     let sql = ` default character set ${charset}`;
 
@@ -85,6 +94,11 @@ export class MySqlSchemaHelper extends SchemaHelper {
     }
 
     sql += ' engine = InnoDB';
+    const startWith = table.getColumns().find(column => column.autoincrement)?.sequence?.startWith;
+
+    if (startWith != null) {
+      sql += ` auto_increment = ${startWith}`;
+    }
 
     if (table.comment) {
       sql += ` comment = ${this.platform.quoteValue(table.comment)}`;

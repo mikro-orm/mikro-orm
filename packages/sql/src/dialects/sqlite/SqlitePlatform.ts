@@ -35,6 +35,10 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return false;
   }
 
+  override supportsAutoincrementIncrement(): boolean {
+    return false;
+  }
+
   override getCurrentTimestampSQL(length: number): string {
     return `(strftime('%s', 'now') * 1000)`;
   }

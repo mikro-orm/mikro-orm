@@ -129,6 +129,25 @@ export abstract class SchemaHelper {
     return [];
   }
 
+  /** Returns SQL that moves the autoincrement counter back to `sequence.startWith` after `clear()` truncated the table. */
+  getResetSequenceSQL(
+    tableName: string,
+    schemaName: string | undefined,
+    columnName: string,
+    startWith: number,
+  ): string {
+    return '';
+  }
+
+  /** Renders the `start with … increment by …` clause for the `sequence` option of an autoincrement column. */
+  protected getSequenceOptionsSQL(column: Column): string {
+    const { startWith, incrementBy } = column.sequence ?? {};
+
+    return [startWith != null && `start with ${startWith}`, incrementBy != null && `increment by ${incrementBy}`]
+      .filter(Boolean)
+      .join(' ');
+  }
+
   supportsSchemaConstraints(): boolean {
     return true;
   }

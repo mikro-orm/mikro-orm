@@ -10,6 +10,7 @@ import type {
   OneToOneOptions,
   ManyToManyOptions,
   IndexColumnOptions,
+  SequenceOptions,
 } from '../metadata/types.js';
 import type {
   AnyString,
@@ -171,6 +172,7 @@ export interface PropertyChain<in out Value, in out Options> {
   unique(unique?: boolean): PropertyChain<Value, Options>;
   comment(comment: string): PropertyChain<Value, Options>;
   collation(collation: string): PropertyChain<Value, Options>;
+  sequence(sequence: SequenceOptions): PropertyChain<Value, Options>;
   accessor(accessor?: string | boolean): PropertyChain<Value, Options>;
 
   // Kind-restricted methods — return type resolves to `never` on wrong kind, preventing misuse.
@@ -828,6 +830,14 @@ export class UniversalPropertyOptionsBuilder<
    */
   collation(collation: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ collation });
+  }
+
+  /**
+   * Set the start value and increment of an autoincrement column. (SQL only)
+   * Applied only when the table is created (and by `orm.schema.clear()`), never diffed by the schema generator.
+   */
+  sequence(sequence: SequenceOptions): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+    return this.assignOptions({ sequence });
   }
 
   /** mysql only */

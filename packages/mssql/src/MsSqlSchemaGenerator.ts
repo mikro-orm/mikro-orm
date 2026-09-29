@@ -35,14 +35,21 @@ export class MsSqlSchemaGenerator extends SchemaGenerator {
 
     // https://stackoverflow.com/questions/253849/cannot-truncate-table-because-it-is-being-referenced-by-a-foreign-key-constraint
     for (const meta of this.getOrderedMetadataForClear(options?.schema).reverse()) {
-      const res = await this.driver.nativeDelete(meta.class, {}, options);
+      await this.driver.nativeDelete(meta.class, {}, options);
 
-      // a TPT child table has no identity of its own, its PK references the parent
-      if (!meta.tptParent && meta.getPrimaryProps().some(pk => pk.autoincrement)) {
+      // a table has at most one identity column: a TPT child's PK references the parent instead, and a non-PK one is only reseeded when it declares `sequence`
+      const props = meta.tptParent ? (meta.ownProps ?? []) : meta.props;
+      const identity = props.find(prop => prop.autoincrement && (prop.primary ? !meta.tptParent : !!prop.sequence));
+
+      if (identity) {
         const tableName = this.driver.getTableName(meta, { schema: options?.schema }, false);
-        await this.execute(`dbcc checkident ('${tableName}', reseed, ${res.affectedRows > 0 ? 0 : 1})`, {
-          ctx: this.em?.getTransactionContext(),
-        });
+        const startWith = identity.sequence?.startWith ?? 1;
+        // once the identity was used (`last_value` is set), the next value is the reseed value plus the table's actual increment
+        const lastValue = `(select last_value from sys.identity_columns where object_id = object_id('${tableName}'))`;
+        await this.execute(
+          `declare @reseed bigint = case when ${lastValue} is null then ${startWith} else ${startWith} - ident_incr('${tableName}') end; dbcc checkident ('${tableName}', reseed, @reseed)`,
+          { ctx: this.em?.getTransactionContext() },
+        );
       }
     }
 

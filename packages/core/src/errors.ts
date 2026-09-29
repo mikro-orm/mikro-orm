@@ -562,6 +562,20 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     );
   }
 
+  /** Thrown when the `sequence` option is declared on a property that is not autoincrement. */
+  static sequenceWithoutAutoincrement(meta: EntityMetadata, prop: EntityProperty): MetadataError {
+    return MetadataError.fromMessage(meta, prop, `defines the 'sequence' option, but is not an autoincrement property`);
+  }
+
+  /** Thrown when `sequence.incrementBy` is declared on a platform without a per-column increment. */
+  static sequenceIncrementNotSupported(meta: EntityMetadata, prop: EntityProperty, platform: string): MetadataError {
+    return MetadataError.fromMessage(
+      meta,
+      prop,
+      `defines 'sequence.incrementBy', but ${platform} does not support a per-column increment`,
+    );
+  }
+
   /** Thrown when row level security is declared on a non-root entity of an STI hierarchy. */
   static rowLevelSecurityOnNonRootStiEntity(meta: EntityMetadata): MetadataError {
     return new MetadataError(

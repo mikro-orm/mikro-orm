@@ -217,6 +217,12 @@ export interface PropertyOptions<Owner> {
    */
   autoincrement?: boolean;
   /**
+   * Start value and increment of an autoincrement column. (SQL only)
+   * Applied only when the table is created (and by `orm.schema.clear()`), never diffed by the schema generator.
+   * `incrementBy` is not supported on MySQL, MariaDB and SQLite.
+   */
+  sequence?: SequenceOptions;
+  /**
    * Add the property to the `returning` clause of inserts, updates and upserts, reloading the database value into the entity.
    */
   returning?: boolean;
@@ -756,6 +762,13 @@ export interface EnumOptions<T> extends PropertyOptions<T> {
   array?: boolean;
   /** for postgres, by default it uses text column with check constraint */
   nativeEnumName?: string;
+}
+
+export interface SequenceOptions {
+  /** The first value the autoincrement column generates. */
+  startWith?: number;
+  /** The step between generated values. Not supported on MySQL, MariaDB and SQLite. */
+  incrementBy?: number;
 }
 
 export interface PrimaryKeyOptions<T> extends PropertyOptions<T> {}

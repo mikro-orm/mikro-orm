@@ -970,6 +970,11 @@ export abstract class Platform {
     return true;
   }
 
+  /** Whether autoincrement columns support a per-column increment (`sequence.incrementBy`). */
+  supportsAutoincrementIncrement(): boolean {
+    return true;
+  }
+
   /** Whether the platform supports row level security (PostgreSQL). */
   supportsRowLevelSecurity(): boolean {
     return false;
@@ -994,6 +999,20 @@ export abstract class Platform {
       throw new MetadataError(
         `Entity ${meta.className} uses partitionBy, but ${this.constructor.name} does not support partitioned tables`,
       );
+    }
+
+    for (const prop of Object.values(meta.properties)) {
+      if (!prop.sequence) {
+        continue;
+      }
+
+      if (!prop.autoincrement) {
+        throw MetadataError.sequenceWithoutAutoincrement(meta, prop);
+      }
+
+      if (prop.sequence.incrementBy != null && !this.supportsAutoincrementIncrement()) {
+        throw MetadataError.sequenceIncrementNotSupported(meta, prop, this.constructor.name);
+      }
     }
 
     const declaresRls = meta.policies.length > 0 || !!meta.rowLevelSecurity;

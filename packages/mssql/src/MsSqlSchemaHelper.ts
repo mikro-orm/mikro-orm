@@ -891,10 +891,11 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     }
 
     Utils.runIfNotEmpty(() => col.push(this.getCollateSQL(column.collation!)), column.collation);
+    const { startWith = 1, incrementBy = 1 } = column.sequence ?? {};
     // `IDENTITY(1,1)` is rejected inside `ALTER COLUMN`, so it must only be emitted when the
     // change actually involves the identity attribute or is a fresh column (no `changedProperties`).
     Utils.runIfNotEmpty(
-      () => col.push('identity(1,1)'),
+      () => col.push(`identity(${startWith},${incrementBy})`),
       column.autoincrement &&
         (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type')),
     );
