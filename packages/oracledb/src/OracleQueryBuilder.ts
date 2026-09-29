@@ -96,7 +96,11 @@ export class OracleQueryBuilder<
       const returningProps = meta.hydrateProps
         .filter(
           prop =>
-            prop.returning || (prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw)),
+            prop.returning || (prop.persist !== false && (prop.autoincrement || prop.generated || prop.defaultRaw)),
+        )
+        // a TPT table can only return its own columns
+        .filter(
+          prop => meta.inheritanceType !== 'tpt' || prop.primary || meta.ownProps!.some(p => p.name === prop.name),
         )
         .filter(prop => !(prop.fieldNames[0] in arr[0]) || isRaw(arr[0][prop.fieldNames[0]]));
 
