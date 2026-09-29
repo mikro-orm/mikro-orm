@@ -130,6 +130,7 @@ export abstract class SchemaHelper {
   }
 
   /** Returns SQL that moves the autoincrement counter back to `sequence.startWith` after `clear()` truncated the table. */
+  /* v8 ignore next */
   getResetSequenceSQL(
     tableName: string,
     schemaName: string | undefined,
