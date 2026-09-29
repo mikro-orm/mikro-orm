@@ -77,11 +77,8 @@ test('clear() resets a non-PK autoincrement column', async () => {
   const orm = await bootstrap([Ticket, Purchase]);
   const insert = async () => {
     const em = orm.em.fork();
-    em.create(Purchase, { id: 1 });
-    em.create(Purchase, { id: 2 });
+    const purchases = [em.create(Purchase, { id: 1 }), em.create(Purchase, { id: 2 })];
     await em.flush();
-    // oracle does not return non-PK identity values from inserts, so read them back
-    const purchases = await orm.em.fork().find(Purchase, {}, { orderBy: { id: 1 } });
     return purchases.map(p => p.number);
   };
 
