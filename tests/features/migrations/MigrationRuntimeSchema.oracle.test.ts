@@ -36,7 +36,7 @@ describe('migrations with runtime schema (oracle)', () => {
 
   const cleanup = async () => {
     await orm.em.execute(
-      `begin for rec in (select owner, table_name from all_tables where owner in ('n1', 'mikro_orm_test_multi_schemas')) loop execute immediate 'drop table "' || rec.owner || '"."' || rec.table_name || '" cascade constraints'; end loop; end;`,
+      `begin for rec in (select owner, table_name from all_tables where owner in ('mig_tenant', 'mikro_orm_test_migration_runtime_schema')) loop execute immediate 'drop table "' || rec.owner || '"."' || rec.table_name || '" cascade constraints'; end loop; end;`,
     );
   };
 
@@ -44,7 +44,7 @@ describe('migrations with runtime schema (oracle)', () => {
     orm = await MikroORM.init({
       driver: OracleDriver,
       entities: [Article],
-      dbName: 'mikro_orm_test_multi_schemas',
+      dbName: 'mikro_orm_test_migration_runtime_schema',
       password: 'oracle123',
       schemaGenerator: { managementDbName: 'system', tableSpace: 'mikro_orm' },
       extensions: [Migrator],
@@ -58,6 +58,9 @@ describe('migrations with runtime schema (oracle)', () => {
       },
     });
 
+    // own connection user and tenant schema, so parallel oracle tests never drop each other's tables
+    await orm.schema.ensureDatabase();
+    await orm.schema.createNamespace('mig_tenant');
     await cleanup();
   });
 
@@ -67,30 +70,30 @@ describe('migrations with runtime schema (oracle)', () => {
   });
 
   test('runs all pending migrations in the target Oracle schema via ALTER SESSION', async () => {
-    await orm.migrator.up({ schema: 'n1' });
+    await orm.migrator.up({ schema: 'mig_tenant' });
 
     const [tables] = await orm.em
       .getConnection()
       .execute<{ c: number }[]>(
-        `select count(*) as c from all_tables where owner = 'n1' and table_name in ('article', 'mikro_orm_migrations')`,
+        `select count(*) as c from all_tables where owner = 'mig_tenant' and table_name in ('article', 'mikro_orm_migrations')`,
       );
     expect(Number(tables.c)).toBe(2);
 
     const [cols] = await orm.em
       .getConnection()
       .execute<{ c: number }[]>(
-        `select count(*) as c from all_tab_columns where owner = 'n1' and table_name = 'article'`,
+        `select count(*) as c from all_tab_columns where owner = 'mig_tenant' and table_name = 'article'`,
       );
     expect(Number(cols.c)).toBe(3);
 
-    const executed = await orm.migrator.getExecuted({ schema: 'n1' });
+    const executed = await orm.migrator.getExecuted({ schema: 'mig_tenant' });
     expect(executed.map(r => r.name)).toEqual(['CreateArticleMigration', 'AddViewsColumnMigration']);
   });
 
   test('second up({ schema }) against the same tenant is a no-op', async () => {
-    await expect(orm.migrator.up({ schema: 'n1' })).resolves.not.toThrow();
+    await expect(orm.migrator.up({ schema: 'mig_tenant' })).resolves.not.toThrow();
 
-    const pending = await orm.migrator.getPending({ schema: 'n1' });
+    const pending = await orm.migrator.getPending({ schema: 'mig_tenant' });
     expect(pending).toHaveLength(0);
   });
 
@@ -98,13 +101,13 @@ describe('migrations with runtime schema (oracle)', () => {
     const [{ s }] = await orm.em
       .getConnection()
       .execute<{ s: string }[]>(`select sys_context('USERENV', 'CURRENT_SCHEMA') as s from dual`);
-    expect(s?.toLowerCase()).toBe('mikro_orm_test_multi_schemas');
+    expect(s?.toLowerCase()).toBe('mikro_orm_test_migration_runtime_schema');
   });
 
   test('down reverts one step in the target schema', async () => {
-    await orm.migrator.down({ schema: 'n1' });
+    await orm.migrator.down({ schema: 'mig_tenant' });
 
-    const executed = await orm.migrator.getExecuted({ schema: 'n1' });
+    const executed = await orm.migrator.getExecuted({ schema: 'mig_tenant' });
     expect(executed.map(r => r.name)).toEqual(['CreateArticleMigration']);
   });
 });
