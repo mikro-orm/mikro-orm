@@ -242,6 +242,9 @@ test('the options apply to an autoincrement primary key added to an existing tab
   await em.flush();
   const coupons = await orm.em.fork().find(Coupon, {}, { orderBy: { id: 1 } });
   expect(coupons.map(c => c.id)).toEqual([100, 101, 102]);
+  await expect(
+    orm.em.getConnection().execute(`select contype from pg_constraint where conrelid = 'coupon'::regclass`),
+  ).resolves.toEqual([{ contype: 'p' }]);
 
   await orm.close(true);
 });

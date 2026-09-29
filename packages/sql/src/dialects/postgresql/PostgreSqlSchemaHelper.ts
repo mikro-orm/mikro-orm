@@ -1706,6 +1706,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       before.push(`create sequence ${seqName} ${sequenceOptions}`);
       after.push(`alter sequence ${seqName} owned by ${table.getQuotedName()}.${this.quote(column.name)}`);
 
+      // the expanded column has no inline `primary key`, which `alterTable` expects from an added autoincrement PK
+      if (column.primary && !this.hasNonDefaultPrimaryKeyName(table)) {
+        after.push(`alter table ${table.getQuotedName()} add primary key (${this.quote(column.name)})`);
+      }
+
       return {
         ...column,
         type: column.mappedType.getColumnType({ autoincrement: false } as EntityProperty, this.platform),
