@@ -37,7 +37,8 @@ export class MsSqlSchemaGenerator extends SchemaGenerator {
     for (const meta of this.getOrderedMetadataForClear(options?.schema).reverse()) {
       const res = await this.driver.nativeDelete(meta.class, {}, options);
 
-      if (meta.getPrimaryProps().some(pk => pk.autoincrement)) {
+      // a TPT child table has no identity of its own, its PK references the parent
+      if (!meta.tptParent && meta.getPrimaryProps().some(pk => pk.autoincrement)) {
         const tableName = this.driver.getTableName(meta, { schema: options?.schema }, false);
         await this.execute(`dbcc checkident ('${tableName}', reseed, ${res.affectedRows > 0 ? 0 : 1})`, {
           ctx: this.em?.getTransactionContext(),
