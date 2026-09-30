@@ -5,6 +5,7 @@ import {
   type Options,
   type Transaction,
   type RawQueryFragment,
+  type SequenceOptions,
   Utils,
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
@@ -138,6 +139,27 @@ export abstract class SchemaHelper {
     startWith: number,
   ): string {
     return '';
+  }
+
+  /** Maps the introspected start and increment of an autoincrement column to its `sequence` option, omitting defaults. */
+  protected getIntrospectedSequence(start: unknown, increment: unknown): SequenceOptions | undefined {
+    if (start == null) {
+      return undefined;
+    }
+
+    const incrementBy = Number(increment ?? 1);
+    const startWith = Number(start);
+    const sequence: SequenceOptions = {};
+
+    if (startWith !== (incrementBy < 0 ? -1 : 1)) {
+      sequence.startWith = startWith;
+    }
+
+    if (incrementBy !== 1) {
+      sequence.incrementBy = incrementBy;
+    }
+
+    return Utils.hasObjectKeys(sequence) ? sequence : undefined;
   }
 
   /** Renders the `start with … increment by …` clause for the `sequence` option of an autoincrement column. */

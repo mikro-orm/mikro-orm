@@ -587,15 +587,16 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       data_type,
       is_identity,
       identity_generation,
-      identity_start,
-      identity_increment,
       generation_expression,
       pg_catalog.col_description(pgc.oid, cols.ordinal_position::int) column_comment,
-      coll.collname as collation_name
+      coll.collname as collation_name,
+      seq.seqstart as sequence_start,
+      seq.seqincrement as sequence_increment
       from information_schema.columns cols
       join pg_class pgc on cols.table_name = pgc.relname
       join pg_attribute pga on pgc.oid = pga.attrelid and cols.column_name = pga.attname
       left join pg_collation coll on pga.attcollation = coll.oid and coll.collname <> 'default'
+      left join pg_sequence seq on seq.seqrelid = pg_get_serial_sequence(quote_ident(cols.table_schema) || '.' || quote_ident(cols.table_name), cols.column_name)::regclass
       where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(table_schema = ${this.platform.quoteValue(schema)} and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}))`).join(' or ')})
       order by ordinal_position`;
 
@@ -649,14 +650,6 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       }
 
       const length = this.inferLengthFromColumnType(type) === -1 ? -1 : col.length;
-      // a descending sequence starts at -1 by default
-      const defaultIdentityStart = col.identity_increment?.startsWith('-') ? '-1' : '1';
-      // read back non-default identity options, so the entity generator keeps e.g. `identity (start with 1000)`
-      const identityOptions = [
-        col.identity_start !== defaultIdentityStart && `start with ${col.identity_start}`,
-        col.identity_increment !== '1' && `increment by ${col.identity_increment}`,
-      ].filter(Boolean);
-      const identitySuffix = identityOptions.length > 0 ? ` (${identityOptions.join(' ')})` : '';
 
       const column: Column = {
         name: col.column_name,
@@ -669,9 +662,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         default: str(this.normalizeDefaultValue(col.column_default, col.length)),
         unsigned: increments,
         autoincrement: increments,
+        sequence: increments ? this.getIntrospectedSequence(col.sequence_start, col.sequence_increment) : undefined,
         generated:
           col.is_identity === 'YES'
-            ? (col.identity_generation === 'BY DEFAULT' ? 'by default as identity' : 'identity') + identitySuffix
+            ? col.identity_generation === 'BY DEFAULT'
+              ? 'by default as identity'
+              : 'identity'
             : col.generation_expression
               ? col.generation_expression + ' stored'
               : undefined,

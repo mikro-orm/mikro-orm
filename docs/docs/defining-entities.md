@@ -2717,6 +2717,10 @@ The options are applied when the schema generator creates the column, either wit
 
 MySQL, MariaDB and SQLite have no per-column increment, so `incrementBy` throws a metadata validation error there. Combining `sequence` with identity options written in the `generated` option (e.g. `generated: 'identity (start with 10)'`) throws as well, use only one of them.
 
+With `defineEntity`, a number is a shorthand for the start value, so `p.integer().primary().sequence(1000)` is the same as `.sequence({ startWith: 1000 })`.
+
+The [entity generator](./entity-generator.md) reads the options back from PostgreSQL, MSSQL and Oracle. MySQL, MariaDB and SQLite only keep the next counter value, not the declared start, so it can't be generated there.
+
 The schema generator never diffs these options. Changing them on an existing table produces no migration, as moving a live counter is a data change that belongs to an explicit migration (e.g. `alter sequence … restart with …` or `alter table … auto_increment = …`).
 
 ## Examples of entity definition with various primary keys

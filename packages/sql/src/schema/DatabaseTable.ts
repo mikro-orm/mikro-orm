@@ -1078,6 +1078,7 @@ export class DatabaseTable {
       nullable: column.nullable,
       primary: column.primary && persist,
       autoincrement: column.autoincrement,
+      sequence: column.sequence,
       fieldName: column.name,
       unsigned: column.unsigned,
       length: column.length,
