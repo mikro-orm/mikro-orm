@@ -661,7 +661,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       }
 
       // same boundary an empty line creates, for statements that have to start their own batch
-      if (groups[i]?.length > 0 && this.startsBatch(stmt)) {
+      if (groups[i]?.length > 0 && this.startsBatch(stmt, groups[i].at(-1)!)) {
         i++;
       }
 
@@ -714,8 +714,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     return parts;
   }
 
-  /** Whether the statement has to be the first one in a query batch, e.g. `create trigger` on MSSQL. */
-  protected startsBatch(_statement: string): boolean {
+  /** Whether the statement has to be the first one in a query batch, e.g. `create trigger` on MSSQL. `previous` is the line before it in the current batch. */
+  protected startsBatch(_statement: string, _previous: string): boolean {
     return false;
   }
 
