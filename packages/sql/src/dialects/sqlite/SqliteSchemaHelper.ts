@@ -225,6 +225,17 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
     const ret: string[] = [];
     this.append(ret, sql);
+    const startWith = columns.find(column => column.autoincrement)?.sequence?.startWith;
+
+    if (startWith != null) {
+      // a table rebuild renames the counter row of the temp table over, so only seed it when missing
+      const sequenceTable = this.quote(this.getTableName('sqlite_sequence', table.schema));
+      const name = this.platform.quoteValue(table.name);
+      this.append(
+        ret,
+        `insert into ${sequenceTable} (name, seq) select ${name}, ${startWith - 1} where not exists (select 1 from ${sequenceTable} where name = ${name})`,
+      );
+    }
 
     for (const index of table.getIndexes()) {
       this.append(ret, this.createIndex(index, table));
@@ -235,6 +246,18 @@ export class SqliteSchemaHelper extends SchemaHelper {
     }
 
     return ret;
+  }
+
+  override getResetSequenceSQL(
+    tableName: string,
+    schemaName: string | undefined,
+    columnName: string,
+    startWith: number,
+  ): string {
+    const sequenceTable = this.quote(this.getTableName('sqlite_sequence', schemaName));
+    const name = this.platform.quoteValue(tableName);
+    // the counter row does not exist before the first insert when the table was created without `sequence`
+    return `delete from ${sequenceTable} where name = ${name};\ninsert into ${sequenceTable} (name, seq) values (${name}, ${startWith - 1})`;
   }
 
   override createTableColumn(

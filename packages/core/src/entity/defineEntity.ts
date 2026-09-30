@@ -10,6 +10,7 @@ import type {
   OneToOneOptions,
   ManyToManyOptions,
   IndexColumnOptions,
+  SequenceOptions,
 } from '../metadata/types.js';
 import type {
   AnyString,
@@ -171,6 +172,7 @@ export interface PropertyChain<in out Value, in out Options> {
   unique(unique?: boolean): PropertyChain<Value, Options>;
   comment(comment: string): PropertyChain<Value, Options>;
   collation(collation: string): PropertyChain<Value, Options>;
+  sequence(sequence: SequenceOptions | number): PropertyChain<Value, Options>;
   accessor(accessor?: string | boolean): PropertyChain<Value, Options>;
 
   // Kind-restricted methods — return type resolves to `never` on wrong kind, preventing misuse.
@@ -828,6 +830,17 @@ export class UniversalPropertyOptionsBuilder<
    */
   collation(collation: string): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
     return this.assignOptions({ collation });
+  }
+
+  /**
+   * Set the start value and increment of an autoincrement column. (SQL only)
+   * A number is a shorthand for `{ startWith }`.
+   * Applied only when the column is created (and by `orm.schema.clear()`), never diffed by the schema generator.
+   */
+  sequence(
+    sequence: SequenceOptions | number,
+  ): Pick<UniversalPropertyOptionsBuilder<Value, Options, IncludeKeys>, IncludeKeys> {
+    return this.assignOptions({ sequence: typeof sequence === 'number' ? { startWith: sequence } : sequence });
   }
 
   /** mysql only */

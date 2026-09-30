@@ -255,6 +255,10 @@ When using generated columns, you'll get a perpetual diff on every `SchemaGenera
 
 See the [SQL Generated columns](./defining-entities.md#sql-generated-columns) section for more details.
 
+## Autoincrement start values
+
+The [`sequence` option](./defining-entities.md#autoincrement-start-value-and-increment) of autoincrement columns is applied only when the column is created (with a new table or as an added column), and `orm.schema.clear()` resets the counter back to its `startWith` value. The schema generator never diffs it, so changing it on an existing table produces no migration. Moving a live counter is a data change, so do it in an explicit migration (e.g. `alter sequence … restart with …` or `alter table … auto_increment = …`).
+
 ## Limitations of SQLite
 
 There are limitations of SQLite database because of which it behaves differently than other SQL drivers. Namely, it is not possible to:

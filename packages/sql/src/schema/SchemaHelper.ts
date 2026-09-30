@@ -5,6 +5,7 @@ import {
   type Options,
   type Transaction,
   type RawQueryFragment,
+  type SequenceOptions,
   Utils,
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
@@ -127,6 +128,52 @@ export abstract class SchemaHelper {
 
   appendComments(table: DatabaseTable): string[] {
     return [];
+  }
+
+  /** Returns SQL that moves the autoincrement counter back to `sequence.startWith` after `clear()` truncated the table. */
+  /* v8 ignore next */
+  getResetSequenceSQL(
+    tableName: string,
+    schemaName: string | undefined,
+    columnName: string,
+    startWith: number,
+  ): string {
+    return '';
+  }
+
+  /** Maps the introspected start and increment of an autoincrement column to its `sequence` option, omitting defaults. */
+  protected getIntrospectedSequence(start: unknown, increment: unknown): SequenceOptions | undefined {
+    if (start == null) {
+      return undefined;
+    }
+
+    const incrementBy = Number(increment ?? 1);
+    const startWith = Number(start);
+    const sequence: SequenceOptions = {};
+
+    if (startWith !== (incrementBy < 0 ? -1 : 1)) {
+      sequence.startWith = startWith;
+    }
+
+    if (incrementBy !== 1) {
+      sequence.incrementBy = incrementBy;
+    }
+
+    return Utils.hasObjectKeys(sequence) ? sequence : undefined;
+  }
+
+  /** Renders the `start with … increment by …` clause for the `sequence` option of an autoincrement column. */
+  protected getSequenceOptionsSQL(column: Column): string {
+    const { startWith, incrementBy } = column.sequence ?? {};
+    const descending = incrementBy != null && incrementBy < 0;
+    // a sequence is bounded by 1 (ascending) or -1 (descending) by default, a start beyond that has to move the bound
+    const bound =
+      startWith != null &&
+      (descending ? startWith > -1 && `maxvalue ${startWith}` : startWith < 1 && `minvalue ${startWith}`);
+
+    return [startWith != null && `start with ${startWith}`, incrementBy != null && `increment by ${incrementBy}`, bound]
+      .filter(Boolean)
+      .join(' ');
   }
 
   supportsSchemaConstraints(): boolean {
