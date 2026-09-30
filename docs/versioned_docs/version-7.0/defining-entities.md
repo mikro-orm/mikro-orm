@@ -1733,7 +1733,7 @@ export class User {
   }
 
   set email(email: string) {
-    return this._email;
+    this._email = email;
   }
 }
 ```
@@ -1756,7 +1756,7 @@ export class User {
   }
 
   set email(email: string) {
-    return this._email;
+    this._email = email;
   }
 }
 ```
