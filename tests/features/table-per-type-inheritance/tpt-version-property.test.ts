@@ -149,7 +149,7 @@ describe('TPT inheritance with a version property', () => {
     await orm.em.flush();
     expect(mock.mock.calls[1][0]).toMatch('select `a0`.`id` from `animal` as `a0` where');
     expect(mock.mock.calls[2][0]).toMatch(
-      `update \`animal\` set \`version\` = \`version\` + 1 where \`id\` in (${id1}, ${id2}) returning \`id\`, \`version\``,
+      `update \`animal\` set \`version\` = \`version\` + 1 where (\`id\`, \`version\`) in ((${id1}, 1), (${id2}, 1)) returning \`id\`, \`version\``,
     );
     expect(mock.mock.calls[3][0]).toMatch(
       `update \`dog\` set \`breed\` = case when (\`id\` = ${id1}) then 'labrador' when (\`id\` = ${id2}) then 'labrador' else \`breed\` end where \`id\` in (${id1}, ${id2}) returning \`id\``,

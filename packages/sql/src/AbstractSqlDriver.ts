@@ -21,7 +21,6 @@ import {
   type EntityName,
   type EntityProperty,
   type EntityValue,
-  type FilterKey,
   type FilterQuery,
   type FindByCursorOptions,
   type FindOneOptions,
@@ -1691,12 +1690,23 @@ export abstract class AbstractSqlDriver<
 
     sql += ' where ';
     const pkProps = meta.primaryKeys.concat(...meta.getOwnConcurrencyCheckKeys());
-    const pks = Utils.flatten(pkProps.map(pk => meta.properties[pk].fieldNames));
 
-    const useTupleIn = pks.length <= 1 || this.platform.allowsComparingTuples();
-    const condTemplate = useTupleIn
-      ? `(${pks.map(() => '?').join(', ')})`
-      : `(${pks.map(pk => `${this.platform.quoteIdentifier(pk)} = ?`).join(' and ')})`;
+    // `ChangeSetPersister` adds the version to every condition (or to none) to keep the update optimistic
+    if (
+      meta.ownsVersionProperty() &&
+      where.every(cond => Utils.isPlainObject(cond) && meta.versionProperty in (cond as Dictionary))
+    ) {
+      pkProps.push(meta.versionProperty);
+    }
+
+    const pks = Utils.flatten(pkProps.map(pk => meta.properties[pk].fieldNames));
+    // a date version is compared via `$in` in sqlite (see `convertVersionValue()`), which a tuple cannot express
+    const isIn = (value: unknown): value is { $in: unknown[] } =>
+      Utils.isPlainObject(value) && Array.isArray((value as Dictionary).$in);
+    const useTupleIn =
+      (pks.length <= 1 || this.platform.allowsComparingTuples()) &&
+      !where.some(cond => pkProps.some(pk => isIn((cond as Dictionary)[pk])));
+    const condTemplate = `(${pks.map(() => '?').join(', ')})`;
 
     const conds = where.map(cond => {
       // with multiple PK columns the condition is looked up by property name, so it needs to stay an object
@@ -1705,15 +1715,23 @@ export abstract class AbstractSqlDriver<
       }
 
       if (pks.length > 1) {
+        const parts: string[] = [];
+
         pkProps.forEach(pk => {
-          if (Array.isArray(cond[pk as keyof FilterQuery<T>])) {
-            params.push(...Utils.flatten(cond[pk as FilterKey<T>] as any));
-          } else {
-            params.push(cond[pk as keyof FilterQuery<T>]);
+          const value = cond[pk as keyof FilterQuery<T>] as unknown;
+          const fieldNames = meta.properties[pk].fieldNames;
+
+          if (isIn(value)) {
+            params.push(...value.$in);
+            parts.push(`${this.platform.quoteIdentifier(fieldNames[0])} in (${value.$in.map(() => '?').join(', ')})`);
+            return;
           }
+
+          params.push(...(Array.isArray(value) ? Utils.flatten(value as any) : [value]));
+          parts.push(...fieldNames.map(field => `${this.platform.quoteIdentifier(field)} = ?`));
         });
 
-        return condTemplate;
+        return useTupleIn ? condTemplate : `(${parts.join(' and ')})`;
       }
 
       params.push(cond);

@@ -356,10 +356,22 @@ export class ChangeSetPersister {
     const cond = [] as FilterQuery<T>[];
     const payload = [] as EntityData<T>[];
 
+    // the version goes into the WHERE clause only when every row has one, the same way the single
+    // entity update does, so the batch cannot overwrite a row changed after `checkOptimisticLocks`
+    const versioned = meta.ownsVersionProperty() && changeSets.every(cs => cs.entity[meta.versionProperty] != null);
+
     for (const changeSet of changeSets) {
-      const where = changeSet.getPrimaryKey(true) as FilterQuery<T>;
+      const where = changeSet.getPrimaryKey(true) as Dictionary;
       this.checkConcurrencyKeys(meta, changeSet, where);
-      cond.push(where);
+
+      if (versioned) {
+        where[meta.versionProperty] = this.#platform.convertVersionValue(
+          changeSet.entity[meta.versionProperty] as unknown as Date,
+          meta.properties[meta.versionProperty],
+        );
+      }
+
+      cond.push(where as FilterQuery<T>);
       payload.push(changeSet.payload);
     }
 
@@ -369,6 +381,7 @@ export class ChangeSetPersister {
     // from those to be able to match them with `getSerializedPrimaryKey()` of the entity
     const pkFields = meta.getPrimaryProps().flatMap(prop => prop.fieldNames);
     res.rows?.forEach(item => map.set(Utils.getPrimaryKeyHash(pkFields.map(field => item[field])), item));
+    this.checkOptimisticLocksAffected(meta, changeSets, res, map);
 
     for (const changeSet of changeSets) {
       if (res.rows) {
@@ -531,6 +544,33 @@ export class ChangeSetPersister {
       })!.entity;
       throw OptimisticLockError.lockFailed(entity);
     }
+  }
+
+  /**
+   * The batch counterpart of `checkOptimisticLock()`: a row changed or removed by another transaction
+   * after `checkOptimisticLocks()` no longer matches the WHERE clause of the batch update.
+   */
+  private checkOptimisticLocksAffected<T extends object>(
+    meta: EntityMetadata<T>,
+    changeSets: ChangeSet<T>[],
+    res: QueryResult<T>,
+    returned: Map<string, Dictionary>,
+  ): void {
+    if (
+      (!meta.ownsVersionProperty() && meta.getOwnConcurrencyCheckKeys().length === 0) ||
+      res.affectedRows == null ||
+      res.affectedRows >= changeSets.length
+    ) {
+      return;
+    }
+
+    // only rows coming from `returning`/`output` tell which entity failed, the rest reports the first one
+    const fromDatabase = this.#platform.usesReturningStatement() || this.#platform.usesOutputStatement();
+    const changeSet =
+      (fromDatabase && changeSets.find(cs => !returned.has(helper(cs.entity).getSerializedPrimaryKey()))) ||
+      changeSets[0];
+
+    throw OptimisticLockError.lockFailed(changeSet.entity);
   }
 
   private checkOptimisticLock<T extends object>(

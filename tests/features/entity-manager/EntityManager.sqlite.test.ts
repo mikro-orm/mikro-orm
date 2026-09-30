@@ -1258,7 +1258,7 @@ describe.each(['sqlite', 'libsql', 'node-sqlite', 'sql-js'] as const)('EntityMan
       'select `f0`.`id` from `foo_bar4` as `f0` where ((`f0`.`id` = ? and `f0`.`version` = ?) or (`f0`.`id` = ? and `f0`.`version` = ?))',
     );
     expect(mock.mock.calls[2][0]).toMatch(
-      'update `foo_bar4` set `foo_bar_id` = case when (`id` = ?) then ? else `foo_bar_id` end, `updated_at` = case when (`id` = ?) then ? when (`id` = ?) then ? else `updated_at` end, `version` = `version` + 1 where `id` in (?, ?) returning `id`, `version`',
+      'update `foo_bar4` set `foo_bar_id` = case when (`id` = ?) then ? else `foo_bar_id` end, `updated_at` = case when (`id` = ?) then ? when (`id` = ?) then ? else `updated_at` end, `version` = `version` + 1 where (`id`, `version`) in ((?, ?), (?, ?)) returning `id`, `version`',
     );
     // this was flaky because the second update query might be executed too quickly, so there might be no `updated_at` change
     // expect(mock.mock.calls[3][0]).toMatch('update `foo_bar4` set `foo_bar_id` = ?, `updated_at` = ?, `version` = ? where `id` = ? and `version` = ? returning `version`');
