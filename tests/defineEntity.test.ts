@@ -1621,6 +1621,19 @@ describe('defineEntity', () => {
 });
 
 describe('PropertyOptionsBuilder', () => {
+  it('should accept the start value as a short form of the sequence option', () => {
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: p => ({
+        id: p.integer().primary().sequence(1000),
+        counter: p.integer().autoincrement().sequence({ startWith: 5, incrementBy: 2 }),
+      }),
+    });
+
+    expect(Foo.meta.properties.id.sequence).toEqual({ startWith: 1000 });
+    expect(Foo.meta.properties.counter.sequence).toEqual({ startWith: 5, incrementBy: 2 });
+  });
+
   it('should define complex property options (1)', () => {
     const Foo = defineEntity({
       name: 'Foo',
