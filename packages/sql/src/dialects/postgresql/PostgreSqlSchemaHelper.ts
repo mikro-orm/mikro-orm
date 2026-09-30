@@ -723,7 +723,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       // SchemaHelper.createCheck).
       const m = /^check \(\((.*)\)\)$/is.exec(check.expression);
       const single = m ? null : /^check \((.*)\)$/is.exec(check.expression);
-      const def = m ? m[1].replace(/\(([^()]*)\)::\w+(?:\[\])?/g, '$1') : single ? single[1] : check.expression;
+      const castRe = /\(([^()]*)\)::\w+(?: precision| varying| with(?:out)? time zone)?(?:\[\])?/g;
+      const def = m ? m[1].replace(castRe, '$1') : single ? single[1] : check.expression;
       ret[key].push({
         name: check.name,
         columnName: check.column_name,
