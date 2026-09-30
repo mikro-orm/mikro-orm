@@ -29,6 +29,11 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     );
   }
 
+  /** Ends the batch after a PL/SQL block (e.g. `create trigger ... end;`), so the `;\n` statement split keeps its closing `;`. */
+  protected override startsBatch(_statement: string, previous: string): boolean {
+    return /\bend;$/i.test(previous);
+  }
+
   /**
    * creates new database and connects to it
    */
