@@ -478,6 +478,42 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return `drop trigger if exists ${this.getSchemaQualifiedName(table, trigger.name)}`;
   }
 
+  override triggerRowReference(row: 'new' | 'old', column: string): string {
+    return `${row === 'new' ? 'inserted' : 'deleted'}.${this.quote(column)}`;
+  }
+
+  /** MSSQL has no row variables, so `insert ... values (inserted.x)` becomes `insert ... select inserted.x from inserted`. */
+  override formatTriggerStatement(sql: string, table: DatabaseTable): string {
+    // the affected rows count query would leak a result set from the trigger
+    sql = sql.replace(/; select @@rowcount;$/, '');
+    const usesNew = sql.includes('inserted.[');
+    const usesOld = sql.includes('deleted.[');
+
+    if (!usesNew && !usesOld) {
+      return sql;
+    }
+
+    const match = /^(insert into .+?) values \((.+)\)$/is.exec(sql);
+
+    if (!match) {
+      throw new Error(
+        `MSSQL triggers have no row variables, only single-row insert statements can reference the new/old rows: ${sql}`,
+      );
+    }
+
+    let from = usesNew ? 'inserted' : 'deleted';
+
+    if (usesNew && usesOld) {
+      const on = table
+        .getPrimaryKey()!
+        .columnNames.map(col => `inserted.${this.quote(col)} = deleted.${this.quote(col)}`)
+        .join(' and ');
+      from = `inserted join deleted on ${on}`;
+    }
+
+    return `${match[1]} select ${match[2]} from ${from}`;
+  }
+
   override routineParamReference(name: string): string {
     return `@${name}`;
   }

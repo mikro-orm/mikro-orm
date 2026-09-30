@@ -1139,8 +1139,28 @@ export type CheckCallback<T> = (columns: SchemaColumns<T>, table: SchemaTable) =
 /** Callback for row level security policy expressions. Receives column mappings and table info. */
 export type PolicyCallback<T> = (columns: SchemaColumns<T>, table: SchemaTable) => string | Raw;
 
-/** Callback for trigger body expressions. Receives column mappings and table info. */
-export type TriggerCallback<T> = (columns: Record<PropertyName<T>, string>, table: SchemaTable) => string | Raw;
+/** Column references to a trigger pseudo-row, usable as query builder values or `sql` template params. */
+export type TriggerRowRefs<T> = Record<PropertyName<T>, Raw & symbol>;
+
+/** Context passed to trigger body callbacks. */
+export interface TriggerBodyContext<T, EM = any> {
+  /** The row after the change (`NEW`, or the `inserted` pseudo-table in MSSQL). */
+  new: TriggerRowRefs<T>;
+  /** The row before the change (`OLD`, or the `deleted` pseudo-table in MSSQL). */
+  old: TriggerRowRefs<T>;
+  /** Entity manager of the schema generator, use it to build DML statements via `em.createQueryBuilder()`. */
+  em: EM;
+}
+
+/** A single statement of a trigger body. Query builders (anything with `toRaw()`) are rendered per dialect. */
+export type TriggerStatement = string | Raw | { toRaw(): Raw };
+
+/** Callback for trigger body expressions. Receives column mappings, table info and the pseudo-row references. */
+export type TriggerCallback<T> = (
+  columns: Record<PropertyName<T>, string>,
+  table: SchemaTable,
+  context: TriggerBodyContext<T>,
+) => TriggerStatement | TriggerStatement[];
 
 /**
  * Callback for generated (computed) column expressions. Receives column mappings and table info.
