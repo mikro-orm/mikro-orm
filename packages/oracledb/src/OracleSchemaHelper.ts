@@ -931,6 +931,10 @@ export class OracleSchemaHelper extends SchemaHelper {
     return `drop trigger if exists ${this.getTriggerName(table, trigger)}`;
   }
 
+  override triggerRowReference(row: 'new' | 'old', column: string): string {
+    return `:${row}.${this.quote(column)}`;
+  }
+
   private getTriggerName(table: DatabaseTable, trigger: SqlTriggerDef): string {
     const schema = table.schema === this.platform.getDefaultSchemaName() ? undefined : table.schema;
     return this.quote(schema, trigger.name);

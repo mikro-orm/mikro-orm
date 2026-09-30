@@ -403,7 +403,7 @@ export class NativeQueryBuilder implements Subquery {
     return options;
   }
 
-  returning(fields: (string | RawQueryFragment | [name: string, type: unknown])[]): this {
+  returning(fields?: (string | RawQueryFragment | [name: string, type: unknown])[]): this {
     this.options.returning = fields;
     return this;
   }
