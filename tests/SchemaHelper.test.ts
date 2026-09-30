@@ -202,6 +202,7 @@ describe('SchemaHelper', () => {
       engine: vi.fn(),
       charset: vi.fn(),
       collate: vi.fn(),
+      getColumns: () => [],
     } as any;
     expect(helper.finalizeTable(mock, 'charset', 'collate')).toBe(
       ' default character set charset collate collate engine = InnoDB',
