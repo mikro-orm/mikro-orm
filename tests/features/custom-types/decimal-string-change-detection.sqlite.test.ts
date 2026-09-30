@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/sqlite';
+import { DecimalType, type EntityProperty, MikroORM } from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../../helpers.js';
 
@@ -18,6 +18,9 @@ class Wallet {
 
   @Property({ type: 'decimal', runtimeType: 'number', precision: 38, scale: 18 })
   fee!: number;
+
+  @Property({ type: 'decimal', nullable: true })
+  amount?: string;
 }
 
 let orm: MikroORM;
@@ -104,4 +107,19 @@ test('high precision string decimals are rounded to scale like the database does
   expect(type.compareValues!('-0.0000000000000000001', '0')).toBe(true);
   // other notations fall back to the numeric comparison
   expect(type.compareValues!('1.000000000000000001e0', '1')).toBe(true);
+  expect(type.compareValues!(1 as unknown as string, '1.000000000000000001')).toBe(true);
+
+  const props = orm.getMetadata().get(Wallet).properties;
+  expect(props.amount!.customType!.compareValues!('1.5', '1.50')).toBe(true);
+
+  // a type not bound to a property keeps the numeric comparison
+  const bare = new DecimalType();
+  bare.platform = orm.em.getPlatform();
+  expect(bare.compareValues('1.5', '1.50')).toBe(true);
+  expect(bare.compareValues('1.5', '1.6')).toBe(false);
+
+  // without a scale, high precision values are rounded to integers
+  bare.prop = { precision: 20 } as EntityProperty;
+  expect(bare.compareValues('12345678901234567890.4', '12345678901234567890')).toBe(true);
+  expect(bare.compareValues('12345678901234567891', '12345678901234567890')).toBe(false);
 });
