@@ -29,6 +29,12 @@ class BigTicket {
 }
 
 @Entity()
+class Countdown {
+  @PrimaryKey({ sequence: { incrementBy: -1 } })
+  id!: number;
+}
+
+@Entity()
 class Purchase {
   @PrimaryKey({ autoincrement: false })
   id!: number;
@@ -124,6 +130,25 @@ test('clear() resets a bigint identity beyond the int range', async () => {
   await expect(insert()).resolves.toBe('5000000000');
   await orm.schema.clear();
   await expect(insert()).resolves.toBe('5000000000');
+
+  await orm.close(true);
+});
+
+test('a descending identity starts at -1 by default', async () => {
+  const orm = await bootstrap([Countdown]);
+  const insert = async () => {
+    const em = orm.em.fork();
+    const counters = [em.create(Countdown, {}), em.create(Countdown, {})];
+    await em.flush();
+    return counters.map(c => c.id);
+  };
+
+  const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
+  expect(sql).toContain('[id] int identity(-1,-1) not null');
+
+  await expect(insert()).resolves.toEqual([-1, -2]);
+  await orm.schema.clear();
+  await expect(insert()).resolves.toEqual([-1, -2]);
 
   await orm.close(true);
 });

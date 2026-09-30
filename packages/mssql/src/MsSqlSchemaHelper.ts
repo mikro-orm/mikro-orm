@@ -895,7 +895,8 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     }
 
     Utils.runIfNotEmpty(() => col.push(this.getCollateSQL(column.collation!)), column.collation);
-    const { startWith = 1, incrementBy = 1 } = column.sequence ?? {};
+    // a descending identity starts at -1 by default, same as on the other drivers
+    const { incrementBy = 1, startWith = incrementBy < 0 ? -1 : 1 } = column.sequence ?? {};
     // `IDENTITY(1,1)` is rejected inside `ALTER COLUMN`, so it must only be emitted when the
     // change actually involves the identity attribute or is a fresh column (no `changedProperties`).
     Utils.runIfNotEmpty(

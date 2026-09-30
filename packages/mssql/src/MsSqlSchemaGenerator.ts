@@ -43,7 +43,7 @@ export class MsSqlSchemaGenerator extends SchemaGenerator {
 
       if (identity) {
         const tableName = this.driver.getTableName(meta, { schema: options?.schema }, false);
-        const startWith = identity.sequence?.startWith ?? 1;
+        const { incrementBy = 1, startWith = incrementBy < 0 ? -1 : 1 } = identity.sequence ?? {};
         // once the identity was used (`last_value` is set), the next value is the reseed value plus the table's actual increment
         const lastValue = `(select last_value from sys.identity_columns where object_id = object_id('${tableName}'))`;
         await this.execute(
