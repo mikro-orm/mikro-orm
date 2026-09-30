@@ -545,8 +545,9 @@ export class QueryBuilderHelper {
       return false;
     }
 
-    // when including the opening bracket/paren we consider it complex
-    return !/[{[(]/.exec(re.source);
+    // LIKE can only express edge anchors, `.`, `.*` and escaped dots; anything else (alternation, quantifiers,
+    // classes, other escapes, or `%` and `_` that LIKE would treat as wildcards) needs the regexp operator
+    return /^\^?(?:[^\\^$.*+?|{}[\]()%_]|\\\.|\.\*?)*\$?$/.test(re.source);
   }
 
   getRegExpParam(re: RegExp): string {
