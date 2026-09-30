@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.3](https://github.com/mikro-orm/mikro-orm/compare/v7.2.2...v7.2.3) (2026-09-30)
+
+### Bug Fixes
+
+* **oracle:** introspect primary keys so the schema diff can restore and change them ([#8357](https://github.com/mikro-orm/mikro-orm/issues/8357)) ([1a5c4f0](https://github.com/mikro-orm/mikro-orm/commit/1a5c4f04bab5fbfdb1f207c3470c92e23a687f04))
+* **oracle:** return non-PK autoincrement and generated columns after inserts ([#8359](https://github.com/mikro-orm/mikro-orm/issues/8359)) ([1662688](https://github.com/mikro-orm/mikro-orm/commit/1662688770e65ae87ba481d190fc7f9a46b42e44))
+
+
 ## [7.2.2](https://github.com/mikro-orm/mikro-orm/compare/v7.2.1...v7.2.2) (2026-09-28)
 
 ### Bug Fixes
