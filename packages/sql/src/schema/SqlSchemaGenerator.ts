@@ -206,6 +206,22 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
           .withSchema(schema)
           .truncate()
           .execute();
+
+        // the counters of a TPT child's inherited columns (PK included) belong to the parent table
+        const props = meta.tptParent ? (meta.ownProps ?? []) : meta.props;
+
+        for (const prop of props.filter(prop => prop.autoincrement && prop.sequence?.startWith != null)) {
+          const sql = this.helper.getResetSequenceSQL(
+            meta.tableName,
+            this.getSchemaName(meta, { schema }),
+            prop.fieldNames[0],
+            prop.sequence!.startWith!,
+          );
+
+          if (sql) {
+            await this.execute(sql, { ctx: this.em?.getTransactionContext() });
+          }
+        }
       } catch (e) {
         if (this.platform.getExceptionConverter().convertException(e as Error) instanceof TableNotFoundException) {
           continue;
