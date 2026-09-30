@@ -2,6 +2,20 @@ import { Type } from './Type.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
 
+function normalizeDecimal(value: unknown): string | undefined {
+  const match = typeof value === 'string' ? /^(-?)(\d+)(?:\.(\d+))?$/.exec(value) : null;
+
+  if (!match) {
+    return undefined;
+  }
+
+  const int = match[2].replace(/^0+(?=\d)/, '');
+  const fraction = (match[3] ?? '').replace(/0+$/, '');
+  const sign = match[1] && /[1-9]/.test(int + fraction) ? '-' : '';
+
+  return sign + int + (fraction ? `.${fraction}` : '');
+}
+
 /**
  * Type that maps an SQL DECIMAL to a JS string or number.
  */
@@ -20,7 +34,13 @@ export class DecimalType<Mode extends 'number' | 'string' = 'string'> extends Ty
   }
 
   override compareValues(a: string, b: string): boolean {
-    return this.platform!.formatDecimal(a, this.prop?.scale) === this.platform!.formatDecimal(b, this.prop?.scale);
+    if (this.platform!.formatDecimal(a, this.prop?.scale) !== this.platform!.formatDecimal(b, this.prop?.scale)) {
+      return false;
+    }
+
+    // doubles keep only ~15 significant digits, so two decimal strings can round to the same number and still differ
+    const [normalizedA, normalizedB] = [normalizeDecimal(a), normalizeDecimal(b)];
+    return normalizedA == null || normalizedB == null || normalizedA === normalizedB;
   }
 
   override getColumnType(prop: EntityProperty, platform: Platform): string {
