@@ -13,7 +13,10 @@ class Wallet {
   @Property({ type: 'decimal', precision: 30, scale: 0 })
   total!: string;
 
-  @Property({ type: 'decimal', runtimeType: 'number', precision: 10, scale: 2 })
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  price!: string;
+
+  @Property({ type: 'decimal', runtimeType: 'number', precision: 38, scale: 18 })
   fee!: number;
 }
 
@@ -32,49 +35,73 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-beforeEach(() => orm.em.clear());
-
 test('string decimals beyond double precision are detected as changed', async () => {
-  const wallet = orm.em.create(Wallet, { balance: '1.000000000000000001', total: '-123456789012345678901', fee: 0 });
-  await orm.em.flush();
+  const em = orm.em.fork();
+  const wallet = em.create(Wallet, {
+    balance: '1.000000000000000001',
+    total: '-123456789012345678901',
+    price: '1',
+    fee: 0,
+  });
+  await em.flush();
 
   // both values round to the same double as the ones they replace
   wallet.balance = '1.000000000000000002';
   wallet.total = '-123456789012345678902';
-  const mock = mockLogger(orm);
-  await orm.em.flush();
+  const mock = mockLogger(orm, ['query', 'query-params']);
+  await em.flush();
 
-  const update = mock.mock.calls.find(call => call[0].includes('update'));
-  expect(update?.[0]).toMatch(
+  expect(mock.mock.calls[1][0]).toMatch(
     /update `wallet` set `balance` = '1.000000000000000002', `total` = '-123456789012345678902'/,
   );
-
-  mock.mockReset();
-  wallet.fee = 1.25;
-  await orm.em.flush();
-
-  const feeUpdate = mock.mock.calls.find(call => call[0].includes('update'));
-  expect(feeUpdate?.[0]).toMatch(/update `wallet` set `fee` = 1.25/);
 });
 
-test('equivalent string decimals are not detected as changed', async () => {
-  const wallet = orm.em.create(Wallet, { balance: '10.5', total: '7', fee: 0 });
-  await orm.em.flush();
+test('formatting and sub-scale differences of string decimals are not detected as changed', async () => {
+  const em = orm.em.fork();
+  const wallet = em.create(Wallet, { balance: '10.5', total: '7', price: '10.5', fee: 0 });
+  await em.flush();
 
   wallet.balance = '10.500000000000000000';
   wallet.total = '007';
-  wallet.fee = 0.001;
-  const mock = mockLogger(orm, ['query']);
-  await orm.em.flush();
+  wallet.price = '10.50';
+  const mock = mockLogger(orm, ['query', 'query-params']);
+  await em.flush();
   expect(mock).not.toHaveBeenCalled();
 
-  wallet.balance = '-0.000';
-  wallet.total = '1e0';
-  await orm.em.flush();
-  mock.mockReset();
-
-  wallet.balance = '0';
-  wallet.total = '1';
-  await orm.em.flush();
+  // the database rounds to the column scale, so digits beyond it do not change the stored value
+  wallet.balance = '10.5000000000000000004';
+  wallet.total = '7.4';
+  wallet.price = '10.501';
+  await em.flush();
   expect(mock).not.toHaveBeenCalled();
+
+  wallet.balance = '10.5000000000000000005';
+  await em.flush();
+  expect(mock.mock.calls[1][0]).toMatch(/update `wallet` set `balance` = '10.5000000000000000005'/);
+});
+
+test('number mode decimals keep the numeric comparison', async () => {
+  const em = orm.em.fork();
+  const wallet = em.create(Wallet, { balance: '1', total: '1', price: '1', fee: '1.000000000000000001' as any });
+  await em.flush();
+
+  wallet.fee = '1.000000000000000002' as any;
+  const mock = mockLogger(orm, ['query', 'query-params']);
+  await em.flush();
+  expect(mock).not.toHaveBeenCalled();
+
+  wallet.fee = 1.5;
+  await em.flush();
+  expect(mock.mock.calls[1][0]).toMatch(/update `wallet` set `fee` = 1.5/);
+});
+
+test('high precision string decimals are rounded to scale like the database does', () => {
+  const type = orm.getMetadata().get(Wallet).properties.balance.customType!;
+
+  expect(type.compareValues!('0.9999999999999999995', '1')).toBe(true);
+  expect(type.compareValues!('-1.0000000000000000015', '-1.000000000000000002')).toBe(true);
+  expect(type.compareValues!('-1.0000000000000000015', '-1.000000000000000001')).toBe(false);
+  expect(type.compareValues!('-0.0000000000000000001', '0')).toBe(true);
+  // other notations fall back to the numeric comparison
+  expect(type.compareValues!('1.000000000000000001e0', '1')).toBe(true);
 });

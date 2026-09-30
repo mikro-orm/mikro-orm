@@ -2,18 +2,31 @@ import { Type } from './Type.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
 
-function normalizeDecimal(value: unknown): string | undefined {
-  const match = typeof value === 'string' ? /^(-?)(\d+)(?:\.(\d+))?$/.exec(value) : null;
-
-  if (!match) {
+/** Scales a plain decimal string to an integer rounded half away from zero at `scale`, like the DB does. */
+function toScaledInteger(value: unknown, scale: number): bigint | undefined {
+  if (typeof value !== 'string') {
     return undefined;
   }
 
-  const int = match[2].replace(/^0+(?=\d)/, '');
-  const fraction = (match[3] ?? '').replace(/0+$/, '');
-  const sign = match[1] && /[1-9]/.test(int + fraction) ? '-' : '';
+  const negative = value.startsWith('-');
+  const [int, fraction = ''] = (negative ? value.slice(1) : value).split('.');
+  const digits = int + fraction;
 
-  return sign + int + (fraction ? `.${fraction}` : '');
+  for (let i = 0; i < digits.length; i++) {
+    const code = digits.charCodeAt(i);
+
+    if (code < 48 || code > 57) {
+      return undefined;
+    }
+  }
+
+  let scaled = BigInt('0' + int + fraction.slice(0, scale).padEnd(scale, '0'));
+
+  if (fraction.charCodeAt(scale) >= 53) {
+    scaled++;
+  }
+
+  return negative ? -scaled : scaled;
 }
 
 /**
@@ -34,13 +47,25 @@ export class DecimalType<Mode extends 'number' | 'string' = 'string'> extends Ty
   }
 
   override compareValues(a: string, b: string): boolean {
-    if (this.platform!.formatDecimal(a, this.prop?.scale) !== this.platform!.formatDecimal(b, this.prop?.scale)) {
+    if (a === b) {
+      return true;
+    }
+
+    const scale = this.prop?.scale;
+
+    if (this.platform!.formatDecimal(a, scale) !== this.platform!.formatDecimal(b, scale)) {
       return false;
     }
 
-    // doubles keep only ~15 significant digits, so two decimal strings can round to the same number and still differ
-    const [normalizedA, normalizedB] = [normalizeDecimal(a), normalizeDecimal(b)];
-    return normalizedA == null || normalizedB == null || normalizedA === normalizedB;
+    // doubles are exact only up to 15 significant digits, so only higher precision strings can differ past the numeric check
+    if ((this.prop?.precision ?? 0) <= 15 || this.compareAsType() !== 'string') {
+      return true;
+    }
+
+    const scaledA = toScaledInteger(a, scale ?? 0);
+    const scaledB = toScaledInteger(b, scale ?? 0);
+
+    return scaledA == null || scaledB == null || scaledA === scaledB;
   }
 
   override getColumnType(prop: EntityProperty, platform: Platform): string {
