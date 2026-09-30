@@ -190,6 +190,33 @@ describe('partitioning helpers', () => {
     ).toBe(true);
   });
 
+  test('ignores list/range partitions created outside of metadata', () => {
+    const declared: TablePartitioning = {
+      definition: 'range (posted_at)',
+      partitions: [{ name: 'parent_default', bound: 'default' }],
+    };
+    const introspected: TablePartitioning = {
+      definition: 'RANGE (posted_at)',
+      partitions: [
+        { name: 'parent_default', schema: 'public', bound: 'DEFAULT' },
+        { name: 'parent_gy1', schema: 'public', bound: "FOR VALUES FROM ('2026-01-01') TO ('2026-02-01')" },
+      ],
+    };
+
+    expect(diffPartitioning(introspected, declared, 'public')).toBe(false);
+    // a declared partition missing from the database is still a change
+    expect(
+      diffPartitioning(
+        introspected,
+        {
+          ...declared,
+          partitions: [...declared.partitions, { name: 'parent_gy2', bound: "from ('2026-02-01') to ('2026-03-01')" }],
+        },
+        'public',
+      ),
+    ).toBe(true);
+  });
+
   test('normalizes postgres canonical range expressions and timestamptz bounds', () => {
     const from: TablePartitioning = {
       definition: "range (((created_at at time zone 'UTC')::date))",
@@ -812,5 +839,36 @@ describe('partitioning helpers', () => {
 
     // partitioning must be left untouched — no diff, hence no destructive throw downstream
     expect(diff === false ? undefined : diff.changedPartitioning).toBeUndefined();
+  });
+
+  test('down diff mirrors the up diff for unmanaged partitioning', () => {
+    const config = new Configuration({ driver: PostgreSqlDriver }, false);
+    const platform = config.getPlatform() as PostgreSqlPlatform;
+    const range = (...values: string[]) =>
+      createPartitionedMeta({ type: 'range', expression: 'createdAt', partitions: values.map(v => ({ values: v })) });
+    const metaSchema = DatabaseSchema.fromMetadata([range('default')], platform as any, config);
+    const dbSchema = DatabaseSchema.fromMetadata(
+      [range('default', "from ('2026-01-01') to ('2026-02-01')")],
+      platform as any,
+      config,
+    );
+    const adoptedSchema = DatabaseSchema.fromMetadata([createPartitionedMeta()], platform as any, config);
+    const comparator = new SchemaComparator(platform);
+
+    for (const [from, to] of [
+      [dbSchema, metaSchema],
+      [dbSchema, adoptedSchema],
+    ]) {
+      const up = comparator.compare(from, to);
+      const down = comparator.compare(to, from, up);
+      expect(up.changedTables).toEqual({});
+      expect(down.changedTables).toEqual({});
+    }
+
+    // a declared partition missing from the database is rebuilt in both directions
+    const up = comparator.compare(metaSchema, dbSchema);
+    const down = comparator.compare(dbSchema, metaSchema, up);
+    expect(up.changedTables['public.partitioned_event'].changedPartitioning).toBeDefined();
+    expect(down.changedTables['public.partitioned_event'].changedPartitioning).toBeDefined();
   });
 });

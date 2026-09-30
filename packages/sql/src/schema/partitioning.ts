@@ -389,14 +389,14 @@ export const diffPartitioning = (
     return true;
   }
 
-  if (
-    normalizeQuotedIdentifiers(normalizePartitionDefinition(from.definition)) !==
-    normalizeQuotedIdentifiers(normalizePartitionDefinition(to.definition))
-  ) {
+  const toDefinition = normalizeQuotedIdentifiers(normalizePartitionDefinition(to.definition));
+
+  if (normalizeQuotedIdentifiers(normalizePartitionDefinition(from.definition)) !== toDefinition) {
     return true;
   }
 
-  if (from.partitions.length !== to.partitions.length) {
+  // list/range partitions created outside of metadata (e.g. at runtime) are left unmanaged, hash partitions are not
+  if (toDefinition.startsWith('hash') && from.partitions.length !== to.partitions.length) {
     return true;
   }
 
@@ -404,10 +404,9 @@ export const diffPartitioning = (
   const serializePartition = (partition: TablePartition) =>
     `${normalizeSchema(partition.schema)}.${partition.name}:${normalizeQuotedIdentifiers(normalizePartitionBound(partition.bound))}`;
 
-  const fromPartitions = from.partitions.map(serializePartition).sort();
-  const toPartitions = to.partitions.map(serializePartition).sort();
+  const fromPartitions = new Set(from.partitions.map(serializePartition));
 
-  return fromPartitions.some((partition, index) => partition !== toPartitions[index]);
+  return to.partitions.some(partition => !fromPartitions.has(serializePartition(partition)));
 };
 
 const SUPPORTED_PARTITION_TYPES = ['hash', 'list', 'range'] as const;

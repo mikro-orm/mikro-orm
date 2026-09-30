@@ -122,6 +122,7 @@ export class SchemaComparator {
           fromSchema.getTable(tableName)!,
           toSchema.getTable(tableName)!,
           inverseDiff?.changedTables[tableName],
+          !!inverseDiff,
         );
 
         if (tableDifferences !== false) {
@@ -428,6 +429,7 @@ export class SchemaComparator {
     fromTable: DatabaseTable,
     toTable: DatabaseTable,
     inverseTableDiff?: TableDifference,
+    inverse = false,
   ): TableDifference | false {
     let changes = 0;
     const tableDifferences: TableDifference = {
@@ -464,8 +466,15 @@ export class SchemaComparator {
       changes++;
     }
 
+    // partitioning is diffed one way (declared vs. existing), so the down diff has to compare it like the up one did
+    const [existingTable, declaredTable] = inverse ? [toTable, fromTable] : [fromTable, toTable];
+
     if (
-      diffPartitioning(fromTable.getPartitioning(), toTable.getPartitioning(), this.#platform.getDefaultSchemaName())
+      diffPartitioning(
+        existingTable.getPartitioning(),
+        declaredTable.getPartitioning(),
+        this.#platform.getDefaultSchemaName(),
+      )
     ) {
       tableDifferences.changedPartitioning = {
         from: fromTable.getPartitioning(),
