@@ -1548,6 +1548,7 @@ The `body` can be a string or a callback that receives column name mappings, jus
 - **PostgreSQL**: creates a separate function and trigger
 - **MySQL/MariaDB/SQLite**: creates one trigger per event (these databases require it)
 - **MSSQL**: creates a single trigger with multiple events (only `after` and `instead of` are supported — MSSQL does not support `before` triggers)
+- **Oracle**: creates a single `create or replace trigger` with multiple events, at row or statement level (only `before` and `after` are supported, `instead of` works only on views and there is no `truncate` event; `when` is allowed only for row-level triggers). Reference rows as `:new`/`:old` in the body, but as `new`/`old` without the colon in `when`
 
 ```ts
 @Trigger({

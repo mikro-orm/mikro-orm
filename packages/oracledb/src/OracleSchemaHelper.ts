@@ -17,6 +17,7 @@ import {
   type Transaction,
   type Type,
   type SqlRoutineDef,
+  type SqlTriggerDef,
   Utils,
 } from '@mikro-orm/sql';
 
@@ -542,6 +543,7 @@ export class OracleSchemaHelper extends SchemaHelper {
     const indexes = await this.getAllIndexes(connection, tablesBySchema, ctx);
     const checks = await this.getAllChecks(connection, tablesBySchema, ctx);
     const fks = await this.getAllForeignKeys(connection, tablesBySchema, ctx);
+    const triggers = await this.getAllTriggers(connection, tablesBySchema, ctx);
     const dbCollation = await this.getDatabaseCollation(connection, ctx);
 
     for (const t of tables) {
@@ -551,7 +553,52 @@ export class OracleSchemaHelper extends SchemaHelper {
       const pks = await this.getPrimaryKeys(connection, indexes[key], table.name, table.schema);
       const enums = this.getEnumDefinitions(checks[key] ?? []);
       table.init(columns[key], indexes[key], checks[key], pks, fks[key], enums);
+
+      if (triggers[key]) {
+        table.setTriggers(triggers[key]);
+      }
     }
+  }
+
+  async getAllTriggers(
+    connection: AbstractSqlConnection,
+    tablesBySchemas: Map<string | undefined, Table[]>,
+    ctx?: Transaction,
+  ): Promise<Dictionary<SqlTriggerDef[]>> {
+    // `trigger_body` is a LONG column, which node-oracledb fetches as a string
+    const sql = `select trigger_name, table_owner as schema_name, table_name, trigger_type, triggering_event, when_clause, trigger_body
+      from all_triggers
+      where base_object_type = 'TABLE'
+      and (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')}) and table_owner = ${this.platform.quoteValue(schema)})`).join(' or ')})
+      order by table_owner, table_name, trigger_name`;
+    const allTriggers = await connection.execute<
+      {
+        trigger_name: string;
+        schema_name: string;
+        table_name: string;
+        trigger_type: string;
+        triggering_event: string;
+        when_clause: string | null;
+        trigger_body: string;
+      }[]
+    >(sql, [], 'all', ctx);
+    const ret = {} as Dictionary<SqlTriggerDef[]>;
+
+    for (const row of allTriggers) {
+      const key = this.getTableKey(row);
+      ret[key] ??= [];
+      ret[key].push({
+        name: row.trigger_name,
+        // e.g. `BEFORE EACH ROW`, `AFTER STATEMENT`
+        timing: row.trigger_type.replace(/\s+(each row|statement)$/i, '').toLowerCase() as SqlTriggerDef['timing'],
+        events: row.triggering_event.toLowerCase().split(/\s+or\s+/) as SqlTriggerDef['events'],
+        forEach: /\beach row$/i.test(row.trigger_type) ? 'row' : 'statement',
+        body: this.stripRoutineBody(row.trigger_body),
+        when: row.when_clause?.trim() || undefined,
+      });
+    }
+
+    return ret;
   }
 
   override getPreAlterTable(tableDiff: TableDifference, safe: boolean): string[] {
@@ -848,6 +895,45 @@ export class OracleSchemaHelper extends SchemaHelper {
     }
 
     return `drop table if exists ${this.quote(schema, name)} cascade constraint`;
+  }
+
+  /** Oracle supports multiple events and both row and statement level in one trigger, but `instead of` works only on views and there is no `truncate` DML event. */
+  override createTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
+    if (trigger.expression) {
+      return trigger.expression;
+    }
+
+    if (trigger.timing === 'instead of') {
+      throw new Error(
+        `Oracle supports INSTEAD OF triggers only on views. Use BEFORE or AFTER for trigger "${trigger.name}".`,
+      );
+    }
+
+    if (trigger.events.includes('truncate')) {
+      throw new Error(
+        `Oracle does not support TRUNCATE triggers. Remove the TRUNCATE event from trigger "${trigger.name}".`,
+      );
+    }
+
+    if (trigger.when && trigger.forEach === 'statement') {
+      throw new Error(`Oracle supports WHEN conditions only on row-level triggers (trigger "${trigger.name}").`);
+    }
+
+    const timing = trigger.timing.toUpperCase();
+    const events = trigger.events.map(e => e.toUpperCase()).join(' OR ');
+    const forEach = trigger.forEach === 'statement' ? '' : ' for each row';
+    const when = trigger.when ? ` when (${trigger.when})` : '';
+    return `create or replace trigger ${this.getTriggerName(table, trigger)} ${timing} ${events} on ${table.getQuotedName()}${forEach}${when} begin ${this.normalizeTriggerBody(trigger.body)} end;`;
+  }
+
+  /** Uses `IF EXISTS` (Oracle 23c+), same as the other drop statements. */
+  override dropTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
+    return `drop trigger if exists ${this.getTriggerName(table, trigger)}`;
+  }
+
+  private getTriggerName(table: DatabaseTable, trigger: SqlTriggerDef): string {
+    const schema = table.schema === this.platform.getDefaultSchemaName() ? undefined : table.schema;
+    return this.quote(schema, trigger.name);
   }
 
   override getAddColumnsSQL(table: DatabaseTable, columns: Column[]): string[] {
