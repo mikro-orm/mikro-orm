@@ -195,12 +195,26 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   override createTable(table: DatabaseTable, alter?: boolean): string[] {
     const partitioning = table.getPartitioning();
+    const [createTable, ...rest] = super.createTable(table, alter);
+    // `serial` columns can't declare sequence options inline, so alter the implicit sequence right after creating the table
+    const sequences = table
+      .getColumns()
+      .filter(column => column.autoincrement && !column.generated && this.getSequenceOptionsSQL(column))
+      .map(column => {
+        const sequence = `pg_get_serial_sequence(${this.platform.quoteValue(table.getQuotedName())}, ${this.platform.quoteValue(column.name)})`;
+        const { startWith = -1, incrementBy = 1 } = column.sequence!;
+        // `alter sequence` keeps the ascending bounds of the serial, so a descending one gets the bounds and start of a fresh sequence
+        const options =
+          incrementBy < 0
+            ? `no minvalue maxvalue ${Math.max(startWith, -1)} start with ${startWith} increment by ${incrementBy}`
+            : this.getSequenceOptionsSQL(column);
+        return `do $$ begin execute format('alter sequence %s ${options} restart', ${sequence}); end $$`;
+      });
 
     if (!partitioning) {
-      return super.createTable(table, alter);
+      return [createTable, ...sequences, ...rest];
     }
 
-    const [createTable, ...rest] = super.createTable(table, alter);
     const partitions = partitioning.partitions.map(partition => {
       const partitionName = this.quote(this.getTableName(partition.name, partition.schema ?? table.schema));
       return `create table ${partitionName} partition of ${table.getQuotedName()} ${partition.bound}`;
@@ -211,7 +225,18 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     // regex replacement tokens like `$$`, `$&`, or `$1` inside user-supplied expressions (e.g., a
     // callback that returns a dollar-quoted literal) are not interpreted as back-references.
     const spliced = `${createTable.slice(0, -1)} partition by ${partitioning.definition};`;
-    return [spliced, ...rest, ...partitions];
+    return [spliced, ...sequences, ...rest, ...partitions];
+  }
+
+  override getResetSequenceSQL(
+    tableName: string,
+    schemaName: string | undefined,
+    columnName: string,
+    startWith: number,
+  ): string {
+    const table = this.platform.quoteValue(this.quote(this.getTableName(tableName, schemaName)));
+    // `truncate … restart identity` goes back to the start the sequence was created with, which the metadata may not match
+    return `select setval(pg_get_serial_sequence(${table}, ${this.platform.quoteValue(columnName)}), ${startWith}, false)`;
   }
 
   override dropMaterializedViewIfExists(name: string, schema?: string): string {
@@ -565,15 +590,16 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       data_type,
       is_identity,
       identity_generation,
-      identity_start,
-      identity_increment,
       generation_expression,
       pg_catalog.col_description(pgc.oid, cols.ordinal_position::int) column_comment,
-      coll.collname as collation_name
+      coll.collname as collation_name,
+      seq.seqstart as sequence_start,
+      seq.seqincrement as sequence_increment
       from information_schema.columns cols
       join pg_class pgc on cols.table_name = pgc.relname
       join pg_attribute pga on pgc.oid = pga.attrelid and cols.column_name = pga.attname
       left join pg_collation coll on pga.attcollation = coll.oid and coll.collname <> 'default'
+      left join pg_sequence seq on seq.seqrelid = pg_get_serial_sequence(quote_ident(cols.table_schema) || '.' || quote_ident(cols.table_name), cols.column_name)::regclass
       where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(table_schema = ${this.platform.quoteValue(schema)} and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}))`).join(' or ')})
       order by ordinal_position`;
 
@@ -627,14 +653,6 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       }
 
       const length = this.inferLengthFromColumnType(type) === -1 ? -1 : col.length;
-      // a descending sequence starts at -1 by default
-      const defaultIdentityStart = col.identity_increment?.startsWith('-') ? '-1' : '1';
-      // read back non-default identity options, so `identity (start with 1000)` does not diff against plain `identity`
-      const identityOptions = [
-        col.identity_start !== defaultIdentityStart && `start with ${col.identity_start}`,
-        col.identity_increment !== '1' && `increment by ${col.identity_increment}`,
-      ].filter(Boolean);
-      const identitySuffix = identityOptions.length > 0 ? ` (${identityOptions.join(' ')})` : '';
 
       const column: Column = {
         name: col.column_name,
@@ -647,9 +665,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         default: str(this.normalizeDefaultValue(col.column_default, col.length)),
         unsigned: increments,
         autoincrement: increments,
+        sequence: increments ? this.getIntrospectedSequence(col.sequence_start, col.sequence_increment) : undefined,
         generated:
           col.is_identity === 'YES'
-            ? (col.identity_generation === 'BY DEFAULT' ? 'by default as identity' : 'identity') + identitySuffix
+            ? col.identity_generation === 'BY DEFAULT'
+              ? 'by default as identity'
+              : 'identity'
             : col.generation_expression
               ? col.generation_expression + ' stored'
               : undefined,
@@ -1444,10 +1465,16 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         }
       }
 
-      if (column.generated?.startsWith('by default as identity')) {
-        columnType += ` generated ${column.generated}`;
-      } else if (column.generated) {
-        columnType += ` generated always as ${column.generated}`;
+      const sequenceOptions = this.getSequenceOptionsSQL(column);
+      const generated =
+        sequenceOptions && /^(by default as )?identity$/.test(column.generated ?? '')
+          ? `${column.generated} (${sequenceOptions})`
+          : column.generated;
+
+      if (generated?.startsWith('by default as identity')) {
+        columnType += ` generated ${generated}`;
+      } else if (generated) {
+        columnType += ` generated always as ${generated}`;
       }
 
       col.push(columnType);
@@ -1665,6 +1692,41 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
+  override getAddColumnsSQL(table: DatabaseTable, columns: Column[]): string[] {
+    const compositePK = table.getPrimaryKey()?.composite;
+    const before: string[] = [];
+    const after: string[] = [];
+    const adds = columns.map(column => {
+      const sequenceOptions = this.getSequenceOptionsSQL(column);
+
+      if (!sequenceOptions || !column.autoincrement || column.generated) {
+        return column;
+      }
+
+      // a `serial` column numbers the existing rows right away, so expand it to a sequence created with the options upfront
+      const seqName = this.quote(
+        this.getTableName(this.platform.getIndexName(table.name, [column.name], 'sequence'), table.schema),
+      );
+      before.push(`create sequence ${seqName} ${sequenceOptions}`);
+      after.push(`alter sequence ${seqName} owned by ${table.getQuotedName()}.${this.quote(column.name)}`);
+
+      // the expanded column has no inline `primary key`, which `alterTable` expects from an added autoincrement PK
+      if (column.primary && !compositePK && !this.hasNonDefaultPrimaryKeyName(table)) {
+        after.push(`alter table ${table.getQuotedName()} add primary key (${this.quote(column.name)})`);
+      }
+
+      return {
+        ...column,
+        type: column.mappedType.getColumnType({ autoincrement: false } as EntityProperty, this.platform),
+        autoincrement: false,
+        nullable: false,
+        default: `nextval('${seqName}')`,
+      };
+    });
+
+    return [...before, ...super.getAddColumnsSQL(table, adds), ...after];
+  }
+
   private getAlterColumnAutoincrement(tableName: string, column: Column, schemaName?: string): string[] {
     const ret: string[] = [];
     /* v8 ignore next */
@@ -1673,8 +1735,19 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     if (column.autoincrement) {
       const seqName = this.platform.getIndexName(tableName, [column.name], 'sequence');
-      ret.push(`create sequence if not exists ${this.quote(seqName)}`);
-      ret.push(`select setval('${seqName}', (select max(${this.quote(column.name)}) from ${this.quote(name)}))`);
+      const sequenceOptions = this.getSequenceOptionsSQL(column);
+      const { incrementBy = 1, startWith = incrementBy < 0 ? -1 : 1 } = column.sequence ?? {};
+      const lastValue = `(select ${incrementBy < 0 ? 'min' : 'max'}(${this.quote(column.name)}) from ${this.quote(name)})`;
+      ret.push(`create sequence if not exists ${this.quote(seqName)}${sequenceOptions ? ` ${sequenceOptions}` : ''}`);
+
+      if (sequenceOptions) {
+        // continue after the existing values, but never before the declared start
+        ret.push(
+          `select setval('${seqName}', ${incrementBy < 0 ? 'least' : 'greatest'}(${lastValue} + ${incrementBy}, ${startWith}), false)`,
+        );
+      } else {
+        ret.push(`select setval('${seqName}', ${lastValue})`);
+      }
       ret.push(
         `alter table ${this.quote(name)} alter column ${this.quote(column.name)} set default nextval('${seqName}')`,
       );

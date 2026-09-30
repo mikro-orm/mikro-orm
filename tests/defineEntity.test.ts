@@ -1621,6 +1621,19 @@ describe('defineEntity', () => {
 });
 
 describe('PropertyOptionsBuilder', () => {
+  it('should accept the start value as a short form of the sequence option', () => {
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: p => ({
+        id: p.integer().primary().sequence(1000),
+        counter: p.integer().autoincrement().sequence({ startWith: 5, incrementBy: 2 }),
+      }),
+    });
+
+    expect(Foo.meta.properties.id.sequence).toEqual({ startWith: 1000 });
+    expect(Foo.meta.properties.counter.sequence).toEqual({ startWith: 5, incrementBy: 2 });
+  });
+
   it('should define complex property options (1)', () => {
     const Foo = defineEntity({
       name: 'Foo',
@@ -1641,6 +1654,7 @@ describe('PropertyOptionsBuilder', () => {
         extra: p.string().extra('VIRTUAL'),
         ignoreChanges: p.string().ignoreSchemaChanges('type', 'extra', 'default'),
         collated: p.string().collation('utf8mb4_unicode_ci'),
+        counter: p.integer().autoincrement().sequence({ startWith: 100, incrementBy: 2 }),
       }),
     });
 
@@ -1660,6 +1674,7 @@ describe('PropertyOptionsBuilder', () => {
         extra: { type: types.string, extra: 'VIRTUAL' },
         ignoreChanges: { type: types.string, ignoreSchemaChanges: ['type', 'extra', 'default'] },
         collated: { type: types.string, collation: 'utf8mb4_unicode_ci' },
+        counter: { type: types.integer, autoincrement: true, sequence: { startWith: 100, incrementBy: 2 } },
       },
     });
 

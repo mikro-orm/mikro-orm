@@ -23,7 +23,7 @@ import type { SerializeOptions } from './serialization/EntitySerializer.js';
 import type { MetadataStorage } from './metadata/MetadataStorage.js';
 import type { Routine } from './metadata/Routine.js';
 import type { EntitySchema } from './metadata/EntitySchema.js';
-import type { EntityPartitionBy, IndexColumnOptions } from './metadata/types.js';
+import type { EntityPartitionBy, IndexColumnOptions, SequenceOptions } from './metadata/types.js';
 import type { Type, types } from './types/index.js';
 import type { Platform } from './platforms/Platform.js';
 import type { Configuration } from './utils/Configuration.js';
@@ -1499,6 +1499,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   hasConvertToJSValueSQL: boolean;
   hasConvertToDatabaseValueSQL: boolean;
   autoincrement?: boolean;
+  sequence?: SequenceOptions;
   returning?: boolean;
   primary?: boolean;
   serializedPrimaryKey: boolean;

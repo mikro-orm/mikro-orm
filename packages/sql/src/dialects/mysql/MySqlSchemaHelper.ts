@@ -77,6 +77,23 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return 'set foreign_key_checks = 1;';
   }
 
+  override getResetSequenceSQL(
+    tableName: string,
+    schemaName: string | undefined,
+    columnName: string,
+    startWith: number,
+  ): string {
+    return `alter table ${this.quote(this.getTableName(tableName, schemaName))} auto_increment = ${startWith}`;
+  }
+
+  override getAddColumnsSQL(table: DatabaseTable, columns: Column[]): string[] {
+    const [sql, ...rest] = super.getAddColumnsSQL(table, columns);
+    const startWith = columns.find(column => column.autoincrement)?.sequence?.startWith;
+
+    // the table option numbers the existing rows of the added column from the declared start too
+    return [startWith != null ? `${sql}, auto_increment = ${startWith}` : sql, ...rest];
+  }
+
   override finalizeTable(table: DatabaseTable, charset: string, collate?: string): string {
     let sql = ` default character set ${charset}`;
 
@@ -85,6 +102,11 @@ export class MySqlSchemaHelper extends SchemaHelper {
     }
 
     sql += ' engine = InnoDB';
+    const startWith = table.getColumns().find(column => column.autoincrement)?.sequence?.startWith;
+
+    if (startWith != null) {
+      sql += ` auto_increment = ${startWith}`;
+    }
 
     if (table.comment) {
       sql += ` comment = ${this.platform.quoteValue(table.comment)}`;

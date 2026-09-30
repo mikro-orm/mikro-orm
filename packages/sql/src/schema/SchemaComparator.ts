@@ -916,7 +916,11 @@ export class SchemaComparator {
       changedProperties.add('nullable');
     }
 
-    if (this.diffExpression(fromColumn.generated as string, toColumn.generated as string)) {
+    // identity options (start/increment) are applied on create only, same as the `sequence` option
+    const withoutIdentityOptions = (generated?: string) =>
+      generated?.replace(/^((?:by default as )?identity)\s*\(.*\)$/is, '$1') as string;
+
+    if (this.diffExpression(withoutIdentityOptions(fromColumn.generated), withoutIdentityOptions(toColumn.generated))) {
       log(`'generated' changed for column ${fromTable.name}.${fromColumn.name}`, { fromColumn, toColumn });
       changedProperties.add('generated');
     }

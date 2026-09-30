@@ -1201,6 +1201,10 @@ export class SourceFile {
     if (prop.generated) {
       options.generated = typeof prop.generated === 'string' ? this.quote(prop.generated) : `${prop.generated}`;
     }
+
+    if (prop.sequence) {
+      options.sequence = prop.sequence;
+    }
   }
 
   protected getManyToManyDecoratorOptions(options: Dictionary, prop: EntityProperty) {

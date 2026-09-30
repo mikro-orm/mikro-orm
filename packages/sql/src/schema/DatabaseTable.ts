@@ -223,6 +223,7 @@ export class DatabaseTable {
         comment: prop.comment,
         collation: prop.collation,
         extra: prop.extra,
+        sequence: prop.sequence,
         ignoreSchemaChanges: prop.ignoreSchemaChanges,
       };
       this.#columns[field].unsigned ??= this.#columns[field].autoincrement;
@@ -1077,6 +1078,7 @@ export class DatabaseTable {
       nullable: column.nullable,
       primary: column.primary && persist,
       autoincrement: column.autoincrement,
+      sequence: column.sequence,
       fieldName: column.name,
       unsigned: column.unsigned,
       length: column.length,
