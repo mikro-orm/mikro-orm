@@ -623,9 +623,11 @@ export class SchemaComparator {
         continue;
       }
 
+      // only auto-generated enum checks, a user check tagged with an enum column must be diffed by expression
       if (
         fromColumn?.enumItems &&
         toColumn?.enumItems &&
+        check.name === this.#platform.getIndexName(fromTable.name, [fromColumn.name], 'check') &&
         !this.diffEnumItems(fromColumn.enumItems, toColumn.enumItems)
       ) {
         continue;
@@ -1167,6 +1169,7 @@ export class SchemaComparator {
           ?.replace(/(?<![\w'])_\w+'(.*?)'/g, '$1')
           .replace(/!=/g, '<>')
           // `\b` keeps this from firing inside identifiers like `min(...)`
+          .replace(/\bnot\s+in\s*\((.*?)\)/gi, '<> all (array[$1])')
           .replace(/\bin\s*\((.*?)\)/gi, '= any (array[$1])')
           // MySQL normalizes count(*) to count(0)
           .replace(/\bcount\s*\(\s*0\s*\)/gi, 'count(*)')
