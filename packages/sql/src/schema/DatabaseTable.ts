@@ -1355,7 +1355,7 @@ export class DatabaseTable {
       composite: properties.length > 1,
       // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them.
       // Partial indexes (`where`) must use CREATE [UNIQUE] INDEX form — constraints can't carry predicates.
-      // Raw `create [unique] index` expressions are plain indexes too, even when they inline a WHERE clause.
+      // Raw `create [unique] index` expressions are plain indexes, not constraints.
       constraint:
         type !== 'index' &&
         !properties.some((d: string) => d.includes('.')) &&

@@ -3,6 +3,7 @@ import { Entity, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@
 
 @Entity({ tableName: 'a' })
 @Unique({ name: 'a_partial', expression: 'create unique index "a_partial" on "a" ("y") where "x" is null' })
+@Unique({ name: 'a_lower', expression: 'create unique index "a_lower" on "a" (lower("y"))' })
 class A {
   @PrimaryKey()
   id!: number;
@@ -28,11 +29,13 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 test('GH #8363', async () => {
-  await orm.schema.execute('drop index "a_partial"');
+  await orm.schema.execute('drop index "a_partial";\ndrop index "a_lower";');
 
   const diff = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
-  expect(diff.up.trim()).toBe('create unique index "a_partial" on "a" ("y") where "x" is null;');
-  expect(diff.down.trim()).toBe('drop index "a_partial";');
+  expect(diff.up.trim()).toBe(
+    'create unique index "a_lower" on "a" (lower("y"));\ncreate unique index "a_partial" on "a" ("y") where "x" is null;',
+  );
+  expect(diff.down.trim()).toBe('drop index "a_lower";\ndrop index "a_partial";');
   await orm.schema.execute(diff.up);
   await orm.schema.execute(diff.down);
 });
