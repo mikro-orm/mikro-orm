@@ -25,9 +25,22 @@ beforeAll(async () => {
   const db = await orm.em.getConnection().getNativeClient();
   db.function('regexp', (pattern: string, value: string) => (new RegExp(pattern).test(value) ? 1 : 0));
 
-  ['AB_12', 'ABX12', 'AB12', 'AB1112', 'A+B', 'draft', 'review', '50%', '500', 'a\\b'].forEach(sku =>
-    orm.em.create(Product, { sku }),
-  );
+  [
+    'AB_12',
+    'ABX12',
+    'AB12',
+    'AB1112',
+    'A+B',
+    'draft',
+    'review',
+    '50%',
+    '500',
+    'a\\b',
+    'a!_b',
+    'a!xb',
+    '/api/users',
+    'xapi/',
+  ].forEach(sku => orm.em.create(Product, { sku }));
   await orm.em.flush();
 });
 
@@ -41,8 +54,6 @@ async function skus(sku: RegExp) {
 }
 
 test('regexps that LIKE cannot express are not converted to LIKE', async () => {
-  expect(await skus(/^AB_12$/)).toEqual(['AB_12']);
-  expect(await skus(/^50%$/)).toEqual(['50%']);
   expect(await skus(/^AB1+2$/)).toEqual(['AB12', 'AB1112']);
   expect(await skus(/^A\+B$/)).toEqual(['A+B']);
   expect(await skus(/^draft$|^review$/)).toEqual(['draft', 'review']);
@@ -56,5 +67,21 @@ test('simple regexps are still converted to LIKE', async () => {
   expect(await skus(/X1/)).toEqual(['ABX12']);
   expect(await skus(/^dra/)).toEqual(['draft']);
   expect(await skus(/iew$/)).toEqual(['review']);
-  expect(mock.mock.calls.map(call => call[0]).filter(sql => sql.includes('like'))).toHaveLength(4);
+  expect(await skus(/^AB_12$/)).toEqual(['AB_12']);
+  expect(await skus(/^50%$/)).toEqual(['50%']);
+  expect(await skus(/0%/)).toEqual(['50%']);
+  expect(await skus(/^a!_b$/)).toEqual(['a!_b']);
+  expect(await skus(new RegExp('^/api/'))).toEqual(['/api/users']);
+  expect(mock.mock.calls.map(call => call[0]).filter(sql => sql.includes('like'))).toHaveLength(9);
+});
+
+test('LIKE wildcards in the regexp are escaped', async () => {
+  const qb = orm.em.createQueryBuilder(Product).where({ sku: /^a!_b%/ });
+  expect(qb.getQuery()).toBe("select `p0`.* from `product` as `p0` where `p0`.`sku` like ? escape '!'");
+  expect(qb.getParams()).toEqual(['a!!!_b!%%']);
+});
+
+test('regexps with the `m` flag are not converted to LIKE', async () => {
+  const qb = orm.em.createQueryBuilder(Product).where({ sku: /^draft$/m });
+  expect(qb.getQuery()).toBe('select `p0`.* from `product` as `p0` where `p0`.`sku` regexp ?');
 });

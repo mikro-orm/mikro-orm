@@ -38,6 +38,17 @@ import type { NativeQueryBuilder } from './NativeQueryBuilder.js';
 /** Captures the column name that follows the alias placeholder. */
 const QUALIFYING_ALIAS_RE = new RegExp(ALIAS_REPLACEMENT_RE + '(?=["\'`\\]]*\\.["\'`\\[]?([\\w$]+))', 'g');
 
+/** Maps regexp tokens to LIKE pattern tokens, escaping LIKE wildcards with `!`. */
+const LIKE_REPLACEMENTS: Record<string, string> = {
+  '\\.': '.',
+  '\\/': '/',
+  '.*': '%',
+  '.': '_',
+  '!': '!!',
+  '%': '!%',
+  _: '!_',
+};
+
 /**
  * @internal
  */
@@ -541,22 +552,19 @@ export class QueryBuilderHelper {
       return false;
     }
 
-    if (re.flags.includes('i')) {
+    if (/[im]/.test(re.flags)) {
       return false;
     }
 
-    // LIKE can only express edge anchors, `.`, `.*` and escaped dots; anything else (alternation, quantifiers,
-    // classes, other escapes, or `%` and `_` that LIKE would treat as wildcards) needs the regexp operator
-    return /^\^?(?:[^\\^$.*+?|{}[\]()%_]|\\\.|\.\*?)*\$?$/.test(re.source);
+    // LIKE can only express edge anchors, `.`, `.*` and escaped `.` or `/`, anything else needs the regexp operator
+    return /^\^?(?:[^\\^$.*+?|{}[\]()]|\\[./]|\.\*?)*\$?$/.test(re.source);
   }
 
   getRegExpParam(re: RegExp): string {
     const value = re.source
-      .replace(/\.\*/g, '%') // .* -> %
-      .replace(/\./g, '_') // .  -> _
-      .replace(/\\_/g, '.') // \. -> .
-      .replace(/^\^/g, '') // remove ^ from start
-      .replace(/\$$/g, ''); // remove $ from end
+      .replace(/^\^/, '') // remove ^ from start
+      .replace(/\$$/, '') // remove $ from end
+      .replace(/\\[./]|\.\*|[.!%_]/g, m => LIKE_REPLACEMENTS[m]);
 
     if (re.source.startsWith('^') && re.source.endsWith('$')) {
       return value;
@@ -667,7 +675,8 @@ export class QueryBuilderHelper {
     const params: unknown[] = [];
 
     if (this.isSimpleRegExp(cond[key])) {
-      parts.push(`${this.#platform.quoteIdentifier(this.mapper(key, type))} like ?`);
+      const escape = /[!%_]/.test(cond[key].source) ? ` escape '!'` : '';
+      parts.push(`${this.#platform.quoteIdentifier(this.mapper(key, type))} like ?${escape}`);
       params.push(this.getRegExpParam(cond[key]));
       return { sql: parts.join(' and '), params };
     }
