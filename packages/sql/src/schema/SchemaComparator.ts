@@ -1185,6 +1185,10 @@ export class SchemaComparator {
           // MySQL adds table/alias prefixes to columns (e.g., a.name or table_name.column vs just column)
           // Strip these prefixes - match word.word patterns and keep only the last part
           .replace(/\b\w+\.(\w+)/g, '$1')
+          // PostgreSQL rewrites `x [not] between a and b` to `x >= a and x <= b` (`x < a or x > b`), cast targets are skipped
+          .replace(/(?<!::\s*)\b(?!not\b)(\w+)\s+(not\s+)?between\s+(\S+)\s+and\s+(\S+)/gi, (_, x, not, a, b) =>
+            not ? `${x} < ${a} or ${x} > ${b}` : `${x} >= ${a} and ${x} <= ${b}`,
+          )
           // Normalize JOIN syntax: inner join -> join (equivalent in SQL)
           .replace(/\binner\s+join\b/gi, 'join')
           // PostgreSQL names an unaliased bare function call after the function itself,

@@ -453,6 +453,39 @@ describe('check constraint [postgres]', () => {
     await orm.close();
   });
 
+  test('check constraint on a double precision column does not cause drift [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    await orm.schema.update();
+
+    // pg casts the literals to `double precision` and rewrites `[not] between` into `>=`/`<=` (`<`/`>`) comparisons
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
+        rate: { type: 'double', name: 'rate', fieldName: 'rate', columnType: 'double precision' },
+        share: { type: 'double', name: 'share', fieldName: 'share', columnType: 'double precision' },
+      },
+      name: 'DoubleCheckTable',
+      tableName: 'double_check_table',
+      checks: [
+        { name: 'chk_rate', expression: 'rate >= 0' },
+        { name: 'chk_share', expression: 'share between 0 and 1' },
+        { name: 'chk_rate_range', expression: 'rate not between 100 and 200' },
+      ],
+    }).init().meta;
+    meta.set(newTableMeta.class, newTableMeta);
+
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).not.toBe('');
+    await orm.schema.execute(diff);
+
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
+
+    await orm.schema.dropDatabase();
+    await orm.close();
+  });
+
   test('array-typed cast in a non-enum check keeps brackets balanced on introspection [postgres]', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();
