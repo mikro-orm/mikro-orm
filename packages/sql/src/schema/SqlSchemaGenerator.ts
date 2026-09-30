@@ -207,11 +207,13 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
           .truncate()
           .execute();
 
-        for (const prop of meta.props.filter(prop => prop.autoincrement && prop.sequence?.startWith != null)) {
-          const schemaName = this.getSchemaName(meta, { schema });
+        // the counters of a TPT child's inherited columns (PK included) belong to the parent table
+        const props = meta.tptParent ? (meta.ownProps ?? []) : meta.props;
+
+        for (const prop of props.filter(prop => prop.autoincrement && prop.sequence?.startWith != null)) {
           const sql = this.helper.getResetSequenceSQL(
             meta.tableName,
-            schemaName,
+            this.getSchemaName(meta, { schema }),
             prop.fieldNames[0],
             prop.sequence!.startWith!,
           );

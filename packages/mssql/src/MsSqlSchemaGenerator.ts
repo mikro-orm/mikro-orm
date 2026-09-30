@@ -37,9 +37,9 @@ export class MsSqlSchemaGenerator extends SchemaGenerator {
     for (const meta of this.getOrderedMetadataForClear(options?.schema).reverse()) {
       await this.driver.nativeDelete(meta.class, {}, options);
 
-      // a table has at most one identity column: a TPT child's PK references the parent instead, and a non-PK one is only reseeded when it declares `sequence`
+      // a table has at most one identity column: a TPT child's inherited PK references the parent instead, and a non-PK one is only reseeded when it declares `sequence`
       const props = meta.tptParent ? (meta.ownProps ?? []) : meta.props;
-      const identity = props.find(prop => prop.autoincrement && (prop.primary ? !meta.tptParent : !!prop.sequence));
+      const identity = props.find(prop => prop.autoincrement && (prop.primary || !!prop.sequence));
 
       if (identity) {
         const tableName = this.driver.getTableName(meta, { schema: options?.schema }, false);

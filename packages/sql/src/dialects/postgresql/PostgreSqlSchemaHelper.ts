@@ -199,7 +199,13 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       .filter(column => column.autoincrement && !column.generated && this.getSequenceOptionsSQL(column))
       .map(column => {
         const sequence = `pg_get_serial_sequence(${this.platform.quoteValue(table.getQuotedName())}, ${this.platform.quoteValue(column.name)})`;
-        return `do $$ begin execute format('alter sequence %s ${this.getSequenceOptionsSQL(column)} restart', ${sequence}); end $$`;
+        const { startWith = -1, incrementBy = 1 } = column.sequence!;
+        // `alter sequence` keeps the ascending bounds of the serial, so a descending one gets the bounds and start of a fresh sequence
+        const options =
+          incrementBy < 0
+            ? `no minvalue maxvalue ${Math.max(startWith, -1)} start with ${startWith} increment by ${incrementBy}`
+            : this.getSequenceOptionsSQL(column);
+        return `do $$ begin execute format('alter sequence %s ${options} restart', ${sequence}); end $$`;
       });
 
     if (!partitioning) {
@@ -1694,7 +1700,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const adds = columns.map(column => {
       const sequenceOptions = this.getSequenceOptionsSQL(column);
 
-      if (!sequenceOptions || !column.autoincrement || column.generated || compositePK) {
+      if (!sequenceOptions || !column.autoincrement || column.generated) {
         return column;
       }
 
@@ -1706,7 +1712,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       after.push(`alter sequence ${seqName} owned by ${table.getQuotedName()}.${this.quote(column.name)}`);
 
       // the expanded column has no inline `primary key`, which `alterTable` expects from an added autoincrement PK
-      if (column.primary && !this.hasNonDefaultPrimaryKeyName(table)) {
+      if (column.primary && !compositePK && !this.hasNonDefaultPrimaryKeyName(table)) {
         after.push(`alter table ${table.getQuotedName()} add primary key (${this.quote(column.name)})`);
       }
 
@@ -1731,15 +1737,17 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     if (column.autoincrement) {
       const seqName = this.platform.getIndexName(tableName, [column.name], 'sequence');
       const sequenceOptions = this.getSequenceOptionsSQL(column);
-      const maxValue = `(select max(${this.quote(column.name)}) from ${this.quote(name)})`;
+      const { incrementBy = 1, startWith = incrementBy < 0 ? -1 : 1 } = column.sequence ?? {};
+      const lastValue = `(select ${incrementBy < 0 ? 'min' : 'max'}(${this.quote(column.name)}) from ${this.quote(name)})`;
       ret.push(`create sequence if not exists ${this.quote(seqName)}${sequenceOptions ? ` ${sequenceOptions}` : ''}`);
 
       if (sequenceOptions) {
-        const { startWith = 1, incrementBy = 1 } = column.sequence!;
-        // continue after the existing values, but never below the declared start
-        ret.push(`select setval('${seqName}', greatest(${maxValue} + ${incrementBy}, ${startWith}), false)`);
+        // continue after the existing values, but never before the declared start
+        ret.push(
+          `select setval('${seqName}', ${incrementBy < 0 ? 'least' : 'greatest'}(${lastValue} + ${incrementBy}, ${startWith}), false)`,
+        );
       } else {
-        ret.push(`select setval('${seqName}', ${maxValue})`);
+        ret.push(`select setval('${seqName}', ${lastValue})`);
       }
       ret.push(
         `alter table ${this.quote(name)} alter column ${this.quote(column.name)} set default nextval('${seqName}')`,

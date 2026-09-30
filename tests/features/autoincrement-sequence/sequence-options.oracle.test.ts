@@ -28,6 +28,12 @@ class Purchase {
   number!: number & Opt;
 }
 
+@Entity({ tableName: 'counter' })
+class Counter {
+  @PrimaryKey({ sequence: { startWith: 0 } })
+  id!: number;
+}
+
 async function bootstrap(entities: any[]) {
   const orm = await MikroORM.init({
     driver: OracleDriver,
@@ -86,5 +92,23 @@ test('clear() resets a non-PK autoincrement column', async () => {
   await orm.schema.clear();
   await expect(insert()).resolves.toEqual([500, 501]);
 
+  await orm.close(true);
+});
+
+test('a start value below the default bound of the identity', async () => {
+  const orm = await bootstrap([Counter]);
+  const insert = async () => {
+    const em = orm.em.fork();
+    const counters = [em.create(Counter, {}), em.create(Counter, {})];
+    await em.flush();
+    return counters.map(c => c.id);
+  };
+
+  await expect(insert()).resolves.toEqual([0, 1]);
+  await orm.schema.clear();
+  await expect(insert()).resolves.toEqual([0, 1]);
+
+  // the Oracle test schema outlives the run, a leftover table would diff in the other tests
+  await orm.schema.drop();
   await orm.close(true);
 });

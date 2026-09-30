@@ -2704,7 +2704,7 @@ export class Order {
   </TabItem>
 </Tabs>
 
-The options are applied when the schema generator creates the column, either with a new table or as an added column, and `orm.schema.clear()` moves the counter back to `startWith`. On PostgreSQL and MySQL, the existing rows of an added column are numbered from `startWith` too. On PostgreSQL, the options also apply when an existing column becomes autoincrement, continuing after its highest value if that is above `startWith`.
+The options are applied when the schema generator creates the column, either with a new table or as an added column, and `orm.schema.clear()` moves the counter back to `startWith`. On PostgreSQL and MySQL, the existing rows of an added column are numbered from `startWith` too. On PostgreSQL, the options also apply when an existing column becomes autoincrement, continuing after its existing values if they are already past `startWith`.
 
 | Driver | Emitted SQL |
 |---|---|

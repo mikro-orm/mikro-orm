@@ -85,6 +85,66 @@ class Line {
   tenant!: number;
 }
 
+@Entity({ tableName: 'line' })
+class LineByTenant {
+  @PrimaryKey()
+  tenant!: number;
+}
+
+@Entity({ tableName: 'refund' })
+class Refund {
+  @PrimaryKey({ sequence: { incrementBy: -1 } })
+  id!: number;
+
+  @Property({ type: 'integer', autoincrement: true, sequence: { startWith: -10, incrementBy: -2 } })
+  number!: number & Opt;
+}
+
+@Entity({ tableName: 'payout' })
+class PayoutWithPlainNumber {
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ type: 'integer', nullable: true })
+  number?: number;
+}
+
+@Entity({ tableName: 'payout' })
+class Payout {
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ type: 'integer', autoincrement: true, sequence: { incrementBy: -1 } })
+  number!: number & Opt;
+}
+
+@Entity({ inheritance: 'tpt' })
+abstract class Vehicle {
+  @PrimaryKey({ type: 'integer', sequence: { startWith: 100 } })
+  id!: number;
+
+  @Property({ type: 'integer', autoincrement: true, sequence: { startWith: 500 } })
+  serial!: number & Opt;
+}
+
+@Entity()
+class Car extends Vehicle {
+  @Property({ type: 'integer' })
+  doors!: number;
+}
+
+@Entity({ tableName: 'counter' })
+class Counter {
+  @PrimaryKey({ sequence: { startWith: 0 } })
+  id!: number;
+
+  @Property({ type: 'integer', autoincrement: true, sequence: { startWith: 5, incrementBy: -1 } })
+  countdown!: number & Opt;
+
+  @Property({ type: 'integer', autoincrement: true, generated: 'identity', sequence: { startWith: -3 } })
+  level!: number & Opt;
+}
+
 async function bootstrap(entities: any[]) {
   const orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
@@ -272,6 +332,98 @@ test('the options apply to an autoincrement column of a composite primary key', 
   await expect(insert()).resolves.toBe(100);
   // the database is shared with the other tests, only the `line` table matters here
   await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.not.toContain('"line"');
+
+  await orm.close(true);
+});
+
+test('the options apply to an autoincrement column added to a composite primary key', async () => {
+  const orm = await bootstrap([LineByTenant]);
+  await orm.em.fork().insertMany(LineByTenant, [{ tenant: 1 }, { tenant: 2 }]);
+
+  orm.discoverEntity(Line, LineByTenant);
+  await orm.schema.update();
+  await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.not.toContain('"line"');
+
+  const em = orm.em.fork();
+  em.create(Line, { tenant: 3 });
+  await em.flush();
+  const lines = await orm.em.fork().find(Line, {}, { orderBy: { id: 1 } });
+  expect(lines.map(l => l.id)).toEqual([100, 101, 102]);
+
+  await orm.close(true);
+});
+
+test('descending serial columns', async () => {
+  const orm = await bootstrap([Refund]);
+  const insert = async () => {
+    const em = orm.em.fork();
+    const refunds = [em.create(Refund, {}), em.create(Refund, {})];
+    await em.flush();
+    return refunds.map(r => [r.id, r.number]);
+  };
+
+  await expect(insert()).resolves.toEqual([
+    [-1, -10],
+    [-2, -12],
+  ]);
+  await orm.schema.clear();
+  await expect(insert()).resolves.toEqual([
+    [-1, -10],
+    [-2, -12],
+  ]);
+
+  await orm.close(true);
+});
+
+test('the options apply when an existing column becomes a descending autoincrement', async () => {
+  const orm = await bootstrap([PayoutWithPlainNumber]);
+  await orm.em.fork().insertMany(PayoutWithPlainNumber, [{ id: 101, number: -5 }]);
+
+  orm.discoverEntity(Payout, PayoutWithPlainNumber);
+  await orm.schema.update();
+
+  const em = orm.em.fork();
+  const payout = em.create(Payout, { id: 102 });
+  await em.flush();
+  expect(payout.number).toBe(-6);
+
+  await orm.close(true);
+});
+
+test('clear() resets only the own columns of a TPT child table', async () => {
+  const orm = await bootstrap([Vehicle, Car]);
+  const insert = async () => {
+    const em = orm.em.fork();
+    const car = em.create(Car, { doors: 4 });
+    await em.flush();
+    return [car.id, car.serial];
+  };
+
+  await expect(insert()).resolves.toEqual([100, 500]);
+  await orm.schema.clear();
+  await expect(insert()).resolves.toEqual([100, 500]);
+
+  await orm.close(true);
+});
+
+test('start values beyond the default bounds of a sequence', async () => {
+  const orm = await bootstrap([Counter]);
+  const insert = async () => {
+    const em = orm.em.fork();
+    const counters = [em.create(Counter, {}), em.create(Counter, {})];
+    await em.flush();
+    return counters.map(c => [c.id, c.countdown, c.level]);
+  };
+
+  await expect(insert()).resolves.toEqual([
+    [0, 5, -3],
+    [1, 4, -2],
+  ]);
+  await orm.schema.clear();
+  await expect(insert()).resolves.toEqual([
+    [0, 5, -3],
+    [1, 4, -2],
+  ]);
 
   await orm.close(true);
 });

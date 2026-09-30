@@ -143,8 +143,13 @@ export abstract class SchemaHelper {
   /** Renders the `start with … increment by …` clause for the `sequence` option of an autoincrement column. */
   protected getSequenceOptionsSQL(column: Column): string {
     const { startWith, incrementBy } = column.sequence ?? {};
+    const descending = incrementBy != null && incrementBy < 0;
+    // a sequence is bounded by 1 (ascending) or -1 (descending) by default, a start beyond that has to move the bound
+    const bound =
+      startWith != null &&
+      (descending ? startWith > -1 && `maxvalue ${startWith}` : startWith < 1 && `minvalue ${startWith}`);
 
-    return [startWith != null && `start with ${startWith}`, incrementBy != null && `increment by ${incrementBy}`]
+    return [startWith != null && `start with ${startWith}`, incrementBy != null && `increment by ${incrementBy}`, bound]
       .filter(Boolean)
       .join(' ');
   }
