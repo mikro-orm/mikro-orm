@@ -7,9 +7,8 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **mssql:** skip TPT child tables when reseeding identities in `clear()` ([#8358](https://github.com/mikro-orm/mikro-orm/issues/8358)) ([7a3614e](https://github.com/mikro-orm/mikro-orm/commit/7a3614e37a2503f99e426c6d59eaf0038b34e6b6))
-* **sql:** restore a missing primary key in the schema diff ([#8355](https://github.com/mikro-orm/mikro-orm/issues/8355)) ([a0e4c75](https://github.com/mikro-orm/mikro-orm/commit/a0e4c75abd06d4a95860de3078f4e0c7988b7111))
-
+- **mssql:** skip TPT child tables when reseeding identities in `clear()` ([#8358](https://github.com/mikro-orm/mikro-orm/issues/8358)) ([7a3614e](https://github.com/mikro-orm/mikro-orm/commit/7a3614e37a2503f99e426c6d59eaf0038b34e6b6))
+- **sql:** restore a missing primary key in the schema diff ([#8355](https://github.com/mikro-orm/mikro-orm/issues/8355)) ([a0e4c75](https://github.com/mikro-orm/mikro-orm/commit/a0e4c75abd06d4a95860de3078f4e0c7988b7111))
 
 ## [7.2.2](https://github.com/mikro-orm/mikro-orm/compare/v7.2.1...v7.2.2) (2026-09-28)
 

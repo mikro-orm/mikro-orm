@@ -7,8 +7,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **core:** detect changes to decimal strings beyond double precision ([#8368](https://github.com/mikro-orm/mikro-orm/issues/8368)) ([6ba4d2b](https://github.com/mikro-orm/mikro-orm/commit/6ba4d2b9270024cd158b3087f46758a41e8ff21c)), closes [high-precision](https://github.com/hi/issues/precision)
-
+- **core:** detect changes to decimal strings beyond double precision ([#8368](https://github.com/mikro-orm/mikro-orm/issues/8368)) ([6ba4d2b](https://github.com/mikro-orm/mikro-orm/commit/6ba4d2b9270024cd158b3087f46758a41e8ff21c)), closes [high-precision](https://github.com/hi/issues/precision)
 
 ## [7.2.2](https://github.com/mikro-orm/mikro-orm/compare/v7.2.1...v7.2.2) (2026-09-28)
 
