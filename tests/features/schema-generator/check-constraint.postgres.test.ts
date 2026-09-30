@@ -458,8 +458,7 @@ describe('check constraint [postgres]', () => {
     const meta = orm.getMetadata();
     await orm.schema.update();
 
-    // pg stores `rate >= 0` on a double column as `CHECK ((rate >= (0)::double precision))`, and
-    // rewrites `share between 0 and 1` to `((share >= (0)::double precision) AND (share <= (1)::double precision))`
+    // pg casts the literals to `double precision` and rewrites `[not] between` into `>=`/`<=` (`<`/`>`) comparisons
     const newTableMeta = new EntitySchema({
       properties: {
         id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'int' },
@@ -471,6 +470,7 @@ describe('check constraint [postgres]', () => {
       checks: [
         { name: 'chk_rate', expression: 'rate >= 0' },
         { name: 'chk_share', expression: 'share between 0 and 1' },
+        { name: 'chk_rate_range', expression: 'rate not between 100 and 200' },
       ],
     }).init().meta;
     meta.set(newTableMeta.class, newTableMeta);

@@ -32,6 +32,9 @@ const POSTGIS_VIEWS = ['geography_columns', 'geometry_columns'];
 /** Dollar-quote delimiter, e.g. `$$` or `$body$`, captured so `split` keeps it. */
 const DOLLAR_QUOTE_TAG = /(\$(?:[A-Za-z_]\w*)?\$)/;
 
+/** pg-added `(<operand>)::type` cast in a check body, including multi word types like `double precision`. */
+const CHECK_CAST_RE = /\(([^()]*)\)::\w+(?: precision| varying| with(?:out)? time zone)?(?:\[\])?/g;
+
 export class PostgreSqlSchemaHelper extends SchemaHelper {
   static readonly DEFAULT_VALUES = {
     'now()': ['now()', 'current_timestamp'],
@@ -723,8 +726,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       // SchemaHelper.createCheck).
       const m = /^check \(\((.*)\)\)$/is.exec(check.expression);
       const single = m ? null : /^check \((.*)\)$/is.exec(check.expression);
-      const castRe = /\(([^()]*)\)::\w+(?: precision| varying| with(?:out)? time zone)?(?:\[\])?/g;
-      const def = m ? m[1].replace(castRe, '$1') : single ? single[1] : check.expression;
+      const def = m ? m[1].replace(CHECK_CAST_RE, '$1') : single ? single[1] : check.expression;
       ret[key].push({
         name: check.name,
         columnName: check.column_name,
