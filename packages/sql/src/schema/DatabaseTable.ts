@@ -1347,6 +1347,7 @@ export class DatabaseTable {
     }
 
     const where = this.processIndexWhere(index.where, meta);
+    const expression = this.processIndexExpression(name, index.expression, meta);
 
     this.#indexes.push({
       keyName: name,
@@ -1354,11 +1355,16 @@ export class DatabaseTable {
       composite: properties.length > 1,
       // JSON columns can have unique index but not unique constraint, and we need to distinguish those, so we can properly drop them.
       // Partial indexes (`where`) must use CREATE [UNIQUE] INDEX form — constraints can't carry predicates.
-      constraint: type !== 'index' && !properties.some((d: string) => d.includes('.')) && !where,
+      // Raw `create [unique] index` expressions are plain indexes, not constraints.
+      constraint:
+        type !== 'index' &&
+        !properties.some((d: string) => d.includes('.')) &&
+        !where &&
+        !/^\s*create\s/i.test(expression ?? ''),
       primary: type === 'primary',
       unique: type !== 'index',
       type: index.type,
-      expression: this.processIndexExpression(name, index.expression, meta),
+      expression,
       where,
       options: index.options,
       deferMode: index.deferMode,
