@@ -31,6 +31,7 @@ describe('UnlogMigrationCommand', () => {
     unlogMigration.mockResolvedValue(void 0);
     const ensureTable = vi.spyOn(MigrationStorage.prototype, 'ensureTable');
     ensureTable.mockResolvedValue(void 0);
+    vi.spyOn(MigrationStorage.prototype, 'getExecutedMigrations').mockResolvedValue([]);
     const infoMock = vi.spyOn(CLIHelper, 'info');
     infoMock.mockImplementation(() => void 0);
 

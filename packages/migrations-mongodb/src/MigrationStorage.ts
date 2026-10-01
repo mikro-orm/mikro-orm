@@ -39,6 +39,22 @@ export class MigrationStorage {
     );
   }
 
+  async setBreakpoint(params: { name: string; breakpoint: boolean }): Promise<void> {
+    const name = this.getMigrationName(params.name);
+    const row = (await this.getExecutedMigrations()).find(migration => this.getMigrationName(migration.name) === name);
+
+    if (!row) {
+      throw new Error(`Cannot set breakpoint on a migration that has not been executed: ${name}`);
+    }
+
+    await this.driver.nativeUpdate(
+      this.getEntityDefinition(),
+      { name: { $in: [name, `${name}.js`, `${name}.ts`] } },
+      { breakpoint: params.breakpoint },
+      { ctx: this.masterTransaction },
+    );
+  }
+
   async getExecutedMigrations(): Promise<MigrationRow[]> {
     const entity = this.getEntityDefinition();
     return this.driver.find(
@@ -82,6 +98,7 @@ export class MigrationStorage {
         id: p.integer().primary().fieldNames('id'),
         name: p.string().fieldNames('name'),
         executedAt: p.datetime().defaultRaw('current_timestamp').fieldNames('executed_at'),
+        breakpoint: p.boolean().nullable(),
       },
     }).init();
     entity.meta.sync();

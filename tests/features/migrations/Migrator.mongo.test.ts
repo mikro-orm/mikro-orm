@@ -24,6 +24,79 @@ class MigrationTest2 extends Migration {
   }
 }
 
+class BreakpointMongoMigration extends Migration {
+  override async up(): Promise<void> {
+    await this.getCollection('breakpoint_items').insertOne({ name: this.constructor.name }, { session: this.ctx });
+  }
+
+  override async down(): Promise<void> {
+    await this.getCollection('breakpoint_items').deleteOne({ name: this.constructor.name }, { session: this.ctx });
+  }
+}
+
+class LaterMongoMigration extends BreakpointMongoMigration {}
+
+describe('migration breakpoints (mongo)', () => {
+  let orm: MikroORM<MongoDriver>;
+
+  beforeEach(async () => {
+    orm = await initORMMongo(true, {
+      migrations: {
+        migrationsList: [BreakpointMongoMigration, LaterMongoMigration],
+        snapshot: false,
+        silent: true,
+      },
+    });
+    await orm.em.getConnection().getDb().createCollection('breakpoint_items');
+    await orm.migrator.up();
+  });
+
+  afterEach(async () => {
+    await orm.em.getConnection().getDb().dropDatabase();
+    await orm.close(true);
+  });
+
+  test('persists breakpoints in legacy documents and rejects rollback before data changes', async () => {
+    const before = await orm.migrator.getExecuted();
+    expect(before.every(row => !('breakpoint' in row))).toBe(true);
+    await orm.migrator.setBreakpoint('BreakpointMongoMigration.js');
+    const migrator = new Migrator(orm.em);
+    expect((await migrator.getExecuted()).map(row => !!row.breakpoint)).toEqual([true, false]);
+    await expect(migrator.down({ to: 0 })).rejects.toThrow("breakpoint 'BreakpointMongoMigration'");
+    expect(await orm.em.getConnection().getDb().collection('breakpoint_items').countDocuments()).toBe(2);
+    expect(await migrator.getExecuted()).toHaveLength(2);
+    expect((await migrator.down({ to: 'BreakpointMongoMigration' })).map(row => row.name)).toEqual([
+      'LaterMongoMigration',
+    ]);
+    await expect(migrator.down()).rejects.toThrow("breakpoint 'BreakpointMongoMigration'");
+    await expect(migrator.unlogMigration('BreakpointMongoMigration')).rejects.toThrow(
+      "breakpoint 'BreakpointMongoMigration'",
+    );
+    await migrator.setBreakpoint('BreakpointMongoMigration', false);
+    expect((await migrator.getExecuted())[0].breakpoint).toBe(false);
+    await migrator.down();
+    expect(await orm.em.getConnection().getDb().collection('breakpoint_items').countDocuments()).toBe(0);
+  });
+
+  test('rejects unknown migrations and unsupported runtime schemas', async () => {
+    await expect(orm.migrator.setBreakpoint('Unknown')).rejects.toThrow('has not been executed');
+    await expect(orm.migrator.setBreakpoint('BreakpointMongoMigration', true, { schema: 'tenant' })).rejects.toThrow(
+      'Runtime schema for migrations is not supported by the MongoDriver',
+    );
+    expect((await orm.migrator.getExecuted()).every(row => !row.breakpoint)).toBe(true);
+  });
+
+  test('sets and removes markers consistently across legacy filename variants', async () => {
+    const collection = orm.em.getConnection().getDb().collection(orm.config.get('migrations').tableName!);
+    await collection.insertOne({ name: 'BreakpointMongoMigration.ts', executed_at: new Date(), breakpoint: true });
+    await orm.migrator.setBreakpoint('BreakpointMongoMigration.js', false);
+    expect((await orm.migrator.getExecuted()).every(row => !row.breakpoint)).toBe(true);
+    await orm.migrator.setBreakpoint('BreakpointMongoMigration.ts');
+    expect((await orm.migrator.getExecuted()).map(row => !!row.breakpoint)).toEqual([true, false, true]);
+    await expect(orm.migrator.down()).rejects.toThrow("breakpoint 'BreakpointMongoMigration'");
+  });
+});
+
 describe('Migrator (mongo)', () => {
   let orm: MikroORM<MongoDriver>;
   let originalMigrationsSettings: any;
