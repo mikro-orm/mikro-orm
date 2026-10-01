@@ -585,7 +585,7 @@ test('ensureTable when the schema does not exist', async () => {
   );
   expect(mock.mock.calls[2][0]).toMatch(`create schema if not exists "custom2"`);
   expect(mock.mock.calls[3][0]).toMatch(
-    `create table "custom2"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255) not null, "executed_at" timestamptz(6) not null default current_timestamp(6))`,
+    `create table "custom2"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255) not null, "executed_at" timestamptz(6) not null default current_timestamp(6), "breakpoint" boolean not null default false)`,
   );
   await orm.close();
 });

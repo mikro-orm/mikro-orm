@@ -2269,8 +2269,8 @@ export type MigrateOptions = {
 /** Result of creating a new migration file, including the generated code and schema diff. */
 export type MigrationResult = { fileName: string; code: string; diff: MigrationDiff };
 
-/** A row from the migrations tracking table, representing an executed migration. */
-export type MigrationRow = { id: number; name: string; executed_at: Date };
+/** A row from the migrations tracking table. Legacy histories can omit the inactive breakpoint flag. */
+export type MigrationRow = { id: number; name: string; executed_at: Date; breakpoint?: boolean };
 
 /**
  * @internal
@@ -2291,6 +2291,7 @@ export interface IMigratorStorage {
   logMigration(params: Dictionary, tx?: Transaction): Promise<void>;
   unlogMigration(params: Dictionary, tx?: Transaction): Promise<void>;
   getExecutedMigrations(): Promise<MigrationRow[]>;
+  setBreakpoint(params: { name: string; breakpoint: boolean }): Promise<void>;
   ensureTable?(): Promise<void>;
   setMasterMigration(trx: Transaction): void;
   unsetMasterMigration(): void;
@@ -2324,6 +2325,15 @@ export interface IMigrator {
    * Returns list of already executed migrations.
    */
   getExecuted(options?: { schema?: string }): Promise<MigrationRow[]>;
+
+  /**
+   * Sets or removes a persistent rollback breakpoint on an executed migration.
+   * A breakpoint prevents reverting that migration and any earlier migration in the execution history.
+   * Rollback and rollup requests affecting protected entries are rejected before execution.
+   * Later migrations remain reversible. When multiple breakpoints exist, the latest one defines the boundary.
+   * Pass `false` to remove the marker, and `options.schema` to select a supported runtime schema.
+   */
+  setBreakpoint(name: string, breakpoint?: boolean, options?: { schema?: string }): Promise<void>;
 
   /**
    * Returns list of pending (not yet executed) migrations found in the migration directory.
@@ -2363,6 +2373,7 @@ export interface IMigrator {
 
   /**
    * Removes a migration from the executed list without reverting it.
+   * Breakpoints do not restrict this operation. Any marker on the removed entry is also removed.
    */
   unlogMigration(name: string): Promise<void>;
 

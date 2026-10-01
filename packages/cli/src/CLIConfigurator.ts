@@ -97,5 +97,6 @@ export async function configure(): Promise<
     .command(MigrationCommandFactory.create('log'))
     .command(MigrationCommandFactory.create('unlog'))
     .command(MigrationCommandFactory.create('rollup'))
+    .command(MigrationCommandFactory.create('breakpoint'))
     .command(new DebugCommand());
 }

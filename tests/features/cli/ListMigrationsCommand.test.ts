@@ -10,10 +10,14 @@ import { initORMSqlite } from '../../bootstrap.js';
 const closeSpy = vi.spyOn(MikroORM.prototype, 'close');
 vi.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
 const getExecutedMigrations = vi.spyOn(Migrator.prototype, 'getExecuted');
-getExecutedMigrations.mockResolvedValue([{ id: 1, name: '1', executed_at: new Date() }]);
+const executedAt = new Date();
+getExecutedMigrations.mockResolvedValue([
+  { id: 1, name: '1.ts', executed_at: executedAt, breakpoint: true },
+  { id: 2, name: '2', executed_at: executedAt },
+]);
 const dumpMock = vi.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
-vi.spyOn(CLIHelper, 'dumpTable').mockImplementation(() => void 0);
+const tableMock = vi.spyOn(CLIHelper, 'dumpTable').mockImplementation(() => void 0);
 
 describe('ListMigrationsCommand', () => {
   let orm: MikroORM<SqliteDriver>;
@@ -38,5 +42,13 @@ describe('ListMigrationsCommand', () => {
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(getExecutedMigrations.mock.calls.length).toBe(1);
     expect(closeSpy).toHaveBeenCalledTimes(1);
+    expect(tableMock).toHaveBeenCalledWith({
+      columns: ['Name', 'Executed at', 'Breakpoint'],
+      rows: [
+        ['1', executedAt.toISOString(), 'Yes'],
+        ['2', executedAt.toISOString(), 'No'],
+      ],
+      empty: 'No migrations executed yet',
+    });
   });
 });

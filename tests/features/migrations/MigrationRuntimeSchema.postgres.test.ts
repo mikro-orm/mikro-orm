@@ -178,4 +178,25 @@ describe('migrations with runtime schema (postgres)', () => {
       orm.config.resetServiceCache();
     }
   });
+
+  test('upgrades a legacy history table and keeps breakpoints scoped to its tenant', async () => {
+    await orm.em.getConnection().execute('alter table "tenant_b"."mikro_orm_migrations" drop column "breakpoint"');
+    const before = await orm.migrator.getExecuted({ schema: 'tenant_b' });
+    expect(before[0]).not.toHaveProperty('breakpoint');
+
+    await orm.migrator.setBreakpoint('CreateArticleMigration', true, { schema: 'tenant_b' });
+    const migrator = new Migrator(orm.em);
+    const after = await migrator.getExecuted({ schema: 'tenant_b' });
+    expect(after).toEqual([{ ...before[0], breakpoint: true }]);
+    await expect(migrator.down({ schema: 'tenant_b' })).rejects.toThrow("breakpoint 'CreateArticleMigration'");
+    expect(await migrator.down({ schema: 'tenant_a' })).toEqual([]);
+    await expect(migrator.setBreakpoint('Unknown', true, { schema: 'tenant_b' })).rejects.toThrow(
+      'has not been executed',
+    );
+    expect(await migrator.getExecuted({ schema: 'tenant_a' })).toEqual([]);
+
+    await migrator.setBreakpoint('CreateArticleMigration', false, { schema: 'tenant_b' });
+    expect((await migrator.getExecuted({ schema: 'tenant_b' }))[0].breakpoint).toBe(false);
+    await migrator.down({ schema: 'tenant_b' });
+  });
 });
