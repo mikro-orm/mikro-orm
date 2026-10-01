@@ -191,6 +191,24 @@ describe.each(Utils.keys(options))('batch update optimistic locking [%s]', type 
       expect((outcome as OptimisticLockError).getEntity()).toBe(a);
     });
 
+    test('version: a reference without a loaded version in the same flush', async () => {
+      const [aId, bId] = await seed(Doc, {});
+      const em = orm.em.fork();
+      const a = await em.findOneOrFail(Doc, aId);
+      const b = em.getReference(Doc, bId);
+      a.title = 'A-T1';
+      b.title = 'B-T1';
+
+      writeBeforeFirstUpdate(() =>
+        orm.em.fork().nativeUpdate(Doc, { id: aId, version: 1 }, { title: 'A-T2', version: 2 }),
+      );
+      const outcome = await flush(em);
+
+      expect(outcome).toBeInstanceOf(OptimisticLockError);
+      expect((outcome as OptimisticLockError).getEntity()).toBe(a);
+      expect((await rows(Doc, [aId]))[0]).toEqual({ id: aId, title: 'A-T2', version: 2 });
+    });
+
     test('concurrencyCheck: write committed between the check and the UPDATE', async () => {
       const [aId, bId] = await seed(Counter, { rev: 1 });
       const em = orm.em.fork();

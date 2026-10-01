@@ -314,11 +314,18 @@ export class ChangeSetPersister {
     options?: DriverMethodOptions,
   ): Promise<void> {
     const size = this.#config.get('batchSize');
+    // a batch checks the version in all rows or none, so references without a loaded version go separately
+    const hasVersion = (cs: ChangeSet<T>) => cs.entity[meta.versionProperty] != null;
+    const groups = meta.ownsVersionProperty()
+      ? [changeSets.filter(hasVersion), changeSets.filter(cs => !hasVersion(cs))]
+      : [changeSets];
 
-    for (let i = 0; i < changeSets.length; i += size) {
-      const chunk = changeSets.slice(i, i + size);
-      await this.persistManagedEntitiesBatch(meta, chunk, options);
-      await this.reloadVersionValues(meta, chunk, options);
+    for (const group of groups) {
+      for (let i = 0; i < group.length; i += size) {
+        const chunk = group.slice(i, i + size);
+        await this.persistManagedEntitiesBatch(meta, chunk, options);
+        await this.reloadVersionValues(meta, chunk, options);
+      }
     }
   }
 
