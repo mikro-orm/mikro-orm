@@ -204,8 +204,10 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
     const parts: string[] = [];
 
-    for (const fk of Object.values(table.getForeignKeys())) {
-      parts.push(this.createForeignKey(table, fk, false));
+    if (this.options.createForeignKeyConstraints) {
+      for (const fk of Object.values(table.getForeignKeys())) {
+        parts.push(this.createForeignKey(table, fk, false));
+      }
     }
 
     for (const check of table.getChecks()) {
