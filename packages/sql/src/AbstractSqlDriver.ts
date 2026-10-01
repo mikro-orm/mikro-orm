@@ -1691,47 +1691,40 @@ export abstract class AbstractSqlDriver<
     sql += ' where ';
     const pkProps = meta.primaryKeys.concat(...meta.getOwnConcurrencyCheckKeys());
 
-    // `ChangeSetPersister` adds the version to every condition (or to none) to keep the update optimistic
+    // an optimistically locked batch carries the version in every condition
     if (
-      meta.ownsVersionProperty() &&
+      meta.versionProperty &&
       where.every(cond => Utils.isPlainObject(cond) && meta.versionProperty in (cond as Dictionary))
     ) {
       pkProps.push(meta.versionProperty);
     }
 
     const pks = Utils.flatten(pkProps.map(pk => meta.properties[pk].fieldNames));
-    // a date version is compared via `$in` in sqlite (see `convertVersionValue()`), which a tuple cannot express
-    const isIn = (value: unknown): value is { $in: unknown[] } =>
-      Utils.isPlainObject(value) && Array.isArray((value as Dictionary).$in);
-    const useTupleIn =
-      (pks.length <= 1 || this.platform.allowsComparingTuples()) &&
-      !where.some(cond => pkProps.some(pk => isIn((cond as Dictionary)[pk])));
-    const condTemplate = `(${pks.map(() => '?').join(', ')})`;
 
-    const conds = where.map(cond => {
+    const useTupleIn = pks.length <= 1 || this.platform.allowsComparingTuples();
+    const condTemplate = useTupleIn
+      ? `(${pks.map(() => '?').join(', ')})`
+      : `(${pks.map(pk => `${this.platform.quoteIdentifier(pk)} = ?`).join(' and ')})`;
+
+    const conds = where.flatMap(cond => {
       // with multiple PK columns the condition is looked up by property name, so it needs to stay an object
       if (pks.length === 1 && Utils.isPlainObject(cond) && Utils.getObjectKeysSize(cond) === 1) {
         cond = Object.values(cond)[0] as object;
       }
 
       if (pks.length > 1) {
-        const parts: string[] = [];
+        // a date version in sqlite matches either of its storage formats (see `convertVersionValue()`)
+        const version = (cond as Dictionary)[meta.versionProperty];
+        const versions: unknown[] = version?.$in ?? [version];
 
-        pkProps.forEach(pk => {
-          const value = cond[pk as keyof FilterQuery<T>] as unknown;
-          const fieldNames = meta.properties[pk].fieldNames;
+        return versions.map(v => {
+          pkProps.forEach(pk => {
+            const value = pk === meta.versionProperty ? v : cond[pk as keyof FilterQuery<T>];
+            params.push(...(Array.isArray(value) ? Utils.flatten(value as any) : [value]));
+          });
 
-          if (isIn(value)) {
-            params.push(...value.$in);
-            parts.push(`${this.platform.quoteIdentifier(fieldNames[0])} in (${value.$in.map(() => '?').join(', ')})`);
-            return;
-          }
-
-          params.push(...(Array.isArray(value) ? Utils.flatten(value as any) : [value]));
-          parts.push(...fieldNames.map(field => `${this.platform.quoteIdentifier(field)} = ?`));
+          return condTemplate;
         });
-
-        return useTupleIn ? condTemplate : `(${parts.join(' and ')})`;
       }
 
       params.push(cond);
