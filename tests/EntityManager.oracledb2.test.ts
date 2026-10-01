@@ -1526,7 +1526,7 @@ describe('EntityManagerOracle2', () => {
       'select "f0"."id" from "foo_bar2" "f0" where (("f0"."id" = ? and "f0"."version" = ?) or ("f0"."id" = ? and "f0"."version" = ?))',
     );
     expect(mock.mock.calls[2][0]).toMatch(
-      'update "foo_bar2" set "id" = case when ("id" = ?) then ? when ("id" = ?) then ? else "id" end, "version" = current_timestamp where "id" in (?, ?) returning "id", "version" into :out_id, :out_version',
+      'update "foo_bar2" set "id" = case when ("id" = ?) then ? when ("id" = ?) then ? else "id" end, "version" = current_timestamp where ("id" = ? and "version" = ?) or ("id" = ? and "version" = ?) returning "id", "version" into :out_id, :out_version',
     );
 
     const c1 = await orm.em.fork().findOne(FooBar2, bars[0]);

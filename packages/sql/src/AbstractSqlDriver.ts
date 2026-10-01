@@ -21,7 +21,6 @@ import {
   type EntityName,
   type EntityProperty,
   type EntityValue,
-  type FilterKey,
   type FilterQuery,
   type FindByCursorOptions,
   type FindOneOptions,
@@ -1691,6 +1690,15 @@ export abstract class AbstractSqlDriver<
 
     sql += ' where ';
     const pkProps = meta.primaryKeys.concat(...meta.getOwnConcurrencyCheckKeys());
+
+    // an optimistically locked batch carries the version in every condition
+    if (
+      meta.versionProperty &&
+      where.every(cond => Utils.isPlainObject(cond) && meta.versionProperty in (cond as Dictionary))
+    ) {
+      pkProps.push(meta.versionProperty);
+    }
+
     const pks = Utils.flatten(pkProps.map(pk => meta.properties[pk].fieldNames));
 
     const useTupleIn = pks.length <= 1 || this.platform.allowsComparingTuples();
@@ -1698,22 +1706,25 @@ export abstract class AbstractSqlDriver<
       ? `(${pks.map(() => '?').join(', ')})`
       : `(${pks.map(pk => `${this.platform.quoteIdentifier(pk)} = ?`).join(' and ')})`;
 
-    const conds = where.map(cond => {
+    const conds = where.flatMap(cond => {
       // with multiple PK columns the condition is looked up by property name, so it needs to stay an object
       if (pks.length === 1 && Utils.isPlainObject(cond) && Utils.getObjectKeysSize(cond) === 1) {
         cond = Object.values(cond)[0] as object;
       }
 
       if (pks.length > 1) {
-        pkProps.forEach(pk => {
-          if (Array.isArray(cond[pk as keyof FilterQuery<T>])) {
-            params.push(...Utils.flatten(cond[pk as FilterKey<T>] as any));
-          } else {
-            params.push(cond[pk as keyof FilterQuery<T>]);
-          }
-        });
+        // a date version in sqlite matches either of its storage formats (see `convertVersionValue()`)
+        const version = (cond as Dictionary)[meta.versionProperty];
+        const versions: unknown[] = version?.$in ?? [version];
 
-        return condTemplate;
+        return versions.map(v => {
+          pkProps.forEach(pk => {
+            const value = pk === meta.versionProperty ? v : cond[pk as keyof FilterQuery<T>];
+            params.push(...(Array.isArray(value) ? Utils.flatten(value as any) : [value]));
+          });
+
+          return condTemplate;
+        });
       }
 
       params.push(cond);

@@ -314,11 +314,18 @@ export class ChangeSetPersister {
     options?: DriverMethodOptions,
   ): Promise<void> {
     const size = this.#config.get('batchSize');
+    // a batch checks the version in all rows or none, so references without a loaded version go separately
+    const hasVersion = (cs: ChangeSet<T>) => cs.entity[meta.versionProperty] != null;
+    const groups = meta.ownsVersionProperty()
+      ? [changeSets.filter(hasVersion), changeSets.filter(cs => !hasVersion(cs))]
+      : [changeSets];
 
-    for (let i = 0; i < changeSets.length; i += size) {
-      const chunk = changeSets.slice(i, i + size);
-      await this.persistManagedEntitiesBatch(meta, chunk, options);
-      await this.reloadVersionValues(meta, chunk, options);
+    for (const group of groups) {
+      for (let i = 0; i < group.length; i += size) {
+        const chunk = group.slice(i, i + size);
+        await this.persistManagedEntitiesBatch(meta, chunk, options);
+        await this.reloadVersionValues(meta, chunk, options);
+      }
     }
   }
 
@@ -355,11 +362,21 @@ export class ChangeSetPersister {
     });
     const cond = [] as FilterQuery<T>[];
     const payload = [] as EntityData<T>[];
+    // like in `updateEntity()`, but the batch needs the version in all rows or none
+    const versioned = meta.ownsVersionProperty() && changeSets.every(cs => cs.entity[meta.versionProperty] != null);
 
     for (const changeSet of changeSets) {
-      const where = changeSet.getPrimaryKey(true) as FilterQuery<T>;
+      const where = changeSet.getPrimaryKey(true) as Dictionary;
       this.checkConcurrencyKeys(meta, changeSet, where);
-      cond.push(where);
+
+      if (versioned) {
+        where[meta.versionProperty] = this.#platform.convertVersionValue(
+          changeSet.entity[meta.versionProperty] as unknown as Date,
+          meta.properties[meta.versionProperty],
+        );
+      }
+
+      cond.push(where as FilterQuery<T>);
       payload.push(changeSet.payload);
     }
 
@@ -369,6 +386,15 @@ export class ChangeSetPersister {
     // from those to be able to match them with `getSerializedPrimaryKey()` of the entity
     const pkFields = meta.getPrimaryProps().flatMap(prop => prop.fieldNames);
     res.rows?.forEach(item => map.set(Utils.getPrimaryKeyHash(pkFields.map(field => item[field])), item));
+
+    if (
+      (meta.ownsVersionProperty() || meta.getOwnConcurrencyCheckKeys().length > 0) &&
+      res.affectedRows < changeSets.length
+    ) {
+      // without `returning`, the stale entity can't be identified, so we report the first one
+      const failed = changeSets.find(cs => !map.has(helper(cs.entity).getSerializedPrimaryKey())) ?? changeSets[0];
+      throw OptimisticLockError.lockFailed(failed.entity);
+    }
 
     for (const changeSet of changeSets) {
       if (res.rows) {
