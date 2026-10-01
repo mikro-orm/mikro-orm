@@ -204,8 +204,10 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
     const parts: string[] = [];
 
-    for (const fk of Object.values(table.getForeignKeys())) {
-      parts.push(this.createForeignKey(table, fk, false));
+    if (this.options.createForeignKeyConstraints) {
+      for (const fk of Object.values(table.getForeignKeys())) {
+        parts.push(this.createForeignKey(table, fk, false));
+      }
     }
 
     for (const check of table.getChecks()) {
@@ -707,7 +709,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     if (
       Utils.hasObjectKeys(diff.removedChecks) ||
       Utils.hasObjectKeys(diff.changedChecks) ||
-      Utils.hasObjectKeys(diff.changedForeignKeys) ||
+      (this.options.createForeignKeyConstraints && Utils.hasObjectKeys(diff.changedForeignKeys)) ||
       Utils.hasObjectKeys(diff.changedColumns) ||
       // sqlite can only add or change a primary key by rebuilding the table
       [...Object.values(diff.addedIndexes), ...Object.values(diff.changedIndexes)].some(index => index.primary)
@@ -732,7 +734,10 @@ export class SqliteSchemaHelper extends SchemaHelper {
       this.append(ret, this.getAddColumnsSQL(diff.toTable, Object.values(diff.addedColumns), diff));
     }
 
-    if (Utils.hasObjectKeys(diff.addedForeignKeys) || Utils.hasObjectKeys(diff.addedChecks)) {
+    if (
+      (this.options.createForeignKeyConstraints && Utils.hasObjectKeys(diff.addedForeignKeys)) ||
+      Utils.hasObjectKeys(diff.addedChecks)
+    ) {
       return this.getAlterTempTableSQL(diff);
     }
 

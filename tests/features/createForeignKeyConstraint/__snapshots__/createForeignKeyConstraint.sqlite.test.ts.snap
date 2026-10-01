@@ -1,0 +1,51 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`createForeignKeyConstraint [sqlite] > create SQL schema (with global createForeignKeyConstraints set to false) > createSchemaSQL-dump 1`] = `
+"create table \`author\` (\`id\` integer not null primary key autoincrement, \`name\` text not null);
+
+create table \`author_following\` (\`author_1_id\` integer not null, \`author_2_id\` integer not null, primary key (\`author_1_id\`, \`author_2_id\`));
+create index \`author_following_author_1_id_index\` on \`author_following\` (\`author_1_id\`);
+create index \`author_following_author_2_id_index\` on \`author_following\` (\`author_2_id\`);
+
+create table \`author_address\` (\`author_id\` integer not null primary key, \`value\` text not null);
+
+create table \`book_tag\` (\`id\` integer not null primary key autoincrement, \`name\` text not null);
+
+create table \`publisher\` (\`id\` integer not null primary key autoincrement, \`name\` text not null);
+
+create table \`book\` (\`id\` integer not null primary key autoincrement, \`title\` text not null, \`author_id\` integer not null, \`publisher_id\` integer not null);
+create index \`book_author_id_index\` on \`book\` (\`author_id\`);
+create index \`book_publisher_id_index\` on \`book\` (\`publisher_id\`);
+
+create table \`book_tags\` (\`book_id\` integer not null, \`book_tag_id\` integer not null, primary key (\`book_id\`, \`book_tag_id\`));
+create index \`book_tags_book_id_index\` on \`book_tags\` (\`book_id\`);
+create index \`book_tags_book_tag_id_index\` on \`book_tags\` (\`book_tag_id\`);
+
+create table \`publisher_address\` (\`publisher_id\` integer not null primary key, \`value\` text not null);
+"
+`;
+
+exports[`createForeignKeyConstraint [sqlite] > create SQL schema > createSchemaSQL-dump 1`] = `
+"create table \`author\` (\`id\` integer not null primary key autoincrement, \`name\` text not null);
+
+create table \`author_following\` (\`author_1_id\` integer not null, \`author_2_id\` integer not null, primary key (\`author_1_id\`, \`author_2_id\`), constraint \`author_following_author_1_id_foreign\` foreign key (\`author_1_id\`) references \`author\` (\`id\`) on update cascade on delete cascade, constraint \`author_following_author_2_id_foreign\` foreign key (\`author_2_id\`) references \`author\` (\`id\`) on update cascade on delete cascade);
+create index \`author_following_author_1_id_index\` on \`author_following\` (\`author_1_id\`);
+create index \`author_following_author_2_id_index\` on \`author_following\` (\`author_2_id\`);
+
+create table \`author_address\` (\`author_id\` integer not null primary key, \`value\` text not null, constraint \`author_address_author_id_foreign\` foreign key (\`author_id\`) references \`author\` (\`id\`) on update cascade on delete cascade);
+
+create table \`book_tag\` (\`id\` integer not null primary key autoincrement, \`name\` text not null);
+
+create table \`publisher\` (\`id\` integer not null primary key autoincrement, \`name\` text not null);
+
+create table \`book\` (\`id\` integer not null primary key autoincrement, \`title\` text not null, \`author_id\` integer not null, \`publisher_id\` integer not null, constraint \`book_author_id_foreign\` foreign key (\`author_id\`) references \`author\` (\`id\`));
+create index \`book_author_id_index\` on \`book\` (\`author_id\`);
+create index \`book_publisher_id_index\` on \`book\` (\`publisher_id\`);
+
+create table \`book_tags\` (\`book_id\` integer not null, \`book_tag_id\` integer not null, primary key (\`book_id\`, \`book_tag_id\`));
+create index \`book_tags_book_id_index\` on \`book_tags\` (\`book_id\`);
+create index \`book_tags_book_tag_id_index\` on \`book_tags\` (\`book_tag_id\`);
+
+create table \`publisher_address\` (\`publisher_id\` integer not null primary key, \`value\` text not null);
+"
+`;
