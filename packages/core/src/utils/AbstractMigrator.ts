@@ -430,8 +430,6 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
   async unlogMigration(name: string): Promise<void> {
     await this.init();
     await this.storage.ensureTable?.();
-    const normalized = this.getMigrationFilename(name);
-    this.assertNoBreakpoint(await this.storage.getExecutedMigrations(), [normalized], 'unlog');
     await this.storage.unlogMigration({ name });
   }
 

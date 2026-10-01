@@ -2329,7 +2329,7 @@ export interface IMigrator {
   /**
    * Sets or removes a persistent rollback breakpoint on an executed migration.
    * A breakpoint prevents reverting that migration and any earlier migration in the execution history.
-   * Rollback, rollup and unlog requests affecting protected entries are rejected before execution.
+   * Rollback and rollup requests affecting protected entries are rejected before execution.
    * Later migrations remain reversible. When multiple breakpoints exist, the latest one defines the boundary.
    * Pass `false` to remove the marker, and `options.schema` to select a supported runtime schema.
    */
@@ -2373,6 +2373,7 @@ export interface IMigrator {
 
   /**
    * Removes a migration from the executed list without reverting it.
+   * Breakpoints do not restrict this operation. Any marker on the removed entry is also removed.
    */
   unlogMigration(name: string): Promise<void>;
 
