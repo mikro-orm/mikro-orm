@@ -171,16 +171,54 @@ describe('migration breakpoints (sqlite)', () => {
     );
   });
 
-  test('requires removing an active breakpoint before unlogging its migration', async () => {
+  test('allows unlogging a faked migration before a breakpoint and reverting its later execution', async () => {
+    await orm.migrator.logMigration('ZFirst');
     await orm.migrator.up();
     await orm.migrator.setBreakpoint('ASecond');
-    await expect(orm.migrator.unlogMigration('ASecond.ts')).rejects.toThrow("breakpoint 'ASecond'");
-    await expect(orm.migrator.unlogMigration('ZFirst')).rejects.toThrow("breakpoint 'ASecond'");
-    await orm.migrator.unlogMigration('MThird');
+
+    await orm.migrator.unlogMigration('ZFirst.ts');
+    expect((await orm.migrator.getExecuted()).map(row => [row.name, row.breakpoint])).toEqual([
+      ['ASecond', true],
+      ['MThird', false],
+    ]);
+    expect(await orm.em.getConnection().execute('select id from breakpoint_item order by id')).toEqual([
+      { id: 2 },
+      { id: 3 },
+    ]);
+
+    expect((await orm.migrator.up('ZFirst')).map(row => row.name)).toEqual(['ZFirst']);
+    expect((await orm.migrator.getExecuted()).map(row => row.name)).toEqual(['ASecond', 'MThird', 'ZFirst']);
+    expect(await orm.em.getConnection().execute('select id from breakpoint_item order by id')).toEqual([
+      { id: 1 },
+      { id: 2 },
+      { id: 3 },
+    ]);
+    expect((await orm.migrator.down()).map(row => row.name)).toEqual(['ZFirst']);
+    expect(await orm.em.getConnection().execute('select id from breakpoint_item order by id')).toEqual([
+      { id: 2 },
+      { id: 3 },
+    ]);
+    expect((await orm.migrator.down()).map(row => row.name)).toEqual(['MThird']);
     await expect(orm.migrator.down()).rejects.toThrow("breakpoint 'ASecond'");
-    await orm.migrator.setBreakpoint('ASecond', false);
-    await orm.migrator.unlogMigration('ASecond');
-    expect((await orm.migrator.getExecuted()).map(row => row.name)).toEqual(['ZFirst']);
+  });
+
+  test('unlogging a breakpoint removes its marker while preserving earlier breakpoints and data', async () => {
+    await orm.migrator.up();
+    await orm.migrator.setBreakpoint('ZFirst');
+    await orm.migrator.setBreakpoint('ASecond');
+
+    await orm.migrator.unlogMigration('ASecond.ts');
+    expect((await orm.migrator.getExecuted()).map(row => [row.name, row.breakpoint])).toEqual([
+      ['ZFirst', true],
+      ['MThird', false],
+    ]);
+    expect(await orm.em.getConnection().execute('select id from breakpoint_item order by id')).toEqual([
+      { id: 1 },
+      { id: 2 },
+      { id: 3 },
+    ]);
+    expect((await orm.migrator.down()).map(row => row.name)).toEqual(['MThird']);
+    await expect(orm.migrator.down()).rejects.toThrow("breakpoint 'ZFirst'");
   });
 });
 

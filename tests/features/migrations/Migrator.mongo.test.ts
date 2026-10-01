@@ -69,13 +69,38 @@ describe('migration breakpoints (mongo)', () => {
       'LaterMongoMigration',
     ]);
     await expect(migrator.down()).rejects.toThrow("breakpoint 'BreakpointMongoMigration'");
-    await expect(migrator.unlogMigration('BreakpointMongoMigration')).rejects.toThrow(
-      "breakpoint 'BreakpointMongoMigration'",
-    );
     await migrator.setBreakpoint('BreakpointMongoMigration', false);
     expect((await migrator.getExecuted())[0].breakpoint).toBe(false);
     await migrator.down();
     expect(await orm.em.getConnection().getDb().collection('breakpoint_items').countDocuments()).toBe(0);
+  });
+
+  test('allows unlogging a faked migration before a breakpoint and reverting its later execution', async () => {
+    await orm.migrator.down({ to: 0 });
+    await orm.migrator.logMigration('BreakpointMongoMigration');
+    await orm.migrator.up();
+    await orm.migrator.setBreakpoint('LaterMongoMigration');
+    const collection = orm.em.getConnection().getDb().collection('breakpoint_items');
+
+    await orm.migrator.unlogMigration('BreakpointMongoMigration.js');
+    expect((await orm.migrator.getExecuted()).map(row => [row.name, !!row.breakpoint])).toEqual([
+      ['LaterMongoMigration', true],
+    ]);
+    expect(await collection.countDocuments()).toBe(1);
+    expect(await collection.countDocuments({ name: 'BreakpointMongoMigration' })).toBe(0);
+
+    expect((await orm.migrator.up('BreakpointMongoMigration')).map(row => row.name)).toEqual([
+      'BreakpointMongoMigration',
+    ]);
+    expect((await orm.migrator.getExecuted()).map(row => row.name)).toEqual([
+      'LaterMongoMigration',
+      'BreakpointMongoMigration',
+    ]);
+    expect(await collection.countDocuments({ name: 'BreakpointMongoMigration' })).toBe(1);
+    expect((await orm.migrator.down()).map(row => row.name)).toEqual(['BreakpointMongoMigration']);
+    expect(await collection.countDocuments()).toBe(1);
+    expect(await collection.countDocuments({ name: 'BreakpointMongoMigration' })).toBe(0);
+    await expect(orm.migrator.down()).rejects.toThrow("breakpoint 'LaterMongoMigration'");
   });
 
   test('rejects unknown migrations and unsupported runtime schemas', async () => {
