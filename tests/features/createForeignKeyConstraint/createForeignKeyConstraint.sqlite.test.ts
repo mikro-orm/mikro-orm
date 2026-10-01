@@ -39,6 +39,9 @@ describe('createForeignKeyConstraint [sqlite]', () => {
     expect(createDump).toMatchSnapshot('createSchemaSQL-dump');
     await orm.schema.create();
 
+    // the missing FKs must not trigger a table rebuild on every update
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+
     await orm.close(true);
   });
 });
