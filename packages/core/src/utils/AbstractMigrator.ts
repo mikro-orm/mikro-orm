@@ -114,6 +114,20 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
   /**
    * @inheritDoc
    */
+  async setBreakpoint(name: string, breakpoint = true, options?: { schema?: string }): Promise<void> {
+    await this.init();
+    this.storage.setRunSchema?.(options?.schema ?? this.options.schema);
+
+    try {
+      await this.storage.setBreakpoint({ name: this.getMigrationFilename(name), breakpoint });
+    } finally {
+      this.storage.unsetRunSchema?.();
+    }
+  }
+
+  /**
+   * @inheritDoc
+   */
   async getPending(options?: { schema?: string }): Promise<MigrationInfo[]> {
     await this.init();
     const schema = options?.schema ?? this.options.schema;
@@ -150,7 +164,9 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     const { fs } = await import('@mikro-orm/core/fs-utils');
 
     const all = await this.discoverMigrations();
-    const executedSet = new Set(await this.storage.executed());
+    const executed = await this.storage.getExecutedMigrations();
+    const executedNames = executed.map(row => this.storage.getMigrationName(row.name));
+    const executedSet = new Set(executedNames);
 
     let toRollup: RunnableMigration[];
 
@@ -179,6 +195,12 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     if (toRollup.length < 2) {
       throw new Error('At least 2 executed migrations are required for rollup');
     }
+
+    this.assertNoBreakpoint(
+      executed,
+      toRollup.map(migration => migration.name),
+      'roll up',
+    );
 
     const withoutPath = toRollup.filter(m => !m.path);
 
@@ -408,6 +430,8 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
   async unlogMigration(name: string): Promise<void> {
     await this.init();
     await this.storage.ensureTable?.();
+    const normalized = this.getMigrationFilename(name);
+    this.assertNoBreakpoint(await this.storage.getExecutedMigrations(), [normalized], 'unlog');
     await this.storage.unlogMigration({ name });
   }
 
@@ -570,14 +594,12 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
     options: NormalizedMigrateOptions = {},
   ): Promise<MigrationInfo[]> {
     const all = await this.discoverMigrations();
-    const executed = await this.storage.executed();
-    const executedSet = new Set(executed);
     let toRun: RunnableMigration[];
 
     if (method === 'up') {
-      toRun = this.filterUp(all, executedSet, options);
+      toRun = this.filterUp(all, new Set(await this.storage.executed()), options);
     } else {
-      toRun = this.filterDown(all, executed, options);
+      toRun = this.filterDown(all, await this.storage.getExecutedMigrations(), options);
     }
 
     const result: MigrationInfo[] = [];
@@ -638,49 +660,46 @@ export abstract class AbstractMigrator<D extends IDatabaseDriver> implements IMi
 
   private filterDown(
     all: RunnableMigration[],
-    executed: string[],
+    executed: MigrationRow[],
     options: NormalizedMigrateOptions,
   ): RunnableMigration[] {
     const migrationMap = new Map(all.map(m => [m.name, m]));
-    const executedReversed = [...executed].reverse();
+    const executedReversed = executed.map(row => this.storage.getMigrationName(row.name)).reverse();
+    let names: string[];
 
     if (options.migrations) {
       const set = new Set(options.migrations);
-      return executedReversed
-        .filter(name => set.has(name))
-        .map(name => migrationMap.get(name)!)
-        .filter(Boolean);
+      names = executedReversed.filter(name => set.has(name));
+    } else if (options.to === 0) {
+      names = executedReversed;
+    } else if (options.to) {
+      const index = executedReversed.indexOf(options.to);
+      names = index < 0 ? executedReversed : executedReversed.slice(0, index);
+    } else {
+      names = executedReversed.slice(0, 1);
     }
 
-    if (options.to === 0) {
-      return executedReversed.map(name => migrationMap.get(name)!).filter(Boolean);
+    this.assertNoBreakpoint(executed, names, 'revert');
+    return names.map(name => migrationMap.get(name)!).filter(Boolean);
+  }
+
+  private assertNoBreakpoint(executed: MigrationRow[], names: string[], operation: string): void {
+    const index = executed.findLastIndex(row => row.breakpoint);
+
+    if (index < 0) {
+      return;
     }
 
-    if (options.to) {
-      const result: RunnableMigration[] = [];
+    const requested = new Set(names);
 
-      for (const name of executedReversed) {
-        if (name === String(options.to)) {
-          break;
-        }
-
-        const m = migrationMap.get(name);
-
-        if (m) {
-          result.push(m);
-        }
+    for (let i = 0; i <= index; i++) {
+      if (requested.has(this.storage.getMigrationName(executed[i].name))) {
+        const name = this.storage.getMigrationName(executed[index].name);
+        throw new Error(
+          `Cannot ${operation} migrations at or before breakpoint '${name}'. Remove the breakpoint first.`,
+        );
       }
-
-      return result;
     }
-
-    // Default: revert last 1
-    if (executedReversed.length > 0) {
-      const m = migrationMap.get(executedReversed[0]);
-      return m ? [m] : [];
-    }
-
-    return [];
   }
 
   private getMigrationFilename(name: string): string {

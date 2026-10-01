@@ -953,6 +953,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
       'migration:log',
       'migration:unlog',
       'migration:rollup',
+      'migration:breakpoint',
       'debug',
     ]);
   });
