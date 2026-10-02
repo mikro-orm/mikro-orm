@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.17](https://github.com/mikro-orm/mikro-orm/compare/v6.6.16...v6.6.17) (2026-10-02)
+
+
+### Bug Fixes
+
+* **query-builder:** do not inline raw query parameters ([#8281](https://github.com/mikro-orm/mikro-orm/issues/8281)) ([28575b4](https://github.com/mikro-orm/mikro-orm/commit/28575b4f63aae75c91bd56e8d94be8867998cf9a))
+* **sqlite:** fix enum introspection for enums with more than two values ([#8139](https://github.com/mikro-orm/mikro-orm/issues/8139)) ([1a9bd90](https://github.com/mikro-orm/mikro-orm/commit/1a9bd90f5d98ffb90002b7b3a24b56f88da69beb))
+
+
+
+
+
 ## [6.6.16](https://github.com/mikro-orm/mikro-orm/compare/v6.6.15...v6.6.16) (2026-07-17)
 
 

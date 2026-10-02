@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.17](https://github.com/mikro-orm/mikro-orm/compare/v6.6.16...v6.6.17) (2026-10-02)
+
+
+### Bug Fixes
+
+* **core:** accept plain arrays for enum array properties in EntityData ([#8168](https://github.com/mikro-orm/mikro-orm/issues/8168)) ([b90c287](https://github.com/mikro-orm/mikro-orm/commit/b90c2874fe965fd7bb811fc2b09c6764aa3e845f)), closes [#8166](https://github.com/mikro-orm/mikro-orm/issues/8166)
+* **core:** keep populated relations clean after a result cache hit ([#8270](https://github.com/mikro-orm/mikro-orm/issues/8270)) ([d338572](https://github.com/mikro-orm/mikro-orm/commit/d3385721b722f6e4e29a9cc94b0c1a464417bbcc)), closes [#8268](https://github.com/mikro-orm/mikro-orm/issues/8268) [#8269](https://github.com/mikro-orm/mikro-orm/issues/8269)
+* **migrations:** keep the snapshot when the migrated database still matches it ([30f6491](https://github.com/mikro-orm/mikro-orm/commit/30f649155baa761d508b9af156115b9423ff201d)), closes [#7804](https://github.com/mikro-orm/mikro-orm/issues/7804)
+* **postgresql:** stop spurious schema diff on PostGIS type modifiers ([1a82866](https://github.com/mikro-orm/mikro-orm/commit/1a828663fab0aead0066cb0168bf7baaa2444539)), closes [#7803](https://github.com/mikro-orm/mikro-orm/issues/7803)
+* **query-builder:** do not inline raw query parameters ([#8281](https://github.com/mikro-orm/mikro-orm/issues/8281)) ([28575b4](https://github.com/mikro-orm/mikro-orm/commit/28575b4f63aae75c91bd56e8d94be8867998cf9a))
+* **sqlite:** fix enum introspection for enums with more than two values ([#8139](https://github.com/mikro-orm/mikro-orm/issues/8139)) ([1a9bd90](https://github.com/mikro-orm/mikro-orm/commit/1a9bd90f5d98ffb90002b7b3a24b56f88da69beb))
+
+
+
+
+
 ## [6.6.16](https://github.com/mikro-orm/mikro-orm/compare/v6.6.15...v6.6.16) (2026-07-17)
 
 

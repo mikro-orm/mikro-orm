@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.17](https://github.com/mikro-orm/mikro-orm/compare/v6.6.16...v6.6.17) (2026-10-02)
+
+
+### Bug Fixes
+
+* **postgresql:** stop spurious schema diff on PostGIS type modifiers ([1a82866](https://github.com/mikro-orm/mikro-orm/commit/1a828663fab0aead0066cb0168bf7baaa2444539)), closes [#7803](https://github.com/mikro-orm/mikro-orm/issues/7803)
+
+
+
+
+
 ## [6.6.16](https://github.com/mikro-orm/mikro-orm/compare/v6.6.15...v6.6.16) (2026-07-17)
 
 **Note:** Version bump only for package @mikro-orm/postgresql

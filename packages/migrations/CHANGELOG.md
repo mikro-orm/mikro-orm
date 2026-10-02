@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.17](https://github.com/mikro-orm/mikro-orm/compare/v6.6.16...v6.6.17) (2026-10-02)
+
+
+### Bug Fixes
+
+* **migrations:** keep the snapshot when the migrated database still matches it ([30f6491](https://github.com/mikro-orm/mikro-orm/commit/30f649155baa761d508b9af156115b9423ff201d)), closes [#7804](https://github.com/mikro-orm/mikro-orm/issues/7804)
+
+
+
+
+
 ## [6.6.16](https://github.com/mikro-orm/mikro-orm/compare/v6.6.15...v6.6.16) (2026-07-17)
 
 **Note:** Version bump only for package @mikro-orm/migrations

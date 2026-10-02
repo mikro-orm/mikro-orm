@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.17](https://github.com/mikro-orm/mikro-orm/compare/v6.6.16...v6.6.17) (2026-10-02)
+
+
+### Bug Fixes
+
+* **core:** accept plain arrays for enum array properties in EntityData ([#8168](https://github.com/mikro-orm/mikro-orm/issues/8168)) ([b90c287](https://github.com/mikro-orm/mikro-orm/commit/b90c2874fe965fd7bb811fc2b09c6764aa3e845f)), closes [#8166](https://github.com/mikro-orm/mikro-orm/issues/8166)
+* **core:** keep populated relations clean after a result cache hit ([#8270](https://github.com/mikro-orm/mikro-orm/issues/8270)) ([d338572](https://github.com/mikro-orm/mikro-orm/commit/d3385721b722f6e4e29a9cc94b0c1a464417bbcc)), closes [#8268](https://github.com/mikro-orm/mikro-orm/issues/8268) [#8269](https://github.com/mikro-orm/mikro-orm/issues/8269)
+
+
+
+
+
 ## [6.6.16](https://github.com/mikro-orm/mikro-orm/compare/v6.6.15...v6.6.16) (2026-07-17)
 
 
