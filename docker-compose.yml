@@ -1,6 +1,6 @@
 services:
   mongo:
-    image: mongo:8.3
+    image: mongo:9.0
     expose:
       - 27017
     ports:
