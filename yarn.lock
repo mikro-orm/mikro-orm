@@ -1357,7 +1357,7 @@ __metadata:
     "@mikro-orm/sql": "npm:7.2.3"
     kysely: "npm:0.29.6"
     tarn: "npm:3.1.2"
-    tedious: "npm:20.0.0"
+    tedious: "npm:20.3.3"
     tsqlstring: "npm:1.0.1"
   peerDependencies:
     "@mikro-orm/core": 7.2.3
@@ -8962,9 +8962,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tedious@npm:20.0.0":
-  version: 20.0.0
-  resolution: "tedious@npm:20.0.0"
+"tedious@npm:20.3.3":
+  version: 20.3.3
+  resolution: "tedious@npm:20.3.3"
   dependencies:
     "@azure/core-auth": "npm:^1.10.1"
     "@azure/identity": "npm:^4.13.1"
@@ -8976,7 +8976,7 @@ __metadata:
     js-md4: "npm:^0.3.2"
     native-duplexpair: "npm:^1.0.0"
     sprintf-js: "npm:^1.1.3"
-  checksum: 10/d38252c9322eb60cf987789e4d5a530a6a005ac98e445341e6f1fbeb015bb1986fa952b61dcd6980c2fc5c09e657fcf9bb3f0073e5bc21598f0cb52722eb6f66
+  checksum: 10/f0fa3fdfb41e8c884efc5c35b4a78c73474e40fb56cafea127e2968b57d070901b0a4aa49a27849bfe442d3da6a601db3a23b718a084a893d2ac3116731b6a86
   languageName: node
   linkType: hard
 
