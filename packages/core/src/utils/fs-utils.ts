@@ -51,11 +51,11 @@ export const fs: FsUtils = {
   },
 
   pathExists(path: string): boolean {
-    if (/[*?[\]]/.test(path)) {
-      return globSync(path).length > 0;
+    if (existsSync(path)) {
+      return true;
     }
 
-    return existsSync(path);
+    return /[*?[\]]/.test(path) && this.resolveGlob(path).length > 0;
   },
 
   ensureDir(path: string): void {
@@ -98,6 +98,12 @@ export const fs: FsUtils = {
   resolveGlob(input: string | string[], cwd?: string): string[] {
     if (Array.isArray(input)) {
       return input.flatMap(paths => this.resolveGlob(paths, cwd));
+    }
+
+    // an absolute path repeats the cwd, which may contain glob characters (e.g. `~/Dropbox (Team)/app`)
+    if (isAbsolute(input)) {
+      cwd ??= process.cwd();
+      input = relative(cwd, input).replace(/\\/g, '/') || '.';
     }
 
     const hasGlobChars = /[*?[\]]/.test(input);
