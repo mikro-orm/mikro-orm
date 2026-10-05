@@ -85,3 +85,50 @@ test('matches rows identified by the primary key and by unique keys', async () =
   expect(res[0].id).toBe(50);
   await expectReloaded(res);
 });
+
+describe.each([true, false])('single row upsert (returning: %s)', returning => {
+  const seed = [
+    { code: null, day: '2025-12-31', position: 1, name: 'x' },
+    { code: null, day: '2025-12-31', position: 2, name: 'y' },
+    { code: 'k', day: '2025-12-31', position: 3, name: 'z' },
+  ];
+  const rows = {
+    'the first unique key': { code: 'a', day: '2026-01-01', position: 1, name: 'new' },
+    'the composite unique key': { code: null, day: '2026-01-01', position: 2, name: 'new' },
+  };
+
+  describe.each(Object.keys(rows) as (keyof typeof rows)[])('identified by %s', key => {
+    test.each(['merge', 'ignore'] as const)('inserts a new row (%s)', async onConflictAction => {
+      vi.spyOn(orm.em.getPlatform(), 'usesReturningStatement').mockReturnValue(returning);
+      await orm.em.fork().insertMany(Slot, seed);
+
+      const entity = await orm.em.fork().upsert(Slot, rows[key], { onConflictAction });
+
+      const all = await orm.em.fork().find(Slot, {}, { orderBy: { id: 'asc' } });
+      expect(all.map(e => e.name)).toEqual(['x', 'y', 'z', 'new']);
+      expect([entity.id, entity.code, entity.position, entity.name]).toEqual([
+        all[3].id,
+        rows[key].code,
+        rows[key].position,
+        'new',
+      ]);
+    });
+
+    test.each(['merge', 'ignore'] as const)('resolves an existing row (%s)', async onConflictAction => {
+      vi.spyOn(orm.em.getPlatform(), 'usesReturningStatement').mockReturnValue(returning);
+      await orm.em.fork().insertMany(Slot, [...seed, { ...rows[key], name: 'old' }]);
+
+      const entity = await orm.em.fork().upsert(Slot, rows[key], { onConflictAction });
+
+      const name = onConflictAction === 'merge' ? 'new' : 'old';
+      const all = await orm.em.fork().find(Slot, {}, { orderBy: { id: 'asc' } });
+      expect(all.map(e => e.name)).toEqual(['x', 'y', 'z', name]);
+      expect([entity.id, entity.code, entity.position, entity.name]).toEqual([
+        all[3].id,
+        rows[key].code,
+        rows[key].position,
+        name,
+      ]);
+    });
+  });
+});
