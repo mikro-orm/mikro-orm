@@ -1567,10 +1567,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       // a `null` unique value cannot identify the row, and as it never conflicts, the row was inserted
-      const pk = helper(entity).getPrimaryKey() ?? ret.insertId;
-
-      if (!Utils.hasObjectKeys(where) && meta.simplePK && pk != null) {
-        where[meta.primaryKeys[0] as EntityKey] = pk as never;
+      if (!Utils.hasObjectKeys(where)) {
+        const insertId = meta.simplePK && ret.insertId != null ? { [meta.primaryKeys[0]]: ret.insertId } : {};
+        Object.assign(where, Utils.getPrimaryKeyCond(entity, meta.primaryKeys) ?? insertId);
       }
 
       const data2 = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
@@ -1768,6 +1767,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         unique.findIndex(p => (data as Dictionary)[p] ?? (data as Dictionary)[p.substring(0, p.indexOf('.'))] != null);
       const tmp = getWhereCondition(meta, options.onConflictFields, row, where);
       propIndex = tmp.propIndex;
+
       where = QueryHelper.processWhere({
         where: tmp.where,
         entityName,
@@ -1787,10 +1787,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       dataIndexes.push(i);
     }
 
+    // mongo inserts the rows with an empty condition as part of the batch and reports their ids
     const positional =
-      (this.getPlatform().usesReturningStatement() || this.getPlatform().usesOutputStatement()) &&
-      options.onConflictAction !== 'ignore' &&
-      !options.onConflictWhere;
+      !this.getPlatform().usesPivotTable() ||
+      ((this.getPlatform().usesReturningStatement() || this.getPlatform().usesOutputStatement()) &&
+        options.onConflictAction !== 'ignore' &&
+        !options.onConflictWhere);
     const hasUniqueKey =
       !!options.onConflictFields || meta.uniques.length > 0 || meta.props.some(p => p.unique && !p.primary);
 

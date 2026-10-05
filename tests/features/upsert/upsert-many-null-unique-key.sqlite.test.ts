@@ -10,10 +10,20 @@ const User = defineEntity({
   },
 });
 
+const Tenant = defineEntity({
+  name: 'Tenant',
+  properties: {
+    org: p.integer().primary(),
+    id: p.integer().primary(),
+    email: p.string().unique().nullable(),
+    name: p.string(),
+  },
+});
+
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = await MikroORM.init({ entities: [User], dbName: ':memory:' });
+  orm = await MikroORM.init({ entities: [User, Tenant], dbName: ':memory:' });
   await orm.schema.create();
 });
 
@@ -91,9 +101,47 @@ test('upsertMany ignoring conflicts when every row has a null unique key', async
   await expectStored(res, ['b', 'c'], 4);
 });
 
+test('upsertMany with onConflictWhere next to a row with a null unique key', async () => {
+  const res = await orm.em.fork().upsertMany(
+    User,
+    [
+      { email: 'a@example.com', name: 'a' },
+      { email: null, name: 'b' },
+    ],
+    { onConflictFields: ['email'], onConflictWhere: { name: 'other' } },
+  );
+
+  await expectStored(res, ['old a', 'b'], 3);
+});
+
+test('upsertMany without RETURNING and with entity instances', async () => {
+  withoutReturning();
+  const em = orm.em.fork();
+  const res = await em.upsertMany([
+    em.create(User, { email: 'a@example.com', name: 'a' }, { persist: false }),
+    em.create(User, { email: null, name: 'b' }, { persist: false }),
+  ]);
+
+  await expectStored(res, ['a', 'b'], 3);
+});
+
 test('upsert without RETURNING and with explicit onConflictFields', async () => {
   withoutReturning();
   const res = await orm.em.fork().upsert(User, { email: null, name: 'b' }, { onConflictFields: ['email'] });
 
   await expectStored([res], ['b'], 3);
+});
+
+test('upsert ignoring conflicts with a composite primary key and a null unique key', async () => {
+  await orm.em.insertMany(Tenant, [{ org: 9, id: 9, email: null, name: 'old' }]);
+  const res = await orm.em
+    .fork()
+    .upsert(
+      Tenant,
+      { org: 1, id: 2, email: null, name: 'b' },
+      { onConflictFields: ['email'], onConflictAction: 'ignore' },
+    );
+
+  expect(res).toMatchObject({ org: 1, id: 2, name: 'b' });
+  expect(await orm.em.fork().count(Tenant)).toBe(2);
 });
