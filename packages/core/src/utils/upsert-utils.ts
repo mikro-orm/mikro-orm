@@ -195,6 +195,27 @@ function getPropertyValue(obj: Dictionary, key: string) {
   return curr[parts[parts.length - 1]];
 }
 
+function getRawConflictColumns(target: Raw): string[] {
+  // columns of a partial index predicate don't identify the row, their values can differ from the data
+  const sql = target.sql.split(/\bwhere\b/i)[0];
+  // a quoted identifier is one name even with a space in it
+  const names = (sql.match(/"[^"]+"|`[^`]+`|\[[^\]]+\]|[\p{L}\p{N}_]+/gu) ?? []).map(n =>
+    n.replace(/^["`[]|["`\]]$/g, ''),
+  );
+  // value params are not column names, only identifiers and nested fragments can carry one
+  const refs = (sql.match(/(?<!\\)\?\??/g) ?? []).flatMap((placeholder, i) => {
+    const param = target.params[i];
+
+    if (isRaw(param)) {
+      return getRawConflictColumns(param);
+    }
+
+    return placeholder === '??' ? [String(param)] : [];
+  });
+
+  return [...names, ...refs];
+}
+
 /**
  * A raw conflict target can't be introspected, so the row is identified by the columns the fragment mentions.
  * @internal
@@ -205,11 +226,9 @@ export function getRawConflictKeys<T extends object>(
   data: Dictionary,
   fallback: string[] = Object.keys(data),
 ): string[] {
-  // columns of a partial index predicate don't identify the row, their values can differ from the data
-  const sql = target.sql.split(/\bwhere\b/i)[0];
-  const words = new Set([sql, ...target.params].join(' ').toLowerCase().match(/\w+/g));
+  const columns = new Set(getRawConflictColumns(target).map(c => c.toLowerCase()));
   const keys = Object.keys(data).filter(k =>
-    meta.properties[k as EntityKey<T>]?.fieldNames?.some(f => words.has(f.toLowerCase())),
+    meta.properties[k as EntityKey<T>]?.fieldNames?.some(f => columns.has(f.toLowerCase())),
   );
 
   return keys.length > 0 ? keys : fallback;

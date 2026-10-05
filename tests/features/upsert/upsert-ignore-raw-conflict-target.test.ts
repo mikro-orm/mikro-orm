@@ -18,11 +18,22 @@ const Product = defineEntity({
   ],
 });
 
+const Setting = defineEntity({
+  name: 'Setting',
+  tableName: 'settings',
+  properties: {
+    id: p.integer().primary(),
+    title: p.string(),
+    code: p.string().defaultRaw(`'main'`).unique(),
+    label: p.string().fieldName('label id').unique().nullable(),
+  },
+});
+
 let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [Product],
+    entities: [Product, Setting],
     dbName: ':memory:',
   });
 });
@@ -31,10 +42,11 @@ beforeEach(async () => {
   await orm.schema.refresh();
   await orm.em.insertMany(Product, [
     { id: 1, title: 'Unrelated', externalId: 'EXT1', category: 'c1' },
-    // seeded last, sqlite keeps reporting its rowid as the insert id after an ignored insert
-
     { id: 2, title: 'Existing', externalId: 'EXT2', category: 'c2' },
   ]);
+  await orm.em.insert(Setting, { id: 1, title: 'Unrelated', code: 'other', label: 'L1' });
+  // seeded last, sqlite keeps reporting its rowid as the insert id after an ignored insert
+  await orm.em.insert(Setting, { id: 2, title: 'Existing', label: 'L2' });
 });
 
 afterEach(() => {
@@ -76,6 +88,57 @@ describe.each([true, false])('ignored conflict on a raw conflict target (returni
 
     expect(product).toMatchObject({ id: 2, title: 'Existing', externalId: 'EXT2', category: 'c2' });
     expect(await em.count(Product)).toBe(2);
+  });
+
+  test('upsert does not identify the row by the identifiers bound in the predicate', async () => {
+    const em = orm.em.fork();
+    const product = await em.upsert(
+      Product,
+      { title: 'New', externalId: 'EXT2', category: 'other' },
+      {
+        onConflictFields: sql`(${sql.ref('external_id')}) where ${sql.ref('external_id')} is not null and ${sql.ref('category')} is not null`,
+        onConflictAction: 'ignore',
+      },
+    );
+
+    expect(product).toMatchObject({ id: 2, title: 'Existing', externalId: 'EXT2', category: 'c2' });
+    expect(await em.count(Product)).toBe(2);
+  });
+
+  test('upsert does not split a quoted column name into other columns', async () => {
+    const em = orm.em.fork();
+    const setting = await em.upsert(
+      Setting,
+      { id: 3, title: 'New', code: 'new', label: 'L2' },
+      { onConflictFields: sql`("label id")`, onConflictAction: 'ignore' },
+    );
+
+    expect(setting).toMatchObject({ id: 2, title: 'Existing', code: 'main', label: 'L2' });
+    expect(await em.count(Setting)).toBe(2);
+  });
+
+  test('upsert falls back to the whole data when it has no column of the target', async () => {
+    const em = orm.em.fork();
+    const setting = await em.upsert(
+      Setting,
+      { title: 'Existing' },
+      { onConflictFields: sql`(code)`, onConflictAction: 'ignore' },
+    );
+
+    expect(setting).toMatchObject({ id: 2, title: 'Existing', code: 'main', label: 'L2' });
+    expect(await em.count(Setting)).toBe(2);
+  });
+
+  test('upsertMany falls back to the whole data when it has no column of the target', async () => {
+    const em = orm.em.fork();
+    const settings = await em.upsertMany(Setting, [{ title: 'Existing' }], {
+      onConflictFields: sql`(code)`,
+      onConflictAction: 'ignore',
+    });
+
+    expect(settings).toHaveLength(1);
+    expect(settings[0]).toMatchObject({ id: 2, title: 'Existing', code: 'main', label: 'L2' });
+    expect(await em.count(Setting)).toBe(2);
   });
 
   test('upsertMany hydrates the conflicting rows', async () => {
