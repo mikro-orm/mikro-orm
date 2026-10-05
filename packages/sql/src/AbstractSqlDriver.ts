@@ -1527,14 +1527,18 @@ export abstract class AbstractSqlDriver<
 
           for (const flag of [false, true]) {
             const idx = [...where.keys()].filter(i => fresh[i] === flag);
-            const conds = idx.map(i => where[i]);
             const part = await this.nativeUpdateMany(
               entityName,
-              conds,
+              idx.map(i => where[i]),
               idx.map(i => data[i]),
               options,
             );
-            idx.forEach((i, j) => (where[i] = conds[j]));
+
+            // the caller reloads by the keys of the first condition, only the PK identifies every row of a mixed batch
+            for (const i of idx) {
+              where[i] = (Utils.getPrimaryKeyCond(data[i] as T, meta.primaryKeys) ?? where[i]) as FilterQuery<T>;
+            }
+
             res = { ...part, affectedRows: res.affectedRows + part.affectedRows };
           }
 
@@ -1548,7 +1552,7 @@ export abstract class AbstractSqlDriver<
         for (const [i, row] of data.entries()) {
           if (meta.primaryKeys.some(pk => row[pk] == null)) {
             // a row without a condition cannot conflict, only the insert knows its PK
-            const found = Utils.isEmpty(where[i])
+            const found = fresh[i]
               ? this.mapResult(inserted[i] as EntityDictionary<T>, meta.tptParent as EntityMetadata<T>)
               : await this.findOne(meta.tptParent.class as EntityName<T>, where[i] as ObjectQuery<T>, {
                   fields: meta.primaryKeys as any[],
@@ -1558,7 +1562,7 @@ export abstract class AbstractSqlDriver<
                 });
             meta.primaryKeys.forEach(pk => (row[pk] = found?.[pk] as never));
 
-            if (Utils.isEmpty(where[i])) {
+            if (fresh[i]) {
               // the caller reloads the row by its condition, the PK is the only thing identifying it
               where[i] = Utils.getPrimaryKeyCond(row as T, meta.primaryKeys) as FilterQuery<T>;
             }

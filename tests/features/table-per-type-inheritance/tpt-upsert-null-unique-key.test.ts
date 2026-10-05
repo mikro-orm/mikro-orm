@@ -157,6 +157,36 @@ describe.each(variants)(
       expect(await orm.em.count(Person)).toBe(4);
     });
 
+    test.runIf(returning)(
+      'em.upsertMany() returns the inserted row when others share its null unique key',
+      async () => {
+        const existingId = await seed();
+        const old = await orm.em.upsertMany(Employee, [
+          { email: null, department: 'support' },
+          { email: null, department: 'legal' },
+        ]);
+        orm.em.clear();
+
+        const created = await orm.em.upsertMany(Employee, [
+          { email: 'existing@example.com', department: 'marketing' },
+          { email: null, department: 'finance' },
+        ]);
+        expect(created.map(e => [e.email, e.department])).toEqual([
+          ['existing@example.com', 'marketing'],
+          [null, 'finance'],
+        ]);
+        expect(created[0].id).toBe(existingId);
+        expect(created[1].id).toBeGreaterThan(old[1].id);
+
+        await expectRows([
+          [existingId, 'existing@example.com', 'marketing'],
+          [old[0].id, null, 'support'],
+          [old[1].id, null, 'legal'],
+          [created[1].id, null, 'finance'],
+        ]);
+      },
+    );
+
     test('em.upsert() with an entity instance', async () => {
       const existingId = await seed();
 
@@ -182,6 +212,35 @@ describe.each(variants)(
       expect(found.map(e => [e.id, e.email, e.department, e.level])).toEqual([
         [existing.id, 'existing@example.com', 'sales', 1],
         [created.id, null, 'support', 2],
+      ]);
+    });
+
+    test.runIf(returning)('em.upsertMany() with a mixed batch in a three level hierarchy', async () => {
+      const existing = await orm.em.upsert(Manager, { email: 'existing@example.com', department: 'sales', level: 1 });
+      const old = await orm.em.upsert(Manager, { email: null, department: 'support', level: 2 });
+      orm.em.clear();
+
+      const created = await orm.em.upsertMany(Manager, [
+        { email: null, department: 'legal', level: 3 },
+        { email: 'existing@example.com', department: 'marketing', level: 4 },
+        { email: null, department: 'finance', level: 5 },
+      ]);
+      expect(created.map(e => [e.email, e.department, e.level])).toEqual([
+        [null, 'legal', 3],
+        ['existing@example.com', 'marketing', 4],
+        [null, 'finance', 5],
+      ]);
+      expect(created[1].id).toBe(existing.id);
+      expect(created[0].id).toBeGreaterThan(old.id);
+      expect(created[2].id).toBeGreaterThan(created[0].id);
+      orm.em.clear();
+
+      const found = await orm.em.find(Manager, {}, { orderBy: { id: 'asc' } });
+      expect(found.map(e => [e.id, e.email, e.department, e.level])).toEqual([
+        [existing.id, 'existing@example.com', 'marketing', 4],
+        [old.id, null, 'support', 2],
+        [created[0].id, null, 'legal', 3],
+        [created[2].id, null, 'finance', 5],
       ]);
     });
   },
