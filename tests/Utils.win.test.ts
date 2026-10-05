@@ -1,3 +1,4 @@
+import { writeFileSync } from 'node:fs';
 import { platform } from 'node:os';
 import { pathToFileURL } from 'node:url';
 import { compareObjects, EntityMetadata, MikroORM, sql, Utils } from '@mikro-orm/sqlite';
@@ -6,6 +7,7 @@ import { fs } from '@mikro-orm/core/fs-utils';
 import { lookupPathFromDecorator } from '../packages/decorators/src/utils.js';
 import { Author4 } from './entities-schema/Author4.js';
 import { initORMSqlite } from './bootstrap.js';
+import { TEMP_DIR } from './helpers.js';
 
 class Test {}
 
@@ -299,6 +301,44 @@ describe('Utils', () => {
     expect(fs.pathExists('LIC*')).toBe(true);
     expect(fs.pathExists('tests')).toBe(true);
     expect(fs.pathExists('tests/**/*.ts')).toBe(true);
+  });
+
+  test('glob and pathExists with absolute paths in a cwd with glob characters', async () => {
+    // e.g. a project in `~/Dropbox (Team)/app`
+    const cwd = fs.normalizePath(TEMP_DIR + '/glob (chars) [x]');
+    const file = cwd + '/entities/Book.ts';
+    fs.ensureDir(cwd + '/entities');
+    writeFileSync(file, '');
+    const spy = vi.spyOn(process, 'cwd').mockReturnValue(cwd);
+
+    try {
+      expect(fs.glob(cwd + '/entities', cwd).map(path => fs.normalizePath(cwd, path))).toEqual([file]);
+      expect(fs.glob(cwd + '/entities/*.ts').map(path => fs.absolutePath(path))).toEqual([file]);
+      expect(fs.pathExists(file)).toBe(true);
+      expect(fs.pathExists(cwd + '/entities/*.ts')).toBe(true);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  test('glob with glob characters in a literal directory', async () => {
+    const cwd = fs.normalizePath(TEMP_DIR + '/glob-literal-dir/app');
+    const inside = cwd + '/src/(group) [x]/entities/Book.ts';
+    const sibling = fs.normalizePath(cwd, '../sibling (y) [z]/entities/Author.ts');
+    fs.ensureDir(cwd + '/src/(group) [x]/entities');
+    fs.ensureDir(fs.normalizePath(cwd, '../sibling (y) [z]/entities'));
+    writeFileSync(inside, '');
+    writeFileSync(sibling, '');
+    const resolve = (path: string) => fs.normalizePath(cwd, path);
+
+    // node:fs fallback first, then tinyglobby
+    for (let i = 0; i < 2; i++) {
+      expect(fs.glob('./src/(group) [x]/entities', cwd).map(resolve)).toEqual([inside]);
+      expect(fs.glob('src', cwd).map(resolve)).toEqual([inside]);
+      expect(fs.glob('../sibling (y) [z]/entities', cwd).map(resolve)).toEqual([sibling]);
+      expect(fs.glob(fs.normalizePath(sibling, '..'), cwd).map(resolve)).toEqual([sibling]);
+      await fs.init();
+    }
   });
 
   test('isPlainObject', async () => {
