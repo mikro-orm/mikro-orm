@@ -539,7 +539,7 @@ export class EntityLoader {
     readonly?: boolean,
   ): void {
     if (prop.mappedBy) {
-      // group children by owner in one pass instead of scanning all children for every owner
+      // group children by owner in one pass
       const map = new Map<AnyEntity, AnyEntity[]>(filtered.map(entity => [entity as AnyEntity, []]));
 
       for (const child of children) {
