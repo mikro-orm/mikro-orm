@@ -203,7 +203,7 @@ export function getRawConflictKeys<T extends object>(
   meta: EntityMetadata<T>,
   target: Raw,
   data: Dictionary,
-  fallback = Object.keys(data),
+  fallback: string[] = Object.keys(data),
 ): string[] {
   // columns of a partial index predicate don't identify the row, their values can differ from the data
   const sql = target.sql.split(/\bwhere\b/i)[0];
