@@ -27,7 +27,7 @@ afterAll(async () => {
 
 test('upsertMany by the serialized primary key updates the document instead of inserting a duplicate', async () => {
   const _id = new ObjectId();
-  await orm.em.fork().insert(Doc, { _id, name: 'old' });
+  await orm.em.fork().insert(Doc, { id: _id.toHexString(), name: 'old' });
 
   const res = await orm.em.fork().upsertMany(Doc, [{ id: _id.toHexString(), name: 'new' }]);
   const stored = await orm.em.fork().find(Doc, {});
