@@ -1588,7 +1588,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           schema: options.schema,
         }),
       );
-      em.getHydrator().hydrate(entity, meta, data2!, em.#entityFactory, 'full', false, true);
+
+      if (!data2) {
+        throw new Error(`Cannot find the upserted ${meta.className} row for condition ${JSON.stringify(where)}`);
+      }
+
+      em.getHydrator().hydrate(entity, meta, data2, em.#entityFactory, 'full', false, true);
     }
 
     // recompute the data as there might be some values missing (e.g. those with db column defaults)
@@ -1775,8 +1780,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       const tmp = getWhereCondition(meta, options.onConflictFields, row, where);
       propIndex = tmp.propIndex;
 
+      // a partial composite PK cannot identify the row
+      const partialPK =
+        meta.compositePK && !Utils.isPlainObject(tmp.where) && meta.primaryKeys.some(pk => row[pk] == null);
       where = QueryHelper.processWhere({
-        where: tmp.where,
+        where: partialPK ? {} : tmp.where,
         entityName,
         metadata: this.metadata,
         platform: this.getPlatform(),
@@ -1802,9 +1810,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         !options.onConflictWhere);
     const hasUniqueKey =
       !!options.onConflictFields || meta.uniques.length > 0 || meta.props.some(p => p.unique && !p.primary);
+    // only an autoincrement PK can be derived from the `insertId` of the batch
+    const autoincrement = meta.getPrimaryProps().some(p => p.autoincrement);
 
     // a row with a `null` unique value has nothing to be reloaded by, the single row path maps its PK from the insert
-    for (let idx = 0; !positional && hasUniqueKey && idx < allWhere.length; idx++) {
+    for (let idx = 0; !positional && (hasUniqueKey || !autoincrement) && idx < allWhere.length; idx++) {
       if (!Utils.hasObjectKeys(allWhere[idx])) {
         result[dataIndexes[idx]] = await em.upsert(entityName, data[dataIndexes[idx]], options);
         allData.splice(idx, 1);
