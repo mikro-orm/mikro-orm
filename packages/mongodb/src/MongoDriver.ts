@@ -397,6 +397,14 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       where = this.buildFilterById(entityName, where as string);
     }
 
+    // an empty filter would match (and overwrite) every document, so insert instead
+    if (options.upsert && Utils.isEmpty(where)) {
+      const res = await this.nativeInsert(entityName, data, options);
+      res.row = { _id: res.insertId };
+
+      return res;
+    }
+
     this.handleVersionProperty(entityName, data, true);
     data = this.renameFields(entityName, data);
     where = this.renameFields(entityName, where as T, true);
