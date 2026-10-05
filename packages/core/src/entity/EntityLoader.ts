@@ -539,11 +539,17 @@ export class EntityLoader {
     readonly?: boolean,
   ): void {
     if (prop.mappedBy) {
+      // group children by owner in one pass instead of scanning all children for every owner
+      const map = new Map<AnyEntity, AnyEntity[]>(filtered.map(entity => [entity as AnyEntity, []]));
+
+      for (const child of children) {
+        for (const owner of (child[prop.mappedBy] as Collection<AnyEntity>).getItems(false)) {
+          map.get(owner)?.push(child);
+        }
+      }
+
       for (const entity of filtered) {
-        const items = children.filter(child =>
-          (child[prop.mappedBy] as Collection<AnyEntity>).contains(entity as AnyEntity, false),
-        );
-        (entity[field] as Collection<AnyEntity>).hydrate(items, true, partial, readonly);
+        (entity[field] as Collection<AnyEntity>).hydrate(map.get(entity as AnyEntity)!, true, partial, readonly);
       }
     } else {
       // owning side of M:N without pivot table needs to be reordered
