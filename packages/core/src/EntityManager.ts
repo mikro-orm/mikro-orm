@@ -1813,8 +1813,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     // only an autoincrement PK can be derived from the `insertId` of the batch
     const autoincrement = meta.getPrimaryProps().some(p => p.autoincrement);
 
+    // a TPT child table does not return its rows, so they are never mapped by position
+    const peel = !!meta.tptParent || (!positional && (hasUniqueKey || !autoincrement));
+
     // a row with a `null` unique value has nothing to be reloaded by, the single row path maps its PK from the insert
-    for (let idx = 0; !positional && (hasUniqueKey || !autoincrement) && idx < allWhere.length; idx++) {
+    for (let idx = 0; peel && idx < allWhere.length; idx++) {
       if (!Utils.hasObjectKeys(allWhere[idx])) {
         result[dataIndexes[idx]] = await em.upsert(entityName, data[dataIndexes[idx]], options);
         allData.splice(idx, 1);

@@ -1520,16 +1520,19 @@ export abstract class AbstractSqlDriver<
     if (options.upsert) {
       if (meta.tptParent) {
         // TPT parent tables go first, the PK they provide is the conflict target of this table
-        await this.nativeUpdateMany(meta.tptParent.class, where, data, options);
+        const res = await this.nativeUpdateMany(meta.tptParent.class, where, data, options);
 
         for (const [i, row] of data.entries()) {
           if (meta.primaryKeys.some(pk => row[pk] == null)) {
-            const found = await this.findOne(meta.tptParent.class as EntityName<T>, where[i] as ObjectQuery<T>, {
-              fields: meta.primaryKeys as any[],
-              ctx: options.ctx,
-              connectionType: 'write',
-              schema: options.schema,
-            });
+            // a row without a condition cannot conflict, only the insert knows its PK
+            const found = Utils.isEmpty(where[i])
+              ? ({ [meta.primaryKeys[0]]: res.insertId } as EntityData<T>)
+              : await this.findOne(meta.tptParent.class as EntityName<T>, where[i] as ObjectQuery<T>, {
+                  fields: meta.primaryKeys as any[],
+                  ctx: options.ctx,
+                  connectionType: 'write',
+                  schema: options.schema,
+                });
             meta.primaryKeys.forEach(pk => (row[pk] = found?.[pk] as never));
           }
         }
@@ -1562,7 +1565,7 @@ export abstract class AbstractSqlDriver<
         );
         options.onConflictMergeFields = options.onConflictMergeFields?.filter(f => own(f as string));
         options.onConflictExcludeFields = options.onConflictExcludeFields?.filter(f => own(f as string));
-        returning = [];
+        returning = this.getPrimaryKeyFields(meta) as (keyof T)[];
       }
 
       qb.insert(data as T[])
@@ -1584,7 +1587,13 @@ export abstract class AbstractSqlDriver<
 
       const res = await this.rethrow(qb.execute('run', false));
 
-      return meta.inheritanceType === 'tpt' ? { ...res, row: undefined, rows: [] } : res;
+      if (meta.inheritanceType === 'tpt') {
+        // child tables do not generate the PK, so every table of the hierarchy reports the one of its first row
+        const insertId = data[0][meta.primaryKeys[0]] ?? res.insertId ?? res.row?.[returning[0] as string];
+        return { ...res, insertId, row: undefined, rows: [] };
+      }
+
+      return res;
     }
 
     const collections = options.processCollections ? data.map(d => this.extractManyToMany(meta, d)) : [];
