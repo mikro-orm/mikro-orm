@@ -195,6 +195,26 @@ function getPropertyValue(obj: Dictionary, key: string) {
   return curr[parts[parts.length - 1]];
 }
 
+/**
+ * A raw conflict target can't be introspected, so the row is identified by the columns the fragment mentions.
+ * @internal
+ */
+export function getRawConflictKeys<T extends object>(
+  meta: EntityMetadata<T>,
+  target: Raw,
+  data: Dictionary,
+  fallback = Object.keys(data),
+): string[] {
+  // columns of a partial index predicate don't identify the row, their values can differ from the data
+  const sql = target.sql.split(/\bwhere\b/i)[0];
+  const words = new Set([sql, ...target.params].join(' ').toLowerCase().match(/\w+/g));
+  const keys = Object.keys(data).filter(k =>
+    meta.properties[k as EntityKey<T>]?.fieldNames?.some(f => words.has(f.toLowerCase())),
+  );
+
+  return keys.length > 0 ? keys : fallback;
+}
+
 /** @internal */
 export function getWhereCondition<T extends object>(
   meta: EntityMetadata<T>,
@@ -216,7 +236,11 @@ export function getWhereCondition<T extends object>(
     !isRaw(unique) &&
     unique.findIndex(p => (data as Dictionary)[p] ?? (data as Dictionary)[p.substring(0, p.indexOf('.'))] != null);
 
-  if (onConflictFields || where == null) {
+  const rawKeys = isRaw(onConflictFields) ? getRawConflictKeys(meta, onConflictFields, data, []) : [];
+
+  if (rawKeys.length > 0) {
+    where = Object.fromEntries(rawKeys.map(k => [k, (data as Dictionary)[k]])) as FilterQuery<T>;
+  } else if (onConflictFields || where == null) {
     if (propIndex !== false && propIndex >= 0) {
       let key = unique[propIndex];
 

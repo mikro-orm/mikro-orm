@@ -2,6 +2,7 @@ import { type Configuration } from './utils/Configuration.js';
 import {
   getOnConflictReturningFields,
   getOnCreateGeneratedFields,
+  getRawConflictKeys,
   getWhereCondition,
   resetUntouchedCollections,
 } from './utils/upsert-utils.js';
@@ -1557,7 +1558,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           }
         }
       } else {
-        Object.keys(data).forEach(prop => {
+        getRawConflictKeys(meta, uniqueFields, data).forEach(prop => {
           where[prop as EntityKey] = data[prop as EntityKey];
         });
 
@@ -1878,7 +1879,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       dataIndexes.forEach((index, idx) => {
         const item = data[index];
         where.$or[idx] = {};
-        const props = Array.isArray(uniqueFields) ? uniqueFields : Object.keys(item);
+        const props = Array.isArray(uniqueFields) ? uniqueFields : getRawConflictKeys(meta, uniqueFields, item);
         props.forEach(prop => {
           where.$or[idx][prop as string] = item[prop as EntityKey];
         });
