@@ -67,6 +67,19 @@ export class EntityComparator {
     return Utils.callCompiledFunction(comparator, a as T, b as T, options);
   }
 
+  /**
+   * Returns true if the comparator checks this property with `!==`, so matching values are identical primitives.
+   * @internal
+   */
+  isStrictlyCompared<T>(prop: EntityProperty<T>): boolean {
+    if (prop.kind !== ReferenceKind.SCALAR || prop.customType?.compareValues) {
+      return false;
+    }
+
+    const type = (prop.customType ? prop.customType.compareAsType() : prop.type).toLowerCase();
+    return ['string', 'number', 'bigint'].includes(type);
+  }
+
   /** Returns true if two entity snapshots are identical (no differences). */
   matching<T extends object>(entityName: EntityName<T>, a: EntityData<T>, b: EntityData<T>): boolean {
     const diff = this.diffEntities(entityName, a, b);

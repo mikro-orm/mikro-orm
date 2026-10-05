@@ -1897,8 +1897,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         }),
       );
 
-      for (const [entity, cond] of loadPK.entries()) {
-        const row = data2.find(row => {
+      if (loadPK.size > 0) {
+        const comparableRows = data2.map(row => {
           const tmp: Dictionary = {};
           add.forEach(k => {
             const prop = meta.properties[k];
@@ -1907,15 +1907,53 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
               tmp[k] = prop?.customType ? prop.customType.convertToDatabaseValue(row[k], this.getPlatform()) : row[k];
             }
           });
-          return this.#comparator.matching<any>(entityName, cond as EntityKey, tmp);
+          return tmp;
         });
+        const isMatch = (cond: Dictionary, idx: number) =>
+          this.#comparator.matching<any>(entityName, cond as EntityKey, comparableRows[idx]);
 
-        /* v8 ignore next */
-        if (!row) {
-          throw new Error(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
+        // When every condition key is a comparable prop checked with `!==`, a matching row has the same primitive
+        // values, so rows can be grouped by those values once instead of comparing every row for every entity.
+        // Props outside `comparableProps` are skipped by the comparator, so they never qualify for grouping.
+        const groupableProps = new Set(meta.comparableProps.filter(prop => this.#comparator.isStrictlyCompared(prop)));
+        const groups = new Map<string, Map<string, number[]>>();
+        // `null` and `undefined` share a key, which can only make a group wider than what `matching` accepts
+        const groupKey = (data: Dictionary, keys: string[]) =>
+          keys.map(k => (data[k] == null ? 'null' : `${typeof data[k]}:${data[k]}`)).join('\0');
+        const findRowIndex = (cond: Dictionary) => {
+          const keys = Utils.keys(cond) as EntityKey<Entity>[];
+
+          if (!keys.every(k => groupableProps.has(meta.properties[k]))) {
+            return comparableRows.findIndex((_, idx) => isMatch(cond, idx));
+          }
+
+          const signature = keys.join('\0');
+
+          if (!groups.has(signature)) {
+            const rowsByKey = new Map<string, number[]>();
+            comparableRows.forEach((tmp, idx) => {
+              const rowKey = groupKey(tmp, keys);
+              const indexes = rowsByKey.get(rowKey) ?? [];
+              indexes.push(idx);
+              rowsByKey.set(rowKey, indexes);
+            });
+            groups.set(signature, rowsByKey);
+          }
+
+          const group = groups.get(signature)!;
+          return group.get(groupKey(cond, keys))?.find(idx => isMatch(cond, idx)) ?? -1;
+        };
+
+        for (const [entity, cond] of loadPK.entries()) {
+          const row = data2[findRowIndex(cond as Dictionary)];
+
+          /* v8 ignore next */
+          if (!row) {
+            throw new Error(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
+          }
+
+          em.getHydrator().hydrate(entity, meta, row, em.#entityFactory, 'full', false, true);
         }
-
-        em.getHydrator().hydrate(entity, meta, row, em.#entityFactory, 'full', false, true);
       }
 
       if (loadPK.size !== data2.length && Array.isArray(uniqueFields)) {
