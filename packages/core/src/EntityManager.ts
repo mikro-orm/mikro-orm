@@ -1912,12 +1912,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           });
           return tmp;
         });
-        // the rows carry the keys of every condition in the batch, compare only those of the given one
+        // rows carry the keys of every condition in the batch, compare only this one's (an empty one must not match)
         const isMatch = (cond: Dictionary, idx: number) =>
           this.#comparator.matching<any>(
             entityName,
             cond as EntityKey,
-            Object.fromEntries(Object.entries(comparableRows[idx]).filter(([k]) => k in cond)),
+            Utils.hasObjectKeys(cond)
+              ? Object.fromEntries(Object.entries(comparableRows[idx]).filter(([k]) => k in cond))
+              : comparableRows[idx],
           );
 
         // When every condition key is a comparable prop checked with `!==`, a matching row has the same primitive
