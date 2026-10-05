@@ -553,12 +553,14 @@ export class EntityLoader {
       }
     } else {
       // owning side of M:N without pivot table needs to be reordered
-      for (const entity of filtered) {
-        const order = !customOrder ? [...(entity[prop.name] as Collection<AnyEntity>).getItems(false)] : []; // copy order of references
-        const items = children.filter(child => (entity[prop.name] as Collection<AnyEntity>).contains(child, false));
+      const childIndex = new Map(children.map((child, idx) => [child, idx]));
 
-        if (!customOrder) {
-          items.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+      for (const entity of filtered) {
+        // keep the order of references, or the order of loaded children when a custom order is used
+        const items = (entity[prop.name] as Collection<AnyEntity>).getItems(false).filter(item => childIndex.has(item));
+
+        if (customOrder) {
+          items.sort((a, b) => childIndex.get(a)! - childIndex.get(b)!);
         }
 
         (entity[field] as Collection<AnyEntity>).hydrate(items, true, partial, readonly);
