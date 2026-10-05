@@ -1572,7 +1572,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         Object.assign(where, Utils.getPrimaryKeyCond(entity, meta.primaryKeys) ?? insertId);
       }
 
-      // an empty condition would hydrate the entity from an arbitrary row, mongo still relies on it
+      // an empty condition would hydrate the entity from an arbitrary row, mongo still gets one for nested conflict fields
       if (!Utils.hasObjectKeys(where) && platform.usesPivotTable()) {
         throw new Error(
           `Cannot find the upserted ${meta.className} row, as neither its primary key nor a unique value is known`,
