@@ -1897,18 +1897,76 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         }),
       );
 
-      for (const [entity, cond] of loadPK.entries()) {
-        const row = data2.find(row => {
-          const tmp: Dictionary = {};
-          add.forEach(k => {
-            const prop = meta.properties[k];
+      const comparableRows = data2.map(row => {
+        const tmp: Dictionary = {};
+        add.forEach(k => {
+          const prop = meta.properties[k];
 
-            if (!prop?.primary) {
-              tmp[k] = prop?.customType ? prop.customType.convertToDatabaseValue(row[k], this.getPlatform()) : row[k];
+          if (!prop?.primary) {
+            tmp[k] = prop?.customType ? prop.customType.convertToDatabaseValue(row[k], this.getPlatform()) : row[k];
+          }
+        });
+        return tmp;
+      });
+      const isMatch = (cond: Dictionary, idx: number) =>
+        this.#comparator.matching<any>(entityName, cond as EntityKey, comparableRows[idx]);
+
+      // When every condition key is compared with `!==`, a matching row has the same primitive values,
+      // so rows can be grouped by those values once instead of comparing every row for every entity.
+      const groups = new Map<string, Map<string, number[]>>();
+      const groupKey = (data: Dictionary, keys: string[]) => {
+        let key = '';
+
+        for (const k of keys) {
+          const value = data[k];
+
+          if (!['string', 'number', 'bigint'].includes(typeof value)) {
+            return undefined;
+          }
+
+          key += `${typeof value}:${value}\0`;
+        }
+
+        return key;
+      };
+      const findRowIndex = (cond: Dictionary) => {
+        const keys = Utils.keys(cond) as EntityKey<Entity>[];
+        const key = keys.every(k => meta.properties[k] && this.#comparator.isStrictlyCompared(meta.properties[k]))
+          ? groupKey(cond, keys)
+          : undefined;
+
+        if (key === undefined) {
+          return comparableRows.findIndex((_, idx) => isMatch(cond, idx));
+        }
+
+        const signature = keys.join('\0');
+        let group = groups.get(signature);
+
+        if (!group) {
+          group = new Map();
+          comparableRows.forEach((tmp, idx) => {
+            const rowKey = groupKey(tmp, keys);
+
+            if (rowKey === undefined) {
+              return;
+            }
+
+            const indexes = group!.get(rowKey);
+
+            if (indexes) {
+              indexes.push(idx);
+            } else {
+              group!.set(rowKey, [idx]);
             }
           });
-          return this.#comparator.matching<any>(entityName, cond as EntityKey, tmp);
-        });
+          groups.set(signature, group);
+        }
+
+        return group.get(key)?.find(idx => isMatch(cond, idx)) ?? -1;
+      };
+
+      for (const [entity, cond] of loadPK.entries()) {
+        const row = data2[findRowIndex(cond as Dictionary)];
 
         /* v8 ignore next */
         if (!row) {
