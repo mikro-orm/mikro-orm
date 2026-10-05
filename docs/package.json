@@ -54,7 +54,7 @@
     "prettier": "^3.5.3"
   },
   "resolutions": {
-    "node-gyp": "13.0.2"
+    "node-gyp": "13.1.0"
   },
   "packageManager": "yarn@4.18.1"
 }

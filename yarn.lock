@@ -1446,7 +1446,7 @@ __metadata:
     "@swc-node/register": "npm:1.12.1"
     "@swc/core": "npm:1.16.13"
     "@types/better-sqlite3": "npm:9.6.0"
-    "@types/node": "npm:24.19.0"
+    "@types/node": "npm:24.19.1"
     "@types/oracledb": "npm:7.0.3"
     "@types/pg": "npm:8.23.1"
     "@types/pg-cursor": "npm:2.7.2"
@@ -3215,12 +3215,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:24.19.0":
-  version: 24.19.0
-  resolution: "@types/node@npm:24.19.0"
+"@types/node@npm:24.19.1":
+  version: 24.19.1
+  resolution: "@types/node@npm:24.19.1"
   dependencies:
     undici-types: "npm:>=7.24.0 <7.24.7"
-  checksum: 10/99ac82727313cda4355b0290a0816df03661dfb83c230276ac00437c898676bffec3fb59214ee0998c0d4ee333cfabec1720fb234f20ace9b45809b94b60a7c5
+  checksum: 10/52c8d538a7d3b57699101912ae89093f97471ad5f4f9564e8012080f1aecadf26acbdbe072232da6d891d2dd9ce84c1a8e6edb29edc4bc307eda1d064de4d1e9
   languageName: node
   linkType: hard
 
