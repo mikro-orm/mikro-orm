@@ -6,10 +6,12 @@ import { Utils } from './Utils.js';
 import { type Dictionary } from '../typings.js';
 import { colors } from '../logging/colors.js';
 
-type GlobFn = (patterns: string | string[], options?: { cwd?: string; expandDirectories?: boolean }) => string[];
+// `dir` is a literal directory (relative to `cwd`) the patterns are matched in, it is never parsed as a glob
+type GlobFn = (patterns: string | string[], options?: { cwd?: string; dir?: string }) => string[];
 
 let globSync: GlobFn = (patterns, options) => {
-  const files = nodeGlobSync(patterns, { ...options, withFileTypes: true });
+  const cwd = options?.dir ? join(options.cwd ?? '', options.dir) : options?.cwd;
+  const files = nodeGlobSync(patterns, { cwd, withFileTypes: true });
   return files.filter(f => f.isFile()).map(f => join(f.parentPath, f.name));
 };
 
@@ -39,7 +41,8 @@ export const fs: FsUtils = {
 
     if (tinyGlobby) {
       globSync = (patterns, options) => {
-        patterns = Utils.asArray(patterns).map(p => p.replace(/\\/g, '/'));
+        const dir = options?.dir ? tinyGlobby.escapePath(options.dir.replace(/\\/g, '/')) + '/' : '';
+        patterns = Utils.asArray(patterns).map(p => dir + p.replace(/\\/g, '/'));
 
         // never forward `cwd: undefined` — tinyglobby >= 0.2.16 calls `path.resolve(undefined)` and throws
         return tinyGlobby.globSync(patterns, {
@@ -106,18 +109,14 @@ export const fs: FsUtils = {
       input = relative(cwd, input).replace(/\\/g, '/') || '.';
     }
 
-    const hasGlobChars = /[*?[\]]/.test(input);
+    try {
+      const s = statSync(cwd ? this.normalizePath(cwd, input) : input);
 
-    if (!hasGlobChars) {
-      try {
-        const s = statSync(cwd ? this.normalizePath(cwd, input) : input);
-
-        if (s.isDirectory()) {
-          return globSync(join(input, '**'), { cwd });
-        }
-      } catch {
-        // ignore
+      if (s.isDirectory()) {
+        return globSync('**', { cwd, dir: input });
       }
+    } catch {
+      // ignore
     }
 
     return globSync(input, { cwd });

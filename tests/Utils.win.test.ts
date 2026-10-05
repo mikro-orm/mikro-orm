@@ -321,6 +321,26 @@ describe('Utils', () => {
     }
   });
 
+  test('glob with glob characters in a literal directory', async () => {
+    const cwd = fs.normalizePath(TEMP_DIR + '/glob-literal-dir/app');
+    const inside = cwd + '/src/(group) [x]/entities/Book.ts';
+    const sibling = fs.normalizePath(cwd, '../sibling (y) [z]/entities/Author.ts');
+    fs.ensureDir(cwd + '/src/(group) [x]/entities');
+    fs.ensureDir(fs.normalizePath(cwd, '../sibling (y) [z]/entities'));
+    writeFileSync(inside, '');
+    writeFileSync(sibling, '');
+    const resolve = (path: string) => fs.normalizePath(cwd, path);
+
+    // node:fs fallback first, then tinyglobby
+    for (let i = 0; i < 2; i++) {
+      expect(fs.glob('./src/(group) [x]/entities', cwd).map(resolve)).toEqual([inside]);
+      expect(fs.glob('src', cwd).map(resolve)).toEqual([inside]);
+      expect(fs.glob('../sibling (y) [z]/entities', cwd).map(resolve)).toEqual([sibling]);
+      expect(fs.glob(fs.normalizePath(sibling, '..'), cwd).map(resolve)).toEqual([sibling]);
+      await fs.init();
+    }
+  });
+
   test('isPlainObject', async () => {
     expect(Utils.isPlainObject({ foo: 'bar' })).toBe(true);
     class Foo {}
