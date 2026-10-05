@@ -1572,6 +1572,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         Object.assign(where, Utils.getPrimaryKeyCond(entity, meta.primaryKeys) ?? insertId);
       }
 
+      // an empty condition would hydrate the entity from an arbitrary row, mongo still relies on it
+      if (!Utils.hasObjectKeys(where) && platform.usesPivotTable()) {
+        throw new Error(
+          `Cannot find the upserted ${meta.className} row, as neither its primary key nor a unique value is known`,
+        );
+      }
+
       const data2 = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
         this.driver.findOne(meta.class, where, {
           fields: returning.concat(...((options.onConflictMergeFields ?? []) as string[])) as any[],
