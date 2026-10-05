@@ -1845,7 +1845,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     // skip the reload only when RETURNING brought back a row for every input
     // (onConflictWhere can suppress writes, leaving some rows out)
     // oxfmt-ignore
-    const uniqueFields = options.onConflictFields ?? ((Utils.isPlainObject(allWhere[0]) ? Object.keys(allWhere[0]).flatMap(key => Utils.splitPrimaryKeys(key)) : meta.primaryKeys) as (keyof Entity)[]);
+    const getUniqueFields = (where: FilterQuery<Entity>) => options.onConflictFields ?? ((Utils.isPlainObject(where) ? Object.keys(where).flatMap(key => Utils.splitPrimaryKeys(key)) : meta.primaryKeys) as (keyof Entity)[]);
+    const uniqueFields = getUniqueFields(allWhere[0]);
+    // an empty condition identifies no row, it must not turn into a reload condition matching every row
+    const getRowUniqueFields = (where: FilterQuery<Entity>) =>
+      Utils.isPlainObject(where) && !Utils.hasObjectKeys(where) ? uniqueFields : getUniqueFields(where);
     const platform = this.getPlatform();
     const returning = getOnConflictReturningFields(
       meta,
@@ -1878,7 +1882,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       dataIndexes.forEach((index, idx) => {
         const item = data[index];
         where.$or[idx] = {};
-        const props = Array.isArray(uniqueFields) ? uniqueFields : Object.keys(item);
+        // the inputs of one batch can be identified by different unique keys
+        const fields = getRowUniqueFields(allWhere[idx]);
+        const props = Array.isArray(fields) ? fields : Object.keys(item);
         props.forEach(prop => {
           where.$or[idx][prop as string] = item[prop as EntityKey];
         });
@@ -1909,8 +1915,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           });
           return tmp;
         });
+        // rows carry the keys of every condition in the batch, compare only this one's (an empty one must not match)
         const isMatch = (cond: Dictionary, idx: number) =>
-          this.#comparator.matching<any>(entityName, cond as EntityKey, comparableRows[idx]);
+          this.#comparator.matching<any>(
+            entityName,
+            cond as EntityKey,
+            Utils.hasObjectKeys(cond)
+              ? Object.fromEntries(Object.entries(comparableRows[idx]).filter(([k]) => k in cond))
+              : comparableRows[idx],
+          );
 
         // When every condition key is a comparable prop checked with `!==`, a matching row has the same primitive
         // values, so rows can be grouped by those values once instead of comparing every row for every entity.
@@ -1959,14 +1972,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       if (loadPK.size !== data2.length && Array.isArray(uniqueFields)) {
         for (let i = 0; i < allData.length; i++) {
           const data = allData[i];
-          const cond = uniqueFields.reduce((a, b) => {
+          const fields = getRowUniqueFields(allWhere[i]) as (keyof Entity)[];
+          const cond = fields.reduce((a, b) => {
             // @ts-ignore
             a[b] = data[b];
             return a;
           }, {});
           const entity = entitiesByData.get(data);
           const row = data2.find(item => {
-            const pk = uniqueFields.reduce((a, b) => {
+            const pk = fields.reduce((a, b) => {
               // @ts-ignore
               a[b] = item[b];
               return a;
