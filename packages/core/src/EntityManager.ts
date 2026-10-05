@@ -1917,53 +1917,31 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         // Props outside `comparableProps` are skipped by the comparator, so they never qualify for grouping.
         const groupableProps = new Set(meta.comparableProps.filter(prop => this.#comparator.isStrictlyCompared(prop)));
         const groups = new Map<string, Map<string, number[]>>();
-        const groupKey = (data: Dictionary, keys: string[]) => {
-          let key = '';
-
-          for (const k of keys) {
-            const value = data[k];
-
-            if (!['string', 'number', 'bigint'].includes(typeof value)) {
-              return undefined;
-            }
-
-            key += `${typeof value}:${value}\0`;
-          }
-
-          return key;
-        };
+        // `null` and `undefined` share a key, which can only make a group wider than what `matching` accepts
+        const groupKey = (data: Dictionary, keys: string[]) =>
+          keys.map(k => (data[k] == null ? 'null' : `${typeof data[k]}:${data[k]}`)).join('\0');
         const findRowIndex = (cond: Dictionary) => {
           const keys = Utils.keys(cond) as EntityKey<Entity>[];
-          const key = keys.every(k => groupableProps.has(meta.properties[k])) ? groupKey(cond, keys) : undefined;
 
-          if (key === undefined) {
+          if (!keys.every(k => groupableProps.has(meta.properties[k]))) {
             return comparableRows.findIndex((_, idx) => isMatch(cond, idx));
           }
 
           const signature = keys.join('\0');
-          let group = groups.get(signature);
 
-          if (!group) {
-            group = new Map();
+          if (!groups.has(signature)) {
+            const rowsByKey = new Map<string, number[]>();
             comparableRows.forEach((tmp, idx) => {
               const rowKey = groupKey(tmp, keys);
-
-              if (rowKey === undefined) {
-                return;
-              }
-
-              const indexes = group!.get(rowKey);
-
-              if (indexes) {
-                indexes.push(idx);
-              } else {
-                group!.set(rowKey, [idx]);
-              }
+              const indexes = rowsByKey.get(rowKey) ?? [];
+              indexes.push(idx);
+              rowsByKey.set(rowKey, indexes);
             });
-            groups.set(signature, group);
+            groups.set(signature, rowsByKey);
           }
 
-          return group.get(key)?.find(idx => isMatch(cond, idx)) ?? -1;
+          const group = groups.get(signature)!;
+          return group.get(groupKey(cond, keys))?.find(idx => isMatch(cond, idx)) ?? -1;
         };
 
         for (const [entity, cond] of loadPK.entries()) {
