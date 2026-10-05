@@ -1393,7 +1393,7 @@ export interface EntityMetadataWithProperties<
     | { '~entity': TBase; '~discriminatorColumn'?: TBaseDiscriminatorColumn }
     | (EntityCtor<TBase> & { '~discriminatorColumn'?: TBaseDiscriminatorColumn });
   properties: TProperties | ((properties: PropertyBuilders) => TProperties);
-  primaryKeys?: TPK & InferPrimaryKeyConstraint<TProperties>[];
+  primaryKeys?: TPK & NoInfer<InferPrimaryKeyConstraint<TProperties>>[];
   hooks?: DefineEntityHooks;
   // Capture the repository type for InferEntity to include EntityRepositoryType
   repository?: () => TRepository;
@@ -1433,16 +1433,16 @@ export interface EntityMetadataWithProperties<
   /** Alias for `discriminator`. */
   discriminatorColumn?: TDiscriminatorColumn;
   discriminatorValue?: TDiscriminatorValue;
-  versionProperty?: AllKeys<TProperties, TBase>;
-  concurrencyCheckKeys?: Set<AllKeys<TProperties, TBase>>;
-  serializedPrimaryKey?: AllKeys<TProperties, TBase>;
+  versionProperty?: NoInfer<AllKeys<TProperties, TBase>>;
+  concurrencyCheckKeys?: Set<NoInfer<AllKeys<TProperties, TBase>>>;
+  serializedPrimaryKey?: NoInfer<AllKeys<TProperties, TBase>>;
   indexes?: {
     properties?: NoInfer<AllKeys<TProperties, TBase>> | NoInfer<AllKeys<TProperties, TBase>>[];
     name?: string;
     type?: string;
     options?: Dictionary;
     expression?: string | IndexCallback<InferEntityFromProperties<TProperties, TPK, TBase>>;
-    where?: PartialWhere<TProperties, TBase>;
+    where?: NoInfer<PartialWhere<TProperties, TBase>>;
     columns?: IndexColumnOptions[];
     include?: NoInfer<AllKeys<TProperties, TBase>> | NoInfer<AllKeys<TProperties, TBase>>[];
     fillFactor?: number;
@@ -1455,7 +1455,7 @@ export interface EntityMetadataWithProperties<
     name?: string;
     options?: Dictionary;
     expression?: string | IndexCallback<InferEntityFromProperties<TProperties, TPK, TBase>>;
-    where?: PartialWhere<TProperties, TBase>;
+    where?: NoInfer<PartialWhere<TProperties, TBase>>;
     deferMode?: DeferMode | `${DeferMode}`;
     columns?: IndexColumnOptions[];
     include?: NoInfer<AllKeys<TProperties, TBase>> | NoInfer<AllKeys<TProperties, TBase>>[];

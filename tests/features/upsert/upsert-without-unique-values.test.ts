@@ -114,7 +114,7 @@ describe('em.upsert without unique values [mongo]', () => {
     expect(books[2].id).toBeInstanceOf(ObjectId);
     expect(books[2].title).toBe('foo 3');
 
-    mock.mock.calls[2][0] = mock.mock.calls[2][0].replaceAll(b1.id, '[generated-object-id]');
+    mock.mock.calls[1][0] = mock.mock.calls[1][0].replaceAll(b1.id, '[generated-object-id]');
     expect(mock.mock.calls).toMatchSnapshot('mongo');
   });
 });
