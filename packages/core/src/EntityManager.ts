@@ -1566,6 +1566,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         }
       }
 
+      // a `null` unique value cannot identify the row, and as it never conflicts, the row was inserted
+      const pk = helper(entity).getPrimaryKey() ?? ret.insertId;
+
+      if (!Utils.hasObjectKeys(where) && meta.simplePK && pk != null) {
+        where[meta.primaryKeys[0] as EntityKey] = pk as never;
+      }
+
       const data2 = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
         this.driver.findOne(meta.class, where, {
           fields: returning.concat(...((options.onConflictMergeFields ?? []) as string[])) as any[],
@@ -1778,6 +1785,23 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       allData.push(row);
       allWhere.push(where);
       dataIndexes.push(i);
+    }
+
+    const positional =
+      (this.getPlatform().usesReturningStatement() || this.getPlatform().usesOutputStatement()) &&
+      options.onConflictAction !== 'ignore' &&
+      !options.onConflictWhere;
+    const hasUniqueKey =
+      !!options.onConflictFields || meta.uniques.length > 0 || meta.props.some(p => p.unique && !p.primary);
+
+    // a row with a `null` unique value has nothing to be reloaded by, the single row path maps its PK from the insert
+    for (let idx = 0; !positional && hasUniqueKey && idx < allWhere.length; idx++) {
+      if (!Utils.hasObjectKeys(allWhere[idx])) {
+        result[dataIndexes[idx]] = await em.upsert(entityName, data[dataIndexes[idx]], options);
+        allData.splice(idx, 1);
+        allWhere.splice(idx, 1);
+        dataIndexes.splice(idx--, 1);
+      }
     }
 
     if (allData.length === 0) {
