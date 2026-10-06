@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.4](https://github.com/mikro-orm/mikro-orm/compare/v7.2.3...v7.2.4) (2026-10-06)
+
+### Bug Fixes
+
+* **core:** check the version in batch updates ([#8381](https://github.com/mikro-orm/mikro-orm/issues/8381)) ([5156bc4](https://github.com/mikro-orm/mikro-orm/commit/5156bc48e4e66714a4bc434dd46d4e9a47f1d743)), closes [#8380](https://github.com/mikro-orm/mikro-orm/issues/8380)
+* **core:** don't infer `defineEntity` properties from index `where` and key options ([#8395](https://github.com/mikro-orm/mikro-orm/issues/8395)) ([dca7734](https://github.com/mikro-orm/mikro-orm/commit/dca77348c2ce4b8eb762614f500d9860d5d374bf)), closes [#8394](https://github.com/mikro-orm/mikro-orm/issues/8394)
+* **core:** match reloaded rows in `upsertMany` when inputs use different unique keys ([#8396](https://github.com/mikro-orm/mikro-orm/issues/8396)) ([20c571d](https://github.com/mikro-orm/mikro-orm/commit/20c571d307005e8aee024cbfcf31f294ff1fdcda))
+* **core:** support glob characters in the project path ([#8390](https://github.com/mikro-orm/mikro-orm/issues/8390)) ([f2c02f0](https://github.com/mikro-orm/mikro-orm/commit/f2c02f004ab3230d9e116f69992994cbcc9fae7d)), closes [#1073](https://github.com/mikro-orm/mikro-orm/issues/1073)
+* **core:** upsert rows with a null unique key without touching unrelated rows ([#8397](https://github.com/mikro-orm/mikro-orm/issues/8397)) ([bb4aa99](https://github.com/mikro-orm/mikro-orm/commit/bb4aa996cc703d72bb4b76c35c7877000d0d6a58)), closes [#8393](https://github.com/mikro-orm/mikro-orm/issues/8393)
+* **mongo:** insert on upsert without a unique value ([#8398](https://github.com/mikro-orm/mikro-orm/issues/8398)) ([1459d92](https://github.com/mikro-orm/mikro-orm/commit/1459d9217c17670ee98f8b0d80722e3fc5f405da))
+* **sqlite:** respect `createForeignKeyConstraints: false` in schema create and update ([#8383](https://github.com/mikro-orm/mikro-orm/issues/8383)) ([656fac7](https://github.com/mikro-orm/mikro-orm/commit/656fac7d48b7853e8cde6d490b19d900ef0876d8)), closes [#8382](https://github.com/mikro-orm/mikro-orm/issues/8382)
+
+### Performance Improvements
+
+* **core:** avoid per-owner scans on the owning side of M:N ([#8392](https://github.com/mikro-orm/mikro-orm/issues/8392)) ([39599a7](https://github.com/mikro-orm/mikro-orm/commit/39599a7dab33d8f319df687f678b99b2226c32a2)), closes [#8391](https://github.com/mikro-orm/mikro-orm/issues/8391) [#8391](https://github.com/mikro-orm/mikro-orm/issues/8391)
+* **core:** group inverse M:N children in one pass ([#8391](https://github.com/mikro-orm/mikro-orm/issues/8391)) ([fa2eefa](https://github.com/mikro-orm/mikro-orm/commit/fa2eefa456b54e68cf3a45379d17befe06ca9e3a))
+* **core:** group reloaded rows by condition values in upsertMany ([#8393](https://github.com/mikro-orm/mikro-orm/issues/8393)) ([33236ce](https://github.com/mikro-orm/mikro-orm/commit/33236ce0c806d29737c28962953cdfe42fc42f67))
+
+
 ## [7.2.3](https://github.com/mikro-orm/mikro-orm/compare/v7.2.2...v7.2.3) (2026-09-30)
 
 ### Bug Fixes

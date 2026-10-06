@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.4](https://github.com/mikro-orm/mikro-orm/compare/v7.2.3...v7.2.4) (2026-10-06)
+
+### Bug Fixes
+
+* **mongo:** insert on upsert without a unique value ([#8398](https://github.com/mikro-orm/mikro-orm/issues/8398)) ([1459d92](https://github.com/mikro-orm/mikro-orm/commit/1459d9217c17670ee98f8b0d80722e3fc5f405da))
+
+
 ## [7.2.3](https://github.com/mikro-orm/mikro-orm/compare/v7.2.2...v7.2.3) (2026-09-30)
 
 **Note:** Version bump only for package @mikro-orm/mongodb
