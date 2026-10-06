@@ -1566,6 +1566,19 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         }
       }
 
+      // a `null` unique value cannot identify the row, and as it never conflicts, the row was inserted
+      if (!Utils.hasObjectKeys(where)) {
+        const insertId = meta.simplePK && ret.insertId != null ? { [meta.primaryKeys[0]]: ret.insertId } : {};
+        Object.assign(where, Utils.getPrimaryKeyCond(entity, meta.primaryKeys) ?? insertId);
+      }
+
+      // an empty condition would hydrate the entity from an arbitrary row, mongo still gets one for nested conflict fields
+      if (!Utils.hasObjectKeys(where) && platform.usesPivotTable()) {
+        throw new Error(
+          `Cannot find the upserted ${meta.className} row, as neither its primary key nor a unique value is known`,
+        );
+      }
+
       const data2 = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
         this.driver.findOne(meta.class, where, {
           fields: returning.concat(...((options.onConflictMergeFields ?? []) as string[])) as any[],
@@ -1575,7 +1588,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           schema: options.schema,
         }),
       );
-      em.getHydrator().hydrate(entity, meta, data2!, em.#entityFactory, 'full', false, true);
+
+      if (!data2) {
+        throw new Error(`Cannot find the upserted ${meta.className} row for condition ${JSON.stringify(where)}`);
+      }
+
+      em.getHydrator().hydrate(entity, meta, data2, em.#entityFactory, 'full', false, true);
     }
 
     // recompute the data as there might be some values missing (e.g. those with db column defaults)
@@ -1761,8 +1779,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         unique.findIndex(p => (data as Dictionary)[p] ?? (data as Dictionary)[p.substring(0, p.indexOf('.'))] != null);
       const tmp = getWhereCondition(meta, options.onConflictFields, row, where);
       propIndex = tmp.propIndex;
+
+      // a partial composite PK cannot identify the row
+      const partialPK =
+        meta.compositePK && !Utils.isPlainObject(tmp.where) && meta.primaryKeys.some(pk => row[pk] == null);
       where = QueryHelper.processWhere({
-        where: tmp.where,
+        where: partialPK ? {} : tmp.where,
         entityName,
         metadata: this.metadata,
         platform: this.getPlatform(),
@@ -1778,6 +1800,30 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       allData.push(row);
       allWhere.push(where);
       dataIndexes.push(i);
+    }
+
+    // mongo inserts the rows with an empty condition as part of the batch and reports their ids
+    const positional =
+      !this.getPlatform().usesPivotTable() ||
+      ((this.getPlatform().usesReturningStatement() || this.getPlatform().usesOutputStatement()) &&
+        options.onConflictAction !== 'ignore' &&
+        !options.onConflictWhere);
+    const hasUniqueKey =
+      !!options.onConflictFields || meta.uniques.length > 0 || meta.props.some(p => p.unique && !p.primary);
+    // only an autoincrement PK can be derived from the `insertId` of the batch
+    const autoincrement = meta.getPrimaryProps().some(p => p.autoincrement);
+
+    // a TPT child table does not return its rows, so they are never mapped by position
+    const peel = !!meta.tptParent || (!positional && (hasUniqueKey || !autoincrement));
+
+    // a row with a `null` unique value has nothing to be reloaded by, the single row path maps its PK from the insert
+    for (let idx = 0; peel && idx < allWhere.length; idx++) {
+      if (!Utils.hasObjectKeys(allWhere[idx])) {
+        result[dataIndexes[idx]] = await em.upsert(entityName, data[dataIndexes[idx]], options);
+        allData.splice(idx, 1);
+        allWhere.splice(idx, 1);
+        dataIndexes.splice(idx--, 1);
+      }
     }
 
     if (allData.length === 0) {
@@ -1846,7 +1892,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     // (onConflictWhere can suppress writes, leaving some rows out)
     // oxfmt-ignore
     const getUniqueFields = (where: FilterQuery<Entity>) => options.onConflictFields ?? ((Utils.isPlainObject(where) ? Object.keys(where).flatMap(key => Utils.splitPrimaryKeys(key)) : meta.primaryKeys) as (keyof Entity)[]);
-    const uniqueFields = getUniqueFields(allWhere[0]);
+    // a row without a condition has no unique fields to derive
+    const uniqueFields = getUniqueFields(allWhere.find(cond => Utils.hasObjectKeys(cond)) ?? allWhere[0]);
     // an empty condition identifies no row, it must not turn into a reload condition matching every row
     const getRowUniqueFields = (where: FilterQuery<Entity>) =>
       Utils.isPlainObject(where) && !Utils.hasObjectKeys(where) ? uniqueFields : getUniqueFields(where);
@@ -1878,12 +1925,16 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       const where = { $or: [] as Dictionary[] };
+      // a row without a condition was inserted, only the primary key reported for it can identify it
+      const insertedPKs = allData.map((row, idx) =>
+        Utils.hasObjectKeys(allWhere[idx]) ? null : Utils.getPrimaryKeyCond(entitiesByData.get(row)!, meta.primaryKeys),
+      );
 
       dataIndexes.forEach((index, idx) => {
         const item = data[index];
-        where.$or[idx] = {};
+        where.$or[idx] = { ...insertedPKs[idx] };
         // the inputs of one batch can be identified by different unique keys
-        const fields = getRowUniqueFields(allWhere[idx]);
+        const fields = insertedPKs[idx] ? [] : getRowUniqueFields(allWhere[idx]);
         const props = Array.isArray(fields) ? fields : Object.keys(item);
         props.forEach(prop => {
           where.$or[idx][prop as string] = item[prop as EntityKey];
@@ -1915,14 +1966,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           });
           return tmp;
         });
-        // rows carry the keys of every condition in the batch, compare only this one's (an empty one must not match)
+        // rows carry the keys of every condition in the batch, compare only this one's
         const isMatch = (cond: Dictionary, idx: number) =>
           this.#comparator.matching<any>(
             entityName,
             cond as EntityKey,
-            Utils.hasObjectKeys(cond)
-              ? Object.fromEntries(Object.entries(comparableRows[idx]).filter(([k]) => k in cond))
-              : comparableRows[idx],
+            Object.fromEntries(Object.entries(comparableRows[idx]).filter(([k]) => k in cond)),
           );
 
         // When every condition key is a comparable prop checked with `!==`, a matching row has the same primitive
@@ -1972,12 +2021,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       if (loadPK.size !== data2.length && Array.isArray(uniqueFields)) {
         for (let i = 0; i < allData.length; i++) {
           const data = allData[i];
-          const fields = getRowUniqueFields(allWhere[i]) as (keyof Entity)[];
-          const cond = fields.reduce((a, b) => {
-            // @ts-ignore
-            a[b] = data[b];
-            return a;
-          }, {});
+          const fields = (insertedPKs[i] ? meta.primaryKeys : getRowUniqueFields(allWhere[i])) as (keyof Entity)[];
+          const cond =
+            insertedPKs[i] ??
+            fields.reduce((a, b) => {
+              // @ts-ignore
+              a[b] = data[b];
+              return a;
+            }, {});
           const entity = entitiesByData.get(data);
           const row = data2.find(item => {
             const pk = fields.reduce((a, b) => {
