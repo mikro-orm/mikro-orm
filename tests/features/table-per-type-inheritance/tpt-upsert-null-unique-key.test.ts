@@ -230,6 +230,20 @@ describe.each(variants)(
       ]);
     });
 
+    test('the driver refuses a batch with more than one row without a unique value', async () => {
+      await expect(
+        orm.em.getDriver().nativeUpdateMany(
+          Employee,
+          [{}, {}],
+          [
+            { email: null, department: 'support' },
+            { email: null, department: 'legal' },
+          ],
+          { upsert: true },
+        ),
+      ).rejects.toThrow('Cannot upsert more than one Employee row without a unique value in one batch');
+    });
+
     test('em.upsertMany() with a mixed batch in a three level hierarchy', async () => {
       const existing = await orm.em.upsert(Manager, { email: 'existing@example.com', department: 'sales', level: 1 });
       const old = await orm.em.upsert(Manager, { email: null, department: 'support', level: 2 });

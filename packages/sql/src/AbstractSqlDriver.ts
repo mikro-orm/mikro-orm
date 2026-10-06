@@ -1519,6 +1519,11 @@ export abstract class AbstractSqlDriver<
 
     if (options.upsert) {
       if (meta.tptParent) {
+        // the parent table reports a single insertId per batch, the EM sends such rows one by one
+        if (where.filter(cond => Utils.isEmpty(cond)).length > 1) {
+          throw new Error(`Cannot upsert more than one ${meta.className} row without a unique value in one batch`);
+        }
+
         // TPT parent tables go first, the PK they provide is the conflict target of this table
         const res = await this.nativeUpdateMany(meta.tptParent.class, where, data, options);
 
