@@ -1889,7 +1889,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     // (onConflictWhere can suppress writes, leaving some rows out)
     // oxfmt-ignore
     const getUniqueFields = (where: FilterQuery<Entity>) => options.onConflictFields ?? ((Utils.isPlainObject(where) ? Object.keys(where).flatMap(key => Utils.splitPrimaryKeys(key)) : meta.primaryKeys) as (keyof Entity)[]);
-    const uniqueFields = getUniqueFields(allWhere[0]);
+    // a row without a condition has no unique fields to derive
+    const uniqueFields = getUniqueFields(allWhere.find(cond => Utils.hasObjectKeys(cond)) ?? allWhere[0]);
     // an empty condition identifies no row, it must not turn into a reload condition matching every row
     const getRowUniqueFields = (where: FilterQuery<Entity>) =>
       Utils.isPlainObject(where) && !Utils.hasObjectKeys(where) ? uniqueFields : getUniqueFields(where);
@@ -1921,12 +1922,16 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       const where = { $or: [] as Dictionary[] };
+      // a row without a condition was inserted, only the primary key reported for it can identify it
+      const insertedPKs = allData.map((row, idx) =>
+        Utils.hasObjectKeys(allWhere[idx]) ? null : Utils.getPrimaryKeyCond(entitiesByData.get(row)!, meta.primaryKeys),
+      );
 
       dataIndexes.forEach((index, idx) => {
         const item = data[index];
-        where.$or[idx] = {};
+        where.$or[idx] = { ...insertedPKs[idx] };
         // the inputs of one batch can be identified by different unique keys
-        const fields = getRowUniqueFields(allWhere[idx]);
+        const fields = insertedPKs[idx] ? [] : getRowUniqueFields(allWhere[idx]);
         const props = Array.isArray(fields) ? fields : Object.keys(item);
         props.forEach(prop => {
           where.$or[idx][prop as string] = item[prop as EntityKey];
@@ -2015,12 +2020,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       if (loadPK.size !== data2.length && Array.isArray(uniqueFields)) {
         for (let i = 0; i < allData.length; i++) {
           const data = allData[i];
-          const fields = getRowUniqueFields(allWhere[i]) as (keyof Entity)[];
-          const cond = fields.reduce((a, b) => {
-            // @ts-ignore
-            a[b] = data[b];
-            return a;
-          }, {});
+          const fields = (insertedPKs[i] ? meta.primaryKeys : getRowUniqueFields(allWhere[i])) as (keyof Entity)[];
+          const cond =
+            insertedPKs[i] ??
+            fields.reduce((a, b) => {
+              // @ts-ignore
+              a[b] = data[b];
+              return a;
+            }, {});
           const entity = entitiesByData.get(data);
           const row = data2.find(item => {
             const pk = fields.reduce((a, b) => {

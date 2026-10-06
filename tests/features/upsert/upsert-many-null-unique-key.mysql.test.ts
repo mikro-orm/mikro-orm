@@ -10,10 +10,19 @@ const User = defineEntity({
   },
 });
 
+const Log = defineEntity({
+  name: 'Log',
+  properties: {
+    id: p.integer().primary().autoincrement(),
+    name: p.string(),
+    note: p.string().nullable(),
+  },
+});
+
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = await MikroORM.init({ entities: [User], dbName: 'mikro_orm_upsert_null_unique_key', port: 3308 });
+  orm = await MikroORM.init({ entities: [User, Log], dbName: 'mikro_orm_upsert_null_unique_key', port: 3308 });
   await orm.schema.refresh();
 });
 
@@ -66,4 +75,16 @@ test('loads the primary keys when every row has a null unique key and onConflict
   );
 
   await expectStored(res, ['b', 'c'], 4);
+});
+
+test('reloads the rows of an entity without any unique key by their generated primary keys', async () => {
+  await orm.em.insertMany(Log, [
+    { name: 'old 1', note: 'note 1' },
+    { name: 'old 2', note: 'note 2' },
+  ]);
+  const res = await orm.em.fork().upsertMany(Log, [{ name: 'a' }, { name: 'b' }]);
+  const rows = await orm.em.fork().find(Log, { name: ['a', 'b'] }, { orderBy: { name: 'asc' } });
+
+  expect(res.map(e => [e.id, e.name, e.note])).toEqual(rows.map(row => [row.id, row.name, null]));
+  expect(rows).toHaveLength(2);
 });
