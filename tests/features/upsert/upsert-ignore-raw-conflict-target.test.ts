@@ -1,4 +1,4 @@
-import { defineEntity, MikroORM, p, quote, sql } from '@mikro-orm/sqlite';
+import { defineEntity, MikroORM, p, quote, raw, sql } from '@mikro-orm/sqlite';
 
 const Product = defineEntity({
   name: 'Product',
@@ -105,12 +105,12 @@ describe.each([true, false])('ignored conflict on a raw conflict target (returni
     expect(await em.count(Product)).toBe(2);
   });
 
-  test('upsert does not split a quoted column name into other columns', async () => {
+  test.each(['("label id")', '([label id])'])('upsert does not split a quoted column name (%s)', async target => {
     const em = orm.em.fork();
     const setting = await em.upsert(
       Setting,
       { id: 3, title: 'New', code: 'new', label: 'L2' },
-      { onConflictFields: sql`("label id")`, onConflictAction: 'ignore' },
+      { onConflictFields: raw(target), onConflictAction: 'ignore' },
     );
 
     expect(setting).toMatchObject({ id: 2, title: 'Existing', code: 'main', label: 'L2' });

@@ -199,7 +199,7 @@ function getRawConflictColumns(target: Raw): string[] {
   // columns of a partial index predicate don't identify the row, their values can differ from the data
   const sql = target.sql.split(/\bwhere\b/i)[0];
   // a quoted identifier is one name even with a space in it
-  const names = (sql.match(/"[^"]+"|`[^`]+`|\[[^\]]+\]|[\p{L}\p{N}_]+/gu) ?? []).map(n =>
+  const names = (sql.match(/"[^"]+"|`[^`]+`|\[[^[\]]+\]|[\p{L}\p{N}_]+/gu) ?? []).map(n =>
     n.replace(/^["`[]|["`\]]$/g, ''),
   );
   // value params are not column names, only identifiers and nested fragments can carry one
