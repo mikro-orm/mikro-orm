@@ -7,8 +7,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **mongo:** insert on upsert without a unique value ([#8398](https://github.com/mikro-orm/mikro-orm/issues/8398)) ([1459d92](https://github.com/mikro-orm/mikro-orm/commit/1459d9217c17670ee98f8b0d80722e3fc5f405da))
-
+- **mongo:** insert on upsert without a unique value ([#8398](https://github.com/mikro-orm/mikro-orm/issues/8398)) ([1459d92](https://github.com/mikro-orm/mikro-orm/commit/1459d9217c17670ee98f8b0d80722e3fc5f405da))
 
 ## [7.2.3](https://github.com/mikro-orm/mikro-orm/compare/v7.2.2...v7.2.3) (2026-09-30)
 

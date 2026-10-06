@@ -7,10 +7,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package @mikro-orm/pglite
 
-
-
-
-
 ## [7.2.3](https://github.com/mikro-orm/mikro-orm/compare/v7.2.2...v7.2.3) (2026-09-30)
 
 **Note:** Version bump only for package @mikro-orm/pglite
