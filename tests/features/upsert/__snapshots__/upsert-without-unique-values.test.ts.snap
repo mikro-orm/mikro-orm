@@ -17,10 +17,7 @@ exports[`em.upsert without unique values [mariadb] > em.upsert() without unique 
 exports[`em.upsert without unique values [mongo] > em.upsert() without unique values > mongo 1`] = `
 [
   [
-    "[query] db.getCollection('mongo-book').updateMany({}, { '$set': { title: 'foo 1' } }, { upsert: true });",
-  ],
-  [
-    "[query] db.getCollection('mongo-book').find({}, { projection: { id: 1 } }).limit(1).toArray();",
+    "[query] db.getCollection('mongo-book').insertOne({ title: 'foo 1' }, {});",
   ],
   [
     "[query] bulk = db.getCollection('mongo-book').initializeUnorderedBulkOp({ upsert: true });bulk.find({ _id: ObjectId('[generated-object-id]') }).upsert().update({ '$set': { _id: ObjectId('[generated-object-id]'), title: 'foo 12' } });bulk.insert({ title: 'foo 2' });bulk.insert({ title: 'foo 3' });bulk.execute()",
