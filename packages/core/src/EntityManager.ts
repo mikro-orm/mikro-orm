@@ -1198,34 +1198,36 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return null;
     }
 
-    // `serialize()` applies `Type.toJSON()`, hydration needs the runtime values of custom types
-    const restoreCustomTypes = (e: Dictionary, data: Dictionary) => {
+    // `serialize()` applies `Type.toJSON()` and `serializedName`, keep only its relations and take the runtime values from the entity
+    const getData = (
+      e: Dictionary,
+      data: Dictionary = helper(e).serialize({
+        ignoreSerializers: true,
+        includeHidden: true,
+        convertCustomTypes: false,
+      }),
+    ) => {
       for (const prop of helper(e).__meta.props) {
-        const value = e[prop.name];
-
-        if (value == null || !(prop.name in data)) {
-          continue;
+        if (prop.serializedName && prop.serializedName in data) {
+          data[prop.name] = data[prop.serializedName];
         }
 
-        if (prop.kind === ReferenceKind.EMBEDDED && Array.isArray(value)) {
-          value.forEach((item, idx) => restoreCustomTypes(item, data[prop.name][idx]));
-        } else if (prop.kind === ReferenceKind.EMBEDDED) {
-          restoreCustomTypes(value, data[prop.name]);
-        } else if (prop.customType && prop.kind === ReferenceKind.SCALAR && !prop.ref) {
-          data[prop.name] = value;
+        if (prop.kind === ReferenceKind.EMBEDDED && e[prop.name] != null) {
+          Utils.asArray(e[prop.name]).forEach((item, i) =>
+            getData(item, prop.array ? data[prop.name][i] : data[prop.name]),
+          );
+        } else if (prop.kind === ReferenceKind.SCALAR && !prop.ref && prop.name in data) {
+          data[prop.name] = e[prop.name];
         }
       }
-    };
-    const serialize = (e: object) => {
-      const data = helper(e).serialize({ ignoreSerializers: true, includeHidden: true, convertCustomTypes: false });
-      restoreCustomTypes(e, data);
+
       return data;
     };
     let found = false;
 
     for (const e of fork.#unitOfWork.getIdentityMap()) {
       const ref = em.getReference(e.constructor, helper(e).getPrimaryKey());
-      const data = serialize(e);
+      const data = getData(e);
       em.config
         .getHydrator(this.metadata)
         .hydrate(ref, helper(ref).__meta, data, em.#entityFactory, 'full', false, false);
@@ -1238,7 +1240,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (!found) {
-      const data = serialize(reloaded);
+      const data = getData(reloaded) as object;
       em.config
         .getHydrator(this.metadata)
         .hydrate(entity, wrapped.__meta, data, em.#entityFactory, 'full', false, false);
