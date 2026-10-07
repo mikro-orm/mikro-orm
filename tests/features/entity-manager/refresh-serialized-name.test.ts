@@ -34,19 +34,14 @@ beforeEach(async () => {
 
 afterAll(() => orm.close(true));
 
-test('em.refresh() reloads properties with `serializedName`', async () => {
+test.each([false, true])('em.refresh() reloads properties with `serializedName` (detached: %s)', async detached => {
   const em = orm.em.fork();
   const book = await em.findOneOrFail(Book, 1);
-  await orm.em.fork().nativeUpdate(Book, 1, { title: 't2', author: 2 });
-  await em.refresh(book);
-  expect(book.title).toBe('t2');
-  expect(book.author.id).toBe(2);
-});
 
-test('em.refresh() reloads properties with `serializedName` on detached entity', async () => {
-  const em = orm.em.fork();
-  const book = await em.findOneOrFail(Book, 1);
-  em.clear();
+  if (detached) {
+    em.clear();
+  }
+
   await orm.em.fork().nativeUpdate(Book, 1, { title: 't2', author: 2 });
   await em.refresh(book);
   expect(book.title).toBe('t2');
