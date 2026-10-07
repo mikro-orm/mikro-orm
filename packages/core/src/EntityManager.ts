@@ -1198,11 +1198,34 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return null;
     }
 
+    // `serialize()` applies `Type.toJSON()`, hydration needs the runtime values of custom types
+    const restoreCustomTypes = (e: Dictionary, data: Dictionary) => {
+      for (const prop of helper(e).__meta.props) {
+        const value = e[prop.name];
+
+        if (value == null || !(prop.name in data)) {
+          continue;
+        }
+
+        if (prop.kind === ReferenceKind.EMBEDDED && Array.isArray(value)) {
+          value.forEach((item, idx) => restoreCustomTypes(item, data[prop.name][idx]));
+        } else if (prop.kind === ReferenceKind.EMBEDDED) {
+          restoreCustomTypes(value, data[prop.name]);
+        } else if (prop.customType && prop.kind === ReferenceKind.SCALAR && !prop.ref) {
+          data[prop.name] = value;
+        }
+      }
+    };
+    const serialize = (e: object) => {
+      const data = helper(e).serialize({ ignoreSerializers: true, includeHidden: true, convertCustomTypes: false });
+      restoreCustomTypes(e, data);
+      return data;
+    };
     let found = false;
 
     for (const e of fork.#unitOfWork.getIdentityMap()) {
       const ref = em.getReference(e.constructor, helper(e).getPrimaryKey());
-      const data = helper(e).serialize({ ignoreSerializers: true, includeHidden: true, convertCustomTypes: false });
+      const data = serialize(e);
       em.config
         .getHydrator(this.metadata)
         .hydrate(ref, helper(ref).__meta, data, em.#entityFactory, 'full', false, false);
@@ -1215,11 +1238,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (!found) {
-      const data = helper(reloaded).serialize({
-        ignoreSerializers: true,
-        includeHidden: true,
-        convertCustomTypes: false,
-      }) as object;
+      const data = serialize(reloaded);
       em.config
         .getHydrator(this.metadata)
         .hydrate(entity, wrapped.__meta, data, em.#entityFactory, 'full', false, false);
