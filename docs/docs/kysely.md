@@ -334,6 +334,31 @@ export const EntityManager = MyEntityManager;
 
 Then import `EntityManager` from `./custom-em` instead of `./entities.generated` in your DI bindings and services. The generated barrel stays purely mechanical (so re-running `discovery:export` never clobbers your custom-EM glue), and `em.getKysely(opts)` keeps full type inference through the subclass.
 
+#### Using it in custom repositories
+
+The `em` property of a repository is typed as the plain driver EM, so `this.em.getKysely()` has no entity information. Redeclare it with the generated `EntityManager` type to get the same inference inside your [custom repositories](./repositories.md#custom-repository):
+
+```ts title="BookRepository.ts"
+import { EntityRepository } from '@mikro-orm/postgresql';
+import type { EntityManager } from './entities.generated.js';
+import { Book } from './Book.entity.js';
+
+export class BookRepository extends EntityRepository<Book> {
+  declare protected readonly em: EntityManager;
+
+  findTitlesWithAuthors() {
+    return this.em
+      .getKysely()
+      .selectFrom('book')
+      .innerJoin('author', 'author.id', 'book.author_id')
+      .select(['book.title', 'author.first_name'])
+      .execute();
+  }
+}
+```
+
+The `declare` modifier only changes the type, there is no runtime effect. Since the grafted type carries the whole entity tuple, all tables are available, not just the one the repository is for, so joins type-check too.
+
 #### Command Options
 
 | Flag | Type | Description |
