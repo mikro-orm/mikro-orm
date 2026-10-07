@@ -1198,15 +1198,45 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return null;
     }
 
+    // `serialize()` applies `Type.toJSON()` and `serializedName`, take only relations and embeddables from it, scalars from the entity
+    const getData = (
+      e: Dictionary,
+      data: Dictionary = helper(e).serialize({
+        ignoreSerializers: true,
+        includeHidden: true,
+        convertCustomTypes: false,
+      }),
+    ) => {
+      for (const prop of helper(e).__meta.props) {
+        if (prop.kind === ReferenceKind.SCALAR && !prop.ref) {
+          data[prop.name] = e[prop.name];
+          continue;
+        }
+
+        if (prop.serializedName && prop.serializedName in data) {
+          data[prop.name] = data[prop.serializedName];
+        }
+
+        if (prop.kind === ReferenceKind.EMBEDDED && e[prop.name] != null) {
+          Utils.asArray(e[prop.name]).forEach((item, i) =>
+            getData(item, prop.array ? data[prop.name][i] : data[prop.name]),
+          );
+        }
+      }
+
+      return data;
+    };
+    const hydrate = (target: object, source: object) => {
+      em.config
+        .getHydrator(this.metadata)
+        .hydrate(target, helper(target).__meta, getData(source), em.#entityFactory, 'full', false, false);
+      Utils.merge(helper(target).__originalEntityData, this.#comparator.prepareEntity(source));
+    };
     let found = false;
 
     for (const e of fork.#unitOfWork.getIdentityMap()) {
       const ref = em.getReference(e.constructor, helper(e).getPrimaryKey());
-      const data = helper(e).serialize({ ignoreSerializers: true, includeHidden: true, convertCustomTypes: false });
-      em.config
-        .getHydrator(this.metadata)
-        .hydrate(ref, helper(ref).__meta, data, em.#entityFactory, 'full', false, false);
-      Utils.merge(helper(ref).__originalEntityData, this.#comparator.prepareEntity(e as Entity));
+      hydrate(ref, e);
       // index a refreshed `targetKey` value, `getByKey` ignores the old one as stale
       if (helper(ref).__meta.root.targetKeys) {
         em.#unitOfWork.getIdentityMap().store(ref);
@@ -1215,15 +1245,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (!found) {
-      const data = helper(reloaded).serialize({
-        ignoreSerializers: true,
-        includeHidden: true,
-        convertCustomTypes: false,
-      }) as object;
-      em.config
-        .getHydrator(this.metadata)
-        .hydrate(entity, wrapped.__meta, data, em.#entityFactory, 'full', false, false);
-      Utils.merge(wrapped.__originalEntityData, this.#comparator.prepareEntity(reloaded as Entity));
+      hydrate(entity, reloaded);
     }
 
     return entity as any;
