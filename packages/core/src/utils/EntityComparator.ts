@@ -500,8 +500,36 @@ export class EntityComparator {
           lines.push(`${padding}  ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
           defined = `${this.propName(prop.fieldNames[0])} != null`;
 
+          const sharesColumn = meta.props.some(
+            p => p !== prop && p.name === prop.name && p.fieldNames?.[0] === prop.fieldNames[0],
+          );
+
+          // an object embeddable shared with a subtype using a different embeddable class is mapped with each
+          // variant's mapper and merged, as the subtype hydrators expect mapped keys, not the raw JSON
+          if (sharesColumn && prop.kind === ReferenceKind.EMBEDDED && prop.object) {
+            const idx = this.#tmpIndex++;
+            context.set(`mergeEmbeddedResult_${idx}`, (prev: unknown, data: Dictionary) => {
+              const item = parseJsonSafe(data);
+              const map = (row: Dictionary) => (row == null ? row : this.getResultMapper(prop.targetMeta!)(row));
+
+              if (Array.isArray(item)) {
+                return item.map((row, i) =>
+                  row == null ? row : { ...(Array.isArray(prev) ? prev[i] : {}), ...map(row) },
+                );
+              }
+
+              return item == null ? item : { ...(Utils.isPlainObject(prev) ? prev : {}), ...map(item) };
+            });
+            lines.push(`${padding}  if (${defined}) {`);
+            lines.push(
+              `${padding}    ret${this.wrap(prop.name)} = mergeEmbeddedResult_${idx}(ret${this.wrap(prop.name)}, ${this.propName(prop.fieldNames[0])});`,
+            );
+            lines.push(`${padding}  }`);
+            continue;
+          }
+
           // a column shared with a differently typed subtype is left for each subtype's hydrator to convert
-          if (meta.props.some(p => p !== prop && p.name === prop.name && p.fieldNames?.[0] === prop.fieldNames[0])) {
+          if (sharesColumn) {
             lines.push(`${padding}  if (${defined}) {`);
             lines.push(`${padding}    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])};`);
             lines.push(`${padding}  }`);
