@@ -3790,7 +3790,8 @@ export class QueryBuilder<
       if (parentAlias) {
         const schema = parentMeta.schema === '*' ? '*' : this.driver.getSchemaName(parentMeta);
         parentMeta
-          .ownProps!.filter(prop => this.platform.shouldHaveColumn(prop, []))
+          // inherited formulas are selected on the main alias in `finalize()`
+          .ownProps!.filter(prop => !prop.formula && this.platform.shouldHaveColumn(prop, []))
           .forEach(prop =>
             this.#state.fields!.push(...this.driver.mapPropToFieldNames(this, prop, parentAlias, parentMeta!, schema)),
           );
@@ -3816,7 +3817,7 @@ export class QueryBuilder<
       return;
     }
 
-    // LEFT JOIN each descendant table and add their fields
+    // LEFT JOIN each descendant table
     for (const childMeta of descendants) {
       const childAlias = this.getNextAlias(childMeta.className);
       this.createAlias(childMeta.class, childAlias);
@@ -3829,7 +3830,12 @@ export class QueryBuilder<
         JoinType.leftJoin,
         `[tpt]${meta.className}`,
       );
+    }
 
+    this.driver.registerTPTAncestorAliases(this, meta, this.mainAlias.aliasName, this.#state.tptAlias);
+
+    for (const childMeta of descendants) {
+      const childAlias = this.#state.tptAlias[childMeta.className];
       // Add child fields
       const schema = childMeta.schema === '*' ? '*' : this.driver.getSchemaName(childMeta);
       childMeta
@@ -3843,7 +3849,7 @@ export class QueryBuilder<
 
     // Add computed discriminator (CASE WHEN to determine concrete type)
     // descendants is pre-sorted by depth (deepest first) during discovery
-    if (meta.tptDiscriminatorColumn) {
+    if (meta.root.tptDiscriminatorColumn) {
       this.#state.fields.push(
         this.driver.buildTPTDiscriminatorExpression(meta, descendants, this.#state.tptAlias, this.mainAlias.aliasName),
       );

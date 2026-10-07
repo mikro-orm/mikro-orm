@@ -2111,7 +2111,7 @@ export class MetadataDiscovery {
       return;
     }
 
-    const belongsToTable = (prop: EntityProperty) => prop.persist !== false || prop.primary;
+    const belongsToTable = (prop: EntityProperty) => prop.persist !== false || prop.primary || !!prop.formula;
     // Use meta.properties (object) since meta.props (array) may not be populated yet
     const allProps = Object.values<EntityProperty>(meta.properties);
 
