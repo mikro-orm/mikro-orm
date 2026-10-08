@@ -1713,6 +1713,13 @@ export class UnitOfWork {
           for (const targetMeta of prop.polymorphTargets) {
             calc.discoverProperty({ ...prop, targetMeta }, meta._id);
           }
+        } else if (prop.targetMeta?.inheritanceType === 'tpt') {
+          calc.discoverProperty(prop, meta._id);
+
+          // a TPT subclass delete has only a leaf change set that also removes the target row; weak edge so it can't break insert order
+          for (const targetMeta of this.#metadata.find(prop.targetMeta.class)!.allTPTDescendants ?? []) {
+            calc.discoverProperty({ ...prop, targetMeta, nullable: true }, meta._id);
+          }
         } else {
           calc.discoverProperty(prop, meta._id);
         }
