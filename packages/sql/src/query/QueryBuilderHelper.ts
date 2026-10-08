@@ -457,7 +457,7 @@ export class QueryBuilderHelper {
     ) {
       const typeProperty = join.prop.targetMeta.root.discriminatorColumn;
       const alias = join.inverseAlias ?? join.alias;
-      join.cond[`${alias}.${typeProperty}`] = join.prop.targetMeta.discriminatorValue;
+      join.cond[`${alias}.${typeProperty}`] = this.getDiscriminatorCondition(join.prop.targetMeta);
     }
 
     // For polymorphic relations, add discriminator condition to filter by target entity type
@@ -516,6 +516,25 @@ export class QueryBuilderHelper {
     }
 
     return { sql, params };
+  }
+
+  /** STI discriminator condition matching the entity and all its subclasses. */
+  getDiscriminatorCondition(meta: EntityMetadata): unknown {
+    const types = Object.values(meta.root.discriminatorMap!).map(cls => this.#metadata.get(cls));
+    const children: EntityMetadata[] = [];
+    const lookUpChildren = (ret: EntityMetadata[], parent: EntityMetadata) => {
+      const children = types.filter(meta2 => meta2.extends && this.#metadata.find(meta2.extends) === parent);
+      children.forEach(m => lookUpChildren(ret, m));
+      ret.push(...children.filter(c => c.discriminatorValue));
+
+      return children;
+    };
+    // resolve from storage, `prop.targetMeta` can be a copy that fails the identity check above
+    lookUpChildren(children, this.#metadata.get(meta.class));
+
+    return children.length > 0
+      ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] }
+      : meta.discriminatorValue;
   }
 
   mapJoinColumns(type: QueryType, join: JoinOptions): (string | Raw)[] {
