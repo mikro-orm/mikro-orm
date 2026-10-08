@@ -3069,6 +3069,16 @@ export abstract class AbstractSqlDriver<
     const aliased = this.platform.quoteIdentifier(`${tableAlias}__${prop.fieldNames[0]}`);
     const sourceAlias = qb.helper.getTPTAliasForProperty(prop.name, tableAlias);
 
+    if (prop.formula) {
+      const quotedAlias = this.platform.quoteIdentifier(tableAlias).toString();
+      const table = this.createFormulaTable(quotedAlias, meta, schema);
+      const columns = meta.createColumnMappingObject(
+        p => qb.helper.getTPTAliasForProperty(p.name, tableAlias),
+        tableAlias,
+      );
+      return [raw(`${this.evaluateFormula(prop.formula, columns, table)} as ${aliased}`)];
+    }
+
     if (prop.customTypes?.some(type => !!type?.convertToJSValueSQL)) {
       return prop.fieldNames.map((col, idx) => {
         if (!prop.customTypes[idx]?.convertToJSValueSQL) {
@@ -3085,16 +3095,6 @@ export abstract class AbstractSqlDriver<
     if (prop.customType?.convertToJSValueSQL) {
       const prefixed = this.platform.quoteIdentifier(`${sourceAlias}.${prop.fieldNames[0]}`);
       return [raw(`${prop.customType.convertToJSValueSQL(prefixed, this.platform)} as ${aliased}`)];
-    }
-
-    if (prop.formula) {
-      const quotedAlias = this.platform.quoteIdentifier(tableAlias).toString();
-      const table = this.createFormulaTable(quotedAlias, meta, schema);
-      const columns = meta.createColumnMappingObject(
-        p => qb.helper.getTPTAliasForProperty(p.name, tableAlias),
-        tableAlias,
-      );
-      return [raw(`${this.evaluateFormula(prop.formula, columns, table)} as ${aliased}`)];
     }
 
     return prop.fieldNames.map(fieldName => {
@@ -3722,7 +3722,7 @@ export abstract class AbstractSqlDriver<
           ret.push(raw(`${this.evaluateFormula(prop.formula, columns, table)} as ${aliased}`));
         }
 
-        if (!prop.object && (prop.hasConvertToDatabaseValueSQL || prop.hasConvertToJSValueSQL)) {
+        if (!prop.object && !prop.formula && (prop.hasConvertToDatabaseValueSQL || prop.hasConvertToJSValueSQL)) {
           ret.push(prop.name);
         }
       }
