@@ -68,7 +68,8 @@ export class CommitOrderCalculator {
       return;
     }
 
-    const propertyType = prop.targetMeta?.root._id;
+    // TPT tables are separate nodes and the FK references the target's own table, not the root
+    const propertyType = (prop.targetMeta?.inheritanceType === 'tpt' ? prop.targetMeta : prop.targetMeta?.root)?._id;
 
     if (propertyType == null || !this.hasNode(propertyType)) {
       return;
