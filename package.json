@@ -83,6 +83,14 @@
     "minimumReleaseAge": "1 day",
     "separateMajorMinor": false,
     "dependencyDashboard": false,
+    "lockFileMaintenance": {
+      "enabled": true,
+      "schedule": [
+        "before 4am"
+      ],
+      "automerge": true,
+      "automergeType": "branch"
+    },
     "packageRules": [
       {
         "matchUpdateTypes": [
