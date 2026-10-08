@@ -500,8 +500,18 @@ export class EntityComparator {
           lines.push(`${padding}  ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
           defined = `${this.propName(prop.fieldNames[0])} != null`;
 
-          // a column shared with a differently typed subtype is left for each subtype's hydrator to convert
-          if (meta.props.some(p => p !== prop && p.name === prop.name && p.fieldNames?.[0] === prop.fieldNames[0])) {
+          const sharesColumn = meta.props.some(
+            p => p !== prop && p.name === prop.name && p.fieldNames?.[0] === prop.fieldNames[0],
+          );
+
+          // hydrators expect mapped embeddable keys, so a shared object embeddable is mapped only for its own subtypes
+          if (sharesColumn && prop.kind === ReferenceKind.EMBEDDED && prop.object && meta.discriminatorMap) {
+            const owners = Object.entries(meta.discriminatorMap)
+              .filter(([, cls]) => this.#metadata.find(cls)?.properties[prop.name]?.targetMeta === prop.targetMeta)
+              .map(([value]) => `${this.propName(meta.discriminatorColumn!)} == ${JSON.stringify(value)}`);
+            defined += ` && (${owners.join(' || ')})`;
+          } else if (sharesColumn) {
+            // a column shared with a differently typed subtype is left for each subtype's hydrator to convert
             lines.push(`${padding}  if (${defined}) {`);
             lines.push(`${padding}    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])};`);
             lines.push(`${padding}  }`);
