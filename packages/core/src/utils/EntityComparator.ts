@@ -504,32 +504,14 @@ export class EntityComparator {
             p => p !== prop && p.name === prop.name && p.fieldNames?.[0] === prop.fieldNames[0],
           );
 
-          // an object embeddable shared with a subtype using a different embeddable class is mapped with each
-          // variant's mapper and merged, as the subtype hydrators expect mapped keys, not the raw JSON
-          if (sharesColumn && prop.kind === ReferenceKind.EMBEDDED && prop.object) {
-            const idx = this.#tmpIndex++;
-            context.set(`mergeEmbeddedResult_${idx}`, (prev: unknown, data: Dictionary) => {
-              const item = parseJsonSafe(data);
-              const map = (row: Dictionary) => (row == null ? row : this.getResultMapper(prop.targetMeta!)(row));
-
-              if (Array.isArray(item)) {
-                return item.map((row, i) =>
-                  row == null ? row : { ...(Array.isArray(prev) ? prev[i] : {}), ...map(row) },
-                );
-              }
-
-              return item == null ? item : { ...(Utils.isPlainObject(prev) ? prev : {}), ...map(item) };
-            });
-            lines.push(`${padding}  if (${defined}) {`);
-            lines.push(
-              `${padding}    ret${this.wrap(prop.name)} = mergeEmbeddedResult_${idx}(ret${this.wrap(prop.name)}, ${this.propName(prop.fieldNames[0])});`,
-            );
-            lines.push(`${padding}  }`);
-            continue;
-          }
-
-          // a column shared with a differently typed subtype is left for each subtype's hydrator to convert
-          if (sharesColumn) {
+          // hydrators expect mapped embeddable keys, so a shared object embeddable is mapped only for its own subtypes
+          if (sharesColumn && prop.kind === ReferenceKind.EMBEDDED && prop.object && meta.discriminatorMap) {
+            const owners = Object.entries(meta.discriminatorMap)
+              .filter(([, cls]) => this.#metadata.find(cls)?.properties[prop.name]?.targetMeta === prop.targetMeta)
+              .map(([value]) => `${this.propName(meta.discriminatorColumn!)} == ${JSON.stringify(value)}`);
+            defined += ` && (${owners.join(' || ')})`;
+          } else if (sharesColumn) {
+            // a column shared with a differently typed subtype is left for each subtype's hydrator to convert
             lines.push(`${padding}  if (${defined}) {`);
             lines.push(`${padding}    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])};`);
             lines.push(`${padding}  }`);
