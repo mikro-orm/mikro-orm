@@ -391,5 +391,48 @@ describe('stored routines — comparator unit tests', () => {
       const diff = diffWith(comparator, [makeRoutine({ name: 'legacy' })], []);
       expect(Object.keys(diff.removedRoutines)).toContain('legacy');
     });
+
+    // the migrator computes `down` as `compare(toSchema, fromSchema, diffUp)`, so `toSchema` is the database there
+    const migrationDiff = (comp: SchemaComparator, db: SqlRoutineDef[], metadata: SqlRoutineDef[]) => {
+      const dbSchema = new DatabaseSchema(ignoreOrm.em.getPlatform(), '');
+      const metadataSchema = new DatabaseSchema(ignoreOrm.em.getPlatform(), '');
+      db.forEach(r => dbSchema.addRoutine(r));
+      metadata.forEach(r => metadataSchema.addRoutine(r));
+      const up = comp.compare(dbSchema, metadataSchema);
+      const down = comp.compare(metadataSchema, dbSchema, up);
+      return { up, down };
+    };
+
+    it('does not recreate unmanaged routines in the down diff', () => {
+      const { up, down } = migrationDiff(ignoreComparator, [makeRoutine({ name: 'legacy' })], []);
+      expect(up.removedRoutines).toEqual({});
+      expect(down.newRoutines).toEqual({});
+    });
+
+    it('drops in the down diff only the routines the up diff created', () => {
+      const { up, down } = migrationDiff(
+        ignoreComparator,
+        [makeRoutine({ name: 'legacy' })],
+        [makeRoutine({ name: 'fresh' })],
+      );
+      expect(Object.keys(up.newRoutines)).toEqual(['fresh']);
+      expect(Object.keys(down.removedRoutines)).toEqual(['fresh']);
+      expect(down.newRoutines).toEqual({});
+    });
+
+    it('does not revert changed routines in the down diff', () => {
+      const { down } = migrationDiff(
+        ignoreComparator,
+        [makeRoutine({ name: 'foo', body: 'select 1' })],
+        [makeRoutine({ name: 'foo', body: 'select 2' })],
+      );
+      expect(down.changedRoutines).toEqual({});
+    });
+
+    it('still mirrors the up diff in the down diff without the flag', () => {
+      const { down } = migrationDiff(comparator, [makeRoutine({ name: 'legacy' })], [makeRoutine({ name: 'fresh' })]);
+      expect(Object.keys(down.newRoutines)).toEqual(['legacy']);
+      expect(Object.keys(down.removedRoutines)).toEqual(['fresh']);
+    });
   });
 });
