@@ -2894,7 +2894,12 @@ export abstract class AbstractSqlDriver<
       childAliases[childMeta.className] = childAlias;
 
       qb.addPropertyJoin(childMeta.tptInverseProp!, baseAlias, childAlias, JoinType.leftJoin, `[tpt]${meta.className}`);
+    }
 
+    this.registerTPTAncestorAliases(qb, meta, baseAlias, childAliases);
+
+    for (const childMeta of descendants) {
+      const childAlias = childAliases[childMeta.className];
       // Add fields from this child (only ownProps, skip PKs)
       const schema = childMeta.schema === '*' ? '*' : this.getSchemaName(childMeta);
       childMeta
@@ -2907,6 +2912,28 @@ export abstract class AbstractSqlDriver<
     // Add computed discriminator (descendants already sorted by depth)
     if (meta.root.tptDiscriminatorColumn) {
       fields.push(this.buildTPTDiscriminatorExpression(meta, descendants, childAliases, baseAlias));
+    }
+  }
+
+  /**
+   * Registers the ancestor table aliases of each polymorphically joined TPT descendant,
+   * so formulas on descendants resolve inherited columns to the table that owns them.
+   * @internal
+   */
+  registerTPTAncestorAliases(
+    qb: AnyQueryBuilder<any>,
+    meta: EntityMetadata,
+    baseAlias: string,
+    childAliases: Dictionary<string>,
+  ): void {
+    const tptAlias = qb.state.tptAlias;
+
+    for (const childMeta of meta.allTPTDescendants!) {
+      for (let parent = childMeta.tptParent; parent; parent = parent.tptParent) {
+        tptAlias[`${childAliases[childMeta.className]}:${parent.className}`] =
+          childAliases[parent.className] ??
+          (parent === meta ? baseAlias : tptAlias[`${baseAlias}:${parent.className}`]);
+      }
     }
   }
 
@@ -3045,7 +3072,10 @@ export abstract class AbstractSqlDriver<
     if (prop.formula) {
       const quotedAlias = this.platform.quoteIdentifier(tableAlias).toString();
       const table = this.createFormulaTable(quotedAlias, meta, schema);
-      const columns = meta.createColumnMappingObject(tableAlias);
+      const columns = meta.createColumnMappingObject(
+        p => qb.helper.getTPTAliasForProperty(p.name, tableAlias),
+        tableAlias,
+      );
       return [raw(`${this.evaluateFormula(prop.formula, columns, table)} as ${aliased}`)];
     }
 
