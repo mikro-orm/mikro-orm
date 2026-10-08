@@ -234,7 +234,7 @@ export class SchemaComparator {
       }
     }
 
-    this.compareRoutines(fromSchema, toSchema, diff, inverseDiff);
+    this.compareRoutines(fromSchema, toSchema, diff, !!inverseDiff);
 
     return diff;
   }
@@ -243,9 +243,10 @@ export class SchemaComparator {
     fromSchema: DatabaseSchema,
     toSchema: DatabaseSchema,
     diff: SchemaDifference,
-    inverseDiff?: SchemaDifference,
+    inverse: boolean,
   ): void {
     // `ignoreRoutines` makes routines create-only: new ones are still added, but existing routines are never diffed for drop/alter.
+    // The down diff (`inverse`) mirrors that: it drops what `up` created and never recreates routines unknown to the metadata.
     const ignoreRoutines = this.#platform.getConfig().get('schemaGenerator').ignoreRoutines;
     // Case-fold so user-written `'sql_hash'` matches Oracle's introspected `'SQL_HASH'`.
     const routineKey = (r: SqlRoutineDef): string => ((r.schema ? `${r.schema}.` : '') + r.name).toLowerCase();
@@ -256,8 +257,7 @@ export class SchemaComparator {
       const fromRoutine = fromByKey.get(key);
 
       if (!fromRoutine) {
-        // In the down diff `toSchema` is the database, so a routine missing from `fromSchema` is unmanaged, not new.
-        if (ignoreRoutines && inverseDiff) {
+        if (ignoreRoutines && inverse) {
           continue;
         }
 
@@ -272,13 +272,12 @@ export class SchemaComparator {
       }
     }
 
-    for (const [key, fromRoutine] of fromByKey) {
-      // With `ignoreRoutines`, the down diff only reverts what the create-only up diff added.
-      const removed = ignoreRoutines ? !!inverseDiff?.newRoutines[key] : !toByKey.has(key);
-
-      if (removed) {
-        diff.removedRoutines[key] = fromRoutine;
-        this.log(`routine ${key} removed`);
+    if (!ignoreRoutines || inverse) {
+      for (const [key, fromRoutine] of fromByKey) {
+        if (!toByKey.has(key)) {
+          diff.removedRoutines[key] = fromRoutine;
+          this.log(`routine ${key} removed`);
+        }
       }
     }
   }
@@ -657,12 +656,8 @@ export class SchemaComparator {
     const toTableTriggers = toTable.getTriggers();
 
     for (const trigger of toTableTriggers) {
-      if (fromTable.hasTrigger(trigger.name)) {
-        continue;
-      }
-
-      // In the down diff `toTable` is the database, so with `ignoreTriggers` a trigger missing from `fromTable` is unmanaged, not new.
-      if (inverse && ignoreTriggers) {
+      // see `compareRoutines` for how `ignoreTriggers` applies to the down diff
+      if (fromTable.hasTrigger(trigger.name) || (ignoreTriggers && inverse)) {
         continue;
       }
 
@@ -672,16 +667,7 @@ export class SchemaComparator {
     }
 
     // `ignoreTriggers` makes triggers create-only: declared ones are still added above, but existing triggers are never diffed for drop/alter.
-    // The down diff only reverts what the create-only up diff added.
-    if (ignoreTriggers) {
-      for (const trigger of fromTableTriggers) {
-        if (inverseTableDiff?.addedTriggers[trigger.name]) {
-          tableDifferences.removedTriggers[trigger.name] = trigger;
-          this.log(`trigger ${trigger.name} removed from table ${tableDifferences.name}`);
-          changes++;
-        }
-      }
-    } else {
+    if (!ignoreTriggers || inverse) {
       for (const trigger of fromTableTriggers) {
         if (!toTable.hasTrigger(trigger.name)) {
           tableDifferences.removedTriggers[trigger.name] = trigger;
@@ -692,7 +678,7 @@ export class SchemaComparator {
 
         const toTableTrigger = toTable.getTrigger(trigger.name)!;
 
-        if (this.diffTrigger(trigger, toTableTrigger)) {
+        if (!ignoreTriggers && this.diffTrigger(trigger, toTableTrigger)) {
           this.log(`trigger ${trigger.name} changed in table ${tableDifferences.name}`, {
             fromTableTrigger: trigger,
             toTableTrigger,

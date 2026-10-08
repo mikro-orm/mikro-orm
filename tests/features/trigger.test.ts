@@ -519,6 +519,11 @@ describe('trigger (defineEntity)', () => {
       .execute(
         `create trigger trg_external after insert on ignore_trg_down_table for each row begin update ignore_trg_down_table set val = val + 1 where id = NEW.id; end`,
       );
+    await orm2.em
+      .getConnection()
+      .execute(
+        `create trigger trg_changed after insert on ignore_trg_down_table for each row begin update ignore_trg_down_table set val = val + 3 where id = NEW.id; end`,
+      );
 
     const meta = orm2.getMetadata(schema1);
     meta.triggers = [
@@ -529,14 +534,22 @@ describe('trigger (defineEntity)', () => {
         forEach: 'row',
         body: 'UPDATE ignore_trg_down_table SET val = val + 2 WHERE id = NEW.id',
       },
+      {
+        name: 'trg_changed',
+        timing: 'after',
+        events: ['insert'],
+        forEach: 'row',
+        body: 'UPDATE ignore_trg_down_table SET val = val + 4 WHERE id = NEW.id',
+      },
     ];
 
     const { up, down } = await orm2.schema.getUpdateSchemaMigrationSQL({ wrap: false });
     expect(up).toContain('trg_declared');
     expect(up).not.toContain('trg_external');
-    // `down` reverts only what `up` created, and leaves the unmanaged trigger alone
+    expect(up).not.toContain('trg_changed');
     expect(down).toContain('trg_declared');
     expect(down).not.toContain('trg_external');
+    expect(down).not.toContain('trg_changed');
 
     await orm2.close();
   });
