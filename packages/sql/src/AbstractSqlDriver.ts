@@ -1309,11 +1309,15 @@ export abstract class AbstractSqlDriver<
               // the map misses subtypes whose props were not initialized yet during discovery (root column owner, grandchildren)
               const discriminator = row[meta.discriminatorColumn];
               const childClass = meta.discriminatorMap?.[discriminator];
-              const activeField =
-                prop.stiFieldNameMap[discriminator] ??
-                (childClass && this.metadata.find(childClass)?.properties[prop.name]?.fieldNames[0]);
+              const childProp = childClass && this.metadata.find(childClass)?.properties[prop.name];
+              const activeField = prop.stiFieldNameMap[discriminator] ?? childProp?.fieldNames[0];
               for (const field of prop.stiFieldNames) {
-                params.push(field === activeField ? (row[prop.name] ?? null) : null);
+                // the subtype's own property, as siblings can declare it with a different type or embeddable
+                if (field === activeField) {
+                  addParams(childProp ?? prop, row);
+                } else {
+                  params.push(null);
+                }
                 keys.push('?');
               }
               return;

@@ -309,3 +309,58 @@ describe('STI grandchild inheriting a conflicting column', () => {
     ]);
   });
 });
+
+describe('STI conflicting column followed by a sibling matching the root column', () => {
+  const Item = defineEntity({
+    name: 'Item',
+    abstract: true,
+    discriminatorColumn: 'type',
+    properties: {
+      id: p.integer().primary(),
+      type: p.string(),
+    },
+  });
+  const TextItem = defineEntity({
+    name: 'TextItem',
+    extends: Item,
+    discriminatorValue: 'text',
+    properties: { value: p.string().fieldName('text_value') },
+  });
+  const OtherItem = defineEntity({
+    name: 'OtherItem',
+    extends: Item,
+    discriminatorValue: 'other',
+    properties: { value: p.string().fieldName('other_value') },
+  });
+  const LongTextItem = defineEntity({
+    name: 'LongTextItem',
+    extends: Item,
+    discriminatorValue: 'long',
+    properties: { value: p.string().fieldName('text_value') },
+  });
+
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({ entities: [Item, TextItem, OtherItem, LongTextItem], dbName: ':memory:' });
+    await orm.schema.create();
+  });
+
+  afterAll(() => orm.close(true));
+
+  test('persists each subtype into its own column', async () => {
+    const em = orm.em.fork();
+    em.create(TextItem, { value: 'foo' });
+    em.create(OtherItem, { value: 'bar' });
+    em.create(LongTextItem, { value: 'baz' });
+    await em.flush();
+    em.clear();
+
+    expect(await em.execute('select type, text_value, other_value from item order by id')).toEqual([
+      { type: 'text', text_value: 'foo', other_value: null },
+      { type: 'other', text_value: null, other_value: 'bar' },
+      { type: 'long', text_value: 'baz', other_value: null },
+    ]);
+    expect((await em.findOneOrFail(OtherItem, { value: 'bar' })).value).toBe('bar');
+  });
+});

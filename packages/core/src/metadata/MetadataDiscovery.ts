@@ -1964,6 +1964,9 @@ export class MetadataDiscovery {
         return;
       }
 
+      // a sibling matching the root property must not drop the column variants of already renamed siblings
+      newProp.stiFieldNames ??= rootProp?.stiFieldNames;
+      newProp.stiFieldNameMap ??= rootProp?.stiFieldNameMap;
       meta.root.addProperty(newProp);
     });
 
