@@ -509,7 +509,8 @@ export class ChangeSetPersister {
 
     if (upsert) {
       for (const prop of meta.props) {
-        if (prop.customType && prop.name in mapped) {
+        // null is not converted, the same way the hydrator handles it
+        if (prop.customType && mapped[prop.name] != null) {
           mapped[prop.name] = prop.customType.convertToJSValue(mapped[prop.name], this.platform);
         }
       }
