@@ -7,12 +7,11 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **schema:** respect `ignoreRoutines` and `ignoreTriggers` in down migrations ([#8416](https://github.com/mikro-orm/mikro-orm/issues/8416)) ([c28a2ec](https://github.com/mikro-orm/mikro-orm/commit/c28a2ecbbfb17983478d811e7cb533281cb80dff))
-* **sql:** match STI subclasses when joining into an STI entity ([#8425](https://github.com/mikro-orm/mikro-orm/issues/8425)) ([74a0ba0](https://github.com/mikro-orm/mikro-orm/commit/74a0ba0f27dc44b09bc16c2943a42a9088201997)), closes [#8424](https://github.com/mikro-orm/mikro-orm/issues/8424)
-* **sql:** persist conflicting STI properties via the row subtype's property ([#8423](https://github.com/mikro-orm/mikro-orm/issues/8423)) ([234a84e](https://github.com/mikro-orm/mikro-orm/commit/234a84e82dd72b995abf8dce5e5f64529826cb76))
-* **sql:** prioritize formula over convertToJSValueSQL in joined queries ([#8415](https://github.com/mikro-orm/mikro-orm/issues/8415)) ([404f04c](https://github.com/mikro-orm/mikro-orm/commit/404f04ca0e8da920f802ef7cd03c12a1c78392df)), closes [#8414](https://github.com/mikro-orm/mikro-orm/issues/8414)
-* **sql:** select formulas of TPT descendants in polymorphic loads ([#8419](https://github.com/mikro-orm/mikro-orm/issues/8419)) ([c65163b](https://github.com/mikro-orm/mikro-orm/commit/c65163b3dbc18ecd37cdc0046aeb4e899bdf78a5))
-
+- **schema:** respect `ignoreRoutines` and `ignoreTriggers` in down migrations ([#8416](https://github.com/mikro-orm/mikro-orm/issues/8416)) ([c28a2ec](https://github.com/mikro-orm/mikro-orm/commit/c28a2ecbbfb17983478d811e7cb533281cb80dff))
+- **sql:** match STI subclasses when joining into an STI entity ([#8425](https://github.com/mikro-orm/mikro-orm/issues/8425)) ([74a0ba0](https://github.com/mikro-orm/mikro-orm/commit/74a0ba0f27dc44b09bc16c2943a42a9088201997)), closes [#8424](https://github.com/mikro-orm/mikro-orm/issues/8424)
+- **sql:** persist conflicting STI properties via the row subtype's property ([#8423](https://github.com/mikro-orm/mikro-orm/issues/8423)) ([234a84e](https://github.com/mikro-orm/mikro-orm/commit/234a84e82dd72b995abf8dce5e5f64529826cb76))
+- **sql:** prioritize formula over convertToJSValueSQL in joined queries ([#8415](https://github.com/mikro-orm/mikro-orm/issues/8415)) ([404f04c](https://github.com/mikro-orm/mikro-orm/commit/404f04ca0e8da920f802ef7cd03c12a1c78392df)), closes [#8414](https://github.com/mikro-orm/mikro-orm/issues/8414)
+- **sql:** select formulas of TPT descendants in polymorphic loads ([#8419](https://github.com/mikro-orm/mikro-orm/issues/8419)) ([c65163b](https://github.com/mikro-orm/mikro-orm/commit/c65163b3dbc18ecd37cdc0046aeb4e899bdf78a5))
 
 ## [7.2.4](https://github.com/mikro-orm/mikro-orm/compare/v7.2.3...v7.2.4) (2026-10-06)
 

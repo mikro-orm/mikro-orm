@@ -7,10 +7,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package @mikro-orm/mssql
 
-
-
-
-
 ## [7.2.4](https://github.com/mikro-orm/mikro-orm/compare/v7.2.3...v7.2.4) (2026-10-06)
 
 **Note:** Version bump only for package @mikro-orm/mssql
