@@ -368,7 +368,7 @@ jobs:
           fi
 
       - name: Publish packages
-        uses: apify/workflows/execute-workflow@526c12d15d6527c1198d5677c2fa659b657c13ce # main
+        uses: apify/workflows/execute-workflow@526c12d15d6527c1198d5677c2fa659b657c13ce # pin to a revision containing action.yaml
         with:
           workflow: release.yml
           inputs: >
