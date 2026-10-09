@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.5](https://github.com/mikro-orm/mikro-orm/compare/v7.2.4...v7.2.5) (2026-10-09)
+
+### Bug Fixes
+
+* **core:** fix custom types and `serializedName` properties in `em.refresh()` ([#8413](https://github.com/mikro-orm/mikro-orm/issues/8413)) ([7463cb2](https://github.com/mikro-orm/mikro-orm/commit/7463cb2197119b2918d0194c882ab48da387a0eb)), closes [#8410](https://github.com/mikro-orm/mikro-orm/issues/8410)
+* **core:** hydrate STI object embeddables declared with different classes via the root ([#8418](https://github.com/mikro-orm/mikro-orm/issues/8418)) ([863195c](https://github.com/mikro-orm/mikro-orm/commit/863195ca7e9a813b7ba7ff2d8e3d1fdbd1150df4)), closes [#8417](https://github.com/mikro-orm/mikro-orm/issues/8417)
+* **core:** keep null custom type values in upsert results ([#8428](https://github.com/mikro-orm/mikro-orm/issues/8428)) ([1a7a9c0](https://github.com/mikro-orm/mikro-orm/commit/1a7a9c06c3d16bd18fe53cf4b4ce565f218d8901)), closes [#8429](https://github.com/mikro-orm/mikro-orm/issues/8429) [#8427](https://github.com/mikro-orm/mikro-orm/issues/8427)
+* **core:** order flush around relations to TPT subclasses ([#8422](https://github.com/mikro-orm/mikro-orm/issues/8422)) ([3fd72ce](https://github.com/mikro-orm/mikro-orm/commit/3fd72cefb34c5d3bd192024fdccc986f1c8980ea))
+* **sql:** persist conflicting STI properties via the row subtype's property ([#8423](https://github.com/mikro-orm/mikro-orm/issues/8423)) ([234a84e](https://github.com/mikro-orm/mikro-orm/commit/234a84e82dd72b995abf8dce5e5f64529826cb76))
+* **sql:** select formulas of TPT descendants in polymorphic loads ([#8419](https://github.com/mikro-orm/mikro-orm/issues/8419)) ([c65163b](https://github.com/mikro-orm/mikro-orm/commit/c65163b3dbc18ecd37cdc0046aeb4e899bdf78a5))
+
+
 ## [7.2.4](https://github.com/mikro-orm/mikro-orm/compare/v7.2.3...v7.2.4) (2026-10-06)
 
 ### Bug Fixes
