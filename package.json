@@ -101,6 +101,15 @@
         "groupSlug": "all-non-major",
         "automerge": true,
         "automergeType": "branch"
+      },
+      {
+        "matchDepTypes": [
+          "resolutions"
+        ],
+        "matchPackageNames": [
+          "undici"
+        ],
+        "allowedVersions": "<8"
       }
     ],
     "schedule": [
