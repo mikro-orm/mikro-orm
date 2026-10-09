@@ -109,7 +109,7 @@
         "matchPackageNames": [
           "undici"
         ],
-        "allowedVersions": "<8"
+        "enabled": false
       }
     ],
     "schedule": [
