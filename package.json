@@ -101,15 +101,6 @@
         "groupSlug": "all-non-major",
         "automerge": true,
         "automergeType": "branch"
-      },
-      {
-        "matchDepTypes": [
-          "resolutions"
-        ],
-        "matchPackageNames": [
-          "undici"
-        ],
-        "allowedVersions": "<8"
       }
     ],
     "schedule": [
@@ -187,8 +178,7 @@
   "resolutions": {
     "handlebars": "4.7.10",
     "js-yaml": "4.3.2",
-    "tar": "7.5.22",
-    "undici@npm:7.29.0": "7.29.1"
+    "tar": "7.5.22"
   },
   "packageManager": "yarn@4.18.1"
 }
