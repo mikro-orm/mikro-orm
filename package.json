@@ -188,7 +188,7 @@
     "handlebars": "4.7.10",
     "js-yaml": "4.3.2",
     "tar": "7.5.22",
-    "undici@npm:7.29.0": "7.29.1"
+    "undici@npm:7.29.0": "7.30.0"
   },
   "packageManager": "yarn@4.18.1"
 }
