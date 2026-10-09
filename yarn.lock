@@ -1499,7 +1499,7 @@ __metadata:
     typescript: "npm:7.0.2"
     unplugin-swc: "npm:2.0.0"
     uuid: "npm:14.0.2"
-    vite: "npm:8.3.3"
+    vite: "npm:8.3.4"
     vitest: "npm:5.0.3"
   dependenciesMeta:
     "@swc/core":
@@ -7805,7 +7805,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.5.28":
+"postcss@npm:^8.5.29":
   version: 8.5.29
   resolution: "postcss@npm:8.5.29"
   dependencies:
@@ -8133,7 +8133,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rolldown@npm:~1.2.11":
+"rolldown@npm:~1.2.12":
   version: 1.2.13
   resolution: "rolldown@npm:1.2.13"
   dependencies:
@@ -9231,15 +9231,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:8.3.3":
-  version: 8.3.3
-  resolution: "vite@npm:8.3.3"
+"vite@npm:8.3.4":
+  version: 8.3.4
+  resolution: "vite@npm:8.3.4"
   dependencies:
     fsevents: "npm:~2.3.3"
     lightningcss: "npm:^1.33.0"
     picomatch: "npm:^4.0.7"
-    postcss: "npm:^8.5.28"
-    rolldown: "npm:~1.2.11"
+    postcss: "npm:^8.5.29"
+    rolldown: "npm:~1.2.12"
     tinyglobby: "npm:^0.2.17"
   peerDependencies:
     "@types/node": ^20.19.0 || >=22.12.0
@@ -9284,7 +9284,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10/61f8f07c3e941ca71133023b77b29afd91c003d58232b03d5f6fc89bb46cad2b234ef5c627c15b56ce0de2554fb911123b492c2e1319468ce423a19b98df8b98
+  checksum: 10/b1f7cbae6aae9ce8851c5ac86fde04b2193379d33eca99da653d4a4cff61705381a954bacc5a985aacad65ee72e783b19c12a2eca95ef3c97aeb91f147f371de
   languageName: node
   linkType: hard
 
