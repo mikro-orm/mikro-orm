@@ -159,7 +159,7 @@
     "jiti": "2.7.0",
     "jsr": "0.14.3",
     "knex": "3.3.0",
-    "lerna": "10.0.1",
+    "lerna": "10.1.0",
     "lint-staged": "17.6.0",
     "mongodb-memory-server-core": "11.3.0",
     "oxfmt": "0.72.0",
@@ -176,8 +176,6 @@
     "vitest": "5.0.3"
   },
   "resolutions": {
-    "handlebars": "4.7.10",
-    "js-yaml": "4.3.2",
     "tar": "7.5.22"
   },
   "packageManager": "yarn@4.18.1"
