@@ -1276,10 +1276,10 @@ export abstract class AbstractSqlDriver<
 
           for (let i = 0; i < (value as Dictionary[]).length; i++) {
             const item = (value as Dictionary[])[i];
-            value[i] = this.mapDataToFieldNames(item, false, prop.embeddedProps, options.convertCustomTypes);
+            value[i] = this.mapDataToFieldNames(item, false, this.variantProps(prop, item), options.convertCustomTypes);
           }
         } else {
-          value = this.mapDataToFieldNames(value, false, prop.embeddedProps, options.convertCustomTypes);
+          value = this.mapDataToFieldNames(value, false, this.variantProps(prop, value), options.convertCustomTypes);
         }
       }
 
@@ -1627,10 +1627,10 @@ export abstract class AbstractSqlDriver<
         if (prop.array && value) {
           for (let i = 0; i < (value as Dictionary[]).length; i++) {
             const item = (value as Dictionary[])[i];
-            value[i] = this.mapDataToFieldNames(item, false, prop.embeddedProps, options.convertCustomTypes);
+            value[i] = this.mapDataToFieldNames(item, false, this.variantProps(prop, item), options.convertCustomTypes);
           }
         } else {
-          value = this.mapDataToFieldNames(value, false, prop.embeddedProps, options.convertCustomTypes);
+          value = this.mapDataToFieldNames(value, false, this.variantProps(prop, value), options.convertCustomTypes);
         }
       }
 

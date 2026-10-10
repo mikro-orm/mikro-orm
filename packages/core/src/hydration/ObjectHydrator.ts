@@ -460,6 +460,12 @@ export class ObjectHydrator extends Hydrator {
                 ? dataKey + this.wrap(childProp.embedded![1])
                 : this.wrap(childProp.name);
               const prop2 = childMeta.properties[childProp.embedded![1]];
+
+              // a same-named property of a different kind in another variant
+              if (prop2 && !Utils.isSameKind(prop2, childProp)) {
+                return;
+              }
+
               const prop3 = {
                 ...prop2,
                 name: childProp.name,

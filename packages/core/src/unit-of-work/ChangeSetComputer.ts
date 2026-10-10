@@ -221,7 +221,8 @@ export class ChangeSetComputer {
 
     targets.forEach(([rawTarget, idx]) => {
       const target = Reference.unwrapReference(rawTarget);
-      const needsProcessing = target != null && (prop.targetKey != null || !target.__helper!.hasPrimaryKey());
+      // a same-named scalar of another polymorphic embeddable variant is not a reference
+      const needsProcessing = Utils.isEntity(target) && (prop.targetKey != null || !target.__helper!.hasPrimaryKey());
 
       if (needsProcessing) {
         // a reference known only by its `targetKey` has no PK, and is never inserted to generate one

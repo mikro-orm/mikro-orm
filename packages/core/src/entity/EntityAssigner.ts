@@ -7,6 +7,7 @@ import type {
   EntityData,
   EntityDTO,
   EntityKey,
+  EntityMetadata,
   EntityProperty,
   EntityValue,
   FromEntityType,
@@ -365,16 +366,29 @@ export class EntityAssigner {
       });
     }
 
+    const polymorphs = prop.targetMeta?.polymorphs;
+    // eslint-disable-next-line eqeqeq
+    const variant = polymorphs?.find(m => m.discriminatorValue == value[prop.targetMeta!.discriminatorColumn!]);
     const create = () =>
       EntityAssigner.validateEM(em) &&
-      em.getEntityFactory().createEmbeddable<T>(prop.targetMeta!.class, value, {
+      em.getEntityFactory().createEmbeddable<T>((variant ?? prop.targetMeta!).class, value, {
         convertCustomTypes: options.convertCustomTypes,
         newEntity: options.mergeEmbeddedProperties ? !('propName' in entity) : true,
       });
-    entity[propName] = (options.mergeEmbeddedProperties ? entity[propName] || create() : create()) as EntityValue<T>;
+    // a different polymorphic variant cannot be merged into the current one
+    const merge = options.mergeEmbeddedProperties && (!variant || entity[propName]?.constructor === variant.class);
+    entity[propName] = (merge ? entity[propName] || create() : create()) as EntityValue<T>;
+    const props: Dictionary<EntityProperty> = polymorphs ? { ...prop.embeddedProps } : prop.embeddedProps;
+
+    // polymorphic variants can declare same-named properties of different kinds or relation targets
+    for (const p of polymorphs ? ((entity[propName] as Dictionary).__meta as EntityMetadata).props : []) {
+      if (props[p.name] && props[p.name].targetMeta?.class !== p.targetMeta?.class) {
+        props[p.name] = { ...p, nullable: prop.nullable || p.nullable };
+      }
+    }
 
     Object.keys(value).forEach(key => {
-      EntityAssigner.assignProperty(entity[propName], key, prop.embeddedProps, value, options);
+      EntityAssigner.assignProperty(entity[propName], key, props, value, options);
     });
   }
 

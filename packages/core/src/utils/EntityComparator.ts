@@ -732,14 +732,28 @@ export class EntityComparator {
       return true;
     }
 
+    // a same-named property of a different kind in another polymorphic variant applies only to its own variants
+    const guard = (childProp: EntityProperty<T>, code: string) => {
+      const variants = prop.targetMeta?.polymorphs?.filter(m => m.properties[childProp.embedded![1]]) ?? [];
+      const owners = variants.filter(m => Utils.isSameKind(m.properties[childProp.embedded![1]], childProp));
+
+      if (owners.length === variants.length) {
+        return code;
+      }
+
+      const discriminator = `entity${[...path, prop.targetMeta!.discriminatorColumn!].map(k => this.wrap(k)).join('')}`;
+      const conds = owners.map(m => `${discriminator} == ${JSON.stringify(m.discriminatorValue)}`);
+      return `${padding}  if (${conds.join(' || ')}) {\n${code}\n${padding}  }`;
+    };
+    const childProps = meta.props.filter(
+      p =>
+        p.embedded?.[0] === prop.name &&
+        // object for JSON embeddable
+        (p.object || p.persist !== false),
+    );
+
     ret +=
-      meta.props
-        .filter(
-          p =>
-            p.embedded?.[0] === prop.name &&
-            // object for JSON embeddable
-            (p.object || p.persist !== false),
-        )
+      childProps
         .map(childProp => {
           const childDataKey =
             meta.embeddable || prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
@@ -789,6 +803,7 @@ export class EntityComparator {
 
           return `${padding}  if (${childCond}) ret${childDataKey} = clone(entity${childEntityKey});`;
         })
+        .map((code, i) => guard(childProps[i], code))
         .join('\n') + `\n`;
 
     if (this.shouldSerialize(prop, dataKey)) {

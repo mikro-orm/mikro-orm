@@ -608,7 +608,8 @@ export class MetadataDiscovery {
   }
 
   private initManyToOneFieldName(prop: EntityProperty, name: string): string[] {
-    const meta2 = prop.targetMeta!;
+    // STI property renaming runs before `initRelation` populates `targetMeta`
+    const meta2 = prop.targetMeta ?? this.#metadata.getByClassName(prop.type);
     const ret: string[] = [];
     // with `targetKey` on a composite PK target, derive the FK field name from that property
     // instead of the PKs (simple PK targets keep the PK based naming for backwards compatibility)
@@ -1689,20 +1690,44 @@ export class MetadataDiscovery {
     const prefix = this.getPrefix(embeddedProp, parentProperty);
     const glue = object ? '~' : '_';
 
-    for (const prop of Object.values(embeddable.properties)) {
-      const name = (embeddedProp.embeddedPath?.join(glue) ?? embeddedProp.fieldNames[0] + glue) + prop.name;
+    const props = Object.values(embeddable.properties);
+
+    // variants can declare a same-named property of a different kind, the virtual entity lacks it when the variants are shared with another union
+    for (const prop of embeddable.polymorphs?.flatMap(m => Object.values(m.properties)) ?? []) {
+      const same = props.find(p => p.name === prop.name && Utils.isSameKind(p, prop));
+
+      if (!same && !prop.embedded) {
+        props.push({ ...prop }); // a copy, the variant's metadata is shared with its other owners
+      } else if (same && same.kind !== ReferenceKind.SCALAR && same.type !== prop.type) {
+        // a column shared by relations to different targets cannot have a FK constraint
+        same.createForeignKeyConstraint = false;
+      }
+    }
+
+    for (const prop of props) {
+      const sameName = props.filter(p => p.name === prop.name);
+      // same-kind variants of a conflicting property share one owner property, as they share the column
+      const first = sameName.find(p => Utils.isSameKind(p, prop))!;
+      const conflict = first !== sameName[0];
+      const name =
+        (embeddedProp.embeddedPath?.join(glue) ?? embeddedProp.fieldNames[0] + glue) +
+        prop.name +
+        (conflict ? `_${props.indexOf(first)}` : '');
 
       meta.properties[name] = Utils.copy(prop);
       meta.properties[name].name = name;
+      // STI column tracking between the variants does not apply to the owner's columns
+      delete meta.properties[name].stiFieldNames;
       meta.properties[name].embedded = [embeddedProp.name, prop.name];
       meta.propertyOrder.set(name, (order += 0.01));
-      embeddedProp.embeddedProps[prop.name] = meta.properties[name];
+      embeddedProp.embeddedProps[conflict ? name : prop.name] = meta.properties[name];
       meta.properties[name].persist ??= embeddedProp.persist;
 
       const refInArray =
         array && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && prop.owner;
 
-      if (embeddedProp.nullable || refInArray) {
+      // each variant fills only its own column of a conflicting property
+      if (embeddedProp.nullable || refInArray || sameName.some(p => !Utils.isSameKind(p, prop))) {
         meta.properties[name].nullable = true;
       }
 
@@ -1913,6 +1938,16 @@ export class MetadataDiscovery {
         rootProp.stiFieldNameMap![meta.discriminatorValue!] = prop.fieldNames[0];
         // subtypes that only differ in type share the column
         rootProp.stiFieldNames = Utils.unique([...rootProp.stiFieldNames, ...prop.fieldNames]);
+
+        // a column shared by relations to different targets cannot have a FK constraint
+        for (const p of Object.values(meta.root.properties)) {
+          const shared = p.type !== newProp.type && compareArrays(p.fieldNames ?? [], newProp.fieldNames);
+
+          if (shared && p.kind !== ReferenceKind.SCALAR && Utils.isSameKind(p, newProp)) {
+            p.createForeignKeyConstraint = newProp.createForeignKeyConstraint = false;
+          }
+        }
+
         newProp.nullable = true;
         newProp.name = name;
         newProp.hydrate = false;
