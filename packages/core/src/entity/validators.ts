@@ -30,13 +30,8 @@ function getValue(o: Dictionary, prop: EntityProperty) {
   if (prop.embedded && prop.embedded[0] in o) {
     const embeddable = o[prop.embedded[0]];
     const variantProp = embeddable?.__meta?.properties[prop.embedded[1]];
-
     // a same-named property of a different kind in another polymorphic variant
-    if (variantProp && !Utils.isSameKind(variantProp, prop)) {
-      return undefined;
-    }
-
-    return embeddable?.[prop.embedded[1]];
+    return variantProp && !Utils.isSameKind(variantProp, prop) ? undefined : embeddable?.[prop.embedded[1]];
   }
 
   /* v8 ignore next */

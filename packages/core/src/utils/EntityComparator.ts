@@ -732,6 +732,19 @@ export class EntityComparator {
       return true;
     }
 
+    // a same-named property of a different kind in another polymorphic variant applies only to its own variants
+    const guard = (childProp: EntityProperty<T>, code: string) => {
+      const variants = prop.targetMeta?.polymorphs?.filter(m => m.properties[childProp.embedded![1]]) ?? [];
+      const owners = variants.filter(m => Utils.isSameKind(m.properties[childProp.embedded![1]], childProp));
+
+      if (owners.length === variants.length) {
+        return code;
+      }
+
+      const discriminator = `entity${[...path, prop.targetMeta!.discriminatorColumn!].map(k => this.wrap(k)).join('')}`;
+      const conds = owners.map(m => `${discriminator} == ${JSON.stringify(m.discriminatorValue)}`);
+      return `${padding}  if (${conds.join(' || ')}) {\n${code}\n${padding}  }`;
+    };
     const childProps = meta.props.filter(
       p =>
         p.embedded?.[0] === prop.name &&
@@ -790,7 +803,7 @@ export class EntityComparator {
 
           return `${padding}  if (${childCond}) ret${childDataKey} = clone(entity${childEntityKey});`;
         })
-        .map((code, i) => this.getPolymorphicVariantGuard(prop, childProps[i], path, padding, code))
+        .map((code, i) => guard(childProps[i], code))
         .join('\n') + `\n`;
 
     if (this.shouldSerialize(prop, dataKey)) {
@@ -798,29 +811,6 @@ export class EntityComparator {
     }
 
     return `${ret}${padding}}`;
-  }
-
-  /** A same-named property of a different kind in another polymorphic variant applies only to its own variants. */
-  private getPolymorphicVariantGuard(
-    prop: EntityProperty,
-    childProp: EntityProperty,
-    path: string[],
-    padding: string,
-    code: string,
-  ): string {
-    const key = childProp.embedded![1];
-    const variants = prop.targetMeta?.polymorphs?.filter(m => m.properties[key]) ?? [];
-
-    if (variants.every(m => Utils.isSameKind(m.properties[key], childProp))) {
-      return code;
-    }
-
-    const discriminator = `entity${[...path, prop.targetMeta!.discriminatorColumn!].map(k => this.wrap(k)).join('')}`;
-    const conds = variants
-      .filter(m => Utils.isSameKind(m.properties[key], childProp))
-      .map(m => `${discriminator} == ${JSON.stringify(m.discriminatorValue)}`);
-
-    return `${padding}  if (${conds.join(' || ')}) {\n${code}\n${padding}  }`;
   }
 
   private getInlineEmbeddedNullLines<T>(

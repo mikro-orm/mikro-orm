@@ -656,19 +656,14 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   /** @internal Polymorphic embeddable variants can declare same-named properties with different field names. */
-  protected getEmbeddedProps(prop: EntityProperty, data?: Dictionary): Dictionary<EntityProperty> {
+  protected variantProps(prop: EntityProperty, data?: Dictionary): Dictionary<EntityProperty> {
     const meta = prop.targetMeta;
     // eslint-disable-next-line eqeqeq
     const variant = meta?.polymorphs?.find(m => m.discriminatorValue == data?.[meta.discriminatorColumn!]);
+    const props = variant ? { ...prop.embeddedProps } : prop.embeddedProps;
 
-    if (!variant) {
-      return prop.embeddedProps;
-    }
-
-    const props = { ...prop.embeddedProps };
-
-    for (const p of Object.values(prop.embeddedProps)) {
-      if (variant.properties[p.embedded![1]] && Utils.isSameKind(variant.properties[p.embedded![1]], p)) {
+    for (const p of variant ? Object.values(props) : []) {
+      if (variant!.properties[p.embedded![1]] && Utils.isSameKind(variant!.properties[p.embedded![1]], p)) {
         props[p.embedded![1]] = p;
       }
     }
@@ -702,7 +697,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         delete data[k];
         Object.assign(
           data,
-          this.mapDataToFieldNames(copy, stringifyJsonArrays, this.getEmbeddedProps(prop, copy), convertCustomTypes),
+          this.mapDataToFieldNames(copy, stringifyJsonArrays, this.variantProps(prop, copy), convertCustomTypes),
         );
 
         return;
@@ -717,7 +712,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
             this.mapDataToFieldNames(
               item,
               stringifyJsonArrays,
-              this.getEmbeddedProps(prop, item),
+              this.variantProps(prop, item),
               convertCustomTypes,
               true,
             ),
@@ -726,7 +721,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
           data[prop.fieldNames[0]] = this.mapDataToFieldNames(
             copy,
             stringifyJsonArrays,
-            this.getEmbeddedProps(prop, copy),
+            this.variantProps(prop, copy),
             convertCustomTypes,
             true,
           );

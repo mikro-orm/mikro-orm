@@ -1693,16 +1693,12 @@ export class MetadataDiscovery {
     const props = Object.values(embeddable.properties);
 
     // variants can declare a same-named property of a different kind, the virtual entity lacks it when the variants are shared with another union
-    const variantProps =
-      embeddable.polymorphs?.flatMap(m => Object.values(m.properties).filter(p => !p.embedded)) ?? [];
-
-    for (const prop of variantProps) {
+    for (const prop of embeddable.polymorphs?.flatMap(m => Object.values(m.properties)) ?? []) {
       const same = props.find(p => p.name === prop.name && Utils.isSameKind(p, prop));
 
-      if (!same) {
-        // a copy, as the variant's own metadata is used by its other owners
-        props.push({ ...prop });
-      } else if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(same.kind) && same.type !== prop.type) {
+      if (!same && !prop.embedded) {
+        props.push({ ...prop }); // a copy, the variant's metadata is shared with its other owners
+      } else if (same && same.kind !== ReferenceKind.SCALAR && same.type !== prop.type) {
         // a column shared by relations to different targets cannot have a FK constraint
         same.createForeignKeyConstraint = false;
       }
@@ -1710,17 +1706,13 @@ export class MetadataDiscovery {
 
     for (const prop of props) {
       const sameName = props.filter(p => p.name === prop.name);
-      const conflict = !Utils.isSameKind(sameName[0], prop);
-
-      // same-kind variants of a conflicting property share one property, as they share the column
-      if (conflict && sameName.find(p => Utils.isSameKind(p, prop)) !== prop) {
-        continue;
-      }
-
+      // same-kind variants of a conflicting property share one owner property, as they share the column
+      const first = sameName.find(p => Utils.isSameKind(p, prop))!;
+      const conflict = first !== sameName[0];
       const name =
         (embeddedProp.embeddedPath?.join(glue) ?? embeddedProp.fieldNames[0] + glue) +
         prop.name +
-        (conflict ? `_${props.indexOf(prop)}` : '');
+        (conflict ? `_${props.indexOf(first)}` : '');
 
       meta.properties[name] = Utils.copy(prop);
       meta.properties[name].name = name;
@@ -1948,16 +1940,11 @@ export class MetadataDiscovery {
         rootProp.stiFieldNames = Utils.unique([...rootProp.stiFieldNames, ...prop.fieldNames]);
 
         // a column shared by relations to different targets cannot have a FK constraint
-        if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(newProp.kind)) {
-          for (const p of Object.values(meta.root.properties)) {
-            if (
-              p !== newProp &&
-              Utils.isSameKind(p, newProp) &&
-              p.type !== newProp.type &&
-              compareArrays(p.fieldNames ?? [], newProp.fieldNames)
-            ) {
-              p.createForeignKeyConstraint = newProp.createForeignKeyConstraint = false;
-            }
+        for (const p of Object.values(meta.root.properties)) {
+          const shared = p.type !== newProp.type && compareArrays(p.fieldNames ?? [], newProp.fieldNames);
+
+          if (shared && p.kind !== ReferenceKind.SCALAR && Utils.isSameKind(p, newProp)) {
+            p.createForeignKeyConstraint = newProp.createForeignKeyConstraint = false;
           }
         }
 
