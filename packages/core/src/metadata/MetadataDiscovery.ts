@@ -1860,8 +1860,7 @@ export class MetadataDiscovery {
 
       // A child that narrows a relation to a subclass of the root's declared
       // target (same STI hierarchy) shares the FK column with the root; treat
-      // that as matching so the rename branch below doesn't run (which would
-      // crash — `targetMeta` is only populated later, in `initRelation`).
+      // that as matching so the rename branch below doesn't run.
       const narrowedRelationOverride =
         rootProp != null && rootProp.type !== prop.type && this.sameRelationTargetRoot(rootProp, prop);
 
@@ -1886,7 +1885,10 @@ export class MetadataDiscovery {
           (rootProp.fieldNames && prop.fieldNames && !compareArrays(rootProp.fieldNames, prop.fieldNames)))
       ) {
         // relation field names need `targetMeta`, which is otherwise populated only later in `initRelation`
-        [rootProp, prop, newProp].forEach(p => this.initRelation(p));
+        for (const p of [rootProp, prop, newProp]) {
+          this.initRelation(p);
+        }
+
         const name = newProp.name;
         this.initFieldName(newProp, newProp.object);
         newProp.renamedFrom = name;

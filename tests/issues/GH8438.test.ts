@@ -1,19 +1,7 @@
-import { defineEntity, p } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/sqlite';
+import { defineEntity, MikroORM, p } from '@mikro-orm/sqlite';
 
-const ReferencedEntity1 = defineEntity({
-  name: 'ReferencedEntity1',
-  properties: {
-    id: p.string().primary(),
-  },
-});
-
-const ReferencedEntity2 = defineEntity({
-  name: 'ReferencedEntity2',
-  properties: {
-    id: p.string().primary(),
-  },
-});
+const ReferencedEntity1 = defineEntity({ name: 'ReferencedEntity1', properties: { id: p.string().primary() } });
+const ReferencedEntity2 = defineEntity({ name: 'ReferencedEntity2', properties: { id: p.string().primary() } });
 
 const AbstractEmbeddable = defineEntity({
   name: 'AbstractEmbeddable',
@@ -129,9 +117,42 @@ test('STI siblings with a same-named scalar and relation', async () => {
   await em.flush();
   em.clear();
 
-  const [text, item] = await em.find(BaseItem, {}, { orderBy: { id: 1 } });
-  expect(text).toBeInstanceOf(TextItem.class);
-  expect((text as InstanceType<typeof TextItem.class>).value).toBe('foo');
-  expect(item).toBeInstanceOf(RefItem.class);
-  expect((item as InstanceType<typeof RefItem.class>).value.id).toBe('r3');
+  const items = await em.find(BaseItem, {}, { orderBy: { id: 1 } });
+  expect(items).toMatchObject([{ value: 'foo' }, { value: { id: 'r3' } }]);
+  expect(items[0]).toBeInstanceOf(TextItem.class);
+  expect(items[1]).toBeInstanceOf(RefItem.class);
+});
+
+test('polymorphic embeddables with a same-named scalar and relation pass discovery', async () => {
+  const Abstract = defineEntity({
+    name: 'ScalarOrRefAbstract',
+    embeddable: true,
+    abstract: true,
+    discriminatorColumn: 'kind',
+    properties: { kind: p.enum(['1', '2']) },
+  });
+  const Scalar = defineEntity({
+    name: 'ScalarEmbeddable',
+    embeddable: true,
+    extends: Abstract,
+    discriminatorValue: '1',
+    properties: { kind: p.enum(['1']), value: p.enum(['A', 'B']) },
+  });
+  const Ref = defineEntity({
+    name: 'RefEmbeddable',
+    embeddable: true,
+    extends: Abstract,
+    discriminatorValue: '2',
+    properties: { kind: p.enum(['2']), value: () => p.manyToOne(ReferencedEntity1) },
+  });
+  const Owner = defineEntity({
+    name: 'Owner',
+    properties: { id: p.integer().primary(), embedded: () => p.embedded([Scalar, Ref]).object() },
+  });
+
+  const orm2 = await MikroORM.init({
+    dbName: ':memory:',
+    entities: [ReferencedEntity1, Abstract, Scalar, Ref, Owner],
+  });
+  await orm2.close(true);
 });
