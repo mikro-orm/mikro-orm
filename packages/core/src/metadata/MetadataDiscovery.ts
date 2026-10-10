@@ -1885,6 +1885,8 @@ export class MetadataDiscovery {
         (!typesMatch ||
           (rootProp.fieldNames && prop.fieldNames && !compareArrays(rootProp.fieldNames, prop.fieldNames)))
       ) {
+        // relation field names need `targetMeta`, which is otherwise populated only later in `initRelation`
+        [rootProp, prop, newProp].forEach(p => this.initRelation(p));
         const name = newProp.name;
         this.initFieldName(newProp, newProp.object);
         newProp.renamedFrom = name;
