@@ -655,6 +655,27 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return { ...atOrPast, ...past } as FilterQuery<T>;
   }
 
+  /** @internal Polymorphic embeddable variants can declare same-named properties with different field names. */
+  protected getEmbeddedProps(prop: EntityProperty, data?: Dictionary): Dictionary<EntityProperty> {
+    const meta = prop.targetMeta;
+    // eslint-disable-next-line eqeqeq
+    const variant = meta?.polymorphs?.find(m => m.discriminatorValue == data?.[meta.discriminatorColumn!]);
+
+    if (!variant) {
+      return prop.embeddedProps;
+    }
+
+    const props = { ...prop.embeddedProps };
+
+    for (const p of Object.values(prop.embeddedProps)) {
+      if (variant.properties[p.embedded![1]] && Utils.isSameKind(variant.properties[p.embedded![1]], p)) {
+        props[p.embedded![1]] = p;
+      }
+    }
+
+    return props;
+  }
+
   /** @internal */
   mapDataToFieldNames(
     data: Dictionary,
@@ -681,7 +702,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         delete data[k];
         Object.assign(
           data,
-          this.mapDataToFieldNames(copy, stringifyJsonArrays, prop.embeddedProps, convertCustomTypes),
+          this.mapDataToFieldNames(copy, stringifyJsonArrays, this.getEmbeddedProps(prop, copy), convertCustomTypes),
         );
 
         return;
@@ -693,13 +714,19 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
         if (prop.array) {
           data[prop.fieldNames[0]] = copy?.map((item: Dictionary) =>
-            this.mapDataToFieldNames(item, stringifyJsonArrays, prop.embeddedProps, convertCustomTypes, true),
+            this.mapDataToFieldNames(
+              item,
+              stringifyJsonArrays,
+              this.getEmbeddedProps(prop, item),
+              convertCustomTypes,
+              true,
+            ),
           );
         } else {
           data[prop.fieldNames[0]] = this.mapDataToFieldNames(
             copy,
             stringifyJsonArrays,
-            prop.embeddedProps,
+            this.getEmbeddedProps(prop, copy),
             convertCustomTypes,
             true,
           );

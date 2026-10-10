@@ -1013,6 +1013,12 @@ export class Utils {
     }
   }
 
+  /** @internal Same-named properties of polymorphic embeddable variants conflict when their kinds differ, to-one kinds share the column. */
+  static isSameKind(a: EntityProperty, b: EntityProperty): boolean {
+    const toOne = (p: EntityProperty) => p.kind === ReferenceKind.MANY_TO_ONE || p.kind === ReferenceKind.ONE_TO_ONE;
+    return a.kind === b.kind || (toOne(a) && toOne(b));
+  }
+
   static unwrapProperty<T>(
     entity: T,
     meta: EntityMetadata<T>,
