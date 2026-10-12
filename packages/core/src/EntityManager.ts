@@ -1209,7 +1209,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     ) => {
       for (const prop of helper(e).__meta.props) {
         if (prop.kind === ReferenceKind.SCALAR && !prop.ref) {
-          data[prop.name] = e[prop.name];
+          if (helper(e).__initialized || prop.primary) {
+            data[prop.name] = e[prop.name];
+          }
+
           continue;
         }
 
