@@ -37,6 +37,8 @@ Alternatively, you can use the `Hidden` type for **primitive property types** (`
 
 Both will work the same, and can be combined with the `HiddenProps` symbol approach.
 
+> With `ReflectMetadataProvider`, intersection types are emitted as `Object`, so the property type needs to be provided explicitly (e.g. `@PrimaryKey({ type: 'number' })`), unless it can be inferred from a default value. See [Metadata Providers](./metadata-providers.md#intersection-types-opt-hidden).
+
 ```ts
 @Entity()
 class Book {

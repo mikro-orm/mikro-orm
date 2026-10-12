@@ -113,6 +113,18 @@ Reading property nullability is not supported, you need to explicitly set `nulla
 prop?: string;
 ```
 
+#### Intersection types (`Opt`, `Hidden`)
+
+TypeScript emits `Object` as the design type for any intersection, so properties typed via `Opt` or `Hidden` (e.g. `number & Hidden` or `Opt<string>`) lose their type, and the ORM falls back to a text column. You need to provide the type explicitly. This is especially important for primary keys, as a numeric PK typed this way will not be treated as autoincrement:
+
+```ts
+@PrimaryKey({ type: 'number', hidden: true })
+id!: number & Hidden;
+
+@Property({ type: 'string' })
+middleName: string & Opt = '';
+```
+
 #### Enums
 
 By default, enum is considered as numeric type. For string enums, you need to explicitly provide one of:

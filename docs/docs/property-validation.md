@@ -97,6 +97,8 @@ An alternative approach is using the `Opt` type, which can be used in two ways:
 
 Both will work the same, and can be combined with the `OptionalProps` symbol approach.
 
+> With `ReflectMetadataProvider`, intersection types are emitted as `Object`, so the property type needs to be provided explicitly (e.g. `@PrimaryKey({ type: 'number' })`), unless it can be inferred from a default value. See [Metadata Providers](./metadata-providers.md#intersection-types-opt-hidden).
+
 ```ts
 import { Opt, Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
