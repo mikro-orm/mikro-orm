@@ -1407,7 +1407,7 @@ __metadata:
     "@mikro-orm/core": "npm:^7.2.5"
     "@mikro-orm/sql": "npm:7.2.5"
     kysely: "npm:0.29.6"
-    oracledb: "npm:7.0.1"
+    oracledb: "npm:26.0.0"
   peerDependencies:
     "@mikro-orm/core": 7.2.5
   languageName: unknown
@@ -6829,10 +6829,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oracledb@npm:7.0.1":
-  version: 7.0.1
-  resolution: "oracledb@npm:7.0.1"
-  checksum: 10/a28800f038d4e267051c5996b162eb795a854fac1d3e88c4180586a8bfbd845ce45422053c28df348479c8e36f46c051c3117646e95265508c7cbcce1ed2d99d
+"oracledb@npm:26.0.0":
+  version: 26.0.0
+  resolution: "oracledb@npm:26.0.0"
+  checksum: 10/5ffb80f1b2c5fa8c63219556e08e1dc2ed73b3d67dceb5283bdb1156d270514a95f9e8fe0ed761ed7ebb9d364675f8d304dfba813ee2c228f4a5b9bbabd85bbc
   languageName: node
   linkType: hard
 
