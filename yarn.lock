@@ -1379,7 +1379,7 @@ __metadata:
     "@mikro-orm/sql": "npm:7.2.5"
     kysely: "npm:0.29.6"
     tarn: "npm:3.1.2"
-    tedious: "npm:20.3.3"
+    tedious: "npm:20.3.6"
     tsqlstring: "npm:1.0.1"
   peerDependencies:
     "@mikro-orm/core": 7.2.5
@@ -1466,9 +1466,9 @@ __metadata:
     "@mikro-orm/mongo-highlighter": "npm:1.0.0"
     "@mikro-orm/sql-highlighter": "npm:1.0.1"
     "@swc-node/register": "npm:1.12.1"
-    "@swc/core": "npm:1.16.13"
+    "@swc/core": "npm:1.16.17"
     "@types/better-sqlite3": "npm:9.6.0"
-    "@types/node": "npm:24.19.1"
+    "@types/node": "npm:24.19.2"
     "@types/oracledb": "npm:7.0.3"
     "@types/pg": "npm:8.23.1"
     "@types/pg-cursor": "npm:2.7.2"
@@ -1497,7 +1497,7 @@ __metadata:
     tsx: "npm:4.23.15"
     typescript: "npm:7.0.2"
     unplugin-swc: "npm:2.0.0"
-    uuid: "npm:14.0.2"
+    uuid: "npm:14.0.3"
     vite: "npm:8.3.4"
     vitest: "npm:5.0.3"
   dependenciesMeta:
@@ -2923,106 +2923,106 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@swc/core-darwin-arm64@npm:1.16.13":
-  version: 1.16.13
-  resolution: "@swc/core-darwin-arm64@npm:1.16.13"
+"@swc/core-darwin-arm64@npm:1.16.17":
+  version: 1.16.17
+  resolution: "@swc/core-darwin-arm64@npm:1.16.17"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@swc/core-darwin-x64@npm:1.16.13":
-  version: 1.16.13
-  resolution: "@swc/core-darwin-x64@npm:1.16.13"
+"@swc/core-darwin-x64@npm:1.16.17":
+  version: 1.16.17
+  resolution: "@swc/core-darwin-x64@npm:1.16.17"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@swc/core-linux-arm-gnueabihf@npm:1.16.13":
-  version: 1.16.13
-  resolution: "@swc/core-linux-arm-gnueabihf@npm:1.16.13"
+"@swc/core-linux-arm-gnueabihf@npm:1.16.17":
+  version: 1.16.17
+  resolution: "@swc/core-linux-arm-gnueabihf@npm:1.16.17"
   conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
 
-"@swc/core-linux-arm64-gnu@npm:1.16.13":
-  version: 1.16.13
-  resolution: "@swc/core-linux-arm64-gnu@npm:1.16.13"
+"@swc/core-linux-arm64-gnu@npm:1.16.17":
+  version: 1.16.17
+  resolution: "@swc/core-linux-arm64-gnu@npm:1.16.17"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@swc/core-linux-arm64-musl@npm:1.16.13":
-  version: 1.16.13
-  resolution: "@swc/core-linux-arm64-musl@npm:1.16.13"
+"@swc/core-linux-arm64-musl@npm:1.16.17":
+  version: 1.16.17
+  resolution: "@swc/core-linux-arm64-musl@npm:1.16.17"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@swc/core-linux-ppc64-gnu@npm:1.16.13":
-  version: 1.16.13
-  resolution: "@swc/core-linux-ppc64-gnu@npm:1.16.13"
+"@swc/core-linux-ppc64-gnu@npm:1.16.17":
+  version: 1.16.17
+  resolution: "@swc/core-linux-ppc64-gnu@npm:1.16.17"
   conditions: os=linux & cpu=ppc64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@swc/core-linux-s390x-gnu@npm:1.16.13":
-  version: 1.16.13
-  resolution: "@swc/core-linux-s390x-gnu@npm:1.16.13"
+"@swc/core-linux-s390x-gnu@npm:1.16.17":
+  version: 1.16.17
+  resolution: "@swc/core-linux-s390x-gnu@npm:1.16.17"
   conditions: os=linux & cpu=s390x & libc=glibc
   languageName: node
   linkType: hard
 
-"@swc/core-linux-x64-gnu@npm:1.16.13":
-  version: 1.16.13
-  resolution: "@swc/core-linux-x64-gnu@npm:1.16.13"
+"@swc/core-linux-x64-gnu@npm:1.16.17":
+  version: 1.16.17
+  resolution: "@swc/core-linux-x64-gnu@npm:1.16.17"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@swc/core-linux-x64-musl@npm:1.16.13":
-  version: 1.16.13
-  resolution: "@swc/core-linux-x64-musl@npm:1.16.13"
+"@swc/core-linux-x64-musl@npm:1.16.17":
+  version: 1.16.17
+  resolution: "@swc/core-linux-x64-musl@npm:1.16.17"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@swc/core-win32-arm64-msvc@npm:1.16.13":
-  version: 1.16.13
-  resolution: "@swc/core-win32-arm64-msvc@npm:1.16.13"
+"@swc/core-win32-arm64-msvc@npm:1.16.17":
+  version: 1.16.17
+  resolution: "@swc/core-win32-arm64-msvc@npm:1.16.17"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@swc/core-win32-ia32-msvc@npm:1.16.13":
-  version: 1.16.13
-  resolution: "@swc/core-win32-ia32-msvc@npm:1.16.13"
+"@swc/core-win32-ia32-msvc@npm:1.16.17":
+  version: 1.16.17
+  resolution: "@swc/core-win32-ia32-msvc@npm:1.16.17"
   conditions: os=win32 & cpu=ia32
   languageName: node
   linkType: hard
 
-"@swc/core-win32-x64-msvc@npm:1.16.13":
-  version: 1.16.13
-  resolution: "@swc/core-win32-x64-msvc@npm:1.16.13"
+"@swc/core-win32-x64-msvc@npm:1.16.17":
+  version: 1.16.17
+  resolution: "@swc/core-win32-x64-msvc@npm:1.16.17"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@swc/core@npm:1.16.13":
-  version: 1.16.13
-  resolution: "@swc/core@npm:1.16.13"
+"@swc/core@npm:1.16.17":
+  version: 1.16.17
+  resolution: "@swc/core@npm:1.16.17"
   dependencies:
-    "@swc/core-darwin-arm64": "npm:1.16.13"
-    "@swc/core-darwin-x64": "npm:1.16.13"
-    "@swc/core-linux-arm-gnueabihf": "npm:1.16.13"
-    "@swc/core-linux-arm64-gnu": "npm:1.16.13"
-    "@swc/core-linux-arm64-musl": "npm:1.16.13"
-    "@swc/core-linux-ppc64-gnu": "npm:1.16.13"
-    "@swc/core-linux-s390x-gnu": "npm:1.16.13"
-    "@swc/core-linux-x64-gnu": "npm:1.16.13"
-    "@swc/core-linux-x64-musl": "npm:1.16.13"
-    "@swc/core-win32-arm64-msvc": "npm:1.16.13"
-    "@swc/core-win32-ia32-msvc": "npm:1.16.13"
-    "@swc/core-win32-x64-msvc": "npm:1.16.13"
+    "@swc/core-darwin-arm64": "npm:1.16.17"
+    "@swc/core-darwin-x64": "npm:1.16.17"
+    "@swc/core-linux-arm-gnueabihf": "npm:1.16.17"
+    "@swc/core-linux-arm64-gnu": "npm:1.16.17"
+    "@swc/core-linux-arm64-musl": "npm:1.16.17"
+    "@swc/core-linux-ppc64-gnu": "npm:1.16.17"
+    "@swc/core-linux-s390x-gnu": "npm:1.16.17"
+    "@swc/core-linux-x64-gnu": "npm:1.16.17"
+    "@swc/core-linux-x64-musl": "npm:1.16.17"
+    "@swc/core-win32-arm64-msvc": "npm:1.16.17"
+    "@swc/core-win32-ia32-msvc": "npm:1.16.17"
+    "@swc/core-win32-x64-msvc": "npm:1.16.17"
     "@swc/counter": "npm:^0.1.3"
     "@swc/types": "npm:^0.1.28"
   peerDependencies:
@@ -3055,7 +3055,7 @@ __metadata:
   peerDependenciesMeta:
     "@swc/helpers":
       optional: true
-  checksum: 10/f90e98685ffa43be9a49ea17b02482dab6f1455e0cb9aacbacae47b829cc9aaeaeaa70c23d32dd7a6d179e02890b6ad52ec78ce81ef5c14fa2025b6225066ae0
+  checksum: 10/f62718ef1b980c74706fe5703545d50ee07d98cf1cc661da7d57e676e749e0eeda47326337c12bc43be227603c872dbfd47176babcc2d878f000ea5cc777149d
   languageName: node
   linkType: hard
 
@@ -3163,12 +3163,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:24.19.1":
-  version: 24.19.1
-  resolution: "@types/node@npm:24.19.1"
+"@types/node@npm:24.19.2":
+  version: 24.19.2
+  resolution: "@types/node@npm:24.19.2"
   dependencies:
     undici-types: "npm:>=7.24.0 <7.24.7"
-  checksum: 10/52c8d538a7d3b57699101912ae89093f97471ad5f4f9564e8012080f1aecadf26acbdbe072232da6d891d2dd9ce84c1a8e6edb29edc4bc307eda1d064de4d1e9
+  checksum: 10/5bc31df093f2866db0a2f9df0a1e99c2a46c3154ca2dc62ee14bde7af216d6361e4737e1023880921007ccb326b8559980e239e18a6fa927cda507da9383225c
   languageName: node
   linkType: hard
 
@@ -8039,13 +8039,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sprintf-js@npm:^1.1.3":
-  version: 1.1.3
-  resolution: "sprintf-js@npm:1.1.3"
-  checksum: 10/e7587128c423f7e43cc625fe2f87e6affdf5ca51c1cc468e910d8aaca46bb44a7fbcfa552f787b1d3987f7043aeb4527d1b99559e6621e01b42b3f45e5a24cbb
-  languageName: node
-  linkType: hard
-
 "sql-escaper@npm:^1.5.1":
   version: 1.5.2
   resolution: "sql-escaper@npm:1.5.2"
@@ -8246,9 +8239,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tedious@npm:20.3.3":
-  version: 20.3.3
-  resolution: "tedious@npm:20.3.3"
+"tedious@npm:20.3.6":
+  version: 20.3.6
+  resolution: "tedious@npm:20.3.6"
   dependencies:
     "@azure/core-auth": "npm:^1.10.1"
     "@azure/identity": "npm:^4.13.1"
@@ -8259,8 +8252,7 @@ __metadata:
     iconv-lite: "npm:^0.7.0"
     js-md4: "npm:^0.3.2"
     native-duplexpair: "npm:^1.0.0"
-    sprintf-js: "npm:^1.1.3"
-  checksum: 10/f0fa3fdfb41e8c884efc5c35b4a78c73474e40fb56cafea127e2968b57d070901b0a4aa49a27849bfe442d3da6a601db3a23b718a084a893d2ac3116731b6a86
+  checksum: 10/0726e32619d60017165093747066d861e13fec55e21c539d14c091f24ec4ab77a610b82c362f28d7c481c7851f6aa63e1444f978e4f654a2a74e81e9f80b26d2
   languageName: node
   linkType: hard
 
@@ -8731,12 +8723,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:*, uuid@npm:14.0.2":
+"uuid@npm:*":
   version: 14.0.2
   resolution: "uuid@npm:14.0.2"
   bin:
     uuid: dist-node/bin/uuid
   checksum: 10/e8263a76ad7b2d1f246df5a48a5bdf30d886eedbb1d3d74c75356d02b2966f5fffd7790b85afdb3682e4e732d13fca7974626419814f45de6847f78ce03c745e
+  languageName: node
+  linkType: hard
+
+"uuid@npm:14.0.3":
+  version: 14.0.3
+  resolution: "uuid@npm:14.0.3"
+  bin:
+    uuid: dist-node/bin/uuid
+  checksum: 10/a6ab4e6ef84ff77b574846215c425c915de035395710e09f083f3bc1d4744df63db78598da0d04619a0a60a15a9cce2bc7c1ef10bf302349e761838816d798a7
   languageName: node
   linkType: hard
 
