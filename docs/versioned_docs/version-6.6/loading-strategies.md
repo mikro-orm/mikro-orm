@@ -20,7 +20,7 @@ The loading strategy can be specified both at mapping time and when loading enti
 Given the following entities:
 
 ```ts
-import { Entity, LoadStrategy, OneToMany, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+import { Collection, Entity, OneToMany, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 
 @Entity()
 export class Author {
@@ -79,7 +79,7 @@ const author = await orm.em.findOne(Author, 1, {
 Alternatively, you can control the strategy in your entity definition.
 
 ```ts
-import { Entity, LoadStrategy, OneToMany } from '@mikro-orm/core';
+import { Collection, Entity, OneToMany } from '@mikro-orm/core';
 
 @Entity()
 export class Author {
