@@ -9,9 +9,9 @@ MikroORM supports three loading strategies:
 - `joined` which uses a single query and joins the relations instead.
 - `balanced` which joins `to-one` relations and uses `select-in` for `to-many` relations.
 
-> `joined` strategy is supported **only in SQL drivers** and is the **default** for those since v6.
+> `joined` strategy is supported **only in SQL drivers**.
 
-> `balanced` strategy will be the default in v7.
+> `balanced` strategy is the **default for SQL drivers** since v7.
 
 ## Configuring the strategy
 
@@ -48,7 +48,7 @@ export class Book {
 }
 ```
 
-With the default `joined` strategy, this will issue a single query, loading the `Author` entity and its `books` and `books.inspiredBy` relations.
+With the default `balanced` strategy, this will issue two queries: one to load the `Author` entity, and another to load its `books`, joining the `books.inspiredBy` relation.
 
 ```ts
 const author = await orm.em.findOne(Author, 1, {
@@ -67,12 +67,12 @@ const author = await orm.em.findOne(Author, 1, {
 
 This will issue three SQL statements, one to load the author, another to load all the books belonging to that author, and a third one fetching the `Book.inspiredBy` relation.
 
-With the `balanced` strategy, this example would use two queries, one for the `Author` entities, the other for their books, including the `inspiredBy` relation:
+With the `joined` strategy, this example would use a single query, loading the `Author` entity and its `books` and `books.inspiredBy` relations:
 
 ```ts
 const author = await orm.em.findOne(Author, 1, {
   populate: ['books.inspiredBy'],
-  strategy: 'balanced',
+  strategy: 'joined',
 });
 ```
 
@@ -106,7 +106,7 @@ You can use `loadStrategy` option in the ORM config:
 MikroORM.init({
   // ...
   populate: ['books'],
-  loadStrategy: 'select-in', // 'joined' is the default for SQL drivers
+  loadStrategy: 'select-in', // 'balanced' is the default for SQL drivers
 });
 ```
 
