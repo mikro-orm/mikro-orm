@@ -5,7 +5,7 @@ sidebar_label: Loading Strategies
 
 MikroORM supports three loading strategies:
 
-- `select-in` which uses separate queries for each relation - it you populate two relations, you will get three queries - one for the root entity, and one for each populated relation.
+- `select-in` which uses separate queries for each relation - if you populate two relations, you will get three queries - one for the root entity, and one for each populated relation.
 - `joined` which uses a single query and joins the relations instead.
 - `balanced` which joins `to-one` relations and uses `select-in` for `to-many` relations.
 
