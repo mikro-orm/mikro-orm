@@ -358,17 +358,24 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     tablesBySchemas: Map<string | undefined, Table[]>,
     ctx?: Transaction,
   ): Promise<Dictionary<Dictionary<ForeignKey>>> {
-    const sql = `select ccu.constraint_name, ccu.table_name, ccu.table_schema schema_name, ccu.column_name,
-      kcu.constraint_schema referenced_schema_name,
-      kcu.column_name referenced_column_name,
-      kcu.table_name referenced_table_name,
-      rc.update_rule,
-      rc.delete_rule
-      from information_schema.constraint_column_usage ccu
-      inner join information_schema.referential_constraints rc on ccu.constraint_name = rc.constraint_name and rc.constraint_schema = ccu.constraint_schema
-      inner join information_schema.key_column_usage kcu on kcu.constraint_name = rc.unique_constraint_name and rc.unique_constraint_schema = kcu.constraint_schema
-      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(ccu.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and ccu.table_schema = '${schema}')`).join(' or ')})
-      order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
+    // `sys.foreign_key_columns` pairs each local column with its referenced column; `information_schema`
+    // has no such pairing, so composite keys came back in arbitrary order
+    const sql = `select fk.name constraint_name, t.name table_name, s.name schema_name, c.name column_name,
+      rs.name referenced_schema_name,
+      rc.name referenced_column_name,
+      rt.name referenced_table_name,
+      replace(fk.update_referential_action_desc, '_', ' ') update_rule,
+      replace(fk.delete_referential_action_desc, '_', ' ') delete_rule
+      from sys.foreign_keys fk
+      inner join sys.foreign_key_columns fkc on fkc.constraint_object_id = fk.object_id
+      inner join sys.tables t on t.object_id = fk.parent_object_id
+      inner join sys.schemas s on s.schema_id = t.schema_id
+      inner join sys.columns c on c.object_id = fkc.parent_object_id and c.column_id = fkc.parent_column_id
+      inner join sys.tables rt on rt.object_id = fk.referenced_object_id
+      inner join sys.schemas rs on rs.schema_id = rt.schema_id
+      inner join sys.columns rc on rc.object_id = fkc.referenced_object_id and rc.column_id = fkc.referenced_column_id
+      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(t.name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and s.name = '${schema}')`).join(' or ')})
+      order by rs.name, rt.name, fkc.constraint_column_id, fk.name`;
     const allFks = await connection.execute<any[]>(sql, [], 'all', ctx);
     const ret = {} as Dictionary;
 
