@@ -11,7 +11,7 @@ MikroORM supports three loading strategies:
 
 > `joined` strategy is supported **only in SQL drivers** and is the **default** for those since v6.
 
-> `combined` strategy will be the default in v7.
+> `balanced` strategy will be the default in v7.
 
 ## Configuring the strategy
 
