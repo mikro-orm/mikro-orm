@@ -1117,17 +1117,14 @@ export class SchemaComparator {
       return true;
     }
 
-    // If only one has column options, they don't match
-    if (cols1.length !== cols2.length) {
-      return false;
-    }
+    // A column without an entry has default options: metadata lists every column of `columns`, even
+    // the ones without options, while introspection may report only the columns with non-default ones.
+    // The indexes already have matching columnNames, so compare the options column by column by name.
+    const names = new Set([...index1.columnNames, ...cols1.map(c => c.name), ...cols2.map(c => c.name)]);
 
-    // Compare each column's options
-    // Note: We don't check c1.name !== c2.name because the indexes already have matching columnNames
-    // and the columns array is derived from those same column names
-    for (let i = 0; i < cols1.length; i++) {
-      const c1 = cols1[i];
-      const c2 = cols2[i];
+    for (const name of names) {
+      const c1 = cols1.find(c => c.name === name) ?? { name };
+      const c2 = cols2.find(c => c.name === name) ?? { name };
 
       const sort1 = c1.sort?.toUpperCase() ?? 'ASC';
       const sort2 = c2.sort?.toUpperCase() ?? 'ASC';
