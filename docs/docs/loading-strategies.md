@@ -107,7 +107,6 @@ You can use `loadStrategy` option in the ORM config:
 ```ts
 MikroORM.init({
   // ...
-  populate: ['books'],
   loadStrategy: 'select-in', // 'balanced' is the default for SQL drivers
 });
 ```
