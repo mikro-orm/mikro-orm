@@ -43,12 +43,25 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
    * Both of the paths that emit one are unguarded by default: `pg-pool` removes its own listener
    * from a client while that client is checked out, deliberately leaving errors to whoever holds it,
    * and it re-emits errors of idle clients on the pool itself. The query in flight still rejects on
-   * its own, so there is nothing to do here beyond logging — the pool has already discarded the
-   * broken client by the time we see it.
+   * its own. An idle client is already discarded by the pool by the time we see it, a checked-out one
+   * is released here, as kysely's `ControlledTransaction` only releases after a successful
+   * commit/rollback (kysely-org/kysely#1990), which a dead connection never gets.
    */
   private handlePoolErrors(pool: Pool): void {
+    const checkedOut = new WeakSet<object>();
+    pool.on('acquire', client => checkedOut.add(client));
+    pool.on('release', (_err, client) => checkedOut.delete(client));
     pool.on('connect', client => {
-      client.on('error', e => this.logger.warn('info', `PostgreSQL connection error: ${e.message}`));
+      client.on('error', e => {
+        this.logger.warn('info', `PostgreSQL connection error: ${e.message}`);
+
+        // kysely still releases a client whose plain query failed, and `pg-pool` throws on a second release
+        if (checkedOut.has(client)) {
+          const release = client.release;
+          client.release = () => undefined;
+          release(e);
+        }
+      });
     });
     pool.on('error', e => this.logger.warn('info', `PostgreSQL pool error: ${e.message}`));
   }
