@@ -7,8 +7,7 @@ class Location {
   recordedAt!: Date;
 }
 
-// mssql introspection reports column options only for descending columns, so the introspected index
-// has no `columns` for the first one and a single entry for the second one
+// mssql introspection reports column options only for descending columns
 const LocationSchema = defineEntity({
   class: Location,
   tableName: 'idx_cols_location',

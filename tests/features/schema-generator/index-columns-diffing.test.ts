@@ -21,11 +21,9 @@ describe('index column options diffing', () => {
 
   afterAll(() => orm.close(true));
 
-  const same = (a: IndexDef, b: IndexDef) => comparator.isIndexFulfilledBy(a, b) && comparator.isIndexFulfilledBy(b, a);
-
   test('columns without options match an index without columns', () => {
     const declared = makeIndex({ columns: [{ name: 'device_id' }, { name: 'position' }] });
-    expect(same(declared, makeIndex())).toBe(true);
+    expect(comparator.diffIndex(declared, makeIndex())).toBe(false);
   });
 
   test('explicit default options match an index without columns', () => {
@@ -35,22 +33,24 @@ describe('index column options diffing', () => {
         { name: 'position', sort: 'asc' },
       ],
     });
-    expect(same(declared, makeIndex())).toBe(true);
+    expect(comparator.diffIndex(declared, makeIndex())).toBe(false);
   });
 
   test('columns are matched by name, not by position', () => {
     // mssql introspection only reports the descending columns
     const declared = makeIndex({ columns: [{ name: 'device_id' }, { name: 'position', sort: 'DESC' }] });
     const introspected = makeIndex({ columns: [{ name: 'position', sort: 'DESC' }] });
-    expect(same(declared, introspected)).toBe(true);
+    expect(comparator.diffIndex(declared, introspected)).toBe(false);
   });
 
   test('real option changes are still detected', () => {
     const plain = makeIndex();
-    expect(same(makeIndex({ columns: [{ name: 'position', sort: 'DESC' }] }), plain)).toBe(false);
-    expect(same(makeIndex({ columns: [{ name: 'device_id', length: 10 }] }), plain)).toBe(false);
-    expect(same(makeIndex({ columns: [{ name: 'device_id', collation: 'NOCASE' }] }), plain)).toBe(false);
-    expect(same(makeIndex({ columns: [{ name: 'device_id', nulls: 'FIRST' }] }), plain)).toBe(false);
+    expect(comparator.diffIndex(makeIndex({ columns: [{ name: 'position', sort: 'DESC' }] }), plain)).toBe(true);
+    expect(comparator.diffIndex(makeIndex({ columns: [{ name: 'device_id', length: 10 }] }), plain)).toBe(true);
+    expect(comparator.diffIndex(makeIndex({ columns: [{ name: 'device_id', collation: 'NOCASE' }] }), plain)).toBe(
+      true,
+    );
+    expect(comparator.diffIndex(makeIndex({ columns: [{ name: 'device_id', nulls: 'FIRST' }] }), plain)).toBe(true);
   });
 });
 

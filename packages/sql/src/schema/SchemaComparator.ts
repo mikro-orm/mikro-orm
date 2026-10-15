@@ -1117,12 +1117,8 @@ export class SchemaComparator {
       return true;
     }
 
-    // A column without an entry has default options: metadata lists every column of `columns`, even
-    // the ones without options, while introspection may report only the columns with non-default ones.
-    // The indexes already have matching columnNames, so compare the options column by column by name.
-    const names = new Set([...index1.columnNames, ...cols1.map(c => c.name), ...cols2.map(c => c.name)]);
-
-    for (const name of names) {
+    // introspection may omit entries for columns with default options, so match them by name
+    for (const name of index1.columnNames) {
       const c1 = cols1.find(c => c.name === name) ?? { name };
       const c2 = cols2.find(c => c.name === name) ?? { name };
 
