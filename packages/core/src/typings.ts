@@ -491,10 +491,13 @@ type ElemMatchCondition<T extends Record<string, any>> = {
   $not?: ElemMatchCondition<T>;
 };
 
-type ElemMatchFilter<T> = T extends readonly (infer E)[]
-  ? E extends Record<string, any>
-    ? { $elemMatch: ElemMatchCondition<E> }
-    : never
+// `$in`/`$nin` on scalar array columns take a list of candidate arrays
+type ArrayFilter<T> = T extends readonly (infer E)[]
+  ? [E] extends [Scalar]
+    ? { $in?: readonly (readonly ExpandScalar<E>[])[]; $nin?: readonly (readonly ExpandScalar<E>[])[] }
+    : E extends Record<string, any>
+      ? { $elemMatch: ElemMatchCondition<E> }
+      : never
   : never;
 
 /** Object form of a filter query, mapping entity keys to their filter conditions. */
@@ -503,7 +506,7 @@ export type FilterObject<T> = {
     | ExpandQuery<ExpandProperty<FilterObjectProp<T, K>>>
     | ExpandQueryMerged<ExpandProperty<FilterObjectProp<T, K>>>
     | FilterValue<ExpandProperty<FilterObjectProp<T, K>>>
-    | ElemMatchFilter<FilterObjectProp<T, K>>
+    | ArrayFilter<FilterObjectProp<T, K>>
     | null;
 };
 
@@ -538,7 +541,7 @@ export type IndexFilterQuery<T, Using extends string> = [Using] extends [never]
             | ExpandQuery<ExpandProperty<FilterObjectProp<T, K>>>
             | ExpandQueryMerged<ExpandProperty<FilterObjectProp<T, K>>>
             | FilterValue<ExpandProperty<FilterObjectProp<T, K>>>
-            | ElemMatchFilter<FilterObjectProp<T, K>>
+            | ArrayFilter<FilterObjectProp<T, K>>
             | null;
         })
       | NonNullable<ExpandScalar<Primary<T>>>

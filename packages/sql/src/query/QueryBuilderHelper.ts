@@ -920,16 +920,20 @@ export class QueryBuilderHelper {
         return `(${tmp.join(', ')})`;
       }
 
-      // array custom types (e.g. `$contains`/`$overlap` on `string[]` columns) are converted to a single
-      // array literal, so we emit a single bound parameter — not one per element wrapped in a tuple
+      // array custom types convert a whole array into one literal, so each candidate array binds a single parameter
       if (prop?.customType instanceof ArrayType) {
-        const item = prop.customType.convertToDatabaseValue(value, this.#platform, {
-          fromQuery: true,
-          key,
-          mode: 'query',
-        });
-        params.push(item);
-        return '?';
+        const list = key === '$in' || key === '$nin';
+        // a flat list (e.g. the `{ tags: ['a', 'b'] }` shorthand) is a single candidate
+        const items = list && value.some(v => Array.isArray(v)) ? value : [value];
+
+        for (const item of items) {
+          params.push(
+            prop.customType.convertToDatabaseValue(item, this.#platform, { fromQuery: true, key, mode: 'query' }),
+          );
+        }
+
+        const sql = items.map(() => '?').join(', ');
+        return list ? `(${sql})` : sql;
       }
 
       value.forEach(p => params.push(p));
