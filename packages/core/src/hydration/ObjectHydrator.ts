@@ -96,7 +96,7 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`  if (data${dataKey} === null) {`);
       if (prop.ref) {
         ret.push(`    entity${entityKey} = new ScalarReference();`);
-        ret.push(`    entity${entityKey}.bind(entity, '${prop.name}');`);
+        ret.push(`    entity${entityKey}.bind(entity, ${this.quote(prop.name)});`);
         ret.push(`    entity${entityKey}.set(${nullVal});`);
       } else {
         ret.push(`    entity${entityKey} = ${nullVal};`);
@@ -146,7 +146,7 @@ export class ObjectHydrator extends Hydrator {
       if (prop.ref) {
         ret.push(`    const value = entity${entityKey};`);
         ret.push(`    entity${entityKey} = oldValue_${idx} ?? new ScalarReference(value);`);
-        ret.push(`    entity${entityKey}.bind(entity, '${prop.name}');`);
+        ret.push(`    entity${entityKey}.bind(entity, ${this.quote(prop.name)});`);
         ret.push(`    entity${entityKey}.set(value);`);
       }
 
@@ -155,7 +155,7 @@ export class ObjectHydrator extends Hydrator {
       if (prop.ref) {
         ret.push(`  if (!entity${entityKey}) {`);
         ret.push(`    entity${entityKey} = new ScalarReference();`);
-        ret.push(`    entity${entityKey}.bind(entity, '${prop.name}');`);
+        ret.push(`    entity${entityKey}.bind(entity, ${this.quote(prop.name)});`);
         ret.push(`  }`);
       }
 
@@ -193,8 +193,8 @@ export class ObjectHydrator extends Hydrator {
         const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
         if (prop2 && !prop2.mapToPk) {
-          ret.push(`  if (data${dataKey} && entity${entityKey} && !entity${entityKey}.${this.safeKey(prop2.name)}) {`);
-          ret.push(`    entity${entityKey}.${prop.ref ? 'unwrap().' : ''}${this.safeKey(prop2.name)} = ${prop2.ref ? 'Reference.create(entity)' : 'entity'};`);
+          ret.push(`  if (data${dataKey} && entity${entityKey} && !entity${entityKey}${this.wrap(prop2.name)}) {`);
+          ret.push(`    entity${entityKey}${prop.ref ? '.unwrap()' : ''}${this.wrap(prop2.name)} = ${prop2.ref ? 'Reference.create(entity)' : 'entity'};`);
           ret.push(`  }`);
         }
       }
@@ -219,7 +219,7 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`  }`);
       ret.push(`  if (Array.isArray(data${dataKey})) {`);
       ret.push(`    const items = data${dataKey}.map(value => createCollectionItem_${this.safeKey(prop.name)}(value, entity));`);
-      ret.push(`    const coll = Collection.create(entity, '${prop.name}', items, newEntity);`);
+      ret.push(`    const coll = Collection.create(entity, ${this.quote(prop.name)}, items, newEntity);`);
       ret.push(`    if (newEntity) {`);
       ret.push(`      coll.setDirty();`);
       ret.push(`    } else {`);
@@ -231,12 +231,12 @@ export class ObjectHydrator extends Hydrator {
       if (!this.platform.usesPivotTable() && prop.owner && prop.kind === ReferenceKind.MANY_TO_MANY) {
         ret.push(`  } else if (!entity${entityKey} && Array.isArray(data${dataKey})) {`);
         const items = this.platform.usesPivotTable() || !prop.owner ? 'undefined' : '[]';
-        ret.push(`    const coll = Collection.create(entity, '${prop.name}', ${items}, !!data${dataKey} || newEntity);`);
+        ret.push(`    const coll = Collection.create(entity, ${this.quote(prop.name)}, ${items}, !!data${dataKey} || newEntity);`);
         ret.push(`    coll.setDirty(false);`);
       }
 
       ret.push(`  } else if (!entity${entityKey}) {`);
-      ret.push(`    const coll = Collection.create(entity, '${prop.name}', undefined, newEntity);`);
+      ret.push(`    const coll = Collection.create(entity, ${this.quote(prop.name)}, undefined, newEntity);`);
       ret.push(`    coll.setDirty(false);`);
       ret.push(`  }`);
 
@@ -303,7 +303,7 @@ export class ObjectHydrator extends Hydrator {
         ret.push(`    const embeddedData = {`);
 
         for (const childProp of Object.values(prop.embeddedProps)) {
-          const key = childProp.embedded![1].match(/^\w+$/) ? childProp.embedded![1] : `'${childProp.embedded![1]}'`;
+          const key = this.objectKey(childProp.embedded![1]);
           ret.push(`      ${key}: data${this.wrap(childProp.name)},`);
         }
 
@@ -434,8 +434,8 @@ export class ObjectHydrator extends Hydrator {
     const prop2 = prop.targetMeta!.properties[prop.mappedBy];
 
     if (prop.kind === ReferenceKind.ONE_TO_MANY && prop2.primary) {
-      lines.push(`    if (typeof value === 'object' && value?.['${prop2.name}'] == null) {`);
-      lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { ref: ${prop2.ref} }) };`);
+      lines.push(`    if (typeof value === 'object' && value?.[${this.quote(prop2.name)}] == null) {`);
+      lines.push(`      value = { ...value, [${this.quote(prop2.name)}]: Reference.wrapReference(entity, { ref: ${prop2.ref} }) };`);
       lines.push(`    }`);
     }
 
@@ -449,11 +449,21 @@ export class ObjectHydrator extends Hydrator {
   }
 
   private wrap(key: string): string {
-    if (key.match(/^\[.*]$/)) {
+    if (key.match(/^\[idx_\d+]$/)) {
       return key;
     }
 
-    return key.match(/^\w+$/) ? `.${key}` : `['${key}']`;
+    return key.match(/^\w+$/) ? `.${key}` : `[${this.quote(key)}]`;
+  }
+
+  /** Renders a key as a single-quoted JS string literal, safe to embed in generated code. */
+  private quote(key: string): string {
+    return `'${key.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+  }
+
+  /** Renders a key as an object literal key, quoted unless it is a plain identifier. */
+  private objectKey(key: string): string {
+    return key.match(/^\w+$/) ? key : this.quote(key);
   }
 
   private safeKey(key: string): string {
