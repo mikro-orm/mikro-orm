@@ -923,14 +923,15 @@ export class QueryBuilderHelper {
       // array custom types (e.g. `$contains`/`$overlap` on `string[]` columns) are converted to a single
       // array literal, so we emit a single bound parameter — not one per element wrapped in a tuple
       if (prop?.customType instanceof ArrayType) {
-        if ((key === '$in' || key === '$nin') && value.length > 0 && value.every(v => Array.isArray(v))) {
-          const customType = prop.customType;
-          const tmp = value.map(item => {
-            params.push(customType.convertToDatabaseValue(item as string[], this.#platform, { fromQuery: true, key, mode: 'query' }));
-            return '?';
-          });
+        // `$in`/`$nin` compare against a list of arrays, so each candidate becomes its own literal
+        if ((key === '$in' || key === '$nin') && value.every(v => Array.isArray(v))) {
+          for (const item of value) {
+            params.push(
+              prop.customType.convertToDatabaseValue(item, this.#platform, { fromQuery: true, key, mode: 'query' }),
+            );
+          }
 
-          return `(${tmp.join(', ')})`;
+          return `(${value.map(() => '?').join(', ')})`;
         }
 
         const item = prop.customType.convertToDatabaseValue(value, this.#platform, {
