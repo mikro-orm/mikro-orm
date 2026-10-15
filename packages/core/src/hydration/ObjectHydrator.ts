@@ -193,8 +193,8 @@ export class ObjectHydrator extends Hydrator {
         const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
         if (prop2 && !prop2.mapToPk) {
-          ret.push(`  if (data${dataKey} && entity${entityKey} && !entity${entityKey}.${this.safeKey(prop2.name)}) {`);
-          ret.push(`    entity${entityKey}.${prop.ref ? 'unwrap().' : ''}${this.safeKey(prop2.name)} = ${prop2.ref ? 'Reference.create(entity)' : 'entity'};`);
+          ret.push(`  if (data${dataKey} && entity${entityKey} && !entity${entityKey}${this.wrap(prop2.name)}) {`);
+          ret.push(`    entity${entityKey}${prop.ref ? '.unwrap()' : ''}${this.wrap(prop2.name)} = ${prop2.ref ? 'Reference.create(entity)' : 'entity'};`);
           ret.push(`  }`);
         }
       }
@@ -303,7 +303,7 @@ export class ObjectHydrator extends Hydrator {
         ret.push(`    const embeddedData = {`);
 
         for (const childProp of Object.values(prop.embeddedProps)) {
-          const key = childProp.embedded![1].match(/^\w+$/) ? childProp.embedded![1] : `'${childProp.embedded![1]}'`;
+          const key = this.objectKey(childProp.embedded![1]);
           ret.push(`      ${key}: data${this.wrap(childProp.name)},`);
         }
 
@@ -434,8 +434,8 @@ export class ObjectHydrator extends Hydrator {
     const prop2 = prop.targetMeta!.properties[prop.mappedBy];
 
     if (prop.kind === ReferenceKind.ONE_TO_MANY && prop2.primary) {
-      lines.push(`    if (typeof value === 'object' && value?.['${prop2.name}'] == null) {`);
-      lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { ref: ${prop2.ref} }) };`);
+      lines.push(`    if (typeof value === 'object' && value?.[${this.quote(prop2.name)}] == null) {`);
+      lines.push(`      value = { ...value, [${this.quote(prop2.name)}]: Reference.wrapReference(entity, { ref: ${prop2.ref} }) };`);
       lines.push(`    }`);
     }
 
@@ -459,6 +459,11 @@ export class ObjectHydrator extends Hydrator {
   /** Renders a key as a single-quoted JS string literal, safe to embed in generated code. */
   private quote(key: string): string {
     return `'${key.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+  }
+
+  /** Renders a key as an object literal key, quoted unless it is a plain identifier. */
+  private objectKey(key: string): string {
+    return key.match(/^\w+$/) ? key : this.quote(key);
   }
 
   private safeKey(key: string): string {
