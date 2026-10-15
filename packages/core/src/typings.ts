@@ -72,6 +72,7 @@ type InternalKeys =
   | 'OptionalProps'
   | 'EagerProps'
   | 'HiddenProps'
+  | 'FilterQueryOverride'
   | 'IndexHints'
   | '__selectedType'
   | '__loadedType';
@@ -202,6 +203,9 @@ export const HiddenProps = Symbol('HiddenProps');
 
 /** Symbol used to declare type-level configuration on an entity (e.g., `[Config]?: DefineConfig<{ forceObject: true }>`). */
 export const Config = Symbol('Config');
+
+/** Symbol used to declare additional string keys allowed in `FilterQuery<T>` (e.g., on virtual entities, where filters may reference properties not present on the entity). */
+export const FilterQueryOverride = Symbol('FilterQueryOverride');
 
 /** Symbol used to declare the entity name as a string literal type (used by `defineEntity`). */
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -507,6 +511,16 @@ export type FilterObject<T> = {
     | null;
 };
 
+/**
+ * Additional filter keys declared via the `[FilterQueryOverride]` symbol, added as a union member of `FilterQuery`.
+ * Resolves to `never` (no-op) when no override is declared.
+ */
+export type ExtractFilterQueryOverride<T> = T extends { [FilterQueryOverride]?: infer X }
+  ? X extends object
+    ? FilterObject<X>
+    : never
+  : never;
+
 /** Recursively expands a type into its `FilterQuery` form for nested object filtering. */
 export type ExpandQuery<T> = T extends object ? (T extends Scalar ? never : FilterQuery<T>) : FilterValue<T>;
 
@@ -518,13 +532,15 @@ export type ObjectQuery<T> = OperatorMap<T> & FilterObject<T>;
 
 /**
  * The main query filter type used in `em.find()`, `em.findOne()`, etc.
- * Accepts an object query, a primary key value, entity props with operators, or an array of filters.
+ * Accepts an object query, a primary key value, entity props with operators, an array of filters,
+ * or a filter query restricted to keys declared via the `[FilterQueryOverride]` symbol.
  */
 export type FilterQuery<T> =
   | ObjectQuery<T>
   | NonNullable<ExpandScalar<Primary<T>>>
   | NonNullable<EntityProps<T> & OperatorMap<T>>
-  | FilterQuery<T>[];
+  | FilterQuery<T>[]
+  | ExtractFilterQueryOverride<T>;
 
 /**
  * `FilterQuery` restricted to only properties covered by the specified index(es).

@@ -47,7 +47,8 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
         const isProp = this.prop || meta.props.find(prop => (prop.fieldNames || []).includes(k));
 
         // do not validate if the key is prefixed or type casted (e.g. `k::text`)
-        if (validate && !isProp && !k.includes('.') && !k.includes('::') && !Utils.isOperator(k)) {
+        // no validation for virtual entities - their expression defines which output columns can be filtered on
+        if (validate && !isProp && !k.includes('.') && !k.includes('::') && !Utils.isOperator(k) && !meta.expression) {
           throw new Error(`Trying to query by not existing property ${Utils.className(entityName)}.${k}`);
         }
       }
