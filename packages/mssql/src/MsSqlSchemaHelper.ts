@@ -342,24 +342,12 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  override mapForeignKeys(fks: any[], tableName: string, schemaName?: string): Dictionary {
-    const ret = super.mapForeignKeys(fks, tableName, schemaName);
-
-    for (const fk of Utils.values(ret)) {
-      fk.columnNames = Utils.unique(fk.columnNames);
-      fk.referencedColumnNames = Utils.unique(fk.referencedColumnNames);
-    }
-
-    return ret;
-  }
-
   async getAllForeignKeys(
     connection: AbstractSqlConnection,
     tablesBySchemas: Map<string | undefined, Table[]>,
     ctx?: Transaction,
   ): Promise<Dictionary<Dictionary<ForeignKey>>> {
-    // `sys.foreign_key_columns` pairs each local column with its referenced column; `information_schema`
-    // has no such pairing, so composite keys came back in arbitrary order
+    // `sys.foreign_key_columns` pairs local and referenced columns of composite FKs, `information_schema` can't
     const sql = `select fk.name constraint_name, t.name table_name, s.name schema_name, c.name column_name,
       rs.name referenced_schema_name,
       rc.name referenced_column_name,
