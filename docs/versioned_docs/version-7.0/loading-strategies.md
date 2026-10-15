@@ -5,13 +5,13 @@ sidebar_label: Loading Strategies
 
 MikroORM supports three loading strategies:
 
-- `select-in` which uses separate queries for each relation - it you populate two relations, you will get three queries - one for the root entity, and one for each populated relation.
+- `select-in` which uses separate queries for each relation - if you populate two relations, you will get three queries - one for the root entity, and one for each populated relation.
 - `joined` which uses a single query and joins the relations instead.
 - `balanced` which joins `to-one` relations and uses `select-in` for `to-many` relations.
 
-> `joined` strategy is supported **only in SQL drivers** and is the **default** for those since v6.
+> `joined` strategy is supported **only in SQL drivers**.
 
-> `combined` strategy will be the default in v7.
+> `balanced` strategy is the **default for SQL drivers** since v7.
 
 ## Configuring the strategy
 
@@ -20,7 +20,8 @@ The loading strategy can be specified both at mapping time and when loading enti
 Given the following entities:
 
 ```ts
-import { Entity, LoadStrategy, OneToMany, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+import { Collection } from '@mikro-orm/core';
+import { Entity, OneToMany, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Author {
@@ -48,7 +49,7 @@ export class Book {
 }
 ```
 
-With the default `joined` strategy, this will issue a single query, loading the `Author` entity and its `books` and `books.inspiredBy` relations.
+With the default `balanced` strategy, this will issue two queries: one to load the `Author` entity, and another to load its `books`, joining the `books.inspiredBy` relation.
 
 ```ts
 const author = await orm.em.findOne(Author, 1, {
@@ -67,19 +68,20 @@ const author = await orm.em.findOne(Author, 1, {
 
 This will issue three SQL statements, one to load the author, another to load all the books belonging to that author, and a third one fetching the `Book.inspiredBy` relation.
 
-With the `balanced` strategy, this example would use two queries, one for the `Author` entities, the other for their books, including the `inspiredBy` relation:
+With the `joined` strategy, this example would use a single query, loading the `Author` entity and its `books` and `books.inspiredBy` relations:
 
 ```ts
 const author = await orm.em.findOne(Author, 1, {
   populate: ['books.inspiredBy'],
-  strategy: 'balanced',
+  strategy: 'joined',
 });
 ```
 
 Alternatively, you can control the strategy in your entity definition.
 
 ```ts
-import { Entity, LoadStrategy, OneToMany } from '@mikro-orm/core';
+import { Collection } from '@mikro-orm/core';
+import { Entity, OneToMany } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Author {
@@ -105,8 +107,7 @@ You can use `loadStrategy` option in the ORM config:
 ```ts
 MikroORM.init({
   // ...
-  populate: ['books'],
-  loadStrategy: 'select-in', // 'joined' is the default for SQL drivers
+  loadStrategy: 'select-in', // 'balanced' is the default for SQL drivers
 });
 ```
 
