@@ -43,6 +43,25 @@ To support undoing those changed, you can implement the `down` method, which thr
 
 Migrations are by default wrapped in a transaction. You can override this behaviour on per migration basis by implementing the `isTransactional(): boolean` method.
 
+Some statements, like `create index concurrently` in PostgreSQL, cannot run inside a transaction at all. With the default `allOrNothing: true`, returning `false` from `isTransactional()` is not enough for them: such a migration runs on a different connection, outside of the master transaction, so it can't see tables created by earlier migrations in the same run, and it hangs on any lock they hold, as those are only released once the whole run commits. Set `allOrNothing: false` too, so every migration is committed on its own. Keep in mind that a failed run will then leave the earlier migrations applied.
+
+```ts
+export class Migration20260101000000 extends Migration {
+
+  isTransactional(): boolean {
+    return false;
+  }
+
+  async up(): Promise<void> {
+    this.addSql('drop index concurrently if exists "user_email_index"');
+    this.addSql('create index concurrently "user_email_index" on "user" ("email")');
+  }
+
+}
+```
+
+A failed concurrent build leaves an invalid index behind, and `create index concurrently if not exists` would silently skip it on the next run, so drop it first as shown above.
+
 `Configuration` object and driver instance are available in the `Migration` class context.
 
 You can execute queries in the migration via `Migration.execute()` method, which will run queries in the same transaction as the rest of the migration. The `Migration.addSql()` method also accepts instances of the native query builder or `raw()` SQL fragments.
