@@ -193,6 +193,10 @@ export class MsSqlConnection extends AbstractSqlConnection {
     eventBroadcaster?: TransactionEventBroadcaster,
   ): Promise<void> {
     if ('savepointName' in ctx) {
+      if (!ctx.isRolledBack && 'failedSavepointRollback' in ctx) {
+        throw ctx.failedSavepointRollback;
+      }
+
       return;
     }
 
