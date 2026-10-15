@@ -1,3 +1,5 @@
+import type { Socket } from 'node:net';
+import type { PoolClient } from 'pg';
 import { MikroORM, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
@@ -74,4 +76,36 @@ test('the pool stays usable after one of its connections was terminated', async 
   await em.flush();
 
   await expect(orm.em.fork().count(TerminatedUser, { name: 'survivor' })).resolves.toBe(1);
+});
+
+test('a backend terminated inside a transaction gives its pool slot back', async () => {
+  const pool = await orm.em.getConnection().getNativeClient();
+
+  const trx = orm.em.fork().transactional(async em => {
+    const [{ pid }] = await em.execute<{ pid: number }[]>('select pg_backend_pid() as pid');
+    await orm.em.fork().execute(`select pg_terminate_backend(${pid})`);
+    // let the socket close before the next query, as when the server drops an idle-in-transaction connection
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await em.execute('select 1');
+  });
+  await expect(trx).rejects.toThrow();
+
+  expect(pool.totalCount).toBe(pool.idleCount);
+  await expect(orm.em.fork().execute('select 1 as one')).resolves.toEqual([{ one: 1 }]);
+});
+
+test('a socket reset mid-query rejects with the connection error and gives the pool slot back', async () => {
+  const pool = await orm.em.getConnection().getNativeClient();
+  let client!: PoolClient;
+  pool.once('acquire', c => (client = c));
+
+  const victim = orm.em.fork().execute('select pg_sleep(5)');
+  const victimRejected = expect(victim).rejects.toThrow('simulated reset');
+  await new Promise(resolve => setTimeout(resolve, 200));
+  // unlike a server-side termination, a reset emits `'error'` before the query rejects and kysely releases
+  (client as PoolClient & { connection: { stream: Socket } }).connection.stream.destroy(new Error('simulated reset'));
+  await victimRejected;
+
+  expect(pool.totalCount).toBe(pool.idleCount);
+  await expect(orm.em.fork().execute('select 1 as one')).resolves.toEqual([{ one: 1 }]);
 });
