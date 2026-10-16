@@ -544,10 +544,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@electric-sql/pglite@npm:0.5.9":
-  version: 0.5.9
-  resolution: "@electric-sql/pglite@npm:0.5.9"
-  checksum: 10/848da8862c0b41dac5bb90e8b0f365f86d9a3ce7ec34511450d28bb25fddf30eed9d66b9176b935d99a41b3524c24c0ff507212470158ee2348cf865bdb3164f
+"@electric-sql/pglite@npm:0.5.10":
+  version: 0.5.10
+  resolution: "@electric-sql/pglite@npm:0.5.10"
+  checksum: 10/3e48d88ee85f470556f9401da030a23616b85b2bb2edf104bf9db3fed4ea41d0f48d0a9c8b0dd0af0a29b0f471ba5ec1b546a81988b8b45313420b4a32b410e1
   languageName: node
   linkType: hard
 
@@ -1417,7 +1417,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/pglite@workspace:packages/pglite"
   dependencies:
-    "@electric-sql/pglite": "npm:0.5.9"
+    "@electric-sql/pglite": "npm:0.5.10"
     "@mikro-orm/core": "npm:^7.2.5"
     "@mikro-orm/sql": "npm:7.2.5"
     kysely: "npm:0.29.6"
@@ -1540,7 +1540,7 @@ __metadata:
     "@mikro-orm/core": "npm:^7.2.5"
     "@mikro-orm/sql": "npm:7.2.5"
     kysely: "npm:0.29.6"
-    sql.js: "npm:1.14.2"
+    sql.js: "npm:1.15.0"
   peerDependencies:
     "@mikro-orm/core": 7.2.5
   languageName: unknown
@@ -8049,10 +8049,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sql.js@npm:1.14.2":
-  version: 1.14.2
-  resolution: "sql.js@npm:1.14.2"
-  checksum: 10/5bf36353beb9255dc73e4a485b02b8d0363df75ba3e5336de3263fddd9e124c05ed9d43f190521bdb2fb49ce1269c1a33bf77f4a9ed8988db609ff7d497b8688
+"sql.js@npm:1.15.0":
+  version: 1.15.0
+  resolution: "sql.js@npm:1.15.0"
+  checksum: 10/8d6bb723b6fa10ef4d00dc698b51e77a02cbb812e8948be15aad0a6bd2ff5b1cde7d646ab8d3d117abdbead1a36dfd422185aa545274db4d790f602e7b26a2c9
   languageName: node
   linkType: hard
 

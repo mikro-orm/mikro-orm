@@ -51,7 +51,7 @@
   "dependencies": {
     "@mikro-orm/sql": "7.2.5",
     "kysely": "0.29.6",
-    "sql.js": "1.14.2"
+    "sql.js": "1.15.0"
   },
   "devDependencies": {
     "@mikro-orm/core": "^7.2.5"
