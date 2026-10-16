@@ -5,6 +5,9 @@ on:
     branches: [ master, next, renovate/** ]
   pull_request:
     branches: [ master, next ]
+permissions:
+  contents: read
+
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
@@ -18,6 +21,8 @@ jobs:
     steps:
       - name: Checkout Source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # corepack must be enabled before setup-node so its yarn cache step can find yarn
       - name: Enable corepack
@@ -45,6 +50,8 @@ jobs:
     steps:
       - name: Checkout Source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # corepack must be enabled before setup-node so its yarn cache step can find yarn
       - name: Enable corepack
@@ -83,6 +90,8 @@ jobs:
     steps:
       - name: Checkout Source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # corepack must be enabled before setup-node so its yarn cache step can find yarn
       - name: Enable corepack
@@ -116,6 +125,8 @@ jobs:
     steps:
       - name: Checkout Source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # corepack must be enabled before setup-node so its yarn cache step can find yarn
       - name: Enable corepack
@@ -226,6 +237,8 @@ jobs:
     steps:
       - name: Checkout Source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # corepack must be enabled before setup-node so its yarn cache step can find yarn
       - name: Enable corepack
@@ -250,6 +263,8 @@ jobs:
     steps:
       - name: Checkout Source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # corepack must be enabled before setup-node so its yarn cache step can find yarn
       - name: Enable corepack
@@ -278,6 +293,8 @@ jobs:
     steps:
       - name: Checkout Source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -312,6 +329,8 @@ jobs:
     steps:
       - name: Checkout Source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # corepack must be enabled before setup-node so its yarn cache step can find yarn
       - name: Enable corepack
@@ -345,6 +364,9 @@ jobs:
         run: deno run --allow-read --allow-write --allow-env --allow-net --allow-sys --node-modules-dir=manual tests/deno/mongodb.test.ts
 
   release:
+    permissions:
+      contents: read
+      actions: write
     name: Release
     if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/next') && github.repository_owner == 'mikro-orm'
     runs-on: ubuntu-latest
@@ -352,6 +374,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           sparse-checkout: lerna.json
           sparse-checkout-cone-mode: false
 
@@ -368,7 +391,7 @@ jobs:
           fi
 
       - name: Publish packages
-        uses: apify/actions/execute-workflow@v1.6.2
+        uses: apify/actions/execute-workflow@6a234394aa4b2a753d3ed294c3e069d044656406 # v1.6.2
         with:
           workflow: release.yml
           inputs: >
