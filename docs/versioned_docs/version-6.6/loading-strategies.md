@@ -5,13 +5,13 @@ sidebar_label: Loading Strategies
 
 MikroORM supports three loading strategies:
 
-- `select-in` which uses separate queries for each relation - it you populate two relations, you will get three queries - one for the root entity, and one for each populated relation.
+- `select-in` which uses separate queries for each relation - if you populate two relations, you will get three queries - one for the root entity, and one for each populated relation.
 - `joined` which uses a single query and joins the relations instead.
 - `balanced` which joins `to-one` relations and uses `select-in` for `to-many` relations.
 
 > `joined` strategy is supported **only in SQL drivers** and is the **default** for those since v6.
 
-> `combined` strategy will be the default in v7.
+> `balanced` strategy will be the default in v7.
 
 ## Configuring the strategy
 
@@ -20,7 +20,7 @@ The loading strategy can be specified both at mapping time and when loading enti
 Given the following entities:
 
 ```ts
-import { Entity, LoadStrategy, OneToMany, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+import { Collection, Entity, OneToMany, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 
 @Entity()
 export class Author {
@@ -79,7 +79,7 @@ const author = await orm.em.findOne(Author, 1, {
 Alternatively, you can control the strategy in your entity definition.
 
 ```ts
-import { Entity, LoadStrategy, OneToMany } from '@mikro-orm/core';
+import { Collection, Entity, OneToMany } from '@mikro-orm/core';
 
 @Entity()
 export class Author {
@@ -105,7 +105,6 @@ You can use `loadStrategy` option in the ORM config:
 ```ts
 MikroORM.init({
   // ...
-  populate: ['books'],
   loadStrategy: 'select-in', // 'joined' is the default for SQL drivers
 });
 ```
