@@ -656,6 +656,34 @@ describe('Transaction Propagation - SQLite', () => {
     expect(count).toBe(1); // Only outer entity should exist
   });
 
+  test('a failing savepoint rollback prevents the outer transaction from committing', async () => {
+    const em = orm.em.fork();
+    const rollback = vi
+      .spyOn(em.getConnection(), 'rollback')
+      .mockRejectedValueOnce(new Error('rollback to savepoint failed'));
+
+    await expect(
+      em.transactional(async em1 => {
+        await em1.insert(TestEntity, { name: 'outer-before' });
+
+        await expect(
+          em1.transactional(async em2 => {
+            await em2.insert(TestEntity, { name: 'inner' });
+            throw new Error('inner business error');
+          }),
+        ).rejects.toThrow('inner business error');
+
+        await em1.insert(TestEntity, { name: 'outer-after' });
+      }),
+    ).rejects.toThrow('rolling back to savepoint "trx1" failed');
+
+    expect(rollback).toHaveBeenCalledTimes(2);
+    rollback.mockRestore();
+
+    const count = await orm.em.count(TestEntity);
+    expect(count).toBe(0);
+  });
+
   test('a failing rollback does not mask the error that caused it', async () => {
     const em = orm.em.fork();
     const rollback = vi
