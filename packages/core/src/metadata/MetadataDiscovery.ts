@@ -657,7 +657,13 @@ export class MetadataDiscovery {
     }
 
     if (!prop.pivotTable && prop.owner && this.#platform.usesPivotTable()) {
-      prop.pivotTable = this.#namingStrategy.joinTableName(meta.className, meta2.tableName, prop.name, meta.tableName);
+      const owner = this.getTPTDeclaringMeta(meta, prop);
+      prop.pivotTable = this.#namingStrategy.joinTableName(
+        owner.className,
+        meta2.tableName,
+        prop.name,
+        owner.tableName,
+      );
     }
 
     if (prop.mappedBy) {
@@ -708,6 +714,15 @@ export class MetadataDiscovery {
     } else {
       prop.inverseJoinColumns ??= this.initManyToOneFieldName(prop, meta2.root.className);
     }
+  }
+
+  /** TPT subclasses inherit M:N properties, which are mapped via the entity that declares them. */
+  private getTPTDeclaringMeta(meta: EntityMetadata, prop: EntityProperty): EntityMetadata {
+    while (meta.tptParent?.properties[prop.name]?.kind === ReferenceKind.MANY_TO_MANY) {
+      meta = meta.tptParent;
+    }
+
+    return meta;
   }
 
   private isExplicitTableName(meta: EntityMetadata): boolean {
@@ -827,7 +842,7 @@ export class MetadataDiscovery {
       return Object.values(meta.properties)
         .filter(prop => prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner && prop.pivotTable)
         .map(prop => {
-          const pivotMeta = this.definePivotTableEntity(meta, prop);
+          const pivotMeta = this.definePivotTableEntity(this.getTPTDeclaringMeta(meta, prop), prop);
           prop.pivotEntity = pivotMeta.class;
 
           if (prop.inversedBy) {
@@ -964,6 +979,19 @@ export class MetadataDiscovery {
     if (pivotMeta) {
       prop.pivotEntity = pivotMeta.class;
       this.ensureCorrectFKOrderInPivotEntity(pivotMeta, prop);
+      const ownerProp = pivotMeta.properties[meta.name + '_owner'];
+
+      // TPT entities inheriting the property share one pivot table, reuse the join columns it was defined with
+      if (ownerProp && meta.inheritanceType === 'tpt' && !prop.polymorphic) {
+        prop.joinColumns = ownerProp.fieldNames;
+        prop.inverseJoinColumns = pivotMeta.properties[prop.targetMeta!.className + '_inverse'].fieldNames;
+
+        if (prop.inversedBy) {
+          const prop2 = prop.targetMeta!.properties[prop.inversedBy];
+          prop2.inverseJoinColumns = prop.joinColumns;
+          prop2.joinColumns = prop.inverseJoinColumns;
+        }
+      }
 
       if (prop.polymorphic && prop.discriminatorValue) {
         pivotMeta.polymorphicDiscriminatorMap ??= {};
@@ -1036,6 +1064,19 @@ export class MetadataDiscovery {
           childProp.joinColumns = prop.joinColumns;
           childProp.inverseJoinColumns = prop.inverseJoinColumns;
         }
+      }
+    } else if (
+      meta.inheritanceType === 'tpt' &&
+      meta.root.className === targetMeta.root.className &&
+      prop.joinColumns.every((joinColumn, idx) => joinColumn === prop.inverseJoinColumns[idx])
+    ) {
+      // both sides default to the TPT root name, so name the owner side after the declaring entity
+      prop.joinColumns = prop.referencedColumnNames.map(name =>
+        this.#namingStrategy.joinKeyColumnName(meta.className, name, meta.compositePK),
+      );
+
+      if (prop.inversedBy) {
+        targetMeta.properties[prop.inversedBy].inverseJoinColumns = prop.joinColumns;
       }
     }
 
