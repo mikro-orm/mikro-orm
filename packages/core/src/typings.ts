@@ -497,6 +497,9 @@ type ElemMatchFilter<T> = T extends readonly (infer E)[]
     : never
   : never;
 
+// scalar array columns can also be compared as whole arrays, e.g. `{ tags: { $in: [['a', 'b'], ['c']] } }`
+type ScalarArrayFilter<T> = T extends readonly Scalar[] ? FilterValue<T> : never;
+
 /** Object form of a filter query, mapping entity keys to their filter conditions. */
 export type FilterObject<T> = {
   -readonly [K in EntityKey<T>]?:
@@ -504,6 +507,7 @@ export type FilterObject<T> = {
     | ExpandQueryMerged<ExpandProperty<FilterObjectProp<T, K>>>
     | FilterValue<ExpandProperty<FilterObjectProp<T, K>>>
     | ElemMatchFilter<FilterObjectProp<T, K>>
+    | ScalarArrayFilter<FilterObjectProp<T, K>>
     | null;
 };
 
