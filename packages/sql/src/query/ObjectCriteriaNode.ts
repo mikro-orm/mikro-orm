@@ -83,6 +83,8 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           // schema-less entities the schema is resolved dynamically and needs to be carried over
           const fixedSchema = parentMeta.schema && parentMeta.schema !== '*';
           const qb2 = qb.clone(true, fixedSchema ? undefined : ['schema']);
+          // the payload was already converted when processing the parent query
+          qb2.unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
           const joinAlias = qb2.getNextAlias(this.prop!.targetMeta!.class);
           const sub = qb2
             .from(parentMeta.class)
