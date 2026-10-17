@@ -56,6 +56,9 @@ test('collection operators convert custom types in nested filters only once', as
 
   const every = await em.find(User, { events: { $every: { code: 'a' } } });
   expect(every.map(u => u.id)).toEqual([1]);
+
+  const all = await em.find(User, { events: { $all: [{ code: 'a' }] } });
+  expect(all.map(u => u.id)).toEqual([1]);
 });
 
 test('collection operators in query builder convert custom types only once', async () => {
