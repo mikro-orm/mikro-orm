@@ -421,9 +421,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       (this.payload as unknown) instanceof RegExp ||
       (this.payload as unknown) instanceof Date ||
       rawField;
-    const operator =
-      Utils.isPlainObject(this.payload) &&
-      Utils.getObjectQueryKeys(this.payload).every(k => Utils.isOperator(k, false));
+    const operator = Utils.isPlainObject(this.payload) && this.isOperatorPayload(this.payload);
     const field = `${alias}.${this.prop!.name}`;
     const method = qb.hasFlag(QueryFlag.INFER_POPULATE) ? 'joinAndSelect' : 'join';
     const path = this.getPath();
