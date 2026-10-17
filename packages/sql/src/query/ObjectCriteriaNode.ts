@@ -57,7 +57,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           return [QueryType.SELECT, QueryType.COUNT].includes(qb.type) ? `${knownKey ? alias : ownerAlias}.${pk}` : pk;
         });
 
-        const conditions: [string, any][] = [];
+        const conditions: [string, any, boolean?][] = [];
         let matchNothing = false;
 
         for (const key of keys) {
@@ -71,18 +71,22 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
           if (key === '$all') {
             // an empty `$all` matches nothing, same as in mongo
             matchNothing ||= (payload as unknown[]).length === 0;
-            conditions.push(...(payload as unknown[]).map(item => ['$some', item] as [string, any]));
+            conditions.push(...(payload as unknown[]).map(item => ['$some', item, true] as [string, any, boolean]));
           } else {
             conditions.push([key, payload]);
           }
         }
 
-        for (const [key, payload] of conditions) {
+        for (const [key, payload, fromAll] of conditions) {
           // entities with a fixed schema must resolve the `from` table's own schema in the subquery,
           // otherwise a nested operator inherits the root entity's schema (GH #7894); for wildcard or
           // schema-less entities the schema is resolved dynamically and needs to be carried over
           const fixedSchema = parentMeta.schema && parentMeta.schema !== '*';
           const qb2 = qb.clone(true, fixedSchema ? undefined : ['schema']);
+          // the payload was already converted when processing the parent query, except for `$all` items
+          if (!fromAll) {
+            qb2.unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
+          }
           const joinAlias = qb2.getNextAlias(this.prop!.targetMeta!.class);
           const sub = qb2
             .from(parentMeta.class)
