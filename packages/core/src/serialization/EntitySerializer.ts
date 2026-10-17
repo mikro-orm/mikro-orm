@@ -26,9 +26,60 @@ import { Reference } from '../entity/Reference.js';
 import { SerializationContext } from './SerializationContext.js';
 import { isRaw } from '../utils/RawQueryFragment.js';
 
+/** First segments of a path list, so a property can be matched without scanning the whole list. */
+interface PathLookup {
+  /** Whether the list contains the `*` wildcard. */
+  all: boolean;
+  /** Each entry up to its first dot, e.g. `books` for both `books` and `books.title`. */
+  heads: Set<string>;
+}
+
+/** Per-call state of an options object prepared by `EntitySerializer.serialize()`. */
+interface PreparedOptions {
+  children: Map<string, SerializeOptions<any, any, any, any>>;
+  fields?: PathLookup;
+  populate?: PathLookup;
+}
+
+// Keyed by option objects created for a single `serialize()` call, so caller-owned options are never cached.
+const preparedOptions = new WeakMap<SerializeOptions<any, any, any, any>, PreparedOptions>();
+
+function createPathLookup(items: readonly string[]): PathLookup {
+  const heads = new Set<string>();
+  let all = false;
+
+  for (const item of items) {
+    const dot = item.indexOf('.');
+    heads.add(dot === -1 ? item : item.substring(0, dot));
+    all ||= item === '*';
+  }
+
+  return { all, heads };
+}
+
+function pathLookup(
+  options: SerializeOptions<any, any, any, any>,
+  key: 'fields' | 'populate',
+  items: readonly string[],
+): PathLookup {
+  const prepared = preparedOptions.get(options);
+
+  if (!prepared) {
+    return createPathLookup(items);
+  }
+
+  return (prepared[key] ??= createPathLookup(items));
+}
+
 /** Returns true when any entry in `items` is `propName`, the wildcard `*`, or a dot-path under `propName`. */
-function matchesPath(items: readonly string[], propName: string): boolean {
-  return items.some(item => item === propName || item === '*' || item.startsWith(propName + '.'));
+function matchesPath(
+  options: SerializeOptions<any, any, any, any>,
+  key: 'fields' | 'populate',
+  items: readonly string[],
+  propName: string,
+): boolean {
+  const lookup = pathLookup(options, key, items);
+  return lookup.all || lookup.heads.has(propName);
 }
 
 function isVisible<T extends object>(
@@ -42,14 +93,15 @@ function isVisible<T extends object>(
     return prop.groups.some(g => options.groups!.includes(g));
   }
 
-  if (Array.isArray(options.fields) && options.fields.length > 0 && !matchesPath(options.fields, propName)) {
+  if (
+    Array.isArray(options.fields) &&
+    options.fields.length > 0 &&
+    !matchesPath(options, 'fields', options.fields, propName)
+  ) {
     return false;
   }
 
-  if (
-    Array.isArray(options.populate) &&
-    options.populate.find(item => item === propName || item.startsWith(propName + '.'))
-  ) {
+  if (Array.isArray(options.populate) && pathLookup(options, 'populate', options.populate).heads.has(propName)) {
     return true;
   }
 
@@ -67,7 +119,7 @@ function isPopulated(propName: string, options: SerializeOptions<any, any, any, 
   if (
     typeof options.populate !== 'boolean' &&
     Array.isArray(options.populate) &&
-    matchesPath(options.populate, propName)
+    matchesPath(options, 'populate', options.populate, propName)
   ) {
     return true;
   }
@@ -89,6 +141,7 @@ export class EntitySerializer {
     const wrapped = helper(entity);
     const meta = wrapped.__meta;
     let contextCreated = false;
+    options = this.prepareOptions(options);
 
     if (!wrapped.__serializationContext.root) {
       const root = new SerializationContext<T>();
@@ -97,7 +150,6 @@ export class EntitySerializer {
         entity,
         (meta, prop) => meta.properties[prop]?.kind !== ReferenceKind.SCALAR,
       );
-      options.populate = (options.populate ? Utils.asArray(options.populate) : options.populate) as any;
       contextCreated = true;
     }
 
@@ -281,11 +333,37 @@ export class EntitySerializer {
     return prop.customType.toJSON(value, platform);
   }
 
+  /**
+   * Copies caller options once per `serialize()` call, so the derived child options and path lookups can be cached
+   * for every entity of the call without ever caching an options object the caller might mutate later.
+   * @internal
+   */
+  static prepareOptions<T extends SerializeOptions<any, any, any, any>>(options: T): T {
+    if (preparedOptions.has(options)) {
+      return options;
+    }
+
+    const prepared = {
+      ...options,
+      populate: options.populate ? Utils.asArray(options.populate) : options.populate,
+    } as T;
+    preparedOptions.set(prepared, { children: new Map() });
+
+    return prepared;
+  }
+
   private static extractChildOptions<T extends object, U extends object>(
     options: SerializeOptions<T, any, any, any>,
     prop: EntityKey<T>,
   ): SerializeOptions<U> {
-    return {
+    const prepared = preparedOptions.get(options);
+    const cached = prepared?.children.get(prop);
+
+    if (cached) {
+      return cached as SerializeOptions<U>;
+    }
+
+    const child = {
       ...options,
       populate: Array.isArray(options.populate)
         ? Utils.extractChildElements(options.populate, prop, '*')
@@ -293,6 +371,13 @@ export class EntitySerializer {
       exclude: Array.isArray(options.exclude) ? Utils.extractChildElements(options.exclude, prop) : options.exclude,
       fields: Array.isArray(options.fields) ? this.extractChildFields(options.fields, prop) : options.fields,
     } as SerializeOptions<U>;
+
+    if (prepared) {
+      prepared.children.set(prop, child);
+      preparedOptions.set(child, { children: new Map() });
+    }
+
+    return child;
   }
 
   /**
@@ -496,9 +581,11 @@ export function serialize<
       ResolveSerializeFields<Fields, ExtractFieldsHint<Entity>>,
       SerializeFieldsKeepPK<Fields>
     >[] {
+  const prepared = EntitySerializer.prepareOptions(options ?? {});
+
   if (Array.isArray(entities)) {
-    return entities.map(e => EntitySerializer.serialize(e, options)) as any;
+    return entities.map(e => EntitySerializer.serialize(e, prepared)) as any;
   }
 
-  return EntitySerializer.serialize(entities, options) as any;
+  return EntitySerializer.serialize(entities, prepared) as any;
 }
