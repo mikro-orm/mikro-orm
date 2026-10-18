@@ -1,8 +1,21 @@
 import { CompiledQuery, type Dialect } from 'kysely';
 import type { Dictionary } from '@mikro-orm/core';
+import { isAbsolute, resolve } from 'node:path';
 import { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
+import { withMigrationFileLock } from './migrationFileLock.js';
 
 const FOREIGN_KEYS_PRAGMA = 'pragma foreign_keys = on';
+
+/** Remote URLs and in-memory databases are not a file two processes can share. */
+function isFileDatabase(dbName: string): boolean {
+  const value = dbName.trim();
+
+  if (!value || value === ':memory:' || value.includes(':memory:')) {
+    return false;
+  }
+
+  return !/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(value);
+}
 
 export class BaseSqliteConnection extends AbstractSqlConnection {
   override createKyselyDialect(options: Dictionary): Dialect {
@@ -16,6 +29,35 @@ export class BaseSqliteConnection extends AbstractSqlConnection {
     await super.connect(options);
     await this.getClient().executeQuery(CompiledQuery.raw(FOREIGN_KEYS_PRAGMA));
     await this.attachDatabases();
+  }
+
+  /**
+   * File-backed SQLite has no session advisory lock. A lock file next to the
+   * database serialises migrators in other processes; `:memory:` databases are
+   * not shared, so they only get the in-process queue from the base class.
+   */
+  override async withMigrationLock<T>(lockName: string, fn: () => Promise<T>): Promise<T> {
+    const lockPath = this.migrationLockPath(lockName);
+
+    if (!lockPath) {
+      return super.withMigrationLock(lockName, fn);
+    }
+
+    return withMigrationFileLock(lockPath, () => super.withMigrationLock(lockName, fn));
+  }
+
+  private migrationLockPath(lockName: string): string | undefined {
+    const dbName = this.config.get('dbName');
+
+    if (!dbName || !isFileDatabase(dbName)) {
+      return undefined;
+    }
+
+    const baseDir = this.config.get('baseDir');
+    const file = isAbsolute(dbName) ? dbName : resolve(baseDir, dbName);
+    const safe = lockName.replace(/[^a-zA-Z0-9_.-]+/g, '_');
+
+    return `${file}.${safe}.lock`;
   }
 
   protected async attachDatabases(): Promise<void> {

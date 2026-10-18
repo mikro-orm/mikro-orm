@@ -71,6 +71,22 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return true;
   }
 
+  override getAcquireMigrationLockSQL(lockName: string): string {
+    const { key1, key2 } = this.migrationLockId(lockName);
+    return `select pg_advisory_lock(${key1}, ${key2})`;
+  }
+
+  override getReleaseMigrationLockSQL(lockName: string): string {
+    const { key1, key2 } = this.migrationLockId(lockName);
+    return `select pg_advisory_unlock(${key1}, ${key2})`;
+  }
+
+  override getMigrationLockTimeoutSettings(): readonly string[] {
+    // `statement_timeout` cancels a session waiting on `pg_advisory_lock`, and
+    // `lock_timeout` does the same. Both are restored once the lock is held.
+    return ['lock_timeout', 'statement_timeout'];
+  }
+
   override getCreateDatabaseSQL(name: string): string {
     return `create database ${this.quote(name)}`;
   }

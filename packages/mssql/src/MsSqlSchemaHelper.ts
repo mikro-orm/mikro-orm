@@ -46,6 +46,26 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return 'master';
   }
 
+  override getAcquireMigrationLockSQL(lockName: string): string {
+    const resource = this.quoteMigrationLockResource(lockName);
+    return [
+      'declare @mikro_orm_migration_lock int;',
+      `exec @mikro_orm_migration_lock = sp_getapplock @Resource = ${resource}, @LockMode = 'Exclusive', @LockOwner = 'Session', @LockTimeout = -1;`,
+      `if (@mikro_orm_migration_lock < 0) throw 50000, 'Unable to acquire the MikroORM migration lock', 1;`,
+    ].join('\n');
+  }
+
+  override getReleaseMigrationLockSQL(lockName: string): string {
+    const resource = this.quoteMigrationLockResource(lockName);
+    return `exec sp_releaseapplock @Resource = ${resource}, @LockOwner = 'Session';`;
+  }
+
+  /** `sp_getapplock` wants an nvarchar literal. `quoteValue` emits a non-unicode string. */
+  private quoteMigrationLockResource(lockName: string): string {
+    const quoted = this.platform.quoteValue(this.migrationLockId(lockName).token);
+    return quoted.startsWith('N') ? quoted : `N${quoted}`;
+  }
+
   override getDropDatabaseSQL(name: string): string {
     // `set offline` rejects all connections including the issuing session, so there is no
     // single-user race window where a torn-down pool connection can reconnect between the

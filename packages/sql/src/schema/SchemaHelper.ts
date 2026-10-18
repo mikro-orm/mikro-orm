@@ -21,6 +21,7 @@ import type {
 } from '../typings.js';
 import type { DatabaseSchema } from './DatabaseSchema.js';
 import type { DatabaseTable } from './DatabaseTable.js';
+import { migrationLockId as hashMigrationLockId } from './migrationLockId.js';
 
 /**
  * Flattens `;\n` boundaries and drops blank lines so the schema-generator's statement splitter
@@ -96,6 +97,43 @@ export abstract class SchemaHelper {
   /** Whether the driver supports setting a runtime schema per migration run. */
   supportsMigrationSchema(): boolean {
     return false;
+  }
+
+  /**
+   * Session-level lock acquired for the whole `migrator.up()` / `down()` run.
+   * Empty when the driver has no session lock (SQLite uses a file lock instead).
+   * The statement must block until the lock is held, and it must survive commits
+   * so `allOrNothing: false` stays covered.
+   */
+  getAcquireMigrationLockSQL(_lockName: string): string {
+    return '';
+  }
+
+  /** Releases the lock taken by {@link getAcquireMigrationLockSQL}. */
+  getReleaseMigrationLockSQL(_lockName: string): string {
+    return '';
+  }
+
+  /**
+   * When true, the acquire statement returns a status column and the caller
+   * must treat anything other than `1` as a failure to lock.
+   */
+  migrationLockReportsStatus(): boolean {
+    return false;
+  }
+
+  /**
+   * Session settings relaxed only while waiting for the lock, then restored.
+   * A server-side `statement_timeout` / `lock_timeout` would otherwise cancel
+   * the waiter. Names are fixed identifiers, never user input.
+   */
+  getMigrationLockTimeoutSettings(): readonly string[] {
+    return [];
+  }
+
+  /** Stable lock id shared by every driver's migration lock. @internal */
+  protected migrationLockId(name: string): { key1: number; key2: number; token: string } {
+    return hashMigrationLockId(name);
   }
 
   /** Restores the session's schema to the connection's default after a migration. */

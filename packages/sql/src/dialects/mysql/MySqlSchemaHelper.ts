@@ -49,6 +49,23 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return true;
   }
 
+  override getAcquireMigrationLockSQL(lockName: string): string {
+    // A negative timeout means "wait forever" on MySQL and "invalid argument"
+    // on MariaDB — the call returns NULL and does not lock. A large positive
+    // timeout waits on both. The lock is released when the connection drops,
+    // so this does not cap how long a migration may run, only how long a
+    // replica will wait for another replica to finish.
+    return `select get_lock(${this.platform.quoteValue(this.migrationLockId(lockName).token)}, 16777215)`;
+  }
+
+  override getReleaseMigrationLockSQL(lockName: string): string {
+    return `select release_lock(${this.platform.quoteValue(this.migrationLockId(lockName).token)})`;
+  }
+
+  override migrationLockReportsStatus(): boolean {
+    return true;
+  }
+
   override async tableExists(
     connection: AbstractSqlConnection,
     tableName: string,

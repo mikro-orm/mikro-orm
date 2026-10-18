@@ -28,6 +28,11 @@ import { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
  * `signal`/`inflightQueryAbortStrategy` on `loggerContext` to avoid widening the public
  * connection API; stripping them prevents leakage into user `Logger.logQuery` payloads.
  */
+/** MySQL `GET_LOCK` returns `1` when the lock is held. Drivers differ on number vs string. */
+function migrationLockGranted(value: unknown): boolean {
+  return value === 1 || value === 1n || value === '1' || value === true;
+}
+
 function extractAbortOptions(loggerContext?: LoggingOptions): {
   abort?: AbortQueryOptions;
   loggerContext?: LoggingOptions;
@@ -47,6 +52,10 @@ function extractAbortOptions(loggerContext?: LoggingOptions): {
 export abstract class AbstractSqlConnection extends Connection {
   declare protected platform: AbstractSqlPlatform;
   #client?: Kysely<any>;
+  /** Kysely bound to the connection that holds the migration lock, when a run is in progress. */
+  #pinned?: Kysely<any>;
+  /** Serialises migration runs that share this connection so `#pinned` cannot be interleaved. */
+  #migrationQueue: Promise<void> = Promise.resolve();
 
   /** Creates a Kysely dialect instance with driver-specific configuration. */
   abstract createKyselyDialect(overrides: Dictionary): MaybePromise<Dialect>;
@@ -146,6 +155,127 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   /**
+   * Runs `fn` while holding this driver's migration lock.
+   *
+   * Drivers that implement a session lock (PostgreSQL advisory locks, MySQL
+   * `GET_LOCK`, SQL Server `sp_getapplock`) take it on a reserved connection and
+   * pin every later query to that connection, so a pool of one cannot deadlock
+   * on the lock. The lock outlives transactions, which is what keeps
+   * `allOrNothing: false` from running the same migration twice. Drivers without
+   * a session lock still queue runs that share this connection.
+   */
+  async withMigrationLock<T>(lockName: string, fn: () => Promise<T>): Promise<T> {
+    return this.#withMigrationQueue(async () => {
+      const helper = this.platform.getSchemaHelper();
+      const acquire = helper?.getAcquireMigrationLockSQL(lockName) ?? '';
+
+      if (!helper || !acquire) {
+        return fn();
+      }
+
+      const release = helper.getReleaseMigrationLockSQL(lockName);
+      await this.ensureConnection();
+
+      return this.getClient()
+        .connection()
+        .execute(async db => {
+          const previous = this.#pinned;
+          this.#pinned = db;
+          let acquired = false;
+
+          try {
+            acquired = await this.#acquireMigrationLock(helper, lockName, acquire);
+            return await fn();
+          } finally {
+            try {
+              if (acquired && release) {
+                await db.executeQuery(CompiledQuery.raw(release));
+              }
+            } catch (error) {
+              const message = error instanceof Error ? error.message : String(error);
+              this.logger.warn('query', `Failed to release the migration lock '${lockName}': ${message}`);
+            } finally {
+              this.#pinned = previous;
+            }
+          }
+        });
+    });
+  }
+
+  async #withMigrationQueue<T>(fn: () => Promise<T>): Promise<T> {
+    const previous = this.#migrationQueue;
+    let release!: () => void;
+    this.#migrationQueue = new Promise<void>(resolve => {
+      release = resolve;
+    });
+    await previous;
+
+    try {
+      return await fn();
+    } finally {
+      release();
+    }
+  }
+
+  /**
+   * Acquires the session lock. Timeouts are suspended only for the wait and
+   * restored before migrations run, so a server `statement_timeout` cannot
+   * cancel the waiter and also does not leak onto later statements.
+   * Returns false when the lock was not taken.
+   */
+  async #acquireMigrationLock(
+    helper: NonNullable<ReturnType<AbstractSqlPlatform['getSchemaHelper']>>,
+    lockName: string,
+    acquire: string,
+  ): Promise<boolean> {
+    const settings = helper.getMigrationLockTimeoutSettings().filter(name => /^[a-z_]+$/.test(name));
+    const previous = await this.#readSessionSettings(settings);
+
+    if (settings.length > 0) {
+      const relax = settings.map(name => `set_config('${name}', '0', false)`).join(', ');
+      await this.#pinned!.executeQuery(CompiledQuery.raw(`select ${relax}`));
+    }
+
+    try {
+      const result = await this.#pinned!.executeQuery(CompiledQuery.raw(acquire));
+
+      if (helper.migrationLockReportsStatus()) {
+        const row = (result.rows[0] ?? {}) as Dictionary;
+        const value = Object.values(row)[0];
+
+        if (!migrationLockGranted(value)) {
+          throw new Error(`Unable to acquire the migration lock for '${lockName}'`);
+        }
+      }
+
+      return true;
+    } finally {
+      await this.#restoreSessionSettings(settings, previous);
+    }
+  }
+
+  async #readSessionSettings(settings: readonly string[]): Promise<Dictionary<string> | undefined> {
+    if (settings.length === 0) {
+      return undefined;
+    }
+
+    const columns = settings.map(name => `current_setting('${name}') as ${name}`).join(', ');
+    const result = await this.#pinned!.executeQuery(CompiledQuery.raw(`select ${columns}`));
+    return (result.rows[0] ?? {}) as Dictionary<string>;
+  }
+
+  async #restoreSessionSettings(settings: readonly string[], previous: Dictionary<string> | undefined): Promise<void> {
+    if (!previous || settings.length === 0) {
+      return;
+    }
+
+    const restore = settings
+      .map(name => `set_config('${name}', ${this.platform.quoteValue(previous[name] ?? '0')}, false)`)
+      .join(', ');
+    await this.#pinned!.executeQuery(CompiledQuery.raw(`select ${restore}`));
+  }
+
+  /**
    * Guards `getNativeClient()` overrides — drivers only capture their client while building their
    * own dialect, which `driverOptions` carrying a ready-made Kysely instance or dialect skips.
    *
@@ -221,7 +351,7 @@ export abstract class AbstractSqlConnection extends Connection {
 
     await this.ensureConnection();
     await options.eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
-    let trxBuilder = this.getClient().startTransaction();
+    let trxBuilder = (this.#pinned ?? this.getClient()).startTransaction();
 
     if (options.isolationLevel) {
       trxBuilder = trxBuilder.setIsolationLevel(options.isolationLevel);
@@ -387,7 +517,7 @@ export abstract class AbstractSqlConnection extends Connection {
       sql,
       async () => {
         const compiled = CompiledQuery.raw(q.formatted);
-        const res = await (ctx ?? this.#client).executeQuery(compiled, abort);
+        const res = await (ctx ?? this.#pinned ?? this.#client).executeQuery(compiled, abort);
         return this.transformRawResult<T>(res, method);
       },
       { ...q, ...cleanCtx },
@@ -417,7 +547,7 @@ export abstract class AbstractSqlConnection extends Connection {
     } as unknown as CompiledQuery;
 
     try {
-      const res = (ctx ?? this.getClient())
+      const res = (ctx ?? this.#pinned ?? this.getClient())
         .getExecutor()
         .stream(compiled, chunkSize ?? 100, abort ? { signal: abort.signal } : undefined);
 

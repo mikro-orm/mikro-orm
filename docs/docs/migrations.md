@@ -23,6 +23,8 @@ export default defineConfig({
 
 By default, each migration will be executed inside a transaction, and all of them will be wrapped in one master transaction, so if one of them fails, everything will be rolled back.
 
+Concurrent `up()` and `down()` runs against the same database wait for each other. The run that arrives second applies only migrations that are still pending, so a data migration is not executed twice when several replicas migrate on startup. PostgreSQL holds a session advisory lock for the run, MySQL and MariaDB use `GET_LOCK`, SQL Server uses `sp_getapplock`, and a file-backed SQLite database uses a lock file next to the database file. The lock is per migrations table (schema + table name). In-memory SQLite is private to one connection, so there is no shared database to coordinate.
+
 ## Migration class
 
 Migrations are classes that extend Migration abstract class:

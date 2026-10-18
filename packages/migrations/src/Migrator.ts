@@ -30,6 +30,8 @@ import { JSMigrationGenerator } from './JSMigrationGenerator.js';
 export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
   readonly #schemaGenerator: SqlSchemaGenerator;
   #snapshotPath?: string;
+  /** Set once `ensureTable()` has succeeded. Distinct from `initialized`, which is also set before the database exists. */
+  #migrationsTableReady = false;
 
   constructor(em: EntityManager) {
     super(em);
@@ -75,26 +77,28 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
   }
 
   protected override async init(): Promise<void> {
-    if (this.initialized) {
-      return;
+    if (!this.initialized) {
+      await super.init();
+      const created = await this.#schemaGenerator.ensureDatabase();
+
+      /* v8 ignore next */
+      if (created) {
+        this.initServices();
+      }
     }
 
-    await super.init();
-    const created = await this.#schemaGenerator.ensureDatabase();
-
-    /* v8 ignore next */
-    if (created) {
-      this.initServices();
+    if (this.#migrationsTableReady || this.options.includeWildcardSchema) {
+      return;
     }
 
     // Defer tracking-table creation when wildcard-schema fan-out is enabled — pre-creating
     // here would land in the default schema and leave a stray `mikro_orm_migrations` after
     // `migrator.up({ schema })` against a virgin DB. For the standard flow, eager creation
     // keeps the per-call query log clean (no `tableExists`/`getNamespaces`/`create` probe
-    // on first storage access).
-    if (!this.options.includeWildcardSchema) {
-      await (this.storage as MigrationStorage).ensureTable();
-    }
+    // on first storage access). `runMigrations` calls this from inside the migration lock,
+    // so two replicas cannot both observe a missing table and create it.
+    await (this.storage as MigrationStorage).ensureTable();
+    this.#migrationsTableReady = true;
   }
 
   /**
@@ -202,8 +206,46 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     method: 'up' | 'down',
     options?: string | string[] | MigrateOptions,
   ): Promise<MigrationInfo[]> {
-    const result = await super.runMigrations(method, options);
+    // `ensureDatabase()` may reconnect, which drops every session lock held on the old pool.
+    // Prepare the database first, then lock, then create the tracking table and migrate.
+    if (!this.initialized) {
+      await super.init();
+      const created = await this.#schemaGenerator.ensureDatabase();
 
+      /* v8 ignore next */
+      if (created) {
+        this.initServices();
+      }
+    }
+
+    return this.driver.getConnection().withMigrationLock(this.migrationLockName(options), async () => {
+      const result = await super.runMigrations(method, options);
+      await this.snapshotAfterMigrate(result, options);
+      return result;
+    });
+  }
+
+  /**
+   * One lock per migrations table. Matches the schema `MigrationStorage` will write,
+   * so two replicas migrating the same table wait and two schemas do not block each other.
+   */
+  private migrationLockName(options?: string | string[] | MigrateOptions): string {
+    const tableName = this.options.tableName ?? 'mikro_orm_migrations';
+    const parts = tableName.split('.');
+    const table = parts.length > 1 ? parts[1] : parts[0];
+    const explicit = Utils.isObject<MigrateOptions>(options) ? options.schema : undefined;
+    const schema =
+      explicit ??
+      this.options.schema ??
+      (parts.length > 1 ? parts[0] : this.config.get('schema', this.driver.getPlatform().getDefaultSchemaName()));
+
+    return schema ? `${schema}.${table}` : table;
+  }
+
+  private async snapshotAfterMigrate(
+    result: MigrationInfo[],
+    options?: string | string[] | MigrateOptions,
+  ): Promise<void> {
     if (result.length > 0 && this.options.snapshot && this.options.snapshotOnMigrate) {
       const ctx = Utils.isObject<MigrateOptions>(options) ? options.transaction : undefined;
       const { skipTables, skipViews } = this.config.get('schemaGenerator');
@@ -225,7 +267,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
       const existing = await this.getSchemaFromSnapshot();
 
       if (existing && !this.snapshotDiffers(existing, schema)) {
-        return result;
+        return;
       }
 
       try {
@@ -234,8 +276,6 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
         // Silently ignore for read-only filesystems (production).
       }
     }
-
-    return result;
   }
 
   /** Whether the introspected schema differs from the snapshot in any way the comparator turns into SQL. */
