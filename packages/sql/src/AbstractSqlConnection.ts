@@ -320,6 +320,13 @@ export abstract class AbstractSqlConnection extends Connection {
     eventBroadcaster?: TransactionEventBroadcaster,
     loggerContext?: LogContext,
   ): Promise<void> {
+    // `commit()` already ignores a context that was rolled back. A second rollback would throw inside
+    // Kysely (`Transaction is already rolled back`) and the `transactional()` catch would log that as a
+    // failed rollback, hiding a commit the server had already discarded.
+    if (ctx.isRolledBack) {
+      return;
+    }
+
     await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionRollback, ctx);
     await this.waitForIdleTransaction(ctx);
 

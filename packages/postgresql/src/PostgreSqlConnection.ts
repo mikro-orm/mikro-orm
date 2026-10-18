@@ -1,9 +1,42 @@
-import { Pool, type PoolConfig, TypeOverrides } from 'pg';
+import { Pool, type PoolClient, type PoolConfig, type QueryResult, TypeOverrides } from 'pg';
 import Cursor from 'pg-cursor';
-import { CompiledQuery, type DatabaseConnection, PostgresDialect } from 'kysely';
+import { CompiledQuery, type ControlledTransaction, type DatabaseConnection, PostgresDialect } from 'kysely';
 import array from 'postgres-array';
-import { type Dictionary, type Routine, type SessionContext, type Transaction } from '@mikro-orm/core';
+import {
+  DriverException,
+  type Dictionary,
+  type LogContext,
+  type Routine,
+  type SessionContext,
+  type Transaction,
+  type TransactionEventBroadcaster,
+} from '@mikro-orm/core';
 import { AbstractSqlConnection, createPostgreSqlTypeParsers, Utils } from '@mikro-orm/sql';
+
+/**
+ * Kysely sends this text for a top-level commit. PostgreSQL also accepts `COMMIT TRANSACTION` / `COMMIT WORK`.
+ * `COMMIT PREPARED` is a different statement and must not match.
+ */
+const COMMIT_STATEMENT = /^\s*commit(?:\s+(?:transaction|work))?\s*;?\s*$/i;
+
+function isCommitStatement(config: unknown): boolean {
+  const sql = typeof config === 'string' ? config : (config as { text?: unknown } | null)?.text;
+
+  return typeof sql === 'string' && COMMIT_STATEMENT.test(sql);
+}
+
+/**
+ * Raised from the `pg` client when `COMMIT` resolves with the command tag `ROLLBACK`. Kysely drops that tag, so the
+ * rejection has to happen before `executeQuery()` returns. Wrapped in {@link DriverException} at the commit boundary.
+ */
+class PostgresCommitRolledBackError extends Error {
+  constructor() {
+    super(
+      'COMMIT was answered with ROLLBACK, so the transaction did not commit. An earlier statement failed and PostgreSQL rolled the transaction back.',
+    );
+    this.name = 'PostgresCommitRolledBackError';
+  }
+}
 
 /** PostgreSQL database connection using the `pg` driver. */
 export class PostgreSqlConnection extends AbstractSqlConnection {
@@ -17,6 +50,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     const pool = new Pool(options);
     this.#pool = pool;
     this.handlePoolErrors(pool);
+    pool.on('connect', client => this.guardCommitCommand(client));
     void onPoolCreated?.(pool);
     const userOnReserve = this.options.onReserveConnection ?? this.config.get('onReserveConnection');
     return new PostgresDialect({
@@ -64,6 +98,60 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
       });
     });
     pool.on('error', e => this.logger.warn('info', `PostgreSQL pool error: ${e.message}`));
+  }
+
+  /**
+   * PostgreSQL does not raise when `COMMIT` runs in an aborted transaction: the command tag is `ROLLBACK` and every
+   * write is discarded. `pg` resolves that query, and Kysely's `PostgresConnection.executeQuery()` keeps only
+   * `{ numAffectedRows, rows }`, so a commit would otherwise look successful. Reject here, while the tag is still
+   * visible. An explicit `ROLLBACK` also has the tag `ROLLBACK` and must keep resolving.
+   */
+  private guardCommitCommand(client: PoolClient): void {
+    const query = client.query;
+
+    client.query = ((...args: unknown[]) => {
+      const result = (query as (...params: unknown[]) => unknown).apply(client, args);
+
+      if (typeof (result as { then?: unknown } | null)?.then !== 'function' || !isCommitStatement(args[0])) {
+        return result;
+      }
+
+      return (result as Promise<QueryResult>).then(queryResult => {
+        if (queryResult.command === 'ROLLBACK') {
+          throw new PostgresCommitRolledBackError();
+        }
+
+        return queryResult;
+      });
+    }) as PoolClient['query'];
+  }
+
+  /**
+   * A commit the server answered with `ROLLBACK` is a failed commit. Release the pooled client (Kysely only does that
+   * after a commit or rollback that resolves) and surface a driver exception. `afterTransactionCommit` is not
+   * dispatched: the parent `commit()` throws before that event.
+   */
+  override async commit(
+    ctx: ControlledTransaction<any, any>,
+    eventBroadcaster?: TransactionEventBroadcaster,
+    loggerContext?: LogContext,
+  ): Promise<void> {
+    try {
+      await super.commit(ctx, eventBroadcaster, loggerContext);
+    } catch (error) {
+      if (!(error instanceof PostgresCommitRolledBackError)) {
+        throw error;
+      }
+
+      try {
+        await super.rollback(ctx, eventBroadcaster, loggerContext);
+      } catch (rollbackError: any) {
+        /* v8 ignore next */
+        this.logger.warn('query', `Failed to roll back transaction: ${rollbackError.message}`);
+      }
+
+      throw new DriverException(error);
+    }
   }
 
   /** Applies the active EM's session context (or resets it) on every pooled connection acquire. */

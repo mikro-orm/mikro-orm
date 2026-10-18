@@ -2159,7 +2159,20 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     await em.flush();
-    await em.getConnection('write').commit(em.#transactionContext, new TransactionEventBroadcaster(em));
+    const ctx = em.#transactionContext;
+
+    try {
+      await em.getConnection('write').commit(ctx, new TransactionEventBroadcaster(em));
+    } catch (error) {
+      // PostgreSQL can answer COMMIT with ROLLBACK and no error. The driver rejects that commit only
+      // after it has rolled the context back and released the connection, so this EM is no longer in it.
+      if (ctx.isRolledBack) {
+        em.#transactionContext = undefined;
+      }
+
+      throw error;
+    }
+
     em.#transactionContext = undefined;
   }
 
