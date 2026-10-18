@@ -259,6 +259,111 @@ describe('defineEntity', () => {
     assert<IsExact<UserRepoType & {}, UserRepository>>(true);
   });
 
+  // GH #8478 — filters that are not a fresh object literal (function return, hoisted const, spread)
+  it('should work with custom repository and filters from a call, const, or spread', () => {
+    function orgFilter() {
+      return { org: { name: 'org', default: true, cond: () => ({}) } };
+    }
+
+    const hoistedFilters = { org: { name: 'org', default: true, cond: () => ({}) } };
+
+    class AuthorRepository extends EntityRepository<Author> {
+      firstNames(authors: Author[]): string[] {
+        return authors.map(author => author.firstName);
+      }
+    }
+
+    const AuthorSchema = defineEntity({
+      name: 'FilterRepoAuthor',
+      repository: () => AuthorRepository,
+      filters: orgFilter(),
+      properties: {
+        id: p.integer().primary(),
+        firstName: p.string(),
+      },
+    });
+
+    class Author extends AuthorSchema.class {}
+
+    expect(AuthorSchema.init().meta.filters.org).toBeDefined();
+    expect(AuthorSchema.init().meta.filters.org.default).toBe(true);
+
+    type IAuthor = InferEntity<typeof AuthorSchema>;
+    assert<IsExact<IAuthor['firstName'], string>>(true);
+    type AuthorRepoType = IAuthor[typeof EntityRepositoryType];
+    assert<IsExact<AuthorRepoType & {}, AuthorRepository>>(true);
+
+    class HoistedAuthorRepository extends EntityRepository<HoistedAuthor> {
+      firstNames(authors: HoistedAuthor[]): string[] {
+        return authors.map(author => author.firstName);
+      }
+    }
+
+    const HoistedAuthorSchema = defineEntity({
+      name: 'FilterRepoHoistedAuthor',
+      repository: () => HoistedAuthorRepository,
+      filters: hoistedFilters,
+      properties: {
+        id: p.integer().primary(),
+        firstName: p.string(),
+      },
+    });
+
+    class HoistedAuthor extends HoistedAuthorSchema.class {}
+
+    expect(HoistedAuthorSchema.init().meta.filters.org.default).toBe(true);
+    type IHoistedAuthor = InferEntity<typeof HoistedAuthorSchema>;
+    assert<IsExact<IHoistedAuthor['firstName'], string>>(true);
+
+    class SpreadAuthorRepository extends EntityRepository<SpreadAuthor> {
+      firstNames(authors: SpreadAuthor[]): string[] {
+        return authors.map(author => author.firstName);
+      }
+    }
+
+    const SpreadAuthorSchema = defineEntity({
+      name: 'FilterRepoSpreadAuthor',
+      repository: () => SpreadAuthorRepository,
+      filters: { ...orgFilter() },
+      properties: {
+        id: p.integer().primary(),
+        firstName: p.string(),
+      },
+    });
+
+    class SpreadAuthor extends SpreadAuthorSchema.class {}
+
+    expect(SpreadAuthorSchema.init().meta.filters.org.name).toBe('org');
+    type ISpreadAuthor = InferEntity<typeof SpreadAuthorSchema>;
+    assert<IsExact<ISpreadAuthor['firstName'], string>>(true);
+
+    function orgFilterWithoutDefault() {
+      return { org: { name: 'org', cond: () => ({}) } };
+    }
+
+    class PlainAuthorRepository extends EntityRepository<PlainAuthor> {
+      firstNames(authors: PlainAuthor[]): string[] {
+        return authors.map(author => author.firstName);
+      }
+    }
+
+    const PlainAuthorSchema = defineEntity({
+      name: 'FilterRepoPlainAuthor',
+      repository: () => PlainAuthorRepository,
+      filters: orgFilterWithoutDefault(),
+      properties: {
+        id: p.integer().primary(),
+        firstName: p.string(),
+      },
+    });
+
+    class PlainAuthor extends PlainAuthorSchema.class {}
+
+    expect(PlainAuthorSchema.init().meta.filters.org.name).toBe('org');
+    type IPlainAuthor = InferEntity<typeof PlainAuthorSchema>;
+    assert<IsExact<IPlainAuthor['firstName'], string>>(true);
+  });
+
   it('should define entity with primary keys', () => {
     const Foo = defineEntity({
       name: 'Foo',

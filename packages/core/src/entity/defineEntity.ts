@@ -1352,6 +1352,39 @@ type AllKeys<TProperties, TBase> = keyof TProperties | (IsNever<TBase> extends t
 // GH #7440 dodged the same trap for `filters.cond` by falling back to a loose `Dictionary` there.
 type PartialWhere<TProperties, TBase> = string | FilterQuery<{ [K in AllKeys<TProperties, TBase> & string]?: unknown }>;
 
+// Strict filter map for `defineEntity`. `cond` keeps a call signature so fresh object literals stay
+// contextually typed. `FilterQuery` is `any`, not the inferred entity — that eager `FilterQuery` is
+// what made `repository` + inline `filters` circular (GH #7440).
+type DefineEntityFilterMap = Dictionary<{
+  name: string;
+  cond:
+    | Dictionary
+    | ((
+        args: Dictionary,
+        type: 'read' | 'update' | 'delete',
+        em: any,
+        options?: FindOptions<any, any, any, any> | FindOneOptions<any, any, any, any>,
+        entityName?: string,
+      ) => MaybePromise<FilterQuery<any>>);
+  default?: boolean;
+  entity?: EntityName<any> | EntityName<any>[];
+  args?: boolean;
+  strict?: boolean;
+  rls?: boolean | { setting?: string };
+}>;
+
+// Call-signature-free twin of `DefineEntityFilterMap`. Comparing a non-fresh `filters` value (a
+// function return, a hoisted const, or a spread) to the `cond` call signature eagerly instantiates
+// this parameter type and circles back through `repository` (GH #8478). A function is assignable to
+// `Dictionary`, so object and callback `cond`s both still match. Only `name` and `cond` are listed:
+// an optional property here makes TypeScript prefer the call-signature arm again and the cycle
+// comes back. Unioned in only when a repository is being inferred; without one, the strict map
+// keeps checking `rls` / `args` / `entity` / `default`.
+type DefineEntityFilterMapLoose = Dictionary<{
+  name: string;
+  cond: Dictionary;
+}>;
+
 /** Metadata descriptor for `defineEntity()`, combining entity options with property definitions. */
 export interface EntityMetadataWithProperties<
   TName extends string,
@@ -1397,24 +1430,9 @@ export interface EntityMetadataWithProperties<
   hooks?: DefineEntityHooks;
   // Capture the repository type for InferEntity to include EntityRepositoryType
   repository?: () => TRepository;
-  // mirrors FilterDefResolved with Dictionary instead of FilterQuery for cond to avoid circular type inference (GH #7440)
-  filters?: Dictionary<{
-    name: string;
-    cond:
-      | Dictionary
-      | ((
-          args: Dictionary,
-          type: 'read' | 'update' | 'delete',
-          em: any,
-          options?: FindOptions<any, any, any, any> | FindOneOptions<any, any, any, any>,
-          entityName?: string,
-        ) => MaybePromise<FilterQuery<any>>);
-    default?: boolean;
-    entity?: EntityName<any> | EntityName<any>[];
-    args?: boolean;
-    strict?: boolean;
-    rls?: boolean | { setting?: string };
-  }>;
+  // GH #7440 / GH #8478 — see DefineEntityFilterMap. The loose arm exists only while `TRepository`
+  // is inferred; `IsNever` keeps non-fresh filters fully checked when there is no repository.
+  filters?: DefineEntityFilterMap | IsNever<TRepository, never, DefineEntityFilterMapLoose>;
   forceObject?: TForceObject;
   // Captured as a literal so `NarrowDiscriminator` can keep the discriminator required for
   // polymorphic embeddables, where the ORM cannot auto-fill it (the value picks the subtype).
