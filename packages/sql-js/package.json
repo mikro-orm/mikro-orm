@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@mikro-orm/sql": "7.2.5",
-    "kysely": "0.29.6",
+    "kysely": "0.29.7",
     "sql.js": "1.15.0"
   },
   "devDependencies": {

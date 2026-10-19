@@ -1309,7 +1309,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.5"
     "@mikro-orm/sql": "npm:7.2.5"
-    kysely: "npm:0.29.6"
+    kysely: "npm:0.29.7"
     libsql: "npm:0.5.29"
   peerDependencies:
     "@mikro-orm/core": 7.2.5
@@ -1322,7 +1322,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.5"
     "@mikro-orm/mysql": "npm:7.2.5"
-    kysely: "npm:0.29.6"
+    kysely: "npm:0.29.7"
   peerDependencies:
     "@mikro-orm/core": 7.2.5
   languageName: unknown
@@ -1377,9 +1377,9 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.5"
     "@mikro-orm/sql": "npm:7.2.5"
-    kysely: "npm:0.29.6"
+    kysely: "npm:0.29.7"
     tarn: "npm:3.1.2"
-    tedious: "npm:20.3.7"
+    tedious: "npm:20.3.8"
     tsqlstring: "npm:1.0.1"
   peerDependencies:
     "@mikro-orm/core": 7.2.5
@@ -1392,7 +1392,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.5"
     "@mikro-orm/sql": "npm:7.2.5"
-    kysely: "npm:0.29.6"
+    kysely: "npm:0.29.7"
     mysql2: "npm:3.24.6"
     sqlstring: "npm:2.3.3"
   peerDependencies:
@@ -1406,7 +1406,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.5"
     "@mikro-orm/sql": "npm:7.2.5"
-    kysely: "npm:0.29.6"
+    kysely: "npm:0.29.7"
     oracledb: "npm:26.0.0"
   peerDependencies:
     "@mikro-orm/core": 7.2.5
@@ -1420,7 +1420,7 @@ __metadata:
     "@electric-sql/pglite": "npm:0.5.10"
     "@mikro-orm/core": "npm:^7.2.5"
     "@mikro-orm/sql": "npm:7.2.5"
-    kysely: "npm:0.29.6"
+    kysely: "npm:0.29.7"
     postgres-array: "npm:3.0.4"
     postgres-date: "npm:2.1.0"
     postgres-interval: "npm:4.1.0"
@@ -1435,7 +1435,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.5"
     "@mikro-orm/sql": "npm:7.2.5"
-    kysely: "npm:0.29.6"
+    kysely: "npm:0.29.7"
     pg: "npm:8.23.1"
     pg-cursor: "npm:2.22.1"
     postgres-array: "npm:3.0.4"
@@ -1539,7 +1539,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.5"
     "@mikro-orm/sql": "npm:7.2.5"
-    kysely: "npm:0.29.6"
+    kysely: "npm:0.29.7"
     sql.js: "npm:1.15.0"
   peerDependencies:
     "@mikro-orm/core": 7.2.5
@@ -1551,7 +1551,7 @@ __metadata:
   resolution: "@mikro-orm/sql@workspace:packages/sql"
   dependencies:
     "@mikro-orm/core": "npm:^7.2.5"
-    kysely: "npm:0.29.6"
+    kysely: "npm:0.29.7"
   peerDependencies:
     "@mikro-orm/core": 7.2.5
   languageName: unknown
@@ -1564,7 +1564,7 @@ __metadata:
     "@mikro-orm/core": "npm:^7.2.5"
     "@mikro-orm/sql": "npm:7.2.5"
     better-sqlite3: "npm:13.0.3"
-    kysely: "npm:0.29.6"
+    kysely: "npm:0.29.7"
   peerDependencies:
     "@mikro-orm/core": 7.2.5
   languageName: unknown
@@ -5690,10 +5690,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"kysely@npm:0.29.6":
-  version: 0.29.6
-  resolution: "kysely@npm:0.29.6"
-  checksum: 10/14025c7db15e9ed1cbd2de6ec6a5dc099859c60c1d5bcf57d3890535ba000e92cb29244d8d3fc9bf52347ca57c004f5a8432108e1693b50cc3be63786e3596aa
+"kysely@npm:0.29.7":
+  version: 0.29.7
+  resolution: "kysely@npm:0.29.7"
+  checksum: 10/ea90071eecb11489d92388fd0b6066f2664022769fc48f675ce43b36c09eed86b68cd6b5f13e124afca81482a1e28b7dce219ecdbd5c15c91d722de523d44321
   languageName: node
   linkType: hard
 
@@ -8242,9 +8242,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tedious@npm:20.3.7":
-  version: 20.3.7
-  resolution: "tedious@npm:20.3.7"
+"tedious@npm:20.3.8":
+  version: 20.3.8
+  resolution: "tedious@npm:20.3.8"
   dependencies:
     "@azure/core-auth": "npm:^1.10.1"
     "@azure/identity": "npm:^4.13.1"
@@ -8255,7 +8255,7 @@ __metadata:
     iconv-lite: "npm:^0.7.0"
     js-md4: "npm:^0.3.2"
     native-duplexpair: "npm:^1.0.0"
-  checksum: 10/42d580d0d91063be63e0cab43db1daf25abcb2cf10f04f5285042ced31098896b94e81421be54825ecd2314735a27907f288e91428f719d76f8de5e6850b1659
+  checksum: 10/54b6fa77a72ce77258fba3c75b6058d15d169935d14e5496b4ec9250eb5c9aaf33e76096f92093d6f40a62785fdea570d8399cc6aaccc1e4cd4f97baed89929a
   languageName: node
   linkType: hard
 
