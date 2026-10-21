@@ -1,4 +1,12 @@
-import { type Dictionary, EnumType, StringType, TextType, type Transaction, type Type } from '@mikro-orm/core';
+import {
+  type Dictionary,
+  EnumType,
+  JsonType,
+  StringType,
+  TextType,
+  type Transaction,
+  type Type,
+} from '@mikro-orm/core';
 import type {
   CheckDef,
   Column,
@@ -812,7 +820,21 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   protected wrap(val: string | null | undefined, type: Type<unknown>): string | null | undefined {
+    if (typeof val !== 'string' || val.length === 0) {
+      return val;
+    }
+
+    // literal defaults of text/blob columns are expressions, reported with a charset introducer
+    // and escaped twice, e.g. `('it''s')` comes back as `_utf8mb4\'it\\\'s\'` (JSON defaults
+    // are parsed separately by the schema comparator)
+    const expression = type instanceof JsonType ? null : /^_\w+\\'(.*)\\'$/s.exec(val);
+
+    if (expression) {
+      const unescape = (str: string) => str.replace(/\\(.)/gs, '$1');
+      return this.platform.quoteValue(unescape(unescape(expression[1])));
+    }
+
     const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType;
-    return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;
+    return stringType ? this.platform.quoteValue(val) : val;
   }
 }
