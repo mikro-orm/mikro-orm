@@ -3710,9 +3710,11 @@ export abstract class AbstractSqlDriver<
     }
 
     if (ret.length > 0 && !hasExplicitFields && addFormulas) {
-      // Create formula column mapping with unquoted aliases - quoting should be handled by the user via `quote` helper
+      // Per-column entries keep their unquoted aliases, while `toString()` yields the quoted alias
+      // that formulas interpolating the mapping object have always received, and that the query
+      // builder renders for the same formula.
       const quotedAlias = this.platform.quoteIdentifier(alias);
-      const columns = meta.createColumnMappingObject(alias);
+      const columns = meta.createColumnMappingObject(alias, quotedAlias.toString());
       const effectiveSchema = schema ?? (meta.schema !== '*' ? meta.schema : undefined);
 
       for (const prop of meta.props) {
