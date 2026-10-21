@@ -1937,13 +1937,13 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
   }
 
   private initIndexes(prop: EntityProperty<Entity>): void {
-    const simpleIndex = this.indexes.find(
-      index =>
-        index.properties === prop.name && !index.options && !index.type && !index.expression && index.where == null,
-    );
-    const simpleUnique = this.uniques.find(
-      index => index.properties === prop.name && !index.options && !index.expression && index.where == null,
-    );
+    // only an index with nothing but a name can be folded into `prop.index`/`prop.unique`,
+    // any other option (`columns`, `include`, `where`, `deferMode`...) would be lost
+    const isSimple = (index: { properties?: unknown }) =>
+      index.properties === prop.name &&
+      Object.entries(index).every(([key, value]) => key === 'name' || key === 'properties' || value == null);
+    const simpleIndex = this.indexes.find(isSimple);
+    const simpleUnique = this.uniques.find(isSimple);
     const owner = prop.kind === ReferenceKind.MANY_TO_ONE;
 
     if (!prop.index && simpleIndex) {
