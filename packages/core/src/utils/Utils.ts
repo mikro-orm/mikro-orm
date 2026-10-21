@@ -333,7 +333,9 @@ export class Utils {
 
         if (Utils.isPlainObject(value)) {
           if (!Utils.isObject(target[key])) {
-            target[key] = Utils.copy(value);
+            // merge into a fresh object rather than deep copying: plain objects are still
+            // copied, but class instances (e.g. a client passed to an adapter) keep their identity
+            target[key] = Utils._merge({}, [value], ignoreUndefined);
             continue;
           }
 
