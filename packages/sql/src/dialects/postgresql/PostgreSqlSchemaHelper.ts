@@ -590,6 +590,16 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       ret[key] ??= [];
       let type = col.data_type.toLowerCase() === 'array' ? col.udt_name.replace(/^_(.*)$/, '$1[]') : col.udt_name;
 
+      // `udt_name` drops the element type modifier of arrays (`_numeric` for `numeric(12,2)[]`),
+      // recover it from `format_type`, e.g. `timestamp(3) with time zone[]` -> `timestamptz(3)[]`
+      const arrayModifier = type.endsWith('[]')
+        ? /^[^(]*(\([^)]*\))[^(]*\[\]$/.exec(col.format_type ?? '')?.[1]
+        : undefined;
+
+      if (arrayModifier) {
+        type = `${type.slice(0, -2)}${arrayModifier}[]`;
+      }
+
       if (
         col.data_type === 'USER-DEFINED' &&
         col.udt_schema &&
