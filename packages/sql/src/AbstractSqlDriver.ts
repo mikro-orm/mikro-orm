@@ -766,8 +766,7 @@ export abstract class AbstractSqlDriver<
       }
 
       const mapToPk = !hint.dataOnly && !!(ref || prop.mapToPk);
-      // Every row of a result has the same columns, so the target props that have one, and the
-      // non-persistent ones, are resolved on the first row of this join path and reused (#8460).
+      // all rows of a result share their columns, so resolve the mapped props once per join path
       const joinedTargets = ((map.joinedTargets as Dictionary) ??= {});
       const { targetProps, virtualProps } = (joinedTargets[path] ??= {
         targetProps: (mapToPk

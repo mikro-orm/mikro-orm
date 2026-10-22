@@ -79,6 +79,18 @@ test('partially loaded joined relation is hydrated on every row (GH #8460)', asy
   expect((edges[2].to as Target).col2).toBeUndefined();
 });
 
+test('streamed partially loaded joined relation is hydrated on every row (GH #8460)', async () => {
+  const stream = orm.em.fork().stream(Edge, { populate: ['to'], fields: ['to.pid'], orderBy: { id: 'asc' } });
+  const edges: Edge[] = [];
+
+  for await (const edge of stream) {
+    edges.push(edge);
+  }
+
+  expect(edges.map(e => e.to?.pid ?? null)).toEqual([null, 'P1', 'P2', 'P1', 'P3']);
+  expect((edges[1].to as Target).col1).toBeUndefined();
+});
+
 test('two join paths to the same entity keep their own selected columns (GH #8460)', async () => {
   const mock = mockLogger(orm, ['query']);
   const edges = await orm.em.fork().find(
