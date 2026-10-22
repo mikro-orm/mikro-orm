@@ -67,6 +67,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return 'reset search_path';
   }
 
+  override getMigrationLockSQL(): { acquire: string; release: string } | undefined {
+    // advisory locks are scoped to the current database
+    return {
+      acquire: 'select pg_try_advisory_lock(hashtext(?)) as locked',
+      release: 'select pg_advisory_unlock(hashtext(?))',
+    };
+  }
+
   override supportsMigrationSchema(): boolean {
     return true;
   }

@@ -144,6 +144,8 @@ await MikroORM.init({
 | `transactional: boolean`                                     | Whether to wrap each individual migration in a transaction. Defaults to `true`. If `false`, migrations will not be automatically wrapped in transactions.                            |
 | `disableForeignKeys: boolean`                                | Whether to disable foreign key checks during migrations. Defaults to `false`. When `true`, wraps migration statements with `set foreign_key_checks = 0` or equivalent.               |
 | `allOrNothing: boolean`                                      | Whether to wrap all migrations in a master transaction. Defaults to `true`. If any migration fails, all changes are rolled back.                                                     |
+| `lock: boolean`                                              | Whether to serialize concurrent `up()`/`down()` runs with a database lock. Defaults to `false`. See [Concurrent runs](#concurrent-runs).                                              |
+| `lockTimeout: number`                                        | How long to wait for the migration lock (in milliseconds) before failing. Waits indefinitely by default.                                                                            |
 | `dropTables: boolean`                                        | Whether to allow dropping tables during migrations. Defaults to `true`. When `false`, table drop operations are skipped.                                                             |
 | `safe: boolean`                                              | Whether to run migrations in safe mode. Defaults to `false`. When `true`, disables both table dropping and column dropping for safety.                                               |
 | `snapshot: boolean`                                          | Whether to save schema snapshots when creating new migrations. Defaults to `true`. Snapshots help with migration diffing and should be versioned alongside migration files.          |
@@ -187,6 +189,8 @@ You can also override those options using the [environment variables](./configur
 - `MIKRO_ORM_MIGRATIONS_TRANSACTIONAL`
 - `MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS`
 - `MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING`
+- `MIKRO_ORM_MIGRATIONS_LOCK`
+- `MIKRO_ORM_MIGRATIONS_LOCK_TIMEOUT`
 - `MIKRO_ORM_MIGRATIONS_DROP_TABLES`
 - `MIKRO_ORM_MIGRATIONS_SAFE`
 - `MIKRO_ORM_MIGRATIONS_SILENT`
@@ -216,6 +220,26 @@ await MikroORM.init({
 ```
 
 This should allow using CLI to generate TS migration files (as in CLI you probably have TS support enabled), while using compiled JS files in production.
+
+### Concurrent runs
+
+Without a lock, two processes migrating the same database at once (e.g. several replicas running migrations on start) race each other: both can see the same migration as pending and apply it twice. Enable `migrations.lock` to serialize them: a run waits until the other one finishes (logging that it waits), then finds nothing pending.
+
+```ts
+await MikroORM.init({
+  migrations: {
+    lock: true,
+    lockTimeout: 60_000, // fail instead of waiting longer than a minute
+  },
+});
+```
+
+The lock is a session-level database lock (`pg_advisory_lock` on PostgreSQL, `GET_LOCK` on MySQL and MariaDB, `sp_getapplock` on MSSQL) held on a pooled connection reserved for the whole run, so it works with `allOrNothing` and non-transactional migrations alike, while the migrations themselves keep using the rest of the pool. This means:
+
+- `pool.max` has to be at least 2, the migrator throws otherwise.
+- It does not work through PgBouncer in transaction pooling mode, which does not keep session state between transactions. Run migrations over a direct connection instead.
+- Other drivers (SQLite, libSQL, PGlite, Oracle, MongoDB) ignore the option.
+- CockroachDB has no working advisory locks, so leave the option disabled there, it fails on the first run.
 
 ## Using custom `MigrationGenerator`
 
