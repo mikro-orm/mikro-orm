@@ -1717,4 +1717,28 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     const names = (await orm.em.find(TestEntity, {})).map(e => e.name);
     expect(names).toEqual(['outer']);
   });
+
+  test('a failing savepoint rollback prevents an explicit commit', async () => {
+    const em = orm.em.fork();
+    const rollback = vi
+      .spyOn(em.getConnection(), 'rollback')
+      .mockRejectedValueOnce(new Error('rollback to savepoint failed'));
+
+    await em.begin();
+    await em.insert(TestEntity, { name: 'outer' });
+
+    await expect(
+      em.transactional(async em2 => {
+        await em2.insert(TestEntity, { name: 'inner' });
+        throw new Error('inner business error');
+      }),
+    ).rejects.toThrow('inner business error');
+
+    await expect(em.commit()).rejects.toThrow('rolling back to savepoint "trx1" failed');
+    await em.rollback();
+    rollback.mockRestore();
+
+    const count = await orm.em.count(TestEntity);
+    expect(count).toBe(0);
+  });
 });
