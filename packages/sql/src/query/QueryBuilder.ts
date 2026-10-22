@@ -2688,8 +2688,10 @@ export class QueryBuilder<
       return Utils.getPrimaryKeyHash(meta.primaryKeys.map(pk => data[pk as EntityKey]));
     };
 
+    const map: Dictionary = {};
+
     for await (const row of res) {
-      const mapped = this.driver.mapResult<Entity>(row as Entity, meta, this.#state.populate, this as any)!;
+      const mapped = this.driver.mapResult<Entity>(row as Entity, meta, this.#state.populate, this as any, map)!;
 
       if (!options.mergeResults || joinedProps.length === 0) {
         yield this.mapResult(mapped, options.mapResults);

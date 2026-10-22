@@ -766,9 +766,17 @@ export abstract class AbstractSqlDriver<
       }
 
       const mapToPk = !hint.dataOnly && !!(ref || prop.mapToPk);
-      const targetProps = mapToPk
-        ? meta2.getPrimaryProps()
-        : meta2.props.filter(prop => this.platform.shouldHaveColumn(prop, (hint.children as any) || []));
+      // all rows of a result share their columns, so resolve the mapped props once per join path
+      const joinedTargets = ((map.joinedTargets as Dictionary) ??= {});
+      const { targetProps, virtualProps } = (joinedTargets[path] ??= {
+        targetProps: (mapToPk
+          ? meta2.getPrimaryProps()
+          : meta2.props.filter(prop => this.platform.shouldHaveColumn(prop, (hint.children as any) || []))
+        ).filter(prop =>
+          prop.fieldNames.some(name => typeof root[`${relationAlias}__${name}` as EntityKey<T>] !== 'undefined'),
+        ),
+        virtualProps: meta2.props.filter(prop => !ref && prop.persist === false && prop.fieldNames),
+      }) as { targetProps: EntityProperty<T>[]; virtualProps: EntityProperty<T>[] };
 
       // If the primary key value for the relation is null, we know we haven't joined to anything
       // and therefore we don't return any record (since all values would be null)
@@ -798,20 +806,18 @@ export abstract class AbstractSqlDriver<
 
       let relationPojo: EntityData<T> = {};
 
-      meta2.props
-        .filter(prop => !ref && prop.persist === false && prop.fieldNames)
-        .forEach(prop => {
-          /* v8 ignore next */
-          if (prop.fieldNames.length > 1) {
-            // composite keys
-            relationPojo[prop.name as EntityKey<T>] = prop.fieldNames.map(
-              name => root[`${relationAlias}__${name}` as EntityKey<T>],
-            ) as EntityDataValue<T>;
-          } else {
-            const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
-            relationPojo[prop.name] = root[alias] as EntityDataValue<T>;
-          }
-        });
+      virtualProps.forEach(prop => {
+        /* v8 ignore next */
+        if (prop.fieldNames.length > 1) {
+          // composite keys
+          relationPojo[prop.name as EntityKey<T>] = prop.fieldNames.map(
+            name => root[`${relationAlias}__${name}` as EntityKey<T>],
+          ) as EntityDataValue<T>;
+        } else {
+          const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
+          relationPojo[prop.name] = root[alias] as EntityDataValue<T>;
+        }
+      });
 
       const tz = this.platform.getTimezone();
 
