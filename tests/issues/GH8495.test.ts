@@ -52,3 +52,13 @@ test('GH #8495: Utils.merge copies plain objects but keeps class instances', () 
   expect(merged.a.b).toEqual({ c: 1 });
   expect(merged.a.client).toBe(client);
 });
+
+test('GH #8495: Utils.merge copies cyclic plain objects', () => {
+  const options: any = { host: 'localhost' };
+  options.self = options;
+  const merged = Utils.merge({}, { driverOptions: options });
+
+  expect(merged.driverOptions).not.toBe(options);
+  expect(merged.driverOptions.host).toBe('localhost');
+  expect(merged.driverOptions.self).toBe(merged.driverOptions);
+});
