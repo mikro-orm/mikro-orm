@@ -196,6 +196,10 @@ export class MySqlConnection extends AbstractSqlConnection {
     eventBroadcaster?: TransactionEventBroadcaster,
   ): Promise<void> {
     if (!ctx.isRolledBack && 'savepointName' in ctx) {
+      if ('failedSavepointRollback' in ctx) {
+        throw ctx.failedSavepointRollback;
+      }
+
       try {
         await ctx.releaseSavepoint(ctx.savepointName as string).execute();
       } catch (e: any) {

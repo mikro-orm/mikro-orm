@@ -365,7 +365,7 @@ await orm.entityGenerator.generate({
     // The "url" is registered in the config, so it will be outputted as a string.
     websitePropOnAuthor.type = 'url';
     // The "URL" doesn't match what is inferred from DB, so it will be wrapped, i.e.
-    // IType<URL, string | null> or IType<URL, sring | undefined> based on the "forceUndefined" option.
+    // IType<URL, string | null> or IType<URL, string | undefined> based on the "forceUndefined" option.
     websitePropOnAuthor.runtimeType = 'URL';
     
     // Assume there exists a table "book" with JSON column named "meta".

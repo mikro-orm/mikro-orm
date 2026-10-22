@@ -57,6 +57,29 @@ describe.each(Utils.keys(options))('batch insert [%s]', type => {
     expect(books.map(b => b.value)).toEqual([1, 2, 1]);
   });
 
+  test.runIf(['mysql', 'mariadb'].includes(type)).each([0, 1, 2])(
+    'mapping of generated PKs when the PK of book %i is set explicitly',
+    async explicit => {
+      const em = orm.em.fork();
+      const author = new Author();
+      const books = [new Book(), new Book(), new Book()];
+      books.forEach((b, idx) => {
+        b.author = author;
+        b.value = idx + 1;
+      });
+      books[explicit].id = 100;
+      await em.persist(books).flush();
+
+      const rows = await em.execute('select book_id, value from book order by value');
+      expect(books.map(b => b.id)).toEqual(rows.map(r => r.book_id));
+
+      books.forEach(b => (b.value! *= 10));
+      await em.flush();
+      const updated = await em.execute('select book_id, value from book order by value');
+      expect(updated).toEqual(books.map(b => ({ book_id: b.id, value: b.value })));
+    },
+  );
+
   test('QB and custom field name', async () => {
     const res = await orm.em.qb(Author).insert([{}, {}, {}]).execute();
 
