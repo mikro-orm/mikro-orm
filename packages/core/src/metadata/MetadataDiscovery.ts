@@ -718,7 +718,10 @@ export class MetadataDiscovery {
 
   /** TPT subclasses inherit M:N properties, which are mapped via the entity that declares them. */
   private getTPTDeclaringMeta(meta: EntityMetadata, prop: EntityProperty): EntityMetadata {
-    while (meta.tptParent?.properties[prop.name]?.kind === ReferenceKind.MANY_TO_MANY) {
+    while (
+      meta.tptParent?.properties[prop.name]?.kind === ReferenceKind.MANY_TO_MANY &&
+      meta.tptParent.properties[prop.name].type === prop.type
+    ) {
       meta = meta.tptParent;
     }
 
@@ -873,6 +876,21 @@ export class MetadataDiscovery {
                 inverseProp.pivotEntity = pivotMeta.class;
                 inverseProp.pivotTable = pivotMeta.tableName;
               }
+            }
+          }
+
+          // TPT children of the target inherit their own copy of the inverse side, which may have been initialized before the pivot
+          const tptChildren = prop.inversedBy ? [...(prop.targetMeta!.tptChildren ?? [])] : [];
+
+          for (const inverseMeta of tptChildren) {
+            tptChildren.push(...(inverseMeta.tptChildren ?? []));
+            const inverseProp = inverseMeta.properties[prop.inversedBy!];
+
+            if (inverseProp?.mappedBy === prop.name) {
+              inverseProp.pivotEntity = pivotMeta.class;
+              inverseProp.pivotTable = pivotMeta.tableName;
+              inverseProp.joinColumns = prop.inverseJoinColumns;
+              inverseProp.inverseJoinColumns = prop.joinColumns;
             }
           }
 
@@ -1070,13 +1088,19 @@ export class MetadataDiscovery {
       meta.root.className === targetMeta.root.className &&
       prop.joinColumns.every((joinColumn, idx) => joinColumn === prop.inverseJoinColumns[idx])
     ) {
-      // both sides default to the TPT root name, so name the owner side after the declaring entity
-      prop.joinColumns = prop.referencedColumnNames.map(name =>
-        this.#namingStrategy.joinKeyColumnName(meta.className, name, meta.compositePK),
-      );
+      // both sides default to the TPT root name, so name the non-root side after its own entity
+      if (meta.tptParent) {
+        prop.joinColumns = prop.referencedColumnNames.map(name =>
+          this.#namingStrategy.joinKeyColumnName(meta.className, name, meta.compositePK),
+        );
+      } else {
+        prop.inverseJoinColumns = this.initManyToOneFieldName(prop, targetMeta.className);
+      }
 
       if (prop.inversedBy) {
-        targetMeta.properties[prop.inversedBy].inverseJoinColumns = prop.joinColumns;
+        const prop2 = targetMeta.properties[prop.inversedBy];
+        prop2.inverseJoinColumns = prop.joinColumns;
+        prop2.joinColumns = prop.inverseJoinColumns;
       }
     }
 
