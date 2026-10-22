@@ -14,11 +14,19 @@ class PrefixedType extends Type<string, string> {
   }
 }
 
+const Tag = defineEntity({
+  name: 'Tag',
+  properties: {
+    id: p.type(PrefixedType).primary(),
+  },
+});
+
 const User = defineEntity({
   name: 'User',
   properties: {
     id: p.integer().primary(),
     events: () => p.oneToMany(Event).mappedBy('user'),
+    tags: () => p.manyToMany(Tag),
   },
 });
 
@@ -34,11 +42,11 @@ const Event = defineEntity({
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = await MikroORM.init({ entities: [User, Event], dbName: ':memory:' });
+  orm = await MikroORM.init({ entities: [User, Event, Tag], dbName: ':memory:' });
   await orm.schema.create();
   const em = orm.em.fork();
-  em.create(User, { id: 1 });
-  em.create(User, { id: 2 });
+  em.create(User, { id: 1, tags: [em.create(Tag, { id: 'x' })] });
+  em.create(User, { id: 2, tags: [em.create(Tag, { id: 'y' })] });
   em.create(Event, { user: 1, code: 'a' });
   em.create(Event, { user: 2, code: 'b' });
   await em.flush();
@@ -59,6 +67,21 @@ test('collection operators convert custom types in nested filters only once', as
 
   const all = await em.find(User, { events: { $all: [{ code: 'a' }] } });
   expect(all.map(u => u.id)).toEqual([1]);
+});
+
+test('collection operators convert custom type primary keys only once', async () => {
+  const em = orm.em.fork();
+  const some = await em.find(User, { tags: { $some: 'x' } });
+  expect(some.map(u => u.id)).toEqual([1]);
+
+  const all = await em.find(User, { tags: { $all: ['x'] } });
+  expect(all.map(u => u.id)).toEqual([1]);
+
+  const allObjects = await em.find(User, { tags: { $all: [{ id: 'x' }] } });
+  expect(allObjects.map(u => u.id)).toEqual([1]);
+
+  const allOperators = await em.find(User, { tags: { $all: [{ id: { $in: ['x'] } }] } });
+  expect(allOperators.map(u => u.id)).toEqual([1]);
 });
 
 test('collection operators in query builder convert custom types only once', async () => {
