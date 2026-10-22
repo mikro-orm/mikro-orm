@@ -5,9 +5,9 @@ on:
     branches: [ master, next, renovate/** ]
   pull_request:
     branches: [ master, next ]
+
 permissions:
   contents: read
-
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
@@ -364,13 +364,13 @@ jobs:
         run: deno run --allow-read --allow-write --allow-env --allow-net --allow-sys --node-modules-dir=manual tests/deno/mongodb.test.ts
 
   release:
-    permissions:
-      contents: read
-      actions: write
     name: Release
     if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/next') && github.repository_owner == 'mikro-orm'
     runs-on: ubuntu-latest
     needs: [ build, test, lint, docs ]
+    permissions:
+      contents: read
+      actions: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
