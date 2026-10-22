@@ -197,7 +197,8 @@ export class EntityComparator {
     const lines: string[] = [];
     const context = new Map<string, any>();
     context.set('isEntityOrRef', (val: any) => Utils.isEntity(val, true));
-    context.set('getCompositeKeyValue', (val: any) => Utils.flatten(Utils.getCompositeKeyValue(val, meta, 'convertToDatabaseValue', this.platform) as unknown[][]));
+    // deep flatten, nested composite PKs produce nested arrays that would be comma-joined by the hash
+    context.set('getCompositeKeyValue', (val: any) => Utils.flatten(Utils.getCompositeKeyValue(val, meta, 'convertToDatabaseValue', this.platform) as unknown[][], true));
     context.set('getPrimaryKeyHash', (val: any) => Utils.getPrimaryKeyHash(Utils.asArray(val)));
 
     if (meta.primaryKeys.length > 1) {

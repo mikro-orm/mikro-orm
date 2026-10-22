@@ -1080,7 +1080,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
 
     for (const item of res) {
-      const key = Utils.getPrimaryKeyHash(Utils.asArray(item[pivotProp2.name]));
+      const fk = item[pivotProp2.name];
+      // the owner PKs are always flat, while the pivot FK follows the owner PK structure,
+      // so a PK built from a relation to another composite PK entity needs flattening too
+      const pks = fk != null ? Utils.getOrderedPrimaryKeys(fk, ownerMeta) : Utils.asArray(fk);
+      const key = Utils.getPrimaryKeyHash(pks as string[]);
       map[key].push(item[pivotProp1.name]);
     }
 
@@ -1174,8 +1178,26 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       return { propName, ref, children: hint.children };
     });
 
+    // with `fixedOrder` the pivot PK is the order column, which is not guaranteed to be unique when the
+    // pivot table is managed externally, so we disambiguate the rows by their FKs on top of the PK
+    const pivotRelations = meta.pivotTable && !meta.compositePK
+      ? meta.relations.filter(p => p.kind === ReferenceKind.MANY_TO_ONE && p.persist !== false)
+      : [];
+
     for (const item of rawResults) {
-      const pk = Utils.getCompositeKeyHash(item, meta);
+      // flat hash, so nested composite PK values keep their own separators and cannot collide
+      let pk = Utils.getCompositeKeyHash(item, meta, false, undefined, true);
+
+      if (pivotRelations.length > 0) {
+        pk = Utils.getPrimaryKeyHash([
+          pk,
+          ...pivotRelations.flatMap(p => {
+            const value = item[p.name as EntityKey<T>];
+            // composite FKs are mapped to an array of values, which `extractPK` does not accept
+            return (Array.isArray(value) ? Utils.flatten(value, true) : Utils.extractPK(value, p.targetMeta)) as string | string[];
+          }),
+        ]);
+      }
 
       if (map[pk]) {
         for (const { propName } of hints) {
