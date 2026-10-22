@@ -1,12 +1,5 @@
 import { defineEntity, MikroORM, p } from '@mikro-orm/sqlite';
 
-// the 6.x schema generator runs every line of the input as a separate statement
-async function execAll(orm: MikroORM, sql: string) {
-  for (const stmt of sql.split(';').map(s => s.trim()).filter(Boolean)) {
-    await orm.schema.execute(stmt.replace(/\s+/g, ' '));
-  }
-}
-
 const Book = defineEntity({
   name: 'Book',
   properties: {
@@ -42,18 +35,12 @@ const Owner = defineEntity({
 });
 
 async function createSchema(orm: MikroORM) {
-  await execAll(orm, `
+  // sqlite runs every line as a separate statement
+  await orm.schema.execute(`
     create table book (id integer primary key, title text not null);
     create table region (country text not null, code text not null, primary key (country, code));
     create table owner (region_country text not null, region_code text not null, id integer not null, name text not null, primary key (region_country, region_code, id));
-    create table owner_books (
-      o_country text not null,
-      o_code text not null,
-      o_id integer not null,
-      book_id integer not null,
-      sort_order integer not null,
-      primary key (o_country, o_code, o_id, book_id)
-    );
+    create table owner_books (o_country text not null, o_code text not null, o_id integer not null, book_id integer not null, sort_order integer not null, primary key (o_country, o_code, o_id, book_id));
     insert into book (id, title) values (1, 'Shared'), (2, 'B2'), (3, 'B3');
   `);
 }
@@ -68,11 +55,10 @@ describe('M:N with a nested composite PK owner and an external pivot table', () 
     });
 
     await createSchema(orm);
-    await execAll(orm, `
+    await orm.schema.execute(`
       insert into region (country, code) values ('cz', 'pr');
       insert into owner (region_country, region_code, id, name) values ('cz', 'pr', 1, 'O1'), ('cz', 'pr', 2, 'O2');
-      insert into owner_books (o_country, o_code, o_id, book_id, sort_order)
-        values ('cz', 'pr', 1, 1, 10), ('cz', 'pr', 1, 2, 11), ('cz', 'pr', 2, 1, 10), ('cz', 'pr', 2, 3, 12);
+      insert into owner_books (o_country, o_code, o_id, book_id, sort_order) values ('cz', 'pr', 1, 1, 10), ('cz', 'pr', 1, 2, 11), ('cz', 'pr', 2, 1, 10), ('cz', 'pr', 2, 3, 12);
     `);
   });
 
@@ -115,11 +101,10 @@ describe('nested PK tuples that comma-join to the same string', () => {
     // the region tuples differ, but both comma-join to 'a,b,c', so a naive
     // one-level flattening of the nested PK produces the same row hash
     await createSchema(orm);
-    await execAll(orm, `
+    await orm.schema.execute(`
       insert into region (country, code) values ('a', 'b,c'), ('a,b', 'c');
       insert into owner (region_country, region_code, id, name) values ('a', 'b,c', 1, 'O1'), ('a,b', 'c', 1, 'O2');
-      insert into owner_books (o_country, o_code, o_id, book_id, sort_order)
-        values ('a', 'b,c', 1, 1, 10), ('a', 'b,c', 1, 2, 11), ('a,b', 'c', 1, 1, 10), ('a,b', 'c', 1, 3, 12);
+      insert into owner_books (o_country, o_code, o_id, book_id, sort_order) values ('a', 'b,c', 1, 1, 10), ('a', 'b,c', 1, 2, 11), ('a,b', 'c', 1, 1, 10), ('a,b', 'c', 1, 3, 12);
     `);
   });
 
