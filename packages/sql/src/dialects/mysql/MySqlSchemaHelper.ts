@@ -824,14 +824,14 @@ export class MySqlSchemaHelper extends SchemaHelper {
       return val;
     }
 
-    // literal defaults of text/blob columns are expressions, reported with a charset introducer
-    // and escaped twice, e.g. `('it''s')` comes back as `_utf8mb4\'it\\\'s\'` (JSON defaults
-    // are parsed separately by the schema comparator)
+    // text/blob literal defaults come back escaped twice with a charset introducer, e.g. `_utf8mb4\'it\\\'s\'` (JSON is parsed by the comparator)
     const expression = type instanceof JsonType ? null : /^_\w+\\'(.*)\\'$/s.exec(val);
 
     if (expression) {
-      const unescape = (str: string) => str.replace(/\\(.)/gs, '$1');
-      return this.platform.quoteValue(unescape(unescape(expression[1])));
+      const unescape = (str: string, escapes: Dictionary<string> = {}) =>
+        str.replace(/\\(.)/gs, (_, char: string) => escapes[char] ?? char);
+      const sqlEscapes = { 0: '\0', b: '\b', n: '\n', r: '\r', t: '\t', Z: '\x1a' };
+      return this.platform.quoteValue(unescape(unescape(expression[1]), sqlEscapes));
     }
 
     const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType;
