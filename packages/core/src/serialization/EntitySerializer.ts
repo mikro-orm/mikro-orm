@@ -62,13 +62,7 @@ function pathLookup(
   key: 'fields' | 'populate',
   items: readonly string[],
 ): PathLookup {
-  const prepared = preparedOptions.get(options);
-
-  if (!prepared) {
-    return createPathLookup(items);
-  }
-
-  return (prepared[key] ??= createPathLookup(items));
+  return (preparedOptions.get(options)![key] ??= createPathLookup(items));
 }
 
 /** Returns true when any entry in `items` is `propName`, the wildcard `*`, or a dot-path under `propName`. */
@@ -356,8 +350,8 @@ export class EntitySerializer {
     options: SerializeOptions<T, any, any, any>,
     prop: EntityKey<T>,
   ): SerializeOptions<U> {
-    const prepared = preparedOptions.get(options);
-    const cached = prepared?.children.get(prop);
+    const prepared = preparedOptions.get(options)!;
+    const cached = prepared.children.get(prop);
 
     if (cached) {
       return cached as SerializeOptions<U>;
@@ -372,10 +366,8 @@ export class EntitySerializer {
       fields: Array.isArray(options.fields) ? this.extractChildFields(options.fields, prop) : options.fields,
     } as SerializeOptions<U>;
 
-    if (prepared) {
-      prepared.children.set(prop, child);
-      preparedOptions.set(child, { children: new Map() });
-    }
+    prepared.children.set(prop, child);
+    preparedOptions.set(child, { children: new Map() });
 
     return child;
   }
