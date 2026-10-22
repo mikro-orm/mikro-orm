@@ -813,6 +813,8 @@ export abstract class SchemaHelper {
 
     if (useDefault) {
       // https://dev.mysql.com/doc/refman/9.0/en/data-type-defaults.html
+      // `tinytext`, `mediumtext`, `longblob` etc. follow the same rule as `text` and `blob`
+      const baseType = column.type.toLowerCase().replace(/^(tiny|medium|long)/, '');
       const needsExpression = [
         'blob',
         'text',
@@ -824,7 +826,7 @@ export abstract class SchemaHelper {
         'multilinestring',
         'multipolygon',
         'geometrycollection',
-      ].some(type => column.type.toLowerCase().startsWith(type));
+      ].some(type => baseType.startsWith(type));
       const defaultSql = needsExpression && !column.default!.startsWith('(') ? `(${column.default})` : column.default;
 
       col.push(`default ${defaultSql}`);
