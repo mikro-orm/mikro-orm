@@ -4012,6 +4012,15 @@ export class QueryBuilder<
     for (const k of Object.keys(cond)) {
       const notAlias = k === '$not' ? this.getNotConditionAlias(cond[k], joins) : undefined;
 
+      if (k === '$not' && !notAlias) {
+        // splitting a `$not` across joins would drop the negation, so it is kept intact like an undistributable `$or`
+        if (filter) {
+          this.mergeFilterOrCondition([{ $not: cond[k] }], joins);
+        }
+
+        continue;
+      }
+
       if (Utils.isOperator(k) && !notAlias) {
         if (Array.isArray(cond[k])) {
           if (k === '$or' && !this.canDistributeOrBranches(cond[k], joins)) {

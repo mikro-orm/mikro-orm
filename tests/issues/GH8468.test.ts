@@ -60,3 +60,30 @@ test.each(['select-in', 'joined'] as const)('$not on a collection in populateWhe
   );
   expect(author.books.getItems().map(book => book.title)).toEqual(['A']);
 });
+
+test.each(['select-in', 'joined'] as const)('$not on a M:N collection in populateWhere (%s)', async strategy => {
+  const books = await orm.em.fork().find(
+    Book,
+    {},
+    {
+      populate: ['tags'],
+      populateWhere: { tags: { $not: { name: 'blue' } } },
+      strategy,
+      orderBy: { id: 1 },
+    },
+  );
+  expect(books.map(book => book.tags.getItems().map(tag => tag.name))).toEqual([['red'], []]);
+});
+
+test.each(['select-in', 'joined'] as const)('$not spanning several joins in populateFilter (%s)', async strategy => {
+  const [author] = await orm.em.fork().find(
+    Author,
+    {},
+    {
+      populate: ['books.tags'],
+      populateFilter: { books: { $not: { title: 'B', tags: { name: 'blue' } } } },
+      strategy,
+    },
+  );
+  expect(author.books.getItems().map(book => book.title)).toEqual(['A']);
+});
