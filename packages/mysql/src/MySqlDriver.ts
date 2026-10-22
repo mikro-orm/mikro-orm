@@ -47,14 +47,27 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
     options: NativeInsertUpdateManyOptions<T> = {},
   ): Promise<QueryResult<T>> {
     options.processCollections ??= true;
-    const res = await super.nativeInsertMany(entityName, data, options);
     const meta = this.metadata.get(entityName);
+    const pk = meta.primaryKeys[0];
+    // mysql continues auto_increment from an explicit id, so a generated row after one starts a new insert
+    const split = data.findIndex((item, idx) => idx > 0 && item[pk] == null && data[idx - 1][pk] != null);
+
+    if (split > 0) {
+      const res = await this.nativeInsertMany(entityName, data.slice(0, split), options);
+      const rest = await this.nativeInsertMany(entityName, data.slice(split), options);
+      res.rows!.push(...rest.rows!);
+      res.affectedRows += rest.affectedRows;
+
+      return res;
+    }
+
+    const res = await super.nativeInsertMany(entityName, data, options);
     const pks = this.getPrimaryKeyFields(meta);
     const ctx = options.ctx;
     const autoIncrementIncrement = await this.getAutoIncrementIncrement(ctx);
     data.forEach(
       (item, idx) =>
-        (res.rows![idx] = { [pks[0]]: item[pks[0]] ?? (res.insertId as number) + idx * autoIncrementIncrement }),
+        (res.rows![idx] = { [pks[0]]: item[pk] ?? (res.insertId as number) + idx * autoIncrementIncrement }),
     );
     res.row = res.rows![0];
 
