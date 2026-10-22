@@ -12,7 +12,7 @@ The loading strategy can be specified both at mapping time and when loading enti
 For example, given the following entities:
 
 ```ts
-import { Entity, LoadStrategy, OneToMany, ManyToOne } from '@mikro-orm/core';
+import { Collection, Entity, LoadStrategy, OneToMany, ManyToOne } from '@mikro-orm/core';
 
 @Entity()
 export class Author {
@@ -36,7 +36,7 @@ const author = await orm.em.findOne(Author, 1, { populate: ['books'] });
 If we update the `Author.books` mapping to the following:
 
 ```ts
-import { Entity, LoadStrategy, OneToMany } from '@mikro-orm/core';
+import { Collection, Entity, LoadStrategy, OneToMany } from '@mikro-orm/core';
 
 @Entity()
 export class Author {

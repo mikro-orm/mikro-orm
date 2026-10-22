@@ -135,8 +135,8 @@
     }
   },
   "devDependencies": {
-    "@commitlint/cli": "21.2.3",
-    "@commitlint/config-conventional": "21.2.3",
+    "@commitlint/cli": "21.2.4",
+    "@commitlint/config-conventional": "21.2.4",
     "@mikro-orm/mongo-highlighter": "1.0.0",
     "@mikro-orm/sql-highlighter": "1.0.1",
     "@swc-node/register": "1.12.1",
@@ -151,7 +151,7 @@
     "@types/sqlstring": "2.3.2",
     "@types/uuid": "11.0.0",
     "@types/yargs": "17.0.35",
-    "@vitest/coverage-v8": "5.0.4",
+    "@vitest/coverage-v8": "5.0.5",
     "bson": "7.3.3",
     "conditional-type-checks": "1.0.6",
     "dataloader": "2.2.3",
@@ -162,8 +162,8 @@
     "lerna": "10.1.1",
     "lint-staged": "17.6.0",
     "mongodb-memory-server-core": "11.3.0",
-    "oxfmt": "0.73.0",
-    "oxlint": "1.88.0",
+    "oxfmt": "0.74.0",
+    "oxlint": "1.89.0",
     "oxlint-tsgolint": "^7.0.0",
     "reflect-metadata": "0.2.2",
     "rimraf": "6.1.3",
@@ -173,7 +173,7 @@
     "unplugin-swc": "2.0.0",
     "uuid": "14.0.3",
     "vite": "8.3.4",
-    "vitest": "5.0.4"
+    "vitest": "5.0.5"
   },
   "resolutions": {
     "tar": "7.5.22"

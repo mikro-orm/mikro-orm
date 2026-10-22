@@ -1117,17 +1117,10 @@ export class SchemaComparator {
       return true;
     }
 
-    // If only one has column options, they don't match
-    if (cols1.length !== cols2.length) {
-      return false;
-    }
-
-    // Compare each column's options
-    // Note: We don't check c1.name !== c2.name because the indexes already have matching columnNames
-    // and the columns array is derived from those same column names
-    for (let i = 0; i < cols1.length; i++) {
-      const c1 = cols1[i];
-      const c2 = cols2[i];
+    // introspection may omit entries for columns with default options, so match them by name
+    for (const name of index1.columnNames) {
+      const c1 = cols1.find(c => c.name === name) ?? { name };
+      const c2 = cols2.find(c => c.name === name) ?? { name };
 
       const sort1 = c1.sort?.toUpperCase() ?? 'ASC';
       const sort2 = c2.sort?.toUpperCase() ?? 'ASC';

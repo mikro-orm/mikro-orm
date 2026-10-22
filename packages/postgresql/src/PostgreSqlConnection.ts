@@ -1,9 +1,34 @@
-import { Pool, type PoolConfig, TypeOverrides } from 'pg';
+import { Client, Pool, type PoolConfig, TypeOverrides } from 'pg';
 import Cursor from 'pg-cursor';
 import { CompiledQuery, type DatabaseConnection, PostgresDialect } from 'kysely';
 import array from 'postgres-array';
 import { type Dictionary, type Routine, type SessionContext, type Transaction } from '@mikro-orm/core';
 import { AbstractSqlConnection, createPostgreSqlTypeParsers, Utils } from '@mikro-orm/sql';
+
+/**
+ * PostgreSQL answers `COMMIT` of an aborted transaction with the command tag `ROLLBACK` instead of an error,
+ * and kysely drops the tag, so the failed commit is rejected here, like any other commit the server refused.
+ */
+class PostgreSqlClient extends Client {
+  override query(...args: any[]): any {
+    const res = (super.query as (...params: unknown[]) => any).apply(this, args);
+
+    // kysely sends a top-level commit as exactly `commit`, a callback-style call returns nothing
+    if (args[0] !== 'commit' || !res) {
+      return res;
+    }
+
+    return res.then((result: { command: string }) => {
+      if (result.command === 'ROLLBACK') {
+        throw Object.assign(new Error('current transaction is aborted, COMMIT was answered with ROLLBACK'), {
+          code: '25P02',
+        });
+      }
+
+      return result;
+    });
+  }
+}
 
 /** PostgreSQL database connection using the `pg` driver. */
 export class PostgreSqlConnection extends AbstractSqlConnection {
@@ -14,7 +39,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
       onPoolCreated?: (pool: Pool) => unknown;
     };
     const options = this.mapOptions(poolOverrides);
-    const pool = new Pool(options);
+    const pool = new Pool({ Client: PostgreSqlClient, ...options });
     this.#pool = pool;
     this.handlePoolErrors(pool);
     void onPoolCreated?.(pool);
@@ -43,12 +68,25 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
    * Both of the paths that emit one are unguarded by default: `pg-pool` removes its own listener
    * from a client while that client is checked out, deliberately leaving errors to whoever holds it,
    * and it re-emits errors of idle clients on the pool itself. The query in flight still rejects on
-   * its own, so there is nothing to do here beyond logging — the pool has already discarded the
-   * broken client by the time we see it.
+   * its own. An idle client is already discarded by the pool by the time we see it, a checked-out one
+   * is released here, as kysely's `ControlledTransaction` only releases after a commit or a rollback,
+   * which a transaction left open on a dead connection may never get.
    */
   private handlePoolErrors(pool: Pool): void {
+    const checkedOut = new WeakSet<object>();
+    pool.on('acquire', client => checkedOut.add(client));
+    pool.on('release', (_err, client) => checkedOut.delete(client));
     pool.on('connect', client => {
-      client.on('error', e => this.logger.warn('info', `PostgreSQL connection error: ${e.message}`));
+      client.on('error', e => {
+        this.logger.warn('info', `PostgreSQL connection error: ${e.message}`);
+
+        // kysely still releases a client whose plain query failed, and `pg-pool` throws on a second release
+        if (checkedOut.has(client)) {
+          const release = client.release;
+          client.release = () => undefined;
+          release(e);
+        }
+      });
     });
     pool.on('error', e => this.logger.warn('info', `PostgreSQL pool error: ${e.message}`));
   }
