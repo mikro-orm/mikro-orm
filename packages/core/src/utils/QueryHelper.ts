@@ -434,6 +434,17 @@ export class QueryHelper {
         return o;
       }
 
+      // `$all` items are matched like separate `$some` payloads, so they need the same processing
+      if ((key as string) === '$all' && Array.isArray(value)) {
+        o[key as string] = value.map(item =>
+          Utils.isPlainObject(item)
+            ? QueryHelper.processWhere({ ...options, where: item, entityName, root: false })
+            : item,
+        );
+
+        return o;
+      }
+
       if (Utils.isPlainObject(value)) {
         o[key as string] = QueryHelper.processWhere({
           ...options,
