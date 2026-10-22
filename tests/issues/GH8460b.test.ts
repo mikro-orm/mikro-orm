@@ -110,7 +110,7 @@ test('a reference is initialized by the joined rows (GH #8460)', async () => {
 test('a column selected by a later query is merged in (GH #8460)', async () => {
   const em = orm.em.fork();
   const [edge] = await findEdges(em);
-  expect((edge.to as Target).col1).toBeUndefined();
+  expect(edge.to.col1).toBeUndefined();
 
   await findEdges(em, ['to.pid', 'to.col1']);
   expect(edge.to.col1).toBe('a1');

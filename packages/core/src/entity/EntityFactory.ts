@@ -239,10 +239,8 @@ export class EntityFactory {
   }
 
   /**
-   * Whether merging `data` into an initialized entity would change nothing, checked without building its snapshot:
-   * every key is a plain scalar whose primitive value the entity already holds. For those properties the snapshot
-   * holds the same value and every comparator treats it as equal, so `mergeData` would find no difference. Keys it
-   * always re-applies (formulas, versions, generated columns, the discriminator) must also match the snapshot.
+   * Whether merging `data` into an initialized entity would change nothing: every key is a scalar the entity already
+   * holds by identity, and keys `mergeData` always re-applies (formula, version, generated, discriminator) match the snapshot.
    */
   private isNoopMerge<T extends object>(
     meta: EntityMetadata<T>,
@@ -260,7 +258,6 @@ export class EntityFactory {
       const prop = meta.properties[key];
       const value = data[key];
 
-      // relations, scalar references, embeddables, dates and JSON never hold the identical value, so they fall back;
       // custom types are left to the full merge, as their JS and database values can differ
       if (!prop || prop.customType || value === undefined || entity[key] !== value) {
         return false;
@@ -283,7 +280,7 @@ export class EntityFactory {
     data: EntityData<T>,
     options: FactoryOptions = {},
   ): void {
-    // a joined row usually brings back exactly what the entity already holds (#8460)
+    // joined rows often repeat exactly what the entity already holds, skip the snapshot and diffing then
     if (this.isNoopMerge(meta, entity, data, options)) {
       return;
     }
