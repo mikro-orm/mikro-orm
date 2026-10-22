@@ -115,8 +115,8 @@ export abstract class SchemaHelper {
   }
 
   /**
-   * When true, the acquire statement returns a status column and the caller
-   * must treat anything other than `1` as a failure to lock.
+   * When true, the acquire statement returns a status column: `1` means the lock is held,
+   * `0` means a bounded wait timed out and the statement is retried, anything else is a failure.
    */
   migrationLockReportsStatus(): boolean {
     return false;

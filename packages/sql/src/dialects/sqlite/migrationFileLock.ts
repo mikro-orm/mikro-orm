@@ -1,5 +1,6 @@
 import { mkdir, open, readFile, rm, stat, type FileHandle } from 'node:fs/promises';
 import { dirname } from 'node:path';
+import { threadId } from 'node:worker_threads';
 
 const tails = new Map<string, Promise<void>>();
 
@@ -27,13 +28,18 @@ async function lockIsStale(lockPath: string): Promise<boolean> {
     throw error;
   }
 
-  const pid = Number(raw);
+  const [pid, owner = 0] = raw.split(':').map(Number);
 
   // Empty or partial contents: the owner is between `open` and `writeFile`, or crashed there.
   // Give a live owner a moment before taking the file.
   if (!Number.isInteger(pid) || pid <= 0) {
     const info = await stat(lockPath).catch(() => undefined);
     return info != null && Date.now() - info.mtimeMs > 5_000;
+  }
+
+  // Same pid and thread is a previous incarnation (e.g. a restarted container); live holders here are queued by `tails`.
+  if (pid === process.pid) {
+    return owner === threadId;
   }
 
   try {
@@ -50,7 +56,7 @@ async function acquireLockFile(lockPath: string): Promise<FileHandle> {
       const handle = await open(lockPath, 'wx');
 
       try {
-        await handle.writeFile(String(process.pid));
+        await handle.writeFile(`${process.pid}:${threadId}`);
       } catch (error) {
         await handle.close().catch(() => undefined);
         await rm(lockPath, { force: true }).catch(() => undefined);
@@ -79,7 +85,7 @@ async function acquireLockFile(lockPath: string): Promise<FileHandle> {
  * SQLite locks the whole database file, so holding `BEGIN IMMEDIATE` on a side
  * connection would block the migration's own writes. A sibling lock file keeps
  * the wait outside the database the migrator has to write to. The lock is
- * cooperative: the file contains the owner's pid and is removed on release.
+ * cooperative: the file contains the owner's pid and thread id and is removed on release.
  * A pid that is no longer running is treated as abandoned.
  */
 export async function withMigrationFileLock<T>(lockPath: string, fn: () => Promise<T>): Promise<T> {
@@ -88,12 +94,9 @@ export async function withMigrationFileLock<T>(lockPath: string, fn: () => Promi
   const current = new Promise<void>(resolve => {
     releaseQueue = resolve;
   });
-  const tail = previous.then(
-    () => current,
-    () => current,
-  );
+  const tail = previous.then(() => current);
   tails.set(lockPath, tail);
-  await previous.catch(() => undefined);
+  await previous;
 
   try {
     await mkdir(dirname(lockPath), { recursive: true });

@@ -48,10 +48,11 @@ export class MsSqlSchemaHelper extends SchemaHelper {
 
   override getAcquireMigrationLockSQL(lockName: string): string {
     const resource = this.quoteMigrationLockResource(lockName);
+    // bounded wait that stays under tedious' default 15s `requestTimeout`; a timed out attempt reports `0` and is retried
     return [
       'declare @mikro_orm_migration_lock int;',
-      `exec @mikro_orm_migration_lock = sp_getapplock @Resource = ${resource}, @LockMode = 'Exclusive', @LockOwner = 'Session', @LockTimeout = -1;`,
-      `if (@mikro_orm_migration_lock < 0) throw 50000, 'Unable to acquire the MikroORM migration lock', 1;`,
+      `exec @mikro_orm_migration_lock = sp_getapplock @Resource = ${resource}, @LockMode = 'Exclusive', @LockOwner = 'Session', @LockTimeout = 5000;`,
+      'select case when @mikro_orm_migration_lock >= 0 then 1 when @mikro_orm_migration_lock = -1 then 0 else -1 end as granted;',
     ].join('\n');
   }
 
@@ -60,10 +61,13 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return `exec sp_releaseapplock @Resource = ${resource}, @LockOwner = 'Session';`;
   }
 
-  /** `sp_getapplock` wants an nvarchar literal. `quoteValue` emits a non-unicode string. */
+  override migrationLockReportsStatus(): boolean {
+    return true;
+  }
+
+  /** `sp_getapplock` takes an nvarchar resource name. */
   private quoteMigrationLockResource(lockName: string): string {
-    const quoted = this.platform.quoteValue(this.migrationLockId(lockName).token);
-    return quoted.startsWith('N') ? quoted : `N${quoted}`;
+    return `N${this.platform.quoteValue(this.migrationLockId(lockName).token)}`;
   }
 
   override getDropDatabaseSQL(name: string): string {

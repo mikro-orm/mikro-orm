@@ -77,15 +77,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
   }
 
   protected override async init(): Promise<void> {
-    if (!this.initialized) {
-      await super.init();
-      const created = await this.#schemaGenerator.ensureDatabase();
-
-      /* v8 ignore next */
-      if (created) {
-        this.initServices();
-      }
-    }
+    await this.prepareDatabase();
 
     if (this.#migrationsTableReady || this.options.includeWildcardSchema) {
       return;
@@ -99,6 +91,20 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     // so two replicas cannot both observe a missing table and create it.
     await (this.storage as MigrationStorage).ensureTable();
     this.#migrationsTableReady = true;
+  }
+
+  private async prepareDatabase(): Promise<void> {
+    if (this.initialized) {
+      return;
+    }
+
+    await super.init();
+    const created = await this.#schemaGenerator.ensureDatabase();
+
+    /* v8 ignore next */
+    if (created) {
+      this.initServices();
+    }
   }
 
   /**
@@ -206,17 +212,8 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     method: 'up' | 'down',
     options?: string | string[] | MigrateOptions,
   ): Promise<MigrationInfo[]> {
-    // `ensureDatabase()` may reconnect, which drops every session lock held on the old pool.
-    // Prepare the database first, then lock, then create the tracking table and migrate.
-    if (!this.initialized) {
-      await super.init();
-      const created = await this.#schemaGenerator.ensureDatabase();
-
-      /* v8 ignore next */
-      if (created) {
-        this.initServices();
-      }
-    }
+    // `ensureDatabase()` may reconnect, dropping session locks, so it has to run before locking
+    await this.prepareDatabase();
 
     return this.driver.getConnection().withMigrationLock(this.migrationLockName(options), async () => {
       const result = await super.runMigrations(method, options);

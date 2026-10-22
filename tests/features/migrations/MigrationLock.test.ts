@@ -1,4 +1,5 @@
 import { writeFile } from 'node:fs/promises';
+import { threadId } from 'node:worker_threads';
 import { MsSqlPlatform } from '@mikro-orm/mssql';
 import { MySqlPlatform } from '@mikro-orm/mysql';
 import { PostgreSqlPlatform } from '@mikro-orm/postgresql';
@@ -24,7 +25,9 @@ describe('migration lock SQL', () => {
     const helper = new MySqlPlatform().getSchemaHelper()!;
     const acquire = helper.getAcquireMigrationLockSQL('mikro_orm_migrations');
 
-    expect(acquire).toMatch(/^select get_lock\('mikro-orm:[0-9a-f]{16}', 16777215\)$/);
+    expect(acquire).toMatch(
+      /^select get_lock\(sha1\(concat_ws\('\.', database\(\), 'mikro-orm:[0-9a-f]{16}'\)\), 16777215\)$/,
+    );
     expect(helper.getReleaseMigrationLockSQL('mikro_orm_migrations')).toBe(
       acquire.replace('get_lock', 'release_lock').replace(', 16777215', ''),
     );
@@ -38,10 +41,10 @@ describe('migration lock SQL', () => {
 
     expect(acquire).toContain('sp_getapplock');
     expect(acquire).toContain("@LockOwner = 'Session'");
-    expect(acquire).toContain('@LockTimeout = -1');
+    expect(acquire).toContain('@LockTimeout = 5000');
     expect(acquire).toMatch(/@Resource = N'mikro-orm:[0-9a-f]{16}'/);
     expect(helper.getReleaseMigrationLockSQL('dbo.mikro_orm_migrations')).toContain('sp_releaseapplock');
-    expect(helper.migrationLockReportsStatus()).toBe(false);
+    expect(helper.migrationLockReportsStatus()).toBe(true);
   });
 
   test('sqlite has no session lock statement', () => {
@@ -72,6 +75,17 @@ describe('sqlite migration file lock', () => {
 
     expect(maxInside).toBe(1);
     expect(inside).toBe(0);
+  });
+
+  test('takes over a lock left by an earlier process with the same pid', async () => {
+    await writeFile(lockPath, `${process.pid}:${threadId}`);
+    let ran = false;
+
+    await withMigrationFileLock(lockPath, async () => {
+      ran = true;
+    });
+
+    expect(ran).toBe(true);
   });
 
   test('takes over a lock whose owner process is gone', async () => {

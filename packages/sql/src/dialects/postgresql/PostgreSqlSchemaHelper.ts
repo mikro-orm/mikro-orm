@@ -82,8 +82,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   override getMigrationLockTimeoutSettings(): readonly string[] {
-    // `statement_timeout` cancels a session waiting on `pg_advisory_lock`, and
-    // `lock_timeout` does the same. Both are restored once the lock is held.
+    // either one would cancel a session waiting on `pg_advisory_lock`
     return ['lock_timeout', 'statement_timeout'];
   }
 

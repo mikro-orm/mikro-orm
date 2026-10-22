@@ -1,8 +1,6 @@
 import { CompiledQuery, type Dialect } from 'kysely';
 import type { Dictionary } from '@mikro-orm/core';
-import { isAbsolute, resolve } from 'node:path';
 import { AbstractSqlConnection } from '../../AbstractSqlConnection.js';
-import { withMigrationFileLock } from './migrationFileLock.js';
 
 const FOREIGN_KEYS_PRAGMA = 'pragma foreign_keys = on';
 
@@ -14,7 +12,8 @@ function isFileDatabase(dbName: string): boolean {
     return false;
   }
 
-  return !/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(value);
+  // two+ char scheme, so a Windows drive letter (`C:\db.sqlite`) still counts as a file
+  return !/^[a-zA-Z][a-zA-Z0-9+.-]+:/.test(value);
 }
 
 export class BaseSqliteConnection extends AbstractSqlConnection {
@@ -37,27 +36,19 @@ export class BaseSqliteConnection extends AbstractSqlConnection {
    * not shared, so they only get the in-process queue from the base class.
    */
   override async withMigrationLock<T>(lockName: string, fn: () => Promise<T>): Promise<T> {
-    const lockPath = this.migrationLockPath(lockName);
-
-    if (!lockPath) {
-      return super.withMigrationLock(lockName, fn);
-    }
-
-    return withMigrationFileLock(lockPath, () => super.withMigrationLock(lockName, fn));
-  }
-
-  private migrationLockPath(lockName: string): string | undefined {
     const dbName = this.config.get('dbName');
 
     if (!dbName || !isFileDatabase(dbName)) {
-      return undefined;
+      return super.withMigrationLock(lockName, fn);
     }
 
-    const baseDir = this.config.get('baseDir');
-    const file = isAbsolute(dbName) ? dbName : resolve(baseDir, dbName);
-    const safe = lockName.replace(/[^a-zA-Z0-9_.-]+/g, '_');
+    // dynamic imports keep `node:fs` out of the static graph for browser/edge SQLite drivers (sql.js)
+    const { fs } = await import('@mikro-orm/core/fs-utils');
+    const { withMigrationFileLock } = await import('./migrationFileLock.js');
+    const file = fs.absolutePath(dbName, this.config.get('baseDir'));
+    const lockPath = `${file}.${lockName.replace(/[^a-zA-Z0-9_.-]+/g, '_')}.lock`;
 
-    return `${file}.${safe}.lock`;
+    return withMigrationFileLock(lockPath, () => super.withMigrationLock(lockName, fn));
   }
 
   protected async attachDatabases(): Promise<void> {

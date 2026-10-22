@@ -22,17 +22,22 @@ import {
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform.js';
 import { NativeQueryBuilder } from './query/NativeQueryBuilder.js';
 
+/** MySQL `GET_LOCK` returns `1` when the lock is held. Drivers differ on number vs string. */
+function migrationLockGranted(value: unknown): boolean {
+  return value === 1 || value === 1n || value === '1' || value === true;
+}
+
+/** `0` means a bounded lock wait timed out and can be retried. */
+function migrationLockTimedOut(value: unknown): boolean {
+  return value === 0 || value === 0n || value === '0';
+}
+
 /**
  * Pulls cancellation controls out of a `loggerContext` payload, returning the abort options
  * and a sanitized context that no longer carries them. The QueryBuilder/EM stash
  * `signal`/`inflightQueryAbortStrategy` on `loggerContext` to avoid widening the public
  * connection API; stripping them prevents leakage into user `Logger.logQuery` payloads.
  */
-/** MySQL `GET_LOCK` returns `1` when the lock is held. Drivers differ on number vs string. */
-function migrationLockGranted(value: unknown): boolean {
-  return value === 1 || value === 1n || value === '1' || value === true;
-}
-
 function extractAbortOptions(loggerContext?: LoggingOptions): {
   abort?: AbortQueryOptions;
   loggerContext?: LoggingOptions;
@@ -54,6 +59,8 @@ export abstract class AbstractSqlConnection extends Connection {
   #client?: Kysely<any>;
   /** Kysely bound to the connection that holds the migration lock, when a run is in progress. */
   #pinned?: Kysely<any>;
+  /** Top-level transaction opened on `#pinned`; while it is open, queries without a ctx use the pool instead of queueing behind it. */
+  #pinnedTrx?: ControlledTransaction<any, any>;
   /** Serialises migration runs that share this connection so `#pinned` cannot be interleaved. */
   #migrationQueue: Promise<void> = Promise.resolve();
 
@@ -184,7 +191,8 @@ export abstract class AbstractSqlConnection extends Connection {
           let acquired = false;
 
           try {
-            acquired = await this.#acquireMigrationLock(helper, lockName, acquire);
+            await this.#acquireMigrationLock(helper, lockName, acquire);
+            acquired = true;
             return await fn();
           } finally {
             try {
@@ -200,6 +208,11 @@ export abstract class AbstractSqlConnection extends Connection {
           }
         });
     });
+  }
+
+  #idlePinned(): Kysely<any> | undefined {
+    const trx = this.#pinnedTrx;
+    return trx && !trx.isCommitted && !trx.isRolledBack ? undefined : this.#pinned;
   }
 
   async #withMigrationQueue<T>(fn: () => Promise<T>): Promise<T> {
@@ -221,13 +234,12 @@ export abstract class AbstractSqlConnection extends Connection {
    * Acquires the session lock. Timeouts are suspended only for the wait and
    * restored before migrations run, so a server `statement_timeout` cannot
    * cancel the waiter and also does not leak onto later statements.
-   * Returns false when the lock was not taken.
    */
   async #acquireMigrationLock(
     helper: NonNullable<ReturnType<AbstractSqlPlatform['getSchemaHelper']>>,
     lockName: string,
     acquire: string,
-  ): Promise<boolean> {
+  ): Promise<void> {
     const settings = helper.getMigrationLockTimeoutSettings().filter(name => /^[a-z_]+$/.test(name));
     const previous = await this.#readSessionSettings(settings);
 
@@ -237,18 +249,23 @@ export abstract class AbstractSqlConnection extends Connection {
     }
 
     try {
-      const result = await this.#pinned!.executeQuery(CompiledQuery.raw(acquire));
+      for (;;) {
+        const result = await this.#pinned!.executeQuery(CompiledQuery.raw(acquire));
 
-      if (helper.migrationLockReportsStatus()) {
-        const row = (result.rows[0] ?? {}) as Dictionary;
-        const value = Object.values(row)[0];
+        if (!helper.migrationLockReportsStatus()) {
+          return;
+        }
 
-        if (!migrationLockGranted(value)) {
+        const value = Object.values((result.rows[0] ?? {}) as Dictionary)[0];
+
+        if (migrationLockGranted(value)) {
+          return;
+        }
+
+        if (!migrationLockTimedOut(value)) {
           throw new Error(`Unable to acquire the migration lock for '${lockName}'`);
         }
       }
-
-      return true;
     } finally {
       await this.#restoreSessionSettings(settings, previous);
     }
@@ -351,7 +368,8 @@ export abstract class AbstractSqlConnection extends Connection {
 
     await this.ensureConnection();
     await options.eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
-    let trxBuilder = (this.#pinned ?? this.getClient()).startTransaction();
+    const pinned = this.#idlePinned();
+    let trxBuilder = (pinned ?? this.getClient()).startTransaction();
 
     if (options.isolationLevel) {
       trxBuilder = trxBuilder.setIsolationLevel(options.isolationLevel);
@@ -362,6 +380,10 @@ export abstract class AbstractSqlConnection extends Connection {
     }
 
     const trx = await trxBuilder.execute();
+
+    if (pinned) {
+      this.#pinnedTrx = trx;
+    }
 
     for (const query of this.platform.getBeginTransactionSQL(options)) {
       this.logQuery(query, options.loggerContext);
@@ -517,7 +539,7 @@ export abstract class AbstractSqlConnection extends Connection {
       sql,
       async () => {
         const compiled = CompiledQuery.raw(q.formatted);
-        const res = await (ctx ?? this.#pinned ?? this.#client).executeQuery(compiled, abort);
+        const res = await (ctx ?? this.#idlePinned() ?? this.#client).executeQuery(compiled, abort);
         return this.transformRawResult<T>(res, method);
       },
       { ...q, ...cleanCtx },
@@ -547,7 +569,7 @@ export abstract class AbstractSqlConnection extends Connection {
     } as unknown as CompiledQuery;
 
     try {
-      const res = (ctx ?? this.#pinned ?? this.getClient())
+      const res = (ctx ?? this.#idlePinned() ?? this.getClient())
         .getExecutor()
         .stream(compiled, chunkSize ?? 100, abort ? { signal: abort.signal } : undefined);
 
