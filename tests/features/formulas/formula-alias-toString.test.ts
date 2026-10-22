@@ -1,13 +1,31 @@
 import { MikroORM, Opt, Type } from '@mikro-orm/sqlite';
-import { Entity, Formula, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
-import { mockLogger } from '../../helpers';
+import {
+  Entity,
+  Formula,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
+import { mockLogger } from '../../helpers.js';
 
-// A type with an SQL conversion sends the select down the driver's formula path as well as
-// the query builder's, which is what made the same formula appear twice.
+// A type with an SQL conversion routes the select through the driver's formula path as well as the query builder's
 class UpperType extends Type<string, string> {
   override convertToJSValueSQL(key: string): string {
     return `upper(${key})`;
   }
+}
+
+@Entity()
+class Author {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @Formula(alias => `(SELECT upper(${alias}.name))`)
+  upperName!: Opt<string>;
 }
 
 @Entity()
@@ -21,10 +39,11 @@ class Book {
   @Property({ type: UpperType })
   code!: string;
 
-  // Interpolating the mapping object itself relies on its `toString`, which is how formulas
-  // were written before the object carried per-column entries.
   @Formula(alias => `(SELECT length(${alias}.title))`)
   titleLength!: Opt<number>;
+
+  @ManyToOne(() => Author)
+  author!: Author;
 }
 
 let orm: MikroORM;
@@ -33,14 +52,12 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
     dbName: ':memory:',
-    entities: [Book],
+    entities: [Author, Book],
   });
   await orm.schema.refresh();
-});
-
-beforeEach(async () => {
-  await orm.schema.clear();
-  orm.em.clear();
+  const author = orm.em.create(Author, { name: 'Bar' });
+  orm.em.create(Book, { title: 'Foo', code: 'abc', author });
+  await orm.em.flush();
 });
 
 afterAll(async () => {
@@ -48,16 +65,20 @@ afterAll(async () => {
 });
 
 test('a formula using the alias toString is selected once, with the alias quoted', async () => {
-  orm.em.create(Book, { title: 'Foo', code: 'abc' });
-  await orm.em.flush();
-  orm.em.clear();
-
+  const em = orm.em.fork();
   const mock = mockLogger(orm);
-  const book = await orm.em.findOneOrFail(Book, { title: 'Foo' });
+  const book = await em.findOneOrFail(Book, { title: 'Foo' });
 
   expect(book.titleLength).toBe(3);
 
   const query = mock.mock.calls[0][0] as string;
   expect(query.match(/SELECT length\(/g)).toHaveLength(1);
   expect(query).toMatch(/SELECT length\(`[^`]+`\.title\)/);
+});
+
+test('a joined formula using the alias toString quotes a reserved-word join alias', async () => {
+  const em = orm.em.fork();
+  const [book] = await em.createQueryBuilder(Book, 'b').leftJoinAndSelect('b.author', 'order').getResultList();
+
+  expect(book.author.upperName).toBe('BAR');
 });

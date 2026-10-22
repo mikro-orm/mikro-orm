@@ -3078,7 +3078,7 @@ export abstract class AbstractSqlDriver<
       const table = this.createFormulaTable(quotedAlias, meta, schema);
       const columns = meta.createColumnMappingObject(
         p => qb.helper.getTPTAliasForProperty(p.name, tableAlias),
-        tableAlias,
+        quotedAlias,
       );
       return [raw(`${this.evaluateFormula(prop.formula, columns, table)} as ${aliased}`)];
     }
@@ -3710,9 +3710,7 @@ export abstract class AbstractSqlDriver<
     }
 
     if (ret.length > 0 && !hasExplicitFields && addFormulas) {
-      // Per-column entries keep their unquoted aliases, while `toString()` yields the quoted alias
-      // that formulas interpolating the mapping object have always received, and that the query
-      // builder renders for the same formula.
+      // `toString()` must yield the quoted alias like `QueryBuilder.finalize()`, which dedupes formulas by rendered SQL
       const quotedAlias = this.platform.quoteIdentifier(alias);
       const columns = meta.createColumnMappingObject(alias, quotedAlias.toString());
       const effectiveSchema = schema ?? (meta.schema !== '*' ? meta.schema : undefined);
