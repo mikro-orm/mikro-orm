@@ -7,11 +7,8 @@ import { Entity, Index, PrimaryKey, Property, ReflectMetadataProvider } from '@m
   columns: [{ name: 'authorId' }, { name: 'createdAt', sort: 'DESC' }, { name: 'id', sort: 'DESC' }],
 })
 @Index({
-  name: 'book_id_author_idx',
-  columns: [
-    { name: 'id', sort: 'DESC' },
-    { name: 'authorId', sort: 'DESC', nulls: 'LAST' },
-  ],
+  name: 'book_author_id_author_idx',
+  columns: [{ name: 'authorId', sort: 'DESC', nulls: 'LAST' }, { name: 'author' }],
 })
 class Book {
   @PrimaryKey({ type: 'number' })
@@ -19,6 +16,9 @@ class Book {
 
   @Property({ type: 'number' })
   authorId!: number;
+
+  @Property({ type: 'number' })
+  author!: number;
 
   @Property({ type: 'Date' })
   createdAt!: Date;
@@ -39,7 +39,7 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test('GH #8489: index column whose name is the end of an earlier column keeps its sort order', async () => {
-  // `id` is the end of `author_id`, and `author_id` comes after `id` in the second index
+test('GH #8489: index column whose name is part of another column keeps its sort order', async () => {
+  // `id` is the end of `author_id`, `author` is the start of `author_id`
   await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
 });

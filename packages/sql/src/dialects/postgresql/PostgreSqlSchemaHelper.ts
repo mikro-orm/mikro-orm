@@ -493,9 +493,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       const name = unquote(colDef);
       const result: IndexColumnOptions = { name };
 
-      // Find this column in the expression and extract modifiers
-      // Create a pattern that matches the column name (quoted or unquoted) followed by modifiers,
-      // as a whole list item, so `id` does not match the end of `author_id`
+      // Match the column (quoted or unquoted) as a whole list item, so `id` never matches inside `author_id`
       const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const colPattern = new RegExp(`(?:^|,)\\s*"?${escapedName}"?(?=\\s|,|$)\\s*([^,)]*?)(?:,|$)`, 'i');
       const colMatch = columnsStr.match(colPattern);
