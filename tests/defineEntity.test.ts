@@ -285,7 +285,6 @@ describe('defineEntity', () => {
 
     class Author extends AuthorSchema.class {}
 
-    expect(AuthorSchema.init().meta.filters.org).toBeDefined();
     expect(AuthorSchema.init().meta.filters.org.default).toBe(true);
 
     type IAuthor = InferEntity<typeof AuthorSchema>;
@@ -362,6 +361,16 @@ describe('defineEntity', () => {
     expect(PlainAuthorSchema.init().meta.filters.org.name).toBe('org');
     type IPlainAuthor = InferEntity<typeof PlainAuthorSchema>;
     assert<IsExact<IPlainAuthor['firstName'], string>>(true);
+
+    const invalidRlsFilters = { org: { name: 'org', cond: {}, rls: 'yes' } };
+    defineEntity({
+      name: 'FilterNoRepoAuthor',
+      // @ts-expect-error without a repository, non-fresh filters are still fully checked
+      filters: invalidRlsFilters,
+      properties: {
+        id: p.integer().primary(),
+      },
+    });
   });
 
   it('should define entity with primary keys', () => {

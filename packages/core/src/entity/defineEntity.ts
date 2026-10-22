@@ -1352,9 +1352,7 @@ type AllKeys<TProperties, TBase> = keyof TProperties | (IsNever<TBase> extends t
 // GH #7440 dodged the same trap for `filters.cond` by falling back to a loose `Dictionary` there.
 type PartialWhere<TProperties, TBase> = string | FilterQuery<{ [K in AllKeys<TProperties, TBase> & string]?: unknown }>;
 
-// Strict filter map for `defineEntity`. `cond` keeps a call signature so fresh object literals stay
-// contextually typed. `FilterQuery` is `any`, not the inferred entity — that eager `FilterQuery` is
-// what made `repository` + inline `filters` circular (GH #7440).
+// mirrors FilterDefResolved with `FilterQuery<any>` instead of the inferred entity to avoid circular type inference (GH #7440)
 type DefineEntityFilterMap = Dictionary<{
   name: string;
   cond:
@@ -1373,13 +1371,7 @@ type DefineEntityFilterMap = Dictionary<{
   rls?: boolean | { setting?: string };
 }>;
 
-// Call-signature-free twin of `DefineEntityFilterMap`. Comparing a non-fresh `filters` value (a
-// function return, a hoisted const, or a spread) to the `cond` call signature eagerly instantiates
-// this parameter type and circles back through `repository` (GH #8478). A function is assignable to
-// `Dictionary`, so object and callback `cond`s both still match. Only `name` and `cond` are listed:
-// an optional property here makes TypeScript prefer the call-signature arm again and the cycle
-// comes back. Unioned in only when a repository is being inferred; without one, the strict map
-// keeps checking `rls` / `args` / `entity` / `default`.
+// non-fresh `filters` checked only against a map with optional props cycle through `repository` (GH #8478), so this arm lists required props only
 type DefineEntityFilterMapLoose = Dictionary<{
   name: string;
   cond: Dictionary;
@@ -1430,8 +1422,7 @@ export interface EntityMetadataWithProperties<
   hooks?: DefineEntityHooks;
   // Capture the repository type for InferEntity to include EntityRepositoryType
   repository?: () => TRepository;
-  // GH #7440 / GH #8478 — see DefineEntityFilterMap. The loose arm exists only while `TRepository`
-  // is inferred; `IsNever` keeps non-fresh filters fully checked when there is no repository.
+  // loose arm only when a repository is inferred, so non-fresh filters stay fully checked without one
   filters?: DefineEntityFilterMap | IsNever<TRepository, never, DefineEntityFilterMapLoose>;
   forceObject?: TForceObject;
   // Captured as a literal so `NarrowDiscriminator` can keep the discriminator required for
