@@ -45,6 +45,12 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `use ${this.quote(defaultSchema)}`;
   }
 
+  override getMigrationLockSQL(): { acquire: string; release: string } {
+    // `get_lock` names are server-wide and limited to 64 characters
+    const name = `left(concat(database(), '.', ?), 64)`;
+    return { acquire: `select get_lock(${name}, 0) as locked`, release: `select release_lock(${name})` };
+  }
+
   override supportsMigrationSchema(): boolean {
     return true;
   }
