@@ -3,6 +3,8 @@ import { MikroORM as MySqlMikroORM } from '@mikro-orm/mysql';
 import { MikroORM as MariaDbMikroORM } from '@mikro-orm/mariadb';
 import { type AbstractSqlConnection, MikroORM as PostgreSqlMikroORM } from '@mikro-orm/postgresql';
 import { MikroORM as MsSqlMikroORM } from '@mikro-orm/mssql';
+import { MikroORM as SqliteMikroORM } from '@mikro-orm/sqlite';
+import { MikroORM as PgliteMikroORM } from '@mikro-orm/pglite';
 import { Migration, Migrator } from '@mikro-orm/migrations';
 
 const LockItem = defineEntity({
@@ -165,5 +167,36 @@ describe.each(drivers)('migration lock ($name)', ({ name, MikroORM, options, sle
         await orm1.close();
       }
     });
+  }
+});
+
+test.each([
+  { name: 'sqlite', MikroORM: SqliteMikroORM, dbName: ':memory:' },
+  { name: 'pglite', MikroORM: PgliteMikroORM, dbName: 'memory://' },
+] as const)('the lock option is ignored without a lock primitive ($name)', async ({ MikroORM, dbName }) => {
+  class InsertItemMigration extends Migration {
+    override async up(): Promise<void> {
+      this.addSql(`insert into lock_item (name) values ('x')`);
+    }
+  }
+
+  const orm = await (MikroORM.init as (o: Partial<Options>) => Promise<CoreMikroORM>)({
+    entities: [LockItem],
+    dbName,
+    extensions: [Migrator],
+    pool: { max: 1 },
+    migrations: {
+      migrationsList: [{ name: 'InsertItemMigration', class: InsertItemMigration }],
+      snapshot: false,
+      silent: true,
+      lock: true,
+    },
+  });
+
+  try {
+    await orm.schema.create();
+    await expect(orm.migrator.up()).resolves.toHaveLength(1);
+  } finally {
+    await orm.close();
   }
 });
