@@ -590,8 +590,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       ret[key] ??= [];
       let type = col.data_type.toLowerCase() === 'array' ? col.udt_name.replace(/^_(.*)$/, '$1[]') : col.udt_name;
 
-      // `udt_name` drops the element type modifier of arrays (`_numeric` for `numeric(12,2)[]`),
-      // recover it from `format_type`, e.g. `timestamp(3) with time zone[]` -> `timestamptz(3)[]`
+      // `udt_name` drops array element typmods (`_numeric` for `numeric(12,2)[]`), recover them from `format_type`
       const arrayModifier = type.endsWith('[]')
         ? /^[^(]*(\([^)]*\))[^(]*\[\]$/.exec(col.format_type ?? '')?.[1]
         : undefined;
@@ -608,9 +607,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         type = `${col.udt_schema}.${type}`;
       }
 
-      if (type === 'bpchar') {
-        type = 'char';
-      }
+      type = type.replace(/^bpchar\b/, 'char');
 
       // postgis stores the geometry/geography typmod (`geometry(point,4326)`) in atttypmod, which
       // information_schema does not expose — recover the full type via format_type so it round-trips

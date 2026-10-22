@@ -1035,6 +1035,11 @@ export class DatabaseTable {
           !this.hasAdvancedIndexOptions(idx),
       );
 
+    // postgres maps `timestamptz(3)[]` to its element type (matching the metadata side when diffing), generate it as an array
+    if (column.type?.endsWith('[]') && !column.enumItems?.length) {
+      column = { ...column, mappedType: Type.getType(t.array) };
+    }
+
     const kind = this.getReferenceKind(fk, unique);
     const runtimeType = this.getPropertyTypeForColumn(namingStrategy, column, fk);
     const type = fk
