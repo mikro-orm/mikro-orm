@@ -1,3 +1,4 @@
+import { defineEntity, p } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/pglite';
 import { Entity, Index, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 
@@ -58,4 +59,36 @@ test('GH #8488: property-level index keeps its options', async () => {
   expect(orm.getMetadata().get(Book).properties.author.index).toBe('book_author_idx');
 
   await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+});
+
+test('GH #8488: single-property index keeps its options with defineEntity', async () => {
+  const Article = defineEntity({
+    name: 'Article',
+    properties: {
+      id: p.integer().primary(),
+      createdAt: p.datetime(),
+      slug: p.string(),
+    },
+    indexes: [
+      { properties: 'createdAt', name: 'article_created_at_idx', columns: [{ name: 'createdAt', sort: 'DESC' }] },
+    ],
+    uniques: [{ properties: 'slug', name: 'article_slug_unique', deferMode: 'deferred' }],
+  });
+
+  const orm2 = await MikroORM.init({ dbName: 'memory://', entities: [Article] });
+  await orm2.schema.create();
+
+  const indexes = await orm2.em.execute<{ indexdef: string }[]>(
+    `select indexdef from pg_indexes where indexname = 'article_created_at_idx'`,
+  );
+  expect(indexes.map(i => i.indexdef)).toEqual([
+    'CREATE INDEX article_created_at_idx ON public.article USING btree (created_at DESC)',
+  ]);
+
+  const [slug] = await orm2.em.execute<{ condeferred: boolean }[]>(
+    `select condeferred from pg_constraint where conname = 'article_slug_unique'`,
+  );
+  expect(slug.condeferred).toBe(true);
+  await expect(orm2.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+  await orm2.close(true);
 });

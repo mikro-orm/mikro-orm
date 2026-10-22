@@ -1937,8 +1937,7 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
   }
 
   private initIndexes(prop: EntityProperty<Entity>): void {
-    // only an index with nothing but a name can be folded into `prop.index`/`prop.unique`,
-    // any other option (`columns`, `include`, `where`, `deferMode`...) would be lost
+    // `prop.index`/`prop.unique` keep only the name, so an index with any other option must stay in `meta.indexes`
     const isSimple = (index: { properties?: unknown }) =>
       index.properties === prop.name &&
       Object.entries(index).every(([key, value]) => key === 'name' || key === 'properties' || value == null);
