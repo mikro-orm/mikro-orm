@@ -48,7 +48,7 @@ for (const [field, factor, names] of [
 /**
  * PostgreSQL stores an interval as months, days and microseconds, and prints it back in its own format,
  * so `interval '1 minute'` comes back from introspection as `'00:01:00'::interval`.
- * Reduces both spellings to the same canonical form, or returns `undefined` when the literal is not understood.
+ * Reformats the literal the way PostgreSQL prints it, or returns `undefined` when the literal is not understood.
  */
 function normalizeIntervalLiteral(literal: string): string | undefined {
   const parts = { months: 0, days: 0, micros: 0 };
@@ -92,16 +92,32 @@ function normalizeIntervalLiteral(literal: string): string | undefined {
   }
 
   const sign = ago ? -1 : 1;
-  const micros = Math.abs(parts.micros);
-  // keep the microseconds split up, one long number could lose digits in the duplicate word removal below
-  const time = [
-    Math.floor(micros / 3_600_000_000),
-    Math.floor(micros / 60_000_000) % 60,
-    Math.floor(micros / 1_000_000) % 60,
-    micros % 1_000_000,
-  ].join(':');
+  const months = parts.months * sign;
+  const micros = parts.micros * sign;
+  const fields: string[] = [];
+  let before = false;
 
-  return `${parts.months * sign}:${parts.days * sign}:${parts.micros * sign < 0 ? '-' : ''}${time}`;
+  // mirrors `EncodeInterval()` with the default `IntervalStyle = postgres`
+  for (const [value, unit] of [
+    [Math.trunc(months / 12), 'year'],
+    [months % 12, 'mon'],
+    [parts.days * sign, 'day'],
+  ] as const) {
+    if (value !== 0) {
+      fields.push(`${before && value > 0 ? '+' : ''}${value} ${unit}${value === 1 ? '' : 's'}`);
+      before = value < 0;
+    }
+  }
+
+  if (fields.length === 0 || micros !== 0) {
+    const abs = Math.abs(micros);
+    const pad = (value: number) => String(value).padStart(2, '0');
+    const fraction = String((abs % 1_000_000) / 1_000_000).slice(1);
+    const time = `${pad(Math.floor(abs / 3_600_000_000))}:${pad(Math.floor(abs / 60_000_000) % 60)}:${pad(Math.floor(abs / 1_000_000) % 60)}`;
+    fields.push(`${micros < 0 ? '-' : before ? '+' : ''}${time}${fraction}`);
+  }
+
+  return fields.join(' ');
 }
 
 /**
@@ -1250,11 +1266,11 @@ export class SchemaComparator {
           // lookbehind: only strip a real charset introducer, never an underscore inside a literal like 'a_b'
           ?.replace(/(?<![\w'])_\w+'(.*?)'/g, '$1')
           // PostgreSQL stores `interval '1 minute'` as `'00:01:00'::interval`
-          .replace(
-            /\binterval\s*'([^']*)'|'([^']*)'\s*::\s*interval\b/gi,
-            (_, typed?: string, cast?: string) =>
-              `interval '${normalizeIntervalLiteral(typed ?? cast!) ?? typed ?? cast}'`,
-          )
+          // the cast form is kept so an untyped `'1 day'` still matches the introspected `'1 day'::interval`
+          .replace(/\binterval\s*'([^']*)'|'([^']*)'\s*::\s*interval\b/gi, (match, typed?: string, cast?: string) => {
+            const literal = normalizeIntervalLiteral(typed ?? cast!);
+            return literal == null ? match : `'${literal}'::interval`;
+          })
           .replace(/!=/g, '<>')
           // `\b` keeps this from firing inside identifiers like `min(...)`
           .replace(/\bnot\s+in\s*\((.*?)\)/gi, '<> all (array[$1])')

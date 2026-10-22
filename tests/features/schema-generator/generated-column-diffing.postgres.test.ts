@@ -31,6 +31,13 @@ const Event = defineEntity({
       .columnType('interval')
       .$type<Opt<string>>()
       .generated(cols => `(${cols.durationMinutes} * interval '1 day -90 seconds') stored`),
+    localStart: p.datetime().columnType('timestamp'),
+    // the untyped literal is stored as `'1 day'::interval`
+    localEnd: p
+      .datetime()
+      .columnType('timestamp')
+      .$type<Opt<Date>>()
+      .generated(cols => `(${cols.localStart} + '1 day') stored`),
   },
 });
 
@@ -60,10 +67,14 @@ test('interval literals are compared by value', () => {
   expect(comparator.diffExpression(`a + interval '1 day ago'`, `a + '-1 days'::interval`)).toBe(false);
   expect(comparator.diffExpression(`a + interval '@ -1 hour -30 minutes'`, `a + '-01:30:00'::interval`)).toBe(false);
   expect(comparator.diffExpression(`a + interval '01:30'`, `a + '01:30:00'::interval`)).toBe(false);
+  expect(comparator.diffExpression(`a + '1 day'`, `a + '1 day'::interval`)).toBe(false);
+  expect(comparator.diffExpression(`a + interval '1 year 13 months'`, `a + '2 years 1 mon'::interval`)).toBe(false);
+  expect(comparator.diffExpression(`a + interval '1 day -90 seconds'`, `a + '1 day -00:01:30'::interval`)).toBe(false);
+  expect(comparator.diffExpression(`a + interval '-1 day 1 minute'`, `a + '-1 days +00:01:00'::interval`)).toBe(false);
+  expect(comparator.diffExpression(`a + interval '1.5 seconds'`, `a + '00:00:01.5'::interval`)).toBe(false);
   // literals that are not understood are compared as they are
-  expect(comparator.diffExpression(`a + interval '1.5 days'`, `a + '1.5 days'::interval`)).toBe(false);
-  expect(comparator.diffExpression(`a + interval 'P1D'`, `a + 'P1D'::interval`)).toBe(false);
-  expect(comparator.diffExpression(`a + interval '1 fortnight'`, `a + '1 fortnight'::interval`)).toBe(false);
+  expect(comparator.diffExpression(`a + '1.5 days'`, `a + '1.5 days'::interval`)).toBe(false);
+  expect(comparator.diffExpression(`a + '1 fortnight'`, `a + '1 fortnight'::interval`)).toBe(false);
   expect(comparator.diffExpression(`a + interval 'P1D'`, `a + '1 day'::interval`)).toBe(true);
   expect(comparator.diffExpression(`a + interval '10 minutes'`, `a + '00:01:00'::interval`)).toBe(true);
   expect(comparator.diffExpression(`a + interval '1 day'`, `a + '24:00:00'::interval`)).toBe(true);
