@@ -1042,7 +1042,14 @@ export class EntityLoader {
       }
     });
 
-    const operators = Object.keys(subCond).filter(key => Utils.isOperator(key, false));
+    const operators = Object.keys(subCond).filter(key => {
+      // `$not` wrapping entity conditions stays on the target entity, only operators on the relation itself map to its PK
+      if (key === '$not' && Utils.isPlainObject(subCond[key])) {
+        return Utils.getObjectQueryKeys(subCond[key]).every(k => Utils.isOperator(k, false));
+      }
+
+      return Utils.isOperator(key, false);
+    });
 
     if (operators.length > 0) {
       subCond[pk] = Utils.isPlainObject(subCond[pk]) ? { ...subCond[pk] } : (subCond[pk] ?? {});
