@@ -226,11 +226,11 @@ __metadata:
   linkType: hard
 
 "@azure/msal-browser@npm:^5.5.0":
-  version: 5.25.1
-  resolution: "@azure/msal-browser@npm:5.25.1"
+  version: 5.26.0
+  resolution: "@azure/msal-browser@npm:5.26.0"
   dependencies:
-    "@azure/msal-common": "npm:16.14.2"
-  checksum: 10/deef7ce6c47473f3d9543310fef97092648180e026764f88705ea7fc0449fa52b66ce0ecf86ea36f4d0ab88b2985fb7c9a9f31398da7d22a2523cc637da89ade
+    "@azure/msal-common": "npm:16.14.3"
+  checksum: 10/11938ba9a426f5506a6db4048e377b815077dd118dcb13bdf85131c541e05ec198968cc2e48d1d5ca03dc6d2fa3630087c50805b3f24cb55f3fdfc7da70d79de
   languageName: node
   linkType: hard
 
@@ -241,10 +241,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure/msal-common@npm:16.14.2":
-  version: 16.14.2
-  resolution: "@azure/msal-common@npm:16.14.2"
-  checksum: 10/db1c5986485470a92bb5ae08d088945eadf76bdcba223e685c03d7e3264d0df4353ca64b32a94ee928a58ca6ed847106c956a03b1d385ec9d91c1454a817ec90
+"@azure/msal-common@npm:16.14.3":
+  version: 16.14.3
+  resolution: "@azure/msal-common@npm:16.14.3"
+  checksum: 10/be6df5c62dee049588494e605e9288f2cd601f3949de1e1165dd99822ea70c73a270e3e9c12190c9ed39a215d4de2910053506846450199e3d6634179b82f478
   languageName: node
   linkType: hard
 
@@ -1910,11 +1910,11 @@ __metadata:
   linkType: hard
 
 "@npmcli/promise-spawn@npm:^10.0.0":
-  version: 10.0.0
-  resolution: "@npmcli/promise-spawn@npm:10.0.0"
+  version: 10.0.1
+  resolution: "@npmcli/promise-spawn@npm:10.0.1"
   dependencies:
     which: "npm:^7.0.0"
-  checksum: 10/72f210980aac2e13d3bffea06c0064ccc5987eec889f198f92aa47f87419d14c84683171bf150cdf2664c0320876fc5a523a11679cbde7febd84d82c26405690
+  checksum: 10/34e5649e58cfbefffb3285debef3d5442afacecf96aa1c50d449001a7293f7c911f10e86e862142938dce31b26572c18c2cd9a3c7af48cc75f6cac5893ed0307
   languageName: node
   linkType: hard
 
@@ -2763,8 +2763,8 @@ __metadata:
   linkType: hard
 
 "@rollup/pluginutils@npm:^5.4.0":
-  version: 5.4.0
-  resolution: "@rollup/pluginutils@npm:5.4.0"
+  version: 5.5.1
+  resolution: "@rollup/pluginutils@npm:5.5.1"
   dependencies:
     "@types/estree": "npm:^1.0.0"
     estree-walker: "npm:^2.0.2"
@@ -2774,7 +2774,7 @@ __metadata:
   peerDependenciesMeta:
     rollup:
       optional: true
-  checksum: 10/eb1687d52c3847a27c5f6e790ee31a6a356c23e3c16222b4d7cf31d48dfaad2edc13e49355da9f2c59c90c1220cb089b36780cb95dc6d0ee54587f61cc5cf080
+  checksum: 10/a2f8ae672f7c155966a34d813a15906c5c2e78adf062048364c2859aad1db58c515f5ad6baf88bbe6ca62a1516cc19d87fcf15e7951cbdbbaffac434d2ecbd2d
   languageName: node
   linkType: hard
 
@@ -3818,15 +3818,15 @@ __metadata:
   linkType: hard
 
 "bin-links@npm:^7.0.0":
-  version: 7.0.0
-  resolution: "bin-links@npm:7.0.0"
+  version: 7.0.1
+  resolution: "bin-links@npm:7.0.1"
   dependencies:
     cmd-shim: "npm:^9.0.0"
     npm-normalize-package-bin: "npm:^6.0.0"
     proc-log: "npm:^7.0.0"
     read-cmd-shim: "npm:^7.0.0"
     write-file-atomic: "npm:^8.0.0"
-  checksum: 10/43e4d7ded3fde4507ea73bbec0f14ba0d6d29b778157ed9198d341ec0a9019780f145054ab23beca5a82c1a7204ce3ef78360f088d8eab2a149cfac070b1d3a1
+  checksum: 10/dec0d17f9d21b5976097206f6913d465a9882f7fd19b3a8b2d42bd1d800e51a5c5cce2aae855db1402e5c9afe500934ec2ccfe67cb8a43bf9778a3cfa54119ec
   languageName: node
   linkType: hard
 
@@ -7146,7 +7146,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pacote@npm:22.0.0, pacote@npm:^22.0.0":
+"pacote@npm:22.0.0":
   version: 22.0.0
   resolution: "pacote@npm:22.0.0"
   dependencies:
@@ -7170,6 +7170,33 @@ __metadata:
   bin:
     pacote: bin/index.js
   checksum: 10/ae89b41f6e1a25e5d975d59330c9db6bd68e165408c50194754ee36da8b4074623b1249480de7a6956a5d099271fa3038df9996192bbe71112596b6b28c65951
+  languageName: node
+  linkType: hard
+
+"pacote@npm:^22.0.0":
+  version: 22.0.1
+  resolution: "pacote@npm:22.0.1"
+  dependencies:
+    "@gar/promise-retry": "npm:^1.0.0"
+    "@npmcli/git": "npm:^8.0.0"
+    "@npmcli/installed-package-contents": "npm:^5.0.0"
+    "@npmcli/package-json": "npm:^8.0.0"
+    "@npmcli/promise-spawn": "npm:^10.0.0"
+    "@npmcli/run-script": "npm:^11.0.0"
+    cacache: "npm:^21.0.1"
+    fs-minipass: "npm:^3.0.0"
+    minipass: "npm:^7.0.2"
+    npm-package-arg: "npm:^14.0.0"
+    npm-packlist: "npm:^11.2.0"
+    npm-pick-manifest: "npm:^12.0.0"
+    npm-registry-fetch: "npm:^20.0.1"
+    proc-log: "npm:^7.0.0"
+    sigstore: "npm:^5.0.0"
+    ssri: "npm:^14.0.0"
+    tar: "npm:^7.4.3"
+  bin:
+    pacote: bin/index.js
+  checksum: 10/b49fa4b7dcc1a7730667b4c55e7e740edf4a72f42c7beef1bdb0bc07276a129c5f519de0a36ca74f9e71e68fb207d0818cb00195b2e21bf7144ffa11128da846
   languageName: node
   linkType: hard
 
