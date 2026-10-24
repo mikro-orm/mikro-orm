@@ -313,3 +313,47 @@ export class BookWithAuthor {
 
 }
 ```
+
+## Filtering on keys that are not entity properties
+
+The `where` query of a virtual entity is passed to its `expression`, so the entity can filter on anything the underlying query supports. The type system, however, only allows filtering on the entity's own properties. To opt in to additional filter keys, declare them using the `[FilterQueryOverride]` symbol:
+
+```ts title="./entities/Publisher.ts"
+import { defineEntity, p, FilterQueryOverride } from '@mikro-orm/core';
+
+const PublisherSchema = defineEntity({
+  name: 'Publisher',
+  expression: `select p.name, b.genre from publisher p join book b on b.publisher_id = p.id`,
+  properties: {
+    name: p.string(),
+  },
+});
+
+export class Publisher extends PublisherSchema.class {
+  // `genre` is not a property of `Publisher`, but it is allowed in the filter query
+  readonly [FilterQueryOverride]?: { genre: string };
+}
+
+PublisherSchema.setClass(Publisher);
+
+// both are valid
+em.find(Publisher, { name: 'Foo', genre: 'non-fiction' });
+em.find(Publisher, { genre: { $in: ['non-fiction', 'fiction'] } });
+```
+
+When using decorators:
+
+```ts
+@Entity({ expression: `select p.name, b.genre from publisher p join book b on b.publisher_id = p.id` })
+export class Publisher {
+
+  @Property()
+  name!: string;
+
+  // `genre` is not a property of `Publisher`, but it is allowed in the filter query
+  readonly [FilterQueryOverride]?: { genre: string };
+
+}
+```
+
+Keys that are neither entity properties nor declared via `[FilterQueryOverride]` will still be rejected by the type system.
