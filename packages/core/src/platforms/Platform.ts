@@ -488,6 +488,11 @@ export abstract class Platform {
     return 'text';
   }
 
+  /** Whether array columns support the `&&` (overlap) operator. */
+  supportsArrayOverlap(): boolean {
+    return false;
+  }
+
   /** Serializes a string array into its database storage format. */
   marshallArray(values: string[]): string {
     return values.map(v => (/[,",\\]/.test(v) ? JSON.stringify(v) : v)).join(',');

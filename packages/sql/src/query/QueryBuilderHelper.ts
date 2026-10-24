@@ -889,6 +889,24 @@ export class QueryBuilderHelper {
 
         parts.push(`${this.#platform.quoteIdentifier(mappedKey)} ${replacement} ${sql}`);
         params.push(...query.params);
+      } else if (
+        ['$in', '$nin'].includes(op) &&
+        prop?.customType instanceof ArrayType &&
+        !opValue.every((v: unknown) => Array.isArray(v))
+      ) {
+        // a flat list on an array column matches any of its elements, like in mongo
+        if (!this.#platform.supportsArrayOverlap()) {
+          throw new ValidationError(
+            `${op} on array property ${prop.name} expects a list of arrays, use $eq for an exact match or $overlap for element matching`,
+          );
+        }
+
+        const mappedKey = this.mapper(key, type, opValue, null);
+        const sql = `${this.#platform.quoteIdentifier(mappedKey)} && ?`;
+        parts.push(op === '$in' ? sql : `not (${sql})`);
+        params.push(
+          prop.customType.convertToDatabaseValue(opValue, this.#platform, { fromQuery: true, key: op, mode: 'query' }),
+        );
       } else {
         const mappedKey = this.mapper(key, type, opValue, null);
         const val = this.getValueReplacement(fields, opValue, params, op, prop, rowValues);
@@ -920,16 +938,19 @@ export class QueryBuilderHelper {
         return `(${tmp.join(', ')})`;
       }
 
-      // array custom types (e.g. `$contains`/`$overlap` on `string[]` columns) are converted to a single
-      // array literal, so we emit a single bound parameter — not one per element wrapped in a tuple
+      // array custom types convert a whole array into one literal, so each candidate array binds a single parameter
       if (prop?.customType instanceof ArrayType) {
-        const item = prop.customType.convertToDatabaseValue(value, this.#platform, {
-          fromQuery: true,
-          key,
-          mode: 'query',
-        });
-        params.push(item);
-        return '?';
+        const list = key === '$in' || key === '$nin';
+        const items = list ? value : [value];
+
+        for (const item of items) {
+          params.push(
+            prop.customType.convertToDatabaseValue(item, this.#platform, { fromQuery: true, key, mode: 'query' }),
+          );
+        }
+
+        const sql = items.map(() => '?').join(', ');
+        return list ? `(${sql})` : sql;
       }
 
       value.forEach(p => params.push(p));

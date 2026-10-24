@@ -305,6 +305,10 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
     return 'text[]';
   }
 
+  override supportsArrayOverlap(): boolean {
+    return true;
+  }
+
   override getFloatDeclarationSQL(): string {
     return 'real';
   }
