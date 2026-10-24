@@ -238,6 +238,41 @@ export class EntityFactory {
     return entity as New<T, P>;
   }
 
+  /**
+   * Whether merging `data` into an initialized entity would change nothing: every key is a scalar the entity already
+   * holds by identity, and keys `mergeData` always re-applies (formula, version, generated, discriminator) match the snapshot.
+   */
+  private isNoopMerge<T extends object>(
+    meta: EntityMetadata<T>,
+    entity: T,
+    data: EntityData<T>,
+    options: FactoryOptions,
+  ): boolean {
+    const wrapped = helper(entity);
+
+    if (!wrapped.__initialized || options.normalizeAccessors) {
+      return false;
+    }
+
+    for (const key of Utils.keys(data)) {
+      const prop = meta.properties[key];
+      const value = data[key];
+
+      // custom types are left to the full merge, as their JS and database values can differ
+      if (!prop || prop.customType || value === undefined || entity[key] !== value) {
+        return false;
+      }
+
+      const reapplied = prop.formula || prop.version || prop.generated || key === meta.root.discriminatorColumn;
+
+      if (reapplied && (wrapped.__originalEntityData?.[key] !== value || !wrapped.__loadedProperties.has(key))) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   /** Merges new data into an existing entity, preserving user-modified properties. */
   mergeData<T extends object>(
     meta: EntityMetadata<T>,
@@ -245,6 +280,11 @@ export class EntityFactory {
     data: EntityData<T>,
     options: FactoryOptions = {},
   ): void {
+    // joined rows often repeat exactly what the entity already holds, skip the snapshot and diffing then
+    if (this.isNoopMerge(meta, entity, data, options)) {
+      return;
+    }
+
     // merge unchanged properties automatically
     data = QueryHelper.processParams(data);
     const existsData = this.#comparator.prepareEntity(entity);
