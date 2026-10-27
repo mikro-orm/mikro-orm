@@ -3321,6 +3321,25 @@ export class QueryBuilder<
         return;
       }
 
+      // the joined strategy selects `alias.column as alias__column`; when a property is named like another
+      // property's column, resolving `column` by property name would read (or drop) the wrong column
+      if (
+        prop &&
+        customAlias?.endsWith(`__${f}`) &&
+        prop.kind !== ReferenceKind.EMBEDDED &&
+        (prop.persist === false || !prop.fieldNames?.includes(f)) &&
+        (this.#state.aliases[a]?.meta ?? this.mainAlias.meta).props.some(
+          p =>
+            p !== prop &&
+            p.persist !== false &&
+            (p.kind !== ReferenceKind.EMBEDDED || p.object) &&
+            p.fieldNames?.includes(f),
+        )
+      ) {
+        ret.push(raw('?? as ??', [`${a}.${f}`, customAlias]));
+        return;
+      }
+
       if (prop?.persist === false && !prop.embedded && !prop.formula && type === 'where') {
         return;
       }
