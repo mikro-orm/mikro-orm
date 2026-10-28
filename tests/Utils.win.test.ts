@@ -182,6 +182,23 @@ describe('Utils', () => {
       expect(cloned).toBe(false);
     });
 
+    test('should copy shared references and cycles once', () => {
+      const shared = { name: 'shared' };
+      const parent: any = { a: shared, b: [shared], map: new Map([['s', shared]]), set: new Set([shared]) };
+      parent.self = parent;
+      parent.b.push(parent.b);
+
+      const copy = Utils.copy(parent);
+      expect(copy).not.toBe(parent);
+      expect(copy.self).toBe(copy);
+      expect(copy.a).not.toBe(shared);
+      expect(copy.a).toEqual(shared);
+      expect(copy.b[0]).toBe(copy.a);
+      expect(copy.b[1]).toBe(copy.b);
+      expect(copy.map.get('s')).toBe(copy.a);
+      expect([...copy.set][0]).toBe(copy.a);
+    });
+
     it('should copy child object even though getter property is dynamically injected', () => {
       function NameDecorator<T extends { new (...args: any[]): {} }>(constructor: T) {
         return class extends constructor {
