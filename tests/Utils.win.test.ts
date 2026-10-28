@@ -809,6 +809,44 @@ describe('Utils', () => {
     ]);
   });
 
+  test('hash matches the BigInt based FNV-1a 64 implementation', () => {
+    // metadata keys and generated index names depend on the exact output
+    const reference = (data: string, length?: number) => {
+      let h = 0xcbf29ce484222325n;
+
+      for (let i = 0; i < data.length; i++) {
+        h ^= BigInt(data.charCodeAt(i));
+        h = (h * 0x100000001b3n) & 0xffffffffffffffffn;
+      }
+
+      const hash = h.toString(16).padStart(16, '0');
+      return length ? hash.substring(0, length) : hash;
+    };
+
+    // published FNV-1a 64 test vectors
+    expect(Utils.hash('')).toBe('cbf29ce484222325');
+    expect(Utils.hash('a')).toBe('af63dc4c8601ec8c');
+    expect(Utils.hash('foobar')).toBe('85944171f73967e8');
+
+    // deterministic pseudo-random strings over the whole UTF-16 code unit range, lone surrogates included
+    let seed = 42;
+    const random = (max: number) => {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      return seed % max;
+    };
+    const inputs = ['/path/to/entity', 'idx_'.repeat(500), '\u0000', '\uffff'.repeat(8)];
+
+    for (let i = 0; i < 3000; i++) {
+      const maxCode = [0x80, 0x800, 0x10000][i % 3];
+      inputs.push(String.fromCharCode(...Array.from({ length: random(80) }, () => random(maxCode))));
+    }
+
+    for (const input of inputs) {
+      expect(Utils.hash(input)).toBe(reference(input));
+      expect(Utils.hash(input, 5)).toBe(reference(input, 5));
+    }
+  });
+
   test('getORMPackageVersion', () => {
     const version = fs.getORMPackageVersion('@mikro-orm/core');
     expect(version).toBeDefined();
