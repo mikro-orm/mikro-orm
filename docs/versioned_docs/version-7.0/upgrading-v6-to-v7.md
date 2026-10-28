@@ -572,6 +572,25 @@ MikroORM.init({
 
 > Note: If you have existing data stored in local timezone and enable UTC mode, or vice versa, the timestamps will be interpreted incorrectly. Make sure to migrate your data accordingly, or keep the setting consistent with how your data was originally stored.
 
+### Session time zone with the MariaDB driver
+
+In v6, `@mikro-orm/mariadb` used the `mariadb` client, which ran `SET time_zone` on every new connection when `forceUtcTimezone` or `timezone` was set. In v7 the driver uses `mysql2`, which only applies the option when converting `Date` values and leaves the session time zone as it is.
+
+Values written from JavaScript are still stored in UTC, but anything the database computes on its own, such as `now()` or a `current_timestamp` column default, now follows the server's default time zone. If that is not UTC, an app-written and a database-generated timestamp in the same row can end up hours apart.
+
+To keep the v6 behavior, set the session time zone when a connection is created:
+
+```ts
+import { CompiledQuery, type DatabaseConnection } from 'kysely';
+
+MikroORM.init({
+  onCreateConnection: async connection => {
+    const db = connection as DatabaseConnection;
+    await db.executeQuery(CompiledQuery.raw("set time_zone = '+00:00'"));
+  },
+});
+```
+
 ## `processOnCreateHooksEarly` enabled by default
 
 The `processOnCreateHooksEarly` option is now enabled by default. [`onCreate` hooks](./events.md#available-events) are now executed inside `em.create` method if used explicitly.
