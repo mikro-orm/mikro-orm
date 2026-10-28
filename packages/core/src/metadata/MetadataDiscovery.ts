@@ -290,11 +290,13 @@ export class MetadataDiscovery {
         .replace(/\[]$/, '') // remove array suffix
         .replace(/\((.*)\)/, '$1'); // unwrap union types
 
+    const discoveredNames = new Set(this.#discovered.map(m => m.className));
     // Names can be ambiguous when a minifier mangles two classes to the same name,
     // so class references also need to be checked by identity.
+    const discoveredClasses = new Set(this.#discovered.map(m => m.class));
     const discoveredByIdentity = (target: unknown) => {
       const cls = EntitySchema.is(target) ? target.meta.class : target;
-      return typeof cls !== 'function' || this.#discovered.some(m => m.class === cls);
+      return typeof cls !== 'function' || discoveredClasses.has(cls as EntityCtor);
     };
 
     const missing: EntityClass[] = [];
@@ -309,7 +311,7 @@ export class MetadataDiscovery {
           const target =
             typeof indirect === 'function' && !indirect.prototype ? (indirect as () => EntityClass)() : indirect;
 
-          if (!this.#discovered.find(m => m.className === Utils.className(target)) || !discoveredByIdentity(target)) {
+          if (!discoveredNames.has(Utils.className(target)) || !discoveredByIdentity(target)) {
             missing.push(target);
           }
         }
@@ -320,7 +322,7 @@ export class MetadataDiscovery {
           if (
             !unwrap(prop.type)
               .split(/ ?\| ?/)
-              .every(type => this.#discovered.find(m => m.className === type)) ||
+              .every(type => discoveredNames.has(type)) ||
             !Utils.asArray(target as EntityClass).every(discoveredByIdentity)
           ) {
             missing.push(...Utils.asArray(target as EntityClass));
@@ -407,7 +409,9 @@ export class MetadataDiscovery {
       this.#validator.validateDiscovered(this.#discovered, this.#config.get('discovery'));
     }
 
-    return this.#discovered.filter(meta => found.find(m => m.name === meta.className));
+    const foundNames = new Set(found.map(m => m.name));
+
+    return this.#discovered.filter(meta => foundNames.has(meta.className));
   }
 
   reset<T>(entityName: EntityName<T>): void {
