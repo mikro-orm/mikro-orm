@@ -18,6 +18,12 @@ export class MetadataStorage {
   static readonly META_SYMBOL = Symbol.for('@mikro-orm/core/MetadataStorage.META_SYMBOL');
 
   static readonly #metadata: Dictionary<EntityMetadata> = getGlobalStorage('metadata');
+  /**
+   * Class names of the global registry entries, built on first use by `isKnownEntity()`, updated by `getMetadata()`
+   * and dropped by `clear()`. Lives in the global storage next to the registry, so it stays in sync when several
+   * copies of this module share the registry (e.g. after `vi.resetModules()`).
+   */
+  static readonly #classNames: { names?: Set<string> } = getGlobalStorage('metadata-class-names');
   /** Hashes of entity file paths, decorators call `getMetadata()` with the same path for every decorated member. */
   static readonly #pathHashes = new Map<string, string>();
   readonly #metadataMap = new Map<EntityName, EntityMetadata>();
@@ -62,12 +68,15 @@ export class MetadataStorage {
 
       // Keep the name-keyed entry in sync, the class-keyed metadata survives `MetadataStorage.clear()`.
       MetadataStorage.#metadata[key] = target[MetadataStorage.META_SYMBOL]!;
+      MetadataStorage.#classNames.names?.add(target[MetadataStorage.META_SYMBOL]!.className);
 
       return target[MetadataStorage.META_SYMBOL]!;
     }
 
     if (key && !MetadataStorage.#metadata[key]) {
-      MetadataStorage.#metadata[key] = new EntityMetadata({ className: entity, path });
+      const meta = new EntityMetadata({ className: entity, path });
+      MetadataStorage.#metadata[key] = meta;
+      MetadataStorage.#classNames.names?.add(meta.className);
     }
 
     if (key) {
@@ -90,12 +99,15 @@ export class MetadataStorage {
 
   /** Checks whether an entity with the given class name exists in the global metadata. */
   static isKnownEntity(name: string): boolean {
-    return !!Object.values(this.#metadata).find(meta => meta.className === name);
+    // file discovery asks this for every exported class of every entity file
+    this.#classNames.names ??= new Set(Object.values(this.#metadata).map(meta => meta.className));
+    return this.#classNames.names.has(name);
   }
 
   /** Clears all entries from the global metadata registry. */
   static clear(): void {
     Object.keys(this.#metadata).forEach(k => delete this.#metadata[k]);
+    delete this.#classNames.names;
   }
 
   /** Returns the map of all registered entity metadata. */
