@@ -18,6 +18,8 @@ export class MetadataStorage {
   static readonly META_SYMBOL = Symbol.for('@mikro-orm/core/MetadataStorage.META_SYMBOL');
 
   static readonly #metadata: Dictionary<EntityMetadata> = getGlobalStorage('metadata');
+  /** Hashes of entity file paths, decorators call `getMetadata()` with the same path for every decorated member. */
+  static readonly #pathHashes = new Map<string, string>();
   readonly #metadataMap = new Map<EntityName, EntityMetadata>();
   readonly #idMap: Record<number, EntityMetadata>;
   readonly #classNameMap: Record<string, EntityMetadata>;
@@ -46,7 +48,7 @@ export class MetadataStorage {
     path?: string,
     target?: EntityCtor & { [MetadataStorage.META_SYMBOL]?: EntityMetadata },
   ): Dictionary<EntityMetadata> | EntityMetadata<T> {
-    const key = entity && path ? entity + '-' + Utils.hash(path) : null;
+    const key = entity && path ? entity + '-' + MetadataStorage.hashPath(path) : null;
 
     // Key the registry by the class reference when available, so two classes minified
     // to the same mangled name don't collide on the `className-path` key.
@@ -73,6 +75,17 @@ export class MetadataStorage {
     }
 
     return MetadataStorage.#metadata;
+  }
+
+  private static hashPath(path: string): string {
+    let hash = MetadataStorage.#pathHashes.get(path);
+
+    if (hash === undefined) {
+      hash = Utils.hash(path);
+      MetadataStorage.#pathHashes.set(path, hash);
+    }
+
+    return hash;
   }
 
   /** Checks whether an entity with the given class name exists in the global metadata. */
