@@ -26,6 +26,12 @@ import { raw, Raw } from '../utils/RawQueryFragment.js';
 import type { Logger } from '../logging/Logger.js';
 import { BaseEntity } from '../entity/BaseEntity.js';
 
+/** Relations of all discovered entities grouped by the class name of their target. */
+type ReferencingPropertiesIndex = {
+  byType: Map<string, [EntityMetadata, EntityProperty][]>;
+  withTargetKey: Map<string, EntityProperty[]>;
+};
+
 /** Discovers, validates, and processes entity metadata from configured sources. */
 export class MetadataDiscovery {
   readonly #namingStrategy: NamingStrategy;
@@ -240,11 +246,12 @@ export class MetadataDiscovery {
 
     discovered.forEach(meta => meta.sync(true));
     this.#metadataProvider.combineCache();
+    const referencingProperties = this.indexReferencingProperties(filtered);
 
     return discovered.map(meta => {
       meta = this.#metadata.get(meta.class);
       meta.sync(true);
-      this.findReferencingProperties(meta, filtered);
+      this.findReferencingProperties(meta, referencingProperties);
 
       if (meta.inheritanceType === 'tpt') {
         this.computeTPTOwnProps(meta);
@@ -868,21 +875,55 @@ export class MetadataDiscovery {
     return [];
   }
 
-  private findReferencingProperties(meta: EntityMetadata, metadata: EntityMetadata[]) {
+  /**
+   * Groups the relations of all entities by target class name in one pass, so `findReferencingProperties()`
+   * does not go over the relations of every entity for each entity. Lists keep the order of `metadata` and
+   * `relations`, which is the order the entries were found in before.
+   */
+  private indexReferencingProperties(metadata: EntityMetadata[]): ReferencingPropertiesIndex {
+    const index: ReferencingPropertiesIndex = { byType: new Map(), withTargetKey: new Map() };
+    const add = <T>(map: Map<string, T[]>, key: string, value: T) => {
+      const list = map.get(key);
+
+      if (list) {
+        list.push(value);
+      } else {
+        map.set(key, [value]);
+      }
+    };
+
     for (const meta2 of metadata) {
       for (const prop2 of meta2.relations) {
-        if (prop2.kind !== ReferenceKind.SCALAR && prop2.type === meta.className) {
-          meta.referencingProperties.push({ meta: meta2, prop: prop2 });
+        if (prop2.kind !== ReferenceKind.SCALAR) {
+          add(index.byType, prop2.type, [meta2, prop2]);
         }
 
-        if (
-          prop2.targetKey &&
-          (prop2.type === meta.className || prop2.polymorphTargets?.some(t => t.className === meta.className)) &&
-          !(meta.primaryKeys.length === 1 && meta.primaryKeys[0] === prop2.targetKey) &&
-          !meta.root.targetKeys?.includes(prop2.targetKey)
-        ) {
-          (meta.root.targetKeys ??= []).push(prop2.targetKey);
+        if (prop2.targetKey) {
+          const targets = new Set([prop2.type, ...(prop2.polymorphTargets?.map(t => t.className) ?? [])]);
+
+          for (const target of targets) {
+            add(index.withTargetKey, target, prop2);
+          }
         }
+      }
+    }
+
+    return index;
+  }
+
+  private findReferencingProperties(meta: EntityMetadata, index: ReferencingPropertiesIndex) {
+    for (const [meta2, prop2] of index.byType.get(meta.className) ?? []) {
+      meta.referencingProperties.push({ meta: meta2, prop: prop2 });
+    }
+
+    for (const prop2 of index.withTargetKey.get(meta.className) ?? []) {
+      const targetKey = prop2.targetKey!;
+
+      if (
+        !(meta.primaryKeys.length === 1 && meta.primaryKeys[0] === targetKey) &&
+        !meta.root.targetKeys?.includes(targetKey)
+      ) {
+        (meta.root.targetKeys ??= []).push(targetKey);
       }
     }
   }
