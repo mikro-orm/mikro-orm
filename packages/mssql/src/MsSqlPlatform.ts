@@ -8,13 +8,17 @@ import {
   FloatType,
   type IDatabaseDriver,
   type IPrimaryKey,
+  isRaw,
+  JsonProperty,
   type MikroORM,
   MsSqlNativeQueryBuilder,
   type Primary,
   QueryOrder,
   raw,
   RawQueryFragment,
+  type TransformContext,
   Type,
+  Utils,
 } from '@mikro-orm/sql';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
@@ -85,6 +89,13 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
   override convertsJsonAutomatically(): boolean {
     return false;
+  }
+
+  override convertJsonToDatabaseValue(value: unknown, context?: TransformContext): unknown {
+    const json = super.convertJsonToDatabaseValue(value, context) as string;
+
+    // JSON is stored in `nvarchar(max)`, so write it as a Unicode literal, otherwise non-Latin characters are lost
+    return context?.mode === 'hydration' ? json : new UnicodeString(json);
   }
 
   override indexForeignKeys(): boolean {
@@ -302,6 +313,15 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     }
 
     return `[${id.toString().replaceAll(']', ']]').replace('.', `].[`)}]`;
+  }
+
+  override quoteValue(value: any): string {
+    // inlined JSON (object embeddables) goes to `nvarchar(max)` too, see `convertJsonToDatabaseValue`
+    if (!isRaw(value) && (Utils.isPlainObject(value) || value?.[JsonProperty])) {
+      return this.escape(new UnicodeString(JSON.stringify(value)));
+    }
+
+    return super.quoteValue(value);
   }
 
   override escape(value: any): string {
