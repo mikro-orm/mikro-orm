@@ -394,14 +394,26 @@ export class NativeQueryBuilder implements Subquery {
 
   comment(comment: string | string[]): this {
     this.options.comment ??= [];
-    this.options.comment.push(...Utils.asArray(comment));
+    this.options.comment.push(...this.validateComments(comment));
     return this;
   }
 
   hintComment(comment: string | string[]): this {
     this.options.hintComment ??= [];
-    this.options.hintComment.push(...Utils.asArray(comment));
+    this.options.hintComment.push(...this.validateComments(comment));
     return this;
+  }
+
+  /** Comments are interpolated verbatim, so a terminator or a `?` placeholder inside one would corrupt the query. */
+  private validateComments(comment: string | string[]): string[] {
+    const comments = Utils.asArray(comment);
+    const invalid = comments.find(c => c.includes('/*') || c.includes('*/') || c.includes('?'));
+
+    if (invalid != null) {
+      throw new Error(`Query comments cannot contain '/*', '*/' or '?', got: '${invalid}'`);
+    }
+
+    return comments;
   }
 
   setFlags(flags: Set<QueryFlag>): this {
