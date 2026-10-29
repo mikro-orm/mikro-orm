@@ -26,6 +26,12 @@ import { raw, Raw } from '../utils/RawQueryFragment.js';
 import type { Logger } from '../logging/Logger.js';
 import { BaseEntity } from '../entity/BaseEntity.js';
 
+/** Relations of all discovered entities grouped by the class name of their target. */
+type ReferencingPropertiesIndex = {
+  byType: Map<string, [EntityMetadata, EntityProperty][]>;
+  withTargetKey: Map<string, EntityProperty[]>;
+};
+
 /** Discovers, validates, and processes entity metadata from configured sources. */
 export class MetadataDiscovery {
   readonly #namingStrategy: NamingStrategy;
@@ -240,11 +246,12 @@ export class MetadataDiscovery {
 
     discovered.forEach(meta => meta.sync(true));
     this.#metadataProvider.combineCache();
+    const referencingProperties = this.indexReferencingProperties(filtered);
 
     return discovered.map(meta => {
       meta = this.#metadata.get(meta.class);
       meta.sync(true);
-      this.findReferencingProperties(meta, filtered);
+      this.findReferencingProperties(meta, referencingProperties);
 
       if (meta.inheritanceType === 'tpt') {
         this.computeTPTOwnProps(meta);
@@ -283,11 +290,13 @@ export class MetadataDiscovery {
         .replace(/\[]$/, '') // remove array suffix
         .replace(/\((.*)\)/, '$1'); // unwrap union types
 
+    const discoveredNames = new Set(this.#discovered.map(m => m.className));
     // Names can be ambiguous when a minifier mangles two classes to the same name,
     // so class references also need to be checked by identity.
+    const discoveredClasses = new Set(this.#discovered.map(m => m.class));
     const discoveredByIdentity = (target: unknown) => {
       const cls = EntitySchema.is(target) ? target.meta.class : target;
-      return typeof cls !== 'function' || this.#discovered.some(m => m.class === cls);
+      return typeof cls !== 'function' || discoveredClasses.has(cls as EntityCtor);
     };
 
     const missing: EntityClass[] = [];
@@ -302,7 +311,7 @@ export class MetadataDiscovery {
           const target =
             typeof indirect === 'function' && !indirect.prototype ? (indirect as () => EntityClass)() : indirect;
 
-          if (!this.#discovered.find(m => m.className === Utils.className(target)) || !discoveredByIdentity(target)) {
+          if (!discoveredNames.has(Utils.className(target)) || !discoveredByIdentity(target)) {
             missing.push(target);
           }
         }
@@ -313,7 +322,7 @@ export class MetadataDiscovery {
           if (
             !unwrap(prop.type)
               .split(/ ?\| ?/)
-              .every(type => this.#discovered.find(m => m.className === type)) ||
+              .every(type => discoveredNames.has(type)) ||
             !Utils.asArray(target as EntityClass).every(discoveredByIdentity)
           ) {
             missing.push(...Utils.asArray(target as EntityClass));
@@ -400,7 +409,9 @@ export class MetadataDiscovery {
       this.#validator.validateDiscovered(this.#discovered, this.#config.get('discovery'));
     }
 
-    return this.#discovered.filter(meta => found.find(m => m.name === meta.className));
+    const foundNames = new Set(found.map(m => m.name));
+
+    return this.#discovered.filter(meta => foundNames.has(meta.className));
   }
 
   reset<T>(entityName: EntityName<T>): void {
@@ -868,21 +879,54 @@ export class MetadataDiscovery {
     return [];
   }
 
-  private findReferencingProperties(meta: EntityMetadata, metadata: EntityMetadata[]) {
+  /**
+   * Groups the relations of all entities by target class name in one pass, so `findReferencingProperties()`
+   * does not go over the relations of every entity for each entity. Lists keep the order of `metadata` and `relations`.
+   */
+  private indexReferencingProperties(metadata: EntityMetadata[]): ReferencingPropertiesIndex {
+    const index: ReferencingPropertiesIndex = { byType: new Map(), withTargetKey: new Map() };
+    const add = <T>(map: Map<string, T[]>, key: string, value: T) => {
+      const list = map.get(key);
+
+      if (list) {
+        list.push(value);
+      } else {
+        map.set(key, [value]);
+      }
+    };
+
     for (const meta2 of metadata) {
       for (const prop2 of meta2.relations) {
-        if (prop2.kind !== ReferenceKind.SCALAR && prop2.type === meta.className) {
-          meta.referencingProperties.push({ meta: meta2, prop: prop2 });
+        if (prop2.kind !== ReferenceKind.SCALAR) {
+          add(index.byType, prop2.type, [meta2, prop2]);
         }
 
-        if (
-          prop2.targetKey &&
-          (prop2.type === meta.className || prop2.polymorphTargets?.some(t => t.className === meta.className)) &&
-          !(meta.primaryKeys.length === 1 && meta.primaryKeys[0] === prop2.targetKey) &&
-          !meta.root.targetKeys?.includes(prop2.targetKey)
-        ) {
-          (meta.root.targetKeys ??= []).push(prop2.targetKey);
+        if (prop2.targetKey) {
+          const targets = new Set([prop2.type, ...(prop2.polymorphTargets?.map(t => t.className) ?? [])]);
+
+          for (const target of targets) {
+            add(index.withTargetKey, target, prop2);
+          }
         }
+      }
+    }
+
+    return index;
+  }
+
+  private findReferencingProperties(meta: EntityMetadata, index: ReferencingPropertiesIndex) {
+    for (const [meta2, prop2] of index.byType.get(meta.className) ?? []) {
+      meta.referencingProperties.push({ meta: meta2, prop: prop2 });
+    }
+
+    for (const prop2 of index.withTargetKey.get(meta.className) ?? []) {
+      const targetKey = prop2.targetKey!;
+
+      if (
+        !(meta.primaryKeys.length === 1 && meta.primaryKeys[0] === targetKey) &&
+        !meta.root.targetKeys?.includes(targetKey)
+      ) {
+        (meta.root.targetKeys ??= []).push(targetKey);
       }
     }
   }
