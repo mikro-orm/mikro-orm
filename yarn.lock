@@ -544,10 +544,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@electric-sql/pglite@npm:0.5.12":
-  version: 0.5.12
-  resolution: "@electric-sql/pglite@npm:0.5.12"
-  checksum: 10/1bf8208a6da5bf67ba4f6234a1eef60801d2f69ff6d28653bb25dceb44e56007cfe8a591cece1efd7c833f2866d776ea549f5cf77607775e701b2fbc3f6c04b9
+"@electric-sql/pglite@npm:0.5.13":
+  version: 0.5.13
+  resolution: "@electric-sql/pglite@npm:0.5.13"
+  checksum: 10/da0478546ccbfa9753a06d5622d723597e78a7446bcb67761558f2cb5e318cb25bda03b6edfe4d214cd3f7617d45880fb6303499b9e78431dffeeff749beef98
   languageName: node
   linkType: hard
 
@@ -1417,7 +1417,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/pglite@workspace:packages/pglite"
   dependencies:
-    "@electric-sql/pglite": "npm:0.5.12"
+    "@electric-sql/pglite": "npm:0.5.13"
     "@mikro-orm/core": "npm:^7.2.5"
     "@mikro-orm/sql": "npm:7.2.5"
     kysely: "npm:0.29.7"
@@ -1468,7 +1468,7 @@ __metadata:
     "@swc-node/register": "npm:1.12.1"
     "@swc/core": "npm:1.16.20"
     "@types/better-sqlite3": "npm:9.6.0"
-    "@types/node": "npm:26.6.5"
+    "@types/node": "npm:26.6.6"
     "@types/oracledb": "npm:26.0.0"
     "@types/pg": "npm:8.23.1"
     "@types/pg-cursor": "npm:2.7.2"
@@ -3154,12 +3154,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:26.6.5, @types/node@npm:>=22":
+"@types/node@npm:*, @types/node@npm:>=22":
   version: 26.6.5
   resolution: "@types/node@npm:26.6.5"
   dependencies:
     undici-types: "npm:~8.9.0"
   checksum: 10/03780cc68280b566af47c0f673318e665258dbdcc953737a83c11593424d55aecb8b2642a573da33f76cb4dd5457379548388b78ab284cb3b762030e5d58b252
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:26.6.6":
+  version: 26.6.6
+  resolution: "@types/node@npm:26.6.6"
+  dependencies:
+    undici-types: "npm:~8.9.0"
+  checksum: 10/07c6c6fc1f5cc89c700ac9ebcebd42b000fef234bf0b80e9461a8f077105f15faf16df95b83745e0c0e37338d1fbc28cb402ef27b5787fd7a57b492c926ff7ae
   languageName: node
   linkType: hard
 
