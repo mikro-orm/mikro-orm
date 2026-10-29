@@ -881,8 +881,7 @@ export class MetadataDiscovery {
 
   /**
    * Groups the relations of all entities by target class name in one pass, so `findReferencingProperties()`
-   * does not go over the relations of every entity for each entity. Lists keep the order of `metadata` and
-   * `relations`, which is the order the entries were found in before.
+   * does not go over the relations of every entity for each entity. Lists keep the order of `metadata` and `relations`.
    */
   private indexReferencingProperties(metadata: EntityMetadata[]): ReferencingPropertiesIndex {
     const index: ReferencingPropertiesIndex = { byType: new Map(), withTargetKey: new Map() };

@@ -18,11 +18,7 @@ export class MetadataStorage {
   static readonly META_SYMBOL = Symbol.for('@mikro-orm/core/MetadataStorage.META_SYMBOL');
 
   static readonly #metadata: Dictionary<EntityMetadata> = getGlobalStorage('metadata');
-  /**
-   * Class names of the global registry entries, built on first use by `isKnownEntity()`, updated by `getMetadata()`
-   * and dropped by `clear()`. Lives in the global storage next to the registry, so it stays in sync when several
-   * copies of this module share the registry (e.g. after `vi.resetModules()`).
-   */
+  /** Lives in the global storage next to the registry, so it stays in sync when several copies of this module share it (e.g. after `vi.resetModules()`). */
   static readonly #classNames: { names?: Set<string> } = getGlobalStorage('metadata-class-names');
   /** Hashes of entity file paths, decorators call `getMetadata()` with the same path for every decorated member. */
   static readonly #pathHashes = new Map<string, string>();
@@ -99,7 +95,6 @@ export class MetadataStorage {
 
   /** Checks whether an entity with the given class name exists in the global metadata. */
   static isKnownEntity(name: string): boolean {
-    // file discovery asks this for every exported class of every entity file
     this.#classNames.names ??= new Set(Object.values(this.#metadata).map(meta => meta.className));
     return this.#classNames.names.has(name);
   }
