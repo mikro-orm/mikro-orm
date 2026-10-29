@@ -101,6 +101,12 @@
         "groupSlug": "all-non-major",
         "automerge": true,
         "automergeType": "branch"
+      },
+      {
+        "matchPackageNames": [
+          "vite"
+        ],
+        "allowedVersions": "!/^8\\.3\\.5$/"
       }
     ],
     "schedule": [
@@ -142,7 +148,7 @@
     "@swc-node/register": "1.12.1",
     "@swc/core": "1.16.20",
     "@types/better-sqlite3": "9.6.0",
-    "@types/node": "24.19.2",
+    "@types/node": "26.6.5",
     "@types/oracledb": "7.0.3",
     "@types/pg": "8.23.1",
     "@types/pg-cursor": "2.7.2",
@@ -172,7 +178,7 @@
     "typescript": "7.0.2",
     "unplugin-swc": "2.0.0",
     "uuid": "14.0.3",
-    "vite": "8.3.5",
+    "vite": "8.3.4",
     "vitest": "5.0.5"
   },
   "resolutions": {
