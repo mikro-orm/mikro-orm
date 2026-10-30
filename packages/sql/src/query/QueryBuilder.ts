@@ -4012,7 +4012,18 @@ export class QueryBuilder<
 
   private mergeOnConditions(joins: JoinOptions[], cond: Dictionary, filter: boolean, op?: string) {
     for (const k of Object.keys(cond)) {
-      if (Utils.isOperator(k)) {
+      const notAlias = k === '$not' ? this.getNotConditionAlias(cond[k], joins) : undefined;
+
+      if (k === '$not' && !notAlias) {
+        // splitting a `$not` across joins would drop the negation, so it is kept intact like an undistributable `$or`
+        if (filter) {
+          this.mergeFilterOrCondition([{ $not: cond[k] }], joins);
+        }
+
+        continue;
+      }
+
+      if (Utils.isOperator(k) && !notAlias) {
         if (Array.isArray(cond[k])) {
           if (k === '$or' && !this.canDistributeOrBranches(cond[k], joins)) {
             // entity filters have no other sink, so their `$or` is kept intact on the outermost targeted join instead
@@ -4030,7 +4041,7 @@ export class QueryBuilder<
         this.mergeOnConditions(joins, cond[k], filter, k);
       }
 
-      const [alias] = this.helper.splitField(k as EntityKey<Entity>);
+      const alias = notAlias ?? this.helper.splitField(k as EntityKey<Entity>)[0];
       const join = joins.find(j => j.alias === alias);
 
       if (join) {
@@ -4060,6 +4071,16 @@ export class QueryBuilder<
         this.nestReferencedJoins(join);
       }
     }
+  }
+
+  /**
+   * `$not` can be moved to a join's `on` clause as a whole only when all of its conditions target that join.
+   */
+  private getNotConditionAlias(cond: Dictionary, joins: JoinOptions[]): string | undefined {
+    const aliases = this.getOrBranchAliases([cond]);
+    const [alias] = aliases;
+
+    return aliases.size === 1 && joins.some(j => j.alias === alias) ? alias : undefined;
   }
 
   /**

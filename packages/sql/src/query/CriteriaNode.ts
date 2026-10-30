@@ -167,10 +167,21 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
       (this.payload as unknown) instanceof RegExp ||
       (this.payload as unknown) instanceof Date ||
       rawField;
-    const operator =
-      Utils.isObject(this.payload) && Utils.getObjectQueryKeys(this.payload).every(k => Utils.isOperator(k, false));
+    return this.prop.kind === ReferenceKind.MANY_TO_MANY && (scalar || this.isOperatorPayload(this.payload));
+  }
 
-    return this.prop.kind === ReferenceKind.MANY_TO_MANY && (scalar || operator);
+  protected isOperatorPayload(payload: any): boolean {
+    return (
+      Utils.isObject(payload) &&
+      Utils.getObjectQueryKeys(payload).every(k => {
+        if (k === '$not' && payload[k] instanceof CriteriaNode && Utils.isPlainObject(payload[k].payload)) {
+          // `$not` wrapping entity conditions needs the target entity join, not just the pivot table
+          return Utils.getObjectQueryKeys(payload[k].payload).every(ik => Utils.isOperator(ik, false));
+        }
+
+        return Utils.isOperator(k, false);
+      })
+    );
   }
 
   getPivotPath(path: string): string {
