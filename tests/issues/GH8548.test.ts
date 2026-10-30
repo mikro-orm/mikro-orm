@@ -83,6 +83,7 @@ afterAll(async () => {
 });
 
 test('GH #8548: partial loading through a reference into a to-many collection', async () => {
+  // the entities are still managed, so populate checks the already loaded references
   const [a] = await orm.em.findAll(EntityA, {
     fields: ['id', 'entityD.secondField.name', 'entityD.secondField.fields.name'],
     populate: ['entityD', 'entityD.secondField', 'entityD.secondField.fields'],
