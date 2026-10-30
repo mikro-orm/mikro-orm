@@ -19,6 +19,21 @@ type PgliteDriverOptions = Partial<PGliteOptions> & {
   pglite?: PGlite | (() => PGlite | Promise<PGlite>);
 };
 
+/**
+ * PostgreSQL answers `COMMIT` of an aborted transaction (e.g. after a caught unique violation) with the command
+ * tag `ROLLBACK` instead of an error, and PGlite's `transaction()` ignores the tag. A statement run before the
+ * commit fails in an aborted transaction (`25P02`), so `transaction()` rolls back and rejects instead.
+ */
+const rejectAbortedCommit =
+  (transaction: PGlite['transaction']): PGlite['transaction'] =>
+  callback =>
+    transaction(async tx => {
+      const result = await callback(tx);
+      await tx.query('select 1');
+
+      return result;
+    });
+
 const isInMemoryDataDir = (dataDir: string | undefined): boolean =>
   !dataDir || dataDir === 'memory://' || dataDir.startsWith('memory:');
 
@@ -87,34 +102,32 @@ export class PgliteConnection extends AbstractSqlConnection {
       }
     }
 
-    if (this.#neuterClose) {
-      // Hand kysely a delegating wrapper rather than mutating the underlying
-      // instance — proxies can't pierce PGlite's private fields, and patching
-      // `close` directly would orphan a user-supplied PGlite (its real `close`
-      // would stay neutered after `orm.close()`). Each method call hits the
-      // original `p`, so `#private` fields stay reachable.
-      const sharedPglitePromise = this.#pglite.then(
-        p =>
-          ({
-            query: p.query.bind(p),
-            transaction: p.transaction.bind(p),
-            close: () => Promise.resolve(),
-            get closed() {
-              return p.closed;
-            },
-            get ready() {
-              return p.ready;
-            },
-            // `waitReady` is a stable Promise on the underlying instance — capture it
-            // directly so coverage doesn't hinge on `kysely` actually awaiting it (which
-            // only happens in the WASM-not-yet-loaded transient window).
-            waitReady: p.waitReady,
-          }) as PGlite,
-      );
-      return new PGliteDialect({ pglite: () => sharedPglitePromise, onCreateConnection });
-    }
+    // Hand kysely a delegating wrapper rather than mutating the underlying
+    // instance — proxies can't pierce PGlite's private fields, and patching
+    // `close` directly would orphan a user-supplied PGlite (its real `close`
+    // would stay neutered after `orm.close()`). Each method call hits the
+    // original `p`, so `#private` fields stay reachable.
+    const neuterClose = this.#neuterClose;
+    const pglitePromise = this.#pglite.then(
+      p =>
+        ({
+          query: p.query.bind(p),
+          transaction: rejectAbortedCommit(p.transaction.bind(p)),
+          close: neuterClose ? () => Promise.resolve() : p.close.bind(p),
+          get closed() {
+            return p.closed;
+          },
+          get ready() {
+            return p.ready;
+          },
+          // `waitReady` is a stable Promise on the underlying instance — capture it
+          // directly so coverage doesn't hinge on `kysely` actually awaiting it (which
+          // only happens in the WASM-not-yet-loaded transient window).
+          waitReady: p.waitReady,
+        }) as PGlite,
+    );
 
-    return new PGliteDialect({ pglite: () => this.#pglite!, onCreateConnection });
+    return new PGliteDialect({ pglite: () => pglitePromise, onCreateConnection });
   }
 
   override async close(force?: boolean): Promise<void> {
