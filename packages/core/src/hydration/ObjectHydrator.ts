@@ -363,7 +363,9 @@ export class ObjectHydrator extends Hydrator {
       }
 
       ret.push(`  } else if (!entity${entityKey}) {`);
-      ret.push(`    const coll = Collection.create(entity, ${this.quote(prop.name)}, [], false);`);
+      ret.push(
+        `    const coll = Collection.create(entity, ${this.quote(prop.name)}, undefined, ${prop.owner ? 'true' : 'newEntity'});`,
+      );
       ret.push(`    coll.setDirty(false);`);
       ret.push(`  }`);
 
