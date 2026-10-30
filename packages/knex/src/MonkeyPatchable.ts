@@ -17,6 +17,8 @@ import MsSqlQueryCompiler from 'knex/lib/dialects/mssql/query/mssql-querycompile
 // @ts-ignore
 import MsSqlDialect from 'knex/lib/dialects/mssql';
 // @ts-ignore
+import MsSqlTransaction from 'knex/lib/dialects/mssql/transaction';
+// @ts-ignore
 import PostgresDialect from 'knex/lib/dialects/postgres';
 // @ts-ignore
 import PostgresDialectTableCompiler from 'knex/lib/dialects/postgres/schema/pg-tablecompiler';
@@ -49,6 +51,7 @@ export const MonkeyPatchable = {
   MsSqlTableCompiler,
   MsSqlQueryCompiler,
   MsSqlDialect,
+  MsSqlTransaction,
   PostgresDialect,
   PostgresDialectTableCompiler,
   PostgresQueryCompiler,
