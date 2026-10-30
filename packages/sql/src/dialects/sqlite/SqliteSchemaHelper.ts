@@ -358,7 +358,8 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
       for (let i = cols.length - 1; i >= 0; i--) {
         const col = cols[i];
-        const re = ` *, *[\`"']?${col.name}[\`"']? (.*)`;
+        // the first column is not preceded by a comma
+        const re = ` *(?:^|,) *[\`"']?${col.name}[\`"']? (.*)`;
         const columnDef = new RegExp(re, 'i').exec(columnsDef);
 
         if (columnDef) {
