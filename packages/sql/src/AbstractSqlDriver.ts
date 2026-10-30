@@ -3718,7 +3718,12 @@ export abstract class AbstractSqlDriver<
     if (ret.length > 0 && !hasExplicitFields && addFormulas) {
       // `toString()` must yield the quoted alias like `QueryBuilder.finalize()`, which dedupes formulas by rendered SQL
       const quotedAlias = this.platform.quoteIdentifier(alias);
-      const columns = meta.createColumnMappingObject(alias, quotedAlias.toString());
+      // TPT parent aliases are only known once the parent joins exist
+      qb.ensureTPTJoins();
+      const columns = meta.createColumnMappingObject(
+        p => qb.helper.getTPTAliasForProperty(p.name, alias),
+        quotedAlias.toString(),
+      );
       const effectiveSchema = schema ?? (meta.schema !== '*' ? meta.schema : undefined);
 
       for (const prop of meta.props) {
