@@ -621,6 +621,8 @@ describe('check typings', () => {
     ok05 = { name: '1', array: 1 };
     ok05 = { name: '1', array: [1, 2, 3] };
     ok05 = { name: '1', array: { $in: [1, 2, 3] } };
+    ok05 = { name: '1', array: { $in: [[1, 2], [3]] } };
+    ok05 = { name: '1', array: { $nin: [[1, 2]], $ne: null } };
 
     const ok06: FilterQuery<Author2> = { name: '...' };
     ok06.age = 10;
@@ -666,6 +668,11 @@ describe('check typings', () => {
     fail02 = { author: { born: [123] } };
     // @ts-expect-error
     fail02 = { author: { born: { $in: [123] } } };
+    // @ts-expect-error
+    fail02 = { price: { $in: [[1, 2]] } };
+
+    // @ts-expect-error
+    const fail03: FilterQuery<FooBar2> = { array: { $in: [['1']] } };
   });
 
   test('Loaded<T> type is assignable to T', async () => {
