@@ -263,6 +263,6 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
     }
 
     // text/blob literals come back fully backslash-escaped (`'it\'s'`), varchar ones with doubled quotes (`'it''s'`) but still `\\` for a backslash
-    return this.quoteDefault(this.unescapeDefault(match[1].replaceAll("''", "\\'")));
+    return this.platform.quoteDefaultValue(this.unescapeDefault(match[1].replaceAll("''", "\\'")));
   }
 }

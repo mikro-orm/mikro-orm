@@ -18,6 +18,12 @@ class Note {
   @Property({ type: 'text', default: 'a\\b' })
   note!: string & Opt;
 
+  @Property({ default: 'a\nb' })
+  newline!: string & Opt;
+
+  @Property({ default: "x\\'y" })
+  mixed!: string & Opt;
+
   @Property({ default: 'say "hi"' })
   quote!: string & Opt;
 
@@ -52,6 +58,10 @@ test('string defaults containing single quotes are escaped', async () => {
   const loaded = await orm.em.findOneOrFail(Note, note.id);
   expect(loaded.title).toBe("it's");
   expect(loaded.body).toBe("'quoted'");
+  expect(loaded.path).toBe('a\\b');
+  expect(loaded.note).toBe('a\\b');
+  expect(loaded.newline).toBe('a\nb');
+  expect(loaded.mixed).toBe("x\\'y");
 });
 
 test('varchar and text literals are introspected in the same form', async () => {
@@ -66,7 +76,7 @@ test('varchar and text literals are introspected in the same form', async () => 
       .getTable('escaped_defaults')!
       .getColumns()
       .map(col => col.default);
-    expect(defaults).toEqual([null, `'a\\\\''b'`, `'a\\\\''b'`, `'a\\nb'`, `'a\\nb'`]);
+    expect(defaults).toEqual([null, `'a\\\\\\'b'`, `'a\\\\\\'b'`, `'a\\nb'`, `'a\\nb'`]);
   } finally {
     await connection.execute('drop table escaped_defaults');
   }
