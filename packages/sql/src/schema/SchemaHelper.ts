@@ -1273,6 +1273,21 @@ export abstract class SchemaHelper {
     return `drop trigger if exists ${this.quote(trigger.name)}`;
   }
 
+  /** Renders a reference to a column of the trigger's `new`/`old` pseudo-row. */
+  triggerRowReference(row: 'new' | 'old', column: string): string {
+    return `${row}.${this.quote(column)}`;
+  }
+
+  /** Adapts a DML statement built via the query builder to the dialect's trigger semantics. */
+  formatTriggerStatement(sql: string, _table: DatabaseTable): string {
+    return sql;
+  }
+
+  /** Completes a trigger body built via the query builder, e.g. with the `return` statement PostgreSQL requires. */
+  finalizeTriggerBody(body: string): string {
+    return body;
+  }
+
   /** Default no-op so SQLite/libSQL silent-skip routine DDL; routine-capable dialects override. */
   createRoutine(_routine: SqlRoutineDef): string {
     return '';

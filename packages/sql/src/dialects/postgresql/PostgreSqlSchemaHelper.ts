@@ -778,6 +778,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `${fnSql};\n${triggerSql}`;
   }
 
+  override finalizeTriggerBody(body: string): string {
+    // `new` is null on delete and `old` on insert, and the returned row is ignored by `after` and statement triggers
+    return /(^|;)\s*return\b/i.test(body) ? body : `${body}; return coalesce(new, old)`;
+  }
+
   /** Generates SQL to drop a PostgreSQL trigger and its associated function. */
   override dropTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
     const triggerName = this.platform.quoteIdentifier(trigger.name);
