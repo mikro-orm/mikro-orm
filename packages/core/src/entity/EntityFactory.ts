@@ -6,6 +6,7 @@ import type {
   EntityDataValue,
   EntityKey,
   EntityMetadata,
+  EntityProperty,
   EntityName,
   EntityValue,
   IHydrator,
@@ -259,7 +260,7 @@ export class EntityFactory {
       const value = data[key];
 
       // custom types are left to the full merge, as their JS and database values can differ
-      if (!prop || prop.customType || value === undefined || entity[key] !== value) {
+      if (!prop || prop.customType || value === undefined || !this.holdsValue(prop, entity[key], value)) {
         return false;
       }
 
@@ -271,6 +272,19 @@ export class EntityFactory {
     }
 
     return true;
+  }
+
+  /** Whether hydrating `value` into `prop` would leave `current` as is, mirroring the hydrator's Date and boolean coercion. */
+  private holdsValue(prop: EntityProperty, current: unknown, value: unknown): boolean {
+    if (current instanceof Date && value instanceof Date) {
+      return current.getTime() === value.getTime();
+    }
+
+    if (prop.runtimeType === 'boolean' && value != null) {
+      return current === !!value;
+    }
+
+    return current === value;
   }
 
   /** Merges new data into an existing entity, preserving user-modified properties. */
