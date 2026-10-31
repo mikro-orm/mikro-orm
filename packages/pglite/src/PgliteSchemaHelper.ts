@@ -23,6 +23,11 @@ export class PgliteSchemaHelper extends PostgreSqlSchemaHelper {
     return pgliteUsesNamedDatabase(driverOptions);
   }
 
+  override getMigrationLockSQL(): undefined {
+    // PGlite runs in-process on a single connection: nothing to serialize, and the lock would starve the migrations
+    return undefined;
+  }
+
   override getManagementDbName(): string {
     return this.#usesNamedDatabase() ? super.getManagementDbName() : '';
   }
