@@ -178,6 +178,7 @@ export class MetadataValidator {
     };
 
     const pivotProps = new Map<string, { prop: EntityProperty; meta: EntityMetadata }[]>();
+    const discoveredNames = new Set(discovered.map(m => m.className));
 
     // check for not discovered entities
     discovered.forEach(meta =>
@@ -186,7 +187,7 @@ export class MetadataValidator {
           prop.kind !== ReferenceKind.SCALAR &&
           !unwrap(prop.type)
             .split(/ ?\| ?/)
-            .every(type => discovered.find(m => m.className === type))
+            .every(type => discoveredNames.has(type))
         ) {
           throw MetadataError.fromUnknownEntity(prop.type, `${meta.className}.${prop.name}`);
         }

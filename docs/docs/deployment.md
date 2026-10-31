@@ -84,6 +84,44 @@ export default defineConfig({
 
 > You must regenerate the compiled functions file whenever entity definitions or driver configuration changes.
 
+## Reuse the ORM instance on Cloudflare Workers
+
+Cloudflare Workers don't allow a connection to be used outside the request that opened it. Creating a new `MikroORM` instance per request satisfies that, but runs the metadata discovery on every request. Instead, create the instance once per isolate, fork its `EntityManager` for each request, and configure the `pg` pool so it never reuses a connection:
+
+```ts
+import { MikroORM, type EntityManager } from '@mikro-orm/postgresql';
+import { env } from 'cloudflare:workers';
+import compiledFunctions from './compiled-functions.js';
+import config from './mikro-orm.config.js';
+
+let shared: { orm: MikroORM; clientUrl: string } | undefined;
+
+export function withEntityManager<T>(work: (em: EntityManager) => Promise<T>): Promise<T> {
+  const clientUrl = env.HYPERDRIVE.connectionString;
+
+  if (shared?.clientUrl !== clientUrl) {
+    shared = {
+      clientUrl,
+      orm: new MikroORM({
+        ...config,
+        clientUrl,
+        compiledFunctions,
+        ensureDatabase: false,
+        driverOptions: { max: Number.POSITIVE_INFINITY, maxUses: 1 },
+      }),
+    };
+  }
+
+  return work(shared.orm.em.fork());
+}
+```
+
+This relies on the following behavior:
+
+- The instance opens no connection until a query runs, so every connection is opened by the request that needs it. Disable `ensureDatabase`, as it would otherwise query the database on the first request of each isolate.
+- With `maxUses: 1`, the pool closes a connection once it is released instead of keeping it idle, so one request never gets a connection opened by another. Keep `max` unlimited: once the pool is full, a waiting request gets its connection only after another request releases one, and it is opened from that other request's context.
+- Each query outside a transaction opens its own connection, while a transaction keeps one connection for all its queries. Hyperdrive pools the connections to the database, which keeps opening them cheap.
+
 ## Fill type or entity attributes everywhere
 
 What discovery process does is to sniff TS types and save their value to string, so it can be used later for validation. You can skip the whole process by simply providing those values manually:

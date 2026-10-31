@@ -2688,8 +2688,10 @@ export class QueryBuilder<
       return Utils.getPrimaryKeyHash(meta.primaryKeys.map(pk => data[pk as EntityKey]));
     };
 
+    const map: Dictionary = {};
+
     for await (const row of res) {
-      const mapped = this.driver.mapResult<Entity>(row as Entity, meta, this.#state.populate, this as any)!;
+      const mapped = this.driver.mapResult<Entity>(row as Entity, meta, this.#state.populate, this as any, map)!;
 
       if (!options.mergeResults || joinedProps.length === 0) {
         yield this.mapResult(mapped, options.mapResults);
@@ -3319,6 +3321,25 @@ export class QueryBuilder<
         return;
       }
 
+      // the joined strategy selects by column name, which can collide with the name of another property
+      const shadowed =
+        customAlias &&
+        prop &&
+        (prop.kind === ReferenceKind.EMBEDDED ||
+          (customAlias.endsWith(`__${f}`) && (prop.persist === false || !prop.fieldNames.includes(f)))) &&
+        (this.#state.aliases[a]?.meta ?? this.mainAlias.meta).props.some(
+          p =>
+            p !== prop &&
+            p.persist !== false &&
+            (p.kind !== ReferenceKind.EMBEDDED || p.object) &&
+            p.fieldNames?.includes(f),
+        );
+
+      if (shadowed) {
+        ret.push(raw('?? as ??', [`${a}.${f}`, customAlias]));
+        return;
+      }
+
       if (prop?.persist === false && !prop.embedded && !prop.formula && type === 'where') {
         return;
       }
@@ -3330,15 +3351,7 @@ export class QueryBuilder<
         return;
       }
 
-      // the joined strategy selects by column name, which can collide with an inline embedded property name
-      const shadowed =
-        customAlias &&
-        prop?.kind === ReferenceKind.EMBEDDED &&
-        (this.#state.aliases[a]?.meta ?? this.mainAlias.meta).props.some(
-          p => (p.kind !== ReferenceKind.EMBEDDED || p.object) && p.fieldNames?.includes(f),
-        );
-
-      if (prop?.kind === ReferenceKind.EMBEDDED && !shadowed) {
+      if (prop?.kind === ReferenceKind.EMBEDDED) {
         if (customAlias) {
           throw new Error(
             `Cannot use 'as ${customAlias}' alias on embedded property '${field}' because it expands to multiple columns. Alias individual fields instead (e.g. '${field}.propertyName as ${customAlias}').`,

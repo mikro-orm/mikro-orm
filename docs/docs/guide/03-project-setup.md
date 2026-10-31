@@ -500,7 +500,7 @@ That is because you just synchronized the schema by calling `npx mikro-orm schem
 
 If you want to start using migrations, and you already have the schema generated, the `--initial` flag will help with keeping the existing schema, while generating the first migration based only on the entity metadata. It can be used only if the schema is empty or fully up-to-date. The generated migration will be automatically marked as executed if your schema already exists - if not, you will need to execute it manually as any other migration, via `npx mikro-orm migration:up`.
 
-> Initial migration can be created only if there are no migrations previously generated or executed. If you are starting fresh, and you have no schema yet, you don't need to use the `--inital` flag, a regular migration will do the job too.
+> Initial migration can be created only if there are no migrations previously generated or executed. If you are starting fresh, and you have no schema yet, you don't need to use the `--initial` flag, a regular migration will do the job too.
 
 ```sh
 npx mikro-orm migration:create --initial

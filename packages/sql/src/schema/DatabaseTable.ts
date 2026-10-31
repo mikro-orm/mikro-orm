@@ -1182,10 +1182,10 @@ export class DatabaseTable {
     }
 
     // unquote string defaults if `raw = false`
-    const match = /^'(.*)'$/.exec('' + val);
+    const match = /^'(.*)'$/s.exec('' + val);
 
     if (!raw && match) {
-      return match[1];
+      return schemaHelper.unescapeDefault(match[1]);
     }
 
     return '' + val;
@@ -1273,6 +1273,20 @@ export class DatabaseTable {
             };
 
             return [expand(rootProp, 1)];
+          }
+
+          // object embedded property index, the JSON keys are the field names of the embedded properties
+          if (rootProp?.embeddable && rootProp.object && rootProp.embeddedProps[parts[1]]) {
+            let p = rootProp.embeddedProps[parts[1]];
+            let i = 2;
+
+            while (i < parts.length && p.embeddedProps?.[parts[i]]) {
+              p = p.embeddedProps[parts[i]];
+              i++;
+            }
+
+            // a path below the last embedded property targets plain JSON keys, kept as they are
+            return [[...p.embeddedPath!, ...parts.slice(i)].join('.')];
           }
 
           // json index, we need to rename the column only

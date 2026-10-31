@@ -1,4 +1,12 @@
-import { type Dictionary, EnumType, StringType, TextType, type Transaction, type Type } from '@mikro-orm/core';
+import {
+  type Dictionary,
+  EnumType,
+  JsonType,
+  StringType,
+  TextType,
+  type Transaction,
+  type Type,
+} from '@mikro-orm/core';
 import type {
   CheckDef,
   Column,
@@ -812,7 +820,24 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   protected wrap(val: string | null | undefined, type: Type<unknown>): string | null | undefined {
+    if (typeof val !== 'string' || val.length === 0) {
+      return val;
+    }
+
+    // text/blob literal defaults come back escaped twice with a charset introducer, e.g. `_utf8mb4\'it\\\'s\'` (JSON is parsed by the comparator)
+    const expression = type instanceof JsonType ? null : /^_\w+\\'(.*)\\'$/s.exec(val);
+
+    if (expression) {
+      return this.platform.quoteDefaultValue(this.unescapeDefault(expression[1].replace(/\\(.)/gs, '$1')));
+    }
+
     const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType;
-    return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;
+    return stringType ? this.platform.quoteDefaultValue(val) : val;
+  }
+
+  /** Decodes the backslash escapes of an introspected string literal. */
+  override unescapeDefault(val: string): string {
+    const sqlEscapes: Dictionary<string> = { 0: '\0', b: '\b', n: '\n', r: '\r', t: '\t', Z: '\x1a' };
+    return val.replace(/\\(.)/gs, (_, char: string) => sqlEscapes[char] ?? char);
   }
 }

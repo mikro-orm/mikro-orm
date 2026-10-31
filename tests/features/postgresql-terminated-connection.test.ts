@@ -108,4 +108,9 @@ test('a socket reset mid-query rejects with the connection error and gives the p
 
   expect(pool.totalCount).toBe(pool.idleCount);
   await expect(orm.em.fork().execute('select 1 as one')).resolves.toEqual([{ one: 1 }]);
+
+  // the server notices the reset only once the sleep ends, and the lingering backend would block dropping the database
+  await orm.em
+    .fork()
+    .execute(`select pg_terminate_backend(${(client as PoolClient & { processID: number }).processID})`);
 });
