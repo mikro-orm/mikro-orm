@@ -34,6 +34,7 @@ export class CLIHelper {
     EM extends D[typeof EntityManagerType] & EntityManager<D> = D[typeof EntityManagerType] & EntityManager<D>,
   >(contextName?: string, paths?: string[], options: Partial<Options<D>> = {}): Promise<Configuration<D, EM>> {
     this.commonJSCompat(options);
+    const configPaths = paths ? [] : (this.getSettings().configPaths ?? []);
     paths ??= await this.getConfigPaths();
     const deps = fs.getORMPackages();
 
@@ -46,6 +47,15 @@ export class CLIHelper {
 
     const result = await this.getConfigFile(paths);
     if (!result[0]) {
+      // an explicitly configured TS path that exists but was filtered out must not fail with an unrelated error
+      const skipped = configPaths.find(p => !paths.includes(p) && fs.pathExists(fs.absolutePath(p)));
+
+      if (skipped) {
+        throw new Error(
+          `MikroORM config file '${skipped}' was skipped because TypeScript support is not available. Install a TypeScript loader (see \`MIKRO_ORM_CLI_TS_LOADER\`) or point \`configPaths\` to a compiled JS file.`,
+        );
+      }
+
       if (Utils.hasObjectKeys(env)) {
         const merged = Utils.mergeConfig(
           { contextName },

@@ -828,13 +828,16 @@ export class MySqlSchemaHelper extends SchemaHelper {
     const expression = type instanceof JsonType ? null : /^_\w+\\'(.*)\\'$/s.exec(val);
 
     if (expression) {
-      const unescape = (str: string, escapes: Dictionary<string> = {}) =>
-        str.replace(/\\(.)/gs, (_, char: string) => escapes[char] ?? char);
-      const sqlEscapes = { 0: '\0', b: '\b', n: '\n', r: '\r', t: '\t', Z: '\x1a' };
-      return this.platform.quoteValue(unescape(unescape(expression[1]), sqlEscapes));
+      return this.platform.quoteDefaultValue(this.unescapeDefault(expression[1].replace(/\\(.)/gs, '$1')));
     }
 
     const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType;
-    return stringType ? this.platform.quoteValue(val) : val;
+    return stringType ? this.platform.quoteDefaultValue(val) : val;
+  }
+
+  /** Decodes the backslash escapes of an introspected string literal. */
+  override unescapeDefault(val: string): string {
+    const sqlEscapes: Dictionary<string> = { 0: '\0', b: '\b', n: '\n', r: '\r', t: '\t', Z: '\x1a' };
+    return val.replace(/\\(.)/gs, (_, char: string) => sqlEscapes[char] ?? char);
   }
 }

@@ -938,6 +938,11 @@ export abstract class SchemaHelper {
     }, {});
   }
 
+  /** Decodes the content of an introspected string literal, the inverse of `Platform.quoteDefaultValue()`. */
+  unescapeDefault(val: string): string {
+    return val.replaceAll("''", "'");
+  }
+
   normalizeDefaultValue(
     defaultValue: string | RawQueryFragment,
     length?: number,
