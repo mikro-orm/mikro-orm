@@ -117,4 +117,36 @@ describe('migrations with runtime schema (mysql)', () => {
     const executedB = await orm.migrator.getExecuted({ schema: tenants[1] });
     expect(executedB.map(r => r.name)).toEqual(['CreateArticleMigration', 'AddViewColumnMigration']);
   });
+
+  test('persists breakpoints in the target database and rejects a mixed rollback before DDL executes', async () => {
+    await orm.migrator.setBreakpoint('CreateArticleMigration', true, { schema: tenants[1] });
+    const migrator = new Migrator(orm.em);
+    expect((await migrator.getExecuted({ schema: tenants[1] })).map(row => row.breakpoint)).toEqual([true, false]);
+    expect((await migrator.getExecuted({ schema: tenants[0] }))[0].breakpoint).toBe(false);
+    await expect(migrator.down({ to: 0, schema: tenants[1] })).rejects.toThrow("breakpoint 'CreateArticleMigration'");
+    expect(await migrator.getExecuted({ schema: tenants[1] })).toHaveLength(2);
+    const [cols] = await orm.em
+      .getConnection()
+      .execute<{ c: number }[]>(
+        "select count(*) c from information_schema.columns where table_schema = ? and table_name = 'article' and column_name = 'views'",
+        [tenants[1]],
+      );
+    expect(cols.c).toBe(1);
+    await migrator.down({ to: 'CreateArticleMigration', schema: tenants[1] });
+    await expect(migrator.down({ schema: tenants[1] })).rejects.toThrow("breakpoint 'CreateArticleMigration'");
+  });
+
+  test('upgrades a legacy history table in the selected database', async () => {
+    await orm.em
+      .getConnection()
+      .execute(`alter table \`${tenants[0]}\`.\`mikro_orm_migrations\` drop column \`breakpoint\``);
+    const before = await orm.migrator.getExecuted({ schema: tenants[0] });
+    expect(before[0]).not.toHaveProperty('breakpoint');
+    await orm.migrator.setBreakpoint('CreateArticleMigration', true, { schema: tenants[0] });
+    expect(await orm.migrator.getExecuted({ schema: tenants[0] })).toEqual([{ ...before[0], breakpoint: true }]);
+    await expect(orm.migrator.down({ schema: tenants[0] })).rejects.toThrow("breakpoint 'CreateArticleMigration'");
+    await orm.migrator.setBreakpoint('CreateArticleMigration', false, { schema: tenants[0] });
+    await orm.migrator.down({ schema: tenants[0] });
+    expect(await orm.migrator.getExecuted({ schema: tenants[0] })).toEqual([]);
+  });
 });
