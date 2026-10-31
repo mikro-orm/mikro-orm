@@ -79,6 +79,8 @@ test('MySqlConnection forwards onReserveConnection to Kysely MysqlDialect', asyn
 
   expect(pool.calls).toEqual([
     'getConnection',
+    // `forceUtcTimezone` is on by default, so the session time zone is pinned on every new connection
+    'query:set time_zone = ?',
     'reserve',
     'query:set @app_tenant_id = ?',
     'query:select 1 as count',
