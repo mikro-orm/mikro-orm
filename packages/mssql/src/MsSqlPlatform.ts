@@ -75,7 +75,6 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override convertDateToJSValue(value: string | Date): string {
-    /* v8 ignore next */
     if (typeof value === 'string') {
       return value;
     }
