@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Retries `lerna publish`, which flakes on sigstore provenance ("409 an equivalent entry
-# already exists in the transparency log") when Rekor times out and the request is retried
-# with the same signature. A fresh attempt signs with a new ephemeral key, so it goes
-# through; `from-package` only picks up packages missing from the registry, so retrying
-# never republishes anything.
+# Retries `lerna publish` as a safety net for transient registry/sigstore failures.
+# `from-package` only picks up packages missing from the registry, so retrying never
+# republishes anything. The common failure mode (Rekor timing out, sigstore retrying the
+# same signature and getting "409 an equivalent entry already exists") is handled at the
+# source by the sigstore patch in .yarn/patches, which makes the client fetch the existing
+# entry instead of failing.
 set -uo pipefail
 
 attempts=${PUBLISH_ATTEMPTS:-3}

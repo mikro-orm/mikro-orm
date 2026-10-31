@@ -153,7 +153,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     match = /^'(.*)'$/.exec(defaultValue);
 
     if (stripQuotes && match) {
-      defaultValue = match[1];
+      defaultValue = match[1].replaceAll("''", "'");
     }
 
     return super.normalizeDefaultValue(defaultValue, length, MsSqlSchemaHelper.DEFAULT_VALUES);

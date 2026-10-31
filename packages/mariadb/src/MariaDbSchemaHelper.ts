@@ -256,6 +256,13 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
   }
 
   protected override wrap(val: string | undefined | null, type: Type<unknown>): string | undefined | null {
-    return val;
+    const match = typeof val === 'string' ? /^'(.*)'$/s.exec(val) : null;
+
+    if (!match) {
+      return val;
+    }
+
+    // text/blob literals come back fully backslash-escaped (`'it\'s'`), varchar ones with doubled quotes (`'it''s'`) but still `\\` for a backslash
+    return this.quoteDefault(this.unescapeDefault(match[1].replaceAll("''", "\\'")));
   }
 }

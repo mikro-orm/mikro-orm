@@ -1185,7 +1185,7 @@ export class DatabaseTable {
     const match = /^'(.*)'$/.exec('' + val);
 
     if (!raw && match) {
-      return match[1];
+      return match[1].replaceAll("''", "'");
     }
 
     return '' + val;
