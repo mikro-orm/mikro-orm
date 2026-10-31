@@ -256,7 +256,13 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
   }
 
   protected override wrap(val: string | undefined | null, type: Type<unknown>): string | undefined | null {
-    // text/blob literal defaults come back backslash-escaped (`'it\'s'`) while varchar ones use doubled quotes, which is what metadata emits
-    return typeof val === 'string' && /^'.*'$/s.test(val) ? val.replaceAll("\\'", "''") : val;
+    const match = typeof val === 'string' ? /^'(.*)'$/s.exec(val) : null;
+
+    if (!match) {
+      return val;
+    }
+
+    // text/blob literals come back fully backslash-escaped (`'it\'s'`), varchar ones with doubled quotes (`'it''s'`) but still `\\` for a backslash
+    return this.quoteDefault(this.unescapeDefault(match[1].replaceAll("''", "\\'")));
   }
 }

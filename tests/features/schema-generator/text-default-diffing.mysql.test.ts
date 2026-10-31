@@ -51,7 +51,7 @@ test('escaped text defaults are introspected as plain literals', async () => {
       .getTable('escaped_defaults')!
       .getColumns()
       .map(col => col.default);
-    expect(defaults).toEqual([null, `'it''s'`, `'a\\b'`, `'a\nb'`]);
+    expect(defaults).toEqual([null, `'it''s'`, `'a\\\\b'`, `'a\\nb'`]);
   } finally {
     await connection.execute('drop table escaped_defaults');
   }

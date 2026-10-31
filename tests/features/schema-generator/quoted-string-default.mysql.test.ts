@@ -11,6 +11,19 @@ class Note {
 
   @Property({ type: 'text', default: "'quoted'" })
   body!: string & Opt;
+
+  // mysql reads `\b` in the create DDL as a backspace, the introspected literal has to render it the same way
+  @Property({ default: 'a\\b' })
+  path!: string & Opt;
+
+  @Property({ type: 'text', default: 'a\\b' })
+  note!: string & Opt;
+
+  @Property({ default: 'say "hi"' })
+  quote!: string & Opt;
+
+  @Property({ type: 'text', default: 'say "hi"' })
+  text!: string & Opt;
 }
 
 let orm: MikroORM;
