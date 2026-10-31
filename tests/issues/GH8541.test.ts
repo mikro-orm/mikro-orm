@@ -42,11 +42,11 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 test('GH #8541', async () => {
-  orm.em.create(Document, { data: { text: '≥ ≤ Δ' }, meta: { title: '≥ ≤ Δ' } });
+  const created = orm.em.create(Document, { data: { text: '≥ ≤ Δ' }, meta: { title: '≥ ≤ Δ' } });
   await orm.em.flush();
   orm.em.clear();
 
-  const document = await orm.em.findOneOrFail(Document, { id: { $ne: null } });
+  const document = await orm.em.findOneOrFail(Document, created.id);
   expect(document.data).toEqual({ text: '≥ ≤ Δ' });
   expect(document.meta.title).toBe('≥ ≤ Δ');
 
