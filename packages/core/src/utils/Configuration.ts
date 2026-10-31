@@ -1082,7 +1082,7 @@ export interface Options<
   /**
    * Force `Date` values to be stored in UTC for datetime columns without timezone.
    * Works for MySQL (`datetime` type), PostgreSQL (`timestamp` type), and MSSQL (`datetime`/`datetime2` types).
-   * SQLite does this by default.
+   * SQLite does this by default. MySQL and MariaDB also get their session time zone set on every new connection.
    * @default true
    */
   forceUtcTimezone: boolean;
