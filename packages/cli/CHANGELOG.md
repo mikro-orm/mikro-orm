@@ -7,8 +7,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **cli:** report a configured TS config path skipped without TS support ([#8537](https://github.com/mikro-orm/mikro-orm/issues/8537)) ([c9951e2](https://github.com/mikro-orm/mikro-orm/commit/c9951e2e45aa819917e101cbabeeeeea9d9451df)), closes [#8531](https://github.com/mikro-orm/mikro-orm/issues/8531)
-
+- **cli:** report a configured TS config path skipped without TS support ([#8537](https://github.com/mikro-orm/mikro-orm/issues/8537)) ([c9951e2](https://github.com/mikro-orm/mikro-orm/commit/c9951e2e45aa819917e101cbabeeeeea9d9451df)), closes [#8531](https://github.com/mikro-orm/mikro-orm/issues/8531)
 
 ## [7.2.5](https://github.com/mikro-orm/mikro-orm/compare/v7.2.4...v7.2.5) (2026-10-09)
 

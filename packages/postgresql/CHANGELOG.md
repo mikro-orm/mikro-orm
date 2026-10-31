@@ -7,9 +7,8 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **postgresql:** reject a commit PostgreSQL answered with ROLLBACK ([#8499](https://github.com/mikro-orm/mikro-orm/issues/8499)) ([743fafd](https://github.com/mikro-orm/mikro-orm/commit/743fafd702db1c8c9ae79699b9106376e25b4aba)), closes [#8476](https://github.com/mikro-orm/mikro-orm/issues/8476)
-* **postgresql:** release pooled client when its connection drops mid-transaction ([#8448](https://github.com/mikro-orm/mikro-orm/issues/8448)) ([ada68f8](https://github.com/mikro-orm/mikro-orm/commit/ada68f831908050078b0a5856518993f132549c7)), closes [kysely-org/kysely#1990](https://github.com/kysely-org/kysely/issues/1990) [#8069](https://github.com/mikro-orm/mikro-orm/issues/8069) [#8447](https://github.com/mikro-orm/mikro-orm/issues/8447)
-
+- **postgresql:** reject a commit PostgreSQL answered with ROLLBACK ([#8499](https://github.com/mikro-orm/mikro-orm/issues/8499)) ([743fafd](https://github.com/mikro-orm/mikro-orm/commit/743fafd702db1c8c9ae79699b9106376e25b4aba)), closes [#8476](https://github.com/mikro-orm/mikro-orm/issues/8476)
+- **postgresql:** release pooled client when its connection drops mid-transaction ([#8448](https://github.com/mikro-orm/mikro-orm/issues/8448)) ([ada68f8](https://github.com/mikro-orm/mikro-orm/commit/ada68f831908050078b0a5856518993f132549c7)), closes [kysely-org/kysely#1990](https://github.com/kysely-org/kysely/issues/1990) [#8069](https://github.com/mikro-orm/mikro-orm/issues/8069) [#8447](https://github.com/mikro-orm/mikro-orm/issues/8447)
 
 ## [7.2.5](https://github.com/mikro-orm/mikro-orm/compare/v7.2.4...v7.2.5) (2026-10-09)
 
