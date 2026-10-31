@@ -1699,7 +1699,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       return super.normalizeDefaultValue(defaultValue, length, PostgreSqlSchemaHelper.DEFAULT_VALUES);
     }
 
-    const match = /^'(.*)'::(.*)$/.exec(defaultValue);
+    const match = /^'(.*)'::(.*)$/s.exec(defaultValue);
 
     if (match) {
       if (match[2] === 'integer') {

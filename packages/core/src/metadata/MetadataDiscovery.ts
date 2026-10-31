@@ -2506,7 +2506,7 @@ export class MetadataDiscovery {
       val = prop.customType.convertToDatabaseValue(prop.default, this.#platform)!;
     }
 
-    prop.defaultRaw = typeof val === 'string' ? `'${val.replaceAll("'", "''")}'` : '' + val;
+    prop.defaultRaw = typeof val === 'string' ? this.#platform.quoteDefaultValue(val) : '' + val;
   }
 
   private inferTypeFromDefault(prop: EntityProperty): void {

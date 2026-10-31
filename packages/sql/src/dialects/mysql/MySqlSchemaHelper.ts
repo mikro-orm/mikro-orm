@@ -828,21 +828,16 @@ export class MySqlSchemaHelper extends SchemaHelper {
     const expression = type instanceof JsonType ? null : /^_\w+\\'(.*)\\'$/s.exec(val);
 
     if (expression) {
-      return this.quoteDefault(this.unescapeDefault(expression[1].replace(/\\(.)/gs, '$1')));
+      return this.platform.quoteDefaultValue(this.unescapeDefault(expression[1].replace(/\\(.)/gs, '$1')));
     }
 
     const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType;
-    return stringType ? this.quoteDefault(val) : val;
+    return stringType ? this.platform.quoteDefaultValue(val) : val;
   }
 
   /** Decodes the backslash escapes of an introspected string literal. */
-  protected unescapeDefault(val: string): string {
+  override unescapeDefault(val: string): string {
     const sqlEscapes: Dictionary<string> = { 0: '\0', b: '\b', n: '\n', r: '\r', t: '\t', Z: '\x1a' };
     return val.replace(/\\(.)/gs, (_, char: string) => sqlEscapes[char] ?? char);
-  }
-
-  /** Metadata doubles embedded quotes and leaves `"` alone, so undo those two escapes of `quoteValue` while keeping the backslash form of control characters. */
-  protected quoteDefault(val: string): string {
-    return this.platform.quoteValue(val).replaceAll("\\'", "''").replaceAll('\\"', '"');
   }
 }

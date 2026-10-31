@@ -11,6 +11,18 @@ class Note {
 
   @Property({ type: 'text', default: "'quoted'" })
   body!: string & Opt;
+
+  @Property({ default: 'a\\b' })
+  path!: string & Opt;
+
+  @Property({ type: 'text', default: 'a\\b' })
+  note!: string & Opt;
+
+  @Property({ default: 'a\nb' })
+  newline!: string & Opt;
+
+  @Property({ default: "x\\'y" })
+  mixed!: string & Opt;
 }
 
 let orm: MikroORM;
@@ -36,4 +48,8 @@ test('string defaults containing single quotes are escaped', async () => {
   const loaded = await orm.em.findOneOrFail(Note, note.id);
   expect(loaded.title).toBe("it's");
   expect(loaded.body).toBe("'quoted'");
+  expect(loaded.path).toBe('a\\b');
+  expect(loaded.note).toBe('a\\b');
+  expect(loaded.newline).toBe('a\nb');
+  expect(loaded.mixed).toBe("x\\'y");
 });

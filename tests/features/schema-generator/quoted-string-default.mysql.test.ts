@@ -12,12 +12,17 @@ class Note {
   @Property({ type: 'text', default: "'quoted'" })
   body!: string & Opt;
 
-  // mysql reads `\b` in the create DDL as a backspace, the introspected literal has to render it the same way
   @Property({ default: 'a\\b' })
   path!: string & Opt;
 
   @Property({ type: 'text', default: 'a\\b' })
   note!: string & Opt;
+
+  @Property({ default: 'a\nb' })
+  newline!: string & Opt;
+
+  @Property({ default: "x\\'y" })
+  mixed!: string & Opt;
 
   @Property({ default: 'say "hi"' })
   quote!: string & Opt;
@@ -50,4 +55,8 @@ test('string defaults containing single quotes are escaped', async () => {
   const loaded = await orm.em.findOneOrFail(Note, note.id);
   expect(loaded.title).toBe("it's");
   expect(loaded.body).toBe("'quoted'");
+  expect(loaded.path).toBe('a\\b');
+  expect(loaded.note).toBe('a\\b');
+  expect(loaded.newline).toBe('a\nb');
+  expect(loaded.mixed).toBe("x\\'y");
 });
