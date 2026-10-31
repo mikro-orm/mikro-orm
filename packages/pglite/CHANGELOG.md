@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.6](https://github.com/mikro-orm/mikro-orm/compare/v7.2.5...v7.2.6) (2026-10-31)
+
+### Bug Fixes
+
+* **pglite:** reject a commit of an aborted transaction ([#8552](https://github.com/mikro-orm/mikro-orm/issues/8552)) ([c7b0de4](https://github.com/mikro-orm/mikro-orm/commit/c7b0de4127efa7f89c5e4d76c49a7c3d164166cf)), closes [#8499](https://github.com/mikro-orm/mikro-orm/issues/8499) [#8550](https://github.com/mikro-orm/mikro-orm/issues/8550)
+
+
 ## [7.2.5](https://github.com/mikro-orm/mikro-orm/compare/v7.2.4...v7.2.5) (2026-10-09)
 
 **Note:** Version bump only for package @mikro-orm/pglite

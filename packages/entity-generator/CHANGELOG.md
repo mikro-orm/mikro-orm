@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.6](https://github.com/mikro-orm/mikro-orm/compare/v7.2.5...v7.2.6) (2026-10-31)
+
+### Bug Fixes
+
+* **core:** escape backslashes in string default values on the MySQL family ([#8554](https://github.com/mikro-orm/mikro-orm/issues/8554)) ([a69516e](https://github.com/mikro-orm/mikro-orm/commit/a69516ea21476b1b30cace5b62798ee20bdd15d8)), closes [#8553](https://github.com/mikro-orm/mikro-orm/issues/8553) [#8553](https://github.com/mikro-orm/mikro-orm/issues/8553)
+* **schema:** align introspected string defaults with the doubled-quote form ([#8553](https://github.com/mikro-orm/mikro-orm/issues/8553)) ([70946fb](https://github.com/mikro-orm/mikro-orm/commit/70946fbe1865e1f9b5503035faedadace2f67c49)), closes [#8517](https://github.com/mikro-orm/mikro-orm/issues/8517)
+
+
 ## [7.2.5](https://github.com/mikro-orm/mikro-orm/compare/v7.2.4...v7.2.5) (2026-10-09)
 
 **Note:** Version bump only for package @mikro-orm/entity-generator

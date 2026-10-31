@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.6](https://github.com/mikro-orm/mikro-orm/compare/v7.2.5...v7.2.6) (2026-10-31)
+
+### Bug Fixes
+
+* **mysql:** map generated ids of a batch insert that mixes explicit and generated primary keys ([#8475](https://github.com/mikro-orm/mikro-orm/issues/8475)) ([85652ae](https://github.com/mikro-orm/mikro-orm/commit/85652aead73a82d327243a2e0040533a3f91ef44))
+* **sql:** refuse to commit when rolling back to a savepoint failed ([#8462](https://github.com/mikro-orm/mikro-orm/issues/8462)) ([1610b60](https://github.com/mikro-orm/mikro-orm/commit/1610b6005b9ea0e41d7c2808c33bb8603b1d041b)), closes [#8458](https://github.com/mikro-orm/mikro-orm/issues/8458)
+
+
 ## [7.2.5](https://github.com/mikro-orm/mikro-orm/compare/v7.2.4...v7.2.5) (2026-10-09)
 
 **Note:** Version bump only for package @mikro-orm/mysql

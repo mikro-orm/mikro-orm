@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.6](https://github.com/mikro-orm/mikro-orm/compare/v7.2.5...v7.2.6) (2026-10-31)
+
+### Bug Fixes
+
+* **core:** escape backslashes in string default values on the MySQL family ([#8554](https://github.com/mikro-orm/mikro-orm/issues/8554)) ([a69516e](https://github.com/mikro-orm/mikro-orm/commit/a69516ea21476b1b30cace5b62798ee20bdd15d8)), closes [#8553](https://github.com/mikro-orm/mikro-orm/issues/8553) [#8553](https://github.com/mikro-orm/mikro-orm/issues/8553)
+* **core:** map MSSQL date results to strings so loaded entities are not dirty ([d16b6ab](https://github.com/mikro-orm/mikro-orm/commit/d16b6abb6947d83310cafed6d29dddacd46cc9f1)), closes [#8539](https://github.com/mikro-orm/mikro-orm/issues/8539)
+* **mssql:** keep composite foreign key columns paired when introspecting ([#8449](https://github.com/mikro-orm/mikro-orm/issues/8449)) ([690e734](https://github.com/mikro-orm/mikro-orm/commit/690e7344dd92efb44ef7cbd1d7a51cb896c92ad3))
+* **mssql:** write JSON values as Unicode literals ([#8542](https://github.com/mikro-orm/mikro-orm/issues/8542)) ([0316a53](https://github.com/mikro-orm/mikro-orm/commit/0316a53fc07a22dea7b8b4f0a67e3b51fbb6b2ce)), closes [#8541](https://github.com/mikro-orm/mikro-orm/issues/8541)
+* **schema:** align introspected string defaults with the doubled-quote form ([#8553](https://github.com/mikro-orm/mikro-orm/issues/8553)) ([70946fb](https://github.com/mikro-orm/mikro-orm/commit/70946fbe1865e1f9b5503035faedadace2f67c49)), closes [#8517](https://github.com/mikro-orm/mikro-orm/issues/8517)
+* **sql:** refuse to commit when rolling back to a savepoint failed ([#8462](https://github.com/mikro-orm/mikro-orm/issues/8462)) ([1610b60](https://github.com/mikro-orm/mikro-orm/commit/1610b6005b9ea0e41d7c2808c33bb8603b1d041b)), closes [#8458](https://github.com/mikro-orm/mikro-orm/issues/8458)
+
+
 ## [7.2.5](https://github.com/mikro-orm/mikro-orm/compare/v7.2.4...v7.2.5) (2026-10-09)
 
 **Note:** Version bump only for package @mikro-orm/mssql
