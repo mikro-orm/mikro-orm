@@ -3321,21 +3321,17 @@ export class QueryBuilder<
         return;
       }
 
-      // the joined strategy selects `alias.column as alias__column`; when a property is named like another
-      // property's column, resolving `column` by property name would read (or drop) the wrong column
-      if (
+      // the joined strategy selects by column name, which can collide with the name of another property
+      const shadowed =
+        customAlias &&
         prop &&
-        customAlias?.endsWith(`__${f}`) &&
-        prop.kind !== ReferenceKind.EMBEDDED &&
-        (prop.persist === false || !prop.fieldNames?.includes(f)) &&
+        (prop.kind === ReferenceKind.EMBEDDED ||
+          (customAlias.endsWith(`__${f}`) && (prop.persist === false || !prop.fieldNames.includes(f)))) &&
         (this.#state.aliases[a]?.meta ?? this.mainAlias.meta).props.some(
-          p =>
-            p !== prop &&
-            p.persist !== false &&
-            (p.kind !== ReferenceKind.EMBEDDED || p.object) &&
-            p.fieldNames?.includes(f),
-        )
-      ) {
+          p => p !== prop && p.persist !== false && (p.kind !== ReferenceKind.EMBEDDED || p.object) && p.fieldNames?.includes(f),
+        );
+
+      if (shadowed) {
         ret.push(raw('?? as ??', [`${a}.${f}`, customAlias]));
         return;
       }
@@ -3351,15 +3347,7 @@ export class QueryBuilder<
         return;
       }
 
-      // the joined strategy selects by column name, which can collide with an inline embedded property name
-      const shadowed =
-        customAlias &&
-        prop?.kind === ReferenceKind.EMBEDDED &&
-        (this.#state.aliases[a]?.meta ?? this.mainAlias.meta).props.some(
-          p => (p.kind !== ReferenceKind.EMBEDDED || p.object) && p.fieldNames?.includes(f),
-        );
-
-      if (prop?.kind === ReferenceKind.EMBEDDED && !shadowed) {
+      if (prop?.kind === ReferenceKind.EMBEDDED) {
         if (customAlias) {
           throw new Error(
             `Cannot use 'as ${customAlias}' alias on embedded property '${field}' because it expands to multiple columns. Alias individual fields instead (e.g. '${field}.propertyName as ${customAlias}').`,
