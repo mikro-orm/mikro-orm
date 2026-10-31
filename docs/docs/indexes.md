@@ -327,6 +327,12 @@ The `expression` escape hatch (raw SQL for the whole index body) cannot be combi
 
 :::
 
+:::note Combining with `deferMode`
+
+Partial unique indexes cannot be deferrable — only constraints can, and constraints cannot carry a predicate. MikroORM throws a clear error if `deferMode` is combined with `where`. On PostgreSQL, a deferrable partial uniqueness check can be expressed as an exclusion constraint (`exclude using btree (col with =) where (...) deferrable initially deferred`) in a migration.
+
+:::
+
 :::note Round-trip via the entity generator
 
 On PostgreSQL, indexes over functional columns (e.g. `lower(email)`, `(data->>'kind')`) are introspected as opaque `expression` strings — the full `CREATE INDEX … WHERE …` survives the round-trip, but a regenerated entity uses `expression` rather than structured `properties` + `where`. Purely column-based partial indexes round-trip as structured `where`.

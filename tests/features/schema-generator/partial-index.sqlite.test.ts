@@ -264,6 +264,38 @@ describe('partial index [sqlite]', () => {
     meta.reset(e.class);
   });
 
+  test('addIndex rejects combining `deferMode` and `where` on a unique (GH #8512)', async () => {
+    const meta = orm.getMetadata();
+    for (const [, m] of meta.getAll()) {
+      meta.reset(m.class);
+    }
+
+    const e = new EntitySchema<PartialUser>({
+      name: 'PartialUserDeferred',
+      tableName: 'partial_user_deferred',
+      properties: {
+        id: { primary: true, name: 'id', type: 'number', fieldName: 'id', columnType: 'integer' },
+        email: { name: 'email', type: 'string', fieldName: 'email', columnType: 'text' },
+        deletedAt: { name: 'deletedAt', type: 'Date', fieldName: 'deleted_at', columnType: 'datetime', nullable: true },
+      },
+      uniques: [
+        {
+          name: 'partial_user_deferred_email_unique',
+          properties: ['email'],
+          where: { deletedAt: null },
+          deferMode: 'deferred',
+        } as any,
+      ],
+    }).init().meta;
+    meta.set(e.class, e as any);
+
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).rejects.toThrow(
+      /cannot combine `deferMode` with `where`/,
+    );
+
+    meta.reset(e.class);
+  });
+
   test('entity generator round-trips a partial index/unique back into clean `where:` options', async () => {
     const meta = orm.getMetadata();
     // wipe slate before introspecting

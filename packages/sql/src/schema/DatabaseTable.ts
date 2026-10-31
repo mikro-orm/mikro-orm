@@ -1360,6 +1360,15 @@ export class DatabaseTable {
       );
     }
 
+    // Partial uniques (`where`) are emitted as `create unique index ... where ...`, but only constraints
+    // can be deferrable — no dialect accepts `deferrable` on an index, so the generated DDL would always
+    // fail. Reject it up-front and point users to an exclusion constraint (PostgreSQL), which supports both.
+    if (index.where != null && index.deferMode) {
+      throw new Error(
+        `Index '${name}' on entity '${meta.className}': cannot combine \`deferMode\` with \`where\` — partial unique indexes cannot be deferrable. On PostgreSQL, declare an exclusion constraint instead, e.g. \`exclude using btree (col with =) where (...) deferrable initially ${index.deferMode}\`.`,
+      );
+    }
+
     const where = this.processIndexWhere(index.where, meta);
     const expression = this.processIndexExpression(name, index.expression, meta);
 
