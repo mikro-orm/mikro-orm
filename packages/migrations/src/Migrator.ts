@@ -6,6 +6,7 @@ import {
   type MigrateOptions,
   type MigrationInfo,
   type MikroORM,
+  type Transaction,
   Utils,
   t,
   Type,
@@ -202,10 +203,10 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     method: 'up' | 'down',
     options?: string | string[] | MigrateOptions,
   ): Promise<MigrationInfo[]> {
-    const result = await super.runMigrations(method, options);
+    const ctx = Utils.isObject<MigrateOptions>(options) ? options.transaction : undefined;
+    const result = await this.runWithoutForeignKeys(ctx, () => super.runMigrations(method, options));
 
     if (result.length > 0 && this.options.snapshot && this.options.snapshotOnMigrate) {
-      const ctx = Utils.isObject<MigrateOptions>(options) ? options.transaction : undefined;
       const { skipTables, skipViews } = this.config.get('schemaGenerator');
       const schema = await DatabaseSchema.create(
         this.em.getConnection(),
@@ -236,6 +237,16 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     }
 
     return result;
+  }
+
+  private async runWithoutForeignKeys<T>(ctx: Transaction | undefined, run: () => Promise<T>): Promise<T> {
+    // sqlite ignores `pragma foreign_keys` inside a transaction, so a table rebuild would run the FK actions of child rows
+    if (ctx || !this.driver.getPlatform().getSchemaHelper()!.getForeignKeyCheckSQL()) {
+      return run();
+    }
+
+    await this.init(); // can recreate the runner, which holds the FK state
+    return (this.runner as MigrationRunner).runWithoutForeignKeys(run);
   }
 
   /** Whether the introspected schema differs from the snapshot in any way the comparator turns into SQL. */

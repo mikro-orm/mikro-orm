@@ -8,6 +8,7 @@ export class MigrationRunner {
   readonly #helper: SchemaHelper;
   #masterTransaction?: Transaction;
   #runSchema?: string;
+  #foreignKeysOff = false;
 
   constructor(
     protected readonly driver: AbstractSqlDriver,
@@ -34,17 +35,28 @@ export class MigrationRunner {
         );
       }
 
-      const queries = await this.getQueries(migration, method);
-      await Utils.runSerial(queries, sql => this.driver.execute(sql));
-      await afterRun?.();
+      await this.runWithForeignKeys(async () => {
+        const queries = await this.getQueries(migration, method);
+        await Utils.runSerial(queries, sql => this.driver.execute(sql));
+        await afterRun?.();
+      });
     } else {
       await this.#connection.transactional(
         async tx => {
           migration.setTransactionContext(tx);
+          const violations = await this.countForeignKeyViolations(tx);
 
           try {
             const queries = await this.getQueries(migration, method);
             await Utils.runSerial(queries, sql => this.driver.execute(sql, undefined, 'all', tx));
+            const added = (await this.countForeignKeyViolations(tx)) - violations;
+
+            if (added > 0) {
+              throw new Error(
+                `Migration ${migration.name ?? migration.constructor.name} left ${added} rows that violate foreign keys`,
+              );
+            }
+
             await afterRun?.(tx);
           } finally {
             await this.resetSessionSchema(tx);
@@ -53,6 +65,42 @@ export class MigrationRunner {
         { ctx: this.#masterTransaction },
       );
     }
+  }
+
+  /** Runs migrations with FK checks off, for drivers that ignore the switch inside a transaction (SQLite). */
+  async runWithoutForeignKeys<T>(run: () => Promise<T>): Promise<T> {
+    await this.setForeignKeys(false);
+
+    try {
+      return await run();
+    } finally {
+      await this.setForeignKeys(true);
+    }
+  }
+
+  // a migration outside a transaction gets no `foreign_key_check`, so it runs with FK checks on
+  private async runWithForeignKeys(run: () => Promise<void>): Promise<void> {
+    if (!this.#foreignKeysOff) {
+      return run();
+    }
+
+    await this.setForeignKeys(true);
+
+    try {
+      await run();
+    } finally {
+      await this.setForeignKeys(false);
+    }
+  }
+
+  private async setForeignKeys(enabled: boolean): Promise<void> {
+    await this.driver.execute(enabled ? this.#helper.enableForeignKeysSQL() : this.#helper.disableForeignKeysSQL());
+    this.#foreignKeysOff = !enabled;
+  }
+
+  private async countForeignKeyViolations(ctx: Transaction): Promise<number> {
+    const sql = this.#helper.getForeignKeyCheckSQL();
+    return sql ? (await this.driver.execute<unknown[]>(sql, undefined, 'all', ctx)).length : 0;
   }
 
   private async resetSessionSchema(ctx?: Transaction): Promise<void> {

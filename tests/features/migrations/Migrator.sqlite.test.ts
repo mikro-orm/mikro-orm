@@ -574,12 +574,14 @@ describe('Migrator (sqlite)', () => {
     mock.mock.calls.length = 0;
     await runner.run(migration1, 'up');
     expect(spy1).toHaveBeenCalledWith('select 1 + 1');
-    expect(mock.mock.calls).toHaveLength(5);
+    expect(mock.mock.calls).toHaveLength(7);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('pragma foreign_keys = off;');
-    expect(mock.mock.calls[2][0]).toMatch('select 1 + 1');
-    expect(mock.mock.calls[3][0]).toMatch('pragma foreign_keys = on;');
-    expect(mock.mock.calls[4][0]).toMatch('commit');
+    expect(mock.mock.calls[1][0]).toMatch('pragma foreign_key_check');
+    expect(mock.mock.calls[2][0]).toMatch('pragma foreign_keys = off;');
+    expect(mock.mock.calls[3][0]).toMatch('select 1 + 1');
+    expect(mock.mock.calls[4][0]).toMatch('pragma foreign_keys = on;');
+    expect(mock.mock.calls[5][0]).toMatch('pragma foreign_key_check');
+    expect(mock.mock.calls[6][0]).toMatch('commit');
     mock.mock.calls.length = 0;
 
     await expect(runner.run(migration1, 'down')).rejects.toThrow('This migration cannot be reverted');
