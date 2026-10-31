@@ -3328,7 +3328,11 @@ export class QueryBuilder<
         (prop.kind === ReferenceKind.EMBEDDED ||
           (customAlias.endsWith(`__${f}`) && (prop.persist === false || !prop.fieldNames.includes(f)))) &&
         (this.#state.aliases[a]?.meta ?? this.mainAlias.meta).props.some(
-          p => p !== prop && p.persist !== false && (p.kind !== ReferenceKind.EMBEDDED || p.object) && p.fieldNames?.includes(f),
+          p =>
+            p !== prop &&
+            p.persist !== false &&
+            (p.kind !== ReferenceKind.EMBEDDED || p.object) &&
+            p.fieldNames?.includes(f),
         );
 
       if (shadowed) {
