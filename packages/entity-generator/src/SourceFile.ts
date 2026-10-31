@@ -950,7 +950,8 @@ export class SourceFile {
         typeof prop.defaultRaw !== 'undefined' &&
         prop.defaultRaw !== 'null' &&
         prop.defaultRaw !== '' &&
-        prop.defaultRaw !== (typeof prop.default === 'string' ? this.quote(prop.default) : `${prop.default}`)
+        prop.defaultRaw !==
+          (typeof prop.default === 'string' ? `'${prop.default.replaceAll("'", "''")}'` : `${prop.default}`)
       ) {
         // kept as a template literal for readability, but raw SQL may contain `${`, which would otherwise interpolate
         options.defaultRaw = `\`${prop.defaultRaw.replaceAll('\\', '\\\\').replaceAll('`', '\\`').replaceAll('${', '\\${')}\``;

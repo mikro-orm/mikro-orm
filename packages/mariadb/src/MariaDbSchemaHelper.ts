@@ -256,6 +256,7 @@ export class MariaDbSchemaHelper extends MySqlSchemaHelper {
   }
 
   protected override wrap(val: string | undefined | null, type: Type<unknown>): string | undefined | null {
-    return val;
+    // text/blob literal defaults come back backslash-escaped (`'it\'s'`) while varchar ones use doubled quotes, which is what metadata emits
+    return typeof val === 'string' && /^'.*'$/s.test(val) ? val.replaceAll("\\'", "''") : val;
   }
 }

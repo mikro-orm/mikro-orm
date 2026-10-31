@@ -824,6 +824,8 @@ export class MySqlSchemaHelper extends SchemaHelper {
       return val;
     }
 
+    // metadata doubles embedded quotes, so the introspected literal has to match that form, not the backslash escaping of `quoteValue`
+    const quote = (str: string) => `'${str.replaceAll("'", "''")}'`;
     // text/blob literal defaults come back escaped twice with a charset introducer, e.g. `_utf8mb4\'it\\\'s\'` (JSON is parsed by the comparator)
     const expression = type instanceof JsonType ? null : /^_\w+\\'(.*)\\'$/s.exec(val);
 
@@ -831,10 +833,10 @@ export class MySqlSchemaHelper extends SchemaHelper {
       const unescape = (str: string, escapes: Dictionary<string> = {}) =>
         str.replace(/\\(.)/gs, (_, char: string) => escapes[char] ?? char);
       const sqlEscapes = { 0: '\0', b: '\b', n: '\n', r: '\r', t: '\t', Z: '\x1a' };
-      return this.platform.quoteValue(unescape(unescape(expression[1]), sqlEscapes));
+      return quote(unescape(unescape(expression[1]), sqlEscapes));
     }
 
     const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType;
-    return stringType ? this.platform.quoteValue(val) : val;
+    return stringType ? quote(val) : val;
   }
 }

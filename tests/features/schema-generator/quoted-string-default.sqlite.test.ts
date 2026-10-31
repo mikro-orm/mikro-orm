@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/sqlite';
+import { MikroORM, type Opt } from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 @Entity()
@@ -7,10 +7,10 @@ class Note {
   id!: number;
 
   @Property({ default: "it's" })
-  title!: string;
+  title!: string & Opt;
 
   @Property({ type: 'text', default: "'quoted'" })
-  body!: string;
+  body!: string & Opt;
 }
 
 let orm: MikroORM;
@@ -34,7 +34,7 @@ test('string defaults containing single quotes are escaped', async () => {
   const diff = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
   expect(diff).toEqual({ up: '', down: '' });
 
-  const note = orm.em.create(Note, {} as Note);
+  const note = orm.em.create(Note, {});
   await orm.em.flush();
   orm.em.clear();
   const loaded = await orm.em.findOneOrFail(Note, note.id);
