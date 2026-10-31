@@ -2503,7 +2503,7 @@ export class MetadataDiscovery {
     // guard preserves the legacy convention where JSON defaults are passed pre-stringified.
     // Array defaults are converted unconditionally (e.g. `default: []` on a JSON-backed embedded array).
     if (prop.customType && (Array.isArray(prop.default) || prop.customType.compareAsType() !== 'any')) {
-      val = prop.customType.convertToDatabaseValue(prop.default, this.#platform)!;
+      val = prop.customType.convertToDatabaseValue(prop.default, this.#platform, { mode: 'discovery' })!;
     }
 
     prop.defaultRaw = typeof val === 'string' ? this.#platform.quoteDefaultValue(val) : '' + val;

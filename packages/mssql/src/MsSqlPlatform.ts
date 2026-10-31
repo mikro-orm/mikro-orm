@@ -14,6 +14,7 @@ import {
   QueryOrder,
   raw,
   RawQueryFragment,
+  type TransformContext,
   Type,
 } from '@mikro-orm/sql';
 // @ts-expect-error no types available
@@ -84,6 +85,13 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
 
   override convertsJsonAutomatically(): boolean {
     return false;
+  }
+
+  override convertJsonToDatabaseValue(value: unknown, context?: TransformContext): unknown {
+    const json = super.convertJsonToDatabaseValue(value, context) as string;
+
+    // JSON is stored in `nvarchar(max)`, so write it as a Unicode literal, otherwise non-Latin characters are lost
+    return context?.mode === 'hydration' || context?.mode === 'discovery' ? json : new UnicodeString(json);
   }
 
   override indexForeignKeys(): boolean {
