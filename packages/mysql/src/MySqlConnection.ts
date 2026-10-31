@@ -1,4 +1,5 @@
 import {
+  CompiledQuery,
   type ControlledTransaction,
   type MysqlDialectConfig,
   type MysqlPool,
@@ -27,6 +28,7 @@ export class MySqlConnection extends AbstractSqlConnection {
   override async createKyselyDialect(overrides: PoolOptions): Promise<MysqlDialect> {
     const options = this.mapOptions(overrides);
     const password = options.password as ConnectionConfig['password'];
+    const onCreateConnection = this.getOnCreateConnection(options.timezone);
 
     if (typeof password === 'function') {
       const initialPassword = await password();
@@ -60,7 +62,7 @@ export class MySqlConnection extends AbstractSqlConnection {
       return new MysqlDialect({
         pool,
         controlConnection: MySqlConnection.#controlConnection,
-        onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
+        onCreateConnection,
         onReserveConnection: this.options.onReserveConnection ?? this.config.get('onReserveConnection'),
       });
     }
@@ -70,9 +72,28 @@ export class MySqlConnection extends AbstractSqlConnection {
     return new MysqlDialect({
       pool: this.#pool as any,
       controlConnection: MySqlConnection.#controlConnection,
-      onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
+      onCreateConnection,
       onReserveConnection: this.options.onReserveConnection ?? this.config.get('onReserveConnection'),
     });
+  }
+
+  /**
+   * `mysql2` uses the `timezone` option only to convert `Date` values on the client, so the session
+   * time zone (and with it `now()` or `current_timestamp` defaults) would still follow the server.
+   * Pin it on every new connection, before the user-provided `onCreateConnection` hook runs.
+   */
+  private getOnCreateConnection(timezone?: string): MysqlDialectConfig['onCreateConnection'] {
+    const hook = this.options.onCreateConnection ?? this.config.get('onCreateConnection');
+    const sessionTimezone = timezone === 'Z' ? '+00:00' : timezone;
+
+    if (!sessionTimezone || sessionTimezone === 'local') {
+      return hook;
+    }
+
+    return async connection => {
+      await connection.executeQuery(CompiledQuery.raw('set time_zone = ?', [sessionTimezone]));
+      await hook?.(connection);
+    };
   }
 
   /** Returns the `mysql2` connection pool backing this connection. */

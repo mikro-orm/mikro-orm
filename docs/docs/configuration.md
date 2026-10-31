@@ -403,6 +403,8 @@ MikroORM.init({
 
 The `forceUtcTimezone` option forces `Date` values to be stored in UTC for datetime columns without timezone. It works for MySQL (`datetime` type), PostgreSQL (`timestamp` type), and MSSQL (`datetime`/`datetime2` types). SQLite stores dates as numeric timestamps, which are inherently timezone-agnostic.
 
+With MySQL and MariaDB, the ORM also sets the session time zone (`SET time_zone`) on every new connection, so values the database computes on its own, such as `now()` or a `current_timestamp` column default, use the same time zone as values written from JavaScript. This applies to both `forceUtcTimezone` and the `timezone` option.
+
 This option is enabled by default since v7. To disable it and store dates in local timezone:
 
 ```ts
