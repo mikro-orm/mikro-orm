@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 # Retries `lerna publish` as a safety net for transient registry/sigstore failures.
 # `from-package` only picks up packages missing from the registry, so retrying never
-# republishes anything. The common failure mode (Rekor timing out, sigstore retrying the
-# same signature and getting "409 an equivalent entry already exists") is handled at the
-# source by the sigstore patch in .yarn/patches, which makes the client fetch the existing
-# entry instead of failing.
+# republishes anything. The common failure mode (Rekor answering slowly, sigstore timing
+# out and retrying the same signature, "409 an equivalent entry already exists", then the
+# follow-up fetch of that entry timing out as well) is handled at the source by the sigstore
+# patch in .yarn/patches: a 30s Rekor timeout instead of 5s, plus fetching the existing
+# entry on conflict. Rekor outages tend to last a few minutes, so the attempts here are
+# spread over several minutes instead of giving up within one.
 set -uo pipefail
 
-attempts=${PUBLISH_ATTEMPTS:-3}
-delay=${PUBLISH_RETRY_DELAY:-30}
+attempts=${PUBLISH_ATTEMPTS:-5}
+delay=${PUBLISH_RETRY_DELAY:-60}
 root=$(git rev-parse --show-toplevel)
 
 for i in $(seq 1 "$attempts"); do
