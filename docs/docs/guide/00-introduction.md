@@ -7,6 +7,8 @@ slug: /guide
 
 MikroORM is a TypeScript ORM for Node.js based on Data Mapper, Unit of Work, and Identity Map patterns. In this guide, you will learn what those words mean, how to set up a simple API project, how to test it, and many more.
 
+![MikroORM, with its Identity Map and Unit of Work, sits in the middle. Your services, written with plain entity classes, call find, persist and flush on it, and the MikroORM CLI uses it for migrations and seeding. It connects to the database through one driver package per database: @mikro-orm/postgresql for PostgreSQL, @mikro-orm/mysql for MySQL and @mikro-orm/mongodb for MongoDB.](/img/diagrams/mikro-orm-overview.svg)
+
 This Getting Started Guide was written as a step-by-step tutorial, accompanied by working StackBlitz examples and a [GitHub repository with the final project](https://github.com/mikro-orm/guide). It will show you how to create a production-ready application from scratch, all the way down to a docker image you can deploy wherever you want.
 
 To take a peek at the final project we will be building, try cloning the [`mikro-orm/guide` GitHub project](https://github.com/mikro-orm/guide).

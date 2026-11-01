@@ -284,6 +284,8 @@ See [Serializing](./serializing.md) for all options including serialization grou
 
 MikroORM uses a driver abstraction to support multiple databases. The `@mikro-orm/core` package contains database-agnostic logic (EntityManager, UnitOfWork, IdentityMap), while driver packages provide database-specific implementations.
 
+![@mikro-orm/core sits in the middle. The inner ring is built on core: @mikro-orm/sql and @mikro-orm/mongodb. The outer ring is built on @mikro-orm/sql: the PostgreSQL, MySQL, MariaDB, SQLite, libSQL and SQL Server drivers.](/img/diagrams/mikro-orm-packages.svg)
+
 **SQL drivers**: `@mikro-orm/postgresql`, `@mikro-orm/pglite`, `@mikro-orm/mysql`, `@mikro-orm/mariadb`, `@mikro-orm/sqlite`, `@mikro-orm/libsql`, `@mikro-orm/sql-js`, `@mikro-orm/mssql`, `@mikro-orm/oracledb` - all with full QueryBuilder support.
 
 **MongoDB driver**: `@mikro-orm/mongodb` - uses the native MongoDB driver. No QueryBuilder (use `em.find()` with filter objects instead).
@@ -341,3 +343,5 @@ See [Events and Hooks](./events.md) for the complete event reference.
 - [Serializing](./serializing.md) - Converting entities to DTOs
 - [Events and Hooks](./events.md) - Lifecycle events
 - [Transactions](./transactions.md) - Transaction management
+
+<small>Diagram made with [svgdiagram.ai](https://svgdiagram.ai)</small>
