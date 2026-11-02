@@ -860,6 +860,14 @@ export declare namespace LazyRef {
   }
 }
 
+/**
+ * The brand's only key is optional, so an object type without named properties (like `Record<string, number>`)
+ * extends `LazyRef.Brand<infer U>` too, with `U` inferred as `unknown`. `LazyRef<T>` needs `T extends object`,
+ * so an `unknown` target means the type is not a `LazyRef` and resolves to `Fallback`. `any` stays `any`.
+ * Only checked once `unknown extends U` holds, so a real `LazyRef` skips it.
+ */
+type NotLazyRef<U, Fallback> = IsAny<U> extends true ? U : Fallback;
+
 /** Alias for `Reference<T> & { id: number }` (see {@apilink Ref}). */
 export type EntityRef<T extends object> =
   true extends IsUnknown<PrimaryProperty<T>>
@@ -2554,7 +2562,9 @@ export type ArrayElement<ArrayType extends unknown[]> = ArrayType extends (infer
 /** Unwraps a property type from its wrapper (Reference, Collection, or array) to the inner entity type. */
 export type ExpandProperty<T> =
   T extends LazyRef.Brand<infer U>
-    ? NonNullable<U>
+    ? unknown extends U
+      ? NotLazyRef<U, NonNullable<T>>
+      : NonNullable<U>
     : T extends ReferenceShape<infer U>
       ? NonNullable<U>
       : T extends CollectionShape<infer U>
@@ -2651,9 +2661,17 @@ export type AddOptional<T> = undefined | null extends T
     : undefined extends T
       ? undefined
       : never;
+
+/**
+ * Like {@link ExtractTypeWithLazyRef}, but a record type that matched `LazyRef.Brand` resolves to itself (see
+ * {@link NotLazyRef}). `AutoPath` keeps the unguarded version, as it is on its hot path.
+ */
+type ExtractLoadedType<T> =
+  T extends LazyRef.Brand<infer U> ? (unknown extends U ? NotLazyRef<U, ExtractType<T>> : U) : ExtractType<T>;
+
 type LoadedProp<T, L extends string = never, F extends string = '*', E extends string = never> = LoadedLoadable<
   T,
-  Loaded<ExtractTypeWithLazyRef<T>, L, F, E>
+  Loaded<ExtractLoadedType<T>, L, F, E>
 >;
 /** Extracts the eager-loaded property names declared via `[EagerProps]` as a string union. */
 export type AddEager<T> = ExtractEagerProps<T> & string;
