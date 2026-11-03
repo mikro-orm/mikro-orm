@@ -241,7 +241,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
 
   private async runWithoutForeignKeys<T>(ctx: Transaction | undefined, run: () => Promise<T>): Promise<T> {
     // sqlite ignores `pragma foreign_keys` inside a transaction, so a table rebuild would run the FK actions of child rows
-    if (ctx || !this.driver.getPlatform().getSchemaHelper()!.getForeignKeyCheckSQL()) {
+    if (ctx || !this.options.transactional || !this.driver.getPlatform().getSchemaHelper()!.getForeignKeyCheckSQL()) {
       return run();
     }
 

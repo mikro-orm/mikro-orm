@@ -1,7 +1,7 @@
 import { mkdir, rm } from 'node:fs/promises';
 import { defineEntity, type MigrationsOptions, MikroORM, p } from '@mikro-orm/sqlite';
 import { Migration, Migrator } from '@mikro-orm/migrations';
-import { TEMP_DIR } from '../helpers.js';
+import { mockLogger, TEMP_DIR } from '../helpers.js';
 
 // v2 changes the type of `bio`, which sqlite applies by rebuilding the `author` table
 function createEntities(version: 1 | 2) {
@@ -151,6 +151,17 @@ test.each([{ transactional: false }, { allOrNothing: false }])(
     await orm.close();
   },
 );
+
+test('foreign keys are not toggled when migrations are not transactional', async () => {
+  const orm = await init('not-transactional', {
+    transactional: false,
+    migrationsList: [{ name: 'Select', class: SelectOutsideTransaction }],
+  });
+  const mock = mockLogger(orm, ['query']);
+  await orm.migrator.up();
+  expect(mock.mock.calls.flat().filter(q => q.includes('pragma foreign_keys'))).toEqual([]);
+  await orm.close();
+});
 
 test('a transactional migration after a non-transactional one runs with foreign keys off', async () => {
   const orm = await init('mixed', {

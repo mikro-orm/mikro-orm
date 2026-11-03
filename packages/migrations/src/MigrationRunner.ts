@@ -100,7 +100,13 @@ export class MigrationRunner {
 
   private async countForeignKeyViolations(ctx: Transaction): Promise<number> {
     const sql = this.#helper.getForeignKeyCheckSQL();
-    return sql ? (await this.driver.execute<unknown[]>(sql, undefined, 'all', ctx)).length : 0;
+
+    // with FK checks on (caller-supplied transaction), the database enforces them itself
+    if (!this.#foreignKeysOff || !sql) {
+      return 0;
+    }
+
+    return (await this.driver.execute<unknown[]>(sql, undefined, 'all', ctx)).length;
   }
 
   private async resetSessionSchema(ctx?: Transaction): Promise<void> {

@@ -586,7 +586,7 @@ There is no way to rollback DDL changes in MySQL. An implicit commit is forced f
 
 ### SQLite
 
-SQLite ignores `pragma foreign_keys` inside a transaction, and some column changes rebuild the table, which would run the foreign key actions of the rows referencing it. Transactional migrations therefore run with foreign keys off, and each migration checks before its commit that it left no new rows violating a foreign key. Foreign key actions like `on delete cascade` do not run for statements inside a migration. When you pass your own `transaction`, foreign keys stay on.
+SQLite ignores `pragma foreign_keys` inside a transaction, and some column changes rebuild the table, which would run the foreign key actions of the rows referencing it. Transactional migrations therefore run with foreign keys off, and each migration checks before its commit that it left no new rows violating a foreign key. Foreign key actions like `on delete cascade` do not run for statements inside a transactional migration. When you pass your own `transaction`, foreign keys stay on.
 
 ### MongoDB
 

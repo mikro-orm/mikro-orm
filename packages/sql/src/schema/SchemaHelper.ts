@@ -79,7 +79,7 @@ export abstract class SchemaHelper {
     return '';
   }
 
-  /** Returns SQL listing rows that violate foreign keys, for drivers whose FK checks migrations switch off (SQLite). */
+  /** Returns SQL listing rows that violate foreign keys; when non-empty, migrations run with FK checks off and verify afterwards (SQLite). */
   getForeignKeyCheckSQL(): string {
     return '';
   }
