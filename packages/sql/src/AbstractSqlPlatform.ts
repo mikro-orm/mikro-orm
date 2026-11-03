@@ -206,7 +206,7 @@ export abstract class AbstractSqlPlatform extends Platform {
     return false;
   }
 
-  supportsSchemas(): boolean {
+  override supportsSchemas(): boolean {
     return false;
   }
 

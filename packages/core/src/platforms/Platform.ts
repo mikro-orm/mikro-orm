@@ -980,6 +980,11 @@ export abstract class Platform {
     return false;
   }
 
+  /** Whether the platform can address schemas, i.e. namespaces above tables. */
+  supportsSchemas(): boolean {
+    return false;
+  }
+
   /** Whether the driver can apply the session context on every pooled connection acquire (`sessionContext: 'connection'`). */
   supportsConnectionSessionContext(): boolean {
     return false;
@@ -998,6 +1003,20 @@ export abstract class Platform {
     if (meta.partitionBy && !this.supportsPartitionedTables()) {
       throw new MetadataError(
         `Entity ${meta.className} uses partitionBy, but ${this.constructor.name} does not support partitioned tables`,
+      );
+    }
+
+    // A schema is a namespace, so an entity that declares one needs a platform
+    // that can address namespaces at all. Without this check the schema only
+    // fails later, at DDL time, with the driver's own error: on SQLite the
+    // shared schema generator still emits `schema.table` while the platform
+    // cannot create the namespace, so `orm.schema.create()` throws
+    // "unknown database" and `update()` reads `<schema>.sqlite_master`.
+    // `partitionBy` and row-level security are refused here for the same
+    // reason: the platform is the only thing that knows what it can address.
+    if (meta.schema && !this.supportsSchemas()) {
+      throw new MetadataError(
+        `Entity ${meta.className} declares schema '${meta.schema}', but ${this.constructor.name} does not support schemas`,
       );
     }
 

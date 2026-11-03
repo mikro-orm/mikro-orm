@@ -532,6 +532,25 @@ describe('partitioning helpers', () => {
     ).toThrow('Entity PartitionedEvent uses partitionBy, but SqlitePlatform does not support partitioned tables');
   });
 
+  test('rejects an entity schema on a platform that cannot address schemas', () => {
+    const config = new Configuration({ driver: SqliteDriver }, false);
+    const platform = config.getPlatform();
+    // A metadata record with no partitionBy, so this reaches the schema check
+    // rather than stopping at the sibling validation above it.
+    const meta = createPartitionedMeta({ type: 'hash', expression: ['type'], partitions: 4 });
+    meta.partitionBy = undefined;
+
+    // SqlitePlatform answers false here unless databases are attached, and the
+    // shared schema generator qualifies `schema.table` regardless, so without
+    // this guard the failure arrives later as `unknown database` from DDL.
+    expect(platform.supportsSchemas()).toBe(false);
+    meta.schema = 'foo';
+
+    expect(() => platform.validateMetadata(meta)).toThrow(
+      "Entity PartitionedEvent declares schema 'foo', but SqlitePlatform does not support schemas",
+    );
+  });
+
   test('surfaces the unsupported-platform error through MikroORM.init metadata discovery', async () => {
     await expect(
       SqliteMikroORM.init({
