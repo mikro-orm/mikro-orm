@@ -1,4 +1,4 @@
-import { type EntityProperty, type IsolationLevel } from '@mikro-orm/core';
+import { type EntityMetadata, type EntityProperty, type IsolationLevel, MetadataError } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '../../AbstractSqlPlatform.js';
 import { SqliteNativeQueryBuilder } from './SqliteNativeQueryBuilder.js';
 import { SqliteSchemaHelper } from './SqliteSchemaHelper.js';
@@ -163,6 +163,19 @@ export class SqlitePlatform extends AbstractSqlPlatform {
   override getDefaultSchemaName(): string | undefined {
     // Return 'main' only when schema support is active (i.e., databases are attached)
     return this.supportsSchemas() ? 'main' : undefined;
+  }
+
+  override validateMetadata(meta: EntityMetadata): void {
+    super.validateMetadata(meta);
+
+    // `main` always exists and `*` resolves at runtime; anything else fails later as `unknown database` unless attached
+    const attached = this.config.get('attachDatabases')?.some(db => db.name === meta.schema);
+
+    if (meta.schema && !['main', '*'].includes(meta.schema) && !attached) {
+      throw new MetadataError(
+        `Entity ${meta.className} declares schema '${meta.schema}', but SQLite cannot address it: attach it via \`attachDatabases\` or remove the schema in \`discovery.onMetadata\` when sharing entities between drivers`,
+      );
+    }
   }
 
   override getFullTextWhereClause(): string {
