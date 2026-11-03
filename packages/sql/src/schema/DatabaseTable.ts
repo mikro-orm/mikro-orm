@@ -1035,7 +1035,7 @@ export class DatabaseTable {
           !this.hasAdvancedIndexOptions(idx),
       );
 
-    // postgres maps `timestamptz(3)[]` to its element type (matching the metadata side when diffing), generate it as an array
+    // `getMappedType('timestamptz(3)[]')` resolves to the element type so diffing keeps the modifier, but the property is still an array
     if (column.type?.endsWith('[]') && !column.enumItems?.length) {
       column = { ...column, mappedType: Type.getType(t.array) };
     }
