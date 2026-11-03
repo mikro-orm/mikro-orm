@@ -1035,6 +1035,11 @@ export class DatabaseTable {
           !this.hasAdvancedIndexOptions(idx),
       );
 
+    // `getMappedType('timestamptz(3)[]')` resolves to the element type so diffing keeps the modifier, but the property is still an array
+    if (column.type?.endsWith('[]') && !column.enumItems?.length) {
+      column = { ...column, mappedType: Type.getType(t.array) };
+    }
+
     const kind = this.getReferenceKind(fk, unique);
     const runtimeType = this.getPropertyTypeForColumn(namingStrategy, column, fk);
     const type = fk
