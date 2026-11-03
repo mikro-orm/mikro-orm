@@ -54,21 +54,6 @@ services:
     healthcheck:
       test: /usr/bin/pg_isready -h 'localhost'
 
-  postgre18:
-    image: postgres:18-alpine
-    profiles: [postgres18]
-    ports:
-      - "127.0.0.1:55418:5432"
-    environment:
-      POSTGRES_HOST_AUTH_METHOD: trust
-    tmpfs:
-      - /var/lib/postgresql
-    healthcheck:
-      test: ["CMD", "pg_isready", "-h", "localhost", "-U", "postgres"]
-      interval: 1s
-      timeout: 5s
-      retries: 30
-
   postgis:
     image: imresamu/postgis:16-3.4
     ports:

@@ -39,6 +39,17 @@ describe('RESTRICT constraint violations [postgres]', () => {
     await orm.close(true);
   });
 
+  // PostgreSQL 18 reports RESTRICT violations as 23001 instead of 23503, which the CI server does not emit yet
+  test.each(['23001', '23503'])('maps SQLSTATE %s to a foreign key constraint violation', code => {
+    const converter = orm.em.getPlatform().getExceptionConverter();
+    const error = Object.assign(
+      new Error('update or delete on table "x" violates RESTRICT setting of foreign key constraint "y" on table "z"'),
+      { code },
+    );
+
+    expect(converter.convertException(error)).toBeInstanceOf(ForeignKeyConstraintViolationException);
+  });
+
   test('converts ON DELETE RESTRICT violations', async () => {
     await expect(orm.em.nativeDelete(Parent, { id: 1 })).rejects.toThrow(ForeignKeyConstraintViolationException);
     expect(await orm.em.findOneOrFail(Parent, 1)).toMatchObject({ id: 1 });
