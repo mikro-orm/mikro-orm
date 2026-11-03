@@ -3306,7 +3306,11 @@ export class QueryBuilder<
         customAlias = asMatch[2];
       }
 
-      const join = Object.keys(this.#state.joins).find(k => field === k.substring(0, k.indexOf('#')))!;
+      // An aliased field is a column (e.g. `a1.UserID as a1__UserID` from the joined strategy), not a relation
+      // to expand, even when the FK column has the same name as its relation property.
+      const join = customAlias
+        ? undefined
+        : Object.keys(this.#state.joins).find(k => field === k.substring(0, k.indexOf('#')));
 
       if (join && type === 'where') {
         ret.push(...(this.helper.mapJoinColumns(this.type, this.#state.joins[join]) as string[]));
