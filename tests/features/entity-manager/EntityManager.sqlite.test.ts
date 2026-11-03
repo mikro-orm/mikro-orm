@@ -1731,6 +1731,13 @@ describe.each(['sqlite', 'libsql', 'node-sqlite', 'sql-js'] as const)('EntityMan
         TableNotFoundException,
       );
       await expect(orm.em.createQueryBuilder(Author4, 'a').getCount()).rejects.toThrow(TableNotFoundException);
+      await expect(
+        (async () => {
+          for await (const _ of orm.em.createQueryBuilder(Author4, 'a').stream()) {
+            // consume
+          }
+        })(),
+      ).rejects.toThrow(TableNotFoundException);
     } finally {
       orm.getMetadata(Author4).tableName = 'author4';
     }

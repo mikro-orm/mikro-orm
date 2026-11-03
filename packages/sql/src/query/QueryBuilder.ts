@@ -2597,13 +2597,7 @@ export class QueryBuilder<
     const conn = this.getConnection();
     // outside a transaction, wrap in a short implicit one so RLS `set local` session context applies (no-op when unset)
     const sessionContext = this.context ? undefined : this.em?.getTransactionSessionContext();
-    // `IDatabaseDriver.convertException` is the contract every driver method
-    // honours: a native driver error becomes a `DriverException` subclass so a
-    // caller can branch on it. `AbstractSqlDriver.find()` gets that by wrapping
-    // its `qb.execute()` in `this.rethrow(...)`, but a QueryBuilder used
-    // directly does not, so the same failing query threw `SqliteError` (or a
-    // minified constructor name on pglite) from `getResultList()` where
-    // `em.find()` threw `TableNotFoundException`.
+    // a QueryBuilder used directly must honour the same `convertException` contract as the driver methods
     const res = await (
       sessionContext
         ? conn.transactional(trx => conn.execute(query.sql, query.params, method, trx, loggerContext), {
@@ -2685,7 +2679,9 @@ export class QueryBuilder<
 
     const query = this.toQuery();
     const loggerContext = { id: this.em?.id, ...this.loggerContext, ...this.#abortOptions };
-    const res = this.getConnection().stream(query.sql, query.params, this.context, loggerContext, chunkSize);
+    const res = this.convertStreamExceptions(
+      this.getConnection().stream(query.sql, query.params, this.context, loggerContext, chunkSize),
+    );
     const meta = this.mainAlias.meta;
 
     if (options.rawResults || !meta) {
@@ -2728,6 +2724,14 @@ export class QueryBuilder<
       for (const row of merged) {
         yield this.mapResult(row, options.mapResults);
       }
+    }
+  }
+
+  private async *convertStreamExceptions<T>(res: AsyncIterableIterator<T>): AsyncIterableIterator<T> {
+    try {
+      yield* res;
+    } catch (e) {
+      throw this.driver.convertException(e as Error);
     }
   }
 
