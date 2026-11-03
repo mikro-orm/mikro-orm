@@ -892,12 +892,13 @@ export class QueryBuilderHelper {
       } else if (
         ['$in', '$nin'].includes(op) &&
         prop?.customType instanceof ArrayType &&
+        Array.isArray(opValue) &&
         !opValue.every((v: unknown) => Array.isArray(v))
       ) {
         // a flat list on an array column matches any of its elements, like in mongo
         if (!this.#platform.supportsArrayOverlap()) {
           throw new ValidationError(
-            `${op} on array property ${prop.name} expects a list of arrays, use $eq for an exact match or $overlap for element matching`,
+            `${op} on array property ${prop.name} expects a list of arrays, use $eq for an exact match`,
           );
         }
 

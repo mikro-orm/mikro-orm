@@ -39,7 +39,7 @@ test('`$in`/`$nin` on an array column bind one marshalled value per candidate', 
 test('a flat list on an array column is rejected without native array support', async () => {
   const em = orm.em.fork();
   await expect(em.find(Recipe, { tags: ['c', 'd'] })).rejects.toThrow(
-    '$in on array property tags expects a list of arrays, use $eq for an exact match or $overlap for element matching',
+    '$in on array property tags expects a list of arrays, use $eq for an exact match',
   );
   await expect(em.find(Recipe, { tags: { $nin: ['c', 'd'] } })).rejects.toThrow('$nin on array property tags');
 });
