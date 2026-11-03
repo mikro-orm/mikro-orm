@@ -1,15 +1,16 @@
-import type {
-  Configuration,
-  Constructor,
-  Dictionary,
-  EntityDictionary,
-  EntityKey,
-  EntityName,
-  FilterQuery,
-  NativeInsertUpdateManyOptions,
-  QueryResult,
-  Transaction,
-  UpsertManyOptions,
+import {
+  type Configuration,
+  type Constructor,
+  type Dictionary,
+  type EntityDictionary,
+  type EntityKey,
+  type EntityName,
+  type FilterQuery,
+  isRaw,
+  type NativeInsertUpdateManyOptions,
+  type QueryResult,
+  type Transaction,
+  type UpsertManyOptions,
 } from '@mikro-orm/core';
 import { AbstractSqlDriver, Utils } from '@mikro-orm/sql';
 import { MySqlConnection } from './MySqlConnection.js';
@@ -57,6 +58,7 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
       const rest = await this.nativeInsertMany(entityName, data.slice(split), options);
       res.rows!.push(...rest.rows!);
       res.affectedRows += rest.affectedRows;
+      res.insertedIds = res.insertedIds && rest.insertedIds ? [...res.insertedIds, ...rest.insertedIds] : undefined;
 
       return res;
     }
@@ -70,6 +72,13 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
         (res.rows![idx] = { [pks[0]]: item[pk] ?? (res.insertId as number) + idx * autoIncrementIncrement }),
     );
     res.row = res.rows![0];
+
+    const ids = res.rows!.map(row => row[pks[0]]);
+
+    // without `returning` the value of a raw pk expression is never known
+    if (pks.length === 1 && !ids.some(isRaw)) {
+      res.insertedIds = ids;
+    }
 
     return res;
   }
