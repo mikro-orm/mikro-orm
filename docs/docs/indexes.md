@@ -329,7 +329,7 @@ The `expression` escape hatch (raw SQL for the whole index body) cannot be combi
 
 :::note Combining with `deferMode`
 
-Partial unique indexes cannot be deferrable — only constraints can, and constraints cannot carry a predicate. MikroORM throws a clear error if `deferMode` is combined with `where`. On PostgreSQL, a deferrable partial uniqueness check can be expressed as an exclusion constraint (`exclude using btree (col with =) where (...) deferrable initially deferred`) in a migration.
+Partial unique indexes cannot be deferrable — only constraints can, and constraints cannot carry a predicate. MikroORM throws if `deferMode` is combined with `where`. On PostgreSQL, a deferrable partial uniqueness check can be expressed as an [exclusion constraint](./defining-entities.md#exclusion-constraints-postgresql) via `@Check()`, e.g. `expression: 'exclude using btree (email with =) where (deleted_at is null) deferrable initially deferred'`.
 
 :::
 

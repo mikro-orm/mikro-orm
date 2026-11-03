@@ -284,7 +284,7 @@ describe('partial index [sqlite]', () => {
           properties: ['email'],
           where: { deletedAt: null },
           deferMode: 'deferred',
-        } as any,
+        },
       ],
     }).init().meta;
     meta.set(e.class, e as any);
