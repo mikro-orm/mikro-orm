@@ -800,8 +800,7 @@ export class UnitOfWork {
       }
     }
 
-    // Primary key and unique value hashes of the inserts, per entity type, built on first use. Delete change sets
-    // don't change the inserts, so each removed entity can be matched with a set lookup instead of a scan over them.
+    // hashes of the inserts' PKs and unique values per type, built lazily, so matching a removed entity is a set lookup
     const insertHashes: Dictionary<Set<string | null>> = {};
 
     for (const entity of this.#removeStack) {
@@ -813,23 +812,22 @@ export class UnitOfWork {
       }
 
       const uniqueName = wrapped.__meta.uniqueName;
+      let hashes = insertHashes[uniqueName];
 
-      if (!insertHashes[uniqueName]) {
-        insertHashes[uniqueName] = new Set();
+      if (!hashes) {
+        hashes = insertHashes[uniqueName] = new Set();
 
         for (const cs of inserts[uniqueName] ?? []) {
-          insertHashes[uniqueName].add(cs.getSerializedPrimaryKey());
+          hashes.add(cs.getSerializedPrimaryKey());
 
           for (const hash of this.expandUniqueProps(cs.entity)) {
-            insertHashes[uniqueName].add(hash);
+            hashes.add(hash);
           }
         }
       }
 
       const deletePkHash = [wrapped.getSerializedPrimaryKey(), ...this.expandUniqueProps(entity)];
-      const type = deletePkHash.some(hash => insertHashes[uniqueName].has(hash))
-        ? ChangeSetType.DELETE_EARLY
-        : ChangeSetType.DELETE;
+      const type = deletePkHash.some(hash => hashes.has(hash)) ? ChangeSetType.DELETE_EARLY : ChangeSetType.DELETE;
 
       this.computeChangeSet(entity, type);
     }
