@@ -603,11 +603,6 @@ export class QueryHelper {
     return filter.default || filterName in options;
   }
 
-  /** A query builder used as a value (e.g. `{ $in: qb }`) is rendered as a sub-query, it is not a value of the property type. */
-  private static isSubquery(value: unknown): boolean {
-    return Utils.isObject(value) && !Utils.isPlainObject(value) && typeof (value as Dictionary).toRaw === 'function';
-  }
-
   static processCustomType<T extends object>(
     prop: EntityProperty<T>,
     cond: FilterQuery<T>,
@@ -637,7 +632,8 @@ export class QueryHelper {
       ) as unknown as FilterQuery<T>;
     }
 
-    if (isRaw(cond) || QueryHelper.isSubquery(cond)) {
+    // a query builder (anything with `toRaw()`) renders as a sub-query, not as a value of the property type
+    if (isRaw(cond) || typeof (cond as Dictionary)?.toRaw === 'function') {
       return cond;
     }
 
