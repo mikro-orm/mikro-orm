@@ -175,7 +175,7 @@ export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
       Utils.isObject(payload) &&
       Utils.getObjectQueryKeys(payload).every(k => {
         if (k === '$not' && payload[k] instanceof CriteriaNode && Utils.isPlainObject(payload[k].payload)) {
-          // `$not` wrapping entity conditions needs the target entity join, not just the pivot table
+          // `$not` wrapping entity conditions is a condition on the target entity, not on the relation itself
           return Utils.getObjectQueryKeys(payload[k].payload).every(ik => Utils.isOperator(ik, false));
         }
 

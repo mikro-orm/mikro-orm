@@ -4109,9 +4109,9 @@ export class QueryBuilder<
   }
 
   /**
-   * An entity filter's `$or` that cannot be distributed is applied intact to the `on` clause of the
-   * outermost join common to all targeted joins, nesting the targeted joins under it so the clause
-   * can reference their aliases.
+   * A condition that cannot be distributed (an entity filter's `$or`, or a `$not` spanning several joins)
+   * is applied intact to the `on` clause of the outermost join common to all targeted joins, nesting
+   * the targeted joins under it so the clause can reference their aliases.
    */
   private mergeFilterOrCondition(branches: Dictionary[], joins: JoinOptions[]): void {
     const aliases = this.getOrBranchAliases(branches);

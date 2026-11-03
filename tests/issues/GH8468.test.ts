@@ -43,23 +43,49 @@ beforeAll(async () => {
 
 afterAll(() => orm.close(true));
 
+test('$not on a M:N collection', async () => {
+  const books = await orm.em.fork().find(Book, { tags: { $not: { name: 'blue' } } });
+  expect(books.map(book => book.title)).toEqual(['A']);
+});
+
 test('$not inside $some on a collection', async () => {
   const count = await orm.em.fork().count(Book, { tags: { $some: { $not: { name: 'blue' } } } });
   expect(count).toBe(1);
 });
 
-test.each(['select-in', 'joined'] as const)('$not on a collection in populateWhere (%s)', async strategy => {
+test.each([
+  ['populateWhere', 'select-in'],
+  ['populateWhere', 'joined'],
+  ['populateFilter', 'select-in'],
+  ['populateFilter', 'joined'],
+] as const)('$not on a collection in %s (%s)', async (option, strategy) => {
   const [author] = await orm.em.fork().find(
     Author,
     {},
     {
       populate: ['books'],
-      populateWhere: { books: { $not: { title: 'B' } } },
+      [option]: { books: { $not: { title: 'B' } } },
       strategy,
     },
   );
   expect(author.books.getItems().map(book => book.title)).toEqual(['A']);
 });
+
+test.each(['select-in', 'joined'] as const)(
+  '$not on a collection under `$and` in populateWhere (%s)',
+  async strategy => {
+    const [author] = await orm.em.fork().find(
+      Author,
+      {},
+      {
+        populate: ['books'],
+        populateWhere: { $and: [{ books: { $not: { title: 'B' } } }] },
+        strategy,
+      },
+    );
+    expect(author.books.getItems().map(book => book.title)).toEqual(['A']);
+  },
+);
 
 test.each(['select-in', 'joined'] as const)('$not on a M:N collection in populateWhere (%s)', async strategy => {
   const books = await orm.em.fork().find(

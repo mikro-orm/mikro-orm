@@ -1017,6 +1017,14 @@ export class EntityLoader {
     const subCond = Utils.isPlainObject(where[prop.name]) ? { ...(where[prop.name] as Dictionary) } : {};
     const meta2 = prop.targetMeta!;
     const pk = Utils.getPrimaryKeyHash(meta2.primaryKeys);
+    // `$not` wrapping entity conditions stays on the target entity, only operators on the relation itself map to its PK
+    const isRelationOperator = (key: string | symbol, value: unknown) => {
+      if (key === '$not' && Utils.isPlainObject(value)) {
+        return Utils.getObjectQueryKeys(value).every(k => Utils.isOperator(k, false));
+      }
+
+      return Utils.isOperator(key, false);
+    };
 
     ['$and', '$or'].forEach(op => {
       if (where[op]) {
@@ -1025,7 +1033,10 @@ export class EntityLoader {
           .filter(
             (sub: unknown) =>
               sub != null &&
-              !(Utils.isPlainObject(sub) && Utils.getObjectQueryKeys(sub).every(key => Utils.isOperator(key, false))),
+              !(
+                Utils.isPlainObject(sub) &&
+                Utils.getObjectQueryKeys(sub).every(key => isRelationOperator(key, (sub as Dictionary)[key as string]))
+              ),
           )
           .map((cond: Dictionary) => {
             if (Utils.isPrimaryKey(cond)) {
@@ -1042,14 +1053,7 @@ export class EntityLoader {
       }
     });
 
-    const operators = Object.keys(subCond).filter(key => {
-      // `$not` wrapping entity conditions stays on the target entity, only operators on the relation itself map to its PK
-      if (key === '$not' && Utils.isPlainObject(subCond[key])) {
-        return Utils.getObjectQueryKeys(subCond[key]).every(k => Utils.isOperator(k, false));
-      }
-
-      return Utils.isOperator(key, false);
-    });
+    const operators = Object.keys(subCond).filter(key => isRelationOperator(key, subCond[key]));
 
     if (operators.length > 0) {
       subCond[pk] = Utils.isPlainObject(subCond[pk]) ? { ...subCond[pk] } : (subCond[pk] ?? {});
