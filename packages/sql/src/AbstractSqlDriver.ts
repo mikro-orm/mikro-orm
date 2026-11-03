@@ -1431,6 +1431,17 @@ export abstract class AbstractSqlDriver<
       res.rows ??= [];
       pk = data.map((d, i) => d[pks[0]] ?? res.rows![i]?.[pks[0]]).map(d => [d]);
       res.insertId = res.insertId || res.row[pks[0]];
+
+      // Every driver here declares `usesBatchInserts()`, so a multi-row insert
+      // is expected to report one primary key per row. Only claim that when
+      // every row actually came back with one: a driver that returns no rows
+      // for the insert would otherwise make `EntityManager.insertMany` answer
+      // `[undefined, undefined]` where it used to fall back to `[insertId]`.
+      const ids = pk.map(row => row[0]);
+
+      if (ids.length === data.length && ids.every(id => id != null)) {
+        res.insertedIds = ids;
+      }
     }
 
     for (let i = 0; i < collections.length; i++) {
