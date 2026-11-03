@@ -1250,7 +1250,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:7.2.6"
     mikro-orm: "npm:7.2.6"
-    yargs: "npm:17.7.2"
+    yargs: "npm:18.2.0"
   bin:
     mikro-orm: ./dist/cli.js
   languageName: unknown
