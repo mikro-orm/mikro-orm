@@ -1403,6 +1403,44 @@ describe('defineEntity', () => {
     expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
+  it('should define entity with double property', () => {
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: p => ({
+        id: p.integer().primary().autoincrement(),
+        rate: p.double(),
+        ratio: p.double('number'),
+        precise: p.double('string'),
+      }),
+    });
+
+    type IFoo = InferEntity<typeof Foo>;
+    assert<
+      IsExact<
+        Omit<IFoo, typeof IndexHints>,
+        {
+          id: Opt<number>;
+          rate: number;
+          ratio: number;
+          precise: string;
+          [PrimaryKeyProp]?: 'id';
+        }
+      >
+    >(true);
+
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
+      properties: {
+        id: { type: types.integer, primary: true, autoincrement: true },
+        rate: { type: new types.double() },
+        ratio: { type: new types.double('number') },
+        precise: { type: new types.double('string') },
+      },
+    });
+
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
+  });
+
   it('should define entity with unique constraint', () => {
     const Category = defineEntity({
       name: 'Category',
