@@ -142,7 +142,7 @@ export abstract class AbstractSqlPlatform extends Platform {
     }
 
     if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
-      return this.escape(JSON.stringify(value));
+      return this.escape(this.convertJsonToDatabaseValue(value));
     }
 
     return this.escape(value);

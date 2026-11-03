@@ -28,8 +28,8 @@ function getPropertyDescriptor<T>(obj: T, prop: keyof T): PropertyDescriptor | n
 const TypedArray = Object.getPrototypeOf(Uint8Array);
 
 export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
-  const allParents: unknown[] = [];
-  const allChildren: unknown[] = [];
+  // already cloned objects, so shared references and cycles map to a single clone
+  const clones = new Map<unknown, unknown>();
 
   function _clone(parent: any) {
     // cloning null always returns null
@@ -101,14 +101,11 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
       child = Object.create(proto);
     }
 
-    const index = allParents.indexOf(parent);
-
-    if (index !== -1) {
-      return allChildren[index];
+    if (clones.has(parent)) {
+      return clones.get(parent);
     }
 
-    allParents.push(parent);
-    allChildren.push(child);
+    clones.set(parent, child);
 
     if (parent instanceof Map) {
       parent.forEach((value: unknown, key: string) => {

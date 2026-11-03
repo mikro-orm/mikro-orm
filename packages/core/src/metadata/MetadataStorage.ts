@@ -18,6 +18,10 @@ export class MetadataStorage {
   static readonly META_SYMBOL = Symbol.for('@mikro-orm/core/MetadataStorage.META_SYMBOL');
 
   static readonly #metadata: Dictionary<EntityMetadata> = getGlobalStorage('metadata');
+  /** Lives in the global storage next to the registry, so it stays in sync when several copies of this module share it (e.g. after `vi.resetModules()`). */
+  static readonly #classNames: { names?: Set<string> } = getGlobalStorage('metadata-class-names');
+  /** Hashes of entity file paths, decorators call `getMetadata()` with the same path for every decorated member. */
+  static readonly #pathHashes = new Map<string, string>();
   readonly #metadataMap = new Map<EntityName, EntityMetadata>();
   readonly #idMap: Record<number, EntityMetadata>;
   readonly #classNameMap: Record<string, EntityMetadata>;
@@ -46,7 +50,7 @@ export class MetadataStorage {
     path?: string,
     target?: EntityCtor & { [MetadataStorage.META_SYMBOL]?: EntityMetadata },
   ): Dictionary<EntityMetadata> | EntityMetadata<T> {
-    const key = entity && path ? entity + '-' + Utils.hash(path) : null;
+    const key = entity && path ? entity + '-' + MetadataStorage.hashPath(path) : null;
 
     // Key the registry by the class reference when available, so two classes minified
     // to the same mangled name don't collide on the `className-path` key.
@@ -60,12 +64,15 @@ export class MetadataStorage {
 
       // Keep the name-keyed entry in sync, the class-keyed metadata survives `MetadataStorage.clear()`.
       MetadataStorage.#metadata[key] = target[MetadataStorage.META_SYMBOL]!;
+      MetadataStorage.#classNames.names?.add(target[MetadataStorage.META_SYMBOL]!.className);
 
       return target[MetadataStorage.META_SYMBOL]!;
     }
 
     if (key && !MetadataStorage.#metadata[key]) {
-      MetadataStorage.#metadata[key] = new EntityMetadata({ className: entity, path });
+      const meta = new EntityMetadata({ className: entity, path });
+      MetadataStorage.#metadata[key] = meta;
+      MetadataStorage.#classNames.names?.add(meta.className);
     }
 
     if (key) {
@@ -75,14 +82,27 @@ export class MetadataStorage {
     return MetadataStorage.#metadata;
   }
 
+  private static hashPath(path: string): string {
+    let hash = MetadataStorage.#pathHashes.get(path);
+
+    if (hash === undefined) {
+      hash = Utils.hash(path);
+      MetadataStorage.#pathHashes.set(path, hash);
+    }
+
+    return hash;
+  }
+
   /** Checks whether an entity with the given class name exists in the global metadata. */
   static isKnownEntity(name: string): boolean {
-    return !!Object.values(this.#metadata).find(meta => meta.className === name);
+    this.#classNames.names ??= new Set(Object.values(this.#metadata).map(meta => meta.className));
+    return this.#classNames.names.has(name);
   }
 
   /** Clears all entries from the global metadata registry. */
   static clear(): void {
     Object.keys(this.#metadata).forEach(k => delete this.#metadata[k]);
+    delete this.#classNames.names;
   }
 
   /** Returns the map of all registered entity metadata. */

@@ -1182,10 +1182,10 @@ export class DatabaseTable {
     }
 
     // unquote string defaults if `raw = false`
-    const match = /^'(.*)'$/.exec('' + val);
+    const match = /^'(.*)'$/s.exec('' + val);
 
     if (!raw && match) {
-      return match[1];
+      return schemaHelper.unescapeDefault(match[1]);
     }
 
     return '' + val;

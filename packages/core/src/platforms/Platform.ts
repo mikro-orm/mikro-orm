@@ -763,6 +763,11 @@ export abstract class Platform {
     return value;
   }
 
+  /** Quotes a string default value for DDL; dialects that escape with backslashes override this. */
+  quoteDefaultValue(value: string): string {
+    return `'${value.replaceAll("'", "''")}'`;
+  }
+
   /* v8 ignore next */
   escape(value: any): string {
     return value;
