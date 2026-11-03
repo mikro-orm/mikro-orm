@@ -75,13 +75,18 @@ test.each(['select-in', 'joined'] as const)('$not on a M:N collection in populat
   expect(books.map(book => book.tags.getItems().map(tag => tag.name))).toEqual([['red'], []]);
 });
 
-test.each(['select-in', 'joined'] as const)('$not spanning several joins in populateFilter (%s)', async strategy => {
+test.each([
+  ['populateWhere', 'select-in'],
+  ['populateWhere', 'joined'],
+  ['populateFilter', 'select-in'],
+  ['populateFilter', 'joined'],
+] as const)('$not spanning several joins in %s (%s)', async (option, strategy) => {
   const [author] = await orm.em.fork().find(
     Author,
     {},
     {
       populate: ['books.tags'],
-      populateFilter: { books: { $not: { title: 'B', tags: { name: 'blue' } } } },
+      [option]: { books: { $not: { title: 'B', tags: { name: 'blue' } } } },
       strategy,
     },
   );
