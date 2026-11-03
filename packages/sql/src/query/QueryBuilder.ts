@@ -3306,8 +3306,7 @@ export class QueryBuilder<
         customAlias = asMatch[2];
       }
 
-      // An aliased field is a column (e.g. `a1.UserID as a1__UserID` from the joined strategy), not a relation
-      // to expand, even when the FK column has the same name as its relation property.
+      // an aliased field is always a column, never a relation to expand, even when an FK column is named like its relation
       const join = customAlias
         ? undefined
         : Object.keys(this.#state.joins).find(k => field === k.substring(0, k.indexOf('#')));
