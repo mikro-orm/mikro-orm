@@ -138,22 +138,22 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     defaultValues: Dictionary<string[]> = {},
     stripQuotes = false,
   ): string | number {
-    let match = /^\((.*)\)$/.exec(defaultValue);
+    let match = /^\((.*)\)$/s.exec(defaultValue);
 
     if (match) {
       defaultValue = match[1];
     }
 
-    match = /^\((.*)\)$/.exec(defaultValue);
+    match = /^\((.*)\)$/s.exec(defaultValue);
 
     if (match) {
       defaultValue = match[1];
     }
 
-    match = /^'(.*)'$/.exec(defaultValue);
+    match = /^'(.*)'$/s.exec(defaultValue);
 
     if (stripQuotes && match) {
-      defaultValue = match[1];
+      defaultValue = match[1].replaceAll("''", "'");
     }
 
     return super.normalizeDefaultValue(defaultValue, length, MsSqlSchemaHelper.DEFAULT_VALUES);

@@ -188,6 +188,14 @@ export abstract class AbstractSqlConnection extends Connection {
         await this.rollback(trx, options.eventBroadcaster, options.loggerContext);
       } catch (rollbackError: any) {
         this.logger.warn('query', `Failed to roll back transaction: ${rollbackError.message}`);
+
+        // the inner writes are still part of the outer transaction, so it must not commit them
+        if (options.ctx) {
+          (options.ctx as Dictionary).failedSavepointRollback ??= new Error(
+            `Cannot commit the transaction, rolling back to savepoint "${(trx as Dictionary).savepointName}" failed: ${rollbackError.message}`,
+            { cause: rollbackError },
+          );
+        }
       }
 
       throw error;
@@ -301,6 +309,10 @@ export abstract class AbstractSqlConnection extends Connection {
       return;
     }
 
+    if ('failedSavepointRollback' in ctx) {
+      throw ctx.failedSavepointRollback;
+    }
+
     await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionCommit, ctx);
 
     if ('savepointName' in ctx) {
@@ -320,6 +332,11 @@ export abstract class AbstractSqlConnection extends Connection {
     eventBroadcaster?: TransactionEventBroadcaster,
     loggerContext?: LogContext,
   ): Promise<void> {
+    // kysely rolls back on its own when the database answers a commit with a rollback
+    if (ctx.isRolledBack) {
+      return;
+    }
+
     await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionRollback, ctx);
     await this.waitForIdleTransaction(ctx);
 

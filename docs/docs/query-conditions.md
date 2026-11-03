@@ -181,7 +181,7 @@ The implementation and requirements differs per driver so it's important that fi
 
 ### PostgreSQL
 
-PosgreSQL allows to execute queries (pg-query) on the type pg-vector. The pg-vector type can be a column (more performant) or be created in the query (no excess columns in the database). When using a column, advanced functionality such as [a custom `regconfig` or `setweight`](https://www.postgresql.org/docs/current/textsearch-controls.html) (the default `regconfig` is `simple`) is also supported.
+PostgreSQL allows to execute queries (pg-query) on the type pg-vector. The pg-vector type can be a column (more performant) or be created in the query (no excess columns in the database). When using a column, advanced functionality such as [a custom `regconfig` or `setweight`](https://www.postgresql.org/docs/current/textsearch-controls.html) (the default `regconfig` is `simple`) is also supported.
 
 Refer to the [PostgreSQL documentation](https://www.postgresql.org/docs/current/functions-textsearch.html) for possible queries.
 
