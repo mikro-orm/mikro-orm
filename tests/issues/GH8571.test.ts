@@ -1,7 +1,13 @@
 import { Collection, PrimaryKeyProp, type Ref } from '@mikro-orm/core';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '@mikro-orm/decorators/legacy';
 import { MikroORM } from '@mikro-orm/sqlite';
-
 
 @Entity()
 class User {
@@ -48,7 +54,10 @@ beforeAll(async () => {
     dbName: ':memory:',
   });
   await orm.schema.create();
-  await orm.em.insertMany(User, [{ UserID: 1, name: 'John' }, { UserID: 2, name: 'Cindy' }]);
+  await orm.em.insertMany(User, [
+    { UserID: 1, name: 'John' },
+    { UserID: 2, name: 'Cindy' },
+  ]);
   await orm.em.insert(Revision, { RevisionID: 1 });
   await orm.em.insertMany(Member, [
     { RevisionID: 1, UserID: 1, Type: 'member' },
@@ -58,11 +67,23 @@ beforeAll(async () => {
 
 afterAll(() => orm.close(true));
 
-test.each(['joined', 'select-in', 'balanced'] as const)('nested populate of a composite PK relation (%s)', async strategy => {
-  const revisions = await orm.em.fork().find(Revision, {}, {
-    populate: ['members.UserID'],
-    strategy,
-  });
-  expect(revisions).toHaveLength(1);
-  expect(revisions[0].members.getItems().map(member => member.UserID.$.name).sort()).toEqual(['Cindy', 'John']);
-});
+test.each(['joined', 'select-in', 'balanced'] as const)(
+  'nested populate of a composite PK relation (%s)',
+  async strategy => {
+    const revisions = await orm.em.fork().find(
+      Revision,
+      {},
+      {
+        populate: ['members.UserID'],
+        strategy,
+      },
+    );
+    expect(revisions).toHaveLength(1);
+    expect(
+      revisions[0].members
+        .getItems()
+        .map(member => member.UserID.$.name)
+        .sort(),
+    ).toEqual(['Cindy', 'John']);
+  },
+);
