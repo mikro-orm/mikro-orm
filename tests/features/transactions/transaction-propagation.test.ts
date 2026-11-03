@@ -1687,4 +1687,58 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     const count = await orm.em.count(TestEntity);
     expect(count).toBe(0);
   });
+
+  test('a failing savepoint rollback prevents the parent savepoint from committing', async () => {
+    const em = orm.em.fork();
+    const rollback = vi
+      .spyOn(em.getConnection(), 'rollback')
+      .mockRejectedValueOnce(new Error('rollback to savepoint failed'));
+
+    await em.transactional(async em1 => {
+      await em1.insert(TestEntity, { name: 'outer' });
+
+      await expect(
+        em1.transactional(async em2 => {
+          await em2.insert(TestEntity, { name: 'middle' });
+
+          await expect(
+            em2.transactional(async em3 => {
+              await em3.insert(TestEntity, { name: 'inner' });
+              throw new Error('inner business error');
+            }),
+          ).rejects.toThrow('inner business error');
+        }),
+      ).rejects.toThrow('rolling back to savepoint');
+    });
+
+    expect(rollback).toHaveBeenCalledTimes(2);
+    rollback.mockRestore();
+
+    const names = (await orm.em.find(TestEntity, {})).map(e => e.name);
+    expect(names).toEqual(['outer']);
+  });
+
+  test('a failing savepoint rollback prevents an explicit commit', async () => {
+    const em = orm.em.fork();
+    const rollback = vi
+      .spyOn(em.getConnection(), 'rollback')
+      .mockRejectedValueOnce(new Error('rollback to savepoint failed'));
+
+    await em.begin();
+    await em.insert(TestEntity, { name: 'outer' });
+
+    await expect(
+      em.transactional(async em2 => {
+        await em2.insert(TestEntity, { name: 'inner' });
+        throw new Error('inner business error');
+      }),
+    ).rejects.toThrow('inner business error');
+
+    await expect(em.commit()).rejects.toThrow('rolling back to savepoint "trx1" failed');
+    await em.rollback();
+    rollback.mockRestore();
+
+    const count = await orm.em.count(TestEntity);
+    expect(count).toBe(0);
+  });
 });

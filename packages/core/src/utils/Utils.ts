@@ -852,16 +852,21 @@ export class Utils {
     return Collection.isCollection(item);
   }
 
-  // FNV-1a 64-bit
+  // FNV-1a 64-bit, computed on two uint32 halves instead of a BigInt. The prime is 2^40 + 0x1b3, so
+  // `h * prime mod 2^64` is `h * 0x1b3` plus the low half shifted up by 40 bits. Every partial product
+  // stays below 2^41, so the double arithmetic is exact.
   static hash(data: string, length?: number): string {
-    let h1 = 0xcbf29ce484222325n;
+    let hi = 0xcbf29ce4;
+    let lo = 0x84222325;
 
     for (let i = 0; i < data.length; i++) {
-      h1 ^= BigInt(data.charCodeAt(i));
-      h1 = (h1 * 0x100000001b3n) & 0xffffffffffffffffn;
+      lo = (lo ^ data.charCodeAt(i)) >>> 0;
+      const loProduct = lo * 0x1b3;
+      hi = (((hi * 0x1b3) >>> 0) + Math.floor(loProduct / 0x100000000) + ((lo << 8) >>> 0)) >>> 0;
+      lo = loProduct >>> 0;
     }
 
-    const hash = h1.toString(16).padStart(16, '0');
+    const hash = hi.toString(16).padStart(8, '0') + lo.toString(16).padStart(8, '0');
 
     if (length) {
       return hash.substring(0, length);

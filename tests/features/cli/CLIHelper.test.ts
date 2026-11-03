@@ -383,6 +383,20 @@ describe('CLIHelper', () => {
     }
   });
 
+  test('names a configured TS config path skipped due to missing TS support', async () => {
+    pathExistsMock.mockImplementation((path: string) => path.endsWith('.ts'));
+    pkg['mikro-orm'].configPaths = ['./src/mikro-orm.config.ts'];
+    process.env.MIKRO_ORM_CLI_PREFER_TS = '0';
+    const error =
+      "MikroORM config file './src/mikro-orm.config.ts' was skipped because TypeScript support is not available. Install a TypeScript loader (see `MIKRO_ORM_CLI_TS_LOADER`) or point `configPaths` to a compiled JS file.";
+    await expect(CLIHelper.getConfiguration()).rejects.toThrow(error);
+
+    // env vars must not silently replace an explicitly configured config file
+    process.env.MIKRO_ORM_HOST = 'localhost';
+    await expect(CLIHelper.getConfiguration()).rejects.toThrow(error);
+    delete pkg['mikro-orm'].configPaths;
+  });
+
   test('gets ORM configuration [no mikro-orm.config]', async () => {
     delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CONTEXT;
     await expect(CLIHelper.getConfiguration()).rejects.toThrow(
