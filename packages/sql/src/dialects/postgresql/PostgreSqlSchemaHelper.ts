@@ -493,10 +493,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       const name = unquote(colDef);
       const result: IndexColumnOptions = { name };
 
-      // Find this column in the expression and extract modifiers
-      // Create a pattern that matches the column name (quoted or unquoted) followed by modifiers
+      // Match the column (quoted or unquoted) as a whole list item, so `id` never matches inside `author_id`
       const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const colPattern = new RegExp(`"?${escapedName}"?\\s*([^,)]*?)(?:,|$)`, 'i');
+      const colPattern = new RegExp(`(?:^|,)\\s*"?${escapedName}"?(?=\\s|,|$)\\s*([^,)]*?)(?:,|$)`, 'i');
       const colMatch = columnsStr.match(colPattern);
 
       if (colMatch) {
@@ -1700,7 +1699,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       return super.normalizeDefaultValue(defaultValue, length, PostgreSqlSchemaHelper.DEFAULT_VALUES);
     }
 
-    const match = /^'(.*)'::(.*)$/.exec(defaultValue);
+    const match = /^'(.*)'::(.*)$/s.exec(defaultValue);
 
     if (match) {
       if (match[2] === 'integer') {

@@ -1352,6 +1352,31 @@ type AllKeys<TProperties, TBase> = keyof TProperties | (IsNever<TBase> extends t
 // GH #7440 dodged the same trap for `filters.cond` by falling back to a loose `Dictionary` there.
 type PartialWhere<TProperties, TBase> = string | FilterQuery<{ [K in AllKeys<TProperties, TBase> & string]?: unknown }>;
 
+// mirrors FilterDefResolved with `FilterQuery<any>` instead of the inferred entity to avoid circular type inference (GH #7440)
+type DefineEntityFilterMap = Dictionary<{
+  name: string;
+  cond:
+    | Dictionary
+    | ((
+        args: Dictionary,
+        type: 'read' | 'update' | 'delete',
+        em: any,
+        options?: FindOptions<any, any, any, any> | FindOneOptions<any, any, any, any>,
+        entityName?: string,
+      ) => MaybePromise<FilterQuery<any>>);
+  default?: boolean;
+  entity?: EntityName<any> | EntityName<any>[];
+  args?: boolean;
+  strict?: boolean;
+  rls?: boolean | { setting?: string };
+}>;
+
+// non-fresh `filters` checked only against a map with optional props cycle through `repository` (GH #8478), so this arm lists required props only
+type DefineEntityFilterMapLoose = Dictionary<{
+  name: string;
+  cond: Dictionary;
+}>;
+
 /** Metadata descriptor for `defineEntity()`, combining entity options with property definitions. */
 export interface EntityMetadataWithProperties<
   TName extends string,
@@ -1397,24 +1422,8 @@ export interface EntityMetadataWithProperties<
   hooks?: DefineEntityHooks;
   // Capture the repository type for InferEntity to include EntityRepositoryType
   repository?: () => TRepository;
-  // mirrors FilterDefResolved with Dictionary instead of FilterQuery for cond to avoid circular type inference (GH #7440)
-  filters?: Dictionary<{
-    name: string;
-    cond:
-      | Dictionary
-      | ((
-          args: Dictionary,
-          type: 'read' | 'update' | 'delete',
-          em: any,
-          options?: FindOptions<any, any, any, any> | FindOneOptions<any, any, any, any>,
-          entityName?: string,
-        ) => MaybePromise<FilterQuery<any>>);
-    default?: boolean;
-    entity?: EntityName<any> | EntityName<any>[];
-    args?: boolean;
-    strict?: boolean;
-    rls?: boolean | { setting?: string };
-  }>;
+  // loose arm only when a repository is inferred, so non-fresh filters stay fully checked without one
+  filters?: DefineEntityFilterMap | IsNever<TRepository, never, DefineEntityFilterMapLoose>;
   forceObject?: TForceObject;
   // Captured as a literal so `NarrowDiscriminator` can keep the discriminator required for
   // polymorphic embeddables, where the ORM cannot auto-fill it (the value picks the subtype).
