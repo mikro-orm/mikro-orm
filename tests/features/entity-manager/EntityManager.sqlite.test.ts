@@ -1723,21 +1723,16 @@ describe.each(['sqlite', 'libsql', 'node-sqlite', 'sql-js'] as const)('EntityMan
     orm.getMetadata(Author4).tableName = 'test';
 
     try {
-      // the EntityManager path is wrapped in AbstractSqlDriver.rethrow(), so it converts
       await expect(orm.em.find(Author4, {})).rejects.toThrow(TableNotFoundException);
-
-      // a QueryBuilder used directly must honour the same IDatabaseDriver contract
       await expect(orm.em.createQueryBuilder(Author4, 'a').select('*').getResultList()).rejects.toThrow(
         TableNotFoundException,
       );
       await expect(orm.em.createQueryBuilder(Author4, 'a').getCount()).rejects.toThrow(TableNotFoundException);
-      await expect(
-        (async () => {
-          for await (const _ of orm.em.createQueryBuilder(Author4, 'a').stream()) {
-            // consume
-          }
-        })(),
-      ).rejects.toThrow(TableNotFoundException);
+      await expect(async () => {
+        for await (const _ of orm.em.createQueryBuilder(Author4, 'a').stream()) {
+          // should not reach here
+        }
+      }).rejects.toThrow(TableNotFoundException);
     } finally {
       orm.getMetadata(Author4).tableName = 'author4';
     }
