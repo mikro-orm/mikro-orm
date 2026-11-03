@@ -72,9 +72,14 @@ test('interval literals are compared by value', () => {
   expect(comparator.diffExpression(`a + interval '1 day -90 seconds'`, `a + '1 day -00:01:30'::interval`)).toBe(false);
   expect(comparator.diffExpression(`a + interval '-1 day 1 minute'`, `a + '-1 days +00:01:00'::interval`)).toBe(false);
   expect(comparator.diffExpression(`a + interval '1.5 seconds'`, `a + '00:00:01.5'::interval`)).toBe(false);
+  expect(comparator.diffExpression(`a + interval '1 decade 2 c 1 mil'`, `a + '1210 years'::interval`)).toBe(false);
+  expect(comparator.diffExpression(`a + interval '1 msecond 1 usecond'`, `a + '00:00:00.001001'::interval`)).toBe(
+    false,
+  );
   // literals that are not understood are compared as they are
   expect(comparator.diffExpression(`a + '1.5 days'`, `a + '1.5 days'::interval`)).toBe(false);
   expect(comparator.diffExpression(`a + '1 fortnight'`, `a + '1 fortnight'::interval`)).toBe(false);
+  expect(comparator.diffExpression(`a + '1 constructor'`, `a + '1 constructor'::interval`)).toBe(false);
   expect(comparator.diffExpression(`a + interval 'P1D'`, `a + '1 day'::interval`)).toBe(true);
   expect(comparator.diffExpression(`a + interval '10 minutes'`, `a + '00:01:00'::interval`)).toBe(true);
   expect(comparator.diffExpression(`a + interval '1 day'`, `a + '24:00:00'::interval`)).toBe(true);

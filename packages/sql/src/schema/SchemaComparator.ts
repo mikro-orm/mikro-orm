@@ -27,9 +27,12 @@ import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import type { SchemaHelper } from './SchemaHelper.js';
 import { diffPartitioning } from './partitioning.js';
 
-const INTERVAL_UNITS: Record<string, [field: 'months' | 'days' | 'micros', factor: number]> = {};
+const INTERVAL_UNITS = new Map<string, [field: 'months' | 'days' | 'micros', factor: number]>();
 
 for (const [field, factor, names] of [
+  ['months', 12_000, 'mil mils millennium millennia millenniums'],
+  ['months', 1_200, 'c cent century centuries'],
+  ['months', 120, 'dec decs decade decades'],
   ['months', 12, 'y yr yrs year years'],
   ['months', 1, 'mon mons month months'],
   ['days', 7, 'w week weeks'],
@@ -37,11 +40,11 @@ for (const [field, factor, names] of [
   ['micros', 3_600_000_000, 'h hr hrs hour hours'],
   ['micros', 60_000_000, 'm min mins minute minutes'],
   ['micros', 1_000_000, 's sec secs second seconds'],
-  ['micros', 1_000, 'ms msec msecs millisecond milliseconds'],
-  ['micros', 1, 'us usec usecs microsecond microseconds'],
+  ['micros', 1_000, 'ms msec msecs msecond mseconds millisecond milliseconds'],
+  ['micros', 1, 'us usec usecs usecond useconds microsecond microseconds'],
 ] as const) {
   for (const name of names.split(' ')) {
-    INTERVAL_UNITS[name] = [field, factor];
+    INTERVAL_UNITS.set(name, [field, factor]);
   }
 }
 
@@ -66,7 +69,7 @@ function normalizeIntervalLiteral(literal: string): string | undefined {
         return '';
       }
 
-      const target = INTERVAL_UNITS[unit!];
+      const target = INTERVAL_UNITS.get(unit!);
 
       if (!target) {
         valid = false;
@@ -1266,7 +1269,6 @@ export class SchemaComparator {
           // lookbehind: only strip a real charset introducer, never an underscore inside a literal like 'a_b'
           ?.replace(/(?<![\w'])_\w+'(.*?)'/g, '$1')
           // PostgreSQL stores `interval '1 minute'` as `'00:01:00'::interval`
-          // the cast form is kept so an untyped `'1 day'` still matches the introspected `'1 day'::interval`
           .replace(/\binterval\s*'([^']*)'|'([^']*)'\s*::\s*interval\b/gi, (match, typed?: string, cast?: string) => {
             const literal = normalizeIntervalLiteral(typed ?? cast!);
             return literal == null ? match : `'${literal}'::interval`;
