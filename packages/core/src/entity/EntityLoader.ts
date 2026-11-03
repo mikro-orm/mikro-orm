@@ -1216,7 +1216,7 @@ export class EntityLoader {
       return entity[f].getItems(false).every((item: AnyEntity) => this.isPropertyLoaded(item, r.join('.')));
     }
 
-    return this.isPropertyLoaded(entity[f], r.join('.'));
+    return this.isPropertyLoaded(Reference.unwrapReference(entity[f]), r.join('.'));
   }
 
   private filterReferences<Entity extends object>(

@@ -36,6 +36,11 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
+  /** mysql reads backslashes in string literals as escapes, so defaults need the same escaping as values (minus the needless `\"`). */
+  override quoteDefaultValue(value: string): string {
+    return this.quoteValue(value).replaceAll('\\"', '"');
+  }
+
   override supportsMultiColumnCountDistinct(): boolean {
     return true;
   }
