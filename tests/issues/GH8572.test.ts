@@ -34,10 +34,13 @@ afterAll(() => orm.close(true));
 test('$in with a sub-query on a bigint property', async () => {
   const em = orm.em.fork();
   const groupIds = em.createQueryBuilder(DepartmentLink).select('groupId').where({ departmentId: 10 });
-  const qb = em.createQueryBuilder(DepartmentLink).select('departmentId').where({ groupId: { $in: groupIds } }).orderBy({ departmentId: 'asc' });
+  const qb = em
+    .createQueryBuilder(DepartmentLink)
+    .select('departmentId')
+    .where({ groupId: { $in: groupIds } })
+    .orderBy({ departmentId: 'asc' });
 
   expect(qb.getFormattedQuery()).not.toContain('[object Object]');
   const rows = await qb.execute();
   expect(rows.map(row => row.departmentId)).toEqual([10, 11]);
 });
-
