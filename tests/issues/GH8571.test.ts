@@ -82,7 +82,7 @@ test.each(['joined', 'select-in', 'balanced'] as const)(
     expect(
       revisions[0].members
         .getItems()
-        .map(member => member.UserID.$.name)
+        .map(member => member.UserID.unwrap().name)
         .sort(),
     ).toEqual(['Cindy', 'John']);
   },
