@@ -2597,12 +2597,23 @@ export class QueryBuilder<
     const conn = this.getConnection();
     // outside a transaction, wrap in a short implicit one so RLS `set local` session context applies (no-op when unset)
     const sessionContext = this.context ? undefined : this.em?.getTransactionSessionContext();
-    const res = await (sessionContext
-      ? conn.transactional(trx => conn.execute(query.sql, query.params, method, trx, loggerContext), {
-          sessionContext,
-          loggerContext,
-        })
-      : conn.execute(query.sql, query.params, method, this.context, loggerContext));
+    // `IDatabaseDriver.convertException` is the contract every driver method
+    // honours: a native driver error becomes a `DriverException` subclass so a
+    // caller can branch on it. `AbstractSqlDriver.find()` gets that by wrapping
+    // its `qb.execute()` in `this.rethrow(...)`, but a QueryBuilder used
+    // directly does not, so the same failing query threw `SqliteError` (or a
+    // minified constructor name on pglite) from `getResultList()` where
+    // `em.find()` threw `TableNotFoundException`.
+    const res = await (
+      sessionContext
+        ? conn.transactional(trx => conn.execute(query.sql, query.params, method, trx, loggerContext), {
+            sessionContext,
+            loggerContext,
+          })
+        : conn.execute(query.sql, query.params, method, this.context, loggerContext)
+    ).catch(e => {
+      throw this.driver.convertException(e);
+    });
     const meta = this.mainAlias.meta;
 
     if (!options.mapResults || !meta) {
