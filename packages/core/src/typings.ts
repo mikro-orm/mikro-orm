@@ -2563,10 +2563,13 @@ export type UnboxArray<T> = T extends any[] ? ArrayElement<T> : T;
 export type ArrayElement<ArrayType extends unknown[]> = ArrayType extends (infer ElementType)[] ? ElementType : never;
 
 /** Unwraps a property type from its wrapper (Reference, Collection, or array) to the inner entity type. */
-export type ExpandProperty<T> =
+export type ExpandProperty<T> = ExpandPropertyOf<T, T>;
+
+// `R` is the record fallback: referencing `T` inside the brand branch narrows it to a substitution type, which made checking `QueryBuilder` ~3x slower
+type ExpandPropertyOf<T, R> =
   T extends LazyRef.Brand<infer U>
     ? unknown extends U
-      ? NotLazyRef<U, NonNullable<T>>
+      ? NotLazyRef<U, NonNullable<R>>
       : NonNullable<U>
     : T extends ReferenceShape<infer U>
       ? NonNullable<U>
