@@ -831,6 +831,8 @@ Full list of supported options:
 | `MIKRO_ORM_MIGRATIONS_TRANSACTIONAL`                        | `migrations.transactional`                     |
 | `MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS`                 | `migrations.disableForeignKeys`                |
 | `MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING`                       | `migrations.allOrNothing`                      |
+| `MIKRO_ORM_MIGRATIONS_LOCK`                                 | `migrations.lock`                              |
+| `MIKRO_ORM_MIGRATIONS_LOCK_TIMEOUT`                         | `migrations.lockTimeout`                       |
 | `MIKRO_ORM_MIGRATIONS_DROP_TABLES`                          | `migrations.dropTables`                        |
 | `MIKRO_ORM_MIGRATIONS_SAFE`                                 | `migrations.safe`                              |
 | `MIKRO_ORM_MIGRATIONS_EMIT`                                 | `migrations.emit`                              |
