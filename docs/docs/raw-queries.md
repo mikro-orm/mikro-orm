@@ -97,8 +97,8 @@ You can use the `raw` helper for `QueryBuilder` or Kysely query builder instance
 ```ts
 import { raw } from '@mikro-orm/postgresql';
 
-const kysely = em.getKysely();
-const subQuery = kysely.selectFrom('user').select('id').where('active', '=', true);
+const db = em.getKysely();
+const subQuery = db.selectFrom('user').select('id').where('active', '=', true);
 
 const r = await em.find(User, {
   id: raw(subQuery),
