@@ -8,8 +8,10 @@ import {
   type FilterDef,
   MetadataError,
   QueryHelper,
+  raw,
   type Routine,
   type Transaction,
+  type TriggerDef,
   type Type,
   Utils,
   isRaw,
@@ -18,6 +20,7 @@ import { DatabaseTable } from './DatabaseTable.js';
 import { normalizeViewDefinition } from './SchemaHelper.js';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection.js';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver.js';
+import type { QueryBuilder } from '../query/QueryBuilder.js';
 import type { DatabaseView, SqlPolicyDef, SqlRoutineDef } from '../typings.js';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform.js';
 import { getTablePartitioning } from './partitioning.js';
@@ -372,9 +375,7 @@ export class DatabaseSchema {
       }
 
       for (const trigger of meta.triggers) {
-        const body = isRaw(trigger.body)
-          ? platform.formatQuery(trigger.body.sql, trigger.body.params)
-          : (trigger.body as string | undefined);
+        const body = this.resolveTriggerBody(meta, trigger, table, platform, em);
 
         table.addTrigger({
           name: trigger.name!,
@@ -449,6 +450,56 @@ export class DatabaseSchema {
     }
 
     return schema;
+  }
+
+  /** Evaluates the trigger body, rendering query builder statements for the trigger's dialect. */
+  private static resolveTriggerBody(
+    meta: EntityMetadata,
+    trigger: TriggerDef,
+    table: DatabaseTable,
+    platform: AbstractSqlPlatform,
+    em?: any,
+  ): string | undefined {
+    if (!(trigger.body instanceof Function)) {
+      return isRaw(trigger.body) ? platform.formatQuery(trigger.body.sql, trigger.body.params) : trigger.body;
+    }
+
+    const helper = platform.getSchemaHelper()!;
+    const columns = meta.createSchemaColumnMappingObject() as Dictionary;
+    const rowRefs = (row: 'new' | 'old') =>
+      Object.fromEntries(
+        Object.entries(columns)
+          .filter(([, column]) => typeof column === 'string')
+          .map(([prop, column]) => [prop, raw(helper.triggerRowReference(row, column))]),
+      );
+    const qualifiedName = meta.schema ? `${meta.schema}.${meta.tableName}` : meta.tableName;
+    const schemaTable = { name: meta.tableName, schema: meta.schema, qualifiedName, toString: () => qualifiedName };
+    const context = {
+      new: rowRefs('new'),
+      old: rowRefs('old'),
+      em: em ?? platform.getConfig().getDriver().createEntityManager(),
+    };
+    let usesQueryBuilder = false;
+    const statements = Utils.asArray(trigger.body(columns, schemaTable, context)).map(statement => {
+      if (typeof statement === 'string') {
+        return statement;
+      }
+
+      if (isRaw(statement)) {
+        return platform.formatQuery(statement.sql, statement.params);
+      }
+
+      usesQueryBuilder = true;
+      const native = (statement as QueryBuilder).getNativeQuery();
+      // trigger bodies can't return result sets
+      native.returning();
+      const { sql, params } = native.compile();
+
+      return helper.formatTriggerStatement(platform.formatQuery(sql, params), table);
+    });
+    const body = statements.length === 1 ? statements[0] : statements.map(s => s.trim().replace(/;$/, '')).join('; ');
+
+    return usesQueryBuilder ? helper.finalizeTriggerBody(body) : body;
   }
 
   /** Compiles an `rls`-flagged filter's condition into a resolved policy backed by `current_setting()` lookups. */

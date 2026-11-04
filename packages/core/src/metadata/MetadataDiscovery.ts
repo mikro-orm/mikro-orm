@@ -2444,9 +2444,7 @@ export class MetadataDiscovery {
       return;
     }
 
-    const columns = meta.createSchemaColumnMappingObject();
-    const table = this.createSchemaTable(meta);
-
+    // body callbacks are evaluated by the schema generator, as they need the platform and entity manager
     for (const trigger of meta.triggers) {
       if (trigger.body && trigger.expression) {
         throw new MetadataError(
@@ -2462,10 +2460,6 @@ export class MetadataDiscovery {
 
       trigger.name ??= this.#namingStrategy.indexName(meta.tableName, trigger.events, 'trigger');
       trigger.forEach ??= 'row';
-
-      if (trigger.body instanceof Function) {
-        trigger.body = trigger.body(columns, table);
-      }
     }
 
     meta.hasTriggers = true;
