@@ -4696,6 +4696,9 @@ export class QueryBuilder<
   }
 }
 
+// prototype-level brand recognized by `isSubquery()`, JSON payloads cannot forge it
+Object.defineProperty(QueryBuilder.prototype, '__subquery', { value: true, writable: false, configurable: false });
+
 export interface RunQueryBuilder<
   Entity extends object,
   RootAlias extends string = never,

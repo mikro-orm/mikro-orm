@@ -14,6 +14,7 @@ import {
   type FormulaTable,
   inspect,
   isRaw,
+  isSubquery,
   LockMode,
   type MetadataStorage,
   OptimisticLockError,
@@ -877,8 +878,8 @@ export class QueryBuilderHelper {
       const opValue = value[op];
       const opValueIsRaw = isRaw(opValue);
 
-      if (opValueIsRaw || typeof opValue?.toRaw === 'function') {
-        const query: RawQueryFragment = opValueIsRaw ? opValue : opValue.toRaw();
+      if (opValueIsRaw || isSubquery(opValue)) {
+        const query: RawQueryFragment = opValueIsRaw ? opValue : (opValue as NativeQueryBuilder).toRaw();
         const mappedKey = this.mapper(key, type, query, null);
 
         let sql = this.replaceAliases(query.sql);

@@ -15,7 +15,7 @@ import type { Platform } from '../platforms/Platform.js';
 import type { MetadataStorage } from '../metadata/MetadataStorage.js';
 import { JsonType } from '../types/JsonType.js';
 import { helper } from '../entity/wrap.js';
-import { isRaw, Raw } from './RawQueryFragment.js';
+import { isRaw, isSubquery, Raw } from './RawQueryFragment.js';
 import { MetadataError, ValidationError } from '../errors.js';
 import type { FilterOptions } from '../drivers/IDatabaseDriver.js';
 
@@ -632,8 +632,8 @@ export class QueryHelper {
       ) as unknown as FilterQuery<T>;
     }
 
-    // a query builder (anything with `toRaw()`) renders as a sub-query, not as a value of the property type
-    if (isRaw(cond) || typeof (cond as Dictionary)?.toRaw === 'function') {
+    // a query builder renders as a sub-query, not as a value of the property type
+    if (isRaw(cond) || isSubquery(cond)) {
       return cond;
     }
 

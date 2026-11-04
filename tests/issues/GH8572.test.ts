@@ -1,4 +1,5 @@
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
+import { isSubquery } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -43,4 +44,14 @@ test('$in with a sub-query on a bigint property', async () => {
   expect(qb.getFormattedQuery()).not.toContain('[object Object]');
   const rows = await qb.execute();
   expect(rows.map(row => row.departmentId)).toEqual([10, 11]);
+});
+
+test('sub-query detection cannot be spoofed by a plain object', () => {
+  const em = orm.em.fork();
+  const qb = em.createQueryBuilder(DepartmentLink).select('groupId');
+  expect(isSubquery(qb)).toBe(true);
+  expect(isSubquery(qb.getNativeQuery())).toBe(true);
+  expect(isSubquery({ __subquery: true })).toBe(false);
+  expect(isSubquery({ toRaw: () => qb.toRaw() })).toBe(false);
+  expect(isSubquery(JSON.parse('{"__subquery":true}'))).toBe(false);
 });

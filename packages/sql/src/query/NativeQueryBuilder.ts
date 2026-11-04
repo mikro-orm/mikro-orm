@@ -737,3 +737,10 @@ export class NativeQueryBuilder implements Subquery {
     return this.platform.quoteIdentifier(id);
   }
 }
+
+// prototype-level brand recognized by `isSubquery()`, JSON payloads cannot forge it
+Object.defineProperty(NativeQueryBuilder.prototype, '__subquery', {
+  value: true,
+  writable: false,
+  configurable: false,
+});
