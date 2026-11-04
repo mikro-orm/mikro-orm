@@ -763,3 +763,44 @@ test('polymorphic owner M:N inherited by a TPT subclass keeps its own discrimina
 
   await orm2.close(true);
 });
+
+@Entity()
+class Label15 {
+  @PrimaryKey()
+  id!: number;
+}
+
+@Entity({ inheritance: 'tpt' })
+abstract class Item15 {
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToMany(() => Label15)
+  labels = new Collection<Label15>(this);
+}
+
+@Entity()
+class Book15 extends Item15 {
+  @ManyToMany(() => Label15, undefined, { fixedOrder: true })
+  declare labels: Collection<Label15>;
+}
+
+test('TPT subclass redeclaring an M:N with fixedOrder keeps its own ordered pivot table', async () => {
+  const orm2 = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
+    dbName: ':memory:',
+    entities: [Label15, Item15, Book15],
+  });
+  await orm2.schema.create();
+  expect(orm2.getMetadata().get(Book15).properties.labels.pivotTable).toBe('book15_labels');
+
+  const em = orm2.em.fork();
+  const book = em.create(Book15, {});
+  book.labels.add(em.create(Label15, { id: 3 }), em.create(Label15, { id: 1 }), em.create(Label15, { id: 2 }));
+  await em.flush();
+  em.clear();
+
+  const loaded = await em.findOneOrFail(Book15, book.id, { populate: ['labels'] });
+  expect(loaded.labels.getIdentifiers()).toEqual([3, 1, 2]);
+  await orm2.close(true);
+});

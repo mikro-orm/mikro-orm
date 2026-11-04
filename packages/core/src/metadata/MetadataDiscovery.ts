@@ -644,10 +644,18 @@ export class MetadataDiscovery {
 
   /**
    * Walks up the TPT hierarchy to the entity whose M:N declaration this property inherits. A child redeclaring
-   * the property with a different target, pivot table or join columns keeps its own pivot table.
+   * the property with a different target, pivot table, join columns or fixed order keeps its own pivot table.
    */
   private getPivotDeclaringMeta(meta: EntityMetadata, prop: EntityProperty): EntityMetadata {
-    const keys = ['type', 'pivotTable', 'pivotEntity', 'joinColumns', 'inverseJoinColumns'] as const;
+    const keys = [
+      'type',
+      'pivotTable',
+      'pivotEntity',
+      'joinColumns',
+      'inverseJoinColumns',
+      'fixedOrder',
+      'fixedOrderColumn',
+    ] as const;
 
     // Rails-style polymorphic owners already share an explicit pivot table, each under its own discriminator value
     if (prop.polymorphic && !QueryHelper.isUnionTargetPolymorphic(prop)) {
@@ -676,7 +684,6 @@ export class MetadataDiscovery {
 
   private initManyToManyFields(meta: EntityMetadata, prop: EntityProperty): void {
     const meta2 = prop.targetMeta!;
-    Utils.defaultValue(prop, 'fixedOrder', !!prop.fixedOrderColumn);
     // inverse sides derive their mapping from the owner via `mappedBy`
     const declaringMeta = prop.mappedBy ? meta : this.getPivotDeclaringMeta(meta, prop);
 
@@ -691,6 +698,8 @@ export class MetadataDiscovery {
       prop.referencedColumnNames = prop2.referencedColumnNames;
       return;
     }
+
+    Utils.defaultValue(prop, 'fixedOrder', !!prop.fixedOrderColumn);
 
     const pivotMeta = this.#metadata.find(prop.pivotEntity);
     const props = Object.values(pivotMeta?.properties ?? {});
