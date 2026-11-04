@@ -3,6 +3,39 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.7](https://github.com/mikro-orm/mikro-orm/compare/v7.2.6...v7.2.7) (2026-11-04)
+
+### Bug Fixes
+
+* **core:** don't convert a sub-query value with the property's custom type ([#8574](https://github.com/mikro-orm/mikro-orm/issues/8574)) ([6843a82](https://github.com/mikro-orm/mikro-orm/commit/6843a82bdd32ee80b805e85b8c66808e72ce76b2)), closes [#8572](https://github.com/mikro-orm/mikro-orm/issues/8572)
+* **core:** don't treat record types as `LazyRef` ([#8564](https://github.com/mikro-orm/mikro-orm/issues/8564)) ([0aeceac](https://github.com/mikro-orm/mikro-orm/commit/0aeceacb899eb6c3d7f13d8e3a6b6ac3a689f219))
+* **core:** keep class instances by reference when merging the config ([#8496](https://github.com/mikro-orm/mikro-orm/issues/8496)) ([d11862d](https://github.com/mikro-orm/mikro-orm/commit/d11862d858d9a80f9e84185800f798f0f9a76608)), closes [#8495](https://github.com/mikro-orm/mikro-orm/issues/8495)
+* **core:** respect the entity default `orderBy` in `em.findByCursor()` ([#8503](https://github.com/mikro-orm/mikro-orm/issues/8503)) ([8d789d8](https://github.com/mikro-orm/mikro-orm/commit/8d789d860d40485381648afe244182e57a703e09)), closes [#7133](https://github.com/mikro-orm/mikro-orm/issues/7133)
+* **core:** use distinct pivot columns for M:N within one STI hierarchy ([#8592](https://github.com/mikro-orm/mikro-orm/issues/8592)) ([6b5a605](https://github.com/mikro-orm/mikro-orm/commit/6b5a605d4f2ad58bf09326efa5189e2bc09d4654))
+* **postgres:** compare interval literals in generated expressions by value ([#8585](https://github.com/mikro-orm/mikro-orm/issues/8585)) ([e19482b](https://github.com/mikro-orm/mikro-orm/commit/e19482b80901cad517a92583ab978d85eaf2f2bb)), closes [#8482](https://github.com/mikro-orm/mikro-orm/issues/8482) [#8481](https://github.com/mikro-orm/mikro-orm/issues/8481)
+* **postgres:** keep element type modifiers when introspecting array columns ([#8498](https://github.com/mikro-orm/mikro-orm/issues/8498)) ([08a55c7](https://github.com/mikro-orm/mikro-orm/commit/08a55c760b9491300fa45a7164d122ba31e707b6)), closes [#8497](https://github.com/mikro-orm/mikro-orm/issues/8497)
+* **postgres:** map restrict violation errors to `ForeignKeyConstraintViolationException` ([#8558](https://github.com/mikro-orm/mikro-orm/issues/8558)) ([4d9178f](https://github.com/mikro-orm/mikro-orm/commit/4d9178f18cf356860a28c3bc176a4fc927be7164))
+* **schema:** reject combining `deferMode` with `where` on unique indexes ([#8514](https://github.com/mikro-orm/mikro-orm/issues/8514)) ([1bc4d12](https://github.com/mikro-orm/mikro-orm/commit/1bc4d12ebed488d4801345cf0fac8ac81990be69)), closes [#8512](https://github.com/mikro-orm/mikro-orm/issues/8512)
+* **sql:** convert driver exceptions on the QueryBuilder read path ([#8584](https://github.com/mikro-orm/mikro-orm/issues/8584)) ([fa08c33](https://github.com/mikro-orm/mikro-orm/commit/fa08c337fb83244da8caecf307fc12de7fe3899c)), closes [#8577](https://github.com/mikro-orm/mikro-orm/issues/8577)
+* **sql:** emit valid SQL for `$in`/`$nin` on array columns ([#8502](https://github.com/mikro-orm/mikro-orm/issues/8502)) ([2ab63ff](https://github.com/mikro-orm/mikro-orm/commit/2ab63ff214f0451cc76a74b97553cc1cbad1f4b0)), closes [#8454](https://github.com/mikro-orm/mikro-orm/issues/8454)
+* **sql:** handle `$not` nested under collection properties ([#8471](https://github.com/mikro-orm/mikro-orm/issues/8471)) ([fee6fc5](https://github.com/mikro-orm/mikro-orm/commit/fee6fc51eced42c60293695c0def3dce208b6549)), closes [#8468](https://github.com/mikro-orm/mikro-orm/issues/8468)
+* **sqlite:** fail fast when an entity declares a schema that is not attached ([#8583](https://github.com/mikro-orm/mikro-orm/issues/8583)) ([1cbfa26](https://github.com/mikro-orm/mikro-orm/commit/1cbfa2666d9de02f7e3dcad972788ad789349494))
+* **sqlite:** keep child rows when a migration rebuilds a table ([#8510](https://github.com/mikro-orm/mikro-orm/issues/8510)) ([0a3aa8a](https://github.com/mikro-orm/mikro-orm/commit/0a3aa8a9683a61c8537ff1ad651138f7f34e5976)), closes [#6300](https://github.com/mikro-orm/mikro-orm/issues/6300) [#6358](https://github.com/mikro-orm/mikro-orm/issues/6358)
+* **sqlite:** read the definition of the first column when introspecting a table ([#8518](https://github.com/mikro-orm/mikro-orm/issues/8518)) ([b0f843e](https://github.com/mikro-orm/mikro-orm/commit/b0f843ed3b4c90a85a2ddefac6a0e88aa9f59a04))
+* **sql:** keep aliased FK columns when they match a joined relation name ([#8573](https://github.com/mikro-orm/mikro-orm/issues/8573)) ([0175b57](https://github.com/mikro-orm/mikro-orm/commit/0175b57406858a5c2763218fdd44043705d04d55)), closes [#8571](https://github.com/mikro-orm/mikro-orm/issues/8571)
+* **sql:** resolve inherited columns in TPT child formulas to the parent alias ([#8506](https://github.com/mikro-orm/mikro-orm/issues/8506)) ([e02bb16](https://github.com/mikro-orm/mikro-orm/commit/e02bb16952ad4e477bcb5684ebf8e3119efd7d3e)), closes [#8492](https://github.com/mikro-orm/mikro-orm/issues/8492)
+* **sql:** return one primary key per row from em.insertMany ([#8582](https://github.com/mikro-orm/mikro-orm/issues/8582)) ([0d3333a](https://github.com/mikro-orm/mikro-orm/commit/0d3333ab11b019a0c6461676838933f7ad92d806)), closes [#8575](https://github.com/mikro-orm/mikro-orm/issues/8575)
+
+### Features
+
+* **core:** embed a query builder passed as a raw fragment param as a sub-query ([#8590](https://github.com/mikro-orm/mikro-orm/issues/8590)) ([64763fd](https://github.com/mikro-orm/mikro-orm/commit/64763fda6e94bb12b74054ac9eaaf27ac1290a19)), closes [#8570](https://github.com/mikro-orm/mikro-orm/issues/8570)
+
+### Performance Improvements
+
+* **core:** avoid quadratic delete-early matching in computeChangeSets ([#8580](https://github.com/mikro-orm/mikro-orm/issues/8580)) ([2de826a](https://github.com/mikro-orm/mikro-orm/commit/2de826ad727f1df0c7c73dd1d8175f41b5c47737)), closes [#8579](https://github.com/mikro-orm/mikro-orm/issues/8579) [#8579](https://github.com/mikro-orm/mikro-orm/issues/8579)
+* **core:** match serializer fields and populate paths by first segment ([#8464](https://github.com/mikro-orm/mikro-orm/issues/8464)) ([059a9e5](https://github.com/mikro-orm/mikro-orm/commit/059a9e575c7e250a93df02c9cda9cfd1df095238))
+
+
 ## [7.2.6](https://github.com/mikro-orm/mikro-orm/compare/v7.2.5...v7.2.6) (2026-10-31)
 
 ### Bug Fixes

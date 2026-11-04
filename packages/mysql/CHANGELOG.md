@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.7](https://github.com/mikro-orm/mikro-orm/compare/v7.2.6...v7.2.7) (2026-11-04)
+
+### Bug Fixes
+
+* **sql:** return one primary key per row from em.insertMany ([#8582](https://github.com/mikro-orm/mikro-orm/issues/8582)) ([0d3333a](https://github.com/mikro-orm/mikro-orm/commit/0d3333ab11b019a0c6461676838933f7ad92d806)), closes [#8575](https://github.com/mikro-orm/mikro-orm/issues/8575)
+
+
 ## [7.2.6](https://github.com/mikro-orm/mikro-orm/compare/v7.2.5...v7.2.6) (2026-10-31)
 
 ### Bug Fixes
