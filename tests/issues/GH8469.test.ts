@@ -848,3 +848,46 @@ test('inverse M:N declared on a TPT subclass keeps its pivot table when another 
   expect(notes.pivotTable).toBe('note16_tags');
   await orm2.close(true);
 });
+
+@Entity({ inheritance: 'tpt' })
+class Animal17 {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @ManyToMany(() => Animal17, a => a.friendOf, { owner: true })
+  friends = new Collection<Animal17>(this);
+
+  @ManyToMany(() => Animal17, a => a.friends)
+  friendOf = new Collection<Animal17>(this);
+}
+
+@Entity()
+class Dog17 extends Animal17 {
+  @ManyToMany(() => Dog17)
+  declare friends: Collection<Animal17>;
+}
+
+test.each([
+  [Animal17, Dog17],
+  [Dog17, Animal17],
+])('inherited inverse stays on the root pivot when a TPT subclass redeclares the owner side', async (...entities) => {
+  const orm2 = await MikroORM.init({ metadataProvider: ReflectMetadataProvider, dbName: ':memory:', entities });
+  await orm2.schema.create();
+  const friendOf = orm2.getMetadata().get(Dog17).properties.friendOf;
+  expect(friendOf.pivotTable).toBe('animal17_friends');
+  expect(friendOf.joinColumns).toEqual(['animal17_2_id']);
+
+  const em = orm2.em.fork();
+  const tom = em.create(Animal17, { name: 'tom' });
+  const rex = em.create(Dog17, { name: 'rex' });
+  tom.friends.add(rex);
+  await em.flush();
+  em.clear();
+
+  const loaded = await em.findOneOrFail(Dog17, rex.id, { populate: ['friendOf'] });
+  expect(loaded.friendOf.getItems().map(a => a.name)).toEqual(['tom']);
+  await orm2.close(true);
+});

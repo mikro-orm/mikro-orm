@@ -935,7 +935,9 @@ export class MetadataDiscovery {
                 inverseProp.mappedBy === prop.name &&
                 !inverseProp.pivotEntity &&
                 // a descendant can declare its own inverse of another owner's same-named M:N
-                targets.some(target => target.properties[inverseProp.name]?.mappedBy === prop.name)
+                targets.some(target => target.properties[inverseProp.name]?.mappedBy === prop.name) &&
+                // the target itself can carry an inherited inverse of a parent M:N it redeclares
+                (inverseProp.targetMeta?.properties[prop.name]?.pivotTable ?? prop.pivotTable) === prop.pivotTable
               ) {
                 inverseProp.pivotEntity = pivotMeta.class;
                 inverseProp.pivotTable = pivotMeta.tableName;
@@ -1163,9 +1165,10 @@ export class MetadataDiscovery {
           childProp.inverseJoinColumns = prop.inverseJoinColumns;
         }
 
-        const childProp2 = prop.inversedBy && sharesPivot ? childMeta.properties[prop.inversedBy] : undefined;
+        const childProp2 = prop.inversedBy ? childMeta.properties[prop.inversedBy] : undefined;
 
-        if (childProp2) {
+        // the inherited inverse can stay on this pivot even when the child redeclares the owner side
+        if (childProp2 && (childMeta.inheritanceType !== 'tpt' || childProp2.pivotTable === prop.pivotTable)) {
           childProp2.inverseJoinColumns = prop.joinColumns;
           childProp2.joinColumns = prop.inverseJoinColumns;
         }
