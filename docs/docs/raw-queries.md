@@ -105,6 +105,14 @@ const r = await em.find(User, {
 });
 ```
 
+A `QueryBuilder` can also be used as a parameter value of a raw fragment (this works with the `raw` and `sql` helpers from any package, including `@mikro-orm/core`), it will be embedded as a sub-query:
+
+```ts
+const active = em.createQueryBuilder(User, 'u').select('u.id').where({ active: true });
+const qb = em.createQueryBuilder(Book).where(sql`author_id in (${active})`);
+// or raw('author_id in (?)', [active])
+```
+
 ## `sql` tagged templates
 
 You can also use the `sql` tagged template function, which works the same, but supports only the simple string signature:
