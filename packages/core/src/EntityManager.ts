@@ -1129,6 +1129,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       throw new Error('Explicit `orderBy` option required');
     }
 
+    const meta = this.metadata.get<Entity>(entityName);
+
+    // same merge as em.find, so the cursor and the query see the same orderBy
+    if (meta.orderBy) {
+      options.orderBy = QueryHelper.mergeOrderBy(options.orderBy, meta.orderBy);
+    }
+
     const [entities, count] =
       options.includeCount !== false
         ? await em.findAndCount(entityName, options.where as any, options as any)
@@ -1137,7 +1144,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       entities as any,
       count as IncludeCount extends true ? number : undefined,
       options as any,
-      this.metadata.get(entityName),
+      meta,
     ) as Cursor<Entity, Hint, Fields, Excludes, IncludeCount>;
   }
 

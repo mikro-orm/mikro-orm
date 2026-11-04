@@ -307,7 +307,7 @@ console.log(count); // total count, e.g. 1327
 
 As an alternative to the offset based pagination with `limit` and `offset`, you can paginate based on a cursor. A cursor is an opaque string that defines specific place in ordered entity graph. You can use `em.findByCursor()` to access those options. Under the hood, it will call `em.find()` and `em.count()` just like the `em.findAndCount()` method, but will use the cursor options instead.
 
-Supports `before`, `after`, `first` and `last` options while disallowing `limit` and `offset`. Explicit `orderBy` option is required. It also supports the `includeCount` (default to true) option. When explicitly set to false, entity manager will perform a `find` instead of `findAndCount`. The cursor `totalCount` will be set to null instead. This can be used as a performance optimization to avoid an expensive SQL count query, when knowing the exact number of pages is not important.
+Supports `before`, `after`, `first` and `last` options while disallowing `limit` and `offset`. Explicit `orderBy` option is required. If the entity defines a default `orderBy`, its keys are appended to the explicit one and become part of the cursor as well, so a cursor built manually via `Cursor.for()` has to use the same merged order. It also supports the `includeCount` (default to true) option. When explicitly set to false, entity manager will perform a `find` instead of `findAndCount`. The cursor `totalCount` will be set to null instead. This can be used as a performance optimization to avoid an expensive SQL count query, when knowing the exact number of pages is not important.
 
 Use `first` and `after` for forward pagination, or `last` and `before` for backward pagination.
 

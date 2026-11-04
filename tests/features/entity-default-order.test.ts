@@ -231,6 +231,22 @@ describe('entity-level default orderBy', () => {
     });
   });
 
+  describe('em.findByCursor() with entity-level orderBy', () => {
+    test('pages forward and backward past the first page', async () => {
+      const first = await orm.em.findByCursor(Item, { first: 2, orderBy: { id: QueryOrder.ASC } });
+      const next = await orm.em.findByCursor(Item, { first: 2, after: first, orderBy: { id: QueryOrder.ASC } });
+      expect(first.items.map(i => i.name)).toEqual(['Item A', 'Item B']);
+      expect(next.items.map(i => i.name)).toEqual(['Item C', 'Item D']);
+      expect(next.hasNextPage).toBe(false);
+
+      const last = await orm.em.findByCursor(Item, { last: 2, orderBy: { id: QueryOrder.ASC } });
+      const prev = await orm.em.findByCursor(Item, { last: 2, before: last, orderBy: { id: QueryOrder.ASC } });
+      expect(last.items.map(i => i.name)).toEqual(['Item C', 'Item D']);
+      expect(prev.items.map(i => i.name)).toEqual(['Item A', 'Item B']);
+      expect(prev.hasPrevPage).toBe(false);
+    });
+  });
+
   describe('populate with entity-level orderBy', () => {
     test('entity-level orderBy applies when populating relations', async () => {
       const post = await orm.em.findOneOrFail(
