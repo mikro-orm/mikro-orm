@@ -133,6 +133,19 @@ export abstract class AbstractSqlDriver<
     return meta.inheritanceType === 'tpt' && meta.ownProps ? meta.ownProps : meta.props;
   }
 
+  /** Columns reloaded by INSERT: generated/default columns any row leaves to the database, and explicit `returning` hints. */
+  protected getInsertReturningProperties<T extends object>(
+    meta: EntityMetadata<T>,
+    data: EntityDictionary<T>[],
+  ): EntityProperty<T>[] {
+    return this.getTableProps(meta).filter(
+      prop =>
+        prop.returning ||
+        (((prop.persist !== false && prop.defaultRaw) || prop.autoincrement || prop.generated) &&
+          data.some(d => !(prop.name in d) || isRaw(d[prop.name]))),
+    );
+  }
+
   /** Columns reloaded by UPDATE: raw values, PKs, generated/version columns and explicit `returning` hints. */
   protected getUpdateReturningProperties<T extends object>(
     meta: EntityMetadata<T>,
@@ -1247,13 +1260,7 @@ export abstract class AbstractSqlDriver<
         : `(${this.platform.quoteIdentifier(pks[0])})`;
 
     if (this.platform.usesOutputStatement()) {
-      const returningProps = this.getTableProps(meta).filter(
-        prop =>
-          prop.returning ||
-          (((prop.persist !== false && prop.defaultRaw) || prop.autoincrement || prop.generated) &&
-            (!(prop.name in data[0]) || isRaw(data[0][prop.name]))),
-      );
-      const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
+      const returningFields = Utils.flatten(this.getInsertReturningProperties(meta, data).map(prop => prop.fieldNames));
       sql +=
         returningFields.length > 0
           ? ` output ${returningFields.map(field => 'inserted.' + this.platform.quoteIdentifier(field)).join(', ')}`
@@ -1396,13 +1403,7 @@ export abstract class AbstractSqlDriver<
     }
 
     if (meta && this.platform.usesReturningStatement()) {
-      const returningProps = this.getTableProps(meta).filter(
-        prop =>
-          prop.returning ||
-          (((prop.persist !== false && prop.defaultRaw) || prop.autoincrement || prop.generated) &&
-            (!(prop.name in data[0]) || isRaw(data[0][prop.name]))),
-      );
-      const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
+      const returningFields = Utils.flatten(this.getInsertReturningProperties(meta, data).map(prop => prop.fieldNames));
       /* v8 ignore next */
       sql +=
         returningFields.length > 0
@@ -1421,23 +1422,46 @@ export abstract class AbstractSqlDriver<
       options.ctx,
       withAbortContext(options.loggerContext, options),
     );
-    let pk: any[];
-
-    if (pks.length > 1) {
-      // owner has composite pk
-      pk = data.map(d => Utils.getOrderedPrimaryKeys(d as Record<string, Primary<T>>, meta));
-    } else {
-      res.row ??= {};
-      res.rows ??= [];
-      pk = data.map((d, i) => d[pks[0]] ?? res.rows![i]?.[pks[0]]).map(d => [d]);
-      res.insertId = res.insertId || res.row[pks[0]];
-    }
+    const pk = this.resolveInsertedPrimaryKeys(meta, data, res);
 
     for (let i = 0; i < collections.length; i++) {
       await this.processManyToMany<T>(meta, pk[i], collections[i], false, options);
     }
 
     return res;
+  }
+
+  /** Resolves the primary key of every inserted row from the supplied data or the returned rows, and reports them via `insertedIds` when all are known. */
+  protected resolveInsertedPrimaryKeys<T extends object>(
+    meta: EntityMetadata<T>,
+    data: EntityDictionary<T>[],
+    res: QueryResult<T>,
+  ): any[][] {
+    const pks = this.getPrimaryKeyFields(meta);
+
+    if (pks.length > 1) {
+      // owner has composite pk
+      const pk = data.map(d => Utils.getOrderedPrimaryKeys(d as Record<string, Primary<T>>, meta));
+      res.insertedIds = pk as Primary<T>[];
+
+      return pk;
+    }
+
+    res.row ??= {};
+    res.rows ??= [];
+    const ids: any[] = data.map((d, i) => {
+      // a raw pk expression is resolved by the database, its value only exists in the returned row
+      const supplied = d[meta.primaryKeys[0]] ?? d[pks[0]];
+      return supplied == null || isRaw(supplied) ? res.rows![i]?.[pks[0]] : supplied;
+    });
+    res.insertId = res.insertId || res.row[pks[0]];
+
+    // drivers without `returning` leave the ids unknown here, keep the `insertId` fallback for them
+    if (ids.every(id => id != null)) {
+      res.insertedIds = ids;
+    }
+
+    return ids.map(id => [id]);
   }
 
   async nativeUpdate<T extends object>(
