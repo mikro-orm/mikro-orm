@@ -3,16 +3,20 @@ import type { Platform } from '../platforms/Platform.js';
 import type { EntityProperty } from '../typings.js';
 
 /**
- * Type that maps an SQL DOUBLE to a JS string or number.
+ * Type that maps an SQL DOUBLE to a JS number (default) or string.
  */
-export class DoubleType extends Type<number | string, string> {
+export class DoubleType<Mode extends 'number' | 'string' = 'number'> extends Type<JSTypeByMode<Mode>, string> {
+  constructor(public mode?: Mode) {
+    super();
+  }
+
   /* v8 ignore next */
-  override convertToJSValue(value: string): number | string {
-    if (this.prop?.runtimeType === 'number') {
-      return +value;
+  override convertToJSValue(value: string): JSTypeByMode<Mode> {
+    if ((this.mode ?? this.prop?.runtimeType) === 'number') {
+      return +value as JSTypeByMode<Mode>;
     }
 
-    return String(value);
+    return String(value) as JSTypeByMode<Mode>;
   }
 
   override getColumnType(prop: EntityProperty, platform: Platform): string {
@@ -20,6 +24,8 @@ export class DoubleType extends Type<number | string, string> {
   }
 
   override compareAsType(): string {
-    return this.prop?.runtimeType ?? 'number';
+    return this.mode ?? this.prop?.runtimeType ?? 'number';
   }
 }
+
+type JSTypeByMode<Mode extends 'number' | 'string'> = Mode extends 'number' ? number : string;
