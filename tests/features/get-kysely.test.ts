@@ -753,34 +753,6 @@ describe('InferClassEntityDB', () => {
     await orm.close();
   });
 
-  test('typed aggregates via re-exported kysely helpers', async () => {
-    const orm = await MikroORM.init({
-      entities: [Author, Post],
-      dbName: ':memory:',
-      metadataProvider: ReflectMetadataProvider,
-    });
-
-    await orm.schema.create();
-
-    const author = orm.em.create(Author, { firstName: 'John', email: 'john@example.com' });
-    orm.em.create(Post, { title: 't1', author });
-    orm.em.create(Post, { title: 't2', author });
-    await orm.em.flush();
-
-    const rows = await orm.em
-      .getKysely()
-      .selectFrom('post')
-      .select(['author_id as authorId', kysely.sql<number>`count(*)`.as('postCount')])
-      .where(kysely.sql<kysely.SqlBool>`author_id = ${1}`)
-      .groupBy('author_id')
-      .execute();
-
-    expectTypeOf(rows[0].postCount).toEqualTypeOf<number>();
-    expect(rows).toEqual([{ authorId: 1, postCount: 2 }]);
-
-    await orm.close();
-  });
-
   test('infer decorator entity with tableNamingStrategy: entity', async () => {
     const orm = await MikroORM.init({
       entities: [Author, Post],
@@ -1044,6 +1016,58 @@ describe('InferClassEntityDB', () => {
     expectTypeOf<'hexColors'>().toExtend<ColumnKeysProp>();
     expectTypeOf<'stops'>().toExtend<ColumnKeysProp>();
     expectTypeOf<DBProp['color_template_flat']['hexColors']>().toEqualTypeOf<string[]>();
+  });
+});
+
+describe('kysely namespace', () => {
+  @Entity()
+  class Author {
+    [EntityName]?: 'Author';
+
+    @PrimaryKey()
+    id!: number;
+
+    @Property()
+    name!: string;
+  }
+
+  @Entity()
+  class Book {
+    [EntityName]?: 'Book';
+
+    @PrimaryKey()
+    id!: number;
+
+    @ManyToOne(() => Author)
+    author!: Author;
+  }
+
+  test('typed aggregates via re-exported `kysely` namespace', async () => {
+    const orm = await MikroORM.init({
+      entities: [Author, Book],
+      dbName: ':memory:',
+      metadataProvider: ReflectMetadataProvider,
+    });
+
+    await orm.schema.create();
+
+    const author = orm.em.create(Author, { name: 'John' });
+    orm.em.create(Book, { author });
+    orm.em.create(Book, { author });
+    await orm.em.flush();
+
+    const rows = await orm.em
+      .getKysely()
+      .selectFrom('book')
+      .select(['author_id as authorId', kysely.sql<number>`count(*)`.as('bookCount')])
+      .where(kysely.sql<kysely.SqlBool>`author_id = ${author.id}`)
+      .groupBy('author_id')
+      .execute();
+
+    expectTypeOf(rows[0].bookCount).toEqualTypeOf<number>();
+    expect(rows).toEqual([{ authorId: 1, bookCount: 2 }]);
+
+    await orm.close();
   });
 });
 

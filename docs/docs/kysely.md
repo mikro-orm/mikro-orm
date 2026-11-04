@@ -29,7 +29,9 @@ const kysely = orm.em.getKysely({
 
 These options are described in detail in the [Plugin Options](#plugin-options) section below.
 
-Kysely's own helpers like `sql` or `SqlBool` are available via the `kysely` namespace re-exported from the driver package, so you don't need a direct `kysely` dependency kept in sync with the version MikroORM uses. Note that the top-level `sql` export is MikroORM's raw fragment helper, not Kysely's `sql`:
+## Kysely Helpers
+
+Kysely's own helpers like `sql` or `SqlBool` are available via the `kysely` namespace re-exported from the driver package, so you don't need a direct `kysely` dependency kept in sync with the version MikroORM uses. The top-level `sql` export is MikroORM's raw fragment helper, not Kysely's `sql`.
 
 ```ts
 import { kysely } from '@mikro-orm/postgresql';
