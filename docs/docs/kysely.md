@@ -12,13 +12,13 @@ This allows you to write lower-level SQL queries while maintaining type safety a
 You can get a Kysely instance through the `em.getKysely()` method:
 
 ```ts
-const kysely = orm.em.getKysely();
+const db = orm.em.getKysely();
 ```
 
 By default, this gives you a raw Kysely instance without the MikroORM plugin. To enable MikroORM-aware features like entity/property name mapping, hook processing, and value conversion, pass a configuration object:
 
 ```ts
-const kysely = orm.em.getKysely({
+const db = orm.em.getKysely({
   tableNamingStrategy: 'entity',
   columnNamingStrategy: 'property',
   processOnCreateHooks: true,
@@ -29,16 +29,32 @@ const kysely = orm.em.getKysely({
 
 These options are described in detail in the [Plugin Options](#plugin-options) section below.
 
+## Kysely Helpers
+
+Kysely's own helpers like `sql` or `SqlBool` are available via the `kysely` namespace re-exported from the driver package, so you don't need a direct `kysely` dependency kept in sync with the version MikroORM uses. The top-level `sql` export is MikroORM's raw fragment helper, not Kysely's `sql`.
+
+```ts
+import { kysely } from '@mikro-orm/postgresql';
+
+const rows = await orm.em
+  .getKysely()
+  .selectFrom('book')
+  .select(['author_id as authorId', kysely.sql<number>`count(*)::int`.as('bookCount')])
+  .where(kysely.sql<kysely.SqlBool>`author_id = any(${authorIds})`)
+  .groupBy('author_id')
+  .execute();
+```
+
 ## Transaction Context
 
 `getKysely()` automatically uses the EntityManager's current transaction context. When called inside `em.transactional(...)` (or after `em.begin()`), the returned Kysely instance is bound to the active transaction, so any query executed via Kysely's own `.execute()` / `.executeTakeFirst*()` participates in that transaction and will be rolled back together with it.
 
 ```ts
 await orm.em.transactional(async em => {
-  const kysely = em.getKysely({ tableNamingStrategy: 'entity', convertValues: true });
+  const db = em.getKysely({ tableNamingStrategy: 'entity', convertValues: true });
 
   // runs inside the transaction
-  await kysely.insertInto('Doc').values({ title: 't', content: 'hello' }).execute();
+  await db.insertInto('Doc').values({ title: 't', content: 'hello' }).execute();
 
   throw new Error('boom'); // rolls back the insert above
 });
@@ -79,12 +95,12 @@ class UserProfile {
 
 }
 
-const kysely = orm.em.getKysely({
+const db = orm.em.getKysely({
   tableNamingStrategy: 'entity',
   columnNamingStrategy: 'property',
 });
 
-const users = await kysely
+const users = await db
   .selectFrom('UserProfile') // entity name, not table name
   .select(['firstName', 'lastName']) // property names, not column names
   .where('firstName', '=', 'John')
@@ -122,10 +138,10 @@ const orm = new MikroORM({
 });
 
 // getKysely() automatically infers table structure
-const kysely = orm.em.getKysely();
+const db = orm.em.getKysely();
 
 // Fully type-safe: TypeScript auto-completes 'users' table and its columns
-const result = await kysely
+const result = await db
   .selectFrom('users')
   .selectAll()
   .where('email', 'is not', null)
@@ -163,12 +179,12 @@ const orm = await MikroORM.init({
 });
 
 // getKysely() infers the table from the class properties
-const kysely = orm.em.getKysely({
+const db = orm.em.getKysely({
   columnNamingStrategy: 'property',
 });
 
 // TypeScript knows about 'user_profile' table with id, firstName, lastName columns
-const result = await kysely
+const result = await db
   .selectFrom('user_profile')
   .select(['id', 'firstName', 'lastName'])
   .execute();
@@ -200,9 +216,9 @@ interface Database {
 }
 
 // Pass the type to getKysely() for full type safety
-const kysely = orm.em.getKysely<Database>();
+const db = orm.em.getKysely<Database>();
 
-const user = await kysely
+const user = await db
   .selectFrom('user_profile')
   .select(['id', 'first_name'])
   .executeTakeFirst();
@@ -219,7 +235,7 @@ interface Database {
   };
 }
 
-const kysely = orm.em.getKysely<Database>({
+const db = orm.em.getKysely<Database>({
   columnNamingStrategy: 'property',
 });
 ```
@@ -248,10 +264,10 @@ interface Database {
   view_stats: ViewStatsTable;
 }
 
-const kysely = orm.em.getKysely<Database>(pluginOptions);
+const db = orm.em.getKysely<Database>(pluginOptions);
 
-const user = await kysely.selectFrom('User').selectAll().executeTakeFirst();
-const stats = await kysely.selectFrom('view_stats').selectAll().executeTakeFirst();
+const user = await db.selectFrom('User').selectAll().executeTakeFirst();
+const stats = await db.selectFrom('view_stats').selectAll().executeTakeFirst();
 ```
 
 ### Generating Entity Exports with the CLI
@@ -388,10 +404,10 @@ Controls how you reference tables in Kysely queries.
 // Assuming entity name is 'User' and database table name is 'users'
 
 // Default (tableNamingStrategy: 'table')
-await kysely.selectFrom('users').selectAll().execute();
+await db.selectFrom('users').selectAll().execute();
 
 // Using entity name strategy (tableNamingStrategy: 'entity')
-await kysely.selectFrom('User').selectAll().execute();
+await db.selectFrom('User').selectAll().execute();
 // Generated SQL: select * from "users"
 ```
 
@@ -403,9 +419,9 @@ Controls how you reference columns in Kysely queries and how results are mapped.
 - `'property'`: Use the entity property name (e.g., `firstName`). The plugin converts property names to column names when generating SQL, and maps column names back to property names in returned results.
 
 ```ts
-const kysely = orm.em.getKysely({ columnNamingStrategy: 'property' });
+const db = orm.em.getKysely({ columnNamingStrategy: 'property' });
 
-const users = await kysely
+const users = await db
   .selectFrom('user')
   .select(['firstName', 'lastName']) // property names
   .where('firstName', '=', 'John')
@@ -428,10 +444,10 @@ When enabled, `INSERT` queries automatically process `onCreate` hooks defined on
 // @Property({ onCreate: () => new Date() })
 // createdAt!: Date;
 
-const kysely = orm.em.getKysely({ processOnCreateHooks: true });
+const db = orm.em.getKysely({ processOnCreateHooks: true });
 
 // Insert without createdAt — it gets added automatically
-await kysely.insertInto('user').values({ name: 'John' }).execute();
+await db.insertInto('user').values({ name: 'John' }).execute();
 
 // Generated SQL automatically includes created_at
 // insert into "user" ("name", "created_at") values (?, ?)
@@ -448,9 +464,9 @@ When enabled, `UPDATE` queries automatically process `onUpdate` hooks defined on
 // @Property({ onUpdate: () => new Date() })
 // updatedAt!: Date;
 
-const kysely = orm.em.getKysely({ processOnUpdateHooks: true });
+const db = orm.em.getKysely({ processOnUpdateHooks: true });
 
-await kysely
+await db
   .updateTable('user')
   .set({ name: 'Johnny' })
   .where('id', '=', 1)
@@ -470,10 +486,10 @@ When enabled, the plugin uses MikroORM's type system to convert query parameters
 - **Output conversion**: Converts raw values returned from the database back to JavaScript objects or custom types.
 
 ```ts
-const kysely = orm.em.getKysely({ convertValues: true });
+const db = orm.em.getKysely({ convertValues: true });
 
 // 1. Input conversion: Date objects are automatically handled
-await kysely
+await db
   .insertInto('user')
   .values({
     name: 'John',
@@ -482,7 +498,7 @@ await kysely
   .execute();
 
 // 2. Output conversion: automatically converted back to Date objects when reading
-const user = await kysely
+const user = await db
   .selectFrom('user')
   .selectAll()
   .executeTakeFirst();

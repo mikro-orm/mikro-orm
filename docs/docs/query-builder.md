@@ -912,9 +912,9 @@ console.log(qb.getQuery());
 MikroORM builds SQL queries natively and executes them via [Kysely](https://kysely.dev/). You can access the configured Kysely instance via `em.getKysely()` method and use it to run your own queries:
 
 ```ts
-const kysely = em.getKysely();
+const db = em.getKysely();
 
-const results = await kysely
+const results = await db
   .selectFrom('author')
   .selectAll()
   .where('id', '>', 100)
@@ -929,8 +929,8 @@ You can also use Kysely query builders as raw fragments in MikroORM queries via 
 ```ts
 import { raw } from '@mikro-orm/postgresql'; // or your driver package
 
-const kysely = em.getKysely();
-const kyselyQuery = kysely.selectFrom('author').select('id').where('active', '=', true);
+const db = em.getKysely();
+const kyselyQuery = db.selectFrom('author').select('id').where('active', '=', true);
 
 const books = await em.find(Book, {
   author: { $in: raw(kyselyQuery) },
