@@ -804,3 +804,47 @@ test('TPT subclass redeclaring an M:N with fixedOrder keeps its own ordered pivo
   expect(loaded.labels.getIdentifiers()).toEqual([3, 1, 2]);
   await orm2.close(true);
 });
+
+@Entity({ inheritance: 'tpt' })
+class Tag16 {
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToMany(() => Post16, post => post.tags)
+  posts = new Collection<Post16>(this);
+}
+
+@Entity()
+class SpecialTag16 extends Tag16 {
+  @ManyToMany(() => Note16, note => note.tags)
+  notes = new Collection<Note16>(this);
+}
+
+@Entity()
+class Post16 {
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToMany(() => Tag16, tag => tag.posts, { owner: true })
+  tags = new Collection<Tag16>(this);
+}
+
+@Entity()
+class Note16 {
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToMany(() => SpecialTag16, tag => tag.notes, { owner: true })
+  tags = new Collection<SpecialTag16>(this);
+}
+
+test('inverse M:N declared on a TPT subclass keeps its pivot table when another owner of the root uses the same name', async () => {
+  const orm2 = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
+    dbName: ':memory:',
+    entities: [Tag16, SpecialTag16, Post16, Note16],
+  });
+  const notes = orm2.getMetadata().get(SpecialTag16).properties.notes;
+  expect(notes.pivotTable).toBe('note16_tags');
+  await orm2.close(true);
+});

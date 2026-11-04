@@ -925,16 +925,17 @@ export class MetadataDiscovery {
             m,
             ...(m.tptChildren ?? []).flatMap(withTPTDescendants),
           ];
-          const inverseCandidates = (
-            QueryHelper.isUnionTargetPolymorphic(prop) ? prop.polymorphTargets! : [prop.targetMeta!]
-          ).flatMap(withTPTDescendants);
+          const targets = QueryHelper.isUnionTargetPolymorphic(prop) ? prop.polymorphTargets! : [prop.targetMeta!];
+          const inverseCandidates = targets.flatMap(withTPTDescendants);
 
           for (const targetMeta of inverseCandidates) {
             for (const inverseProp of Object.values(targetMeta.properties)) {
               if (
                 inverseProp.kind === ReferenceKind.MANY_TO_MANY &&
                 inverseProp.mappedBy === prop.name &&
-                !inverseProp.pivotEntity
+                !inverseProp.pivotEntity &&
+                // a descendant can declare its own inverse of another owner's same-named M:N
+                targets.some(target => target.properties[inverseProp.name]?.mappedBy === prop.name)
               ) {
                 inverseProp.pivotEntity = pivotMeta.class;
                 inverseProp.pivotTable = pivotMeta.tableName;
