@@ -1,4 +1,4 @@
-import { type Configuration, type MigrationsOptions, type Transaction, Utils } from '@mikro-orm/core';
+import { type Configuration, type MigrationsOptions, type Transaction, Utils, ValidationError } from '@mikro-orm/core';
 import type { AbstractSqlConnection, AbstractSqlDriver, SchemaHelper } from '@mikro-orm/sql';
 import type { Migration } from './Migration.js';
 
@@ -52,7 +52,7 @@ export class MigrationRunner {
             const added = (await this.countForeignKeyViolations(tx)) - violations;
 
             if (added > 0) {
-              throw new Error(
+              throw new ValidationError(
                 `Migration ${migration.name ?? migration.constructor.name} left ${added} rows that violate foreign keys`,
               );
             }
