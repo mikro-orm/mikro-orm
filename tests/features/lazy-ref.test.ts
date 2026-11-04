@@ -6,6 +6,7 @@ import {
   ScalarReference,
   unref,
   type LazyRef,
+  type ExpandProperty,
   type InferEntity,
   type Loaded,
   type Ref,
@@ -386,5 +387,45 @@ describe('LazyRef with EntitySchema', () => {
     // @ts-expect-error non-PK access on an unloaded LazyRef must be a compile error
     const _name: string = book.author.name;
     expect(id).toBe(authorId);
+  });
+});
+
+@Entity()
+class ScoreSheet {
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ type: 'json' })
+  scores!: Record<string, number>;
+}
+
+// `LazyRef.Brand` only has an optional key, so a type without named properties extends it too
+describe('record properties are not treated as LazyRef', () => {
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [ScoreSheet],
+      dbName: ':memory:',
+    });
+    await orm.schema.refresh();
+    orm.em.create(ScoreSheet, { scores: { alice: 3 } });
+    await orm.em.flush();
+    orm.em.clear();
+  });
+
+  afterAll(() => orm.close(true));
+
+  test('a record property selected with `fields` keeps its value type', async () => {
+    const [sheet] = await orm.em.find(ScoreSheet, {}, { fields: ['scores'] });
+    expectTypeOf(sheet.scores.alice).toEqualTypeOf<number>();
+    expect(sheet.scores.alice).toBe(3);
+  });
+
+  test('ExpandProperty keeps record types and still unwraps LazyRef', () => {
+    expectTypeOf<ExpandProperty<Record<string, number>>>().toEqualTypeOf<Record<string, number>>();
+    expectTypeOf<ExpandProperty<LazyRef<Author>>>().toEqualTypeOf<Author>();
+    expectTypeOf<ExpandProperty<LazyRef<any>>>().toBeAny();
   });
 });
