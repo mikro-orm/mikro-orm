@@ -1053,13 +1053,17 @@ export class MetadataDiscovery {
       pivotMeta2.compositePK = true;
     }
 
+    // STI entities share one table, so any m:n within the hierarchy is self-referencing, named after the root
+    const stiRoot = meta.root.inheritanceType === 'sti' ? meta.root : undefined;
+    const baseMeta = stiRoot ?? meta;
+
     // handle self-referenced m:n with same default field names
     if (
-      meta.className === targetType &&
+      (meta.className === targetType || stiRoot === targetMeta.root) &&
       prop.joinColumns.every((joinColumn, idx) => joinColumn === prop.inverseJoinColumns[idx])
     ) {
       // use tableName only when explicitly provided by user, otherwise use className for backwards compatibility
-      const baseName = this.isExplicitTableName(meta) ? meta.tableName : meta.className;
+      const baseName = this.isExplicitTableName(baseMeta) ? baseMeta.tableName : baseMeta.className;
       prop.joinColumns = prop.referencedColumnNames.map(name =>
         this.#namingStrategy.joinKeyColumnName(baseName + '_1', name, meta.compositePK),
       );
@@ -1073,12 +1077,19 @@ export class MetadataDiscovery {
         prop2.joinColumns = prop.inverseJoinColumns;
       }
 
-      // propagate updated joinColumns to all child entities that inherit this property (STI)
-      for (const childMeta of this.#discovered.filter(m => m.root === meta && m !== meta)) {
+      // propagate updated joinColumns to all entities of the hierarchy that inherit this property or its inverse (STI)
+      for (const childMeta of this.#discovered.filter(m => m.root === baseMeta)) {
         const childProp = childMeta.properties[prop.name];
         if (childProp) {
           childProp.joinColumns = prop.joinColumns;
           childProp.inverseJoinColumns = prop.inverseJoinColumns;
+        }
+
+        const childProp2 = prop.inversedBy ? childMeta.properties[prop.inversedBy] : undefined;
+
+        if (childProp2) {
+          childProp2.inverseJoinColumns = prop.joinColumns;
+          childProp2.joinColumns = prop.inverseJoinColumns;
         }
       }
     }
