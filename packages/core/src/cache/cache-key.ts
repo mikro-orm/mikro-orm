@@ -28,7 +28,7 @@ function replacer(this: Dictionary, key: string, value: unknown): unknown {
   return value;
 }
 
-/** Serializes a computed result cache key, telling apart all values a query can contain. */
+/** Serializes a result cache or dataloader batch key, telling apart all values a query can contain. */
 export function stringifyCacheKey(key: unknown): string {
   return JSON.stringify(key, replacer);
 }
