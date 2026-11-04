@@ -642,9 +642,65 @@ export class MetadataDiscovery {
     return meta2.primaryKeys.map(() => this.#namingStrategy.propertyToColumnName(name));
   }
 
+  /**
+   * Walks up the TPT hierarchy to the entity whose M:N declaration this property inherits. A child redeclaring
+   * the property with a different target, pivot table, join columns or fixed order keeps its own pivot table.
+   */
+  private getPivotDeclaringMeta(meta: EntityMetadata, prop: EntityProperty): EntityMetadata {
+    const keys = [
+      'type',
+      'pivotTable',
+      'pivotEntity',
+      'joinColumns',
+      'inverseJoinColumns',
+      'fixedOrder',
+      'fixedOrderColumn',
+    ] as const;
+
+    // Rails-style polymorphic owners already share an explicit pivot table, each under its own discriminator value
+    if (prop.polymorphic && !QueryHelper.isUnionTargetPolymorphic(prop)) {
+      return meta;
+    }
+
+    while (meta.tptParent) {
+      const parentProp = meta.tptParent.properties[prop.name];
+
+      if (parentProp?.kind !== ReferenceKind.MANY_TO_MANY) {
+        break;
+      }
+
+      // resolve the parent first so explicit options are compared against its final mapping regardless of discovery order
+      this.initManyToManyFields(meta.tptParent, parentProp);
+
+      if (keys.some(key => prop[key] != null && !Utils.equals(prop[key], parentProp[key]))) {
+        break;
+      }
+
+      meta = meta.tptParent;
+    }
+
+    return meta;
+  }
+
   private initManyToManyFields(meta: EntityMetadata, prop: EntityProperty): void {
     const meta2 = prop.targetMeta!;
+    // inverse sides derive their mapping from the owner via `mappedBy`
+    const declaringMeta = prop.mappedBy ? meta : this.getPivotDeclaringMeta(meta, prop);
+
+    if (declaringMeta !== meta) {
+      const prop2 = declaringMeta.properties[prop.name];
+      prop.pivotTable = prop2.pivotTable;
+      prop.pivotEntity = prop2.pivotEntity;
+      prop.fixedOrder = prop2.fixedOrder;
+      prop.fixedOrderColumn = prop2.fixedOrderColumn;
+      prop.joinColumns = prop2.joinColumns;
+      prop.inverseJoinColumns = prop2.inverseJoinColumns;
+      prop.referencedColumnNames = prop2.referencedColumnNames;
+      return;
+    }
+
     Utils.defaultValue(prop, 'fixedOrder', !!prop.fixedOrderColumn);
+
     const pivotMeta = this.#metadata.find(prop.pivotEntity);
     const props = Object.values(pivotMeta?.properties ?? {});
     const pks = props.filter(p => p.primary);
@@ -694,6 +750,10 @@ export class MetadataDiscovery {
 
     // Union-target polymorphic M:N: owner side is fixed (real FK), target side uses discriminator-derived names.
     const isUnionTargetMN = QueryHelper.isUnionTargetPolymorphic(prop);
+    // both sides of a TPT hierarchy would collide on the root name, so name them after the entities themselves
+    const sameTPTRoot = meta.inheritanceType === 'tpt' && meta.root.class === meta2.root.class;
+    const ownerName = sameTPTRoot ? meta.className : meta.root.className;
+    const targetName = sameTPTRoot ? meta2.className : meta2.root.className;
 
     if (prop.polymorphic && prop.discriminator && !isUnionTargetMN) {
       // Rails-style: owner side is polymorphic, uses discriminator base name (e.g. taggable_id instead of post_id)
@@ -706,7 +766,7 @@ export class MetadataDiscovery {
       );
     } else {
       prop.joinColumns ??= prop.referencedColumnNames.map(referencedColumnName =>
-        this.#namingStrategy.joinKeyColumnName(meta.root.className, referencedColumnName, meta.compositePK),
+        this.#namingStrategy.joinKeyColumnName(ownerName, referencedColumnName, meta.compositePK),
       );
     }
 
@@ -717,7 +777,7 @@ export class MetadataDiscovery {
         this.#namingStrategy.joinKeyColumnName(prop.discriminator!, fieldName, targetPkCols.length > 1),
       );
     } else {
-      prop.inverseJoinColumns ??= this.initManyToOneFieldName(prop, meta2.root.className);
+      prop.inverseJoinColumns ??= this.initManyToOneFieldName(prop, targetName);
     }
   }
 
@@ -838,8 +898,13 @@ export class MetadataDiscovery {
       return Object.values(meta.properties)
         .filter(prop => prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner && prop.pivotTable)
         .map(prop => {
-          const pivotMeta = this.definePivotTableEntity(meta, prop);
+          // an inherited M:N lives in the pivot table of the declaring TPT entity, whose table the pivot FK references
+          const declaringMeta = this.getPivotDeclaringMeta(meta, prop);
+          const ownerProp = declaringMeta.properties[prop.name];
+          const pivotMeta = this.definePivotTableEntity(declaringMeta, ownerProp);
           prop.pivotEntity = pivotMeta.class;
+          prop.inversedBy ??= ownerProp.inversedBy;
+          prop.fixedOrderColumn = ownerProp.fixedOrderColumn;
 
           if (prop.inversedBy) {
             prop.targetMeta!.properties[prop.inversedBy].pivotEntity = pivotMeta.class;
@@ -855,16 +920,24 @@ export class MetadataDiscovery {
           //   - regular inverse (Tag.posts mappedBy Post.tags) — handled by inversedBy above
           //   - union-target inverse (Image.posts mappedBy Post.attachments) — on each polymorph target
           //   - merged inverse (Tag.owners mappedBy [Post,Video].tags) — union collection on the target
-          const inverseCandidates = QueryHelper.isUnionTargetPolymorphic(prop)
-            ? prop.polymorphTargets!
-            : [prop.targetMeta!];
+          // inherited inverse copies on TPT descendants of the target need the pivot as well
+          const withTPTDescendants = (m: EntityMetadata): EntityMetadata[] => [
+            m,
+            ...(m.tptChildren ?? []).flatMap(withTPTDescendants),
+          ];
+          const targets = QueryHelper.isUnionTargetPolymorphic(prop) ? prop.polymorphTargets! : [prop.targetMeta!];
+          const inverseCandidates = targets.flatMap(withTPTDescendants);
 
           for (const targetMeta of inverseCandidates) {
             for (const inverseProp of Object.values(targetMeta.properties)) {
               if (
                 inverseProp.kind === ReferenceKind.MANY_TO_MANY &&
                 inverseProp.mappedBy === prop.name &&
-                !inverseProp.pivotEntity
+                !inverseProp.pivotEntity &&
+                // a descendant can declare its own inverse of another owner's same-named M:N
+                targets.some(target => target.properties[inverseProp.name]?.mappedBy === prop.name) &&
+                // the target itself can carry an inherited inverse of a parent M:N it redeclares
+                (inverseProp.targetMeta?.properties[prop.name]?.pivotTable ?? prop.pivotTable) === prop.pivotTable
               ) {
                 inverseProp.pivotEntity = pivotMeta.class;
                 inverseProp.pivotTable = pivotMeta.tableName;
@@ -1077,17 +1150,25 @@ export class MetadataDiscovery {
         prop2.joinColumns = prop.inverseJoinColumns;
       }
 
-      // propagate updated joinColumns to all entities of the hierarchy that inherit this property or its inverse (STI)
-      for (const childMeta of this.#discovered.filter(m => m.root === baseMeta)) {
+      // propagate updated joinColumns to all entities that inherit this property or its inverse (STI, or TPT sharing the pivot)
+      const inherits = (m: EntityMetadata) =>
+        m.root === baseMeta || (m.inheritanceType === 'tpt' && m.root === meta.root);
+
+      // includes `meta` itself: an STI root carries the inverse copy of an M:N declared on a child
+      for (const childMeta of this.#discovered.filter(inherits)) {
         const childProp = childMeta.properties[prop.name];
-        if (childProp) {
+        // a TPT subclass redeclaring its own pivot table keeps its own columns
+        const sharesPivot = childMeta.inheritanceType !== 'tpt' || childProp?.pivotTable === prop.pivotTable;
+
+        if (childProp && sharesPivot) {
           childProp.joinColumns = prop.joinColumns;
           childProp.inverseJoinColumns = prop.inverseJoinColumns;
         }
 
         const childProp2 = prop.inversedBy ? childMeta.properties[prop.inversedBy] : undefined;
 
-        if (childProp2) {
+        // the inherited inverse can stay on this pivot even when the child redeclares the owner side
+        if (childProp2 && (childMeta.inheritanceType !== 'tpt' || childProp2.pivotTable === prop.pivotTable)) {
           childProp2.inverseJoinColumns = prop.joinColumns;
           childProp2.joinColumns = prop.inverseJoinColumns;
         }
