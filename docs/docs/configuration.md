@@ -177,12 +177,12 @@ For SQL drivers, you can also use `driverOptions` to pass an existing Kysely ins
 
 ```ts
 // Reusing an existing Kysely instance
-const kysely = orm.em.getKysely();
+const db = orm.em.getKysely();
 
 MikroORM.init({
-  driverOptions: kysely,
+  driverOptions: db,
   // or as a function
-  driverOptions: () => kysely,
+  driverOptions: () => db,
 });
 
 // Using a custom Kysely dialect
