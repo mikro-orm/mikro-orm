@@ -12,6 +12,7 @@ import {
   InferKyselyDB,
   InferKyselyTable,
   MikroKyselyPluginOptions,
+  kysely,
 } from '@mikro-orm/sqlite';
 import {
   Entity,
@@ -748,6 +749,34 @@ describe('InferClassEntityDB', () => {
     const authors = await kysely.selectFrom('author').select(['id', 'firstName', 'email']).execute();
 
     expect(authors).toEqual([{ id: 1, firstName: 'John', email: 'john@example.com' }]);
+
+    await orm.close();
+  });
+
+  test('typed aggregates via re-exported kysely helpers', async () => {
+    const orm = await MikroORM.init({
+      entities: [Author, Post],
+      dbName: ':memory:',
+      metadataProvider: ReflectMetadataProvider,
+    });
+
+    await orm.schema.create();
+
+    const author = orm.em.create(Author, { firstName: 'John', email: 'john@example.com' });
+    orm.em.create(Post, { title: 't1', author });
+    orm.em.create(Post, { title: 't2', author });
+    await orm.em.flush();
+
+    const rows = await orm.em
+      .getKysely()
+      .selectFrom('post')
+      .select(['author_id as authorId', kysely.sql<number>`count(*)`.as('postCount')])
+      .where(kysely.sql<kysely.SqlBool>`author_id = ${1}`)
+      .groupBy('author_id')
+      .execute();
+
+    expectTypeOf(rows[0].postCount).toEqualTypeOf<number>();
+    expect(rows).toEqual([{ authorId: 1, postCount: 2 }]);
 
     await orm.close();
   });

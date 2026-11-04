@@ -29,6 +29,20 @@ const kysely = orm.em.getKysely({
 
 These options are described in detail in the [Plugin Options](#plugin-options) section below.
 
+Kysely's own helpers like `sql` or `SqlBool` are available via the `kysely` namespace re-exported from the driver package, so you don't need a direct `kysely` dependency kept in sync with the version MikroORM uses. Note that the top-level `sql` export is MikroORM's raw fragment helper, not Kysely's `sql`:
+
+```ts
+import { kysely } from '@mikro-orm/postgresql';
+
+const rows = await orm.em
+  .getKysely()
+  .selectFrom('book')
+  .select(['author_id as authorId', kysely.sql<number>`count(*)::int`.as('bookCount')])
+  .where(kysely.sql<kysely.SqlBool>`author_id = any(${authorIds})`)
+  .groupBy('author_id')
+  .execute();
+```
+
 ## Transaction Context
 
 `getKysely()` automatically uses the EntityManager's current transaction context. When called inside `em.transactional(...)` (or after `em.begin()`), the returned Kysely instance is bound to the active transaction, so any query executed via Kysely's own `.execute()` / `.executeTakeFirst*()` participates in that transaction and will be rolled back together with it.

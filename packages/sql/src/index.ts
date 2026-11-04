@@ -3,6 +3,7 @@
  * @module sql
  */
 export { Kysely } from 'kysely';
+export * as kysely from 'kysely';
 export * from '@mikro-orm/core';
 export * from './AbstractSqlConnection.js';
 export * from './AbstractSqlDriver.js';
