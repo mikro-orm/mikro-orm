@@ -299,6 +299,8 @@ describe('MikroORM', () => {
     process.env.MIKRO_ORM_DB_NAME = ':memory:';
     process.env.MIKRO_ORM_MIGRATIONS_PATH = './dist/migrations';
     process.env.MIKRO_ORM_MIGRATIONS_GLOB = '*.js';
+    process.env.MIKRO_ORM_MIGRATIONS_LOCK = 'true';
+    process.env.MIKRO_ORM_MIGRATIONS_LOCK_TIMEOUT = '60000';
     process.env.MIKRO_ORM_POPULATE_AFTER_FLUSH = 'true';
     process.env.MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR = 'true';
     process.env.MIKRO_ORM_FORCE_UNDEFINED = 'true';
@@ -325,7 +327,7 @@ describe('MikroORM', () => {
       forceEntityConstructor: true,
       forceUndefined: true,
       discovery: {},
-      migrations: { path: './dist/migrations', glob: '*.js' },
+      migrations: { path: './dist/migrations', glob: '*.js', lock: true, lockTimeout: 60_000 },
     });
     expect([...orm.getMetadata().getAll().keys()].map(k => k.name).sort()).toEqual([
       'Author4',

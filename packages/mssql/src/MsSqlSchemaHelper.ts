@@ -46,6 +46,16 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return 'master';
   }
 
+  override getMigrationLockSQL(): { acquire: string; release: string } {
+    // app locks are scoped to the current database; a zero timeout keeps the call clear of the request timeout
+    return {
+      acquire:
+        `declare @result int; exec @result = sp_getapplock @Resource = ?, @LockMode = 'Exclusive', @LockOwner = 'Session', @LockTimeout = 0; ` +
+        `select case when @result >= 0 then 1 else 0 end as locked`,
+      release: `exec sp_releaseapplock @Resource = ?, @LockOwner = 'Session'`,
+    };
+  }
+
   override getDropDatabaseSQL(name: string): string {
     // `set offline` rejects all connections including the issuing session, so there is no
     // single-user race window where a torn-down pool connection can reconnect between the
