@@ -2597,17 +2597,19 @@ export class QueryBuilder<
     const conn = this.getConnection();
     // outside a transaction, wrap in a short implicit one so RLS `set local` session context applies (no-op when unset)
     const sessionContext = this.context ? undefined : this.em?.getTransactionSessionContext();
+    let res: EntityData<AnyEntity>[];
+
     // a QueryBuilder used directly must honour the same `convertException` contract as the driver methods
-    const res = await (
-      sessionContext
+    try {
+      res = await (sessionContext
         ? conn.transactional(trx => conn.execute(query.sql, query.params, method, trx, loggerContext), {
             sessionContext,
             loggerContext,
           })
-        : conn.execute(query.sql, query.params, method, this.context, loggerContext)
-    ).catch(e => {
-      throw this.driver.convertException(e);
-    });
+        : conn.execute(query.sql, query.params, method, this.context, loggerContext));
+    } catch (e) {
+      throw this.driver.convertException(e as Error);
+    }
     const meta = this.mainAlias.meta;
 
     if (!options.mapResults || !meta) {
