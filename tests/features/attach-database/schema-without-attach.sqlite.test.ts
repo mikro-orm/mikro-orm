@@ -1,4 +1,4 @@
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
@@ -48,6 +48,7 @@ test('main and wildcard schemas are accepted without attachDatabases', async () 
 
 test('schema matching an attached database name is accepted', async () => {
   const dir = join(TEMP_DIR, 'schema-without-attach');
+  rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
   const orm = await MikroORM.init({
     entities: [Invoice],
