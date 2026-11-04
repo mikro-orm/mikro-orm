@@ -1137,6 +1137,12 @@ export class MetadataDiscovery {
         if (childProp && (childMeta.inheritanceType !== 'tpt' || childProp.pivotTable === prop.pivotTable)) {
           childProp.joinColumns = prop.joinColumns;
           childProp.inverseJoinColumns = prop.inverseJoinColumns;
+          const childProp2 = prop.inversedBy ? childMeta.properties[prop.inversedBy] : undefined;
+
+          if (childProp2) {
+            childProp2.joinColumns = prop.inverseJoinColumns;
+            childProp2.inverseJoinColumns = prop.joinColumns;
+          }
         }
       }
     }

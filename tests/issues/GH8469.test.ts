@@ -670,3 +670,42 @@ test('inherited M:N keeps the inverse side declared against the TPT subclass', a
   expect(loaded.members.getIdentifiers()).toEqual([member.id]);
   await orm2.close(true);
 });
+
+@Entity({ inheritance: 'tpt', tableName: 'party13' })
+abstract class Party13 {
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToMany(() => Party13, p => p.friendOf, { owner: true })
+  friends = new Collection<Party13>(this);
+
+  @ManyToMany(() => Party13, p => p.friends)
+  friendOf = new Collection<Party13>(this);
+}
+
+@Entity({ tableName: 'user13' })
+class User13 extends Party13 {}
+
+test.each([
+  [Party13, User13],
+  [User13, Party13],
+])(
+  'inverse side of a bidirectional self-referencing M:N on the TPT root is inherited with its columns',
+  async (...entities) => {
+    const orm2 = await MikroORM.init({ metadataProvider: ReflectMetadataProvider, dbName: ':memory:', entities });
+    await orm2.schema.create();
+    expect(orm2.getMetadata().get(User13).properties.friendOf.joinColumns).toEqual(['party13_2_id']);
+
+    const em = orm2.em.fork();
+    const user = em.create(User13, {});
+    const friend = em.create(User13, {});
+    user.friends.add(friend);
+    await em.flush();
+    em.clear();
+
+    const f = await em.findOneOrFail(User13, friend.id, { populate: ['friendOf'], strategy: 'joined' });
+    expect(f.friendOf.getIdentifiers()).toEqual([user.id]);
+
+    await orm2.close(true);
+  },
+);
