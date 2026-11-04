@@ -488,6 +488,11 @@ export abstract class Platform {
     return 'text';
   }
 
+  /** Whether array columns support the `&&` (overlap) operator. */
+  supportsArrayOverlap(): boolean {
+    return false;
+  }
+
   /** Serializes a string array into its database storage format. */
   marshallArray(values: string[]): string {
     return values.map(v => (/[,",\\]/.test(v) ? JSON.stringify(v) : v)).join(',');
@@ -761,6 +766,11 @@ export abstract class Platform {
   /** Quotes a literal value for safe embedding in SQL. */
   quoteValue(value: any): string {
     return value;
+  }
+
+  /** Quotes a string default value for DDL; dialects that escape with backslashes override this. */
+  quoteDefaultValue(value: string): string {
+    return `'${value.replaceAll("'", "''")}'`;
   }
 
   /* v8 ignore next */

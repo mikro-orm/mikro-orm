@@ -332,6 +332,11 @@ export abstract class AbstractSqlConnection extends Connection {
     eventBroadcaster?: TransactionEventBroadcaster,
     loggerContext?: LogContext,
   ): Promise<void> {
+    // kysely rolls back on its own when the database answers a commit with a rollback
+    if (ctx.isRolledBack) {
+      return;
+    }
+
     await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionRollback, ctx);
     await this.waitForIdleTransaction(ctx);
 

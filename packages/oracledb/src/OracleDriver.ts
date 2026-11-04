@@ -5,20 +5,17 @@ import {
   type Constructor,
   type Dictionary,
   type EntityDictionary,
-  type EntityKey,
   type EntityName,
   type EntityProperty,
   type FilterQuery,
   type LoggingOptions,
   type NativeInsertUpdateManyOptions,
-  type Primary,
   QueryFlag,
   type QueryResult,
   ReferenceKind,
   type RequiredEntityData,
   type Transaction,
   type UpsertManyOptions,
-  Utils,
 } from '@mikro-orm/core';
 import { AbstractSqlDriver, type SqlEntityManager } from '@mikro-orm/sql';
 import { OracleConnection } from './OracleConnection.js';
@@ -71,7 +68,6 @@ export class OracleDriver extends AbstractSqlDriver<OracleConnection, OraclePlat
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
     const meta = this.metadata.get<T>(entityName);
-    const pks = this.getPrimaryKeyFields(meta) as EntityKey<T>[];
     const collections = options.processCollections ? data.map(d => this.extractManyToMany(meta, d)) : [];
     const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes).withSchema(
       this.getSchemaName(meta, options),
@@ -79,17 +75,7 @@ export class OracleDriver extends AbstractSqlDriver<OracleConnection, OraclePlat
     qb.insert(data as RequiredEntityData<T>[]);
 
     const res = await this.rethrow(qb.execute('run'));
-    let pk: any[];
-
-    if (pks.length > 1) {
-      // owner has composite pk
-      pk = data.map(d => Utils.getOrderedPrimaryKeys(d as Record<string, Primary<T>>, meta));
-    } else {
-      res.row ??= {};
-      res.rows ??= [];
-      pk = data.map((d, i) => d[pks[0]] ?? res.rows![i]?.[pks[0]]).map(d => [d]);
-      res.insertId = res.insertId || res.row![pks[0]];
-    }
+    const pk = this.resolveInsertedPrimaryKeys(meta, data, res);
 
     for (let i = 0; i < collections.length; i++) {
       await this.processManyToMany<T>(meta, pk[i], collections[i], false, options);

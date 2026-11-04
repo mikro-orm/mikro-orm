@@ -39,7 +39,7 @@ test('transactional() rejects when PostgreSQL answers COMMIT with ROLLBACK', asy
   const pool = await orm.em.getConnection().getNativeClient();
 
   await expect(orm.em.fork().transactional(insertDuplicateAndCatch)).rejects.toThrow(
-    'COMMIT was answered with ROLLBACK',
+    'Transaction was rolled back instead of committed',
   );
 
   expect(await orm.em.fork().count(User)).toBe(1);
@@ -52,7 +52,7 @@ test('commit() rejects when PostgreSQL answers COMMIT with ROLLBACK', async () =
   await em.begin();
   await insertDuplicateAndCatch(em);
 
-  await expect(em.commit()).rejects.toThrow('COMMIT was answered with ROLLBACK');
+  await expect(em.commit()).rejects.toThrow('Transaction was rolled back instead of committed');
   await em.rollback();
 
   expect(await orm.em.fork().count(User)).toBe(1);

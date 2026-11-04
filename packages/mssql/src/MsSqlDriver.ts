@@ -12,7 +12,6 @@ import {
   type QueryResult,
   type Transaction,
   Utils,
-  isRaw,
   type Constructor,
   type FilterQuery,
   type UpsertManyOptions,
@@ -60,13 +59,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
       }
 
       const res = await this.execute<QueryResult<T>>(sql, [], 'run', options.ctx);
-      const pks = this.getPrimaryKeyFields(meta);
-
-      if (pks.length === 1) {
-        res.row ??= {};
-        res.rows ??= [];
-        res.insertId = res.insertId || res.row[pks[0]];
-      }
+      this.resolveInsertedPrimaryKeys(meta, data, res);
 
       return res;
     }
@@ -74,12 +67,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     return super.nativeInsertMany(entityName, data, options, sql => {
       if (meta.hasTriggers) {
         // must match the OUTPUT columns of the parent implementation, which resolves STI children to the root
-        const returning = this.getTableProps(meta.inheritanceType === 'tpt' ? meta : meta.root).filter(
-          prop =>
-            prop.returning ||
-            (((prop.persist !== false && prop.defaultRaw) || prop.autoincrement || prop.generated) &&
-              (!(prop.name in data[0]) || isRaw(data[0][prop.name]))),
-        );
+        const returning = this.getInsertReturningProperties(meta.inheritanceType === 'tpt' ? meta : meta.root, data);
         sql = this.appendOutputTable(
           entityName,
           returning.flatMap(p => p.fieldNames),

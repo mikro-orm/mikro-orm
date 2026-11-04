@@ -22,6 +22,7 @@ import {
   parseJsonSafe,
   Utils,
 } from './Utils.js';
+import { DateType } from '../types/DateType.js';
 import { JsonType } from '../types/JsonType.js';
 import { Raw } from './RawQueryFragment.js';
 import { EntityIdentifier } from '../entity/EntityIdentifier.js';
@@ -530,6 +531,15 @@ export class EntityComparator {
           lines.push(`${padding}  if (${defined}) {`);
           context.set('parseDate', (value: string | number) => this.#platform.parseDate(value as string));
           parseDate('ret' + this.wrap(prop.name), this.propName(prop.fieldNames[0]), padding);
+          lines.push(`${padding}    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
+          lines.push(`${padding}  }`);
+        } else if (prop.customType instanceof DateType) {
+          // tedious returns DATE columns as `Date`, map them to the string the entity holds, so the snapshot matches it
+          context.set('convertDateToJSValue', (value: string | Date) => this.#platform.convertDateToJSValue(value));
+          lines.push(`${padding}  if (${defined}) {`);
+          lines.push(
+            `${padding}    ret${this.wrap(prop.name)} = ${this.propName(prop.fieldNames[0])} instanceof Date ? convertDateToJSValue(${this.propName(prop.fieldNames[0])}) : ${this.propName(prop.fieldNames[0])};`,
+          );
           lines.push(`${padding}    ${this.propName(prop.fieldNames[0], 'mapped')} = true;`);
           lines.push(`${padding}  }`);
         } else if (prop.kind === ReferenceKind.EMBEDDED && (prop.object || meta.embeddable)) {
