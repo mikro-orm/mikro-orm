@@ -1,5 +1,5 @@
 import type { MikroORM } from '@mikro-orm/core';
-import { wrap, LoadStrategy, serialize } from '@mikro-orm/core';
+import { wrap, LoadStrategy, raw, serialize } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { Author2, Book2, BookTag2, Publisher2 } from '../../entities-sql/index.js';
 import { initORMPostgreSql, mockLogger } from '../../bootstrap.js';
@@ -276,6 +276,56 @@ describe('result cache (postgres)', () => {
     expect(serialize(res1)).toEqual(serialize(res4));
 
     vi.useRealTimers();
+  });
+
+  async function createAuthors() {
+    const authors = [
+      new Author2('Jon', 'jon@wall.st'),
+      new Author2('Kim', 'kim@wall.st'),
+      new Author2('Kate', 'kate@wall.st'),
+    ];
+    authors.forEach((author, i) => (author.age = 20 + i * 10));
+    await orm.em.persist(authors).flush();
+    orm.em.clear();
+    await orm.config.getResultCacheAdapter().clear();
+  }
+
+  test('result cache keys tell regexp conditions apart', async () => {
+    await createAuthors();
+
+    await orm.em.fork().find(Author2, { name: /^J/ }, { cache: true, orderBy: { name: 'asc' } });
+    const res = await orm.em.fork().find(Author2, { name: /^K/ }, { cache: true, orderBy: { name: 'asc' } });
+    expect(res.map(a => a.name)).toEqual(['Kate', 'Kim']);
+
+    await orm.em.fork().findOne(Author2, { name: /^J/ }, { cache: true });
+    const one = await orm.em.fork().findOne(Author2, { name: /^Kim/ }, { cache: true });
+    expect(one?.name).toBe('Kim');
+
+    await orm.em.fork().count(Author2, { name: /^J/ }, { cache: true });
+    expect(await orm.em.fork().count(Author2, { name: /^K/ }, { cache: true })).toBe(2);
+    expect(await orm.em.fork().count(Author2, { name: /^k/ }, { cache: true })).toBe(0);
+    expect(await orm.em.fork().count(Author2, { name: /^k/i }, { cache: true })).toBe(2);
+  });
+
+  test('result cache keys include the params of raw fragments', async () => {
+    await createAuthors();
+
+    await orm.em.fork().find(Author2, { age: { $gt: raw('? + 0', [25]) } }, { cache: true });
+    const res = await orm.em.fork().find(Author2, { age: { $gt: raw('? + 0', [35]) } }, { cache: true });
+    expect(res.map(a => a.name)).toEqual(['Kate']);
+  });
+
+  test('result cache keys include raw fragments used as keys', async () => {
+    await createAuthors();
+
+    await orm.em.fork().find(Author2, {}, { cache: true });
+    const res = await orm.em.fork().find(Author2, { [raw('lower(name)')]: 'kim' }, { cache: true });
+    expect(res.map(a => a.name)).toEqual(['Kim']);
+
+    const orderBy = (age: number) => ({ [raw('abs(age - ?)', [age])]: 'asc' as const });
+    await orm.em.fork().find(Author2, {}, { cache: true, orderBy: orderBy(30), limit: 1 });
+    const [nearest] = await orm.em.fork().find(Author2, {}, { cache: true, orderBy: orderBy(40), limit: 1 });
+    expect(nearest.name).toBe('Kate');
   });
 
   test('cache key falls back to the entity name when the metadata is unknown', () => {
