@@ -1181,6 +1181,13 @@ const propertyBuilders: PropertyBuilders = {
       IncludeKeysForProperty
     >({ type: new types.decimal(mode) }),
 
+  double: <Mode extends 'number' | 'string' = 'number'>(mode?: Mode) =>
+    new UniversalPropertyOptionsBuilder<
+      InferPropertyValueType<typeof types.double<Mode>>,
+      EmptyOptions,
+      IncludeKeysForProperty
+    >({ type: new types.double(mode) }),
+
   json: <T>() => new UniversalPropertyOptionsBuilder<T, EmptyOptions, IncludeKeysForProperty>({ type: types.json }),
 
   string: () =>
@@ -1264,6 +1271,7 @@ type PropertyBuildersOverrideKeys =
   | 'bigint'
   | 'array'
   | 'decimal'
+  | 'double'
   | 'json'
   | 'string'
   | 'text'
@@ -1298,6 +1306,13 @@ export type PropertyBuilders = {
     mode?: Mode,
   ) => UniversalPropertyOptionsBuilder<
     InferPropertyValueType<typeof types.decimal<Mode>>,
+    EmptyOptions,
+    IncludeKeysForProperty
+  >;
+  double: <Mode extends 'number' | 'string' = 'number'>(
+    mode?: Mode,
+  ) => UniversalPropertyOptionsBuilder<
+    InferPropertyValueType<typeof types.double<Mode>>,
     EmptyOptions,
     IncludeKeysForProperty
   >;
