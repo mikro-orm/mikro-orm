@@ -44,6 +44,7 @@ export class PostgreSqlExceptionConverter extends ExceptionConverter {
         break;
       case '23502':
         return new NotNullConstraintViolationException(exception);
+      case '23001':
       case '23503':
         return new ForeignKeyConstraintViolationException(exception);
       case '23505':
