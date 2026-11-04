@@ -104,6 +104,15 @@ export abstract class SchemaHelper {
     return '';
   }
 
+  /**
+   * Returns the SQL to try taking (without waiting) and to release the session-level lock serializing migration runs,
+   * with `name` bound as the only parameter. The try query returns a truthy `locked` column when the lock was taken.
+   * `undefined` means the driver has no lock primitive and runs are not serialized.
+   */
+  getMigrationLockSQL(): { acquire: string; release: string } | undefined {
+    return undefined;
+  }
+
   /** Returns `undefined` for schemaless drivers, throws for drivers that have schemas but no session switch. */
   resolveMigrationSchema(schema: string | undefined): string | undefined {
     if (!schema) {
