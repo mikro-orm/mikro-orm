@@ -10,7 +10,7 @@ import { Utils } from './utils/Utils.js';
 import { Cursor } from './utils/Cursor.js';
 import { QueryHelper } from './utils/QueryHelper.js';
 import { TransactionContext } from './utils/TransactionContext.js';
-import { isRaw, Raw } from './utils/RawQueryFragment.js';
+import { isRaw, isSubquery, Raw } from './utils/RawQueryFragment.js';
 import { EntityFactory } from './entity/EntityFactory.js';
 import { type AssignOptions, EntityAssigner } from './entity/EntityAssigner.js';
 import { validateEmptyWhere, validateParams, validatePrimaryKey, validateProperty } from './entity/validators.js';
@@ -105,9 +105,13 @@ import type { CacheAdapter } from './cache/CacheAdapter.js';
 import { applyPopulateHints, getLoadingStrategy } from './entity/utils.js';
 import { TransactionManager } from './utils/TransactionManager.js';
 
-// JSON loses RegExp patterns, `raw()` params and `raw()` keys (symbols); `this[key]` is the value before `toJSON()`
+// JSON loses RegExp patterns, `raw()` params and `raw()` keys (symbols), and throws on bigints and sub-queries; `this[key]` is the value before `toJSON()`
 function cacheKeyReplacer(this: Dictionary, key: string, value: unknown): unknown {
-  const original = this[key];
+  const original = isSubquery(this[key]) ? (this[key] as unknown as { toRaw(): Raw }).toRaw() : this[key];
+
+  if (typeof original === 'bigint') {
+    return { bigint: original.toString() };
+  }
 
   if (original instanceof RegExp) {
     return { regexp: original.source, flags: original.flags };
