@@ -1719,6 +1719,25 @@ describe.each(['sqlite', 'libsql', 'node-sqlite', 'sql-js'] as const)('EntityMan
     await expect(driver.execute('select uuid from author4')).rejects.toThrow(InvalidFieldNameException);
   });
 
+  test('QueryBuilder converts driver exceptions on the read path', async () => {
+    orm.getMetadata(Author4).tableName = 'test';
+
+    try {
+      await expect(orm.em.find(Author4, {})).rejects.toThrow(TableNotFoundException);
+      await expect(orm.em.createQueryBuilder(Author4, 'a').select('*').getResultList()).rejects.toThrow(
+        TableNotFoundException,
+      );
+      await expect(orm.em.createQueryBuilder(Author4, 'a').getCount()).rejects.toThrow(TableNotFoundException);
+      await expect(async () => {
+        for await (const _ of orm.em.createQueryBuilder(Author4, 'a').stream()) {
+          // should not reach here
+        }
+      }).rejects.toThrow(TableNotFoundException);
+    } finally {
+      orm.getMetadata(Author4).tableName = 'author4';
+    }
+  });
+
   test('find query ignores undefined properties (ignoreUndefinedInQuery)', async () => {
     const mock = mockLogger(orm, ['query']);
     await orm.em.find(Author4, { email: undefined, name: 'foo' });
