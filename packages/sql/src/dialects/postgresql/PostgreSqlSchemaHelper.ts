@@ -35,6 +35,56 @@ const DOLLAR_QUOTE_TAG = /(\$(?:[A-Za-z_]\w*)?\$)/;
 /** pg-added `(<operand>)::type` cast in a check body, including multi word types like `double precision`. */
 const CHECK_CAST_RE = /\(([^()]*)\)::\w+(?: precision| varying| with(?:out)? time zone)?(?:\[\])?/g;
 
+/**
+ * PostgreSQL prints `interval '1 minute'` back as `'00:01:00'`, so the literal is reformatted the same way.
+ * Only non-negative `<n> <unit>` lists are handled, anything else has to be written the way PostgreSQL prints it.
+ */
+function normalizeIntervalLiteral(literal: string): string | undefined {
+  // `[field, factor]` into the months, days and microseconds triple PostgreSQL stores an interval as
+  const units: Dictionary<[number, number]> = {
+    year: [0, 12],
+    month: [0, 1],
+    mon: [0, 1],
+    week: [1, 7],
+    day: [1, 1],
+    hour: [2, 3_600_000_000],
+    minute: [2, 60_000_000],
+    second: [2, 1_000_000],
+  };
+  const parts = [0, 0, 0];
+  const rest = literal
+    .toLowerCase()
+    .replace(/(\d+(?:\.\d+)?) *(year|month|mon|week|day|hour|minute|second)s?\b/g, (_, qty: string, unit: string) => {
+      const [field, factor] = units[unit];
+      parts[field] += +qty * factor;
+      return '';
+    });
+
+  if (rest.trim() || !Number.isInteger(parts[0]) || !Number.isInteger(parts[1])) {
+    return undefined;
+  }
+
+  const [months, days] = parts;
+  const micros = Math.round(parts[2]);
+  const fields = (
+    [
+      [Math.trunc(months / 12), 'year'],
+      [months % 12, 'mon'],
+      [days, 'day'],
+    ] as const
+  )
+    .filter(([v]) => v > 0)
+    .map(([v, u]) => `${v} ${u}${v === 1 ? '' : 's'}`);
+
+  if (micros || !fields.length) {
+    const s = Math.floor(micros / 1_000_000);
+    const time = [s / 3600, (s / 60) % 60, s % 60].map(v => String(Math.floor(v)).padStart(2, '0')).join(':');
+    fields.push(time + String((micros % 1_000_000) / 1_000_000).slice(1));
+  }
+
+  return fields.join(' ');
+}
+
 export class PostgreSqlSchemaHelper extends SchemaHelper {
   static readonly DEFAULT_VALUES = {
     'now()': ['now()', 'current_timestamp'],
@@ -1699,6 +1749,16 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   override alterTableComment(table: DatabaseTable, comment?: string): string {
     return `comment on table ${table.getQuotedName()} is ${this.platform.quoteValue(comment ?? '')}`;
+  }
+
+  override normalizeExpression(expr: string): string {
+    return expr.replace(
+      /\binterval\s*'([^']*)'|'([^']*)'\s*::\s*interval\b/gi,
+      (match, typed?: string, cast?: string) => {
+        const literal = normalizeIntervalLiteral(typed ?? cast!);
+        return literal == null ? match : `'${literal}'::interval`;
+      },
+    );
   }
 
   override normalizeDefaultValue(defaultValue: string, length: number): string | number {
