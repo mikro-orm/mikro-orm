@@ -57,22 +57,35 @@ function createPathLookup(items: readonly string[]): PathLookup {
   return { all, heads };
 }
 
-function pathLookup(
-  options: SerializeOptions<any, any, any, any>,
-  key: 'fields' | 'populate',
-  items: readonly string[],
-): PathLookup {
-  return (preparedOptions.get(options)![key] ??= createPathLookup(items));
+/**
+ * Copies caller options once per `serialize()` call, so the derived child options and path lookups can be cached
+ * for every entity of the call without ever caching an options object the caller might mutate later.
+ */
+function prepareOptions<T extends SerializeOptions<any, any, any, any>>(options: T): T {
+  if (preparedOptions.has(options)) {
+    return options;
+  }
+
+  const prepared = {
+    ...options,
+    populate: options.populate ? Utils.asArray(options.populate) : options.populate,
+  } as T;
+  preparedOptions.set(prepared, { children: new Map() });
+
+  return prepared;
 }
 
-/** Returns true when any entry in `items` is `propName`, the wildcard `*`, or a dot-path under `propName`. */
+function pathLookup(options: SerializeOptions<any, any, any, any>, key: 'fields' | 'populate'): PathLookup {
+  return (preparedOptions.get(options)![key] ??= createPathLookup(options[key] as readonly string[]));
+}
+
+/** Returns true when any entry in `options[key]` is `propName`, the wildcard `*`, or a dot-path under `propName`. */
 function matchesPath(
   options: SerializeOptions<any, any, any, any>,
   key: 'fields' | 'populate',
-  items: readonly string[],
   propName: string,
 ): boolean {
-  const lookup = pathLookup(options, key, items);
+  const lookup = pathLookup(options, key);
   return lookup.all || lookup.heads.has(propName);
 }
 
@@ -87,15 +100,11 @@ function isVisible<T extends object>(
     return prop.groups.some(g => options.groups!.includes(g));
   }
 
-  if (
-    Array.isArray(options.fields) &&
-    options.fields.length > 0 &&
-    !matchesPath(options, 'fields', options.fields, propName)
-  ) {
+  if (Array.isArray(options.fields) && options.fields.length > 0 && !matchesPath(options, 'fields', propName)) {
     return false;
   }
 
-  if (Array.isArray(options.populate) && pathLookup(options, 'populate', options.populate).heads.has(propName)) {
+  if (Array.isArray(options.populate) && pathLookup(options, 'populate').heads.has(propName)) {
     return true;
   }
 
@@ -113,7 +122,7 @@ function isPopulated(propName: string, options: SerializeOptions<any, any, any, 
   if (
     typeof options.populate !== 'boolean' &&
     Array.isArray(options.populate) &&
-    matchesPath(options, 'populate', options.populate, propName)
+    matchesPath(options, 'populate', propName)
   ) {
     return true;
   }
@@ -135,7 +144,7 @@ export class EntitySerializer {
     const wrapped = helper(entity);
     const meta = wrapped.__meta;
     let contextCreated = false;
-    options = this.prepareOptions(options);
+    options = prepareOptions(options);
 
     if (!wrapped.__serializationContext.root) {
       const root = new SerializationContext<T>();
@@ -269,7 +278,8 @@ export class EntitySerializer {
     if ((entity[prop] as unknown) instanceof Function) {
       const returnValue = (entity[prop] as unknown as () => T[keyof T & string])();
       if (!options.ignoreSerializers && serializer) {
-        return serializer(returnValue, this.extractChildOptions(options, prop));
+        // copy, so a serializer mutating its options cannot leak into the cached child options
+        return serializer(returnValue, { ...this.extractChildOptions(options, prop) });
       }
 
       return returnValue as EntityValue<T>;
@@ -325,25 +335,6 @@ export class EntitySerializer {
     }
 
     return prop.customType.toJSON(value, platform);
-  }
-
-  /**
-   * Copies caller options once per `serialize()` call, so the derived child options and path lookups can be cached
-   * for every entity of the call without ever caching an options object the caller might mutate later.
-   * @internal
-   */
-  static prepareOptions<T extends SerializeOptions<any, any, any, any>>(options: T): T {
-    if (preparedOptions.has(options)) {
-      return options;
-    }
-
-    const prepared = {
-      ...options,
-      populate: options.populate ? Utils.asArray(options.populate) : options.populate,
-    } as T;
-    preparedOptions.set(prepared, { children: new Map() });
-
-    return prepared;
   }
 
   private static extractChildOptions<T extends object, U extends object>(
@@ -573,7 +564,7 @@ export function serialize<
       ResolveSerializeFields<Fields, ExtractFieldsHint<Entity>>,
       SerializeFieldsKeepPK<Fields>
     >[] {
-  const prepared = EntitySerializer.prepareOptions(options ?? {});
+  const prepared = prepareOptions(options ?? {});
 
   if (Array.isArray(entities)) {
     return entities.map(e => EntitySerializer.serialize(e, prepared)) as any;

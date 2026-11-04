@@ -1,4 +1,5 @@
-import { defineEntity, MikroORM, p, serialize, wrap } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+import { defineEntity, MikroORM, p, serialize, type SerializeOptions, wrap } from '@mikro-orm/sqlite';
 
 const SupplierSchema = defineEntity({
   name: 'Supplier',
@@ -27,6 +28,27 @@ class Product extends ProductSchema.class {}
 
 ProductSchema.setClass(Product);
 
+@Entity()
+class Order {
+  @PrimaryKey({ type: 'number' })
+  id!: number;
+
+  @Property({ type: 'number' })
+  amount!: number;
+
+  @Property({
+    persist: false,
+    serializer: (value: number, options?: SerializeOptions<any>) => {
+      const fields = options!.fields;
+      options!.fields = ['mutated'] as any;
+      return { value, fields };
+    },
+  })
+  total() {
+    return this.amount * 2;
+  }
+}
+
 describe('serialize options reuse', () => {
   let orm: MikroORM;
   let products: Product[];
@@ -34,13 +56,15 @@ describe('serialize options reuse', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       dbName: ':memory:',
-      entities: [Product, Supplier],
+      entities: [Product, Supplier, Order],
     });
     await orm.schema.refresh();
 
     const supplier = orm.em.create(Supplier, { name: 'Supplier 1', country: 'GR' });
     orm.em.create(Product, { title: 'Product 1', price: 10, supplier });
     orm.em.create(Product, { title: 'Product 2', price: 20, supplier });
+    orm.em.create(Order, { amount: 5 });
+    orm.em.create(Order, { amount: 7 });
     await orm.em.flush();
     orm.em.clear();
 
@@ -80,5 +104,14 @@ describe('serialize options reuse', () => {
       price: 10,
       supplier: { name: 'Supplier 1', country: 'GR' },
     });
+  });
+
+  it('gives each serializer call its own options object', async () => {
+    const orders = await orm.em.fork().find(Order, {}, { orderBy: { id: 'asc' } });
+
+    expect(serialize(orders, { fields: ['id', 'total.value'] as any })).toEqual([
+      { id: 1, total: { value: 10, fields: ['value'] } },
+      { id: 2, total: { value: 14, fields: ['value'] } },
+    ]);
   });
 });
