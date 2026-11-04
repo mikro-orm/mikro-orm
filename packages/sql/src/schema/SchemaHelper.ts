@@ -938,6 +938,14 @@ export abstract class SchemaHelper {
     }, {});
   }
 
+  /**
+   * Rewrites the parts of a user-provided expression the database stores in a different form, so that
+   * `SchemaComparator.diffExpression()` compares it to the introspected definition on equal footing.
+   */
+  normalizeExpression(expr: string): string {
+    return expr;
+  }
+
   /** Decodes the content of an introspected string literal, the inverse of `Platform.quoteDefaultValue()`. */
   unescapeDefault(val: string): string {
     return val.replaceAll("''", "'");

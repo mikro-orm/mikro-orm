@@ -35,6 +35,70 @@ const DOLLAR_QUOTE_TAG = /(\$(?:[A-Za-z_]\w*)?\$)/;
 /** pg-added `(<operand>)::type` cast in a check body, including multi word types like `double precision`. */
 const CHECK_CAST_RE = /\(([^()]*)\)::\w+(?: precision| varying| with(?:out)? time zone)?(?:\[\])?/g;
 
+/** Interval input units mapped to the field PostgreSQL stores them in, singular form only (the trailing `s` is stripped). */
+const INTERVAL_UNITS = new Map<string, [field: 'months' | 'days' | 'micros', factor: number]>([
+  ['year', ['months', 12]],
+  ['month', ['months', 1]],
+  ['mon', ['months', 1]],
+  ['week', ['days', 7]],
+  ['day', ['days', 1]],
+  ['hour', ['micros', 3_600_000_000]],
+  ['minute', ['micros', 60_000_000]],
+  ['min', ['micros', 60_000_000]],
+  ['second', ['micros', 1_000_000]],
+  ['sec', ['micros', 1_000_000]],
+]);
+
+/**
+ * PostgreSQL stores an interval as months, days and microseconds and prints it back in its own format,
+ * so `interval '1 minute'` is introspected as `'00:01:00'::interval`. Only non-negative `<n> <unit>` lists
+ * are handled, anything else has to be written the way PostgreSQL prints it.
+ */
+function normalizeIntervalLiteral(literal: string): string | undefined {
+  const parts = { months: 0, days: 0, micros: 0 };
+  let valid = true;
+
+  const rest = literal.toLowerCase().replace(/(\d+(?:\.\d+)?)\s*([a-z]+)/g, (_, qty: string, unit: string) => {
+    const [field, factor] = INTERVAL_UNITS.get(unit.replace(/s$/, '')) ?? [];
+    const value = +qty * (factor ?? 0);
+
+    if (!field || (field !== 'micros' && !Number.isInteger(value))) {
+      valid = false;
+    } else {
+      parts[field] += Math.round(value);
+    }
+
+    return '';
+  });
+
+  if (!valid || rest.trim() !== '') {
+    return undefined;
+  }
+
+  const fields: string[] = [];
+
+  for (const [value, unit] of [
+    [Math.trunc(parts.months / 12), 'year'],
+    [parts.months % 12, 'mon'],
+    [parts.days, 'day'],
+  ] as const) {
+    if (value > 0) {
+      fields.push(`${value} ${unit}${value === 1 ? '' : 's'}`);
+    }
+  }
+
+  if (parts.micros > 0 || fields.length === 0) {
+    const pad = (value: number) => String(value).padStart(2, '0');
+    const seconds = Math.floor(parts.micros / 1_000_000);
+    const fraction = String((parts.micros % 1_000_000) / 1_000_000).slice(1);
+    fields.push(
+      `${pad(Math.floor(seconds / 3600))}:${pad(Math.floor(seconds / 60) % 60)}:${pad(seconds % 60)}${fraction}`,
+    );
+  }
+
+  return fields.join(' ');
+}
+
 export class PostgreSqlSchemaHelper extends SchemaHelper {
   static readonly DEFAULT_VALUES = {
     'now()': ['now()', 'current_timestamp'],
@@ -1699,6 +1763,16 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   override alterTableComment(table: DatabaseTable, comment?: string): string {
     return `comment on table ${table.getQuotedName()} is ${this.platform.quoteValue(comment ?? '')}`;
+  }
+
+  override normalizeExpression(expr: string): string {
+    return expr.replace(
+      /\binterval\s*'([^']*)'|'([^']*)'\s*::\s*interval\b/gi,
+      (match, typed?: string, cast?: string) => {
+        const literal = normalizeIntervalLiteral(typed ?? cast!);
+        return literal == null ? match : `'${literal}'::interval`;
+      },
+    );
   }
 
   override normalizeDefaultValue(defaultValue: string, length: number): string | number {
