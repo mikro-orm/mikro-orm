@@ -314,7 +314,7 @@ export class Utils {
   /**
    * Merges all sources into the target recursively.
    */
-  private static _merge(target: any, sources: any[], ignoreUndefined: boolean): any {
+  private static _merge(target: any, sources: any[], ignoreUndefined: boolean, copies?: WeakMap<object, any>): any {
     if (!sources.length) {
       return target;
     }
@@ -333,7 +333,15 @@ export class Utils {
 
         if (Utils.isPlainObject(value)) {
           if (!Utils.isObject(target[key])) {
-            target[key] = Utils.copy(value);
+            // copy plain objects but keep class instances by reference, tracking copies so cycles terminate
+            const seen = copies ?? new WeakMap();
+
+            if (!seen.has(value)) {
+              seen.set(value, {});
+              Utils._merge(seen.get(value), [value], ignoreUndefined, seen);
+            }
+
+            target[key] = seen.get(value);
             continue;
           }
 
