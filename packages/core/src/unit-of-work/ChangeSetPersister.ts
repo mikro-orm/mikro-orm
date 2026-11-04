@@ -219,7 +219,7 @@ export class ChangeSetPersister {
     for (const key of meta.concurrencyCheckKeys) {
       cond[key] = changeSet.originalEntity![key];
 
-      if (changeSet.payload[key]) {
+      if (Object.hasOwn(changeSet.payload, key)) {
         tmp.push(key);
       }
     }
