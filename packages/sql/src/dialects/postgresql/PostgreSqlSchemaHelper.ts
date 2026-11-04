@@ -40,24 +40,32 @@ const CHECK_CAST_RE = /\(([^()]*)\)::\w+(?: precision| varying| with(?:out)? tim
  * Only non-negative `<n> <unit>` lists are handled, anything else has to be written the way PostgreSQL prints it.
  */
 function normalizeIntervalLiteral(literal: string): string | undefined {
-  // months, days, microseconds, the triple PostgreSQL stores an interval as
+  // `[field, factor]` into the months, days and microseconds triple PostgreSQL stores an interval as
+  const units: Dictionary<[number, number]> = {
+    year: [0, 12],
+    month: [0, 1],
+    mon: [0, 1],
+    week: [1, 7],
+    day: [1, 1],
+    hour: [2, 3_600_000_000],
+    minute: [2, 60_000_000],
+    second: [2, 1_000_000],
+  };
   const parts = [0, 0, 0];
   const rest = literal
     .toLowerCase()
-    .replace(
-      /(\d+(?:\.\d+)?) *(?:(year)|(month|mon)|(week)|(day)|(hour)|(minute)|(second))s?\b/g,
-      (_, qty: string, ...units: (string | undefined)[]) => {
-        const i = units.findIndex(Boolean);
-        parts[i < 2 ? 0 : i < 4 ? 1 : 2] += +qty * [12, 1, 7, 1, 3_600_000_000, 60_000_000, 1_000_000][i];
-        return '';
-      },
-    );
+    .replace(/(\d+(?:\.\d+)?) *(year|month|mon|week|day|hour|minute|second)s?\b/g, (_, qty: string, unit: string) => {
+      const [field, factor] = units[unit];
+      parts[field] += +qty * factor;
+      return '';
+    });
 
   if (rest.trim() || !Number.isInteger(parts[0]) || !Number.isInteger(parts[1])) {
     return undefined;
   }
 
-  const [months, days, micros] = parts;
+  const [months, days] = parts;
+  const micros = Math.round(parts[2]);
   const fields = (
     [
       [Math.trunc(months / 12), 'year'],
@@ -71,7 +79,7 @@ function normalizeIntervalLiteral(literal: string): string | undefined {
   if (micros || !fields.length) {
     const s = Math.floor(micros / 1_000_000);
     const time = [s / 3600, (s / 60) % 60, s % 60].map(v => String(Math.floor(v)).padStart(2, '0')).join(':');
-    fields.push(time + String((Math.round(micros) % 1_000_000) / 1_000_000).slice(1));
+    fields.push(time + String((micros % 1_000_000) / 1_000_000).slice(1));
   }
 
   return fields.join(' ');

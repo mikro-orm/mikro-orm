@@ -61,6 +61,7 @@ test('interval literals are normalized the way PostgreSQL prints them', () => {
   expect(helper.normalizeExpression(`a + interval '2 weeks'`)).toBe(`a + '14 days'::interval`);
   expect(helper.normalizeExpression(`a + interval '1 day 90 seconds'`)).toBe(`a + '1 day 00:01:30'::interval`);
   expect(helper.normalizeExpression(`a + interval '1.5 seconds'`)).toBe(`a + '00:00:01.5'::interval`);
+  expect(helper.normalizeExpression(`a + interval '59.9999999 seconds'`)).toBe(`a + '00:01:00'::interval`);
   // only the common shapes are covered, anything else is left for the user to write the way PostgreSQL prints it
   expect(helper.normalizeExpression(`a + interval '1.5 days'`)).toBe(`a + interval '1.5 days'`);
   expect(helper.normalizeExpression(`a + interval '-1 day'`)).toBe(`a + interval '-1 day'`);
