@@ -49,6 +49,7 @@ import {
   serialize,
   type SerializeDTO,
   type Subquery,
+  SUBQUERY_BRAND,
   type Transaction,
   Utils,
   ValidationError,
@@ -4697,7 +4698,7 @@ export class QueryBuilder<
 }
 
 // prototype-level brand recognized by `isSubquery()`, JSON payloads cannot forge it
-Object.defineProperty(QueryBuilder.prototype, '__subquery', { value: true, writable: false, configurable: false });
+Object.defineProperty(QueryBuilder.prototype, SUBQUERY_BRAND, { value: true, writable: false, configurable: false });
 
 export interface RunQueryBuilder<
   Entity extends object,

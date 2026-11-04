@@ -1,13 +1,8 @@
 import { Utils } from './Utils.js';
 import type { AnyString, Dictionary, EntityKey, Subquery } from '../typings.js';
 
-// Brand lives on the prototype so JSON payloads — whose proto is
-// `Object.prototype` — cannot forge it. String key, not a `Symbol.for(...)`,
-// so each CJS/ESM copy of this module independently installs it on its own
-// prototype without publishing a global key for the marker that controls raw
-// SQL assembly. The string is namespaced so it does not collide with property
-// names users might independently install on their own prototypes.
-const RAW_FRAGMENT_BRAND = '__mikroOrmRawFragment';
+// Prototype brand of raw fragments; `Symbol.for` so package copies agree.
+const RAW_FRAGMENT_BRAND = Symbol.for('mikro-orm.raw-fragment');
 
 // Back-references from a fragment's symbol key to the fragment itself, shared
 // across CJS/ESM module copies via globalThis: when one copy creates a fragment
@@ -24,7 +19,10 @@ export type RawQueryFragmentSymbol = symbol & {
   readonly [rawFragmentSymbolBrand]: true;
 };
 
-function hasPrototypeBrand(value: object, brand: string): boolean {
+/** Prototype brand of query builders usable as sub-queries; a symbol so JSON payloads cannot carry it, `Symbol.for` so package copies agree. */
+export const SUBQUERY_BRAND = Symbol.for('mikro-orm.subquery');
+
+function hasPrototypeBrand(value: object, brand: string | symbol): boolean {
   // Walk the prototype chain starting from the *prototype* (not the value) so
   // own-property spoofing from JSON payloads cannot forge the brand. Stop at
   // `Object.prototype`, which is never branded — that bails plain objects,
@@ -53,9 +51,9 @@ export function isRaw(value: unknown): value is RawQueryFragment {
   return hasPrototypeBrand(value, RAW_FRAGMENT_BRAND);
 }
 
-/** Checks whether the given value is a query builder usable as a sub-query (its prototype carries the `__subquery` brand). */
+/** Checks whether the given value is a query builder usable as a sub-query (its prototype carries the `SUBQUERY_BRAND`). */
 export function isSubquery(value: unknown): value is Subquery {
-  return value != null && typeof value === 'object' && hasPrototypeBrand(value, '__subquery' satisfies keyof Subquery);
+  return value != null && typeof value === 'object' && hasPrototypeBrand(value, SUBQUERY_BRAND);
 }
 
 /** Represents a raw SQL fragment with optional parameters, usable as both a value and an object key via Symbol coercion. */

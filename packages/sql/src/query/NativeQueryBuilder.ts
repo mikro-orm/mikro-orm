@@ -6,6 +6,7 @@ import {
   raw,
   type RawQueryFragment,
   type Subquery,
+  SUBQUERY_BRAND,
   Utils,
 } from '@mikro-orm/core';
 import { QueryType } from './enums.js';
@@ -739,7 +740,7 @@ export class NativeQueryBuilder implements Subquery {
 }
 
 // prototype-level brand recognized by `isSubquery()`, JSON payloads cannot forge it
-Object.defineProperty(NativeQueryBuilder.prototype, '__subquery', {
+Object.defineProperty(NativeQueryBuilder.prototype, SUBQUERY_BRAND, {
   value: true,
   writable: false,
   configurable: false,

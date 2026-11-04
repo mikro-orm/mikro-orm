@@ -54,4 +54,5 @@ test('sub-query detection cannot be spoofed by a plain object', () => {
   expect(isSubquery({ __subquery: true })).toBe(false);
   expect(isSubquery({ toRaw: () => qb.toRaw() })).toBe(false);
   expect(isSubquery(JSON.parse('{"__subquery":true}'))).toBe(false);
+  expect(isSubquery(Object.assign({}, JSON.parse('{"__proto__":{"__subquery":true}}')))).toBe(false);
 });
