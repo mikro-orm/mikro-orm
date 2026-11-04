@@ -1129,7 +1129,9 @@ export class MetadataDiscovery {
       }
 
       // propagate updated joinColumns to all child entities that inherit this property (STI, or TPT sharing the pivot)
-      for (const childMeta of this.#discovered.filter(m => m.root === meta && m !== meta)) {
+      const inherits = (m: EntityMetadata) => m.root === meta || (m.inheritanceType === 'tpt' && m.root === meta.root);
+
+      for (const childMeta of this.#discovered.filter(m => m !== meta && inherits(m))) {
         const childProp = childMeta.properties[prop.name];
         if (childProp && (childMeta.inheritanceType !== 'tpt' || childProp.pivotTable === prop.pivotTable)) {
           childProp.joinColumns = prop.joinColumns;

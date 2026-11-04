@@ -526,3 +526,45 @@ test.each([
 
   await orm2.close(true);
 });
+
+@Entity({ inheritance: 'tpt', tableName: 'party11' })
+abstract class Party11 {
+  @PrimaryKey()
+  id!: number;
+}
+
+@Entity({ tableName: 'principal11' })
+class Principal11 extends Party11 {
+  @ManyToMany(() => Principal11)
+  peers = new Collection<Principal11>(this);
+}
+
+@Entity({ tableName: 'user11' })
+class User11 extends Principal11 {}
+
+test.each([
+  [Party11, Principal11, User11],
+  [User11, Principal11, Party11],
+])('self-referencing M:N on an intermediate TPT entity is shared by its subclasses', async (...entities) => {
+  const orm2 = await MikroORM.init({ metadataProvider: ReflectMetadataProvider, dbName: ':memory:', entities });
+  await orm2.schema.create();
+
+  for (const entity of [Principal11, User11]) {
+    const prop = orm2.getMetadata().get(entity).properties.peers;
+    expect(prop.pivotTable).toBe('principal11_peers');
+    expect(prop.joinColumns).toEqual(['principal11_1_id']);
+    expect(prop.inverseJoinColumns).toEqual(['principal11_2_id']);
+  }
+
+  const em = orm2.em.fork();
+  const user = em.create(User11, {});
+  const other = em.create(Principal11, {});
+  user.peers.add(other);
+  await em.flush();
+  em.clear();
+
+  const u = await em.findOneOrFail(User11, user.id, { populate: ['peers'] });
+  expect(u.peers.getIdentifiers()).toEqual([other.id]);
+
+  await orm2.close(true);
+});
