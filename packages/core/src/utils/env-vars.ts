@@ -86,6 +86,8 @@ export function loadEnvironmentVars(): Partial<Options> {
   read2('transactional', bool);
   read2('disableForeignKeys', bool);
   read2('allOrNothing', bool);
+  read2('lock', bool);
+  read2('lockTimeout', num);
   read2('dropTables', bool);
   read2('safe', bool);
   read2('silent', bool);
