@@ -3895,7 +3895,7 @@ export class QueryBuilder<
     if (meta && (this.#state.fields?.includes('*') || this.#state.fields?.includes(`${this.mainAlias.aliasName}.*`))) {
       const schema = this.getSchema(this.mainAlias);
 
-      // Create a column mapping with unquoted aliases - quoting should be handled by the user via `quote` helper
+      // Per-column entries are unquoted (meant for `quote`), while `toString()` yields the quoted alias for plain template literals
       // For TPT, use helper to resolve correct alias per property (inherited props use parent alias)
       const quotedMainAlias = this.platform.quoteIdentifier(this.mainAlias.aliasName).toString();
       const columns = meta.createColumnMappingObject(

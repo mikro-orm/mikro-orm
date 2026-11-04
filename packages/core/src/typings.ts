@@ -23,7 +23,7 @@ import type { SerializeOptions } from './serialization/EntitySerializer.js';
 import type { MetadataStorage } from './metadata/MetadataStorage.js';
 import type { Routine } from './metadata/Routine.js';
 import type { EntitySchema } from './metadata/EntitySchema.js';
-import type { EntityPartitionBy, IndexColumnOptions } from './metadata/types.js';
+import type { EntityPartitionBy, IndexColumnOptions, SequenceOptions } from './metadata/types.js';
 import type { Type, types } from './types/index.js';
 import type { Platform } from './platforms/Platform.js';
 import type { Configuration } from './utils/Configuration.js';
@@ -327,6 +327,8 @@ export type CleanTypeConfig<T> = Compute<Pick<T, Extract<keyof T, keyof TypeConf
 /** Configuration options that can be set on an entity via the `[Config]` symbol. */
 export interface TypeConfig {
   forceObject?: boolean;
+  /** Type-level marker of the `forceUndefined` entity option: `defineEntity` infers nullable properties as `T | undefined` instead of `T | null | undefined`. */
+  forceUndefined?: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -1508,6 +1510,7 @@ export interface EntityProperty<Owner = any, Target = any> {
   hasConvertToJSValueSQL: boolean;
   hasConvertToDatabaseValueSQL: boolean;
   autoincrement?: boolean;
+  sequence?: SequenceOptions;
   returning?: boolean;
   primary?: boolean;
   serializedPrimaryKey: boolean;
@@ -2098,6 +2101,8 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   selfReferencing?: boolean;
   hasUniqueProps?: boolean;
   readonly?: boolean;
+  /** Per-entity override of the global `forceUndefined` option. */
+  forceUndefined?: boolean;
   polymorphs?: EntityMetadata[];
   root: EntityMetadata<Entity>;
   definedProperties: Dictionary;

@@ -1124,13 +1124,17 @@ export class MetadataDiscovery {
       pivotMeta2.compositePK = true;
     }
 
+    // STI entities share one table, so any m:n within the hierarchy is self-referencing, named after the root
+    const stiRoot = meta.root.inheritanceType === 'sti' ? meta.root : undefined;
+    const baseMeta = stiRoot ?? meta;
+
     // handle self-referenced m:n with same default field names
     if (
-      meta.className === targetType &&
+      (meta.className === targetType || stiRoot === targetMeta.root) &&
       prop.joinColumns.every((joinColumn, idx) => joinColumn === prop.inverseJoinColumns[idx])
     ) {
       // use tableName only when explicitly provided by user, otherwise use className for backwards compatibility
-      const baseName = this.isExplicitTableName(meta) ? meta.tableName : meta.className;
+      const baseName = this.isExplicitTableName(baseMeta) ? baseMeta.tableName : baseMeta.className;
       prop.joinColumns = prop.referencedColumnNames.map(name =>
         this.#namingStrategy.joinKeyColumnName(baseName + '_1', name, meta.compositePK),
       );
@@ -1144,20 +1148,26 @@ export class MetadataDiscovery {
         prop2.joinColumns = prop.inverseJoinColumns;
       }
 
-      // propagate updated joinColumns to all child entities that inherit this property (STI, or TPT sharing the pivot)
-      const inherits = (m: EntityMetadata) => m.root === meta || (m.inheritanceType === 'tpt' && m.root === meta.root);
+      // propagate updated joinColumns to all entities that inherit this property or its inverse (STI, or TPT sharing the pivot)
+      const inherits = (m: EntityMetadata) =>
+        m.root === baseMeta || (m.inheritanceType === 'tpt' && m.root === meta.root);
 
-      for (const childMeta of this.#discovered.filter(m => m !== meta && inherits(m))) {
+      // includes `meta` itself: an STI root carries the inverse copy of an M:N declared on a child
+      for (const childMeta of this.#discovered.filter(inherits)) {
         const childProp = childMeta.properties[prop.name];
-        if (childProp && (childMeta.inheritanceType !== 'tpt' || childProp.pivotTable === prop.pivotTable)) {
+        // a TPT subclass redeclaring its own pivot table keeps its own columns
+        const sharesPivot = childMeta.inheritanceType !== 'tpt' || childProp?.pivotTable === prop.pivotTable;
+
+        if (childProp && sharesPivot) {
           childProp.joinColumns = prop.joinColumns;
           childProp.inverseJoinColumns = prop.inverseJoinColumns;
-          const childProp2 = prop.inversedBy ? childMeta.properties[prop.inversedBy] : undefined;
+        }
 
-          if (childProp2) {
-            childProp2.joinColumns = prop.inverseJoinColumns;
-            childProp2.inverseJoinColumns = prop.joinColumns;
-          }
+        const childProp2 = prop.inversedBy && sharesPivot ? childMeta.properties[prop.inversedBy] : undefined;
+
+        if (childProp2) {
+          childProp2.inverseJoinColumns = prop.joinColumns;
+          childProp2.joinColumns = prop.inverseJoinColumns;
         }
       }
     }
@@ -1543,6 +1553,7 @@ export class MetadataDiscovery {
     });
     ownProps.forEach(prop => (meta.properties[prop.name] = prop));
     meta.filters = { ...base.filters, ...meta.filters };
+    meta.forceUndefined ??= base.forceUndefined;
 
     if (!meta.discriminatorValue) {
       Object.values(base.properties)

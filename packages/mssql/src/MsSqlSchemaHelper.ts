@@ -46,6 +46,16 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return 'master';
   }
 
+  override getMigrationLockSQL(): { acquire: string; release: string } {
+    // app locks are scoped to the current database; a zero timeout keeps the call clear of the request timeout
+    return {
+      acquire:
+        `declare @result int; exec @result = sp_getapplock @Resource = ?, @LockMode = 'Exclusive', @LockOwner = 'Session', @LockTimeout = 0; ` +
+        `select case when @result >= 0 then 1 else 0 end as locked`,
+      release: `exec sp_releaseapplock @Resource = ?, @LockOwner = 'Session'`,
+    };
+  }
+
   override getDropDatabaseSQL(name: string): string {
     // `set offline` rejects all connections including the issuing session, so there is no
     // single-user race window where a torn-down pool connection can reconnect between the
@@ -179,9 +189,12 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       datetime_precision as datetime_precision,
       character_maximum_length as character_maximum_length,
       columnproperty(sc.object_id, column_name, 'IsIdentity') is_identity,
-      nullif(ic.collation_name, convert(nvarchar(128), databasepropertyex(db_name(), 'Collation'))) as collation_name
+      nullif(ic.collation_name, convert(nvarchar(128), databasepropertyex(db_name(), 'Collation'))) as collation_name,
+      cast(idc.seed_value as bigint) as sequence_start,
+      cast(idc.increment_value as bigint) as sequence_increment
       from information_schema.columns ic
       inner join sys.columns sc on sc.name = ic.column_name and sc.object_id = object_id(ic.table_schema + '.' + ic.table_name)
+      left join sys.identity_columns idc on idc.object_id = sc.object_id and idc.column_id = sc.column_id
       left join sys.computed_columns cmp on cmp.name = ic.column_name and cmp.object_id = object_id(ic.table_schema + '.' + ic.table_name)
       left join sys.extended_properties t4 on t4.major_id = object_id(ic.table_schema + '.' + ic.table_name) and t4.name = 'MS_Description' and t4.minor_id = sc.column_id
       left join sys.default_constraints t5 on sc.default_object_id = t5.object_id
@@ -235,6 +248,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
         defaultConstraint: col.column_default_name,
         nullable: col.is_nullable === 'YES',
         autoincrement: increments,
+        sequence: increments ? this.getIntrospectedSequence(col.sequence_start, col.sequence_increment) : undefined,
         precision: col.numeric_precision,
         scale: col.numeric_scale,
         comment: col.column_comment,
@@ -886,10 +900,12 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     }
 
     Utils.runIfNotEmpty(() => col.push(this.getCollateSQL(column.collation!)), column.collation);
+    // a descending identity starts at -1 by default, same as on the other drivers
+    const { incrementBy = 1, startWith = incrementBy < 0 ? -1 : 1 } = column.sequence ?? {};
     // `IDENTITY(1,1)` is rejected inside `ALTER COLUMN`, so it must only be emitted when the
     // change actually involves the identity attribute or is a fresh column (no `changedProperties`).
     Utils.runIfNotEmpty(
-      () => col.push('identity(1,1)'),
+      () => col.push(`identity(${startWith},${incrementBy})`),
       column.autoincrement &&
         (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type')),
     );

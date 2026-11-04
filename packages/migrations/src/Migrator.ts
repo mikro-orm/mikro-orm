@@ -6,6 +6,7 @@ import {
   type MigrateOptions,
   type MigrationInfo,
   type MikroORM,
+  type Transaction,
   Utils,
   t,
   Type,
@@ -95,6 +96,55 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     if (!this.options.includeWildcardSchema) {
       await (this.storage as MigrationStorage).ensureTable();
     }
+  }
+
+  /** Runs the callback while holding the migration lock (if enabled and supported by the driver). */
+  private async runLocked<T>(cb: () => Promise<T>): Promise<T> {
+    const lock = this.options.lock ? this.driver.getPlatform().getSchemaHelper()!.getMigrationLockSQL() : undefined;
+
+    if (!lock) {
+      return cb();
+    }
+
+    const poolMax = this.config.get('pool').max;
+
+    if (poolMax != null && poolMax < 2) {
+      throw new Error('The migration lock needs at least 2 pooled connections, as it holds one for the whole run');
+    }
+
+    // the database has to exist before a connection can be reserved, creating it may reconnect
+    await this.#schemaGenerator.ensureDatabase();
+    const connection = this.driver.getConnection();
+    const name = this.options.tableName!;
+    const deadline = Date.now() + (this.options.lockTimeout ?? Infinity);
+
+    // a session-level lock on a reserved connection spans all transactions of the run, while its queries keep using the pool
+    return connection
+      .getClient()
+      .connection()
+      .execute(async db => {
+        let waiting = false;
+
+        while (!(await connection.execute<Dictionary>(lock.acquire, [name], 'get', db)).locked) {
+          if (Date.now() >= deadline) {
+            throw new Error(`Timed out after ${this.options.lockTimeout} ms waiting for the migration lock`);
+          }
+
+          if (!waiting && !this.options.silent) {
+            const logger = this.config.getLogger();
+            logger.log('migrator', 'Waiting for the migration lock held by another run', { enabled: true });
+          }
+
+          waiting = true;
+          await new Promise(resolve => setTimeout(resolve, Math.min(500, deadline - Date.now())));
+        }
+
+        try {
+          return await cb();
+        } finally {
+          await connection.execute(lock.release, [name], 'run', db);
+        }
+      });
   }
 
   /**
@@ -202,10 +252,12 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     method: 'up' | 'down',
     options?: string | string[] | MigrateOptions,
   ): Promise<MigrationInfo[]> {
-    const result = await super.runMigrations(method, options);
+    const ctx = Utils.isObject<MigrateOptions>(options) ? options.transaction : undefined;
+    const result = await this.runLocked(() =>
+      this.runWithoutForeignKeys(ctx, () => super.runMigrations(method, options)),
+    );
 
     if (result.length > 0 && this.options.snapshot && this.options.snapshotOnMigrate) {
-      const ctx = Utils.isObject<MigrateOptions>(options) ? options.transaction : undefined;
       const { skipTables, skipViews } = this.config.get('schemaGenerator');
       const schema = await DatabaseSchema.create(
         this.em.getConnection(),
@@ -236,6 +288,16 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     }
 
     return result;
+  }
+
+  private async runWithoutForeignKeys<T>(ctx: Transaction | undefined, run: () => Promise<T>): Promise<T> {
+    // sqlite ignores `pragma foreign_keys` inside a transaction, so a table rebuild would run the FK actions of child rows
+    if (ctx || !this.options.transactional || !this.driver.getPlatform().getSchemaHelper()!.getForeignKeyCheckSQL()) {
+      return run();
+    }
+
+    await this.init(); // can recreate the runner, which holds the FK state
+    return (this.runner as MigrationRunner).runWithoutForeignKeys(run);
   }
 
   /** Whether the introspected schema differs from the snapshot in any way the comparator turns into SQL. */

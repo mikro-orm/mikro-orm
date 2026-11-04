@@ -10,14 +10,18 @@ import {
   type EntityField,
   type EntityKey,
   EntityManagerType,
+  type EntityMetadata,
   type EntityName,
+  type EntityProperty,
   type FilterQuery,
   type FindByCursorOptions,
   type FindOneOptions,
   type FindOptions,
+  GroupOperator,
   type NativeInsertUpdateManyOptions,
   type NativeInsertUpdateOptions,
   PolymorphicRef,
+  QueryHelper,
   type PopulateOptions,
   type QueryResult,
   ReferenceKind,
@@ -656,8 +660,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         return;
       }
 
-      if (meta?.properties[k as EntityKey<T>]) {
-        const prop = meta.properties[k as EntityKey<T>];
+      // per-target polymorphic keys like `likeable[Comment]` resolve to the relation, whose conditions need joins
+      const [propName, targetName] = QueryHelper.splitPolymorphicKey(k as string);
+      const prop = meta?.properties[propName as EntityKey<T>];
+
+      if (prop && (!targetName || prop.polymorphic)) {
         let isObjectId = false;
 
         if (prop.kind === ReferenceKind.SCALAR) {
@@ -705,6 +712,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
             // the FK field is named after the property, e.g. `{ likeable: { $in: ids } }` when loading the inverse side
             copiedData[k] = this.convertObjectIds(value);
           } else if (
+            !targetName &&
             Utils.isPlainObject(value) &&
             Utils.getObjectKeysSize(value) === 1 &&
             prop.targetMeta!.primaryKeys[0] in value
@@ -722,6 +730,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
           const meta2 = this.metadata.find(prop.targetMeta!.class)!;
           const pk = meta2.properties[meta2.primaryKeys[0]];
           isObjectId = pk.type === 'ObjectId';
+
+          if (dotPaths) {
+            copiedData[k] = this.inlineRelationPrimaryKey(meta!, prop, meta2, copiedData[k]);
+          }
         }
 
         if (isObjectId) {
@@ -739,6 +751,38 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     });
 
     return copiedData as T;
+  }
+
+  /** Relations are stored as references, so conditions can only compare them by PK, e.g. `{ author: { id } }` becomes `{ author: _id }`. */
+  private inlineRelationPrimaryKey(
+    meta: EntityMetadata,
+    prop: EntityProperty,
+    meta2: EntityMetadata,
+    value: unknown,
+  ): unknown {
+    if (prop.kind === ReferenceKind.ONE_TO_MANY || (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner)) {
+      throw new Error(
+        `Unsupported condition on inverse side ${meta.className}.${prop.name}, query the owning side ${meta2.className}.${prop.mappedBy} instead.`,
+      );
+    }
+
+    if (!Utils.isPlainObject(value)) {
+      return value;
+    }
+
+    const keys = Object.keys(value);
+
+    if (keys.length === 1 && [meta2.primaryKeys[0], meta2.serializedPrimaryKey].includes(keys[0])) {
+      return value[keys[0]];
+    }
+
+    if (keys.every(k => Utils.isOperator(k) && !(k in GroupOperator) && k !== '$not')) {
+      return value;
+    }
+
+    throw new Error(
+      `Unsupported condition on relation ${meta.className}.${prop.name}, MongoDB can query relations only by primary key or entity reference.`,
+    );
   }
 
   private convertObjectIds<T extends ObjectId | Dictionary | string | any[]>(data: T): T {

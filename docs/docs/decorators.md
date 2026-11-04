@@ -44,6 +44,7 @@ For detailed information about decorator types, metadata providers, and configur
 | `forceConstructor`    | `boolean`                  | yes      | Enforce use of constructor when creating managed entity instances                  |
 | `abstract`            | `boolean`                  | yes      | Marks entity as abstract, such entities are inlined during discovery.              |
 | `readonly`            | `boolean`                  | yes      | Disables change tracking - such entities are ignored during flush.                 |
+| `forceUndefined`      | `boolean`                  | yes      | Hydrate `null` values as `undefined` for this entity, overriding the global [`forceUndefined`](./configuration.md#mapping-null-values-to-undefined) option. |
 | `orderBy`             | `QueryOrderMap` &#124; `QueryOrderMap[]` | yes      | Set default ordering for this entity. See [collections](./collections.md#entity-level-default-ordering). |
 
 ```ts
@@ -129,6 +130,7 @@ export class User {
 | `nullable`         | `boolean`                                         | yes      | Set column as nullable for [Schema Generator](schema-generator.md). **(SQL only)**                                                                                                                                                                                                                                                                              |
 | `unsigned`         | `boolean`                                         | yes      | Set column as unsigned for [Schema Generator](schema-generator.md). **(SQL only)**                                                                                                                                                                                                                                                                              |
 | `comment`          | `string`                                          | yes      | Specify comment of column for [Schema Generator](schema-generator.md). **(SQL only)**                                                                                                                                                                                                                                                                           |
+| `sequence`         | `{ startWith?: number, incrementBy?: number }`    | yes      | Set the start value and increment of an autoincrement column, see [Autoincrement start value and increment](defining-entities.md#autoincrement-start-value-and-increment). **(SQL only)**                                                                                                                                                                       |
 | `version`          | `boolean`                                         | yes      | Set to true to enable [Optimistic Locking](transactions.md#optimistic-locking) via version field. **(SQL only)**                                                                                                                                                                                                                                                |
 | `concurrencyCheck` | `boolean`                                         | yes      | Set to true to enable [Concurrency Check](transactions.md#concurrency-checks) via concurrency fields.                                                                                                                                                                                                                                                           |
 | `customOrder`      | `string[]` &#124; `number[]` &#124; `boolean[]`   | yes      | Specify a custom order for the column. **(SQL only)**                                                                                                                                                                                                                                                                                                           |
@@ -168,6 +170,9 @@ id!: number; // auto increment PK in SQL drivers
 
 @PrimaryKey({ autoincrement: false })
 id!: number; // numeric PK without auto increment
+
+@PrimaryKey({ sequence: { startWith: 1000 } })
+id!: number; // auto increment PK starting at 1000
 
 @PrimaryKey()
 uuid: string = uuid.v4(); // uuid PK in SQL drivers

@@ -2,9 +2,11 @@ import {
   ALIAS_REPLACEMENT,
   type Dictionary,
   type EntityKey,
+  type EntityMetadata,
   type EntityProperty,
   GroupOperator,
   QueryFlag,
+  QueryHelper,
   raw,
   RawQueryFragment,
   ReferenceKind,
@@ -21,6 +23,12 @@ const COLLECTION_OPERATORS = ['$some', '$none', '$every', '$size', '$all'];
  */
 export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   override process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any {
+    const targets = this.isPolymorphicBranch() ? QueryHelper.findTargetMetas(this.prop, this.key as string) : [];
+
+    if (options?.type === 'orderBy' && targets.length > 1) {
+      return this.processPolymorphicOrderBy(qb, targets, options);
+    }
+
     const matchPopulateJoins =
       options?.matchPopulateJoins ||
       (this.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop.kind));
@@ -136,7 +144,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       // with an exclusive condition on the join columns:
       // - if the owning column is null, the row is missing, we don't apply the filter
       // - if the target column is not null, the row is matched, we apply the filter
-      if (toOneProperty && this.prop.nullable && this.isStrict()) {
+      if (toOneProperty && this.prop.nullable && this.isStrict() && !this.isPolymorphicBranch()) {
         const key = this.prop.owner ? this.prop.name : this.prop.referencedPKs;
 
         qb.andWhere({
@@ -148,7 +156,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       }
     }
 
-    return keys.reduce((o, field) => {
+    const ret = keys.reduce((o, field) => {
       const childNode = this.payload[field] as CriteriaNode<T>;
       const payload = childNode.process(qb, { ...options, alias: this.prop ? alias : ownerAlias });
       const operator = Utils.isOperator(field);
@@ -186,6 +194,46 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
         this.inlineCondition(`${alias ?? qb.alias}.${field}`, o, payload);
       }
 
+      return o;
+    }, {} as Dictionary);
+
+    // the target is left joined, so its condition must only match rows that point to it
+    if (this.isPolymorphicBranch() && alias && options?.type !== 'orderBy') {
+      const pk = this.metadata.find(this.entityName)!.primaryKeys[0];
+      this.inlineCondition(`${alias}.${pk}`, ret, { $ne: null });
+    }
+
+    return ret;
+  }
+
+  /** Orders by the first non-null value of the property across the joined polymorphic targets. */
+  private processPolymorphicOrderBy(
+    qb: IQueryBuilder<T>,
+    targets: EntityMetadata[],
+    options: ICriteriaNodeProcessOptions,
+  ): Dictionary {
+    const ownerAlias = options.alias || qb.alias;
+    const aliases = targets.map(target => {
+      const path = `${this.parent!.getPath()}.${this.prop!.name}[${target.className}]`;
+      const alias = qb.getAliasForJoinPath(path, { ...options, matchPopulateJoins: true });
+
+      if (alias) {
+        return alias;
+      }
+
+      const newAlias = qb.getNextAlias(target.class);
+      qb.addPolymorphicJoin(this.prop!, target, ownerAlias, newAlias, JoinType.leftJoin, path);
+
+      return newAlias;
+    });
+
+    return Utils.getObjectQueryKeys(this.payload).reduce((o, field) => {
+      const columns = targets.map(
+        (target, i) => `${aliases[i]}.${target.properties[field as EntityKey].fieldNames[0]}`,
+      );
+      o[raw(`coalesce(${columns.map(() => '??').join(', ')})`, columns) as any] = (
+        this.payload[field] as CriteriaNode<T>
+      ).payload;
       return o;
     }, {} as Dictionary);
   }
@@ -285,7 +333,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     alias?: string,
     childAlias?: string,
   ) {
-    const prop = this.metadata.find(this.entityName)!.properties[field];
+    const prop = (this.payload[field] as CriteriaNode<T>).prop!;
 
     for (const k of Utils.getObjectQueryKeys(payload)) {
       if (RawQueryFragment.isKnownFragmentSymbol(k)) {
@@ -360,6 +408,11 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       return true;
     }
 
+    // the target's discriminator is checked in the join condition, so it is needed even for PK conditions
+    if (this.isPolymorphicBranch()) {
+      return !nestedAlias;
+    }
+
     const meta = this.metadata.find(this.entityName)!;
     const embeddable = this.prop.kind === ReferenceKind.EMBEDDED;
     const knownKey =
@@ -416,6 +469,9 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
     if (this.prop!.kind === ReferenceKind.MANY_TO_MANY && (scalar || operator)) {
       qb.join(field, nestedAlias, undefined, JoinType.pivotJoin, path);
+    } else if (this.isPolymorphicBranch()) {
+      const targetMeta = this.metadata.find(this.entityName)!;
+      qb.addPolymorphicJoin(this.prop!, targetMeta, alias, nestedAlias, JoinType.leftJoin, path);
     } else {
       const prev = qb.state.fields?.slice();
       const toOneProperty = [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop!.kind);
