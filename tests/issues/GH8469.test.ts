@@ -625,3 +625,48 @@ test('polymorphic inverse M:N inherited by a TPT subclass keeps its discriminato
 
   await orm2.close(true);
 });
+
+test('inherited M:N keeps the inverse side declared against the TPT subclass', async () => {
+  @Entity()
+  class Label {
+    @PrimaryKey()
+    id!: number;
+
+    @ManyToMany(() => Member, m => m.labels)
+    members = new Collection<Member>(this);
+  }
+
+  @Entity({ inheritance: 'tpt' })
+  abstract class Account {
+    @PrimaryKey()
+    id!: number;
+
+    @ManyToMany(() => Label)
+    labels = new Collection<Label>(this);
+  }
+
+  @Entity()
+  class Member extends Account {
+    @Property({ nullable: true })
+    email?: string;
+  }
+
+  const orm2 = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
+    dbName: ':memory:',
+    entities: [Label, Account, Member],
+  });
+  await orm2.schema.create();
+  expect(orm2.getMetadata().get(Member).properties.labels.inversedBy).toBe('members');
+
+  const member = orm2.em.create(Member, {});
+  const label = orm2.em.create(Label, {});
+  member.labels.add(label);
+  expect(label.members.contains(member, false)).toBe(true);
+  await orm2.em.flush();
+  orm2.em.clear();
+
+  const loaded = await orm2.em.findOneOrFail(Label, label, { populate: ['members'] });
+  expect(loaded.members.getIdentifiers()).toEqual([member.id]);
+  await orm2.close(true);
+});

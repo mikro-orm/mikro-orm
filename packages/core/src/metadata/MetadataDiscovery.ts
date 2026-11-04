@@ -889,7 +889,7 @@ export class MetadataDiscovery {
           const ownerProp = declaringMeta.properties[prop.name];
           const pivotMeta = this.definePivotTableEntity(declaringMeta, ownerProp);
           prop.pivotEntity = pivotMeta.class;
-          prop.inversedBy = ownerProp.inversedBy;
+          prop.inversedBy ??= ownerProp.inversedBy;
           prop.fixedOrderColumn = ownerProp.fixedOrderColumn;
 
           if (prop.inversedBy) {
