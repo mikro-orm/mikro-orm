@@ -79,6 +79,11 @@ export abstract class SchemaHelper {
     return '';
   }
 
+  /** Returns SQL listing rows that violate foreign keys; when non-empty, migrations run with FK checks off and verify afterwards (SQLite). */
+  getForeignKeyCheckSQL(): string {
+    return '';
+  }
+
   /** Returns SQL to append to schema migration scripts (e.g., re-enabling FK checks). */
   getSchemaEnd(disableForeignKeys?: boolean): string {
     if (disableForeignKeys) {

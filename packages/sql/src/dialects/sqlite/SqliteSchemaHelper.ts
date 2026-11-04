@@ -31,6 +31,10 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return 'pragma foreign_keys = on;';
   }
 
+  override getForeignKeyCheckSQL(): string {
+    return 'pragma foreign_key_check';
+  }
+
   override supportsSchemaConstraints(): boolean {
     return false;
   }
