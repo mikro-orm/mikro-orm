@@ -568,3 +568,60 @@ test.each([
 
   await orm2.close(true);
 });
+
+@Entity({ inheritance: 'tpt', tableName: 'tag12' })
+class Tag12 {
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToMany(() => Post12, post => post.tags)
+  posts = new Collection<Post12>(this);
+
+  @ManyToMany(() => Video12, video => video.tags)
+  videos = new Collection<Video12>(this);
+}
+
+@Entity({ tableName: 'special_tag12' })
+class SpecialTag12 extends Tag12 {}
+
+@Entity({ tableName: 'post12' })
+class Post12 {
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToMany(() => Tag12, tag => tag.posts, { pivotTable: 'taggables12', discriminator: 'taggable', owner: true })
+  tags = new Collection<Tag12>(this);
+}
+
+@Entity({ tableName: 'video12' })
+class Video12 {
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToMany(() => Tag12, tag => tag.videos, { pivotTable: 'taggables12', discriminator: 'taggable', owner: true })
+  tags = new Collection<Tag12>(this);
+}
+
+test('polymorphic inverse M:N inherited by a TPT subclass keeps its discriminator', async () => {
+  const orm2 = await MikroORM.init({
+    metadataProvider: ReflectMetadataProvider,
+    dbName: ':memory:',
+    entities: [Tag12, SpecialTag12, Post12, Video12],
+  });
+  await orm2.schema.create();
+
+  const em = orm2.em.fork();
+  const tag = em.create(SpecialTag12, {});
+  const post = em.create(Post12, { id: 1 });
+  const video = em.create(Video12, { id: 1 });
+  post.tags.add(tag);
+  video.tags.add(tag);
+  await em.flush();
+  em.clear();
+
+  const t = await em.findOneOrFail(SpecialTag12, tag.id, { populate: ['posts', 'videos'] });
+  expect(t.posts.getIdentifiers()).toEqual([1]);
+  expect(t.videos.getIdentifiers()).toEqual([1]);
+
+  await orm2.close(true);
+});

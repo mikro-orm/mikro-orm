@@ -672,7 +672,8 @@ export class MetadataDiscovery {
   private initManyToManyFields(meta: EntityMetadata, prop: EntityProperty): void {
     const meta2 = prop.targetMeta!;
     Utils.defaultValue(prop, 'fixedOrder', !!prop.fixedOrderColumn);
-    const declaringMeta = this.getPivotDeclaringMeta(meta, prop);
+    // inverse sides derive their mapping from the owner via `mappedBy`
+    const declaringMeta = prop.mappedBy ? meta : this.getPivotDeclaringMeta(meta, prop);
 
     if (declaringMeta !== meta) {
       const prop2 = declaringMeta.properties[prop.name];
