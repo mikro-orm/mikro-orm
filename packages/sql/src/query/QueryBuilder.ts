@@ -2598,12 +2598,19 @@ export class QueryBuilder<
     const conn = this.getConnection();
     // outside a transaction, wrap in a short implicit one so RLS `set local` session context applies (no-op when unset)
     const sessionContext = this.context ? undefined : this.em?.getTransactionSessionContext();
-    const res = await (sessionContext
-      ? conn.transactional(trx => conn.execute(query.sql, query.params, method, trx, loggerContext), {
-          sessionContext,
-          loggerContext,
-        })
-      : conn.execute(query.sql, query.params, method, this.context, loggerContext));
+    let res: EntityData<AnyEntity>[];
+
+    // a QueryBuilder used directly must honour the same `convertException` contract as the driver methods
+    try {
+      res = await (sessionContext
+        ? conn.transactional(trx => conn.execute(query.sql, query.params, method, trx, loggerContext), {
+            sessionContext,
+            loggerContext,
+          })
+        : conn.execute(query.sql, query.params, method, this.context, loggerContext));
+    } catch (e) {
+      throw this.driver.convertException(e as Error);
+    }
     const meta = this.mainAlias.meta;
 
     if (!options.mapResults || !meta) {
@@ -2675,7 +2682,9 @@ export class QueryBuilder<
 
     const query = this.toQuery();
     const loggerContext = { id: this.em?.id, ...this.loggerContext, ...this.#abortOptions };
-    const res = this.getConnection().stream(query.sql, query.params, this.context, loggerContext, chunkSize);
+    const res = this.convertStreamExceptions(
+      this.getConnection().stream(query.sql, query.params, this.context, loggerContext, chunkSize),
+    );
     const meta = this.mainAlias.meta;
 
     if (options.rawResults || !meta) {
@@ -2718,6 +2727,14 @@ export class QueryBuilder<
       for (const row of merged) {
         yield this.mapResult(row, options.mapResults);
       }
+    }
+  }
+
+  private async *convertStreamExceptions<T>(res: AsyncIterableIterator<T>): AsyncIterableIterator<T> {
+    try {
+      yield* res;
+    } catch (e) {
+      throw this.driver.convertException(e as Error);
     }
   }
 
@@ -3307,7 +3324,10 @@ export class QueryBuilder<
         customAlias = asMatch[2];
       }
 
-      const join = Object.keys(this.#state.joins).find(k => field === k.substring(0, k.indexOf('#')))!;
+      // an aliased field is always a column, never a relation to expand, even when an FK column is named like its relation
+      const join = customAlias
+        ? undefined
+        : Object.keys(this.#state.joins).find(k => field === k.substring(0, k.indexOf('#')));
 
       if (join && type === 'where') {
         ret.push(...(this.helper.mapJoinColumns(this.type, this.#state.joins[join]) as string[]));
@@ -4024,7 +4044,15 @@ export class QueryBuilder<
 
   private mergeOnConditions(joins: JoinOptions[], cond: Dictionary, filter: boolean, op?: string) {
     for (const k of Object.keys(cond)) {
-      if (Utils.isOperator(k)) {
+      const notAlias = k === '$not' ? this.getNotConditionAlias(cond[k], joins) : undefined;
+
+      if (k === '$not' && !notAlias) {
+        // splitting a `$not` across joins would drop the negation, so it is kept intact on their common ancestor join
+        this.mergeFilterOrCondition([{ $not: cond[k] }], joins);
+        continue;
+      }
+
+      if (Utils.isOperator(k) && !notAlias) {
         if (Array.isArray(cond[k])) {
           if (k === '$or' && !this.canDistributeOrBranches(cond[k], joins)) {
             // entity filters have no other sink, so their `$or` is kept intact on the outermost targeted join instead
@@ -4042,7 +4070,7 @@ export class QueryBuilder<
         this.mergeOnConditions(joins, cond[k], filter, k);
       }
 
-      const [alias] = this.helper.splitField(k as EntityKey<Entity>);
+      const alias = notAlias ?? this.helper.splitField(k as EntityKey<Entity>)[0];
       const join = joins.find(j => j.alias === alias);
 
       if (join) {
@@ -4072,6 +4100,16 @@ export class QueryBuilder<
         this.nestReferencedJoins(join);
       }
     }
+  }
+
+  /**
+   * `$not` can be moved to a join's `on` clause as a whole only when all of its conditions target that join.
+   */
+  private getNotConditionAlias(cond: Dictionary, joins: JoinOptions[]): string | undefined {
+    const aliases = this.getOrBranchAliases([cond]);
+    const [alias] = aliases;
+
+    return aliases.size === 1 && joins.some(j => j.alias === alias) ? alias : undefined;
   }
 
   /**
@@ -4105,9 +4143,9 @@ export class QueryBuilder<
   }
 
   /**
-   * An entity filter's `$or` that cannot be distributed is applied intact to the `on` clause of the
-   * outermost join common to all targeted joins, nesting the targeted joins under it so the clause
-   * can reference their aliases.
+   * A condition that cannot be distributed (an entity filter's `$or`, or a `$not` spanning several joins)
+   * is applied intact to the `on` clause of the outermost join common to all targeted joins, nesting
+   * the targeted joins under it so the clause can reference their aliases.
    */
   private mergeFilterOrCondition(branches: Dictionary[], joins: JoinOptions[]): void {
     const aliases = this.getOrBranchAliases(branches);

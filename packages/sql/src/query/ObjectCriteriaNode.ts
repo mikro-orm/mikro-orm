@@ -365,21 +365,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     const knownKey =
       [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE, ReferenceKind.EMBEDDED].includes(this.prop.kind) ||
       (this.prop.kind === ReferenceKind.ONE_TO_ONE && this.prop.owner);
-    const operatorKeys =
-      knownKey &&
-      keys.every(key => {
-        if (key === '$not') {
-          // $not wraps conditions like $and/$or, check if it wraps entity property conditions (needs auto-join)
-          // vs simple operator conditions on the FK (doesn't need auto-join)
-          const childPayload = (this.payload[key] as CriteriaNode<T>).payload;
-
-          if (Utils.isPlainObject(childPayload)) {
-            return Utils.getObjectQueryKeys(childPayload).every(k => Utils.isOperator(k, false));
-          }
-        }
-
-        return Utils.isOperator(key, false);
-      });
+    const operatorKeys = knownKey && this.isOperatorPayload(this.payload);
     const primaryKeys =
       knownKey &&
       keys.every(key => {
@@ -423,9 +409,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
       (this.payload as unknown) instanceof RegExp ||
       (this.payload as unknown) instanceof Date ||
       rawField;
-    const operator =
-      Utils.isPlainObject(this.payload) &&
-      Utils.getObjectQueryKeys(this.payload).every(k => Utils.isOperator(k, false));
+    const operator = Utils.isPlainObject(this.payload) && this.isOperatorPayload(this.payload);
     const field = `${alias}.${this.prop!.name}`;
     const method = qb.hasFlag(QueryFlag.INFER_POPULATE) ? 'joinAndSelect' : 'join';
     const path = this.getPath();

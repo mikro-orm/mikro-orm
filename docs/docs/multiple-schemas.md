@@ -7,6 +7,8 @@ import TabItem from '@theme/TabItem';
 
 In MySQL, PostgreSQL, and SQLite (via ATTACH DATABASE) it is possible to define your entities in multiple schemas. In MySQL terminology, it is called database, but from an implementation point of view, it is a schema.
 
+On SQLite, an entity schema other than `main` or `*` must match the `name` of one of the `attachDatabases` entries, otherwise the ORM rejects it at `MikroORM.init()` with a hint to attach the database or strip the schema in the `discovery.onMetadata` hook.
+
 > To use multiple schemas, your connection needs to have access to all of them (multiple connections are not supported in a single MikroORM instance).
 
 All you need to do is simply define the schema name via `schema` options, or table name including schema name in `tableName` option:

@@ -1168,10 +1168,15 @@ export class SchemaComparator {
     // expressions like check constraints might be normalized by the driver,
     // e.g. quotes might be added (https://github.com/mikro-orm/mikro-orm/issues/3827)
     const simplify = (str?: string) => {
+      if (str == null) {
+        return str;
+      }
+
       return (
-        str
+        this.#helper
+          .normalizeExpression(str)
           // lookbehind: only strip a real charset introducer, never an underscore inside a literal like 'a_b'
-          ?.replace(/(?<![\w'])_\w+'(.*?)'/g, '$1')
+          .replace(/(?<![\w'])_\w+'(.*?)'/g, '$1')
           .replace(/!=/g, '<>')
           // `\b` keeps this from firing inside identifiers like `min(...)`
           .replace(/\bnot\s+in\s*\((.*?)\)/gi, '<> all (array[$1])')
