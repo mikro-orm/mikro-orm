@@ -105,7 +105,9 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
       return cb();
     }
 
-    if (this.config.get('pool').max! < 2) {
+    const poolMax = this.config.get('pool').max;
+
+    if (poolMax != null && poolMax < 2) {
       throw new Error('The migration lock needs at least 2 pooled connections, as it holds one for the whole run');
     }
 

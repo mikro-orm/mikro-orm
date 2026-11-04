@@ -234,7 +234,7 @@ await MikroORM.init({
 });
 ```
 
-The lock is a session-level database lock (`pg_advisory_lock` on PostgreSQL, `GET_LOCK` on MySQL and MariaDB, `sp_getapplock` on MSSQL) held on a pooled connection reserved for the whole run, so it works with `allOrNothing` and non-transactional migrations alike, while the migrations themselves keep using the rest of the pool. This means:
+The lock is a session-level database lock (`pg_try_advisory_lock` on PostgreSQL, `GET_LOCK` on MySQL and MariaDB, `sp_getapplock` on MSSQL) held on a pooled connection reserved for the whole run, so it works with `allOrNothing` and non-transactional migrations alike, while the migrations themselves keep using the rest of the pool. This means:
 
 - `pool.max` has to be at least 2, the migrator throws otherwise.
 - It does not work through PgBouncer in transaction pooling mode, which does not keep session state between transactions. Run migrations over a direct connection instead.

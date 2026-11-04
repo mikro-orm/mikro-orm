@@ -1,7 +1,11 @@
-import { defineEntity, p, type MikroORM as CoreMikroORM, type Options } from '@mikro-orm/core';
+import { defineEntity, type Dictionary, p, type MikroORM as CoreMikroORM, type Options } from '@mikro-orm/core';
 import { MikroORM as MySqlMikroORM } from '@mikro-orm/mysql';
 import { MikroORM as MariaDbMikroORM } from '@mikro-orm/mariadb';
-import { type AbstractSqlConnection, MikroORM as PostgreSqlMikroORM } from '@mikro-orm/postgresql';
+import {
+  type AbstractSqlConnection,
+  type AbstractSqlPlatform,
+  MikroORM as PostgreSqlMikroORM,
+} from '@mikro-orm/postgresql';
 import { MikroORM as MsSqlMikroORM } from '@mikro-orm/mssql';
 import { MikroORM as SqliteMikroORM } from '@mikro-orm/sqlite';
 import { MikroORM as PgliteMikroORM } from '@mikro-orm/pglite';
@@ -90,10 +94,8 @@ describe.each(drivers)('migration lock ($name)', ({ name, MikroORM, options, sle
   ])(
     'concurrent up() runs apply a migration once (allOrNothing: $allOrNothing, fresh database: $freshDatabase)',
     async ({ allOrNothing, freshDatabase }) => {
-      const messages: string[] = [];
-      const extra = { logger: (msg: string) => messages.push(msg), migrations: { allOrNothing, silent: false } };
-      const orm1 = await init(extra);
-      const orm2 = await init(extra);
+      const orm1 = await init({ migrations: { allOrNothing } });
+      const orm2 = await init({ migrations: { allOrNothing } });
 
       try {
         if (!freshDatabase) {
@@ -110,7 +112,6 @@ describe.each(drivers)('migration lock ($name)', ({ name, MikroORM, options, sle
           .execute(`select count(*) as count from mikro_orm_migrations`);
         expect(+items).toBe(1);
         expect(+logged).toBe(1);
-        expect(messages.some(m => m.includes('Waiting for the migration lock'))).toBe(true);
       } finally {
         await orm1.close();
         await orm2.close();
@@ -118,25 +119,67 @@ describe.each(drivers)('migration lock ($name)', ({ name, MikroORM, options, sle
     },
   );
 
+  /** Runs `cb` while another session holds the migration lock. */
+  const withLockHeld = async (cb: (release: () => Promise<void>) => Promise<void>) => {
+    const connection = orm.em.getConnection() as AbstractSqlConnection;
+    const { acquire, release } = (orm.em.getPlatform() as AbstractSqlPlatform)
+      .getSchemaHelper()!
+      .getMigrationLockSQL()!;
+    const name = 'mikro_orm_migrations';
+
+    await connection
+      .getClient()
+      .connection()
+      .execute(async db => {
+        let held = true;
+        const unlock = async () => {
+          if (held) {
+            held = false;
+            await connection.execute(release, [name], 'run', db);
+          }
+        };
+
+        expect((await connection.execute<Dictionary>(acquire, [name], 'get', db)).locked).toBeTruthy();
+
+        try {
+          await cb(unlock);
+        } finally {
+          await unlock();
+        }
+      });
+  };
+
+  test('waits for the lock held by another session and logs it', async () => {
+    const messages: string[] = [];
+    const orm1 = await init({ logger: msg => messages.push(msg), migrations: { silent: false, lockTimeout: 30_000 } });
+
+    try {
+      await withLockHeld(async release => {
+        const run = orm1.migrator.up();
+        await expect
+          .poll(() => messages.some(m => m.includes('Waiting for the migration lock')), { timeout: 10_000 })
+          .toBe(true);
+        await release();
+        await expect(run).resolves.toHaveLength(1);
+      });
+    } finally {
+      await orm1.close();
+    }
+  });
+
+  test('lockTimeout bounds the wait', async () => {
+    const orm1 = await init({ migrations: { lockTimeout: 100 } });
+
+    try {
+      await withLockHeld(async () => {
+        await expect(orm1.migrator.up()).rejects.toThrow('Timed out after 100 ms waiting for the migration lock');
+      });
+    } finally {
+      await orm1.close();
+    }
+  });
+
   if (name === 'postgresql') {
-    test('lockTimeout bounds the wait', async () => {
-      const orm1 = await init({ migrations: { lockTimeout: 100 } });
-      const connection = orm.em.getConnection() as AbstractSqlConnection;
-
-      try {
-        await connection
-          .getClient()
-          .connection()
-          .execute(async db => {
-            await connection.execute(`select pg_advisory_lock(hashtext('mikro_orm_migrations'))`, [], 'run', db);
-            await expect(orm1.migrator.up()).rejects.toThrow('Timed out after 100 ms waiting for the migration lock');
-            await connection.execute(`select pg_advisory_unlock(hashtext('mikro_orm_migrations'))`, [], 'run', db);
-          });
-      } finally {
-        await orm1.close();
-      }
-    });
-
     test('a failed run releases the lock', async () => {
       class FailingMigration extends Migration {
         override async up(): Promise<void> {
@@ -165,6 +208,27 @@ describe.each(drivers)('migration lock ($name)', ({ name, MikroORM, options, sle
         await expect(orm1.migrator.up()).rejects.toThrow('The migration lock needs at least 2 pooled connections');
       } finally {
         await orm1.close();
+      }
+    });
+
+    test('locks a database that does not exist yet', async () => {
+      class CreateItemMigration extends Migration {
+        override async up(): Promise<void> {
+          this.addSql(`create table lock_item (id serial primary key, name varchar(255) not null)`);
+        }
+      }
+
+      const orm1 = await init({
+        dbName: `${dbName}_fresh`,
+        migrations: { migrationsList: [{ name: 'CreateItemMigration', class: CreateItemMigration }] },
+      });
+
+      try {
+        await expect(orm1.migrator.up()).resolves.toHaveLength(1);
+        await expect(orm1.migrator.up()).resolves.toHaveLength(0);
+      } finally {
+        await orm1.schema.dropDatabase();
+        await orm1.close(true);
       }
     });
   }
