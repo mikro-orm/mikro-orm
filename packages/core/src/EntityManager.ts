@@ -105,6 +105,28 @@ import type { CacheAdapter } from './cache/CacheAdapter.js';
 import { applyPopulateHints, getLoadingStrategy } from './entity/utils.js';
 import { TransactionManager } from './utils/TransactionManager.js';
 
+// JSON loses RegExp patterns, `raw()` params and `raw()` keys (symbols); `this[key]` is the value before `toJSON()`
+function cacheKeyReplacer(this: Dictionary, key: string, value: unknown): unknown {
+  const original = this[key];
+
+  if (original instanceof RegExp) {
+    return { regexp: original.source, flags: original.flags };
+  }
+
+  if (isRaw(original)) {
+    return { sql: original.sql, params: original.params };
+  }
+
+  if (Raw.hasObjectFragments(value)) {
+    return Utils.getObjectQueryKeys(value as Dictionary).map(k => [
+      Raw.getKnownFragment(k) ?? k,
+      (value as Dictionary)[k as string],
+    ]);
+  }
+
+  return value;
+}
+
 /**
  * The EntityManager is the central access point to ORM functionality. It is a facade to all different ORM subsystems
  * such as UnitOfWork, Query Language, and Repository API.
@@ -3667,7 +3689,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       ? em.#sessionContext
         ? `${config[0]}|${JSON.stringify(em.#sessionContext)}`
         : config[0]
-      : JSON.stringify(key);
+      : JSON.stringify(key, cacheKeyReplacer);
     const cached = await em.#resultCache.get(cacheKey);
 
     if (!cached) {
