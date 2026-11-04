@@ -87,18 +87,18 @@ describe.each(drivers)('migration lock ($name)', ({ name, MikroORM, options, sle
   afterAll(() => orm.close(true));
 
   test.each([
-    { allOrNothing: true, freshDatabase: true },
-    { allOrNothing: true, freshDatabase: false },
-    { allOrNothing: false, freshDatabase: true },
-    { allOrNothing: false, freshDatabase: false },
+    { allOrNothing: true, tableExists: false },
+    { allOrNothing: true, tableExists: true },
+    { allOrNothing: false, tableExists: false },
+    { allOrNothing: false, tableExists: true },
   ])(
-    'concurrent up() runs apply a migration once (allOrNothing: $allOrNothing, fresh database: $freshDatabase)',
-    async ({ allOrNothing, freshDatabase }) => {
+    'concurrent up() runs apply a migration once (allOrNothing: $allOrNothing, migrations table exists: $tableExists)',
+    async ({ allOrNothing, tableExists }) => {
       const orm1 = await init({ migrations: { allOrNothing } });
       const orm2 = await init({ migrations: { allOrNothing } });
 
       try {
-        if (!freshDatabase) {
+        if (tableExists) {
           // with an existing migrations table, the runs race on the data change itself
           await orm1.migrator.getExecuted();
         }
