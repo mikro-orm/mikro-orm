@@ -108,8 +108,7 @@ export class QueryHelper {
 
         if (op in where) {
           // Sibling groups are conjunctive, even when both use `$or`.
-          where.$and ??= [];
-          where.$and.push({ [op]: group });
+          where.$and = [...(where.$and ?? []), { [op]: group }];
         } else {
           where[op] = group;
         }

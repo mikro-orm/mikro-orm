@@ -83,3 +83,13 @@ test.each(['nativeUpdate', 'nativeDelete'] as const)('%s preserves every filter 
   expect(affected).toBe(1);
   expect((await em.findOneOrFail(Book, 2)).title).toBe('forbidden');
 });
+
+test('lifting a group does not mutate a shared `$and` array', async () => {
+  const shared = [{ title: 'allowed' }];
+  const first = await orm.em.fork().find(Book, { $and: shared, author: { $and: [{ id: 1 }] } });
+  expect(first.map(book => book.id)).toEqual([1]);
+  expect(shared).toEqual([{ title: 'allowed' }]);
+
+  const second = await orm.em.fork().find(Book, { $and: shared });
+  expect(second.map(book => book.id)).toEqual([1, 3]);
+});
