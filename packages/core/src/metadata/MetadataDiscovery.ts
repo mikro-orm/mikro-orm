@@ -649,6 +649,11 @@ export class MetadataDiscovery {
   private getPivotDeclaringMeta(meta: EntityMetadata, prop: EntityProperty): EntityMetadata {
     const keys = ['type', 'pivotTable', 'pivotEntity', 'joinColumns', 'inverseJoinColumns'] as const;
 
+    // Rails-style polymorphic owners already share an explicit pivot table, each under its own discriminator value
+    if (prop.polymorphic && !QueryHelper.isUnionTargetPolymorphic(prop)) {
+      return meta;
+    }
+
     while (meta.tptParent) {
       const parentProp = meta.tptParent.properties[prop.name];
 
