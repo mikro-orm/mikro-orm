@@ -35,65 +35,43 @@ const DOLLAR_QUOTE_TAG = /(\$(?:[A-Za-z_]\w*)?\$)/;
 /** pg-added `(<operand>)::type` cast in a check body, including multi word types like `double precision`. */
 const CHECK_CAST_RE = /\(([^()]*)\)::\w+(?: precision| varying| with(?:out)? time zone)?(?:\[\])?/g;
 
-/** Interval input units mapped to the field PostgreSQL stores them in, singular form only (the trailing `s` is stripped). */
-const INTERVAL_UNITS = new Map<string, [field: 'months' | 'days' | 'micros', factor: number]>([
-  ['year', ['months', 12]],
-  ['month', ['months', 1]],
-  ['mon', ['months', 1]],
-  ['week', ['days', 7]],
-  ['day', ['days', 1]],
-  ['hour', ['micros', 3_600_000_000]],
-  ['minute', ['micros', 60_000_000]],
-  ['min', ['micros', 60_000_000]],
-  ['second', ['micros', 1_000_000]],
-  ['sec', ['micros', 1_000_000]],
-]);
-
 /**
- * PostgreSQL stores an interval as months, days and microseconds and prints it back in its own format,
- * so `interval '1 minute'` is introspected as `'00:01:00'::interval`. Only non-negative `<n> <unit>` lists
- * are handled, anything else has to be written the way PostgreSQL prints it.
+ * PostgreSQL prints `interval '1 minute'` back as `'00:01:00'`, so the literal is reformatted the same way.
+ * Only non-negative `<n> <unit>` lists are handled, anything else has to be written the way PostgreSQL prints it.
  */
 function normalizeIntervalLiteral(literal: string): string | undefined {
-  const parts = { months: 0, days: 0, micros: 0 };
-  let valid = true;
+  // months, days, microseconds, the triple PostgreSQL stores an interval as
+  const parts = [0, 0, 0];
+  const rest = literal
+    .toLowerCase()
+    .replace(
+      /(\d+(?:\.\d+)?) *(?:(year)|(month|mon)|(week)|(day)|(hour)|(minute)|(second))s?\b/g,
+      (_, qty: string, ...units: (string | undefined)[]) => {
+        const i = units.findIndex(Boolean);
+        parts[i < 2 ? 0 : i < 4 ? 1 : 2] += +qty * [12, 1, 7, 1, 3_600_000_000, 60_000_000, 1_000_000][i];
+        return '';
+      },
+    );
 
-  const rest = literal.toLowerCase().replace(/(\d+(?:\.\d+)?)\s*([a-z]+)/g, (_, qty: string, unit: string) => {
-    const [field, factor] = INTERVAL_UNITS.get(unit.replace(/s$/, '')) ?? [];
-    const value = +qty * (factor ?? 0);
-
-    if (!field || (field !== 'micros' && !Number.isInteger(value))) {
-      valid = false;
-    } else {
-      parts[field] += Math.round(value);
-    }
-
-    return '';
-  });
-
-  if (!valid || rest.trim() !== '') {
+  if (rest.trim() || !Number.isInteger(parts[0]) || !Number.isInteger(parts[1])) {
     return undefined;
   }
 
-  const fields: string[] = [];
+  const [months, days, micros] = parts;
+  const fields = (
+    [
+      [Math.trunc(months / 12), 'year'],
+      [months % 12, 'mon'],
+      [days, 'day'],
+    ] as const
+  )
+    .filter(([v]) => v > 0)
+    .map(([v, u]) => `${v} ${u}${v === 1 ? '' : 's'}`);
 
-  for (const [value, unit] of [
-    [Math.trunc(parts.months / 12), 'year'],
-    [parts.months % 12, 'mon'],
-    [parts.days, 'day'],
-  ] as const) {
-    if (value > 0) {
-      fields.push(`${value} ${unit}${value === 1 ? '' : 's'}`);
-    }
-  }
-
-  if (parts.micros > 0 || fields.length === 0) {
-    const pad = (value: number) => String(value).padStart(2, '0');
-    const seconds = Math.floor(parts.micros / 1_000_000);
-    const fraction = String((parts.micros % 1_000_000) / 1_000_000).slice(1);
-    fields.push(
-      `${pad(Math.floor(seconds / 3600))}:${pad(Math.floor(seconds / 60) % 60)}:${pad(seconds % 60)}${fraction}`,
-    );
+  if (micros || !fields.length) {
+    const s = Math.floor(micros / 1_000_000);
+    const time = [s / 3600, (s / 60) % 60, s % 60].map(v => String(Math.floor(v)).padStart(2, '0')).join(':');
+    fields.push(time + String((Math.round(micros) % 1_000_000) / 1_000_000).slice(1));
   }
 
   return fields.join(' ');
