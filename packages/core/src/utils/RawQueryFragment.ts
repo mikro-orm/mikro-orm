@@ -168,6 +168,11 @@ export const ALIAS_REPLACEMENT = '[::alias::]';
 /** @internal */
 export const ALIAS_REPLACEMENT_RE = '\\[::alias::\\]';
 
+// a query builder param is embedded as a sub-query instead of being bound as a value
+function toRawParam(param: unknown): unknown {
+  return isSubquery(param) ? (param as unknown as { toRaw(): RawQueryFragment }).toRaw() : param;
+}
+
 /**
  * Creates raw SQL query fragment that can be assigned to a property or part of a filter. This fragment is represented
  * by `RawQueryFragment` class instance that can be serialized to a string, so it can be used both as an object value
@@ -260,7 +265,7 @@ export function raw<R = RawQueryFragment & symbol, T extends object = any>(
         return match;
       }
 
-      objectParams.push(dict[key]);
+      objectParams.push(toRawParam(dict[key]));
 
       return identifier ? '??' : '?';
     });
@@ -268,7 +273,7 @@ export function raw<R = RawQueryFragment & symbol, T extends object = any>(
     return new RawQueryFragment(sql, objectParams) as R;
   }
 
-  return new RawQueryFragment(sql, params) as R;
+  return new RawQueryFragment(sql, params?.map(toRawParam)) as R;
 }
 
 /**
