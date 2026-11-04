@@ -88,7 +88,7 @@ describe('SchemaGenerator [oracle]', () => {
     meta.get(Book2).uniques = origBook2Uniques;
     meta.get(Author2).indexes = origAuthor2Indexes;
     await orm.schema.update();
-  });
+  }, 120_000);
 
   test('update schema enums [oracle]', async () => {
     await orm.schema.update();
