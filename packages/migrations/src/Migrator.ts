@@ -98,6 +98,55 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     }
   }
 
+  /** Runs the callback while holding the migration lock (if enabled and supported by the driver). */
+  private async runLocked<T>(cb: () => Promise<T>): Promise<T> {
+    const lock = this.options.lock ? this.driver.getPlatform().getSchemaHelper()!.getMigrationLockSQL() : undefined;
+
+    if (!lock) {
+      return cb();
+    }
+
+    const poolMax = this.config.get('pool').max;
+
+    if (poolMax != null && poolMax < 2) {
+      throw new Error('The migration lock needs at least 2 pooled connections, as it holds one for the whole run');
+    }
+
+    // the database has to exist before a connection can be reserved, creating it may reconnect
+    await this.#schemaGenerator.ensureDatabase();
+    const connection = this.driver.getConnection();
+    const name = this.options.tableName!;
+    const deadline = Date.now() + (this.options.lockTimeout ?? Infinity);
+
+    // a session-level lock on a reserved connection spans all transactions of the run, while its queries keep using the pool
+    return connection
+      .getClient()
+      .connection()
+      .execute(async db => {
+        let waiting = false;
+
+        while (!(await connection.execute<Dictionary>(lock.acquire, [name], 'get', db)).locked) {
+          if (Date.now() >= deadline) {
+            throw new Error(`Timed out after ${this.options.lockTimeout} ms waiting for the migration lock`);
+          }
+
+          if (!waiting && !this.options.silent) {
+            const logger = this.config.getLogger();
+            logger.log('migrator', 'Waiting for the migration lock held by another run', { enabled: true });
+          }
+
+          waiting = true;
+          await new Promise(resolve => setTimeout(resolve, Math.min(500, deadline - Date.now())));
+        }
+
+        try {
+          return await cb();
+        } finally {
+          await connection.execute(lock.release, [name], 'run', db);
+        }
+      });
+  }
+
   /**
    * @inheritDoc
    */
@@ -204,7 +253,9 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
     options?: string | string[] | MigrateOptions,
   ): Promise<MigrationInfo[]> {
     const ctx = Utils.isObject<MigrateOptions>(options) ? options.transaction : undefined;
-    const result = await this.runWithoutForeignKeys(ctx, () => super.runMigrations(method, options));
+    const result = await this.runLocked(() =>
+      this.runWithoutForeignKeys(ctx, () => super.runMigrations(method, options)),
+    );
 
     if (result.length > 0 && this.options.snapshot && this.options.snapshotOnMigrate) {
       const { skipTables, skipViews } = this.config.get('schemaGenerator');
