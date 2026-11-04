@@ -7,8 +7,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **sqlite:** keep child rows when a migration rebuilds a table ([#8510](https://github.com/mikro-orm/mikro-orm/issues/8510)) ([0a3aa8a](https://github.com/mikro-orm/mikro-orm/commit/0a3aa8a9683a61c8537ff1ad651138f7f34e5976)), closes [#6300](https://github.com/mikro-orm/mikro-orm/issues/6300) [#6358](https://github.com/mikro-orm/mikro-orm/issues/6358)
-
+- **sqlite:** keep child rows when a migration rebuilds a table ([#8510](https://github.com/mikro-orm/mikro-orm/issues/8510)) ([0a3aa8a](https://github.com/mikro-orm/mikro-orm/commit/0a3aa8a9683a61c8537ff1ad651138f7f34e5976)), closes [#6300](https://github.com/mikro-orm/mikro-orm/issues/6300) [#6358](https://github.com/mikro-orm/mikro-orm/issues/6358)
 
 ## [7.2.6](https://github.com/mikro-orm/mikro-orm/compare/v7.2.5...v7.2.6) (2026-10-31)
 

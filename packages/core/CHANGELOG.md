@@ -7,23 +7,22 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **core:** don't convert a sub-query value with the property's custom type ([#8574](https://github.com/mikro-orm/mikro-orm/issues/8574)) ([6843a82](https://github.com/mikro-orm/mikro-orm/commit/6843a82bdd32ee80b805e85b8c66808e72ce76b2)), closes [#8572](https://github.com/mikro-orm/mikro-orm/issues/8572)
-* **core:** don't treat record types as `LazyRef` ([#8564](https://github.com/mikro-orm/mikro-orm/issues/8564)) ([0aeceac](https://github.com/mikro-orm/mikro-orm/commit/0aeceacb899eb6c3d7f13d8e3a6b6ac3a689f219))
-* **core:** keep class instances by reference when merging the config ([#8496](https://github.com/mikro-orm/mikro-orm/issues/8496)) ([d11862d](https://github.com/mikro-orm/mikro-orm/commit/d11862d858d9a80f9e84185800f798f0f9a76608)), closes [#8495](https://github.com/mikro-orm/mikro-orm/issues/8495)
-* **core:** respect the entity default `orderBy` in `em.findByCursor()` ([#8503](https://github.com/mikro-orm/mikro-orm/issues/8503)) ([8d789d8](https://github.com/mikro-orm/mikro-orm/commit/8d789d860d40485381648afe244182e57a703e09)), closes [#7133](https://github.com/mikro-orm/mikro-orm/issues/7133)
-* **core:** use distinct pivot columns for M:N within one STI hierarchy ([#8592](https://github.com/mikro-orm/mikro-orm/issues/8592)) ([6b5a605](https://github.com/mikro-orm/mikro-orm/commit/6b5a605d4f2ad58bf09326efa5189e2bc09d4654))
-* **sql:** emit valid SQL for `$in`/`$nin` on array columns ([#8502](https://github.com/mikro-orm/mikro-orm/issues/8502)) ([2ab63ff](https://github.com/mikro-orm/mikro-orm/commit/2ab63ff214f0451cc76a74b97553cc1cbad1f4b0)), closes [#8454](https://github.com/mikro-orm/mikro-orm/issues/8454)
-* **sql:** handle `$not` nested under collection properties ([#8471](https://github.com/mikro-orm/mikro-orm/issues/8471)) ([fee6fc5](https://github.com/mikro-orm/mikro-orm/commit/fee6fc51eced42c60293695c0def3dce208b6549)), closes [#8468](https://github.com/mikro-orm/mikro-orm/issues/8468)
+- **core:** don't convert a sub-query value with the property's custom type ([#8574](https://github.com/mikro-orm/mikro-orm/issues/8574)) ([6843a82](https://github.com/mikro-orm/mikro-orm/commit/6843a82bdd32ee80b805e85b8c66808e72ce76b2)), closes [#8572](https://github.com/mikro-orm/mikro-orm/issues/8572)
+- **core:** don't treat record types as `LazyRef` ([#8564](https://github.com/mikro-orm/mikro-orm/issues/8564)) ([0aeceac](https://github.com/mikro-orm/mikro-orm/commit/0aeceacb899eb6c3d7f13d8e3a6b6ac3a689f219))
+- **core:** keep class instances by reference when merging the config ([#8496](https://github.com/mikro-orm/mikro-orm/issues/8496)) ([d11862d](https://github.com/mikro-orm/mikro-orm/commit/d11862d858d9a80f9e84185800f798f0f9a76608)), closes [#8495](https://github.com/mikro-orm/mikro-orm/issues/8495)
+- **core:** respect the entity default `orderBy` in `em.findByCursor()` ([#8503](https://github.com/mikro-orm/mikro-orm/issues/8503)) ([8d789d8](https://github.com/mikro-orm/mikro-orm/commit/8d789d860d40485381648afe244182e57a703e09)), closes [#7133](https://github.com/mikro-orm/mikro-orm/issues/7133)
+- **core:** use distinct pivot columns for M:N within one STI hierarchy ([#8592](https://github.com/mikro-orm/mikro-orm/issues/8592)) ([6b5a605](https://github.com/mikro-orm/mikro-orm/commit/6b5a605d4f2ad58bf09326efa5189e2bc09d4654))
+- **sql:** emit valid SQL for `$in`/`$nin` on array columns ([#8502](https://github.com/mikro-orm/mikro-orm/issues/8502)) ([2ab63ff](https://github.com/mikro-orm/mikro-orm/commit/2ab63ff214f0451cc76a74b97553cc1cbad1f4b0)), closes [#8454](https://github.com/mikro-orm/mikro-orm/issues/8454)
+- **sql:** handle `$not` nested under collection properties ([#8471](https://github.com/mikro-orm/mikro-orm/issues/8471)) ([fee6fc5](https://github.com/mikro-orm/mikro-orm/commit/fee6fc51eced42c60293695c0def3dce208b6549)), closes [#8468](https://github.com/mikro-orm/mikro-orm/issues/8468)
 
 ### Features
 
-* **core:** embed a query builder passed as a raw fragment param as a sub-query ([#8590](https://github.com/mikro-orm/mikro-orm/issues/8590)) ([64763fd](https://github.com/mikro-orm/mikro-orm/commit/64763fda6e94bb12b74054ac9eaaf27ac1290a19)), closes [#8570](https://github.com/mikro-orm/mikro-orm/issues/8570)
+- **core:** embed a query builder passed as a raw fragment param as a sub-query ([#8590](https://github.com/mikro-orm/mikro-orm/issues/8590)) ([64763fd](https://github.com/mikro-orm/mikro-orm/commit/64763fda6e94bb12b74054ac9eaaf27ac1290a19)), closes [#8570](https://github.com/mikro-orm/mikro-orm/issues/8570)
 
 ### Performance Improvements
 
-* **core:** avoid quadratic delete-early matching in computeChangeSets ([#8580](https://github.com/mikro-orm/mikro-orm/issues/8580)) ([2de826a](https://github.com/mikro-orm/mikro-orm/commit/2de826ad727f1df0c7c73dd1d8175f41b5c47737)), closes [#8579](https://github.com/mikro-orm/mikro-orm/issues/8579) [#8579](https://github.com/mikro-orm/mikro-orm/issues/8579)
-* **core:** match serializer fields and populate paths by first segment ([#8464](https://github.com/mikro-orm/mikro-orm/issues/8464)) ([059a9e5](https://github.com/mikro-orm/mikro-orm/commit/059a9e575c7e250a93df02c9cda9cfd1df095238))
-
+- **core:** avoid quadratic delete-early matching in computeChangeSets ([#8580](https://github.com/mikro-orm/mikro-orm/issues/8580)) ([2de826a](https://github.com/mikro-orm/mikro-orm/commit/2de826ad727f1df0c7c73dd1d8175f41b5c47737)), closes [#8579](https://github.com/mikro-orm/mikro-orm/issues/8579) [#8579](https://github.com/mikro-orm/mikro-orm/issues/8579)
+- **core:** match serializer fields and populate paths by first segment ([#8464](https://github.com/mikro-orm/mikro-orm/issues/8464)) ([059a9e5](https://github.com/mikro-orm/mikro-orm/commit/059a9e575c7e250a93df02c9cda9cfd1df095238))
 
 ## [7.2.6](https://github.com/mikro-orm/mikro-orm/compare/v7.2.5...v7.2.6) (2026-10-31)
 
