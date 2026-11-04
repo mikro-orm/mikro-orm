@@ -9,6 +9,7 @@ import {
   type IndexCallback,
   type IndexOptions,
   isRaw,
+  MetadataError,
   type NamingStrategy,
   ReferenceKind,
   t,
@@ -1337,7 +1338,7 @@ export class DatabaseTable {
     if (columns?.length && properties.length > 0) {
       for (const col of columns) {
         if (!properties.includes(col.name)) {
-          throw new Error(
+          throw new MetadataError(
             `Index '${name}' on entity '${meta.className}': column option references field '${col.name}' which is not in the index properties`,
           );
         }
@@ -1346,7 +1347,7 @@ export class DatabaseTable {
 
     // Validate fillFactor range
     if (index.fillFactor != null && (index.fillFactor < 0 || index.fillFactor > 100)) {
-      throw new Error(
+      throw new MetadataError(
         `fillFactor must be between 0 and 100, got ${index.fillFactor} for index '${name}' on entity '${meta.className}'`,
       );
     }
@@ -1355,14 +1356,14 @@ export class DatabaseTable {
     // with `where` is dialect-dependent (PG/Oracle/MySQL drop `where`, MSSQL appends it) so we
     // reject the combination up-front and ask users to inline the predicate into `expression`.
     if (index.expression && index.where != null) {
-      throw new Error(
+      throw new MetadataError(
         `Index '${name}' on entity '${meta.className}': cannot combine \`expression\` with \`where\` — inline the WHERE clause into the \`expression\` escape hatch, or drop \`expression\` and use structured \`properties\` + \`where\`.`,
       );
     }
 
     // `where` forces the `create unique index` form, and no dialect accepts `deferrable` on an index.
     if (index.where != null && index.deferMode) {
-      throw new Error(
+      throw new MetadataError(
         `Index '${name}' on entity '${meta.className}': cannot combine \`deferMode\` with \`where\` — partial unique indexes cannot be deferrable. On PostgreSQL, declare an exclusion constraint instead, e.g. \`exclude using btree (col with =) where (...) deferrable initially ${index.deferMode}\`.`,
       );
     }
