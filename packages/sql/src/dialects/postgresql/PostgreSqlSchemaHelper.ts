@@ -43,22 +43,39 @@ function normalizeIntervalLiteral(literal: string): string | undefined {
   // `[field, factor]` into the months, days and microseconds triple PostgreSQL stores an interval as
   const units: Dictionary<[number, number]> = {
     year: [0, 12],
+    yr: [0, 12],
+    y: [0, 12],
     month: [0, 1],
     mon: [0, 1],
     week: [1, 7],
+    w: [1, 7],
     day: [1, 1],
+    d: [1, 1],
     hour: [2, 3_600_000_000],
+    hr: [2, 3_600_000_000],
+    h: [2, 3_600_000_000],
     minute: [2, 60_000_000],
+    min: [2, 60_000_000],
+    m: [2, 60_000_000],
     second: [2, 1_000_000],
+    sec: [2, 1_000_000],
+    s: [2, 1_000_000],
+    millisecond: [2, 1_000],
+    msec: [2, 1_000],
+    ms: [2, 1_000],
+    microsecond: [2, 1],
+    usec: [2, 1],
+    us: [2, 1],
   };
   const parts = [0, 0, 0];
-  const rest = literal
-    .toLowerCase()
-    .replace(/(\d+(?:\.\d+)?) *(year|month|mon|week|day|hour|minute|second)s?\b/g, (_, qty: string, unit: string) => {
-      const [field, factor] = units[unit];
-      parts[field] += +qty * factor;
-      return '';
-    });
+  // longer spellings first, so `ms`/`msec` are not read as `m` + plural `s`
+  const unitRe =
+    /(\d+(?:\.\d+)?) *(milliseconds?|microseconds?|msecs?|usecs?|years?|months?|mons?|weeks?|days?|hours?|minutes?|seconds?|yrs?|hrs?|mins?|secs?|ms|us|[ywdhms])\b/g;
+  const rest = literal.toLowerCase().replace(unitRe, (_, qty: string, unit: string) => {
+    const [field, factor] = units[unit] ?? units[unit.slice(0, -1)];
+    parts[field] += +qty * factor;
+    return '';
+  });
 
   if (rest.trim() || !Number.isInteger(parts[0]) || !Number.isInteger(parts[1])) {
     return undefined;
@@ -1752,13 +1769,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   override normalizeExpression(expr: string): string {
-    return expr.replace(
-      /\binterval\s*'([^']*)'|'([^']*)'\s*::\s*interval\b/gi,
-      (match, typed?: string, cast?: string) => {
-        const literal = normalizeIntervalLiteral(typed ?? cast!);
-        return literal == null ? match : `'${literal}'::interval`;
-      },
-    );
+    return expr.replace(/\binterval\s*'([^']*)'|'([^']*)'\s*::\s*interval\b/gi, (_, typed?: string, cast?: string) => {
+      // `interval 'x'` and `'x'::interval` are the same literal and PostgreSQL always prints the cast form
+      const literal = typed ?? cast!;
+      return `'${normalizeIntervalLiteral(literal) ?? literal}'::interval`;
+    });
   }
 
   override normalizeDefaultValue(defaultValue: string, length: number): string | number {
