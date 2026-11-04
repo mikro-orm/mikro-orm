@@ -285,7 +285,7 @@ test('sibling module copies share the fragment registry and recognise each other
       return this.#key;
     }
   }
-  Object.defineProperty(SiblingRawQueryFragment.prototype, '__mikroOrmRawFragment', { value: true });
+  Object.defineProperty(SiblingRawQueryFragment.prototype, Symbol.for('mikro-orm.raw-fragment'), { value: true });
 
   const sibling = new SiblingRawQueryFragment('select 1');
 
@@ -312,7 +312,7 @@ test('compareObjects matches cross-copy fragments carrying the same sql/params',
       public params: unknown[] = [],
     ) {}
   }
-  Object.defineProperty(SiblingRawQueryFragment.prototype, '__mikroOrmRawFragment', { value: true });
+  Object.defineProperty(SiblingRawQueryFragment.prototype, Symbol.for('mikro-orm.raw-fragment'), { value: true });
 
   const real = new RawQueryFragment('select ?', [1]);
   const sibling = new SiblingRawQueryFragment('select ?', [1]);
@@ -345,7 +345,7 @@ test('sibling module fragment drives SQL assembly through em.nativeUpdate end-to
       return this.#key;
     }
   }
-  Object.defineProperty(SiblingRawQueryFragment.prototype, '__mikroOrmRawFragment', { value: true });
+  Object.defineProperty(SiblingRawQueryFragment.prototype, Symbol.for('mikro-orm.raw-fragment'), { value: true });
 
   orm.em.create(Tag, { name: 'sibling-roundtrip', job: orm.em.create(Job, {}) });
   await orm.em.flush();
