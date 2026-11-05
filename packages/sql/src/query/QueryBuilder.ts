@@ -1861,6 +1861,20 @@ export class QueryBuilder<
           o[raw('??', [key]) as any] = o[key];
           delete o[key];
         }
+
+        // an alias-prefixed composite FK needs all its columns, like the unprefixed form gets in `renameFieldToPK()`
+        const [alias, field] = key.includes('.') ? this.helper.splitField(key as EntityKey, true) : [];
+        const prop = field && !Utils.isPlainObject(o[key]) ? this.helper.getProperty(field, alias) : undefined;
+
+        if (
+          prop &&
+          prop.joinColumns?.length > 1 &&
+          (prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner))
+        ) {
+          const columns = prop.polymorphic ? prop.fieldNames : prop.joinColumns;
+          o[Utils.getPrimaryKeyHash(columns.map(col => `${alias}.${col}`))] = o[key];
+          delete o[key];
+        }
       }
 
       this.helper.validateQueryOrder(o);
@@ -4320,9 +4334,13 @@ export class QueryBuilder<
       const orderBy = [];
 
       for (const orderMap of this.#state.orderBy) {
-        for (const field of Utils.getObjectQueryKeys(orderMap)) {
-          const direction = orderMap[field as EntityKey<Entity>];
+        // a composite FK key holds several columns, each needs its own `min()`
+        const entries = Utils.getObjectQueryKeys(orderMap).flatMap(key => {
+          const fields = RawQueryFragment.isKnownFragmentSymbol(key) ? [key] : Utils.splitPrimaryKeys(key);
+          return fields.map(field => [field, orderMap[key as EntityKey<Entity>]] as const);
+        });
 
+        for (const [field, direction] of entries) {
           if (RawQueryFragment.isKnownFragmentSymbol(field)) {
             orderBy.push({ [field]: direction });
             continue;
