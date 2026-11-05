@@ -569,8 +569,14 @@ export class UnitOfWork {
       }
 
       if (prop.kind === ReferenceKind.ONE_TO_MANY && prop2.nullable && Utils.isCollection<AnyEntity>(relation)) {
-        for (const item of relation.getItems(false)) {
-          delete item[inverseProp];
+        // with foreign keys, unlinking would override their delete rule, so leave it to the database
+        const usesForeignKeys =
+          this.#platform.usesPivotTable() && this.#em.config.get('schemaGenerator').createForeignKeyConstraints;
+
+        if (!usesForeignKeys || prop2.deleteRule?.toLowerCase() === 'set null') {
+          for (const item of relation.getItems(false)) {
+            delete item[inverseProp];
+          }
         }
 
         continue;
