@@ -15,6 +15,7 @@ import {
   type FindByCursorOptions,
   type FindOneOptions,
   type FindOptions,
+  GroupOperator,
   type NativeInsertUpdateManyOptions,
   type NativeInsertUpdateOptions,
   PolymorphicRef,
@@ -340,7 +341,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     const meta = this.metadata.find(entityName)!;
     const pk = meta.getPrimaryProps()[0].fieldNames[0] ?? '_id';
     const normalizedWhere = Utils.isPrimaryKey(where) ? ({ [pk]: where } as FilterQuery<T>) : where;
-    const renameWhere = this.renameFields(entityName, normalizedWhere as unknown as EntityDictionary<T>);
+    const renameWhere = this.renameFields(entityName, normalizedWhere as unknown as EntityDictionary<T>, true);
     const source = await this.rethrow(
       this.getConnection('read').find<T>(entityName, renameWhere as FilterQuery<T>, { ctx: options.ctx, limit: 1 }),
     );
@@ -736,7 +737,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         }
       }
 
-      copiedData[key] = this.convertRegExpOperator(copiedData[key]);
+      // `dotPaths` marks a query, entity data (e.g. JSON values) must stay as-is
+      if (dotPaths) {
+        copiedData[key] = this.convertRegExpOperator(copiedData[key]);
+      }
     });
 
     return copiedData as T;
@@ -747,7 +751,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       return value;
     }
 
-    const cond = '$not' in value ? { ...value, $not: this.convertRegExpOperator(value.$not) } : value;
+    let cond = '$not' in value ? { ...value, $not: this.convertRegExpOperator(value.$not) } : value;
+
+    if (Utils.isPlainObject(cond.$elemMatch)) {
+      cond = { ...cond, $elemMatch: this.convertRegExpOperators(cond.$elemMatch) };
+    }
 
     if (!('$re' in cond)) {
       return cond;
@@ -757,6 +765,17 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     // mongo has no `$re`: a RegExp when it stands alone, `$regex` next to other operators
     return Utils.hasObjectKeys(rest) ? { ...rest, $regex: $re } : new RegExp($re);
+  }
+
+  private convertRegExpOperators(where: Dictionary): Dictionary {
+    return Object.fromEntries(
+      Object.entries(where).map(([k, v]) => [
+        k,
+        k in GroupOperator && Array.isArray(v)
+          ? v.map(c => this.convertRegExpOperators(c))
+          : this.convertRegExpOperator(v),
+      ]),
+    );
   }
 
   private convertObjectIds<T extends ObjectId | Dictionary | string | any[]>(data: T): T {
