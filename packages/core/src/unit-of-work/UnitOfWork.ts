@@ -549,7 +549,7 @@ export class UnitOfWork {
       this.#identityMap.delete(entity);
     }
 
-    // remove from referencing relations that are nullable
+    // unlink loaded inverse-side items only when the FK is `set null`, other delete rules are left to the database
     const entityMeta = helper(entity).__meta;
     for (const prop of entityMeta.bidirectionalRelations) {
       const inverseProp = prop.mappedBy || prop.inversedBy;
@@ -568,7 +568,11 @@ export class UnitOfWork {
         continue;
       }
 
-      if (prop.kind === ReferenceKind.ONE_TO_MANY && prop2.nullable && Utils.isCollection<AnyEntity>(relation)) {
+      if (
+        prop.kind === ReferenceKind.ONE_TO_MANY &&
+        prop2.deleteRule === 'set null' &&
+        Utils.isCollection<AnyEntity>(relation)
+      ) {
         for (const item of relation.getItems(false)) {
           delete item[inverseProp];
         }
