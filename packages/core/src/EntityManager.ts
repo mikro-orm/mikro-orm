@@ -104,28 +104,7 @@ import { MetadataError, OptimisticLockError, ValidationError } from './errors.js
 import type { CacheAdapter } from './cache/CacheAdapter.js';
 import { applyPopulateHints, getLoadingStrategy } from './entity/utils.js';
 import { TransactionManager } from './utils/TransactionManager.js';
-
-// JSON loses RegExp patterns, `raw()` params and `raw()` keys (symbols); `this[key]` is the value before `toJSON()`
-function cacheKeyReplacer(this: Dictionary, key: string, value: unknown): unknown {
-  const original = this[key];
-
-  if (original instanceof RegExp) {
-    return { regexp: original.source, flags: original.flags };
-  }
-
-  if (isRaw(original)) {
-    return { sql: original.sql, params: original.params };
-  }
-
-  if (Raw.hasObjectFragments(value)) {
-    return Utils.getObjectQueryKeys(value as Dictionary).map(k => [
-      Raw.getKnownFragment(k) ?? k,
-      (value as Dictionary)[k as string],
-    ]);
-  }
-
-  return value;
-}
+import { scopeCacheKey, stringifyCacheKey } from './cache/cache-key.js';
 
 /**
  * The EntityManager is the central access point to ORM functionality. It is a facade to all different ORM subsystems
@@ -3685,11 +3664,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const em = this.getContext();
     // a named cache key (`config[0]`) discards the computed `key`, which already carries the session context — so
     // scope it here too, otherwise a fork's rows would be served to another session context under the same name
-    const cacheKey = Array.isArray(config)
-      ? em.#sessionContext
-        ? `${config[0]}|${JSON.stringify(em.#sessionContext)}`
-        : config[0]
-      : JSON.stringify(key, cacheKeyReplacer);
+    const cacheKey = Array.isArray(config) ? scopeCacheKey(config[0], em.#sessionContext) : stringifyCacheKey(key);
     const cached = await em.#resultCache.get(cacheKey);
 
     if (!cached) {
@@ -3753,7 +3728,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     // named keys are scoped by the session context (see `tryCache`), so clear this context's variant too
     if (em.#sessionContext) {
-      await em.#resultCache.remove(`${cacheKey}|${JSON.stringify(em.#sessionContext)}`);
+      await em.#resultCache.remove(scopeCacheKey(cacheKey, em.#sessionContext));
     }
   }
 

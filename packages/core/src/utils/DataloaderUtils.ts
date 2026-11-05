@@ -5,8 +5,12 @@ import { type EntityManager } from '../EntityManager.js';
 import { type LoadReferenceOptions, Reference } from '../entity/Reference.js';
 import { ReferenceKind } from '../enums.js';
 import { Utils } from './Utils.js';
+import { stringifyCacheKey } from '../cache/cache-key.js';
 
 type BatchLoadFn<K, V> = (keys: readonly K[]) => PromiseLike<ArrayLike<V | Error>>;
+
+// the original options of each group key, JSON cannot restore values like RegExp or `raw()` from the key
+const groupOptions = new WeakMap<Map<string, unknown>, Map<string, any>>();
 
 export class DataloaderUtils {
   private static DataLoader?: Constructor<{ load: (...args: unknown[]) => Promise<unknown> }>;
@@ -19,6 +23,8 @@ export class DataloaderUtils {
     refsWithOpts: readonly [Ref<any>, Omit<LoadReferenceOptions<any, any>, 'dataloader'>?][],
   ): Map<string, Set<Primary<any>>> {
     const map = new Map<string, Set<Primary<any>>>();
+    const options = new Map<string, any>();
+    groupOptions.set(map, options);
     for (const [ref, opts] of refsWithOpts) {
       /* The key is a combination of the uniqueName (a unique table name based identifier) and a stringified version if the load options because we want
          to map each combination of entities/options into separate find queries in order to return accurate results.
@@ -33,7 +39,8 @@ export class DataloaderUtils {
          Thus such approach should probably be configurable, if not opt-in.
          NOTE: meta + opts multi maps (https://github.com/martian17/ds-js) might be a more elegant way
          to implement this but not necessarily faster.  */
-      const key = `${helper(ref).__meta.uniqueName}|${JSON.stringify(opts ?? {})}`;
+      const key = `${helper(ref).__meta.uniqueName}|${stringifyCacheKey(opts ?? {})}`;
+      options.set(key, opts ?? {});
       let primaryKeysSet = map.get(key);
       if (primaryKeysSet == null) {
         primaryKeysSet = new Set();
@@ -57,7 +64,7 @@ export class DataloaderUtils {
       const groupedIdsMap = DataloaderUtils.groupPrimaryKeysByEntityAndOpts(refsWithOpts);
       const promises = Array.from(groupedIdsMap).map(([key, idsSet]) => {
         const uniqueName = key.substring(0, key.indexOf('|'));
-        const opts = JSON.parse(key.substring(key.indexOf('|') + 1));
+        const opts = groupOptions.get(groupedIdsMap)!.get(key);
         const meta = em.getMetadata().getByUniqueName(uniqueName);
         return em.find(meta.class, Array.from(idsSet), opts);
       });
@@ -80,6 +87,8 @@ export class DataloaderUtils {
     collsWithOpts: readonly [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][],
   ): Map<string, Map<string, Set<Primary<any>>>> {
     const entitiesMap = new Map<string, Map<string, Set<Primary<any>>>>();
+    const options = new Map<string, any>();
+    groupOptions.set(entitiesMap, options);
     for (const [col, opts] of collsWithOpts) {
       /*
       We first get the entity name of the Collection and together with its options (see groupPrimaryKeysByEntityAndOpts
@@ -88,7 +97,8 @@ export class DataloaderUtils {
       The value is another Map which we can use to filter the find query to get results pertaining to the collections that have been dataloaded:
       its keys are the props we are going to filter to and its values are the corresponding PKs.
       */
-      const key = `${col.property.targetMeta!.uniqueName}|${JSON.stringify(opts ?? {})}`;
+      const key = `${col.property.targetMeta!.uniqueName}|${stringifyCacheKey(opts ?? {})}`;
+      options.set(key, opts ?? {});
       let filterMap = entitiesMap.get(key); // We are going to use this map to filter the entities pertaining to the collections that have been dataloaded.
       if (filterMap == null) {
         filterMap = new Map<string, Set<Primary<any>>>();
@@ -120,7 +130,9 @@ export class DataloaderUtils {
   ): Promise<[string, any[]]>[] {
     return Array.from(entitiesAndOptsMap, async ([key, filterMap]): Promise<[string, any[]]> => {
       const uniqueName = key.substring(0, key.indexOf('|'));
-      const opts: Omit<InitCollectionOptions<any, any>, 'dataloader'> = JSON.parse(key.substring(key.indexOf('|') + 1));
+      const opts: Omit<InitCollectionOptions<any, any>, 'dataloader'> = groupOptions
+        .get(entitiesAndOptsMap)
+        ?.get(key) ?? JSON.parse(key.substring(key.indexOf('|') + 1));
       const meta = em.getMetadata().getByUniqueName(uniqueName);
       const res = await em.find(
         meta.class,
@@ -200,7 +212,7 @@ export class DataloaderUtils {
       // We need to filter the results in order to map each input collection
       // to a subset of each query matching the collection items.
       return collsWithOpts.map(([col, opts]) => {
-        const key = `${col.property.targetMeta!.uniqueName}|${JSON.stringify(opts ?? {})}`;
+        const key = `${col.property.targetMeta!.uniqueName}|${stringifyCacheKey(opts ?? {})}`;
         const entities = resultsMap.get(key);
         if (entities == null) {
           // Should never happen
@@ -225,7 +237,7 @@ export class DataloaderUtils {
       const groups = new Map<string, [Collection<any>, Omit<InitCollectionOptions<any, any>, 'dataloader'>?][]>();
 
       for (const [col, opts] of collsWithOpts) {
-        const key = `${col.property.targetMeta!.uniqueName}.${col.property.name}|${JSON.stringify(opts ?? {})}`;
+        const key = `${col.property.targetMeta!.uniqueName}.${col.property.name}|${stringifyCacheKey(opts ?? {})}`;
         const value = groups.get(key) ?? [];
         value.push([col, opts ?? {}]);
         groups.set(key, value);
@@ -313,7 +325,7 @@ export class DataloaderUtils {
         // sharing a relation with the same property name (e.g. `Author.books` and `Publisher.books`)
         // don't collide into a single batch that would use one owner's FK mapping for the other.
         const ownerUniqueName = helper(col.owner).__meta.uniqueName;
-        const key = `${ownerUniqueName}.${prop.name}|${JSON.stringify(opts ?? {})}`;
+        const key = `${ownerUniqueName}.${prop.name}|${stringifyCacheKey(opts ?? {})}`;
         keys.push(key);
         let group = groups.get(key);
 
@@ -323,7 +335,7 @@ export class DataloaderUtils {
         }
 
         const pk = helper(col.owner).getPrimaryKey();
-        group.ownerPKs.set(JSON.stringify(pk), pk);
+        group.ownerPKs.set(stringifyCacheKey(pk), pk);
       }
 
       const promises = Array.from(groups.entries()).map(async ([key, group]): Promise<[string, Dictionary<number>]> => {
