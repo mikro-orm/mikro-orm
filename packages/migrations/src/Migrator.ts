@@ -355,6 +355,7 @@ export class Migrator extends AbstractMigrator<AbstractSqlDriver> {
 
       table.rlsEnabled = !!tbl.rlsEnabled;
       table.rlsForced = !!tbl.rlsForced;
+      table.setPartitioning(tbl.partitioning);
 
       const cols = tbl.columns;
       Object.keys(cols).forEach(col => {
