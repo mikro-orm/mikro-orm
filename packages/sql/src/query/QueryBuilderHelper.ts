@@ -1581,13 +1581,8 @@ export class QueryBuilderHelper {
 
     for (const key of Object.keys(cond)) {
       // operators are kept, only the properties inside them are qualified
-      if (key === '$and' || key === '$or') {
-        cond[key].forEach((sub: FilterQuery<any>) => this.processOnConflictCondition(sub, schema));
-        continue;
-      }
-
-      if (key === '$not') {
-        this.processOnConflictCondition(cond[key], schema);
+      if (key === '$and' || key === '$or' || key === '$not') {
+        Utils.asArray(cond[key]).forEach((sub: FilterQuery<any>) => this.processOnConflictCondition(sub, schema));
         continue;
       }
 

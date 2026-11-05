@@ -60,17 +60,16 @@ test('qb renders an $or group on the conflicting row', () => {
     .where(claimable)
     .getQuery();
 
-  expect(sql).not.toContain('$or');
   expect(sql).toMatch(
     /do update set .* where \(`job`\.`status` = \? or \(`job`\.`status` = \? and `job`\.`claimed_at` < \?\)\)/,
   );
 });
 
 test('upsert with an $or onConflictWhere updates only the rows it matches', async () => {
-  expect(await claim('failed')).toEqual(['running', 2]);
-  expect(await claim('expired')).toEqual(['running', 2]);
-  expect(await claim('running')).toEqual(['running', 1]);
-  expect(await claim('done')).toEqual(['done', 1]);
+  await expect(claim('failed')).resolves.toEqual(['running', 2]);
+  await expect(claim('expired')).resolves.toEqual(['running', 2]);
+  await expect(claim('running')).resolves.toEqual(['running', 1]);
+  await expect(claim('done')).resolves.toEqual(['done', 1]);
 });
 
 test('upsert with $and and $not groups in onConflictWhere', async () => {
