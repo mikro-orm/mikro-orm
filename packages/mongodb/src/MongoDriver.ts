@@ -656,6 +656,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         return;
       }
 
+      let key = k;
+
       if (meta?.properties[k as EntityKey<T>]) {
         const prop = meta.properties[k as EntityKey<T>];
         let isObjectId = false;
@@ -730,15 +732,31 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
         if (prop.fieldNames) {
           Utils.renameKey(copiedData, k, prop.fieldNames[0]);
+          key = prop.fieldNames[0];
         }
       }
 
-      if (Utils.isPlainObject(copiedData[k]) && '$re' in copiedData[k]) {
-        copiedData[k] = new RegExp(copiedData[k].$re);
-      }
+      copiedData[key] = this.convertRegExpOperator(copiedData[key]);
     });
 
     return copiedData as T;
+  }
+
+  private convertRegExpOperator(value: unknown): unknown {
+    if (!Utils.isPlainObject(value)) {
+      return value;
+    }
+
+    const cond = '$not' in value ? { ...value, $not: this.convertRegExpOperator(value.$not) } : value;
+
+    if (!('$re' in cond)) {
+      return cond;
+    }
+
+    const { $re, ...rest } = cond;
+
+    // mongo has no `$re`: a RegExp when it stands alone, `$regex` next to other operators
+    return Utils.hasObjectKeys(rest) ? { ...rest, $regex: $re } : new RegExp($re);
   }
 
   private convertObjectIds<T extends ObjectId | Dictionary | string | any[]>(data: T): T {
