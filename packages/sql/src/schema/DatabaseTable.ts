@@ -1611,6 +1611,8 @@ export class DatabaseTable {
       // collapse mysql's `""` for unset comments to `null` so both sources agree. drop entirely on
       // platforms that can't read comments back (sqlite), where keeping it would flip the snapshot
       comment: supportsComments ? this.comment || null : null,
+      // JSON.stringify drops it when unset, so snapshots of unpartitioned tables stay unchanged
+      partitioning: this.partitioning,
     };
 
     // emit RLS state only when set, so snapshots of non-RLS tables stay byte-for-byte unchanged
