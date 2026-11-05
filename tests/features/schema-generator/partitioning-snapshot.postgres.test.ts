@@ -65,10 +65,11 @@ test('the schema snapshot keeps partitioning, so the next migration is empty', a
   });
 });
 
-test('no partitioned table is rebuilt after the migrations ran and rewrote the snapshot', async () => {
+test('no partitioned table is rebuilt when the snapshot is written from the database', async () => {
   await orm.migrator.create();
+  // forces `up()` to write the snapshot from introspection instead of the entity metadata
+  await rm(`${path}/${(await readdir(path)).find(file => file.endsWith('.json'))}`);
   await orm.migrator.up();
-  await orm.em.execute(`insert into measurement (id, value) values (1, 42)`);
 
   const second = await orm.migrator.create();
   expect(second.diff.up).toEqual([]);
