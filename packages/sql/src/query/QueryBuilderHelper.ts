@@ -1580,6 +1580,12 @@ export class QueryBuilderHelper {
     const tableName = meta.tableName;
 
     for (const key of Object.keys(cond)) {
+      // operators are kept, only the properties inside them are qualified
+      if (key === '$and' || key === '$or' || key === '$not') {
+        Utils.asArray(cond[key]).forEach((sub: FilterQuery<any>) => this.processOnConflictCondition(sub, schema));
+        continue;
+      }
+
       const mapped = this.mapper(key, QueryType.UPSERT);
       Utils.renameKey(cond, key, tableName + '.' + mapped);
     }
