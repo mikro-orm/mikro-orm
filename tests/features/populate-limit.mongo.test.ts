@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/mongodb';
+import { MikroORM, wrap } from '@mikro-orm/mongodb';
 import { Author, Book, BookTag } from '../../tests/entities/index.js';
 import { initORMMongo, mockLogger } from '../bootstrap.js';
 
@@ -234,6 +234,109 @@ describe('populate with limit (MongoDB)', () => {
 
     for (const author of authors) {
       expect(author.books.length).toBeLessThanOrEqual(2);
+    }
+  });
+
+  test('M:N mappedBy-side populate with limit when the books have different tag sets', async () => {
+    const em = orm.em.fork();
+    const author = em.create(Author, { name: 'Tag sets', email: 'tag-sets@test.com' });
+    const t1 = em.create(BookTag, { name: 'tag-sets-1' });
+    const t2 = em.create(BookTag, { name: 'tag-sets-2' });
+
+    // b1-b4 are tagged [t1], b5-b8 [t1, t2]
+    for (let i = 1; i <= 8; i++) {
+      em.create(Book, { title: `b${i}`, author, tags: i <= 4 ? [t1] : [t1, t2] });
+    }
+
+    await em.flush();
+
+    const loadTitles = async (limit: number, offset?: number) => {
+      const tags = await orm.em.fork().find(
+        BookTag,
+        { name: /^tag-sets-/ },
+        {
+          populate: ['books'],
+          populateHints: { books: { limit, offset, orderBy: { title: 'asc' } } },
+          orderBy: { name: 'asc' },
+        },
+      );
+
+      return tags.map(tag => tag.books.getItems().map(book => book.title));
+    };
+
+    expect(await loadTitles(2)).toEqual([
+      ['b1', 'b2'],
+      ['b5', 'b6'],
+    ]);
+    expect(await loadTitles(2, 1)).toEqual([
+      ['b2', 'b3'],
+      ['b6', 'b7'],
+    ]);
+  });
+
+  test('M:N mappedBy-side populate with limit keeps a shared book only where it made the cut', async () => {
+    const em = orm.em.fork();
+    const author = em.create(Author, { name: 'Shared book', email: 'shared-book@test.com' });
+    const t1 = em.create(BookTag, { name: 'shared-book-1' });
+    const t2 = em.create(BookTag, { name: 'shared-book-2' });
+    em.create(Book, { title: 'b0', author, tags: [t2] });
+    const b1 = em.create(Book, { title: 'b1', author, tags: [t1, t2] });
+    await em.flush();
+
+    const tags = await orm.em.fork().find(
+      BookTag,
+      { name: /^shared-book-/ },
+      {
+        populate: ['books'],
+        populateHints: { books: { limit: 1, orderBy: { title: 'asc' } } },
+        orderBy: { name: 'asc' },
+      },
+    );
+
+    // b1 is in the top 1 of t1, but not of t2
+    expect(tags.map(tag => tag.books.getItems().map(book => book.title))).toEqual([['b1'], ['b0']]);
+    expect(wrap(tags[1].books[0], true).__originalEntityData).not.toHaveProperty('__partition');
+
+    // with t2 alone, b1 is not read for t1
+    const em2 = orm.em.fork();
+    const [t2Only] = await em2.find(
+      BookTag,
+      { name: 'shared-book-2' },
+      { populate: ['books'], populateHints: { books: { limit: 1, orderBy: { title: 'asc' } } } },
+    );
+    expect(t2Only.books.getItems().map(book => book.title)).toEqual(['b0']);
+    expect(em2.getUnitOfWork().getById(Book, b1.id)).toBeUndefined();
+  });
+
+  test('M:N mappedBy-side populate with limit bypasses the global result cache', async () => {
+    const em = orm.em.fork();
+    const author = em.create(Author, { name: 'Cached', email: 'cached@test.com' });
+    const t1 = em.create(BookTag, { name: 'cached-1' });
+    const t2 = em.create(BookTag, { name: 'cached-2' });
+    em.create(Book, { title: 'b0', author, tags: [t2] });
+    em.create(Book, { title: 'b1', author, tags: [t1, t2] });
+    await em.flush();
+
+    const resultCache = orm.config.get('resultCache');
+    orm.config.set('resultCache', { ...resultCache, global: true });
+
+    try {
+      for (let i = 0; i < 2; i++) {
+        const tags = await orm.em.fork().find(
+          BookTag,
+          { name: /^cached-/ },
+          {
+            populate: ['books'],
+            populateHints: { books: { limit: 1, orderBy: { title: 'asc' } } },
+            orderBy: { name: 'asc' },
+            // a cached root query would skip the populate query under test
+            cache: false,
+          },
+        );
+        expect(tags.map(tag => tag.books.getItems().map(book => book.title))).toEqual([['b1'], ['b0']]);
+      }
+    } finally {
+      orm.config.set('resultCache', resultCache);
     }
   });
 });
