@@ -338,7 +338,7 @@ export class EntityLoader {
     if (prop.polymorphic && prop.polymorphTargets) {
       return this.populatePolymorphic<Entity>(entities, prop, options, !!ref);
     }
-    const { items, partial } = await this.findChildren<Entity>(
+    const { items, partial, partitions } = await this.findChildren<Entity>(
       (options as Dictionary).filtered ?? entities,
       prop,
       populate,
@@ -352,6 +352,12 @@ export class EntityLoader {
     const hasLimit = populate.limit != null;
     const isPartial = partial || hasLimit;
     const customOrder = mergedOrderBy.length > 0 || !!prop.orderBy || !!prop.targetMeta?.orderBy;
+
+    if (partitions) {
+      this.initializePartitions<Entity>(filtered, items, field, partitions, isPartial);
+      return items;
+    }
+
     this.initializeCollections<Entity>(filtered, prop, field, items, customOrder, isPartial, hasLimit);
 
     return items;
@@ -568,13 +574,34 @@ export class EntityLoader {
     }
   }
 
+  private initializePartitions<Entity>(
+    filtered: Entity[],
+    children: AnyEntity[],
+    field: keyof Entity,
+    partitions: [owner: unknown, child: unknown][],
+    partial: boolean,
+  ): void {
+    // a child belongs only to the owners whose slice returned it, not to every owner in its array
+    const key = (entity: unknown) => helper(entity as AnyEntity).getSerializedPrimaryKey();
+    const owners = new Map(filtered.map(entity => [key(entity), [] as AnyEntity[]]));
+    const items = new Map(children.map(child => [key(child), child]));
+
+    for (const [owner, child] of partitions) {
+      owners.get('' + owner)?.push(items.get('' + child)!);
+    }
+
+    for (const entity of filtered) {
+      (entity[field] as Collection<AnyEntity>).hydrate(owners.get(key(entity))!, true, partial, true);
+    }
+  }
+
   private async findChildren<Entity extends object>(
     entities: Entity[],
     prop: EntityProperty<Entity>,
     populate: PopulateOptions<Entity>,
     options: Required<EntityLoaderOptions<Entity>>,
     ref: boolean,
-  ): Promise<{ items: AnyEntity[]; partial: boolean }> {
+  ): Promise<{ items: AnyEntity[]; partial: boolean; partitions?: [owner: unknown, child: unknown][] }> {
     const children = Utils.unique(this.getChildReferences<Entity>(entities, prop, options, ref, populate));
     const meta = prop.targetMeta!;
     // When targetKey is set, use it for FK lookup instead of the PK
@@ -701,6 +728,8 @@ export class EntityLoader {
         partitionBy: fk,
         limit: populate.limit,
         offset: populate.offset,
+        // the owners of an M:N without a pivot table are stored as an array, the driver slices per owner
+        owners: prop.kind === ReferenceKind.MANY_TO_MANY && ownerProp ? ids : undefined,
       };
     }
 
@@ -783,7 +812,7 @@ export class EntityLoader {
       }
     }
 
-    return { items, partial };
+    return { items, partial, partitions: findOptions._partitionLimit?.partitions };
   }
 
   private mergePrimaryCondition<Entity extends object>(

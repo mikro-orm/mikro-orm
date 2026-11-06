@@ -33,6 +33,15 @@ import { MongoPlatform } from './MongoPlatform.js';
 import { MongoEntityManager } from './MongoEntityManager.js';
 import { MongoMikroORM } from './MongoMikroORM.js';
 
+/** `owners` and `partitions` are set only for the inverse side of an M:N, whose owners are stored in an array. */
+type PartitionLimit = {
+  partitionBy: string;
+  limit: number;
+  offset?: number;
+  owners?: unknown[];
+  partitions?: [owner: unknown, child: unknown][];
+};
+
 /** Database driver for MongoDB. */
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
   override [EntityManagerType]!: MongoEntityManager<this>;
@@ -141,9 +150,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     const orderBy = Utils.asArray(options.orderBy).map(orderBy => this.renameFields(entityName, orderBy as T, true));
-    const partitionLimit = (options as Dictionary)._partitionLimit as
-      | { partitionBy: string; limit: number; offset?: number }
-      | undefined;
+    const partitionLimit = (options as Dictionary)._partitionLimit as PartitionLimit | undefined;
 
     if (partitionLimit) {
       return this.findWithPartitionLimit(entityName, where, orderBy, fields ?? [], partitionLimit, options);
@@ -168,7 +175,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     where: FilterQuery<T>,
     orderBy: Dictionary[],
     fields: string[],
-    partitionLimit: { partitionBy: string; limit: number; offset?: number },
+    partitionLimit: PartitionLimit,
     options: FindOptions<T, any, any, any>,
   ): Promise<EntityData<T>[]> {
     const meta = this.metadata.find<T>(entityName)!;
@@ -178,9 +185,19 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     // a declared property on the target meta (FK of the owning side).
     const prop = (meta.properties as Dictionary)[partitionLimit.partitionBy];
     const partitionField = prop.fieldNames[0];
+    const { owners } = partitionLimit;
+    let partitionKey = partitionField;
 
     const pipeline: Dictionary[] = [];
     pipeline.push({ $match: where });
+
+    // an M:N owner array holds several partitions, so rank each row once per requested owner, like a pivot row in SQL
+    if (owners) {
+      pipeline.push({ $addFields: { __partition: `$${partitionField}` } });
+      pipeline.push({ $unwind: '$__partition' });
+      pipeline.push({ $match: { __partition: { $in: owners } } });
+      partitionKey = '__partition';
+    }
 
     if (orderBy.length > 0) {
       const sortSpec: Dictionary = {};
@@ -198,7 +215,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     // $sort before $group ensures $push collects in correct order
     pipeline.push({
       $group: {
-        _id: `$${partitionField}`,
+        _id: `$${partitionKey}`,
         __docs: { $push: '$$ROOT' },
       },
     });
@@ -217,12 +234,24 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         projection[field] = 1;
       }
 
+      if (owners) {
+        projection.__partition = 1;
+      }
+
       pipeline.push({ $project: projection });
     }
 
     const res = await this.rethrow(
       this.getConnection('read').aggregate<T>(entityName, pipeline, options.ctx, options.logging, options.signal),
     );
+
+    if (owners) {
+      partitionLimit.partitions = res.map((row: Dictionary) => {
+        const owner = row.__partition;
+        delete row.__partition;
+        return [owner, row._id];
+      });
+    }
 
     return res.map(r => this.mapResult<T>(r, meta)!);
   }
