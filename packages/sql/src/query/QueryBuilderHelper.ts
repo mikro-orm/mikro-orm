@@ -602,6 +602,8 @@ export class QueryBuilderHelper {
   }
 
   appendOnConflictClause<T>(type: QueryType, onConflict: OnConflictClause<T>[], qb: NativeQueryBuilder): void {
+    const meta = this.#metadata.find(this.#entityName);
+
     onConflict.forEach(item => {
       const { fields, ignore } = item;
       const sub = qb.onConflict({ fields, ignore });
@@ -622,6 +624,14 @@ export class QueryBuilderHelper {
         }
 
         sub.merge = mergeParam ?? [];
+
+        // a merged row is updated, so its version is bumped as `updateVersionProperty()` does
+        if (meta?.ownsVersionProperty()) {
+          const prop = meta.properties[meta.versionProperty];
+          const timestamp =
+            prop.runtimeType === 'Date' ? this.#platform.getCurrentTimestampSQL(prop.length) : undefined;
+          sub.version = { field: prop.fieldNames[0], timestamp };
+        }
 
         if (item.where) {
           sub.where = this._appendQueryCondition(type, item.where);

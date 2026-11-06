@@ -75,14 +75,15 @@ export class MySqlNativeQueryBuilder extends NativeQueryBuilder {
           this.params.push((clause.merge as Dictionary)[field]);
           return `${this.quote(field)} = ?`;
         });
-        this.parts.push(fields.join(', '));
+        this.parts.push(this.joinVersionMerge(clause, fields, Object.keys(clause.merge)));
       } else if ((clause.merge as string[]).length === 0) {
         const dataAsArray = Utils.asArray(this.options.data);
         const keys = Object.keys(dataAsArray[0]);
-        this.parts.push(keys.map(key => `${this.quote(key)} = values(${this.quote(key)})`).join(', '));
+        const fields = keys.map(key => `${this.quote(key)} = values(${this.quote(key)})`);
+        this.parts.push(this.joinVersionMerge(clause, fields, keys));
       } else {
         const fields = (clause.merge as string[]).map(key => `${this.quote(key)} = values(${this.quote(key)})`);
-        this.parts.push(fields.join(', '));
+        this.parts.push(this.joinVersionMerge(clause, fields, clause.merge as string[]));
       }
 
       if (clause.where) {
