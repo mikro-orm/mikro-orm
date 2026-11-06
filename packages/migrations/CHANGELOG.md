@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.8](https://github.com/mikro-orm/mikro-orm/compare/v7.2.7...v7.2.8) (2026-11-06)
+
+### Bug Fixes
+
+* **migrations:** keep table partitioning in the schema snapshot ([#8601](https://github.com/mikro-orm/mikro-orm/issues/8601)) ([03f85d8](https://github.com/mikro-orm/mikro-orm/commit/03f85d8d6070204ae3602d242c9736e1d7132daf)), closes [#7816](https://github.com/mikro-orm/mikro-orm/issues/7816)
+
+
 ## [7.2.7](https://github.com/mikro-orm/mikro-orm/compare/v7.2.6...v7.2.7) (2026-11-04)
 
 ### Bug Fixes

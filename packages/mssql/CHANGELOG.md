@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.8](https://github.com/mikro-orm/mikro-orm/compare/v7.2.7...v7.2.8) (2026-11-06)
+
+### Bug Fixes
+
+* **sql:** quote index names in `using` hints and validate `using` on `em.count()` ([#8613](https://github.com/mikro-orm/mikro-orm/issues/8613)) ([35fe690](https://github.com/mikro-orm/mikro-orm/commit/35fe690bf45ce72c4b86acb15d6de06fdbd09e8a))
+
+
 ## [7.2.7](https://github.com/mikro-orm/mikro-orm/compare/v7.2.6...v7.2.7) (2026-11-04)
 
 ### Bug Fixes

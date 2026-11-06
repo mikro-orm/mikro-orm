@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.8](https://github.com/mikro-orm/mikro-orm/compare/v7.2.7...v7.2.8) (2026-11-06)
+
+### Bug Fixes
+
+* **core:** apply the entity default `orderBy` in `em.stream()` and `em.findOne()` ([#8612](https://github.com/mikro-orm/mikro-orm/issues/8612)) ([840bc49](https://github.com/mikro-orm/mikro-orm/commit/840bc49f24b1513251c5f4be1502e016d6ee663b)), closes [#7133](https://github.com/mikro-orm/mikro-orm/issues/7133) [#8503](https://github.com/mikro-orm/mikro-orm/issues/8503)
+* **core:** handle non-JSON query values in result cache and dataloader keys ([#8598](https://github.com/mikro-orm/mikro-orm/issues/8598)) ([def0462](https://github.com/mikro-orm/mikro-orm/commit/def0462ede8fb544fa3e891ed8dc61e2589ef018))
+* **core:** include regexp and raw fragment params in result cache keys ([#8597](https://github.com/mikro-orm/mikro-orm/issues/8597)) ([c4d5e78](https://github.com/mikro-orm/mikro-orm/commit/c4d5e78240c7207a14103895bffe605731a015ea))
+* **core:** respect FK `deleteRule` when removing an entity with loaded 1:M collections ([#8608](https://github.com/mikro-orm/mikro-orm/issues/8608)) ([9dff7c8](https://github.com/mikro-orm/mikro-orm/commit/9dff7c8b5db87e638e24270445d3ae6112e61bd4)), closes [#8606](https://github.com/mikro-orm/mikro-orm/issues/8606)
+* **migrations:** keep table partitioning in the schema snapshot ([#8601](https://github.com/mikro-orm/mikro-orm/issues/8601)) ([03f85d8](https://github.com/mikro-orm/mikro-orm/commit/03f85d8d6070204ae3602d242c9736e1d7132daf)), closes [#7816](https://github.com/mikro-orm/mikro-orm/issues/7816)
+* **mongo:** convert `$re` inside `$elemMatch` and keep `$re` keys in entity data ([#8611](https://github.com/mikro-orm/mikro-orm/issues/8611)) ([47ca87b](https://github.com/mikro-orm/mikro-orm/commit/47ca87baa59d8b5d1bc18c0953fe7f7ca66c90cf)), closes [#8599](https://github.com/mikro-orm/mikro-orm/issues/8599)
+* **mongo:** convert `$re` on renamed fields, next to other operators and under `$not` ([#8599](https://github.com/mikro-orm/mikro-orm/issues/8599)) ([885bed8](https://github.com/mikro-orm/mikro-orm/commit/885bed81bec9ae2764e504ce8b6eb531df5caa01))
+* **mongo:** limit inverse M:N populate per parent instead of per owner array ([#8618](https://github.com/mikro-orm/mikro-orm/issues/8618)) ([79e817a](https://github.com/mikro-orm/mikro-orm/commit/79e817a99233d9e3d06597bbb27a2e1f5c0bc9b7))
+* **mssql:** handle composite PK `$in`/`$nin` with an empty list or multiple tuples ([#8609](https://github.com/mikro-orm/mikro-orm/issues/8609)) ([badc189](https://github.com/mikro-orm/mikro-orm/commit/badc18913849e938dd593681013ec63ca17bc6d2))
+* **mysql:** escape and parse enum items containing quotes or commas ([#8614](https://github.com/mikro-orm/mikro-orm/issues/8614)) ([cdbc0cb](https://github.com/mikro-orm/mikro-orm/commit/cdbc0cb133f5bd0849a8e3233304b3a297370f76)), closes [#8554](https://github.com/mikro-orm/mikro-orm/issues/8554)
+* **sql:** keep `$or`, `$and` and `$not` in the upsert conflict condition ([#8602](https://github.com/mikro-orm/mikro-orm/issues/8602)) ([19d05e4](https://github.com/mikro-orm/mikro-orm/commit/19d05e4b8d881d4007e21e1a8e8097c1218e46fa)), closes [#8600](https://github.com/mikro-orm/mikro-orm/issues/8600)
+* **sql:** order by a composite relation key in paginated queries and with an alias prefix ([#8610](https://github.com/mikro-orm/mikro-orm/issues/8610)) ([4b837e4](https://github.com/mikro-orm/mikro-orm/commit/4b837e4ac0facee78f967587df1f29bc9bbc8058))
+* **sql:** quote index names in `using` hints and validate `using` on `em.count()` ([#8613](https://github.com/mikro-orm/mikro-orm/issues/8613)) ([35fe690](https://github.com/mikro-orm/mikro-orm/commit/35fe690bf45ce72c4b86acb15d6de06fdbd09e8a))
+
+### Performance Improvements
+
+* **core:** propagate serialization context along the serialized path only ([#8619](https://github.com/mikro-orm/mikro-orm/issues/8619)) ([7816e11](https://github.com/mikro-orm/mikro-orm/commit/7816e11adc0e0ee30f3c9d12bd58e2fed04bdc7e)), closes [#8616](https://github.com/mikro-orm/mikro-orm/issues/8616)
+
+
 ## [7.2.7](https://github.com/mikro-orm/mikro-orm/compare/v7.2.6...v7.2.7) (2026-11-04)
 
 ### Bug Fixes
