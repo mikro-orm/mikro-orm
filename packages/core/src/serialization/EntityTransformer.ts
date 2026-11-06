@@ -48,17 +48,18 @@ export class EntityTransformer {
       return entity as EntityDTO<Entity>;
     }
 
-    if (!wrapped.__serializationContext.root) {
-      const root = new SerializationContext<Entity>(
+    let root = wrapped.__serializationContext.root;
+
+    if (!root) {
+      root = new SerializationContext<Entity>(
         wrapped.__serializationContext.populate,
         wrapped.__serializationContext.fields,
         wrapped.__serializationContext.exclude,
       );
-      SerializationContext.propagate(root, entity, isVisible);
       contextCreated = true;
     }
 
-    const root = wrapped.__serializationContext.root!;
+    SerializationContext.propagate(root, entity, isVisible);
     const meta = wrapped.__meta;
     const ret = {} as Dictionary;
     const props = new Set<EntityKey<Entity>>();
