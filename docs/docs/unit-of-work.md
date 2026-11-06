@@ -82,7 +82,7 @@ MikroORM is a data-mapper that tries to achieve persistence-ignorance (PI). This
 
 For this MikroORM keeps a second map inside the `UnitOfWork`. Whenever you fetch an object from the database MikroORM will keep a copy of all the properties and associations inside the `UnitOfWork`.
 
-Now whenever you call `em.flush()` MikroORM will iterate over all entities you previously marked for persisting via `em.persist()`. For each object it will compare the original property and association values with the values that are currently set on the object. If changes are detected then the object is queued for a UPDATE operation. Only the fields that actually changed are updated.
+Now whenever you call `em.flush()` MikroORM will iterate over all managed entities in the identity map, together with the new entities you marked for persisting via `em.persist()`. For each object it will compare the original property and association values with the values that are currently set on the object. If changes are detected then the object is queued for a UPDATE operation. Only the fields that actually changed are updated.
 
 ## Implicit Transactions
 
