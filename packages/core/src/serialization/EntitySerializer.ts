@@ -146,17 +146,14 @@ export class EntitySerializer {
     let contextCreated = false;
     options = prepareOptions(options);
 
-    if (!wrapped.__serializationContext.root) {
-      const root = new SerializationContext<T>();
-      SerializationContext.propagate(
-        root,
-        entity,
-        (meta, prop) => meta.properties[prop]?.kind !== ReferenceKind.SCALAR,
-      );
+    let root = wrapped.__serializationContext.root;
+
+    if (!root) {
+      root = new SerializationContext<T>();
       contextCreated = true;
     }
 
-    const root = wrapped.__serializationContext.root!;
+    SerializationContext.propagate(root, entity, (meta, prop) => meta.properties[prop]?.kind !== ReferenceKind.SCALAR);
     const ret = {} as Dictionary;
     const props = new Set<EntityKey<T>>();
 

@@ -57,7 +57,8 @@ export class SerializationContext<T extends object> {
   }
 
   /**
-   * When initializing new context, we need to propagate it to the whole entity graph recursively.
+   * Propagates the context to the entity and its direct relations, so nested serialization calls pick it up.
+   * Runs for every serialized entity, so the context spreads along the serialized path instead of the whole graph.
    */
   static propagate(
     root: SerializationContext<any>,
@@ -76,7 +77,7 @@ export class SerializationContext<T extends object> {
 
       if (Utils.isEntity<AnyEntity>(target, true)) {
         if (!target.__helper!.__serializationContext.root) {
-          this.propagate(root, target, isVisible);
+          root.register(target);
         }
 
         continue;
@@ -85,7 +86,7 @@ export class SerializationContext<T extends object> {
       if (Utils.isCollection(target)) {
         for (const item of target.getItems(false)) {
           if (!(item as AnyEntity).__helper!.__serializationContext.root) {
-            this.propagate(root, item, isVisible);
+            root.register(item);
           }
         }
       }
