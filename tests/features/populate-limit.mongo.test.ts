@@ -307,4 +307,35 @@ describe('populate with limit (MongoDB)', () => {
     expect(t2Only.books.getItems().map(book => book.title)).toEqual(['b0']);
     expect(em2.getUnitOfWork().getById(Book, b1.id)).toBeUndefined();
   });
+
+  test('M:N mappedBy-side populate with limit bypasses the global result cache', async () => {
+    const em = orm.em.fork();
+    const author = em.create(Author, { name: 'Cached', email: 'cached@test.com' });
+    const t1 = em.create(BookTag, { name: 'cached-1' });
+    const t2 = em.create(BookTag, { name: 'cached-2' });
+    em.create(Book, { title: 'b0', author, tags: [t2] });
+    em.create(Book, { title: 'b1', author, tags: [t1, t2] });
+    await em.flush();
+
+    const resultCache = orm.config.get('resultCache');
+    orm.config.set('resultCache', { ...resultCache, global: true });
+
+    try {
+      for (let i = 0; i < 2; i++) {
+        const tags = await orm.em.fork().find(
+          BookTag,
+          { name: /^cached-/ },
+          {
+            populate: ['books'],
+            populateHints: { books: { limit: 1, orderBy: { title: 'asc' } } },
+            orderBy: { name: 'asc' },
+            cache: false,
+          },
+        );
+        expect(tags.map(tag => tag.books.getItems().map(book => book.title))).toEqual([['b1'], ['b0']]);
+      }
+    } finally {
+      orm.config.set('resultCache', resultCache);
+    }
+  });
 });

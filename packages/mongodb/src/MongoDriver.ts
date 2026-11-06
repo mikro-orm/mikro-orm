@@ -33,14 +33,14 @@ import { MongoPlatform } from './MongoPlatform.js';
 import { MongoEntityManager } from './MongoEntityManager.js';
 import { MongoMikroORM } from './MongoMikroORM.js';
 
-/** `owners` and `partitions` are set only for the inverse side of an M:N, whose owners are stored in an array. */
-type PartitionLimit = {
+/** `owners` and `partitions` (written back by the driver) are set only for the inverse side of an M:N, whose owners are stored in an array. */
+interface PartitionLimit {
   partitionBy: string;
   limit: number;
   offset?: number;
   owners?: unknown[];
   partitions?: [owner: unknown, child: unknown][];
-};
+}
 
 /** Database driver for MongoDB. */
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
@@ -179,14 +179,12 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     options: FindOptions<T, any, any, any>,
   ): Promise<EntityData<T>[]> {
     const meta = this.metadata.find<T>(entityName)!;
-    const { limit, offset = 0 } = partitionLimit;
+    const { limit, offset = 0, owners } = partitionLimit;
 
     // Resolve the partition property to its DB field name; callers always pass
     // a declared property on the target meta (FK of the owning side).
     const prop = (meta.properties as Dictionary)[partitionLimit.partitionBy];
     const partitionField = prop.fieldNames[0];
-    const { owners } = partitionLimit;
-    let partitionKey = partitionField;
 
     const pipeline: Dictionary[] = [];
     pipeline.push({ $match: where });
@@ -196,7 +194,6 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       pipeline.push({ $addFields: { __partition: `$${partitionField}` } });
       pipeline.push({ $unwind: '$__partition' });
       pipeline.push({ $match: { __partition: { $in: owners } } });
-      partitionKey = '__partition';
     }
 
     if (orderBy.length > 0) {
@@ -215,7 +212,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     // $sort before $group ensures $push collects in correct order
     pipeline.push({
       $group: {
-        _id: `$${partitionKey}`,
+        _id: owners ? '$__partition' : `$${partitionField}`,
         __docs: { $push: '$$ROOT' },
       },
     });

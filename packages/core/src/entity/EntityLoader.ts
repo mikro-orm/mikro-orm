@@ -724,13 +724,14 @@ export class EntityLoader {
     };
 
     if (populate.limit != null) {
-      findOptions._partitionLimit = {
-        partitionBy: fk,
-        limit: populate.limit,
-        offset: populate.offset,
-        // the owners of an M:N without a pivot table are stored as an array, the driver slices per owner
-        owners: prop.kind === ReferenceKind.MANY_TO_MANY && ownerProp ? ids : undefined,
-      };
+      // the owners of an M:N without a pivot table are stored as an array, the driver slices per owner
+      const owners = prop.kind === ReferenceKind.MANY_TO_MANY && ownerProp ? ids : undefined;
+      findOptions._partitionLimit = { partitionBy: fk, limit: populate.limit, offset: populate.offset, owners };
+
+      // a cached result would not carry the per-owner partitions the driver writes back
+      if (owners) {
+        findOptions.cache = false;
+      }
     }
 
     const items = await this.#em.find(meta.class, where, findOptions);
