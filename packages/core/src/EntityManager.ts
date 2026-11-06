@@ -375,7 +375,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     validateParams(where);
     const meta = this.metadata.get<Entity>(entityName);
 
-    // same merge as em.find
     if (meta.orderBy) {
       options.orderBy = QueryHelper.mergeOrderBy(options.orderBy, meta.orderBy);
     } else {
@@ -1329,7 +1328,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     validateParams(where);
 
-    // same merge as em.find, before the cache key
+    // before the cache key so cached results share the merged orderBy
     if (meta.orderBy) {
       options.orderBy = QueryHelper.mergeOrderBy(options.orderBy, meta.orderBy);
     }
