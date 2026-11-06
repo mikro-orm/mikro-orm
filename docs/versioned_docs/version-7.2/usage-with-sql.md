@@ -159,16 +159,13 @@ These methods execute SQL directly and do not trigger lifecycle hooks.
 
 ## Using SQLite extensions
 
-SQLite extensions like [sqlean](https://github.com/nalgeon/sqlean) can add features that are missing by default (e.g., regexp). Load them via `pool.afterCreate`:
+SQLite extensions like [sqlean](https://github.com/nalgeon/sqlean) can add features that are missing by default (e.g., regexp). Load them via the `onCreateConnection` hook:
 
 ```ts
 const orm = await MikroORM.init({
   // ...
-  pool: {
-    afterCreate: (conn: any, done: any) => {
-      conn.loadExtension('/path/to/sqlean');
-      done(null, conn);
-    },
+  onCreateConnection(connection) {
+    connection.loadExtension('/path/to/sqlean');
   },
 });
 ```
