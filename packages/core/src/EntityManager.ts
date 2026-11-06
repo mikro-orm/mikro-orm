@@ -373,9 +373,16 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     await em.tryFlush(entityName, options);
     const where = (await em.processWhere(entityName, options.where ?? {}, options, 'read')) as FilterQuery<Entity>;
     validateParams(where);
-    options.orderBy = options.orderBy || {};
-    options.populate = (await em.preparePopulate(entityName, options)) as any;
     const meta = this.metadata.get<Entity>(entityName);
+
+    // same merge as em.find
+    if (meta.orderBy) {
+      options.orderBy = QueryHelper.mergeOrderBy(options.orderBy, meta.orderBy);
+    } else {
+      options.orderBy ??= {};
+    }
+
+    options.populate = (await em.preparePopulate(entityName, options)) as any;
     em.validateIndexUsage(meta, options.where ?? {}, options);
     options = { ...options };
     // save the original hint value so we know it was infer/all
@@ -1321,6 +1328,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     validateParams(where);
+
+    // same merge as em.find, before the cache key
+    if (meta.orderBy) {
+      options.orderBy = QueryHelper.mergeOrderBy(options.orderBy, meta.orderBy);
+    }
+
     options.populate = (await em.preparePopulate(entityName, options)) as any;
     const cacheKey = em.cacheKey(entityName, options, 'em.findOne', where);
     const cached = await em.tryCache<Entity, Loaded<Entity, Hint, Fields, Excludes>>(

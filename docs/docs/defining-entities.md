@@ -2135,7 +2135,7 @@ Starting with MikroORM 4.2, there is no limitation for entity file names. It is 
 
 You can define a default ordering for an entity using the `orderBy` option in `@Entity()`. This ordering is automatically applied when:
 
-- Querying the entity directly via `em.find()`, `em.findAll()`, etc.
+- Querying the entity directly via `em.find()`, `em.findAll()`, `em.findOne()`, `em.stream()`, etc.
 - Populating the entity as a relation
 
 All applicable orderings are combined together, with higher-priority orderings taking precedence for the same fields.
