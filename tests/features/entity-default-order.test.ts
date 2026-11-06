@@ -247,6 +247,46 @@ describe('entity-level default orderBy', () => {
     });
   });
 
+  describe('em.stream() and em.findOne() with entity-level orderBy', () => {
+    test('em.stream() yields entities in the entity-level order', async () => {
+      const texts: string[] = [];
+
+      for await (const comment of orm.em.stream(Comment)) {
+        texts.push(comment.text);
+      }
+
+      expect(texts).toEqual(['Second comment', 'Third comment', 'First comment']);
+    });
+
+    test('em.stream() appends entity-level orderBy to runtime orderBy', async () => {
+      const mock = mockLogger(orm);
+      const texts: string[] = [];
+
+      for await (const comment of orm.em.stream(Comment, { orderBy: { text: QueryOrder.ASC } })) {
+        texts.push(comment.text);
+      }
+
+      expect(texts).toEqual(['First comment', 'Second comment', 'Third comment']);
+      expect(mock.mock.calls[0][0].split('order by')[1]).toMatch(/text.*asc.*created_at.*desc.*id.*desc/s);
+    });
+
+    test('em.findOne() returns the first entity in the entity-level order', async () => {
+      const comment = await orm.em.findOneOrFail(Comment, { text: { $like: '% comment' } });
+      expect(comment.text).toBe('Second comment');
+    });
+
+    test('em.findOne() appends entity-level orderBy to runtime orderBy', async () => {
+      const mock = mockLogger(orm);
+      const comment = await orm.em.findOneOrFail(
+        Comment,
+        { text: { $like: '% comment' } },
+        { orderBy: { text: QueryOrder.ASC } },
+      );
+      expect(comment.text).toBe('First comment');
+      expect(mock.mock.calls[0][0].split('order by')[1]).toMatch(/text.*asc.*created_at.*desc.*id.*desc.*limit 1/s);
+    });
+  });
+
   describe('populate with entity-level orderBy', () => {
     test('entity-level orderBy applies when populating relations', async () => {
       const post = await orm.em.findOneOrFail(
