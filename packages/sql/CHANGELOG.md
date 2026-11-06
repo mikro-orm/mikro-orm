@@ -7,13 +7,12 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **migrations:** keep table partitioning in the schema snapshot ([#8601](https://github.com/mikro-orm/mikro-orm/issues/8601)) ([03f85d8](https://github.com/mikro-orm/mikro-orm/commit/03f85d8d6070204ae3602d242c9736e1d7132daf)), closes [#7816](https://github.com/mikro-orm/mikro-orm/issues/7816)
-* **mssql:** handle composite PK `$in`/`$nin` with an empty list or multiple tuples ([#8609](https://github.com/mikro-orm/mikro-orm/issues/8609)) ([badc189](https://github.com/mikro-orm/mikro-orm/commit/badc18913849e938dd593681013ec63ca17bc6d2))
-* **mysql:** escape and parse enum items containing quotes or commas ([#8614](https://github.com/mikro-orm/mikro-orm/issues/8614)) ([cdbc0cb](https://github.com/mikro-orm/mikro-orm/commit/cdbc0cb133f5bd0849a8e3233304b3a297370f76)), closes [#8554](https://github.com/mikro-orm/mikro-orm/issues/8554)
-* **sql:** keep `$or`, `$and` and `$not` in the upsert conflict condition ([#8602](https://github.com/mikro-orm/mikro-orm/issues/8602)) ([19d05e4](https://github.com/mikro-orm/mikro-orm/commit/19d05e4b8d881d4007e21e1a8e8097c1218e46fa)), closes [#8600](https://github.com/mikro-orm/mikro-orm/issues/8600)
-* **sql:** order by a composite relation key in paginated queries and with an alias prefix ([#8610](https://github.com/mikro-orm/mikro-orm/issues/8610)) ([4b837e4](https://github.com/mikro-orm/mikro-orm/commit/4b837e4ac0facee78f967587df1f29bc9bbc8058))
-* **sql:** quote index names in `using` hints and validate `using` on `em.count()` ([#8613](https://github.com/mikro-orm/mikro-orm/issues/8613)) ([35fe690](https://github.com/mikro-orm/mikro-orm/commit/35fe690bf45ce72c4b86acb15d6de06fdbd09e8a))
-
+- **migrations:** keep table partitioning in the schema snapshot ([#8601](https://github.com/mikro-orm/mikro-orm/issues/8601)) ([03f85d8](https://github.com/mikro-orm/mikro-orm/commit/03f85d8d6070204ae3602d242c9736e1d7132daf)), closes [#7816](https://github.com/mikro-orm/mikro-orm/issues/7816)
+- **mssql:** handle composite PK `$in`/`$nin` with an empty list or multiple tuples ([#8609](https://github.com/mikro-orm/mikro-orm/issues/8609)) ([badc189](https://github.com/mikro-orm/mikro-orm/commit/badc18913849e938dd593681013ec63ca17bc6d2))
+- **mysql:** escape and parse enum items containing quotes or commas ([#8614](https://github.com/mikro-orm/mikro-orm/issues/8614)) ([cdbc0cb](https://github.com/mikro-orm/mikro-orm/commit/cdbc0cb133f5bd0849a8e3233304b3a297370f76)), closes [#8554](https://github.com/mikro-orm/mikro-orm/issues/8554)
+- **sql:** keep `$or`, `$and` and `$not` in the upsert conflict condition ([#8602](https://github.com/mikro-orm/mikro-orm/issues/8602)) ([19d05e4](https://github.com/mikro-orm/mikro-orm/commit/19d05e4b8d881d4007e21e1a8e8097c1218e46fa)), closes [#8600](https://github.com/mikro-orm/mikro-orm/issues/8600)
+- **sql:** order by a composite relation key in paginated queries and with an alias prefix ([#8610](https://github.com/mikro-orm/mikro-orm/issues/8610)) ([4b837e4](https://github.com/mikro-orm/mikro-orm/commit/4b837e4ac0facee78f967587df1f29bc9bbc8058))
+- **sql:** quote index names in `using` hints and validate `using` on `em.count()` ([#8613](https://github.com/mikro-orm/mikro-orm/issues/8613)) ([35fe690](https://github.com/mikro-orm/mikro-orm/commit/35fe690bf45ce72c4b86acb15d6de06fdbd09e8a))
 
 ## [7.2.7](https://github.com/mikro-orm/mikro-orm/compare/v7.2.6...v7.2.7) (2026-11-04)
 

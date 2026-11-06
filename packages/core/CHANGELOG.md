@@ -7,17 +7,16 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **core:** apply the entity default `orderBy` in `em.stream()` and `em.findOne()` ([#8612](https://github.com/mikro-orm/mikro-orm/issues/8612)) ([840bc49](https://github.com/mikro-orm/mikro-orm/commit/840bc49f24b1513251c5f4be1502e016d6ee663b)), closes [#7133](https://github.com/mikro-orm/mikro-orm/issues/7133) [#8503](https://github.com/mikro-orm/mikro-orm/issues/8503)
-* **core:** handle non-JSON query values in result cache and dataloader keys ([#8598](https://github.com/mikro-orm/mikro-orm/issues/8598)) ([def0462](https://github.com/mikro-orm/mikro-orm/commit/def0462ede8fb544fa3e891ed8dc61e2589ef018))
-* **core:** include regexp and raw fragment params in result cache keys ([#8597](https://github.com/mikro-orm/mikro-orm/issues/8597)) ([c4d5e78](https://github.com/mikro-orm/mikro-orm/commit/c4d5e78240c7207a14103895bffe605731a015ea))
-* **core:** respect FK `deleteRule` when removing an entity with loaded 1:M collections ([#8608](https://github.com/mikro-orm/mikro-orm/issues/8608)) ([9dff7c8](https://github.com/mikro-orm/mikro-orm/commit/9dff7c8b5db87e638e24270445d3ae6112e61bd4)), closes [#8606](https://github.com/mikro-orm/mikro-orm/issues/8606)
-* **mongo:** limit inverse M:N populate per parent instead of per owner array ([#8618](https://github.com/mikro-orm/mikro-orm/issues/8618)) ([79e817a](https://github.com/mikro-orm/mikro-orm/commit/79e817a99233d9e3d06597bbb27a2e1f5c0bc9b7))
-* **sql:** quote index names in `using` hints and validate `using` on `em.count()` ([#8613](https://github.com/mikro-orm/mikro-orm/issues/8613)) ([35fe690](https://github.com/mikro-orm/mikro-orm/commit/35fe690bf45ce72c4b86acb15d6de06fdbd09e8a))
+- **core:** apply the entity default `orderBy` in `em.stream()` and `em.findOne()` ([#8612](https://github.com/mikro-orm/mikro-orm/issues/8612)) ([840bc49](https://github.com/mikro-orm/mikro-orm/commit/840bc49f24b1513251c5f4be1502e016d6ee663b)), closes [#7133](https://github.com/mikro-orm/mikro-orm/issues/7133) [#8503](https://github.com/mikro-orm/mikro-orm/issues/8503)
+- **core:** handle non-JSON query values in result cache and dataloader keys ([#8598](https://github.com/mikro-orm/mikro-orm/issues/8598)) ([def0462](https://github.com/mikro-orm/mikro-orm/commit/def0462ede8fb544fa3e891ed8dc61e2589ef018))
+- **core:** include regexp and raw fragment params in result cache keys ([#8597](https://github.com/mikro-orm/mikro-orm/issues/8597)) ([c4d5e78](https://github.com/mikro-orm/mikro-orm/commit/c4d5e78240c7207a14103895bffe605731a015ea))
+- **core:** respect FK `deleteRule` when removing an entity with loaded 1:M collections ([#8608](https://github.com/mikro-orm/mikro-orm/issues/8608)) ([9dff7c8](https://github.com/mikro-orm/mikro-orm/commit/9dff7c8b5db87e638e24270445d3ae6112e61bd4)), closes [#8606](https://github.com/mikro-orm/mikro-orm/issues/8606)
+- **mongo:** limit inverse M:N populate per parent instead of per owner array ([#8618](https://github.com/mikro-orm/mikro-orm/issues/8618)) ([79e817a](https://github.com/mikro-orm/mikro-orm/commit/79e817a99233d9e3d06597bbb27a2e1f5c0bc9b7))
+- **sql:** quote index names in `using` hints and validate `using` on `em.count()` ([#8613](https://github.com/mikro-orm/mikro-orm/issues/8613)) ([35fe690](https://github.com/mikro-orm/mikro-orm/commit/35fe690bf45ce72c4b86acb15d6de06fdbd09e8a))
 
 ### Performance Improvements
 
-* **core:** propagate serialization context along the serialized path only ([#8619](https://github.com/mikro-orm/mikro-orm/issues/8619)) ([7816e11](https://github.com/mikro-orm/mikro-orm/commit/7816e11adc0e0ee30f3c9d12bd58e2fed04bdc7e)), closes [#8616](https://github.com/mikro-orm/mikro-orm/issues/8616)
-
+- **core:** propagate serialization context along the serialized path only ([#8619](https://github.com/mikro-orm/mikro-orm/issues/8619)) ([7816e11](https://github.com/mikro-orm/mikro-orm/commit/7816e11adc0e0ee30f3c9d12bd58e2fed04bdc7e)), closes [#8616](https://github.com/mikro-orm/mikro-orm/issues/8616)
 
 ## [7.2.7](https://github.com/mikro-orm/mikro-orm/compare/v7.2.6...v7.2.7) (2026-11-04)
 

@@ -7,10 +7,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **mongo:** convert `$re` inside `$elemMatch` and keep `$re` keys in entity data ([#8611](https://github.com/mikro-orm/mikro-orm/issues/8611)) ([47ca87b](https://github.com/mikro-orm/mikro-orm/commit/47ca87baa59d8b5d1bc18c0953fe7f7ca66c90cf)), closes [#8599](https://github.com/mikro-orm/mikro-orm/issues/8599)
-* **mongo:** convert `$re` on renamed fields, next to other operators and under `$not` ([#8599](https://github.com/mikro-orm/mikro-orm/issues/8599)) ([885bed8](https://github.com/mikro-orm/mikro-orm/commit/885bed81bec9ae2764e504ce8b6eb531df5caa01))
-* **mongo:** limit inverse M:N populate per parent instead of per owner array ([#8618](https://github.com/mikro-orm/mikro-orm/issues/8618)) ([79e817a](https://github.com/mikro-orm/mikro-orm/commit/79e817a99233d9e3d06597bbb27a2e1f5c0bc9b7))
-
+- **mongo:** convert `$re` inside `$elemMatch` and keep `$re` keys in entity data ([#8611](https://github.com/mikro-orm/mikro-orm/issues/8611)) ([47ca87b](https://github.com/mikro-orm/mikro-orm/commit/47ca87baa59d8b5d1bc18c0953fe7f7ca66c90cf)), closes [#8599](https://github.com/mikro-orm/mikro-orm/issues/8599)
+- **mongo:** convert `$re` on renamed fields, next to other operators and under `$not` ([#8599](https://github.com/mikro-orm/mikro-orm/issues/8599)) ([885bed8](https://github.com/mikro-orm/mikro-orm/commit/885bed81bec9ae2764e504ce8b6eb531df5caa01))
+- **mongo:** limit inverse M:N populate per parent instead of per owner array ([#8618](https://github.com/mikro-orm/mikro-orm/issues/8618)) ([79e817a](https://github.com/mikro-orm/mikro-orm/commit/79e817a99233d9e3d06597bbb27a2e1f5c0bc9b7))
 
 ## [7.2.7](https://github.com/mikro-orm/mikro-orm/compare/v7.2.6...v7.2.7) (2026-11-04)
 
