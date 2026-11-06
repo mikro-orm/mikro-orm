@@ -23,6 +23,13 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
     bigint: 'bigint',
     boolean: 'unsigned',
   };
+  readonly #enumItemEscapes: Record<string, string> = {
+    '\0': '\\0',
+    '\n': '\\n',
+    '\r': '\\r',
+    "'": "''",
+    '\\': '\\\\',
+  };
 
   protected readonly ORDER_BY_NULLS_TRANSLATE = {
     [QueryOrder.asc_nulls_first]: 'is not null',
@@ -39,6 +46,20 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
   /** mysql reads backslashes in string literals as escapes, so defaults need the same escaping as values (minus the needless `\"`). */
   override quoteDefaultValue(value: string): string {
     return this.quoteValue(value).replaceAll('\\"', '"');
+  }
+
+  /** enum items are escaped the way mysql prints them back in `column_type`, so the next schema diff matches. */
+  override getEnumTypeDeclarationSQL(column: {
+    items?: unknown[];
+    fieldNames: string[];
+    length?: number;
+    unsigned?: boolean;
+    autoincrement?: boolean;
+  }): string {
+    const items = column.items?.map(item =>
+      typeof item === 'string' ? item.replace(/[\0\n\r'\\]/g, c => this.#enumItemEscapes[c]) : item,
+    );
+    return super.getEnumTypeDeclarationSQL({ ...column, items });
   }
 
   override supportsMultiColumnCountDistinct(): boolean {

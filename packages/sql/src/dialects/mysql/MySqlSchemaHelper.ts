@@ -783,10 +783,10 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return enums.reduce(
       (o, item) => {
         o[item.table_name] ??= {};
-        o[item.table_name][item.column_name] = item.column_type
-          .match(/enum\((.*)\)/)[1]
-          .split(',')
-          .map((item: string) => /'(.*)'/.exec(item)![1]);
+        // items can hold commas, doubled quotes and backslash escapes
+        o[item.table_name][item.column_name] = [...item.column_type.matchAll(/'((?:''|\\.|[^'\\])*)'/g)].map(
+          ([, value]: string[]) => this.unescapeDefault(value.replaceAll("''", "'")),
+        );
         return o;
       },
       {} as Dictionary<string[]>,
