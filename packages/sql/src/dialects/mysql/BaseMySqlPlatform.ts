@@ -51,7 +51,7 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
   }
 
   override formatIndexHint(indexNames: string[]): string {
-    return `use index(${indexNames.join(', ')})`;
+    return `use index(${indexNames.map(name => this.quoteIdentifier(name)).join(', ')})`;
   }
 
   override getDefaultCharset(): string {

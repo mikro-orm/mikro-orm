@@ -508,6 +508,8 @@ export interface CountOptions<T extends object, P extends string = never> extend
   flushMode?: FlushMode | `${FlushMode}`;
   /** SQL: appended to FROM clause (e.g. `'force index(my_index)'`); MongoDB: index name or spec passed as `hint`. */
   indexHint?: string | Dictionary;
+  /** @see FindOptions.using */
+  using?: IndexName<T> | IndexName<T>[];
   /** sql only */
   comments?: string | string[];
   /** sql only */

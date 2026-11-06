@@ -549,7 +549,7 @@ const users = await em.find(User, { name: 'foo', email: 'bar@x' }, {
 });
 ```
 
-The option works on every read method: `find`, `findOne`, `findOneOrFail`, `findAndCount`, `findAll`, `findByCursor`, `stream`, and the matching `EntityRepository` methods.
+The option works on every read method: `find`, `findOne`, `findOneOrFail`, `findAndCount`, `findAll`, `findByCursor`, `stream`, `count`, and the matching `EntityRepository` methods.
 
 For type-safe `using`, declare the available indexes on the entity — see [Query-time index hints](./indexes.md#query-time-index-hints-using) on the indexes page.
 
