@@ -354,7 +354,7 @@ export class EntityLoader {
     const customOrder = mergedOrderBy.length > 0 || !!prop.orderBy || !!prop.targetMeta?.orderBy;
 
     if (partitions) {
-      this.initializePartitions<Entity>(filtered, items, field, partitions, isPartial);
+      this.initializePartitions<Entity>(filtered, items, field, partitions);
       return items;
     }
 
@@ -579,7 +579,6 @@ export class EntityLoader {
     children: AnyEntity[],
     field: keyof Entity,
     partitions: [owner: unknown, child: unknown][],
-    partial: boolean,
   ): void {
     // a child belongs only to the owners whose slice returned it, not to every owner in its array
     const key = (entity: unknown) => helper(entity as AnyEntity).getSerializedPrimaryKey();
@@ -591,7 +590,7 @@ export class EntityLoader {
     }
 
     for (const entity of filtered) {
-      (entity[field] as Collection<AnyEntity>).hydrate(owners.get(key(entity))!, true, partial, true);
+      (entity[field] as Collection<AnyEntity>).hydrate(owners.get(key(entity))!, true, true, true);
     }
   }
 

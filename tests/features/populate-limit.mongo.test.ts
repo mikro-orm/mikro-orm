@@ -329,6 +329,7 @@ describe('populate with limit (MongoDB)', () => {
             populate: ['books'],
             populateHints: { books: { limit: 1, orderBy: { title: 'asc' } } },
             orderBy: { name: 'asc' },
+            // a cached root query would skip the populate query under test
             cache: false,
           },
         );
