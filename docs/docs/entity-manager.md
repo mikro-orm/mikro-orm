@@ -678,7 +678,7 @@ em.assign(author, { age: raw(`age + 1`) });
 const book = em.create(Book, { price: raw(`price * 1.1`) });
 ```
 
-The `raw()` helper returns special raw query fragment object. It disallows serialization (via `toJSON`) as well as working with the value (via [`valueOf()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/valueOf)). Only single use of this value is allowed, if you try to reassign it to another entity, an error will be thrown to protect you from mistakes like this:
+The `raw()` helper returns special raw query fragment object. It disallows working with the value: converting it to a primitive, other than using it as an object key, throws an error. Only single use of this value is allowed, if you try to reassign it to another entity, an error will be thrown to protect you from mistakes like this:
 
 ```ts
 order.number = raw<number>(`(select max(num) + 1 from orders)`);
