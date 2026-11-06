@@ -319,6 +319,14 @@ describe('using option - runtime validation (SQLite)', () => {
     expect(mock.mock.calls[0][0]).toMatch(/select/i);
   });
 
+  test('using validates with count', async () => {
+    await expect(orm.em.count(User, { name: 'foo' } as any, { using: 'nonexistent_idx' })).rejects.toThrow(
+      /Index 'nonexistent_idx' not found on entity 'User'/,
+    );
+    await expect(orm.em.count(User, { age: 30 } as any, { using: 'idx_user_name' })).rejects.toThrow(/Property 'age'/);
+    expect(await orm.em.count(User, { name: 'foo' } as any, { using: 'idx_user_name' })).toBe(0);
+  });
+
   test('using validates with findAll', async () => {
     await expect(orm.em.findAll(User, { where: { age: 30 }, using: 'idx_user_name' } as any)).rejects.toThrow(
       /Property 'age'/,
@@ -491,7 +499,7 @@ describe('using option - MySQL runtime', () => {
   test('using generates USE INDEX hint for MySQL', async () => {
     const mock = mockLogger(orm);
     await orm.em.find(User, { name: 'foo' } as any, { using: 'idx_user_name' });
-    expect(mock.mock.calls[0][0]).toMatch(/use index\(idx_user_name\)/);
+    expect(mock.mock.calls[0][0]).toMatch(/use index\(`idx_user_name`\)/);
   });
 
   test('using with multiple indexes generates combined hint', async () => {
@@ -499,7 +507,7 @@ describe('using option - MySQL runtime', () => {
     await orm.em.find(User, { name: 'foo', email: 'bar' } as any, {
       using: ['idx_user_name', 'idx_user_name_email'],
     });
-    expect(mock.mock.calls[0][0]).toMatch(/use index\(idx_user_name, idx_user_name_email\)/);
+    expect(mock.mock.calls[0][0]).toMatch(/use index\(`idx_user_name`, `idx_user_name_email`\)/);
   });
 
   test('using does not override explicit indexHint', async () => {
@@ -515,7 +523,13 @@ describe('using option - MySQL runtime', () => {
   test('using generates hint for findOne', async () => {
     const mock = mockLogger(orm);
     await orm.em.findOne(User, { name: 'foo' } as any, { using: 'idx_user_name' });
-    expect(mock.mock.calls[0][0]).toMatch(/use index\(idx_user_name\)/);
+    expect(mock.mock.calls[0][0]).toMatch(/use index\(`idx_user_name`\)/);
+  });
+
+  test('using generates hint for count', async () => {
+    const mock = mockLogger(orm);
+    await orm.em.count(User, { name: 'foo' } as any, { using: 'idx_user_name' });
+    expect(mock.mock.calls[0][0]).toMatch(/select count\(\*\).*use index\(`idx_user_name`\)/);
   });
 
   test('using generates hint for count (via findAndCount)', async () => {
@@ -553,7 +567,7 @@ describe('using option - MSSQL runtime', () => {
   test('using generates WITH (INDEX(...)) hint for MSSQL', async () => {
     const mock = mockLogger(orm);
     await orm.em.find(User, { name: 'foo' } as any, { using: 'idx_user_name' });
-    expect(mock.mock.calls[0][0]).toMatch(/with \(index\(idx_user_name\)\)/);
+    expect(mock.mock.calls[0][0]).toMatch(/with \(index\(\[idx_user_name\]\)\)/);
   });
 
   test('using with multiple indexes generates combined MSSQL hint', async () => {
@@ -561,7 +575,7 @@ describe('using option - MSSQL runtime', () => {
     await orm.em.find(User, { name: 'foo', email: 'bar' } as any, {
       using: ['idx_user_name', 'idx_user_name_email'],
     });
-    expect(mock.mock.calls[0][0]).toMatch(/with \(index\(idx_user_name, idx_user_name_email\)\)/);
+    expect(mock.mock.calls[0][0]).toMatch(/with \(index\(\[idx_user_name\], \[idx_user_name_email\]\)\)/);
   });
 });
 

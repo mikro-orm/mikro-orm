@@ -43,7 +43,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   override formatIndexHint(indexNames: string[]): string {
-    return `with (index(${indexNames.join(', ')}))`;
+    return `with (index(${indexNames.map(name => this.quoteIdentifier(name)).join(', ')}))`;
   }
 
   /** @inheritDoc */

@@ -2779,6 +2779,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
     options.populateFilter = await this.getJoinedFilters(meta, options as FindOptions<Entity>);
     validateParams(where);
+    em.validateIndexUsage(meta, where, options);
     delete (options as FindOptions<Entity>).orderBy;
 
     await em.processUnionWhere(entityName, options as FindOptions<Entity, Hint>, 'read');
