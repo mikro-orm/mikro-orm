@@ -1,4 +1,4 @@
-import { MikroORM, raw, sql, UnderscoreNamingStrategy } from '@mikro-orm/core';
+import { MikroORM, raw, sql, UnderscoreNamingStrategy, wrap } from '@mikro-orm/core';
 import { QueryBuilder } from '@mikro-orm/postgresql';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { Author2, Book2, BookTag2, FooParam2, Publisher2, PublisherType, Test2 } from '../../entities-sql/index.js';
@@ -26,6 +26,18 @@ describe('QueryBuilder - Mutations', () => {
     await orm.schema.dropDatabase();
     await orm.close(true);
   });
+
+  async function createBooksOfTwoPublishers(email: string) {
+    const em = orm.em.fork();
+    const author = new Author2('auto-join', email);
+    const books = ['p1', 'p2'].map(name => {
+      const book = new Book2(`book of ${name}`, author);
+      book.publisher = wrap(new Publisher2(name)).toReference();
+      return book;
+    });
+    await em.persist(books).flush();
+    return { em, author };
+  }
 
   test('insert query picks write replica', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
@@ -215,6 +227,22 @@ describe('QueryBuilder - Mutations', () => {
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL, 123]);
   });
 
+  test('update query with auto-joining runs on the write connection and returns the affected rows', async () => {
+    const { em, author } = await createBooksOfTwoPublishers('auto-join-update@example.com');
+    const spy = vi.spyOn(MySqlDriver.prototype, 'getConnection');
+    const res = await em.qb(Publisher2).update({ type: PublisherType.GLOBAL }).where({ books: { author } }).execute();
+    expect(res.affectedRows).toBe(2);
+    expect(spy).toHaveBeenLastCalledWith('write');
+    spy.mockRestore();
+  });
+
+  test("update query with auto-joining updates every matched row with execute('get')", async () => {
+    const { em, author } = await createBooksOfTwoPublishers('auto-join-get@example.com');
+    await em.qb(Publisher2).update({ type: PublisherType.GLOBAL }).where({ books: { author } }).execute('get');
+    const publishers = await em.fork().find(Publisher2, { books: { author } });
+    expect(publishers.map(p => p.type)).toEqual([PublisherType.GLOBAL, PublisherType.GLOBAL]);
+  });
+
   test('update query with composite keys and auto-joining', async () => {
     const qb = orm.em.createQueryBuilder(FooParam2);
     qb.update({ value: 'test 123' }).where({ bar: { baz: 123 } });
@@ -299,6 +327,19 @@ describe('QueryBuilder - Mutations', () => {
         ') as `e0`)',
     );
     expect(qb.getParams()).toEqual([123]);
+  });
+
+  test('delete query with auto-joining runs on the write connection and returns the affected rows', async () => {
+    const { em, author } = await createBooksOfTwoPublishers('auto-join-delete@example.com');
+    const spy = vi.spyOn(MySqlDriver.prototype, 'getConnection');
+    const res = await em
+      .qb(Book2)
+      .delete()
+      .where({ author: { email: author.email } })
+      .execute();
+    expect(res.affectedRows).toBe(2);
+    expect(spy).toHaveBeenLastCalledWith('write');
+    spy.mockRestore();
   });
 
   test('delete query with composite keys and auto-joining', async () => {

@@ -2582,14 +2582,15 @@ export class QueryBuilder<
     options = typeof options === 'boolean' ? { mapResults: options } : (options ?? {});
     options.mergeResults ??= true;
     options.mapResults ??= true;
-    const isRunType = [QueryType.INSERT, QueryType.UPDATE, QueryType.DELETE, QueryType.TRUNCATE].includes(this.type);
+    const type = this.getExecuteType();
+    const isRunType = [QueryType.INSERT, QueryType.UPDATE, QueryType.DELETE, QueryType.TRUNCATE].includes(type);
     method ??= isRunType ? 'run' : 'all';
 
     if (!this.connectionType && (isRunType || this.context)) {
       this.connectionType = 'write';
     }
 
-    if (!this.#state.finalized && method === 'get' && this.type === QueryType.SELECT) {
+    if (!this.#state.finalized && method === 'get' && type === QueryType.SELECT) {
       this.limit(1);
     }
 
@@ -2658,6 +2659,22 @@ export class QueryBuilder<
     await this.em?.storeCache(this.#state.cache, cached!, mapped);
 
     return mapped as U;
+  }
+
+  /**
+   * An update or delete with auto-joined conditions stays a select until `finalize()` wraps it,
+   * so read the same flags `wrapModifySubQuery()` uses.
+   */
+  private getExecuteType(): QueryType {
+    if (this.#state.flags.has(QueryFlag.UPDATE_SUB_QUERY)) {
+      return QueryType.UPDATE;
+    }
+
+    if (this.#state.flags.has(QueryFlag.DELETE_SUB_QUERY)) {
+      return QueryType.DELETE;
+    }
+
+    return this.type;
   }
 
   private getConnection(): AbstractSqlConnection {
