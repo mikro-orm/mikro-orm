@@ -199,7 +199,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
         // The array-form escape hatch passes raw [spec, options] to the driver; fold `where`
         // into the options dict (on a clone, to avoid mutating the user's metadata).
         const opts = { ...index.options[1] };
-        this.applyPartialFilter(opts, index.where, index.name, meta.className);
+        this.applyPartialFilter(opts, index.where, index.name, meta);
         res.push([collection.collectionName, collection.createIndex(index.options[0], opts)]);
         return;
       }
@@ -245,7 +245,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
         indexOptions.hidden = true;
       }
 
-      this.applyPartialFilter(indexOptions, index.where, index.name, meta.className);
+      this.applyPartialFilter(indexOptions, index.where, index.name, meta);
 
       res.push([collection.collectionName, this.executeQuery(collection, 'createIndex', fieldOrSpec, indexOptions)]);
     });
@@ -261,7 +261,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     options: Dictionary,
     where: unknown,
     indexName: string | undefined,
-    entityName: string,
+    meta: EntityMetadata,
   ): void {
     if (where == null) {
       return;
@@ -272,18 +272,19 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
         .getLogger()
         .warn(
           'schema',
-          `Index '${indexName ?? '(unnamed)'}' on entity '${entityName}': both \`where\` and \`options.partialFilterExpression\` are set; \`options.partialFilterExpression\` wins.`,
+          `Index '${indexName ?? '(unnamed)'}' on entity '${meta.className}': both \`where\` and \`options.partialFilterExpression\` are set; \`options.partialFilterExpression\` wins.`,
         );
       return;
     }
 
     if (typeof where === 'string') {
       throw new Error(
-        `Index '${indexName ?? '(unnamed)'}' on entity '${entityName}': string \`where\` is not supported on MongoDB; pass an object/FilterQuery (it maps to MongoDB's \`partialFilterExpression\`).`,
+        `Index '${indexName ?? '(unnamed)'}' on entity '${meta.className}': string \`where\` is not supported on MongoDB; pass an object/FilterQuery (it maps to MongoDB's \`partialFilterExpression\`).`,
       );
     }
 
-    options.partialFilterExpression = where;
+    // map property names to field names, the same way the driver does for queries
+    options.partialFilterExpression = this.driver.renameFields(meta.class, where as Dictionary, true);
   }
 
   private async executeQuery(collection: Collection, method: keyof Collection, ...args: unknown[]) {
@@ -315,7 +316,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
         unique: true,
         ...index.options,
       };
-      this.applyPartialFilter(indexOptions, index.where, index.name, meta.className);
+      this.applyPartialFilter(indexOptions, index.where, index.name, meta);
       res.push([collection.collectionName, this.executeQuery(collection, 'createIndex', fieldOrSpec, indexOptions)]);
     });
 

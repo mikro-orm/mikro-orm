@@ -1,4 +1,4 @@
-import { EntitySchema, MikroORM } from '@mikro-orm/mongodb';
+import { EntitySchema, MikroORM, UniqueConstraintViolationException } from '@mikro-orm/mongodb';
 import { ObjectId } from 'bson';
 import { mockLogger } from '../../helpers.js';
 
@@ -25,6 +25,60 @@ const schema = new EntitySchema<PartialUser>({
   ],
 }).init();
 
+class PartialAddress {
+  city!: string;
+}
+
+const addressSchema = new EntitySchema<PartialAddress>({
+  class: PartialAddress,
+  embeddable: true,
+  properties: {
+    city: { type: 'string', fieldName: 'town' },
+  },
+});
+
+class PartialAccount {
+  _id!: ObjectId;
+  email!: string;
+  status!: string;
+  address?: PartialAddress;
+}
+
+const accountSchema = new EntitySchema<PartialAccount>({
+  class: PartialAccount,
+  collection: 'partial_account',
+  properties: {
+    _id: { primary: true, name: '_id', type: 'ObjectId' },
+    email: { name: 'email', type: 'string' },
+    status: { name: 'status', type: 'string', fieldName: 'st' },
+    address: { kind: 'embedded', entity: () => PartialAddress, object: true, nullable: true },
+  },
+  indexes: [
+    {
+      name: 'partial_account_email_idx',
+      properties: ['email'],
+      where: { status: { $in: ['active', 'pending'] } },
+    },
+    {
+      name: 'partial_account_email_town_idx',
+      properties: ['email'],
+      where: { address: { city: 'Prague' } },
+    },
+    {
+      name: 'partial_account_email_raw_idx',
+      options: [{ email: -1 }, { name: 'partial_account_email_raw_idx' }] as any,
+      where: { status: 'pending' },
+    },
+  ],
+  uniques: [
+    {
+      name: 'partial_account_email_uniq',
+      properties: ['email'],
+      where: { status: 'active' },
+    },
+  ],
+});
+
 const baseProps = {
   _id: { primary: true, name: '_id', type: 'ObjectId' },
   email: { name: 'email', type: 'string' },
@@ -36,7 +90,7 @@ describe('partial index [mongo]', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [schema],
+      entities: [schema, accountSchema, addressSchema],
       dbName: 'mikro_orm_test_partial_index_mongo',
       ensureIndexes: false,
     });
@@ -232,5 +286,31 @@ describe('partial index [mongo]', () => {
     }[];
     const idx = indexes.find(i => i.name === 'partial_conflict_uniq');
     expect(idx!.partialFilterExpression).toEqual({ email: { $exists: true } });
+  });
+
+  test('`where` on a property with a custom `fieldName` or in an object embeddable uses the stored field name', async () => {
+    await orm.schema.ensureIndexes();
+    const indexes = (await orm.em.getCollection('partial_account').indexes()) as {
+      name: string;
+      partialFilterExpression?: unknown;
+    }[];
+    const filters = Object.fromEntries(indexes.map(i => [i.name, i.partialFilterExpression]));
+    expect(filters.partial_account_email_uniq).toEqual({ st: 'active' });
+    expect(filters.partial_account_email_idx).toEqual({ st: { $in: ['active', 'pending'] } });
+    expect(filters.partial_account_email_raw_idx).toEqual({ st: 'pending' });
+    expect(filters.partial_account_email_town_idx).toEqual({ 'address.town': 'Prague' });
+  });
+
+  test('partial unique index on a property with a custom `fieldName` rejects a duplicate', async () => {
+    await orm.schema.ensureIndexes();
+    const em = orm.em.fork();
+    em.create(PartialAccount, { email: 'a@a.a', status: 'active' });
+    em.create(PartialAccount, { email: 'a@a.a', status: 'inactive' });
+    await em.flush();
+
+    const em2 = orm.em.fork();
+    em2.create(PartialAccount, { email: 'a@a.a', status: 'active' });
+    await expect(em2.flush()).rejects.toThrow(UniqueConstraintViolationException);
+    expect(await orm.em.fork().count(PartialAccount, { email: 'a@a.a', status: 'active' })).toBe(1);
   });
 });
