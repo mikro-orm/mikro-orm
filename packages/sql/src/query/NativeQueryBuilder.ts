@@ -75,6 +75,8 @@ export class NativeQueryBuilder implements Subquery {
   protected parts: string[] = [];
   protected params: unknown[] = [];
   protected options: Options = {};
+  /** the table name or alias usable as a column qualifier (without the alias definition or index hint) */
+  #tableQualifier?: string;
 
   constructor(protected readonly platform: AbstractSqlPlatform) {}
 
@@ -106,7 +108,12 @@ export class NativeQueryBuilder implements Subquery {
       const alias = options?.alias ? `${asKeyword}${this.platform.quoteIdentifier(options.alias)}` : '';
       const schema =
         options?.schema && options.schema !== this.platform.getDefaultSchemaName() ? `${options.schema}.` : '';
+      this.#tableQualifier = options?.alias
+        ? this.platform.quoteIdentifier(options.alias)
+        : this.quote(schema + tableName);
       tableName = this.quote(schema + tableName) + alias;
+    } else {
+      this.#tableQualifier = undefined;
     }
 
     this.options.tableName = tableName;
@@ -319,7 +326,10 @@ export class NativeQueryBuilder implements Subquery {
     if (clause.version && !merged.includes(clause.version.field)) {
       const field = this.quote(clause.version.field);
       // the existing row's version, as the `version + 1` of an update (a bare column is ambiguous with `excluded`)
-      parts = [...parts, `${field} = ${clause.version.timestamp ?? `${this.getTableName()}.${field} + 1`}`];
+      parts = [
+        ...parts,
+        `${field} = ${clause.version.timestamp ?? `${this.#tableQualifier ?? this.getTableName()}.${field} + 1`}`,
+      ];
     }
 
     return parts.join(', ');

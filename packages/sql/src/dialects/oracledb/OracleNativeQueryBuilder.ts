@@ -215,7 +215,7 @@ export class OracleNativeQueryBuilder extends NativeQueryBuilder {
     if (!clause.ignore) {
       /* v8 ignore next: merge type branch */
       if (!clause.merge || Array.isArray(clause.merge)) {
-        const merge = clause.merge || keys;
+        const merge = clause.merge?.length ? clause.merge : keys;
         const mergeParts = merge
           .filter(field => !Array.isArray(clause.fields) || !clause.fields.includes(field))
           .filter((field: any) => keys.includes(field)) // only reference columns present in the source data

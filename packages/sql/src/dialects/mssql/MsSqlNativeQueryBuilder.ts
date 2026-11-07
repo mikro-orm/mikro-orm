@@ -159,7 +159,7 @@ export class MsSqlNativeQueryBuilder extends NativeQueryBuilder {
       this.parts.push('then update set');
 
       if (!clause.merge || Array.isArray(clause.merge)) {
-        const merge = clause.merge || keys;
+        const merge = clause.merge?.length ? clause.merge : keys;
         const parts = merge
           .filter(field => !Array.isArray(clause.fields) || !clause.fields.includes(field))
           .map((column: any) => `${this.quote(column)} = tsource.${this.quote(column)}`);

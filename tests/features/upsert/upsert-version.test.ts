@@ -10,6 +10,15 @@ const Doc = defineEntity({
   },
 });
 
+const DatedDoc = defineEntity({
+  name: 'UpsertVersionDatedDoc',
+  properties: {
+    id: p.integer().primary(),
+    title: p.string(),
+    version: p.datetime().version(),
+  },
+});
+
 const options = {
   sqlite: { dbName: ':memory:' },
   postgresql: {},
@@ -27,7 +36,7 @@ describe.each(Utils.keys(options))('upsert bumps the version [%s]', type => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Doc],
+      entities: [Doc, DatedDoc],
       dbName: 'mikro_orm_test_upsert_version',
       driver: PLATFORMS[type] as any,
       ...options[type],
@@ -81,5 +90,38 @@ describe.each(Utils.keys(options))('upsert bumps the version [%s]', type => {
 
     const row = await orm.em.fork().findOneOrFail(Doc, 1);
     expect([row.title, row.version]).toEqual(['d3', 2]);
+  });
+
+  test('qb.merge() without fields merges every column and bumps the version', async () => {
+    await orm.em.fork().createQueryBuilder(Doc).insert({ id: 1, title: 'd2' }).onConflict('id').merge().execute();
+
+    const row = await orm.em.fork().findOneOrFail(Doc, 1);
+    expect([row.title, row.version]).toEqual(['d2', 2]);
+  });
+
+  // mysql, mssql and oracle do not support an aliased insert
+  test.runIf(type === 'sqlite' || type === 'postgresql')('aliased qb bumps the version', async () => {
+    await orm.em
+      .fork()
+      .createQueryBuilder(Doc, 'd')
+      .insert({ id: 1, title: 'd2' })
+      .onConflict('id')
+      .merge(['title'])
+      .execute();
+
+    const row = await orm.em.fork().findOneOrFail(Doc, 1);
+    expect([row.title, row.version]).toEqual(['d2', 2]);
+  });
+
+  test('em.upsert() refreshes a datetime version', async () => {
+    const old = new Date('2020-01-01T00:00:00Z');
+    await orm.em.fork().insert(DatedDoc, { id: 1, title: 'd1', version: old });
+
+    const doc = await orm.em.fork().upsert(DatedDoc, { id: 1, title: 'd2' });
+    const row = await orm.em.fork().findOneOrFail(DatedDoc, 1);
+    expect(row.title).toBe('d2');
+    expect(row.version.getTime()).toBeGreaterThan(old.getTime());
+    // oracle returns the timestamp without fractional seconds
+    expect(Math.floor(doc.version.getTime() / 1000)).toBe(Math.floor(row.version.getTime() / 1000));
   });
 });
