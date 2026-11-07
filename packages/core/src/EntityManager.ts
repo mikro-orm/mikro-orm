@@ -1943,13 +1943,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const getRowUniqueFields = (where: FilterQuery<Entity>) =>
       Utils.isPlainObject(where) && !Utils.hasObjectKeys(where) ? uniqueFields : getUniqueFields(where);
     const platform = this.getPlatform();
-    const returning = getOnConflictReturningFields(
-      meta,
-      data[dataIndexes[0]],
-      uniqueFields,
-      options,
-      platform,
-    ) as string[];
+    const returning = getOnConflictReturningFields(meta, allData[0], uniqueFields, options, platform) as string[];
     if (options.onConflictWhere && res.rows?.length !== allData.length) {
       returning.push(...meta.comparableProps.filter(p => !p.lazy && !p.embeddable).map(p => p.name));
     }

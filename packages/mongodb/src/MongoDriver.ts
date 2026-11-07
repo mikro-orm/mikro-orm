@@ -432,6 +432,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       return res;
     }
 
+    // work on a copy, `em.upsert()` builds the entity from the caller's data and must not see the `$inc`
+    data = { ...data };
     this.handleVersionProperty(entityName, data, true);
     data = this.renameFields(entityName, data);
     where = this.renameFields(entityName, where as T, true);
@@ -481,6 +483,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       return row;
     });
     data = data.map(row => {
+      row = { ...row };
       this.handleVersionProperty(entityName, row, true);
       return this.renameFields(entityName, row);
     });
