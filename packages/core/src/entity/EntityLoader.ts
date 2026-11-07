@@ -790,6 +790,12 @@ export class EntityLoader {
         const ref = entity[prop.name] as AnyEntity | null | undefined;
 
         if (ref == null) {
+          // an inverse 1:1 with no matching row is resolved as empty, mark it so it is not queried again
+          if (isInverseOneToOne && !partial && childrenMap.has(getKey(entity as AnyEntity))) {
+            entity[prop.name] = nullVal as EntityValue<Entity>;
+            helper(entity).__loadedProperties.add(prop.name);
+          }
+
           continue;
         }
 
@@ -1321,7 +1327,12 @@ export class EntityLoader {
         return false;
       }
 
-      if (value === undefined || !Utils.isEntity(value, true)) {
+      // with `forceUndefined`, an empty relation that was already loaded is `undefined` instead of `null`
+      if (value === undefined) {
+        return !helper(e).__loadedProperties.has(prop.name);
+      }
+
+      if (!Utils.isEntity(value, true)) {
         return true;
       }
 
