@@ -1,5 +1,6 @@
 import {
   ArrayType,
+  BigIntType,
   BooleanType,
   DateTimeType,
   DecimalType,
@@ -9,6 +10,7 @@ import {
   JsonType,
   type Logger,
   parseJsonSafe,
+  type Type,
   Utils,
 } from '@mikro-orm/core';
 import type {
@@ -1401,6 +1403,13 @@ export class SchemaComparator {
     return Number.isFinite(value) ? value : null;
   }
 
+  // metadata quotes bigint defaults (`'0'`) while mysql reports them bare, so compare them as integers like decimals
+  private normalizeBigIntDefault(defaultValue: string, type: Type<unknown>): string {
+    const value = defaultValue.replace(/^'(.+)'$/, '$1');
+
+    return type instanceof BigIntType && /^-?\d+$/.test(value) ? BigInt(value).toString() : defaultValue;
+  }
+
   hasSameDefaultValue(from: Column, to: Column): boolean {
     if (
       from.default == null ||
@@ -1451,7 +1460,10 @@ export class SchemaComparator {
     }
 
     if (from.default && to.default) {
-      return from.default.toString().toLowerCase() === to.default.toString().toLowerCase();
+      const defaultValueFrom = this.normalizeBigIntDefault(from.default.toString(), to.mappedType);
+      const defaultValueTo = this.normalizeBigIntDefault(to.default.toString(), to.mappedType);
+
+      return defaultValueFrom.toLowerCase() === defaultValueTo.toLowerCase();
     }
 
     if (['', this.#helper.getDefaultEmptyString()].includes(to.default!) && from.default != null) {
