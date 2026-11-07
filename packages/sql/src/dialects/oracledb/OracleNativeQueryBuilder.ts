@@ -215,7 +215,8 @@ export class OracleNativeQueryBuilder extends NativeQueryBuilder {
     if (!clause.ignore) {
       /* v8 ignore next: merge type branch */
       if (!clause.merge || Array.isArray(clause.merge)) {
-        const mergeParts = (clause.merge || keys)
+        const merge = clause.merge?.length ? clause.merge : keys;
+        const mergeParts = merge
           .filter(field => !Array.isArray(clause.fields) || !clause.fields.includes(field))
           .filter((field: any) => keys.includes(field)) // only reference columns present in the source data
           .map((column: any) => `${this.quote(column)} = tsource.${this.quote(column)}`);
@@ -230,7 +231,7 @@ export class OracleNativeQueryBuilder extends NativeQueryBuilder {
           }
 
           this.parts.push('then update set');
-          this.parts.push(mergeParts.join(', '));
+          this.parts.push(this.joinVersionMerge(clause, mergeParts, merge));
         }
       } /* v8 ignore start: object-form merge branch */ else if (typeof clause.merge === 'object') {
         this.parts.push('when matched');
@@ -245,7 +246,7 @@ export class OracleNativeQueryBuilder extends NativeQueryBuilder {
           this.params.push(value);
           return `${this.getTableName()}.${this.quote(key)} = ?`;
         });
-        this.parts.push(parts.join(', '));
+        this.parts.push(this.joinVersionMerge(clause, parts, Object.keys(clause.merge)));
       }
       /* v8 ignore stop */
     }

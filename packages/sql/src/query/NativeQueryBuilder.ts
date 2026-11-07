@@ -65,6 +65,7 @@ interface OnConflictClause {
   ignore?: boolean;
   merge?: Dictionary | (string | RawQueryFragment)[];
   where?: { sql: string; params: unknown[] };
+  version?: { field: string; timestamp?: string };
 }
 
 /** @internal */
@@ -74,6 +75,8 @@ export class NativeQueryBuilder implements Subquery {
   protected parts: string[] = [];
   protected params: unknown[] = [];
   protected options: Options = {};
+  /** the table name or alias usable as a column qualifier (without the alias definition or index hint) */
+  #tableQualifier?: string;
 
   constructor(protected readonly platform: AbstractSqlPlatform) {}
 
@@ -105,7 +108,12 @@ export class NativeQueryBuilder implements Subquery {
       const alias = options?.alias ? `${asKeyword}${this.platform.quoteIdentifier(options.alias)}` : '';
       const schema =
         options?.schema && options.schema !== this.platform.getDefaultSchemaName() ? `${options.schema}.` : '';
+      this.#tableQualifier = options?.alias
+        ? this.platform.quoteIdentifier(options.alias)
+        : this.quote(schema + tableName);
       tableName = this.quote(schema + tableName) + alias;
+    } else {
+      this.#tableQualifier = undefined;
     }
 
     this.options.tableName = tableName;
@@ -293,18 +301,18 @@ export class NativeQueryBuilder implements Subquery {
         this.params.push((clause.merge as Dictionary)[field]);
         return `${this.quote(field)} = ?`;
       });
-      this.parts.push(fields.join(', '));
+      this.parts.push(this.joinVersionMerge(clause, fields, Object.keys(clause.merge)));
     } else if (clause.merge) {
       this.parts.push('do update set');
 
       if ((clause.merge as string[]).length) {
         const fields = (clause.merge as string[]).map(field => `${this.quote(field)} = excluded.${this.quote(field)}`);
-        this.parts.push(fields.join(', '));
+        this.parts.push(this.joinVersionMerge(clause, fields, clause.merge as string[]));
       } else {
         const dataAsArray = Utils.asArray(this.options.data);
         const keys = Object.keys(dataAsArray[0]);
         const fields = keys.map(field => `${this.quote(field)} = excluded.${this.quote(field)}`);
-        this.parts.push(fields.join(', '));
+        this.parts.push(this.joinVersionMerge(clause, fields, keys));
       }
     }
 
@@ -312,6 +320,19 @@ export class NativeQueryBuilder implements Subquery {
       this.parts.push(`where ${clause.where.sql}`);
       this.params.push(...clause.where.params);
     }
+  }
+
+  protected joinVersionMerge(clause: OnConflictClause, parts: string[], merged: unknown[]): string {
+    if (clause.version && !merged.includes(clause.version.field)) {
+      const field = this.quote(clause.version.field);
+      // the existing row's version, as the `version + 1` of an update (a bare column is ambiguous with `excluded`)
+      parts = [
+        ...parts,
+        `${field} = ${clause.version.timestamp ?? `${this.#tableQualifier ?? this.getTableName()}.${field} + 1`}`,
+      ];
+    }
+
+    return parts.join(', ');
   }
 
   protected combineParts(): { sql: string; params: unknown[] } {
