@@ -10,7 +10,6 @@ import {
   JsonType,
   type Logger,
   parseJsonSafe,
-  type Type,
   Utils,
 } from '@mikro-orm/core';
 import type {
@@ -1403,11 +1402,10 @@ export class SchemaComparator {
     return Number.isFinite(value) ? value : null;
   }
 
-  // metadata quotes bigint defaults (`'0'`) while mysql reports them bare, so compare them as integers like decimals
-  private normalizeBigIntDefault(defaultValue: string, type: Type<unknown>): string {
-    const value = defaultValue.replace(/^'(.+)'$/, '$1');
+  private parseBigIntDefault(defaultValue: string | number): bigint | null {
+    const value = ('' + defaultValue).replace(/^'(.+)'$/, '$1');
 
-    return type instanceof BigIntType && /^-?\d+$/.test(value) ? BigInt(value).toString() : defaultValue;
+    return /^-?\d+$/.test(value) ? BigInt(value) : null;
   }
 
   hasSameDefaultValue(from: Column, to: Column): boolean {
@@ -1459,11 +1457,18 @@ export class SchemaComparator {
       }
     }
 
-    if (from.default && to.default) {
-      const defaultValueFrom = this.normalizeBigIntDefault(from.default.toString(), to.mappedType);
-      const defaultValueTo = this.normalizeBigIntDefault(to.default.toString(), to.mappedType);
+    // metadata quotes bigint defaults (`'0'`) while mysql reports them bare
+    if (to.mappedType instanceof BigIntType) {
+      const defaultValueFrom = this.parseBigIntDefault(from.default);
+      const defaultValueTo = this.parseBigIntDefault(to.default);
 
-      return defaultValueFrom.toLowerCase() === defaultValueTo.toLowerCase();
+      if (defaultValueFrom != null && defaultValueTo != null) {
+        return defaultValueFrom === defaultValueTo;
+      }
+    }
+
+    if (from.default && to.default) {
+      return from.default.toString().toLowerCase() === to.default.toString().toLowerCase();
     }
 
     if (['', this.#helper.getDefaultEmptyString()].includes(to.default!) && from.default != null) {
