@@ -192,7 +192,7 @@ describe('stored routines — Oracle', () => {
     expect(result).toBe(42);
   });
 
-  it('function with DATE return binds via oracledb.DATE', async () => {
+  it('function with DATE return resolves to a Date', async () => {
     const result = await orm.em.callRoutine(TodayPlus, { offset_days: 0 });
     expect(result).toBeInstanceOf(Date);
   });
