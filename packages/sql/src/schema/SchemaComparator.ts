@@ -1,5 +1,6 @@
 import {
   ArrayType,
+  BigIntType,
   BooleanType,
   DateTimeType,
   DecimalType,
@@ -1401,6 +1402,12 @@ export class SchemaComparator {
     return Number.isFinite(value) ? value : null;
   }
 
+  private parseBigIntDefault(defaultValue: string | number): bigint | null {
+    const value = ('' + defaultValue).replace(/^'(.+)'$/, '$1');
+
+    return /^-?\d+$/.test(value) ? BigInt(value) : null;
+  }
+
   hasSameDefaultValue(from: Column, to: Column): boolean {
     if (
       from.default == null ||
@@ -1447,6 +1454,16 @@ export class SchemaComparator {
           this.#platform.formatDecimal(defaultValueFrom, to.scale) ===
           this.#platform.formatDecimal(defaultValueTo, to.scale)
         );
+      }
+    }
+
+    // metadata quotes bigint defaults (`'0'`) while mysql reports them bare
+    if (to.mappedType instanceof BigIntType) {
+      const defaultValueFrom = this.parseBigIntDefault(from.default);
+      const defaultValueTo = this.parseBigIntDefault(to.default);
+
+      if (defaultValueFrom != null && defaultValueTo != null) {
+        return defaultValueFrom === defaultValueTo;
       }
     }
 

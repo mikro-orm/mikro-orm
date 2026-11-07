@@ -1,4 +1,4 @@
-import { MikroORM, Opt, sql } from '@mikro-orm/core';
+import { defineEntity, type IDatabaseDriver, MikroORM, Opt, p, sql } from '@mikro-orm/core';
 import { Entity, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
@@ -120,5 +120,69 @@ describe('diffing default values (GH #2385)', () => {
     expect(await orm.schema.getCreateSchemaSQL()).toMatchSnapshot();
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await orm.close();
+  });
+});
+
+// metadata quotes bigint defaults (`'0'`) while mysql and mariadb report them bare
+const BigIntDefaults = defineEntity({
+  name: 'BigIntDefaults',
+  properties: {
+    id: p.integer().primary(),
+    big: p.bigint().default(0),
+    negative: p.bigint('number').default(-5),
+    huge: p.bigint().default('9007199254740993'),
+    code: p.string().default('007'),
+  },
+});
+
+const ChangedBigIntDefaults = defineEntity({
+  name: 'BigIntDefaults',
+  properties: {
+    id: p.integer().primary(),
+    big: p.bigint().default(1),
+    negative: p.bigint('number').default(-5),
+    // differs from the stored default only beyond Number.MAX_SAFE_INTEGER
+    huge: p.bigint().default('9007199254740992'),
+    // a numeric-looking string default is still compared as text
+    code: p.string().default('7'),
+  },
+});
+
+const options = {
+  mysql: { driver: MySqlDriver, port: 3308 },
+  mariadb: { driver: MariaDbDriver, port: 3309 },
+} as const;
+
+describe.each(['mysql', 'mariadb'] as const)('bigint defaults [%s]', type => {
+  const dbName = 'mikro_orm_test_bigint_defaults';
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init<IDatabaseDriver>({ ...options[type], entities: [BigIntDefaults], dbName });
+    await orm.schema.refresh();
+  });
+
+  afterAll(() => orm.close(true));
+
+  test('do not produce additional diffs', async () => {
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+  });
+
+  test('still diff a changed value', async () => {
+    const changed = await MikroORM.init<IDatabaseDriver>({
+      ...options[type],
+      entities: [ChangedBigIntDefaults],
+      dbName,
+    });
+    const diff = await changed.schema.getUpdateSchemaSQL({ wrap: false });
+    await changed.close(true);
+    expect(diff).toBe(
+      [
+        "alter table `big_int_defaults` modify `big` bigint not null default '1';",
+        "alter table `big_int_defaults` modify `huge` bigint not null default '9007199254740992';",
+        "alter table `big_int_defaults` modify `code` varchar(255) not null default '7';",
+        '',
+      ].join('\n'),
+    );
   });
 });

@@ -42,6 +42,10 @@ class Widget7796 {
   @Property({ columnType: 'decimal(10,2)', type: 'decimal', default: '0.00' })
   fee: string = '0.00';
 
+  // bigint defaults get quoted in metadata (`'0'`)
+  @Property({ type: 'bigint', default: 0 })
+  views: bigint = 0n;
+
   @ManyToOne(() => Category7796, { deleteRule: 'cascade', updateRule: 'cascade' })
   category!: Category7796;
 }
