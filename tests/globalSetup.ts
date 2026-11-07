@@ -319,18 +319,23 @@ export async function setup() {
   const skipMongo = process.env.npm_lifecycle_event === 'test:sqlite';
 
   if (!skipMongo && !(globalThis as any).__MONGOINSTANCE) {
-    try {
-      const instance = await MongoMemoryReplSet.create({
-        replSet: { name: 'rs', count: 3 },
-      });
+    // The library picks a free port and only then spawns `mongod`, so another process can grab it
+    // in between ("Port ... already in use"); a fresh attempt picks new ports.
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      const instance = new MongoMemoryReplSet({ replSet: { name: 'rs', count: 3 } });
 
-      await instance.waitUntilRunning();
-      const uri = instance.getUri();
-      (globalThis as any).__MONGOINSTANCE = instance;
-      process.env.MONGO_URI = uri.slice(0, uri.lastIndexOf('/'));
-    } catch {
-      // eslint-disable-next-line no-console
-      console.warn('Failed to start MongoDB memory server');
+      try {
+        await instance.start();
+        await instance.waitUntilRunning();
+        const uri = instance.getUri();
+        (globalThis as any).__MONGOINSTANCE = instance;
+        process.env.MONGO_URI = uri.slice(0, uri.lastIndexOf('/'));
+        break;
+      } catch {
+        await instance.stop({ force: true, doCleanup: true }).catch(() => undefined);
+        // eslint-disable-next-line no-console
+        console.warn(`Failed to start MongoDB memory server (attempt ${attempt}/3)`);
+      }
     }
   }
 
