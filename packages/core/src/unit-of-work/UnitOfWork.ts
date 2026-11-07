@@ -200,7 +200,9 @@ export class UnitOfWork {
         }
       }
 
-      wrapped.__originalEntityData = data;
+      // a partial refresh must keep the snapshot of properties it did not reload
+      wrapped.__originalEntityData =
+        options?.refresh && wrapped.__originalEntityData ? { ...wrapped.__originalEntityData, ...data } : data;
     }
 
     return entity;
