@@ -3870,17 +3870,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bson@npm:7.3.4":
+"bson@npm:7.3.4, bson@npm:^7.2.0, bson@npm:^7.3.2":
   version: 7.3.4
   resolution: "bson@npm:7.3.4"
   checksum: 10/f0df76350601fa45ac65845fa93cf2803287de69aaa66ec124c10e53b58a9c7a288ceeef2df3d5c25d64ea2780603ddfb10e65500e462da6cc2061d5727c568c
-  languageName: node
-  linkType: hard
-
-"bson@npm:^7.2.0, bson@npm:^7.3.2":
-  version: 7.3.3
-  resolution: "bson@npm:7.3.3"
-  checksum: 10/27f90714578b84999cd79dd53aede2fd09118371af453f2a0b47ed07e50ab9514c1b2d5acd3d85e805172c32b963f3c3a457a34dd6ff7d0eb0d9e20910735f8f
   languageName: node
   linkType: hard
 
