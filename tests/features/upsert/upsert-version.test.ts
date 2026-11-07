@@ -121,7 +121,6 @@ describe.each(Utils.keys(options))('upsert bumps the version [%s]', type => {
     const row = await orm.em.fork().findOneOrFail(DatedDoc, 1);
     expect(row.title).toBe('d2');
     expect(row.version.getTime()).toBeGreaterThan(old.getTime());
-    // oracle returns the timestamp without fractional seconds
-    expect(Math.floor(doc.version.getTime() / 1000)).toBe(Math.floor(row.version.getTime() / 1000));
+    expect(doc.version.getTime()).toBe(row.version.getTime());
   });
 });
