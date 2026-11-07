@@ -153,72 +153,79 @@ export class EntitySerializer {
       contextCreated = true;
     }
 
-    SerializationContext.propagate(root, entity, (meta, prop) => meta.properties[prop]?.kind !== ReferenceKind.SCALAR);
     const ret = {} as Dictionary;
-    const props = new Set<EntityKey<T>>();
 
-    if (meta.serializedPrimaryKey && !meta.compositePK) {
-      props.add(meta.serializedPrimaryKey);
-    } else {
-      meta.primaryKeys.forEach(pk => props.add(pk));
-    }
+    try {
+      SerializationContext.propagate(
+        root,
+        entity,
+        (meta, prop) => meta.properties[prop]?.kind !== ReferenceKind.SCALAR,
+      );
+      const props = new Set<EntityKey<T>>();
 
-    if (wrapped.isInitialized() || !wrapped.hasPrimaryKey()) {
-      const entityKeys = new Set(Object.keys(entity) as EntityKey<T>[]);
+      if (meta.serializedPrimaryKey && !meta.compositePK) {
+        props.add(meta.serializedPrimaryKey);
+      } else {
+        meta.primaryKeys.forEach(pk => props.add(pk));
+      }
 
-      for (const prop of meta.props) {
-        if (entityKeys.has(prop.name) || (prop.getter && prop.accessor === prop.name)) {
-          props.add(prop.name);
+      if (wrapped.isInitialized() || !wrapped.hasPrimaryKey()) {
+        const entityKeys = new Set(Object.keys(entity) as EntityKey<T>[]);
+
+        for (const prop of meta.props) {
+          if (entityKeys.has(prop.name) || (prop.getter && prop.accessor === prop.name)) {
+            props.add(prop.name);
+          }
+        }
+
+        for (const key of entityKeys) {
+          if (!meta.properties[key as EntityKey]) {
+            props.add(key);
+          }
         }
       }
 
-      for (const key of entityKeys) {
-        if (!meta.properties[key as EntityKey]) {
-          props.add(key);
+      const visited = root.visited.has(entity);
+
+      if (!visited) {
+        root.visited.add(entity);
+      }
+
+      for (const prop of props) {
+        if (!isVisible<T>(meta, prop, options)) {
+          continue;
+        }
+
+        const cycle = root.visit(meta.class, prop);
+
+        if (cycle && visited) {
+          continue;
+        }
+
+        const val = this.processProperty<T>(prop, entity, options);
+
+        if (!cycle) {
+          root.leave(meta.class, prop);
+        }
+
+        if (options.skipNull && Utils.isPlainObject(val)) {
+          Utils.dropUndefinedProperties(val, null);
+        }
+
+        if (isRaw(val)) {
+          throw new Error(`Trying to serialize raw SQL fragment: '${val.sql}'`);
+        }
+
+        const visible = typeof val !== 'undefined' && !(val === null && options.skipNull);
+
+        if (visible) {
+          ret[this.propertyName(meta, prop)] = val as EntityDTOProp<T, EntityValue<T>>;
         }
       }
-    }
-
-    const visited = root.visited.has(entity);
-
-    if (!visited) {
-      root.visited.add(entity);
-    }
-
-    for (const prop of props) {
-      if (!isVisible<T>(meta, prop, options)) {
-        continue;
+    } finally {
+      if (contextCreated) {
+        root.close();
       }
-
-      const cycle = root.visit(meta.class, prop);
-
-      if (cycle && visited) {
-        continue;
-      }
-
-      const val = this.processProperty<T>(prop, entity, options);
-
-      if (!cycle) {
-        root.leave(meta.class, prop);
-      }
-
-      if (options.skipNull && Utils.isPlainObject(val)) {
-        Utils.dropUndefinedProperties(val, null);
-      }
-
-      if (isRaw(val)) {
-        throw new Error(`Trying to serialize raw SQL fragment: '${val.sql}'`);
-      }
-
-      const visible = typeof val !== 'undefined' && !(val === null && options.skipNull);
-
-      if (visible) {
-        ret[this.propertyName(meta, prop)] = val as EntityDTOProp<T, EntityValue<T>>;
-      }
-    }
-
-    if (contextCreated) {
-      root.close();
     }
 
     if (!wrapped.isInitialized()) {
