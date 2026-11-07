@@ -55,6 +55,7 @@ import type {
   EntityKey,
   EntityMetadata,
   EntityName,
+  EntityProperty,
   FilterDef,
   FilterQuery,
   FromEntityType,
@@ -3568,7 +3569,20 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     let autoRefresh: boolean;
 
     if (options.fields) {
-      autoRefresh = options.fields.some(field => !helper(entity).__loadedProperties.has(field as string));
+      // inline embeddables track only their leaf properties as loaded, not the parent
+      const isLoaded = (prop: EntityProperty): boolean =>
+        helper(entity).__loadedProperties.has(prop.name) ||
+        (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Object.values(prop.embeddedProps).every(isLoaded));
+      autoRefresh = options.fields.some(field => {
+        const [first, ...rest] = (field as string).split('.');
+        let prop: EntityProperty | undefined = meta.properties[first as EntityKey<T>];
+
+        for (const part of rest) {
+          prop = prop?.kind === ReferenceKind.EMBEDDED && !prop.object ? prop.embeddedProps[part] : undefined;
+        }
+
+        return !prop || !isLoaded(prop);
+      });
     } else {
       autoRefresh = meta.comparableProps.some(prop => {
         const inlineEmbedded = prop.kind === ReferenceKind.EMBEDDED && !prop.object;
