@@ -72,6 +72,15 @@ describe.each(Utils.keys(options))('upsert bumps the version [%s]', type => {
     expect(docs.map(d => d.version)).toEqual([2, 1]);
   });
 
+  test('em.upsertMany() of entity instances returns their versions', async () => {
+    const em = orm.em.fork();
+    const docs = await em.upsertMany([
+      em.create(Doc, { id: 1, title: 'd2' }, { persist: false }), // exists
+      em.create(Doc, { id: 2, title: 'd2' }, { persist: false }), // inserts
+    ]);
+    expect(docs.map(d => d.version)).toEqual([2, 1]);
+  });
+
   test('a version given in the data is kept', async () => {
     await orm.em.fork().upsert(Doc, { id: 1, title: 'd2', version: 7 });
 
