@@ -108,4 +108,15 @@ describe.each(Utils.keys(options))('upsert merges every column of a composite FK
     const details = (await orm.em.fork().findOneOrFail(Holder, 1)).details!.pair!.unwrap();
     expect([details.a, details.b]).toEqual([2, 2]);
   });
+
+  test('qb.merge() with a column name merges only that column', async () => {
+    await orm.em
+      .fork()
+      .createQueryBuilder(Holder)
+      .insert({ id: 1, pair: [2, 2] })
+      .onConflict('id')
+      .merge(['pair_a'] as never[])
+      .execute();
+    expect(await pairOf(1)).toEqual([2, 1]);
+  });
 });

@@ -656,10 +656,12 @@ export class QueryBuilderHelper {
     const [alias, field] = this.splitField(key as EntityKey);
     const prop = this.getProperty(field, alias);
 
+    // a column given by its own name stays a single column
     if (
       prop &&
       [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
-      prop.fieldNames.length > 1
+      prop.fieldNames.length > 1 &&
+      !prop.fieldNames.includes(field)
     ) {
       return { prop, columns: prop.ownColumns ?? prop.fieldNames };
     }
