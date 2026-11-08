@@ -122,7 +122,7 @@ describe('getNativeClient', () => {
   });
 
   test('oracle returns the oracledb pool', async () => {
-    const orm = await initORMOracleDb();
+    const orm = await initORMOracleDb('mikro_orm_test_native_client', { schema: 'none' });
     const pool = await orm.em.getConnection().getNativeClient();
 
     expect(pool.poolMax).toBeGreaterThan(0);
