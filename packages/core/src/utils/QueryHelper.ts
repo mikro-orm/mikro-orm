@@ -90,8 +90,9 @@ export class QueryHelper {
 
   /**
    * @internal Returns `data` as sent to the driver: a composite FK referencing other columns of the target than its PK
-   * (`prop.referencedProps`) holds their values, read from the target in `source` (an entity, or the data it was
-   * created from). A target given only by its PK is looked up via `getTarget`, e.g. in the identity map.
+   * (`prop.referencedProps`) holds their values, read from the target in `data`, or in `source` (the entity being
+   * written, or the data it was created from) where `data` holds only its PK. A target given only by its PK otherwise
+   * is looked up via `getTarget`, e.g. in the identity map.
    */
   static withReferencedValues<T extends object, D extends Dictionary>(
     meta: EntityMetadata<T>,
@@ -113,10 +114,15 @@ export class QueryHelper {
         continue;
       }
 
-      let target = Reference.unwrapReference(source?.[prop.name]) as Dictionary | undefined;
+      let target = Reference.unwrapReference(value as object) as Dictionary | undefined;
 
       if (!Utils.isEntity(target) && !Utils.isPlainObject(target)) {
-        target = getTarget?.(prop, value) as Dictionary | undefined;
+        const candidate = Reference.unwrapReference(source?.[prop.name]) as Dictionary | undefined;
+        // an entity being written holds the current target, data it was created from may have changed since (e.g. in a hook)
+        const current =
+          Utils.isEntity(candidate) &&
+          (Utils.isEntity(source) || Utils.equals(QueryHelper.processParams(candidate), value));
+        target = current ? candidate : (getTarget?.(prop, value) as Dictionary | undefined);
       }
 
       const tuple = prop.referencedProps.map(key => {

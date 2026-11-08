@@ -1,4 +1,13 @@
-import { EntitySchema, MikroORM, Ref, ref, ScalarRef, Type, ValidationError } from '@mikro-orm/postgresql';
+import {
+  type Dictionary,
+  EntitySchema,
+  MikroORM,
+  Ref,
+  ref,
+  ScalarRef,
+  Type,
+  ValidationError,
+} from '@mikro-orm/postgresql';
 import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { mockLogger } from '../helpers.js';
 
@@ -354,4 +363,31 @@ test('native inserts, upserts and updates', async () => {
   await expect(orm.em.fork().insert(Product, { id: 8, category: 1 })).rejects.toThrow(
     `Cannot set Product.category to a reference of Category without the value of Category.active, load it first`,
   );
+});
+
+test('a relation replaced in a `beforeUpsert` hook', async () => {
+  let replace = true;
+  // the hook gets the upserted data, a plain object, so the subscriber is not limited to the entity class
+  orm.em.getEventManager().registerSubscriber({
+    beforeUpsert: args => {
+      if (replace && args.meta.class === Product) {
+        (args.entity as Dictionary).category = 1;
+      }
+    },
+  });
+
+  const em = orm.em.fork();
+  const c2 = em.create(Category, { id: 2, active: false });
+  em.create(Category, { id: 1, active: true });
+  await em.flush();
+
+  // the hook gives only the PK, so the target is looked up in the identity map, not taken from the original data
+  await em.upsert(Product, { id: 1, category: c2 });
+  await em.upsertMany(Product, [{ id: 2, category: c2 }]);
+  replace = false;
+
+  expect(await rows('product')).toEqual([
+    { id: 1, category_id: 1, category_active: true, revision: null },
+    { id: 2, category_id: 1, category_active: true, revision: null },
+  ]);
 });
