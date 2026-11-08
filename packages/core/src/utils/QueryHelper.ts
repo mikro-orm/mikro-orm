@@ -102,15 +102,13 @@ export class QueryHelper {
     getTarget?: (prop: EntityProperty<T>, pk: unknown) => object | undefined,
   ): D {
     for (const prop of meta.relations) {
+      if (!prop.referencedProps) {
+        continue;
+      }
+
       const value = data[prop.name] as unknown;
 
-      // a ready tuple is the FK value already
-      if (
-        !prop.referencedProps ||
-        value == null ||
-        isRaw(value) ||
-        (Array.isArray(value) && value.length === prop.fieldNames.length)
-      ) {
+      if (value == null || isRaw(value)) {
         continue;
       }
 
@@ -122,6 +120,12 @@ export class QueryHelper {
         const current =
           Utils.isEntity(candidate) &&
           (Utils.isEntity(source) || Utils.equals(QueryHelper.processParams(candidate), value));
+
+        // a ready tuple is the FK value already, a composite PK of the same arity is told apart only via `source`
+        if (!current && Array.isArray(value) && value.length === prop.fieldNames.length) {
+          continue;
+        }
+
         target = current ? candidate : (getTarget?.(prop, value) as Dictionary | undefined);
       }
 

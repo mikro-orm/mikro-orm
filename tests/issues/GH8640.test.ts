@@ -2,6 +2,7 @@ import {
   type Dictionary,
   EntitySchema,
   MikroORM,
+  PrimaryKeyProp,
   Ref,
   ref,
   ScalarRef,
@@ -134,6 +135,31 @@ class Note {
   project!: Ref<Project>;
 }
 
+// the target has a composite PK of the same arity as the FK, which references only one of its columns
+@Entity()
+@Unique({ properties: ['a', 'c'] })
+class Pair {
+  [PrimaryKeyProp]?: ['a', 'b'];
+
+  @PrimaryKey({ type: 'integer' })
+  a!: number;
+
+  @PrimaryKey({ type: 'integer' })
+  b!: number;
+
+  @Property({ type: 'integer' })
+  c!: number;
+}
+
+@Entity()
+class PairRef {
+  @PrimaryKey({ type: 'integer' })
+  id!: number;
+
+  @ManyToOne(() => Pair, { ref: true, joinColumns: ['pair_a', 'pair_c'], referencedColumnNames: ['a', 'c'] })
+  pair!: Ref<Pair>;
+}
+
 // a `mapToPk` relation is given the whole FK value
 @Entity()
 class Coupon {
@@ -152,7 +178,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [Category, Product, Banner, Coupon, Point, Marker, Tenant, Project, Task, Note],
+    entities: [Category, Product, Banner, Coupon, Point, Marker, Tenant, Project, Task, Note, Pair, PairRef],
     dbName: 'mikro_orm_test_gh8640',
   });
   await orm.schema.refresh();
@@ -320,6 +346,21 @@ test('FK referencing a column the target does not map keeps the PK type', async 
   expect(prop.columnTypes).toEqual(['int', 'int']);
   expect(prop.referencedProps).toBeUndefined();
   await orm2.close();
+});
+
+test('target with a composite PK of the same arity as the FK', async () => {
+  const em = orm.em.fork();
+  const pair = em.create(Pair, { a: 1, b: 2, c: 3 });
+  em.create(PairRef, { id: 1, pair });
+  await em.flush();
+  await em.insert(PairRef, { id: 2, pair });
+  // a ready tuple is the FK value, not the target PK
+  await em.insert(PairRef, { id: 3, pair: [1, 3] as never });
+  expect(await rows('pair_ref')).toEqual([
+    { id: 1, pair_a: 1, pair_c: 3 },
+    { id: 2, pair_a: 1, pair_c: 3 },
+    { id: 3, pair_a: 1, pair_c: 3 },
+  ]);
 });
 
 test('mapToPk relation with the whole FK value', async () => {
