@@ -108,6 +108,8 @@ export class MsSqlConnection extends AbstractSqlConnection {
         fallbackToDefaultDb: true,
         useUTC: this.config.get('forceUtcTimezone', false),
         encrypt: false,
+        // tedious defaults to 15s, which is the only query timeout among the supported drivers
+        requestTimeout: 60_000,
       },
       server: options.host!,
     } as ConnectionConfiguration;
