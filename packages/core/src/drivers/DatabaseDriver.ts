@@ -810,7 +810,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       }
 
       if (prop.fieldNames) {
-        Utils.renameKey(data, k, prop.fieldNames[0]);
+        Utils.renameKey(data, k, this.getScalarFieldName(prop));
       }
     });
 
@@ -896,6 +896,17 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   protected getPrimaryKeyFields<T>(meta: EntityMetadata<T>): string[] {
     return meta.getPrimaryProps().flatMap(pk => pk.fieldNames);
+  }
+
+  /** Column a scalar value of the property maps to; a composite FK given as a scalar holds only the target PK, which belongs to the column referencing it. */
+  protected getScalarFieldName(prop: EntityProperty): string {
+    if (prop.fieldNames.length < 2 || prop.polymorphic || !prop.targetMeta) {
+      return prop.fieldNames[0];
+    }
+
+    const idx = prop.referencedColumnNames.indexOf(prop.targetMeta.getPrimaryProps()[0]?.fieldNames[0]);
+
+    return prop.fieldNames[idx === -1 ? 0 : idx];
   }
 
   protected createReplicas(cb: (c: ConnectionOptions) => C): C[] {

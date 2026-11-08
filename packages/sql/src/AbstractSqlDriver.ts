@@ -1680,6 +1680,8 @@ export abstract class AbstractSqlDriver<
         }
       }
 
+      const scalarColumn = prop.fieldNames.length > 1 && !prop.polymorphic ? this.getScalarFieldName(prop) : undefined;
+
       prop.fieldNames.forEach((fieldName: string, fieldNameIdx: number) => {
         if (fields.has(fieldName) || (prop.ownColumns && !prop.ownColumns.includes(fieldName))) {
           return;
@@ -1706,7 +1708,15 @@ export abstract class AbstractSqlDriver<
             }
 
             params.push(...pks);
-            addParams(prop, prop.fieldNames.length > 1 ? data[idx][key]?.[fieldNameIdx] : data[idx][key]);
+            const value = data[idx][key];
+            const scalar = Array.isArray(value) && value.length === 1 ? value[0] : value;
+
+            // a composite FK given as a scalar holds only the target PK, written to the column that references it
+            if (scalarColumn && !isRaw(scalar) && Utils.isPrimaryKey(scalar)) {
+              addParams(prop, (fieldName === scalarColumn ? scalar : null) as Dictionary);
+            } else {
+              addParams(prop, prop.fieldNames.length > 1 ? value?.[fieldNameIdx] : value);
+            }
           }
         });
         sql += ` else ${this.platform.quoteIdentifier(fieldName)} end, `;
