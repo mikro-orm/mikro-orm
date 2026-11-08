@@ -18,6 +18,7 @@ import {
   LockMode,
   type MetadataStorage,
   OptimisticLockError,
+  PolymorphicRef,
   QueryOperator,
   type QueryOrderMap,
   QueryOrderNumeric,
@@ -622,8 +623,8 @@ export class QueryBuilderHelper {
               return;
             }
 
-            const values: unknown[] =
-              value == null ? [] : Utils.flatten(Utils.asArray(QueryHelper.processParams(value)), true);
+            const param = value instanceof PolymorphicRef ? value.toTuple() : QueryHelper.processParams(value);
+            const values: unknown[] = value == null ? [] : Utils.flatten(Utils.asArray(param), true);
             columns.forEach(column => {
               (mergeParam as Dictionary)[column] = values[prop.fieldNames.indexOf(column)] ?? null;
             });
@@ -651,7 +652,7 @@ export class QueryBuilderHelper {
     });
   }
 
-  /** The columns a merged property is written to, a composite FK to all the columns it owns, not just the first one. */
+  /** The columns a merged property is written to; a composite FK maps to all the columns it owns. */
   private getMergeColumns(key: string, type: QueryType): { prop?: EntityProperty; columns: string[] } {
     const [alias, field] = this.splitField(key as EntityKey);
     const prop = this.getProperty(field, alias);
