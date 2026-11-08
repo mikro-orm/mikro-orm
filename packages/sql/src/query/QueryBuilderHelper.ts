@@ -614,13 +614,24 @@ export class QueryBuilderHelper {
         if (Utils.isObject(item.merge)) {
           mergeParam = {};
           Utils.keys(item.merge).forEach(key => {
-            const k = this.mapper(key as string, type);
-            (mergeParam as Dictionary)[k] = item.merge![key];
+            const value = (item.merge as Dictionary)[key] as unknown;
+            const { prop, columns } = this.getMergeColumns(key as string, type);
+
+            if (!prop || isRaw(value)) {
+              (mergeParam as Dictionary)[columns[0]] = value;
+              return;
+            }
+
+            const values: unknown[] =
+              value == null ? [] : Utils.flatten(Utils.asArray(QueryHelper.processParams(value)), true);
+            columns.forEach(column => {
+              (mergeParam as Dictionary)[column] = values[prop.fieldNames.indexOf(column)] ?? null;
+            });
           });
         }
 
         if (Array.isArray(item.merge)) {
-          mergeParam = (item.merge as string[]).map(key => this.mapper(key, type));
+          mergeParam = (item.merge as string[]).flatMap(key => this.getMergeColumns(key, type).columns);
         }
 
         sub.merge = mergeParam ?? [];
@@ -638,6 +649,22 @@ export class QueryBuilderHelper {
         }
       }, 'merge' in item);
     });
+  }
+
+  /** The columns a merged property is written to, a composite FK to all the columns it owns, not just the first one. */
+  private getMergeColumns(key: string, type: QueryType): { prop?: EntityProperty; columns: string[] } {
+    const [alias, field] = this.splitField(key as EntityKey);
+    const prop = this.getProperty(field, alias);
+
+    if (
+      prop &&
+      [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
+      prop.fieldNames.length > 1
+    ) {
+      return { prop, columns: prop.ownColumns ?? prop.fieldNames };
+    }
+
+    return { columns: [this.mapper(key, type)] };
   }
 
   appendQueryCondition(
