@@ -612,15 +612,19 @@ export class QueryBuilderHelper {
         let mergeParam: Dictionary | string[] = item.merge!;
 
         if (Utils.isObject(item.merge)) {
-          mergeParam = {};
-          Utils.keys(item.merge).forEach(key => {
-            const k = this.mapper(key as string, type);
-            (mergeParam as Dictionary)[k] = item.merge![key];
-          });
+          // same mapping as the insert data, so composite FK and polymorphic values are split across their columns
+          mergeParam = this.processData(item.merge, false);
         }
 
         if (Array.isArray(item.merge)) {
-          mergeParam = (item.merge as string[]).map(key => this.mapper(key, type));
+          mergeParam = (item.merge as string[]).flatMap(key => {
+            const [a, f] = typeof key === 'string' ? this.splitField(key as EntityKey) : [];
+            const prop = f ? this.getProperty(f, a) : undefined;
+            // a property name merges all columns of a composite FK, a column name merges just that column
+            return prop?.targetMeta && prop.fieldNames.length > 1 && !prop.fieldNames.includes(f!)
+              ? (prop.ownColumns ?? prop.fieldNames)
+              : [this.mapper(key, type)];
+          });
         }
 
         sub.merge = mergeParam ?? [];
