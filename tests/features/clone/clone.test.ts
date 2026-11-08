@@ -16,6 +16,7 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryKey,
   Property,
   ManyToMany,
@@ -145,6 +146,30 @@ class OrderLine {
   total?: number;
 }
 
+@Entity()
+class Profile {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  bio!: string;
+
+  @OneToOne(() => User, u => u.profile, { ref: true, nullable: true })
+  user?: Ref<User>;
+}
+
+@Entity()
+class User {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @OneToOne(() => Profile, { ref: true, owner: true, nullable: true })
+  profile?: Ref<Profile>;
+}
+
 // --- TPT entities ---
 
 @Entity({ inheritance: 'tpt' })
@@ -185,7 +210,7 @@ describe.each(Utils.keys(options))('clone [%s]', type => {
 
   beforeAll(async () => {
     orm = await MikroORM.init<IDatabaseDriver>({
-      entities: [Author, Book, Address, Company, Tag, Article, Product, OrderLine, Vehicle, Car, Truck],
+      entities: [Author, Book, Address, Company, Tag, Article, Product, OrderLine, Profile, User, Vehicle, Car, Truck],
       driver: PLATFORMS[type],
       loggerFactory: SimpleLogger.create,
       metadataProvider: ReflectMetadataProvider,
@@ -369,6 +394,20 @@ describe.each(Utils.keys(options))('clone [%s]', type => {
       expect(lines).toHaveLength(2);
       expect(lines[1].qty).toBe(2);
       expect(lines[1].total).toBe(6);
+    });
+
+    test('excludes inverse 1:1 side from metadata-derived columns', async () => {
+      const user = orm.em.create(User, { name: 'John', profile: { bio: 'hello' } });
+      await orm.em.flush();
+      orm.em.clear();
+
+      const source = (orm.em as SqlEntityManager).createQueryBuilder(Profile).where({ id: user.profile!.id });
+      await (orm.em as SqlEntityManager).createQueryBuilder(Profile).insertFrom(source).execute();
+
+      orm.em.clear();
+      const profiles = await orm.em.find(Profile, {}, { orderBy: { id: 'asc' } });
+      expect(profiles).toHaveLength(2);
+      expect(profiles[1].bio).toBe('hello');
     });
 
     test('M:1 FK column is copied', async () => {
@@ -598,6 +637,17 @@ describe.each(Utils.keys(options))('clone [%s]', type => {
       expect(cloned.id).not.toBe(line.id);
       expect(cloned.price).toBe(3);
       expect(cloned.total).toBe(12);
+    });
+
+    test('inverse 1:1 side is excluded from clone', async () => {
+      const user = orm.em.create(User, { name: 'John', profile: { bio: 'hello' } });
+      await orm.em.flush();
+      orm.em.clear();
+
+      const cloned = await orm.em.clone(Profile, { id: user.profile!.id }, { bio: 'copy' });
+
+      expect(cloned.id).not.toBe(user.profile!.id);
+      expect(cloned.bio).toBe('copy');
     });
   });
 });
