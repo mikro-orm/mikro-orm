@@ -202,10 +202,14 @@ export class EntitySerializer {
           continue;
         }
 
-        const val = this.processProperty<T>(prop, entity, options);
+        let val: EntityValue<T> | undefined;
 
-        if (!cycle) {
-          root.leave(meta.class, prop);
+        try {
+          val = this.processProperty<T>(prop, entity, options);
+        } finally {
+          if (!cycle) {
+            root.leave(meta.class, prop);
+          }
         }
 
         if (options.skipNull && Utils.isPlainObject(val)) {

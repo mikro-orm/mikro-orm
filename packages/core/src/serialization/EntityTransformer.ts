@@ -122,10 +122,14 @@ export class EntityTransformer {
           continue;
         }
 
-        const val = EntityTransformer.processProperty<Entity>(prop, entity, raw, populated);
+        let val: EntityValue<Entity> | undefined;
 
-        if (!cycle) {
-          root.leave(meta.class, prop);
+        try {
+          val = EntityTransformer.processProperty<Entity>(prop, entity, raw, populated);
+        } finally {
+          if (!cycle) {
+            root.leave(meta.class, prop);
+          }
         }
 
         if (isRaw(val)) {
