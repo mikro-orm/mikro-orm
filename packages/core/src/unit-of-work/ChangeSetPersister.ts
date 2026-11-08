@@ -14,6 +14,7 @@ import type {
 } from '../typings.js';
 import { EntityIdentifier } from '../entity/EntityIdentifier.js';
 import { PolymorphicRef } from '../entity/PolymorphicRef.js';
+import { QueryHelper } from '../utils/QueryHelper.js';
 import { type Collection } from '../entity/Collection.js';
 import { type EntityFactory } from '../entity/EntityFactory.js';
 import { helper } from '../entity/wrap.js';
@@ -202,7 +203,7 @@ export class ChangeSetPersister {
     this.resolveTPTIdentifiers(changeSet);
 
     // Use changeSet's own meta for STI entities to get correct field mappings
-    const res = await this.#driver.nativeInsertMany(changeSet.meta.class, [changeSet.payload], options);
+    const res = await this.#driver.nativeInsertMany(changeSet.meta.class, [this.getDriverPayload(changeSet)], options);
 
     if (!wrapped.hasPrimaryKey()) {
       this.mapPrimaryKey(meta, res.insertId ?? res.row?.[meta.primaryKeys[0]], changeSet);
@@ -272,7 +273,7 @@ export class ChangeSetPersister {
 
     const res = await this.#driver.nativeInsertMany(
       meta.class,
-      changeSets.map(cs => cs.payload),
+      changeSets.map(cs => this.getDriverPayload(cs)),
       options,
     );
 
@@ -377,7 +378,7 @@ export class ChangeSetPersister {
       }
 
       cond.push(where as FilterQuery<T>);
-      payload.push(changeSet.payload);
+      payload.push(this.getDriverPayload(changeSet));
     }
 
     const res = await this.#driver.nativeUpdateMany(meta.class, cond, payload, options);
@@ -488,7 +489,12 @@ export class ChangeSetPersister {
       meta.getOwnConcurrencyCheckKeys().length === 0 &&
       (!meta.ownsVersionProperty() || changeSet.entity[meta.versionProperty] == null)
     ) {
-      return this.#driver.nativeUpdate(changeSet.meta.class, cond as FilterQuery<T>, changeSet.payload, options);
+      return this.#driver.nativeUpdate(
+        changeSet.meta.class,
+        cond as FilterQuery<T>,
+        this.getDriverPayload(changeSet),
+        options,
+      );
     }
 
     if (meta.ownsVersionProperty()) {
@@ -500,7 +506,17 @@ export class ChangeSetPersister {
 
     this.checkConcurrencyKeys(meta, changeSet, cond);
 
-    return this.#driver.nativeUpdate<T>(changeSet.meta.class, cond as FilterQuery<T>, changeSet.payload, options);
+    return this.#driver.nativeUpdate<T>(
+      changeSet.meta.class,
+      cond as FilterQuery<T>,
+      this.getDriverPayload(changeSet),
+      options,
+    );
+  }
+
+  /** The payload (and so the entity snapshot) keeps the target PK, the driver gets the whole composite FK value. */
+  private getDriverPayload<T extends object>(changeSet: ChangeSet<T>): EntityDictionary<T> {
+    return QueryHelper.withReferencedValues(changeSet.meta, changeSet.payload, changeSet.entity, this.#platform);
   }
 
   private async checkOptimisticLocks<T extends object>(

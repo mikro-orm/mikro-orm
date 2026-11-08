@@ -573,8 +573,24 @@ export class MetadataDiscovery {
         prop.ownColumns = prop.joinColumns;
       }
 
+      if (prop.joinColumns.length !== prop.referencedColumnNames.length) {
+        throw MetadataError.fromWrongForeignKey(meta, prop, 'referencedColumnNames');
+      }
+
+      // the FK can reference other columns than the target PK, e.g. the PK plus a column of a composite unique key
+      const referencedProps = prop.referencedColumnNames.map(col =>
+        prop.targetMeta!.props.find(p => p.fieldNames?.includes(col)),
+      );
+
       if (prop.joinColumns.length !== prop.columnTypes.length) {
-        prop.columnTypes = prop.joinColumns.flatMap(field => {
+        prop.columnTypes = prop.joinColumns.flatMap((field, idx) => {
+          const referenced = referencedProps[idx];
+
+          // the PK columns are already typed by `initColumnType()` (e.g. without autoincrement)
+          if (referenced && !referenced.primary) {
+            return [referenced.columnTypes[referenced.fieldNames.indexOf(prop.referencedColumnNames[idx])]];
+          }
+
           const matched = meta.props.find(p => p.fieldNames?.includes(field));
 
           /* v8 ignore next */
@@ -586,8 +602,15 @@ export class MetadataDiscovery {
         });
       }
 
-      if (prop.joinColumns.length !== prop.referencedColumnNames.length) {
-        throw MetadataError.fromWrongForeignKey(meta, prop, 'referencedColumnNames');
+      // when the relation owns all the FK columns, the extra ones are filled from the target entity on write
+      if (
+        !prop.mapToPk &&
+        !prop.embedded &&
+        prop.ownColumns.length === prop.joinColumns.length &&
+        referencedProps.every((p): p is EntityProperty => p != null) &&
+        referencedProps.some(p => !p.primary)
+      ) {
+        prop.referencedProps = referencedProps;
       }
     }
   }
