@@ -189,19 +189,23 @@ describe('check constraint [mysql8]', () => {
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
 
     // the down migration re-adds the introspected checks
-    orm.getMetadata(Order).checks = [];
+    const meta = orm.getMetadata(Order);
+    const checks = meta.checks;
+    meta.checks = [];
     const { up, down } = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
     await orm.schema.execute(up);
     await orm.schema.execute(down);
-    const checks = await orm.em
+    const names = await orm.em
       .getConnection()
       .execute(
         `select constraint_name from information_schema.check_constraints where constraint_schema = database() order by 1`,
       );
-    expect(checks.map((c: any) => c.constraint_name ?? c.CONSTRAINT_NAME)).toEqual([
+    expect(names.map((c: any) => c.constraint_name ?? c.CONSTRAINT_NAME)).toEqual([
       'order_note_check',
       'order_status_check',
     ]);
+    meta.checks = checks;
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
 
     await orm.schema.dropDatabase();
     await orm.close();
