@@ -254,6 +254,15 @@ See the [D1 SQL documentation](https://developers.cloudflare.com/d1/sql-api/sql-
 - No native support for fulltext search
 - Upsert support is limited
 
+Queries time out after 60 seconds by default (`tedious` itself defaults to 15 seconds). Use `driverOptions` to change it, `0` disables the timeout:
+
+```ts
+await MikroORM.init({
+  driver: MsSqlDriver,
+  driverOptions: { options: { requestTimeout: 0 } },
+});
+```
+
 ## Oracle limitations
 
 - Cycles in cascade paths are not supported
