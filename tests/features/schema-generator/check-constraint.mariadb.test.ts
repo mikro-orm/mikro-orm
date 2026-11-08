@@ -18,6 +18,20 @@ class FooEntity {
   price3!: number;
 }
 
+@Entity()
+@Check({ name: 'order_status_check', expression: `status in ('new', 'paid')` })
+@Check({ name: 'order_note_check', expression: `note <> 'it''s'` })
+class Order {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  status!: string;
+
+  @Property()
+  note!: string;
+}
+
 describe('check constraint [mariadb]', () => {
   test('check constraint is generated for decorator [mariadb]', async () => {
     const orm = await MikroORM.init({
@@ -94,6 +108,36 @@ describe('check constraint [mariadb]', () => {
     expect(diff).toMatchSnapshot('mariadb-check-constraint-diff-5');
     await orm.schema.execute(diff);
 
+    await orm.close();
+  });
+
+  test('check constraints with string literals are not re-created [mariadb]', async () => {
+    const orm = await MikroORM.init({
+      metadataProvider: ReflectMetadataProvider,
+      entities: [Order],
+      dbName: `mikro_orm_test_checks_literals`,
+      port: 3309,
+    });
+
+    await orm.schema.refresh({ dropDb: true });
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+
+    // the down migration re-adds the introspected checks
+    orm.getMetadata(Order).checks = [];
+    const { up, down } = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
+    await orm.schema.execute(up);
+    await orm.schema.execute(down);
+    const checks = await orm.em
+      .getConnection()
+      .execute(
+        `select constraint_name from information_schema.check_constraints where constraint_schema = database() order by 1`,
+      );
+    expect(checks.map((c: any) => c.constraint_name ?? c.CONSTRAINT_NAME)).toEqual([
+      'order_note_check',
+      'order_status_check',
+    ]);
+
+    await orm.schema.dropDatabase();
     await orm.close();
   });
 });

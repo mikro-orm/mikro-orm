@@ -419,12 +419,14 @@ export class MySqlSchemaHelper extends SchemaHelper {
 
     for (const check of allChecks) {
       const key = this.getTableKey(check);
+      // string literals come back escaped twice, decoded one level the same as the defaults in `wrap()`
+      const expression = check.expression.replace(/\\(.)/gs, '$1');
       ret[key] ??= [];
       ret[key].push({
         name: check.name,
         columnName: check.column_name,
-        definition: `check ${check.expression}`,
-        expression: check.expression.replace(/^\((.*)\)$/, '$1'),
+        definition: `check ${expression}`,
+        expression: expression.replace(/^\((.*)\)$/, '$1'),
       });
     }
 
@@ -833,6 +835,11 @@ export class MySqlSchemaHelper extends SchemaHelper {
 
     const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType;
     return stringType ? this.platform.quoteDefaultValue(val) : val;
+  }
+
+  override normalizeExpression(expr: string): string {
+    // `\'` and `''` are the same quote inside a literal
+    return expr.replace(/\\(.)/gs, (escape, char: string) => (char === "'" ? "''" : escape));
   }
 
   /** Decodes the backslash escapes of an introspected string literal. */
