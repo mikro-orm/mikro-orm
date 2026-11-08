@@ -83,8 +83,8 @@ __metadata:
   linkType: hard
 
 "@azure/core-client@npm:^1.9.2":
-  version: 1.11.1
-  resolution: "@azure/core-client@npm:1.11.1"
+  version: 1.11.2
+  resolution: "@azure/core-client@npm:1.11.2"
   dependencies:
     "@azure/abort-controller": "npm:^2.1.2"
     "@azure/core-auth": "npm:^1.10.0"
@@ -93,7 +93,7 @@ __metadata:
     "@azure/core-util": "npm:^1.13.0"
     "@azure/logger": "npm:^1.3.0"
     tslib: "npm:^2.6.2"
-  checksum: 10/f50e95d78552bf80f02ada5602f2a4e65fa4d284a923d061a1d1473279b7d3a04171dba7d3f837fbd14c1b4eab610a0caaed921f983911bee2d1a8547acd30c3
+  checksum: 10/dcd5fd948c16a914e20a117db460184695a1d5cd1d70978c53e8fcc7efbbdd761a2e486c56d9e9702cdac41cacc1c8cfb0c2b7fa961338b973033266ea05323b
   languageName: node
   linkType: hard
 
@@ -226,28 +226,28 @@ __metadata:
   linkType: hard
 
 "@azure/msal-browser@npm:^5.5.0":
-  version: 5.28.0
-  resolution: "@azure/msal-browser@npm:5.28.0"
+  version: 5.29.0
+  resolution: "@azure/msal-browser@npm:5.29.0"
   dependencies:
-    "@azure/msal-common": "npm:16.16.0"
-  checksum: 10/f8221cbad6bae3c5cada2b567b1d19637162d92343d8dd859233005174aa0ef6b091c73c525f7d11c9e4d0c3e6c8d95a5aab7c20059720b2b5bcb5d9fb7b29e2
+    "@azure/msal-common": "npm:16.16.1"
+  checksum: 10/7b66b37fc7a3f646fed73c1bd63be7ebf95d6a5fc4f10e392dfd657f0031b5f8351f8d24a83c984430620c579aa00efa6d8605ec3acf41d1f216cdec66955cd6
   languageName: node
   linkType: hard
 
-"@azure/msal-common@npm:16.16.0":
-  version: 16.16.0
-  resolution: "@azure/msal-common@npm:16.16.0"
-  checksum: 10/23018c7b9c72a48f514121e8443bdc4754517fe4b6586b03776dcabf0a26b4d542e3fc1e6ae35a1fede5108af7c09c74c6633c9e3cda44946d7d24ccc2190d9b
+"@azure/msal-common@npm:16.16.1":
+  version: 16.16.1
+  resolution: "@azure/msal-common@npm:16.16.1"
+  checksum: 10/f0121a677c983b2e587e8eb43105d43c59acc49eb2a599946bfc253fb37113991bc0379dc7918ec52104384091b8aebaae3b09b6c7f79ae7285309ade3d0fd7a
   languageName: node
   linkType: hard
 
 "@azure/msal-node@npm:^7.1.0":
-  version: 7.2.0
-  resolution: "@azure/msal-node@npm:7.2.0"
+  version: 7.2.1
+  resolution: "@azure/msal-node@npm:7.2.1"
   dependencies:
-    "@azure/msal-common": "npm:16.16.0"
+    "@azure/msal-common": "npm:16.16.1"
     jsonwebtoken: "npm:^9.0.0"
-  checksum: 10/8445b2d95e0270650f5f79697f639b7b32439bd7a794ffedd75996fb6bb2516d07b87679046453cc314023ac8cf04ed295e24b91437b61e3f5aefbf6e72d8181
+  checksum: 10/3d21c9bd79af9df264716b60a7e88a5ce01629e45eec7ad71916d6eb85176d12815e52caa5ea9867de8f7efe95b9624a0606605493f240c0275bd49cd2e745cc
   languageName: node
   linkType: hard
 
@@ -3443,13 +3443,13 @@ __metadata:
   linkType: hard
 
 "@typespec/ts-http-runtime@npm:^0.3.0, @typespec/ts-http-runtime@npm:^0.3.4, @typespec/ts-http-runtime@npm:^0.3.8":
-  version: 0.3.9
-  resolution: "@typespec/ts-http-runtime@npm:0.3.9"
+  version: 0.3.10
+  resolution: "@typespec/ts-http-runtime@npm:0.3.10"
   dependencies:
-    http-proxy-agent: "npm:^7.0.0"
-    https-proxy-agent: "npm:^7.0.0"
+    http-proxy-agent: "npm:^9.1.0"
+    https-proxy-agent: "npm:^9.1.0"
     tslib: "npm:^2.6.2"
-  checksum: 10/761491f4c797419e5b63081423f5d921e7bff5e4367150a4ff9fe291da6746f825070cd633c0f3e9cc133279126ca3745d3c5254960755e2ca7b5f4967638b3d
+  checksum: 10/43b58128a4b0b56cd6a874a31ccd803c34724ab1820462a62e49a76a3809c4d7909a9ef938c35de08d7f987f21ea3bed4be18756a10083980e9b57414165a0f3
   languageName: node
   linkType: hard
 
@@ -3559,7 +3559,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"agent-base@npm:^7.1.0, agent-base@npm:^7.1.2":
+"agent-base@npm:^7.1.2":
   version: 7.1.4
   resolution: "agent-base@npm:7.1.4"
   checksum: 10/79bef167247789f955aaba113bae74bf64aa1e1acca4b1d6bb444bdf91d82c3e07e9451ef6a6e2e35e8f71a6f97ce33e3d855a5328eb9fad1bc3cc4cfd031ed8
@@ -5110,17 +5110,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"http-proxy-agent@npm:^7.0.0":
-  version: 7.0.2
-  resolution: "http-proxy-agent@npm:7.0.2"
-  dependencies:
-    agent-base: "npm:^7.1.0"
-    debug: "npm:^4.3.4"
-  checksum: 10/d062acfa0cb82beeb558f1043c6ba770ea892b5fb7b28654dbc70ea2aeea55226dd34c02a294f6c1ca179a5aa483c4ea641846821b182edbd9cc5d89b54c6848
-  languageName: node
-  linkType: hard
-
-"http-proxy-agent@npm:^9.0.0":
+"http-proxy-agent@npm:^9.0.0, http-proxy-agent@npm:^9.1.0":
   version: 9.1.0
   resolution: "http-proxy-agent@npm:9.1.0"
   dependencies:
@@ -5131,7 +5121,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"https-proxy-agent@npm:^7.0.0, https-proxy-agent@npm:^7.0.6":
+"https-proxy-agent@npm:^7.0.6":
   version: 7.0.6
   resolution: "https-proxy-agent@npm:7.0.6"
   dependencies:
@@ -5141,7 +5131,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"https-proxy-agent@npm:^9.0.0":
+"https-proxy-agent@npm:^9.0.0, https-proxy-agent@npm:^9.1.0":
   version: 9.1.0
   resolution: "https-proxy-agent@npm:9.1.0"
   dependencies:
