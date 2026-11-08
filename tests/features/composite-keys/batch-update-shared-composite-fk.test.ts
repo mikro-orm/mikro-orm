@@ -93,8 +93,17 @@ test('batch update of a composite FK sharing a column with another relation', as
   const routes = await em.find(Route, {}, { orderBy: { id: 1 } });
   routes.forEach(r => (r.system = em.getReference(System, 2, { wrapped: true })));
   await em.flush();
-  expect(await orm.em.getConnection().execute(`select * from route order by id`)).toEqual([
+  const routeRows = () => orm.em.getConnection().execute(`select * from route order by id`);
+  expect(await routeRows()).toEqual([
     { id: 1, carrier_id: 1, system_id: 2 },
+    { id: 2, carrier_id: 1, system_id: 2 },
+  ]);
+
+  // a single update used to write the scalar to the first join column, i.e. the shared one
+  routes[0].system = em.getReference(System, 1, { wrapped: true });
+  await em.flush();
+  expect(await routeRows()).toEqual([
+    { id: 1, carrier_id: 1, system_id: 1 },
     { id: 2, carrier_id: 1, system_id: 2 },
   ]);
 });

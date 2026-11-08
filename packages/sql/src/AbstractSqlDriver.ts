@@ -1680,13 +1680,7 @@ export abstract class AbstractSqlDriver<
         }
       }
 
-      // a composite FK given as a scalar holds only the target PK, written to the column that references it
-      const pkColumn =
-        prop.fieldNames.length > 1 && prop.targetMeta && !prop.polymorphic
-          ? prop.fieldNames[
-              (prop.referencedColumnNames ?? []).indexOf(prop.targetMeta.getPrimaryProps()[0]?.fieldNames[0])
-            ]
-          : undefined;
+      const scalarColumn = prop.fieldNames.length > 1 && !prop.polymorphic ? this.getScalarFieldName(prop) : undefined;
 
       prop.fieldNames.forEach((fieldName: string, fieldNameIdx: number) => {
         if (fields.has(fieldName) || (prop.ownColumns && !prop.ownColumns.includes(fieldName))) {
@@ -1717,8 +1711,9 @@ export abstract class AbstractSqlDriver<
             const value = data[idx][key];
             const scalar = Array.isArray(value) && value.length === 1 ? value[0] : value;
 
-            if (pkColumn && !isRaw(scalar) && Utils.isPrimaryKey(scalar)) {
-              addParams(prop, (fieldName === pkColumn ? scalar : null) as Dictionary);
+            // a composite FK given as a scalar holds only the target PK, written to the column that references it
+            if (scalarColumn && !isRaw(scalar) && Utils.isPrimaryKey(scalar)) {
+              addParams(prop, (fieldName === scalarColumn ? scalar : null) as Dictionary);
             } else {
               addParams(prop, prop.fieldNames.length > 1 ? value?.[fieldNameIdx] : value);
             }
