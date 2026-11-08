@@ -1207,25 +1207,14 @@ export abstract class AbstractSqlDriver<
     return { selectFields, insertColumns };
   }
 
-  private getCloneableProps<T extends object>(meta: EntityMetadata<T>, ownProps?: boolean): EntityProperty<T>[] {
-    return (ownProps ? (meta.ownProps ?? meta.props) : meta.props).filter(prop => {
-      if (prop.persist === false) {
-        return false;
-      }
-      if (prop.primary) {
-        return false;
-      }
-      if (!prop.fieldNames?.length) {
-        return false;
-      }
-      if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
-        return false;
-      }
-      if (prop.kind === ReferenceKind.EMBEDDED && !prop.object) {
-        return false;
-      }
-      return true;
-    });
+  /**
+   * Returns properties whose columns can be copied by an `INSERT … SELECT` (owning columns that are not PKs, generated or formulas).
+   * @internal
+   */
+  getCloneableProps<T extends object>(meta: EntityMetadata<T>, ownProps?: boolean): EntityProperty<T>[] {
+    return (ownProps ? (meta.ownProps ?? meta.props) : meta.props).filter(
+      prop => !prop.primary && !prop.generated && this.platform.shouldHaveColumn(prop, true, undefined, false, false),
+    );
   }
 
   async nativeInsertMany<T extends object>(

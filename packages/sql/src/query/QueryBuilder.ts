@@ -3713,7 +3713,7 @@ export class QueryBuilder<
     }
 
     // Tier 3: derive from metadata — all cloneable columns
-    const cloneableProps = this.getCloneableProps(meta!);
+    const cloneableProps = this.driver.getCloneableProps(meta!);
     const selectFields: (string | RawQueryFragment)[] = [];
     const columns: string[] = [];
 
@@ -3730,28 +3730,6 @@ export class QueryBuilder<
     }
 
     return columns;
-  }
-
-  /** Returns properties that are safe to clone (persistable, non-PK, non-generated). */
-  private getCloneableProps(meta: EntityMetadata): EntityProperty[] {
-    return meta.props.filter(prop => {
-      if (prop.persist === false) {
-        return false;
-      }
-      if (prop.primary) {
-        return false;
-      }
-      if (!prop.fieldNames?.length) {
-        return false;
-      }
-      if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
-        return false;
-      }
-      if (prop.kind === ReferenceKind.EMBEDDED && !prop.object) {
-        return false;
-      }
-      return true;
-    });
   }
 
   private applyDiscriminatorCondition(): void {
