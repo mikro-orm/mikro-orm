@@ -592,6 +592,18 @@ export class MetadataDiscovery {
     }
   }
 
+  /** A composite FK owning a column that references a non-PK column of the target has to fill it from the target. */
+  private initReferencedProps(meta: EntityMetadata): void {
+    for (const prop of meta.props) {
+      // a column owned by another property is filled by it, and a `mapToPk` relation holds the FK value itself
+      if (!prop.ownColumns || prop.ownColumns.length !== prop.joinColumns?.length || prop.mapToPk || prop.embedded) {
+        continue;
+      }
+
+      prop.referencedProps = this.getReferencedColumnProps(prop)?.map(p => p.name);
+    }
+  }
+
   private initFieldName(prop: EntityProperty, object = false): void {
     if (prop.fieldNames && prop.fieldNames.length > 0) {
       return;
@@ -826,6 +838,7 @@ export class MetadataDiscovery {
     }
 
     this.initOwnColumns(meta);
+    this.initReferencedProps(meta);
     meta.simplePK =
       pks.length === 1 && pks[0].kind === ReferenceKind.SCALAR && !pks[0].customType && pks[0].runtimeType !== 'Date';
     meta.serializedPrimaryKey ??= meta.props.find(prop => prop.serializedPrimaryKey)?.name;
@@ -2929,8 +2942,11 @@ export class MetadataDiscovery {
     const targetMeta = prop.targetMeta!;
     prop.columnTypes = [];
 
-    // Use targetKey property if specified, otherwise use primary key properties
-    const referencedProps = prop.targetKey ? [targetMeta.properties[prop.targetKey]] : targetMeta.getPrimaryProps();
+    // Use targetKey property if specified, otherwise use primary key properties. A composite FK can also reference
+    // other columns of the target (e.g. a composite unique key), each FK column then takes the type of its column.
+    const columnProps = this.getReferencedColumnProps(prop);
+    const referencedProps =
+      columnProps ?? (prop.targetKey ? [targetMeta.properties[prop.targetKey]] : targetMeta.getPrimaryProps());
 
     if (prop.polymorphic && prop.polymorphTargets) {
       prop.columnTypes.push(this.#platform.getVarcharTypeDeclarationSQL(prop));
@@ -2950,10 +2966,49 @@ export class MetadataDiscovery {
       prop.columnTypes.push(...columnTypes);
 
       if (!targetMeta.compositePK || prop.targetKey) {
-        prop.customType = referencedProp.customType;
+        // the FK value is the target PK, the other columns only follow it
+        if (!columnProps || referencedProp.primary) {
+          prop.customType = referencedProp.customType;
+        }
+
         prop.collation ??= referencedProp.collation;
       }
     }
+  }
+
+  /** Target properties referenced by the columns of an owning to-one composite FK, unless they are just the target PK. */
+  private getReferencedColumnProps(prop: EntityProperty): EntityProperty[] | undefined {
+    // a scalar or an owning to-one relation holds the value of its column
+    const ownsValue = (p: EntityProperty) =>
+      p.kind === ReferenceKind.SCALAR ||
+      p.kind === ReferenceKind.MANY_TO_ONE ||
+      (p.kind === ReferenceKind.ONE_TO_ONE && p.owner);
+
+    if (!ownsValue(prop) || prop.targetKey || prop.polymorphic || !(prop.referencedColumnNames?.length > 1)) {
+      return undefined;
+    }
+
+    const targetMeta = prop.targetMeta!;
+    const pks = targetMeta.getPrimaryProps();
+
+    if (prop.referencedColumnNames.every(column => pks.some(pk => pk.fieldNames.includes(column)))) {
+      return undefined;
+    }
+
+    // PK columns first, then any other property holding the value of exactly that column
+    const props = prop.referencedColumnNames.map(column =>
+      [...pks, ...targetMeta.props].find(
+        p =>
+          p.fieldNames?.length === 1 &&
+          p.fieldNames[0] === column &&
+          ownsValue(p) &&
+          !p.formula &&
+          !p.embedded &&
+          !p.targetKey,
+      ),
+    );
+
+    return props.every(p => p) ? (props as EntityProperty[]) : undefined;
   }
 
   private getMappedType(prop: EntityProperty): Type<unknown> {

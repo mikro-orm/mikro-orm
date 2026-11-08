@@ -21,6 +21,7 @@ import { ChangeSetType, type ChangeSet } from './ChangeSet.js';
 import type { QueryResult } from '../connections/Connection.js';
 import { isRaw } from '../utils/RawQueryFragment.js';
 import { equals, Utils } from '../utils/Utils.js';
+import { QueryHelper } from '../utils/QueryHelper.js';
 import { type Configuration } from '../utils/Configuration.js';
 import { type EntityComparator } from '../utils/EntityComparator.js';
 import type { DriverMethodOptions, IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
@@ -202,7 +203,7 @@ export class ChangeSetPersister {
     this.resolveTPTIdentifiers(changeSet);
 
     // Use changeSet's own meta for STI entities to get correct field mappings
-    const res = await this.#driver.nativeInsertMany(changeSet.meta.class, [changeSet.payload], options);
+    const res = await this.#driver.nativeInsertMany(changeSet.meta.class, [this.getDriverPayload(changeSet)], options);
 
     if (!wrapped.hasPrimaryKey()) {
       this.mapPrimaryKey(meta, res.insertId ?? res.row?.[meta.primaryKeys[0]], changeSet);
@@ -272,7 +273,7 @@ export class ChangeSetPersister {
 
     const res = await this.#driver.nativeInsertMany(
       meta.class,
-      changeSets.map(cs => cs.payload),
+      changeSets.map(cs => this.getDriverPayload(cs)),
       options,
     );
 
@@ -377,7 +378,7 @@ export class ChangeSetPersister {
       }
 
       cond.push(where as FilterQuery<T>);
-      payload.push(changeSet.payload);
+      payload.push(this.getDriverPayload(changeSet));
     }
 
     const res = await this.#driver.nativeUpdateMany(meta.class, cond, payload, options);
@@ -474,6 +475,11 @@ export class ChangeSetPersister {
     });
   }
 
+  /** The payload as sent to the driver, see `QueryHelper.withReferencedValues()`. */
+  private getDriverPayload<T extends object>(changeSet: ChangeSet<T>): EntityData<T> {
+    return QueryHelper.withReferencedValues(changeSet.meta, changeSet.payload, changeSet.entity, this.#platform);
+  }
+
   private async updateEntity<T extends object>(
     meta: EntityMetadata<T>,
     changeSet: ChangeSet<T>,
@@ -488,7 +494,12 @@ export class ChangeSetPersister {
       meta.getOwnConcurrencyCheckKeys().length === 0 &&
       (!meta.ownsVersionProperty() || changeSet.entity[meta.versionProperty] == null)
     ) {
-      return this.#driver.nativeUpdate(changeSet.meta.class, cond as FilterQuery<T>, changeSet.payload, options);
+      return this.#driver.nativeUpdate(
+        changeSet.meta.class,
+        cond as FilterQuery<T>,
+        this.getDriverPayload(changeSet),
+        options,
+      );
     }
 
     if (meta.ownsVersionProperty()) {
@@ -500,7 +511,12 @@ export class ChangeSetPersister {
 
     this.checkConcurrencyKeys(meta, changeSet, cond);
 
-    return this.#driver.nativeUpdate<T>(changeSet.meta.class, cond as FilterQuery<T>, changeSet.payload, options);
+    return this.#driver.nativeUpdate<T>(
+      changeSet.meta.class,
+      cond as FilterQuery<T>,
+      this.getDriverPayload(changeSet),
+      options,
+    );
   }
 
   private async checkOptimisticLocks<T extends object>(

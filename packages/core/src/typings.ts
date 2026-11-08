@@ -1585,6 +1585,8 @@ export interface EntityProperty<Owner = any, Target = any> {
   referencedColumnNames: string[];
   referencedTableName: string;
   referencedPKs: EntityKey<Owner>[];
+  /** @internal target properties a composite FK references, set when it owns all its columns and not all of them are the target PK */
+  referencedProps?: string[];
   targetKey?: string;
   serializer?: (value: any, options?: SerializeOptions<any>) => any;
   serializedName?: string;

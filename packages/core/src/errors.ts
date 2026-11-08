@@ -60,6 +60,20 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     );
   }
 
+  static referencedValueUnknown(
+    meta: EntityMetadata,
+    prop: EntityProperty,
+    key: string,
+    entity: AnyEntity,
+  ): ValidationError {
+    const targetName = prop.targetMeta!.className;
+
+    return new ValidationError(
+      `Cannot set ${meta.className}.${prop.name} to a reference of ${targetName} without the value of ${targetName}.${key}, load it first`,
+      entity,
+    );
+  }
+
   static transactionRequired(): ValidationError {
     return new ValidationError('An open transaction is required for this operation');
   }

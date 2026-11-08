@@ -88,6 +88,64 @@ export class QueryHelper {
     return params;
   }
 
+  /**
+   * @internal Returns `data` as sent to the driver: a composite FK referencing other columns of the target than its PK
+   * (`prop.referencedProps`) holds their values, read from the target in `source` (an entity, or the data it was
+   * created from). A target given only by its PK is looked up via `getTarget`, e.g. in the identity map.
+   */
+  static withReferencedValues<T extends object, D extends Dictionary>(
+    meta: EntityMetadata<T>,
+    data: D,
+    source: Dictionary | undefined,
+    platform: Platform,
+    getTarget?: (prop: EntityProperty<T>, pk: unknown) => object | undefined,
+  ): D {
+    for (const prop of meta.relations) {
+      const value = data[prop.name] as unknown;
+
+      // a ready tuple is the FK value already
+      if (
+        !prop.referencedProps ||
+        value == null ||
+        isRaw(value) ||
+        (Array.isArray(value) && value.length === prop.fieldNames.length)
+      ) {
+        continue;
+      }
+
+      let target = Reference.unwrapReference(source?.[prop.name]) as Dictionary | undefined;
+
+      if (!Utils.isEntity(target) && !Utils.isPlainObject(target)) {
+        target = getTarget?.(prop, value) as Dictionary | undefined;
+      }
+
+      const tuple = prop.referencedProps.map(key => {
+        let val = Reference.unwrapReference(target?.[key]);
+        val = Utils.isScalarReference(val) ? val.unwrap() : val;
+
+        if (val === undefined) {
+          // without the target, name the first value its PK does not give
+          const missing = target ? key : prop.referencedProps!.find(k => !prop.targetMeta!.properties[k].primary)!;
+          throw ValidationError.referencedValueUnknown(meta, prop, missing, source ?? data);
+        }
+
+        if (Utils.isEntity(val)) {
+          return helper(val).getPrimaryKey(true);
+        }
+
+        const targetProp = prop.targetMeta!.properties[key];
+
+        return targetProp.customType && val != null
+          ? targetProp.customType.convertToDatabaseValue(val, platform, { mode: 'serialization' })
+          : val;
+      });
+
+      data = { ...data, [prop.name]: tuple };
+    }
+
+    return data;
+  }
+
   static processObjectParams<T extends Dictionary>(params: T = {} as T): T {
     const ret = (Array.isArray(params) ? [...params] : { ...params }) as T;
     Utils.getObjectQueryKeys(params).forEach(k => {
