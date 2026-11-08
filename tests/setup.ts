@@ -2,10 +2,24 @@
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { MetadataStorage } from '@mikro-orm/core';
+import { MsSqlConnection } from '@mikro-orm/mssql';
 
 process.env.MIKRO_ORM_ALLOW_GLOBAL_CONTEXT = '1';
 process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI = '1';
 process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH = './tests/tsconfig.dummy.json';
+
+// SQL Server on the shared CI runner occasionally stalls past tedious's default 15s `requestTimeout`
+// and then also misses the cancel ("Failed to cancel request in 5000ms"), failing whichever mssql test
+// happens to be running, so give test connections more headroom.
+const MSSQL_PATCHED = Symbol.for('mikro-orm-tests:mssql-request-timeout');
+
+if (!(MsSqlConnection.prototype as any)[MSSQL_PATCHED]) {
+  (MsSqlConnection.prototype as any)[MSSQL_PATCHED] = true;
+  const { createKyselyDialect } = MsSqlConnection.prototype;
+  MsSqlConnection.prototype.createKyselyDialect = function (overrides) {
+    return createKyselyDialect.call(this, { ...overrides, options: { requestTimeout: 60_000, ...overrides?.options } });
+  };
+}
 
 vi.resetModules();
 vi.restoreAllMocks();
