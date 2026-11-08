@@ -1502,6 +1502,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const meta = this.metadata.get<Entity>(entityName);
     const convertCustomTypes = !Utils.isEntity(data);
+    const source = data as Dictionary;
     let generatedFields: EntityKey<Entity>[] = [];
 
     if (Utils.isEntity(data)) {
@@ -1562,7 +1563,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const ret = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
-      em.driver.nativeUpdate(entityName, where, data, {
+      em.driver.nativeUpdate(entityName, where, em.withReferencedValues(meta, data, source, options.schema), {
         upsert: true,
         convertCustomTypes,
         ...options,
@@ -1765,6 +1766,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     // the rows are replaced with their processed copies below, keep the caller's array intact
+    const sources = data as Dictionary[];
     data = [...data];
     const meta = this.metadata.get<Entity>(entityName);
     const convertCustomTypes = !Utils.isEntity(data[0]);
@@ -1895,12 +1897,17 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const res = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
-      em.driver.nativeUpdateMany(entityName, allWhere, allData, {
-        upsert: true,
-        convertCustomTypes,
-        ...options,
-        ctx,
-      }),
+      em.driver.nativeUpdateMany(
+        entityName,
+        allWhere,
+        allData.map((row, idx) => em.withReferencedValues(meta, row, sources[dataIndexes[idx]], options.schema)),
+        {
+          upsert: true,
+          convertCustomTypes,
+          ...options,
+          ctx,
+        },
+      ),
     );
 
     const loadPK = new Map<Entity, FilterQuery<Entity>>();
@@ -2210,6 +2217,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     await this.getUnitOfWork().lock(entity, { lockMode, ...options });
   }
 
+  /** The data as sent to the driver, a target given only by its PK is looked up in the identity map. */
+  private withReferencedValues<Entity extends object>(
+    meta: EntityMetadata<Entity>,
+    data: EntityData<Entity>,
+    source: Dictionary | undefined,
+    schema?: string,
+  ): EntityData<Entity> {
+    return QueryHelper.withReferencedValues(meta, data, source, this.getPlatform(), (prop, pk) =>
+      this.#unitOfWork.getById(prop.targetMeta!.class, pk as Primary<object>, schema),
+    );
+  }
+
   /**
    * Fires native insert query. Calling this has no side effects on the context (identity map).
    */
@@ -2249,10 +2268,17 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return cs.getPrimaryKey()!;
     }
 
+    const source = data as Dictionary;
     data = QueryHelper.processObjectParams(data);
     validateParams(data, 'insert data');
+    const insertData = em.withReferencedValues(
+      em.metadata.get(entityName),
+      data as EntityData<Entity>,
+      source,
+      options.schema,
+    );
     const res = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
-      em.driver.nativeInsert<Entity>(entityName, data as EntityData<Entity>, { ...options, ctx }),
+      em.driver.nativeInsert<Entity>(entityName, insertData, { ...options, ctx }),
     );
 
     return res.insertId!;
@@ -2360,10 +2386,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return css.map(cs => cs.getPrimaryKey()!);
     }
 
+    const sources = data as Dictionary[];
     data = data.map(row => QueryHelper.processObjectParams(row));
     data.forEach(row => validateParams(row, 'insert data'));
+    const meta = em.metadata.get(entityName);
+    const insertData = (data as EntityData<Entity>[]).map((row, idx) =>
+      em.withReferencedValues(meta, row, sources[idx], options.schema),
+    );
     const res = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
-      em.driver.nativeInsertMany<Entity>(entityName, data as EntityData<Entity>[], { ...options, ctx }),
+      em.driver.nativeInsertMany<Entity>(entityName, insertData, { ...options, ctx }),
     );
 
     if (res.insertedIds) {
@@ -2387,6 +2418,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     await em.processUnionWhere(entityName, options, 'update');
 
+    const source = data as Dictionary;
     data = QueryHelper.processObjectParams(data);
     where = await em.processWhere(
       entityName,
@@ -2397,11 +2429,16 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     validateParams(data, 'update data');
     validateParams(where, 'update condition');
     const res = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
-      em.driver.nativeUpdate(entityName, where, data, {
-        em,
-        ...options,
-        ctx,
-      } as NativeInsertUpdateOptions<Entity>),
+      em.driver.nativeUpdate(
+        entityName,
+        where,
+        em.withReferencedValues(em.metadata.get(entityName), data, source, options.schema),
+        {
+          em,
+          ...options,
+          ctx,
+        } as NativeInsertUpdateOptions<Entity>,
+      ),
     );
 
     return res.affectedRows;

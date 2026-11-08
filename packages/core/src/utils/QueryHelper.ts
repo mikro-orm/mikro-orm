@@ -88,6 +88,71 @@ export class QueryHelper {
     return params;
   }
 
+  /**
+   * @internal The data as sent to the driver: a composite FK referencing other target columns than its PK
+   * (`prop.referencedProps`) gets their values from the target, which is the relation value in `source` (the entity
+   * being written, or the data it was created from), or is looked up via `getTarget` when `data` holds a bare PK.
+   */
+  static withReferencedValues<T extends object, D extends Dictionary>(
+    meta: EntityMetadata<T>,
+    data: D,
+    source: Dictionary | undefined,
+    platform: Platform,
+    getTarget?: (prop: EntityProperty<T>, pk: unknown) => object | undefined,
+  ): D {
+    for (const prop of meta.relations) {
+      const value = data[prop.name] as unknown;
+
+      // a ready tuple is the FK value already
+      if (
+        !prop.referencedProps ||
+        value == null ||
+        isRaw(value) ||
+        (Array.isArray(value) && value.length === prop.fieldNames.length)
+      ) {
+        continue;
+      }
+
+      let target = Reference.unwrapReference(value as object) as Dictionary | undefined;
+
+      if (!Utils.isEntity(target) && !Utils.isPlainObject(target)) {
+        const candidate = Reference.unwrapReference(source?.[prop.name]) as Dictionary | undefined;
+        // the data created from the source may have changed since (e.g. in a hook), then the PK decides
+        const current =
+          Utils.isEntity(candidate) &&
+          (Utils.isEntity(source) || Utils.equals(QueryHelper.processParams(candidate), value));
+        target = current ? candidate : (getTarget?.(prop, value) as Dictionary | undefined);
+      }
+
+      const tuple = prop.referencedProps.map((referencedProp, idx) => {
+        let val = Reference.unwrapReference(target?.[referencedProp.name]) as unknown;
+        val = Utils.isScalarReference(val) ? val.unwrap() : val;
+        val = Utils.isEntity(val) ? helper(val).getPrimaryKey(true) : val;
+
+        if (val === undefined) {
+          // without the target, name the first value its PK does not give
+          const missing = target ? referencedProp : prop.referencedProps!.find(p => !p.primary)!;
+          throw new ValidationError(
+            `Cannot set ${meta.className}.${prop.name} to a reference of ${prop.targetMeta!.className} without the value of ${prop.targetMeta!.className}.${missing.name}, load it first`,
+          );
+        }
+
+        if (referencedProp.customType && val != null) {
+          val = referencedProp.customType.convertToDatabaseValue(val, platform, { mode: 'serialization' });
+        }
+
+        // a relation holding a composite PK yields a nested array, one entry per column
+        return Utils.flatten([val] as unknown[][], true)[
+          referencedProp.fieldNames.indexOf(prop.referencedColumnNames[idx])
+        ];
+      });
+
+      data = { ...data, [prop.name]: tuple };
+    }
+
+    return data;
+  }
+
   static processObjectParams<T extends Dictionary>(params: T = {} as T): T {
     const ret = (Array.isArray(params) ? [...params] : { ...params }) as T;
     Utils.getObjectQueryKeys(params).forEach(k => {
