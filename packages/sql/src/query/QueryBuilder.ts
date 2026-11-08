@@ -3741,6 +3741,9 @@ export class QueryBuilder<
       if (prop.primary) {
         return false;
       }
+      if (prop.generated) {
+        return false;
+      }
       if (!prop.fieldNames?.length) {
         return false;
       }

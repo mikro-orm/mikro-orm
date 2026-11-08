@@ -130,6 +130,21 @@ class Product {
   priceWithTax?: number;
 }
 
+@Entity()
+class OrderLine {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  qty!: number;
+
+  @Property()
+  price!: number;
+
+  @Property({ generated: '(qty * price) stored' })
+  total?: number;
+}
+
 // --- TPT entities ---
 
 @Entity({ inheritance: 'tpt' })
@@ -170,7 +185,7 @@ describe.each(Utils.keys(options))('clone [%s]', type => {
 
   beforeAll(async () => {
     orm = await MikroORM.init<IDatabaseDriver>({
-      entities: [Author, Book, Address, Company, Tag, Article, Product, Vehicle, Car, Truck],
+      entities: [Author, Book, Address, Company, Tag, Article, Product, OrderLine, Vehicle, Car, Truck],
       driver: PLATFORMS[type],
       loggerFactory: SimpleLogger.create,
       metadataProvider: ReflectMetadataProvider,
@@ -339,6 +354,21 @@ describe.each(Utils.keys(options))('clone [%s]', type => {
       const companies = await orm.em.find(Company, {}, { orderBy: { id: 'asc' } });
       expect(companies).toHaveLength(2);
       expect(companies[1].name).toBe('Acme');
+    });
+
+    test('excludes generated columns from metadata-derived columns', async () => {
+      const line = orm.em.create(OrderLine, { qty: 2, price: 3 });
+      await orm.em.flush();
+      orm.em.clear();
+
+      const source = (orm.em as SqlEntityManager).createQueryBuilder(OrderLine).where({ id: line.id });
+      await (orm.em as SqlEntityManager).createQueryBuilder(OrderLine).insertFrom(source).execute();
+
+      orm.em.clear();
+      const lines = await orm.em.find(OrderLine, {}, { orderBy: { id: 'asc' } });
+      expect(lines).toHaveLength(2);
+      expect(lines[1].qty).toBe(2);
+      expect(lines[1].total).toBe(6);
     });
 
     test('M:1 FK column is copied', async () => {
@@ -556,6 +586,18 @@ describe.each(Utils.keys(options))('clone [%s]', type => {
       expect(cloned.name).toBe('Widget Clone');
       expect(cloned.price).toBe(100);
       // transient (persist: false) and priceWithTax (formula) should not cause errors
+    });
+
+    test('generated columns are excluded from clone', async () => {
+      const line = orm.em.create(OrderLine, { qty: 2, price: 3 });
+      await orm.em.flush();
+      orm.em.clear();
+
+      const cloned = await orm.em.clone(OrderLine, { id: line.id }, { qty: 4 });
+
+      expect(cloned.id).not.toBe(line.id);
+      expect(cloned.price).toBe(3);
+      expect(cloned.total).toBe(12);
     });
   });
 });
