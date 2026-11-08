@@ -1717,7 +1717,7 @@ export abstract class AbstractSqlDriver<
             const value = data[idx][key];
             const scalar = Array.isArray(value) && value.length === 1 ? value[0] : value;
 
-            if (pkColumn && Utils.isPrimaryKey(scalar)) {
+            if (pkColumn && !isRaw(scalar) && Utils.isPrimaryKey(scalar)) {
               addParams(prop, (fieldName === pkColumn ? scalar : null) as Dictionary);
             } else {
               addParams(prop, prop.fieldNames.length > 1 ? value?.[fieldNameIdx] : value);
