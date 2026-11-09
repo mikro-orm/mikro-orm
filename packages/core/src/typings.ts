@@ -1932,7 +1932,7 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
               if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
                 const targetMeta = prop.targetMeta ?? helper(entity)?.__meta;
                 if (targetMeta) {
-                  wrapped.__originalEntityData[prop.name] = Utils.getPrimaryKeyValues(val, targetMeta, true);
+                  wrapped.__originalEntityData[prop.name] = Utils.getPrimaryKeyValues(val, targetMeta, true, true);
                 }
               }
 

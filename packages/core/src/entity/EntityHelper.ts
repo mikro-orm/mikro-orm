@@ -246,6 +246,7 @@ export class EntityHelper {
             wrapped.__data[prop.name],
             prop.targetMeta!,
             true,
+            true,
           );
         }
 
