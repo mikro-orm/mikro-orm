@@ -532,20 +532,23 @@ export type FilterQuery<T> =
 /**
  * `FilterQuery` restricted to only properties covered by the specified index(es).
  * Used when `using` option is set in `FindOptions` to enforce type-safe index usage.
+ * Falls back to `FilterQuery` when `Using` is not a specific index name (e.g. inferred from the options type).
  */
 export type IndexFilterQuery<T, Using extends string> = [Using] extends [never]
   ? FilterQuery<T>
-  :
-      | (OperatorMap<T> & {
-          -readonly [K in Extract<EntityKey<T>, IndexColumns<T, Using>>]?:
-            | ExpandQuery<ExpandProperty<FilterObjectProp<T, K>>>
-            | ExpandQueryMerged<ExpandProperty<FilterObjectProp<T, K>>>
-            | FilterValue<ExpandProperty<FilterObjectProp<T, K>>>
-            | ArrayFilter<FilterObjectProp<T, K>>
-            | null;
-        })
-      | NonNullable<ExpandScalar<Primary<T>>>
-      | IndexFilterQuery<T, Using>[];
+  : string extends Using
+    ? FilterQuery<T>
+    :
+        | (OperatorMap<T> & {
+            -readonly [K in Extract<EntityKey<T>, IndexColumns<T, Using>>]?:
+              | ExpandQuery<ExpandProperty<FilterObjectProp<T, K>>>
+              | ExpandQueryMerged<ExpandProperty<FilterObjectProp<T, K>>>
+              | FilterValue<ExpandProperty<FilterObjectProp<T, K>>>
+              | ArrayFilter<FilterObjectProp<T, K>>
+              | null;
+          })
+        | NonNullable<ExpandScalar<Primary<T>>>
+        | IndexFilterQuery<T, Using>[];
 
 /** Replaces `where` and `using` on an options type with index-aware variants when `Using` is specified. */
 export type WithUsingOptions<Opts, Entity, Using extends string> = Omit<Opts, 'where' | 'using'> & {
@@ -1932,7 +1935,7 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
               if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
                 const targetMeta = prop.targetMeta ?? helper(entity)?.__meta;
                 if (targetMeta) {
-                  wrapped.__originalEntityData[prop.name] = Utils.getPrimaryKeyValues(val, targetMeta, true);
+                  wrapped.__originalEntityData[prop.name] = EntityHelper.getForeignKeyValue(entity, prop, targetMeta);
                 }
               }
 

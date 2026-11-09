@@ -46,11 +46,7 @@ export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extend
     Using extends string = never,
   >(
     entityName: EntityName<Entity>,
-    options: WithUsingOptions<
-      StreamOptions<NoInfer<Entity>, Hint, Fields, Excludes>,
-      NoInfer<Entity>,
-      Using
-    > = {} as any,
+    options: WithUsingOptions<StreamOptions<Entity, Hint, Fields, Excludes>, NoInfer<Entity>, Using> = {} as any,
   ): AsyncIterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
     if (!Utils.isEmpty(options.populate)) {
       throw new Error('Populate option is not supported when streaming results in MongoDB');

@@ -224,7 +224,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Using extends string = never,
   >(
     entityName: EntityName<Entity>,
-    where: [Using] extends [never] ? FilterQuery<NoInfer<Entity>> : IndexFilterQuery<NoInfer<Entity>, Using>,
+    where: NoInfer<[Using] extends [never] ? FilterQuery<Entity> : IndexFilterQuery<Entity, Using>>,
     options?: FindOptions<Entity, Hint, Fields, Excludes> & { using?: Using | Using[] },
   ): Promise<Loaded<Entity, Hint, Fields, Excludes>[]>;
 
@@ -355,11 +355,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Using extends string = never,
   >(
     entityName: EntityName<Entity>,
-    options: WithUsingOptions<
-      StreamOptions<NoInfer<Entity>, Hint, Fields, Excludes>,
-      NoInfer<Entity>,
-      Using
-    > = {} as any,
+    options: WithUsingOptions<StreamOptions<Entity, Hint, Fields, Excludes>, NoInfer<Entity>, Using> = {} as any,
   ): AsyncIterableIterator<Loaded<Entity, Hint, Fields, Excludes>> {
     const em = this.getContext();
 
@@ -372,7 +368,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options = em.prepareOptions(options);
     (options as Dictionary).strategy = 'joined';
     await em.tryFlush(entityName, options);
-    const where = (await em.processWhere(entityName, options.where ?? {}, options, 'read')) as FilterQuery<Entity>;
+    const where = (await em.processWhere(
+      entityName,
+      options.where ?? ({} as any),
+      options,
+      'read',
+    )) as FilterQuery<Entity>;
     validateParams(where);
     const meta = this.metadata.get<Entity>(entityName);
 
@@ -424,7 +425,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Using extends string = never,
   >(
     entityName: EntityName<Entity>,
-    options?: WithUsingOptions<FindAllOptions<NoInfer<Entity>, Hint, Fields, Excludes>, NoInfer<Entity>, Using>,
+    options?: WithUsingOptions<FindAllOptions<Entity, Hint, Fields, Excludes>, NoInfer<Entity>, Using>,
   ): Promise<Loaded<Entity, Hint, Fields, Excludes>[]> {
     return this.find(entityName, options?.where ?? ({} as any), options as any);
   }
@@ -1033,7 +1034,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Using extends string = never,
   >(
     entityName: EntityName<Entity>,
-    where: [Using] extends [never] ? FilterQuery<NoInfer<Entity>> : IndexFilterQuery<NoInfer<Entity>, Using>,
+    where: NoInfer<[Using] extends [never] ? FilterQuery<Entity> : IndexFilterQuery<Entity, Using>>,
     options?: FindOptions<Entity, Hint, Fields, Excludes> & { using?: Using | Using[] },
   ): Promise<[Loaded<Entity, Hint, Fields, Excludes>[], number]>;
 
@@ -1123,7 +1124,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   >(
     entityName: EntityName<Entity>,
     options: WithUsingOptions<
-      FindByCursorOptions<NoInfer<Entity>, Hint, Fields, Excludes, IncludeCount>,
+      FindByCursorOptions<Entity, Hint, Fields, Excludes, IncludeCount>,
       NoInfer<Entity>,
       Using
     >,
@@ -1280,7 +1281,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Using extends string = never,
   >(
     entityName: EntityName<Entity>,
-    where: [Using] extends [never] ? FilterQuery<NoInfer<Entity>> : IndexFilterQuery<NoInfer<Entity>, Using>,
+    where: NoInfer<[Using] extends [never] ? FilterQuery<Entity> : IndexFilterQuery<Entity, Using>>,
     options?: FindOneOptions<Entity, Hint, Fields, Excludes> & { using?: Using | Using[] },
   ): Promise<Loaded<Entity, Hint, Fields, Excludes> | null>;
 
@@ -1409,7 +1410,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Using extends string = never,
   >(
     entityName: EntityName<Entity>,
-    where: [Using] extends [never] ? FilterQuery<NoInfer<Entity>> : IndexFilterQuery<NoInfer<Entity>, Using>,
+    where: NoInfer<[Using] extends [never] ? FilterQuery<Entity> : IndexFilterQuery<Entity, Using>>,
     options?: FindOneOrFailOptions<Entity, Hint, Fields, Excludes> & { using?: Using | Using[] },
   ): Promise<Loaded<Entity, Hint, Fields, Excludes>>;
 

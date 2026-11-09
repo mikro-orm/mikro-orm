@@ -1,8 +1,11 @@
 import {
+  DecimalType,
   DeferMode,
   type Dictionary,
+  DoubleType,
   type EntityProperty,
   EnumType,
+  FloatType,
   type IndexColumnOptions,
   type Transaction,
   Type,
@@ -347,7 +350,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       const table = schema.addTable(t.table_name, t.schema_name, t.table_comment);
       table.collation = dbCollation;
       const pks = await this.getPrimaryKeys(connection, indexes[key], table.name, table.schema);
-      const enums = this.getEnumDefinitions(checks[key] ?? []);
+      const enums = this.getEnumDefinitions(checks[key] ?? [], columns[key] ?? []);
 
       if (columns[key]) {
         table.init(columns[key], indexes[key], checks[key], pks, fks[key], enums);
@@ -1450,7 +1453,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `alter type ${this.quote(name)} add value if not exists ${this.platform.quoteValue(value)}${suffix}`;
   }
 
-  private getEnumDefinitions(checks: CheckDef[]): Dictionary<string[]> {
+  private getEnumDefinitions(checks: CheckDef[], columns: Column[]): Dictionary<string[]> {
     return checks.reduce(
       (o, item) => {
         // check constraints are defined as one of:
@@ -1466,7 +1469,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         const m2 =
           item.definition?.match(/\(array\[(.*)]\)/i) || item.definition?.match(/ = ('(?:[^']|'')*'::[\w ]+)\)/i);
 
-        if (item.columnName && m1 && m2) {
+        // enums with string items are emulated with a check, a check like `delta in (1, -1)` on a number is a plain one
+        const column = columns.find(c => c.name === item.columnName);
+        const numeric =
+          column != null &&
+          (this.platform.isNumericColumn(column.mappedType) ||
+            [DecimalType, FloatType, DoubleType].some(t => column.mappedType instanceof t));
+
+        if (item.columnName && m1 && m2 && !numeric) {
           /* v8 ignore next */
           const parts = m2[1].match(/('(?:[^']|'')*'::\w[\w ]*)/g) ?? m2[1].split(',');
           let items = parts.map((item: string) => /^\(?'((?:[^']|'')*)'/.exec(item.trim())?.[1]?.replace(/''/g, "'"));
@@ -1475,6 +1485,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
           if (items.length > 0) {
             o[item.columnName] = items as string[];
+            // kept to compare with a plain check of the same values, e.g. `kind = 'manual'` is stored like a single item enum
+            item.introspectedExpression = item.expression as string;
             item.expression = this.platform.getEnumCheckConstraintExpression(item.columnName, items as string[]);
             item.definition = `check (${item.expression})`;
           }
