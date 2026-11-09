@@ -53,11 +53,44 @@ const draftSchema = defineEntity({
 class Draft extends draftSchema.class {}
 draftSchema.setClass(Draft);
 
+const shopSchema = defineEntity({
+  name: 'Shop8657',
+  properties: {
+    tenant: p.integer().primary(),
+    code: p.integer().primary(),
+  },
+});
+
+class Shop extends shopSchema.class {}
+shopSchema.setClass(Shop);
+
+const cartSchema = defineEntity({
+  name: 'Cart8657',
+  properties: {
+    shop: () => p.oneToOne(Shop).primary(),
+    note: () => p.oneToOne(Note).mappedBy('cart').ref().nullable(),
+  },
+});
+
+class Cart extends cartSchema.class {}
+cartSchema.setClass(Cart);
+
+const noteSchema = defineEntity({
+  name: 'Note8657',
+  properties: {
+    id: p.string().primary(),
+    cart: () => p.oneToOne(Cart).inversedBy('note').ref().nullable(),
+  },
+});
+
+class Note extends noteSchema.class {}
+noteSchema.setClass(Note);
+
 let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [Order, Draft],
+    entities: [Order, Draft, Shop, Cart, Note],
     dbName: ':memory:',
   });
   await orm.schema.create();
@@ -65,6 +98,9 @@ beforeAll(async () => {
   const em = orm.em.fork();
   const order = em.create(Order, { id: new OrderId('order_1') });
   em.create(Draft, { id: 'draft_1', order, updatedAt: 0 });
+  const shop = em.create(Shop, { tenant: 1, code: 2 });
+  const cart = em.create(Cart, { shop });
+  em.create(Note, { id: 'note_1', cart });
   await em.flush();
 });
 
@@ -91,4 +127,13 @@ test('populating the owner from the inverse side does not emit an update on flus
   const mock = mockLogger(orm);
   await em.flush();
   expect(mock).not.toHaveBeenCalled();
+});
+
+test('loading the inverse side keeps the owner of a composite FK target clean', async () => {
+  const em = orm.em.fork();
+  const cart = await em.findOneOrFail(Cart, { shop: { tenant: 1, code: 2 } });
+  expect(wrap(cart.note!.unwrap(), true).__originalEntityData).toEqual({ id: 'note_1', cart: [1, 2] });
+
+  em.getUnitOfWork().computeChangeSets();
+  expect(em.getUnitOfWork().getChangeSets()).toHaveLength(0);
 });

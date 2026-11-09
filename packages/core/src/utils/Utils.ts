@@ -590,6 +590,11 @@ export class Utils {
 
     if (Utils.isEntity(entity, true)) {
       pk = helper(entity).getPrimaryKey(convertCustomTypes);
+
+      // the converted PK of a relation to a composite PK target is an object keyed by the target PKs
+      if (convertCustomTypes && meta.primaryKeys.length === 1 && Utils.isPlainObject(pk)) {
+        return toArray(pk);
+      }
     } else {
       pk = meta.primaryKeys.reduce((o, pk) => {
         const targetMeta = meta.properties[pk as EntityKey<T>].targetMeta;
