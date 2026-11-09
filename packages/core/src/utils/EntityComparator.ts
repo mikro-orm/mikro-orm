@@ -28,6 +28,7 @@ import { Raw } from './RawQueryFragment.js';
 import { EntityIdentifier } from '../entity/EntityIdentifier.js';
 import type { Configuration } from './Configuration.js';
 import { PolymorphicRef } from '../entity/PolymorphicRef.js';
+import { EntityHelper } from '../entity/EntityHelper.js';
 
 type Comparator<T> = (a: T, b: T, options?: { includeInverseSides?: boolean }) => EntityData<T>;
 type ResultMapper<T> = (result: EntityData<T>) => EntityData<T> | null;
@@ -931,15 +932,8 @@ export class EntityComparator {
         ret += `      }\n`;
         if (prop.targetKey) {
           // the FK holds the `targetKey` value in the format of the actual target's column
-          const targetKey = prop.targetKey;
           const targetKeyValueKey = `targetKeyValue_${this.safeKey(prop.name)}`;
-          context.set(targetKeyValueKey, (val: AnyEntity) => {
-            const customType = val.__meta!.properties[targetKey]?.customType;
-            const value = val[targetKey];
-            return customType
-              ? customType.convertToDatabaseValue(value, this.#platform, { mode: 'serialization' })
-              : value;
-          });
+          context.set(targetKeyValueKey, (val: AnyEntity) => EntityHelper.getForeignKeyValue(val, prop, val.__meta!));
           ret += `      const pk = ${targetKeyValueKey}(val${level});\n`;
         } else {
           ret += `      const pk = val${level}?.__helper?.__identifier && !val${level}?.__helper?.hasPrimaryKey()\n`;

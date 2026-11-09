@@ -1,12 +1,12 @@
-import { defineEntity, MikroORM, p, type Platform, Type } from '@mikro-orm/sqlite';
+import { defineEntity, MikroORM, p, Type } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers.js';
 
 class UpperCaseType extends Type<string, string> {
-  convertToDatabaseValue(value: string, platform: Platform): string {
+  convertToDatabaseValue(value: string): string {
     return value.toUpperCase();
   }
 
-  convertToJSValue(value: string, platform: Platform): string {
+  convertToJSValue(value: string): string {
     return value.toLowerCase();
   }
 

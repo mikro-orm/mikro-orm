@@ -8,6 +8,7 @@ import { ChangeSet, ChangeSetType } from './ChangeSet.js';
 import { helper } from '../entity/wrap.js';
 import { validateEntity } from '../entity/validators.js';
 import { Reference } from '../entity/Reference.js';
+import { EntityHelper } from '../entity/EntityHelper.js';
 import { PolymorphicRef } from '../entity/PolymorphicRef.js';
 import { type Collection } from '../entity/Collection.js';
 import type { Platform } from '../platforms/Platform.js';
@@ -230,16 +231,10 @@ export class ChangeSetComputer {
           throw ValidationError.referenceWithoutPK(target);
         }
 
-        let value = prop.targetKey ? target[prop.targetKey] : target.__helper!.__identifier;
-
         // use the actual target's meta, a polymorphic relation has several
-        if (prop.targetKey) {
-          const targetProp = target.__meta!.properties[prop.targetKey];
-
-          if (targetProp?.customType) {
-            value = targetProp.customType.convertToDatabaseValue(value, this.#platform, { mode: 'serialization' });
-          }
-        }
+        let value = prop.targetKey
+          ? EntityHelper.getForeignKeyValue(target, prop, target.__meta!)
+          : target.__helper!.__identifier;
 
         if (prop.polymorphic) {
           const discriminator = QueryHelper.findDiscriminatorValue(prop.discriminatorMap!, target.constructor)!;
