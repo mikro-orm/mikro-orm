@@ -242,12 +242,7 @@ export class EntityHelper {
 
         // when propagation from inside hydration, we set the FK to the entity data immediately
         if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
-          wrapped.__originalEntityData[prop.name] = Utils.getPrimaryKeyValues(
-            wrapped.__data[prop.name],
-            prop.targetMeta!,
-            true,
-            true,
-          );
+          wrapped.__originalEntityData[prop.name] = EntityHelper.getForeignKeyValue(entity, prop, prop.targetMeta!);
         }
 
         EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val), old);
@@ -255,6 +250,24 @@ export class EntityHelper {
       enumerable: true,
       configurable: true,
     });
+  }
+
+  /**
+   * Returns the database value of the FK pointing to the given entity.
+   * @internal
+   */
+  static getForeignKeyValue(target: AnyEntity, prop: EntityProperty<any>, targetMeta: EntityMetadata): any {
+    if (!prop.targetKey) {
+      return Utils.getPrimaryKeyValues(target, targetMeta, true, true);
+    }
+
+    // with `targetKey`, the FK holds that value instead of the PK
+    const value = target[prop.targetKey];
+    const customType = targetMeta.properties[prop.targetKey]?.customType;
+
+    return customType
+      ? customType.convertToDatabaseValue(value, helper(target).__platform, { mode: 'serialization' })
+      : value;
   }
 
   static propagate<T extends object>(
