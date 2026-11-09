@@ -1972,7 +1972,13 @@ export class MetadataDiscovery {
       // from multiple polymorphic variants with different types. The flag is
       // cleared implicitly when the first child claims the root property via
       // addProperty below, so subsequent children correctly trigger renaming.
-      const typesMatch = rootProp?.type === prop.type || rootProp?.stiMerged === true || narrowedRelationOverride;
+      // the root of a polymorphic embeddable holds a copy of the variant property, so a custom type instance is compared by its class
+      const sameTypeInstance =
+        Type.isMappedType(rootProp?.type) &&
+        Type.isMappedType(prop.type) &&
+        rootProp.type.constructor === prop.type.constructor;
+      const typesMatch =
+        rootProp?.type === prop.type || sameTypeInstance || rootProp?.stiMerged === true || narrowedRelationOverride;
 
       // Inverse-side relations (1:m, inverse m:n) have no FK column on this
       // entity, so the rename branch — which exists to disambiguate physical
