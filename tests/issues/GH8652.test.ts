@@ -5,6 +5,8 @@ import { Check, Entity, Enum, PrimaryKey, Property } from '@mikro-orm/decorators
 @Entity()
 @Check({ name: 'entry_delta_check', expression: 'delta in (1, -1)' })
 @Check({ name: 'entry_sign_check', expression: 'sign in (-1, -2)' })
+@Check({ name: 'entry_amount_check', expression: 'amount in (1.5, -1.5)' })
+@Check({ name: 'entry_ratio_check', expression: 'ratio in (1.5, -1.5)' })
 @Check({ name: 'entry_kind_check', expression: `kind = 'manual'` })
 @Check({ name: 'entry_day_check', expression: `day in ('2020-01-01', '2021-01-01')` })
 class Entry {
@@ -16,6 +18,12 @@ class Entry {
 
   @Property({ type: 'smallint' })
   sign!: number;
+
+  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  amount!: string;
+
+  @Property({ type: 'double' })
+  ratio!: number;
 
   @Property({ type: 'text' })
   kind!: string;
@@ -50,6 +58,8 @@ test('a check on a number column is not read as an enum', async () => {
   const table = schema.getTable('entry')!;
   expect(table.getColumn('delta')!.enumItems ?? []).toEqual([]);
   expect(table.getColumn('sign')!.enumItems ?? []).toEqual([]);
+  expect(table.getColumn('amount')!.enumItems ?? []).toEqual([]);
+  expect(table.getColumn('ratio')!.enumItems ?? []).toEqual([]);
   expect(table.getColumn('mode')!.enumItems).toEqual(['only']);
   expect(table.getColumn('type')!.enumItems).toEqual(['a', 'b']);
 });

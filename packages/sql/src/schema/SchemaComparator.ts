@@ -1201,12 +1201,15 @@ export class SchemaComparator {
           // Protect dots inside string literals before the quote strip below, or the alias-prefix normalization
           // would mangle literal contents — `current_setting('app.tenant')` and `current_setting('req.tenant')`
           // must not both collapse to `current_settingtenant`
-          .replace(/'([^']*)'/g, (_, inner: string) => `'${inner.replaceAll('.', '\u0000')}'`)
+          // numbers are left alone, postgres quotes the negative ones (`'-1.5'::numeric`)
+          .replace(/'([^']*)'/g, (m, inner: string) =>
+            /^-?\d+(\.\d+)?$/.test(inner) ? m : `'${inner.replaceAll('.', '\u0000')}'`,
+          )
           // Remove quotes first so we can process identifiers
           .replace(/['"`]/g, '')
           // MySQL adds table/alias prefixes to columns (e.g., a.name or table_name.column vs just column)
           // Strip these prefixes - match word.word patterns and keep only the last part
-          .replace(/\b\w+\.(\w+)/g, '$1')
+          .replace(/\b(?!\d)\w+\.(\w+)/g, '$1')
           // PostgreSQL rewrites `x [not] between a and b` to `x >= a and x <= b` (`x < a or x > b`), cast targets are skipped
           .replace(/(?<!::\s*)\b(?!not\b)(\w+)\s+(not\s+)?between\s+(\S+)\s+and\s+(\S+)/gi, (_, x, not, a, b) =>
             not ? `${x} < ${a} or ${x} > ${b}` : `${x} >= ${a} and ${x} <= ${b}`,

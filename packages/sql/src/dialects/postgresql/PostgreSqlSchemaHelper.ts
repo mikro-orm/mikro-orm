@@ -1,8 +1,11 @@
 import {
+  DecimalType,
   DeferMode,
   type Dictionary,
+  DoubleType,
   type EntityProperty,
   EnumType,
+  FloatType,
   type IndexColumnOptions,
   type Transaction,
   Type,
@@ -1468,7 +1471,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
         // enums with string items are emulated with a check, a check like `delta in (1, -1)` on a number is a plain one
         const column = columns.find(c => c.name === item.columnName);
-        const numeric = column != null && this.platform.isNumericColumn(column.mappedType);
+        const numeric =
+          column != null &&
+          (this.platform.isNumericColumn(column.mappedType) ||
+            [DecimalType, FloatType, DoubleType].some(t => column.mappedType instanceof t));
 
         if (item.columnName && m1 && m2 && !numeric) {
           /* v8 ignore next */
