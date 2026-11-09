@@ -202,11 +202,17 @@ describe.skipIf(true)('using option - type safety', () => {
       options: FindOptions<T>,
       one: FindOneOptions<T>,
       orFail: FindOneOrFailOptions<T>,
+      all: FindAllOptions<T>,
+      cursor: FindByCursorOptions<T>,
+      stream: StreamOptions<T>,
     ) => {
       em.find(entityName, where, options) as any;
       em.findAndCount(entityName, where, options) as any;
       em.findOne(entityName, where, one) as any;
       em.findOneOrFail(entityName, where, orFail) as any;
+      em.findAll(entityName, all) as any;
+      em.findByCursor(entityName, cursor) as any;
+      em.stream(entityName, stream) as any;
     };
 
     const options = {} as FindOptions<User>;
