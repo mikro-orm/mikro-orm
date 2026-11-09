@@ -34,4 +34,10 @@ test('assign() rejects an unparseable date string with ValidationError (#8656)',
   orm.em.assign(event, { happenedAt: '2026-11-09T10:00:00.000Z' });
   expect(event.happenedAt).toBeInstanceOf(Date);
   expect(event.happenedAt.toISOString()).toBe('2026-11-09T10:00:00.000Z');
+
+  orm.em.assign(event, { happenedAt: Date.UTC(2026, 10, 10) as any });
+  expect(event.happenedAt).toBeInstanceOf(Date);
+  expect(event.happenedAt.toISOString()).toBe('2026-11-10T00:00:00.000Z');
+
+  expect(() => orm.em.assign(event, { happenedAt: NaN as any })).toThrow(ValidationError);
 });
