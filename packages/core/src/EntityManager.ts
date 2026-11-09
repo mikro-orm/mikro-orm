@@ -224,7 +224,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Using extends string = never,
   >(
     entityName: EntityName<Entity>,
-    where: [Using] extends [never] ? FilterQuery<NoInfer<Entity>> : IndexFilterQuery<NoInfer<Entity>, Using>,
+    where: NoInfer<[Using] extends [never] ? FilterQuery<Entity> : IndexFilterQuery<Entity, Using>>,
     options?: FindOptions<Entity, Hint, Fields, Excludes> & { using?: Using | Using[] },
   ): Promise<Loaded<Entity, Hint, Fields, Excludes>[]>;
 
@@ -1033,7 +1033,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Using extends string = never,
   >(
     entityName: EntityName<Entity>,
-    where: [Using] extends [never] ? FilterQuery<NoInfer<Entity>> : IndexFilterQuery<NoInfer<Entity>, Using>,
+    where: NoInfer<[Using] extends [never] ? FilterQuery<Entity> : IndexFilterQuery<Entity, Using>>,
     options?: FindOptions<Entity, Hint, Fields, Excludes> & { using?: Using | Using[] },
   ): Promise<[Loaded<Entity, Hint, Fields, Excludes>[], number]>;
 
@@ -1280,7 +1280,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Using extends string = never,
   >(
     entityName: EntityName<Entity>,
-    where: [Using] extends [never] ? FilterQuery<NoInfer<Entity>> : IndexFilterQuery<NoInfer<Entity>, Using>,
+    where: NoInfer<[Using] extends [never] ? FilterQuery<Entity> : IndexFilterQuery<Entity, Using>>,
     options?: FindOneOptions<Entity, Hint, Fields, Excludes> & { using?: Using | Using[] },
   ): Promise<Loaded<Entity, Hint, Fields, Excludes> | null>;
 
@@ -1409,7 +1409,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     Using extends string = never,
   >(
     entityName: EntityName<Entity>,
-    where: [Using] extends [never] ? FilterQuery<NoInfer<Entity>> : IndexFilterQuery<NoInfer<Entity>, Using>,
+    where: NoInfer<[Using] extends [never] ? FilterQuery<Entity> : IndexFilterQuery<Entity, Using>>,
     options?: FindOneOrFailOptions<Entity, Hint, Fields, Excludes> & { using?: Using | Using[] },
   ): Promise<Loaded<Entity, Hint, Fields, Excludes>>;
 

@@ -1,4 +1,18 @@
-import { IndexHints, MikroORM, PrimaryKeyProp, type EntityManager } from '@mikro-orm/core';
+import {
+  EntityRepository,
+  IndexHints,
+  MikroORM,
+  PrimaryKeyProp,
+  type EntityManager,
+  type EntityName,
+  type FilterQuery,
+  type FindAllOptions,
+  type FindByCursorOptions,
+  type FindOneOptions,
+  type FindOneOrFailOptions,
+  type FindOptions,
+  type StreamOptions,
+} from '@mikro-orm/core';
 import { Entity, Index, PrimaryKey, Property, ReflectMetadataProvider, Unique } from '@mikro-orm/decorators/legacy';
 import { defineEntity, p, SqliteDriver } from '@mikro-orm/sqlite';
 import { MySqlDriver } from '@mikro-orm/mysql';
@@ -159,6 +173,46 @@ describe.skipIf(true)('using option - type safety', () => {
 
   test('using accepts array for multiple indexes', () => {
     em.find(User, { name: 'foo' }, { using: ['idx_user_name', 'uniq_user_email'] }) as any;
+  });
+
+  test('options typed as FindOptions<T> do not narrow where', () => {
+    class BaseRepository<T extends object> extends EntityRepository<T> {
+      wrappers(
+        where: FilterQuery<T>,
+        options: FindOptions<T>,
+        one: FindOneOptions<T>,
+        orFail: FindOneOrFailOptions<T>,
+        all: FindAllOptions<T>,
+        cursor: FindByCursorOptions<T>,
+        stream: StreamOptions<T>,
+      ) {
+        this.find(where, options) as any;
+        this.findAndCount(where, options) as any;
+        this.findOne(where, one) as any;
+        this.findOneOrFail(where, orFail) as any;
+        this.findAll(all) as any;
+        this.findByCursor(cursor) as any;
+        this.stream(stream) as any;
+      }
+    }
+
+    const generic = <T extends object>(
+      entityName: EntityName<T>,
+      where: FilterQuery<T>,
+      options: FindOptions<T>,
+      one: FindOneOptions<T>,
+      orFail: FindOneOrFailOptions<T>,
+    ) => {
+      em.find(entityName, where, options) as any;
+      em.findAndCount(entityName, where, options) as any;
+      em.findOne(entityName, where, one) as any;
+      em.findOneOrFail(entityName, where, orFail) as any;
+    };
+
+    const options = {} as FindOptions<User>;
+    em.find(User, { age: 30 }, options) as any;
+    void BaseRepository;
+    void generic;
   });
 });
 
