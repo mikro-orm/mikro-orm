@@ -139,6 +139,8 @@ export interface CheckDef<T = unknown> {
   expression: string | CheckCallback<T>;
   definition?: string;
   columnName?: string;
+  /** @internal the expression as introspected, before it was normalized as the check of an enum */
+  introspectedExpression?: string;
 }
 
 /** Resolved row level security policy for schema operations (all callbacks resolved to strings). */
