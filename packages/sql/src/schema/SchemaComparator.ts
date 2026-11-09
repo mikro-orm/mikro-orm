@@ -634,6 +634,14 @@ export class SchemaComparator {
         continue;
       }
 
+      // a check read as the one of an enum can be a plain check of the same values, e.g. `kind = 'manual'`
+      const introspected = check.introspectedExpression ?? toTableCheck.introspectedExpression;
+      const declared = check.introspectedExpression ? toTableCheck.expression : check.expression;
+
+      if (introspected && !this.diffExpression(introspected, declared as string)) {
+        continue;
+      }
+
       // only auto-generated enum checks, a user check tagged with an enum column must be diffed by expression
       if (
         fromColumn?.enumItems &&
