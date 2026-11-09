@@ -186,7 +186,11 @@ export class EntityAssigner {
         !(value instanceof Date) &&
         (typeof value === 'string' || typeof value === 'number')
       ) {
-        value = new Date(value);
+        const date = new Date(value);
+
+        if (!isNaN(date.getTime())) {
+          value = date;
+        }
       }
 
       validateProperty(prop, value, entity);
