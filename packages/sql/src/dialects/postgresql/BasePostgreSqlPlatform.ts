@@ -404,30 +404,27 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
   /**
    * Ported from PostgreSQL 9.2.4 source code (`src/interfaces/libpq/fe-exec.c`),
    * matching `pg.Client.prototype.escapeLiteral` so we don't need a `pg` dep here.
+   * Avoids per-character concatenation (builds a rope, slow on large values) and regexps (fixed cost on tiny values).
    */
   private escapeLiteral(str: string): string {
-    let hasBackslash = false;
-    let escaped = `'`;
+    const hasBackslash = str.includes('\\');
+    const hasQuote = str.includes(`'`);
 
-    for (let i = 0; i < str.length; i++) {
-      const c = str[i];
-      if (c === `'`) {
-        escaped += c + c;
-      } else if (c === '\\') {
-        escaped += c + c;
-        hasBackslash = true;
-      } else {
-        escaped += c;
-      }
+    if (!hasBackslash && !hasQuote) {
+      return `'${str}'`;
     }
 
-    escaped += `'`;
+    let escaped = str;
 
     if (hasBackslash) {
-      escaped = ` E${escaped}`;
+      escaped = escaped.replaceAll('\\', '\\\\');
     }
 
-    return escaped;
+    if (hasQuote) {
+      escaped = escaped.replaceAll(`'`, `''`);
+    }
+
+    return hasBackslash ? ` E'${escaped}'` : `'${escaped}'`;
   }
 
   override getVarcharTypeDeclarationSQL(column: { length?: number }): string {
