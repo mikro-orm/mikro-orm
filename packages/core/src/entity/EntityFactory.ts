@@ -58,6 +58,11 @@ export interface FactoryOptions {
    * This is useful for creating references by unique non-PK properties.
    */
   key?: string;
+  /**
+   * When `false`, the entity (and all relations, references and nested entities hydrated with it) is created detached:
+   * no identity map lookup, no registration in the unit of work and no `EntityManager` attached. Defaults to `true`.
+   */
+  managed?: boolean;
 }
 
 /** @internal Factory responsible for creating, merging, and hydrating entity instances. */
@@ -113,7 +118,8 @@ export class EntityFactory {
     }
 
     const meta2 = this.processDiscriminatorColumn<T>(meta, data);
-    const exists = this.findEntity<T>(data, meta2, options);
+    const managed = options.managed !== false;
+    const exists = managed ? this.findEntity<T>(data, meta2, options) : undefined;
     let wrapped = exists && helper(exists);
 
     if (wrapped && !options.refresh) {
@@ -173,6 +179,11 @@ export class EntityFactory {
     wrapped.__processing = true;
     wrapped.__initialized = options.initialized;
 
+    // unmanaged entities serialize their relations like managed ones, the serializers otherwise expand them as new entities
+    if (!managed) {
+      wrapped.__populated = false;
+    }
+
     if (options.newEntity || meta.forceConstructor || meta.virtual) {
       const tmp = { ...data };
       meta.constructorParams?.forEach(prop => delete tmp[prop as EntityKey<T>]);
@@ -212,7 +223,7 @@ export class EntityFactory {
       Object.setPrototypeOf(entity, meta2.prototype as object);
     }
 
-    if (options.merge && wrapped.hasPrimaryKey()) {
+    if (options.merge && managed && wrapped.hasPrimaryKey()) {
       this.unitOfWork.register(entity, data, {
         // Always refresh to ensure the payload is in correct shape for joined strategy. When loading nested relations,
         // they will be created early without `Type.ensureComparable` being properly handled, resulting in extra updates.
@@ -408,10 +419,15 @@ export class EntityFactory {
   createReference<T extends object>(
     entityName: EntityName<T>,
     id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>,
-    options: Pick<FactoryOptions, 'merge' | 'convertCustomTypes' | 'schema' | 'key'> = {},
+    options: Pick<FactoryOptions, 'merge' | 'convertCustomTypes' | 'schema' | 'key' | 'managed'> = {},
   ): T {
     options.convertCustomTypes ??= true;
     const meta = this.#metadata.get<T>(entityName);
+
+    if (options.managed === false) {
+      return this.createUnmanagedReference(meta, id, options);
+    }
+
     const schema = this.#driver.getSchemaName(meta, options);
 
     // Handle alternate key lookup, a `key` pointing at the single PK is a plain PK reference
@@ -459,6 +475,39 @@ export class EntityFactory {
     }
 
     return this.create<T>(entityName, id as EntityData<T>, { ...options, initialized: false }) as T;
+  }
+
+  /** Creates a detached reference stub, bypassing the identity map entirely. */
+  private createUnmanagedReference<T extends object>(
+    meta: EntityMetadata<T>,
+    id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>,
+    options: Pick<FactoryOptions, 'convertCustomTypes' | 'schema' | 'key'>,
+  ): T {
+    const createOptions = { ...options, merge: false, managed: false, initialized: false };
+
+    if (options.key && !(meta.primaryKeys.length === 1 && meta.primaryKeys[0] === options.key)) {
+      const prop = meta.root.properties[options.key as EntityKey<T>];
+      let value = Array.isArray(id) ? id[0] : Utils.isPlainObject(id) ? (id as Dictionary)[options.key] : id;
+
+      if (options.convertCustomTypes && prop?.customType) {
+        value = prop.customType.convertToJSValue(value, this.#platform, { mode: 'hydration' });
+      }
+
+      const entity = this.create(meta.class, {} as EntityData<T>, createOptions) as T;
+      (entity as Dictionary)[options.key] = value;
+
+      return entity;
+    }
+
+    if (Array.isArray(id)) {
+      id = meta.simplePK ? id[0] : Utils.getPrimaryKeyCondFromArray(id, meta);
+    }
+
+    if (Utils.isPrimaryKey(id)) {
+      id = { [meta.primaryKeys[0]]: id as Primary<T> };
+    }
+
+    return this.create<T>(meta.class, id as EntityData<T>, createOptions) as T;
   }
 
   /** Creates an embeddable entity instance from the provided data. */
@@ -516,11 +565,12 @@ export class EntityFactory {
 
     // creates new entity instance, bypassing constructor call as its already persisted entity
     const entity = Object.create(meta.class.prototype) as T;
-    helper(entity).__managed = true;
+    const managed = options.managed !== false;
+    helper(entity).__managed = managed;
     helper(entity).__processing = !meta.embeddable && !meta.virtual;
     helper(entity).__schema = schema;
 
-    if (options.merge && !options.newEntity) {
+    if (options.merge && managed && !options.newEntity) {
       this.#hydrator.hydrateReference(
         entity,
         meta,
@@ -619,6 +669,7 @@ export class EntityFactory {
         options.schema,
         this.#driver.getSchemaName(meta, options),
         options.normalizeAccessors,
+        options.managed,
       );
     } else {
       this.#hydrator.hydrateReference(
@@ -630,6 +681,7 @@ export class EntityFactory {
         options.schema,
         this.#driver.getSchemaName(meta, options),
         options.normalizeAccessors,
+        options.managed,
       );
     }
 
@@ -756,12 +808,15 @@ export class EntityFactory {
 
       if (prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && value) {
         const pk = Reference.unwrapReference<any>(value);
-        const entity = this.unitOfWork.getById(
-          prop.targetMeta!.class,
-          pk,
-          options.schema,
-          options.convertCustomTypes,
-        ) as T[keyof T];
+        const entity =
+          options.managed === false
+            ? undefined
+            : (this.unitOfWork.getById(
+                prop.targetMeta!.class,
+                pk,
+                options.schema,
+                options.convertCustomTypes,
+              ) as T[keyof T]);
 
         if (entity) {
           return entity;

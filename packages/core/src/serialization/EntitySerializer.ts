@@ -44,6 +44,11 @@ interface PreparedOptions {
 // Keyed by option objects created for a single `serialize()` call, so caller-owned options are never cached.
 const preparedOptions = new WeakMap<SerializeOptions<any, any, any, any>, PreparedOptions>();
 
+/** Non-managed entities are expanded as new ones, unless marked as not populated (e.g. via `em.map(..., { managed: false })`). */
+function isNewEntity(wrapped: { __managed?: boolean; __populated?: boolean }): boolean {
+  return !wrapped.__managed && wrapped.__populated !== false;
+}
+
 function createPathLookup(items: readonly string[]): PathLookup {
   const heads = new Set<string>();
   let all = false;
@@ -402,7 +407,7 @@ export class EntitySerializer {
     const child = Reference.unwrapReference(entity[prop.name] as T);
     const wrapped = helper(child);
     const populated = isPopulated(prop.name, options) && wrapped.isInitialized();
-    const expand = populated || !wrapped.__managed;
+    const expand = populated || isNewEntity(wrapped);
     const meta = wrapped.__meta;
     const childOptions = this.extractChildOptions(options, prop.name) as Dictionary;
     const visible = meta.primaryKeys.filter(prop => isVisible(meta, prop, childOptions));
@@ -445,7 +450,7 @@ export class EntitySerializer {
       const populated = isPopulated(prop.name, options);
       const wrapped = helper(item);
 
-      if (populated || !wrapped.__managed) {
+      if (populated || isNewEntity(wrapped)) {
         return this.serialize(item, this.extractChildOptions(options, prop.name));
       }
 

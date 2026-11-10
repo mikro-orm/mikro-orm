@@ -897,6 +897,19 @@ const before = em.map(User, beforeRow, { disableIdentityMap: true });
 const after = em.map(User, afterRow);
 ```
 
+When you only need to read the mapped entities and never flush them, use `managed: false` instead. It builds the entity directly through the entity factory, without forking a context, without any identity map lookups and without registering anything in the unit of work, which makes it considerably cheaper when mapping large batches of rows (e.g. a logical replication consumer). You still get the same entity instance you would get from `em.findOne()`: custom types are converted, embeddables are hydrated and relations become references.
+
+```ts
+const before = em.map(User, beforeRow, { managed: false });
+const after = em.map(User, afterRow, { managed: false });
+
+before !== after; // true, even for the same primary key
+wrap(before).isManaged(); // false
+wrap(before).toObject(); // same output as for a managed entity
+```
+
+Everything created this way is _unmanaged_, including the relations, references and nested entities. Mapping the same primary key twice yields two distinct objects. Unmanaged references have no `EntityManager` attached, so they cannot be loaded: `ref.load()`, `ref.loadOrFail()` and `wrap(entity).init()` throw a `ValidationError` (`Cannot load unmanaged reference ...`). Use `em.findOne()` with the reference's primary key, or map the row as managed, if you need to load them. When both `managed: false` and `disableIdentityMap` are provided, `managed: false` wins.
+
 > Keep in mind that this can also have [negative effect on the performance](https://stackoverflow.com/questions/9259480/entity-framework-mergeoption-notracking-bad-performance).
 
 ## Entity Repositories

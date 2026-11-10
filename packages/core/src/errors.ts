@@ -70,6 +70,12 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     );
   }
 
+  static unmanagedReference(entity: AnyEntity): ValidationError {
+    return new ValidationError(
+      `Cannot load unmanaged reference ${entity.constructor.name}(${entity.__helper!.getSerializedPrimaryKey()}). It was created without an EntityManager (e.g. via \`em.map(..., { managed: false })\`), load it via \`em.findOne()\` or map the result as managed instead.`,
+    );
+  }
+
   static notEntity(owner: AnyEntity, prop: EntityProperty, data: any): ValidationError {
     const type = /\[object (\w+)]/.exec(Object.prototype.toString.call(data))![1].toLowerCase();
     return new ValidationError(

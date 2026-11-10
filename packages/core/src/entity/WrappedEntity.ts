@@ -189,6 +189,10 @@ export class WrappedEntity<Entity extends object> {
     options?: FindOneOptions<Entity, Hint, Fields, Excludes>,
   ): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
     if (!this.__em) {
+      if (this.__managed === false && !this.__initialized) {
+        throw ValidationError.unmanagedReference(this.entity);
+      }
+
       throw ValidationError.entityNotManaged(this.entity);
     }
 

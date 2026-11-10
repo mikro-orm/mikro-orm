@@ -19,6 +19,7 @@ type EntityHydrator<T extends object> = (
   schema?: string,
   parentSchema?: string,
   normalizeAccessors?: boolean,
+  managed?: boolean,
 ) => void;
 
 /** @internal JIT-compiled hydrator that converts raw database rows into entity instances with optimized generated code. */
@@ -46,6 +47,7 @@ export class ObjectHydrator extends Hydrator {
     schema?: string,
     parentSchema?: string,
     normalizeAccessors?: boolean,
+    managed = true,
   ): void {
     const hydrate = this.getEntityHydrator(meta, type, normalizeAccessors);
     const running = this.running;
@@ -62,6 +64,7 @@ export class ObjectHydrator extends Hydrator {
       schema,
       parentSchema,
       normalizeAccessors,
+      managed,
     );
     this.running = running;
   }
@@ -78,6 +81,7 @@ export class ObjectHydrator extends Hydrator {
     schema?: string,
     parentSchema?: string,
     normalizeAccessors?: boolean,
+    managed = true,
   ): void {
     const hydrate = this.getEntityHydrator(meta, 'reference', normalizeAccessors);
     const running = this.running;
@@ -92,6 +96,7 @@ export class ObjectHydrator extends Hydrator {
       schema,
       parentSchema,
       normalizeAccessors,
+      managed,
     );
     this.running = running;
   }
@@ -260,11 +265,11 @@ export class ObjectHydrator extends Hydrator {
         );
         if (prop.ref) {
           ret.push(
-            `      entity${entityKey} = Reference.create(factory.createReference(targetClass, data${dataKey}.id, { merge: true, convertCustomTypes, normalizeAccessors, schema${keyOption} }));`,
+            `      entity${entityKey} = Reference.create(factory.createReference(targetClass, data${dataKey}.id, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema${keyOption} }));`,
           );
         } else {
           ret.push(
-            `      entity${entityKey} = factory.createReference(targetClass, data${dataKey}.id, { merge: true, convertCustomTypes, normalizeAccessors, schema${keyOption} });`,
+            `      entity${entityKey} = factory.createReference(targetClass, data${dataKey}.id, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema${keyOption} });`,
           );
         }
       } else {
@@ -273,11 +278,11 @@ export class ObjectHydrator extends Hydrator {
         context.set(targetKey, prop.targetMeta!.class);
         if (prop.ref) {
           ret.push(
-            `      entity${entityKey} = Reference.create(factory.createReference(${targetKey}, data${dataKey}, { merge: true, convertCustomTypes, normalizeAccessors, schema${keyOption} }));`,
+            `      entity${entityKey} = Reference.create(factory.createReference(${targetKey}, data${dataKey}, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema${keyOption} }));`,
           );
         } else {
           ret.push(
-            `      entity${entityKey} = factory.createReference(${targetKey}, data${dataKey}, { merge: true, convertCustomTypes, normalizeAccessors, schema${keyOption} });`,
+            `      entity${entityKey} = factory.createReference(${targetKey}, data${dataKey}, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema${keyOption} });`,
           );
         }
       }
@@ -296,11 +301,11 @@ export class ObjectHydrator extends Hydrator {
 
       if (prop.ref) {
         ret.push(
-          `      entity${entityKey} = Reference.create(factory.${method}(${hydrateTargetExpr}, data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema }));`,
+          `      entity${entityKey} = Reference.create(factory.${method}(${hydrateTargetExpr}, data${dataKey}, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema }));`,
         );
       } else {
         ret.push(
-          `      entity${entityKey} = factory.${method}(${hydrateTargetExpr}, data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });`,
+          `      entity${entityKey} = factory.${method}(${hydrateTargetExpr}, data${dataKey}, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });`,
         );
       }
 
@@ -582,7 +587,7 @@ export class ObjectHydrator extends Hydrator {
 
     const code =
       `// compiled hydrator for entity ${meta.className} (${type + normalizeAccessors ? ' normalized' : ''})\n` +
-      `return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {\n` +
+      `return function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors, managed) {\n` +
       `${lines.join('\n')}\n}`;
     const fnKey = `hydrator-${meta.compiledName}-${type}-${normalizeAccessors}`;
     const hydrator = Utils.createFunction(context, code, this.config.get('compiledFunctions'), fnKey);
@@ -609,12 +614,12 @@ export class ObjectHydrator extends Hydrator {
     const targetKey = this.safeKey(`${prop.targetMeta!.tableName}_${this.#tmpIndex++}`);
     context.set(targetKey, prop.targetMeta!.class);
     lines.push(
-      `    if (isPrimaryKey(value, ${meta.compositePK})) return factory.createReference(${targetKey}, value, { convertCustomTypes, schema, normalizeAccessors, merge: true });`,
+      `    if (isPrimaryKey(value, ${meta.compositePK})) return factory.createReference(${targetKey}, value, { convertCustomTypes, schema, normalizeAccessors, merge: managed, managed });`,
     );
     lines.push(`    if (value && isEntity(value)) return value;`);
 
     lines.push(
-      `    return factory.create(${targetKey}, value, { newEntity, convertCustomTypes, schema, normalizeAccessors, merge: true });`,
+      `    return factory.create(${targetKey}, value, { newEntity, convertCustomTypes, schema, normalizeAccessors, merge: managed, managed });`,
     );
     lines.push(`  }`);
 
