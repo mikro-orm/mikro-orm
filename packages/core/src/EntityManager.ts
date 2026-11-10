@@ -3077,9 +3077,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     // entities mapped via `em.map(..., { managed: false })` have no EntityManager to load their relations into,
     // new entities (`__managed` not set) and removed ones (still bound to their EntityManager) are fine
+    // non-entities are left for the populate validation below
     const unmanaged = arr.find(e => {
-      const wrapped = helper(e) as { __managed?: boolean; __em?: unknown };
-      return wrapped.__managed === false && !wrapped.__em;
+      const wrapped = helper(e) as { __managed?: boolean; __em?: unknown } | undefined;
+      return wrapped?.__managed === false && !wrapped.__em;
     });
 
     if (unmanaged) {
