@@ -539,6 +539,64 @@ test('collections of unmanaged entities cannot be loaded', async () => {
   expect(author.books.isInitialized()).toBe(false);
 });
 
+describe('em.populate()', () => {
+  const populateError = (entity: string) =>
+    `Cannot populate unmanaged entity ${entity}. It was created without an EntityManager ` +
+    '(e.g. via `em.map(..., { managed: false })`), load the relation with `em.find()`/`em.findOne()` or map the result as managed instead.';
+
+  test('rejects unmanaged entities for M:1 relations without running queries', async () => {
+    const [row] = await rawRows(Book);
+    const em = orm.em.fork();
+    const book = em.map(Book, row, { managed: false });
+
+    await expect(em.populate(book, ['author'])).rejects.toThrow(ValidationError);
+    await expect(em.populate(book, ['author'])).rejects.toThrow(populateError('Book(10)'));
+    expect(book.author.isInitialized()).toBe(false);
+    expect(em.getUnitOfWork().getIdentityMap().values()).toEqual([]);
+  });
+
+  test('rejects unmanaged entities for 1:M relations', async () => {
+    const em = orm.em.fork();
+    const author = em.map(Author, { id: 1, name: 'Jon' }, { managed: false });
+
+    await expect(em.populate(author, ['books'])).rejects.toThrow(populateError('Author(1)'));
+    expect(author.books.isInitialized()).toBe(false);
+    expect(em.getUnitOfWork().getIdentityMap().values()).toEqual([]);
+  });
+
+  test('rejects arrays mixing managed and unmanaged entities, loading nothing', async () => {
+    const [row] = await rawRows(Book);
+    const em = orm.em.fork();
+    const managed = em.map(Book, { ...row });
+    const unmanaged = em.map(Book, { ...row }, { managed: false });
+
+    await expect(em.populate([managed, unmanaged], ['author'])).rejects.toThrow(populateError('Book(10)'));
+    expect(managed.author.isInitialized()).toBe(false);
+    expect(unmanaged.author.isInitialized()).toBe(false);
+  });
+
+  test('managed entities are populated as before', async () => {
+    const [row] = await rawRows(Book);
+    const em = orm.em.fork();
+    const book = em.map(Book, row);
+
+    await em.populate(book, ['author']);
+    expect(book.author.isInitialized()).toBe(true);
+    expect(book.author.unwrap().name).toBe('Jon');
+  });
+
+  test('relations of unmanaged entities can be loaded via em.findOne()', async () => {
+    const [row] = await rawRows(Book);
+    const em = orm.em.fork();
+    const book = em.map(Book, row, { managed: false });
+    const author = await em.findOneOrFail(Author, book.author.id, { populate: ['books'] });
+
+    expect(wrap(author).isManaged()).toBe(true);
+    expect(author.books.getItems().map(b => b.id)).toEqual([10]);
+    expect(book.author.isInitialized()).toBe(false);
+  });
+});
+
 test('default behaviour is unchanged', async () => {
   const [row] = await rawRows(Book);
   const em = orm.em.fork();

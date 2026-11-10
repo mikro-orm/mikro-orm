@@ -3075,6 +3075,17 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return entities as any;
     }
 
+    // entities mapped via `em.map(..., { managed: false })` have no EntityManager to load their relations into,
+    // new entities (`__managed` not set) and removed ones (still bound to their EntityManager) are fine
+    const unmanaged = arr.find(e => {
+      const wrapped = helper(e) as { __managed?: boolean; __em?: unknown };
+      return wrapped.__managed === false && !wrapped.__em;
+    });
+
+    if (unmanaged) {
+      throw ValidationError.unmanagedPopulate(unmanaged);
+    }
+
     const em = this.getContext();
     options = em.prepareOptions(options);
     const entityName = arr[0].constructor;

@@ -908,7 +908,7 @@ wrap(before).isManaged(); // false
 wrap(before).toObject(); // same output as for a managed entity
 ```
 
-Everything created this way is _unmanaged_, including the relations, references and nested entities. Mapping the same primary key twice yields two distinct objects. Unmanaged references have no `EntityManager` attached, so they cannot be loaded: `ref.load()`, `ref.loadOrFail()` and `wrap(entity).init()` throw a `ValidationError` (`Cannot load unmanaged reference ...`). Use `em.findOne()` with the reference's primary key, or map the row as managed, if you need to load them. When both `managed: false` and `disableIdentityMap` are provided, `managed: false` wins.
+Everything created this way is _unmanaged_, including the relations, references and nested entities. Mapping the same primary key twice yields two distinct objects. Unmanaged entities have no `EntityManager` attached, so nothing can be loaded through them: `ref.load()`, `ref.loadOrFail()`, `wrap(entity).init()`, `collection.init()` / `load()` / `loadCount()` and `em.populate()` throw a `ValidationError`. Load the relations with `em.find()` / `em.findOne()` instead (e.g. `em.findOne(Author, book.author.id, { populate: ['books'] })`), or map the row as managed. When both `managed: false` and `disableIdentityMap` are provided, `managed: false` wins.
 
 > Keep in mind that this can also have [negative effect on the performance](https://stackoverflow.com/questions/9259480/entity-framework-mergeoption-notracking-bad-performance).
 
