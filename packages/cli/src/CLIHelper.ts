@@ -310,6 +310,38 @@ export class CLIHelper {
     return parts.join('/');
   }
 
+  /** Resolves `id` from the project via its `exports`. `import.meta.resolve()` ignores `parent` without a flag. */
+  private static resolveFromProject(id: string): string | undefined {
+    const [, name, subpath] = /^((?:@[^/]+\/)?[^/]+)(.*)$/.exec(id)!;
+    const root = createRequire(join(process.cwd(), 'noop.js'))
+      .resolve.paths(name)
+      ?.map(dir => join(dir, name))
+      .find(dir => fs.pathExists(join(dir, 'package.json')));
+
+    if (!root) {
+      return undefined;
+    }
+
+    const pick = (target: any): string | undefined => {
+      if (typeof target === 'string') {
+        return target;
+      }
+
+      for (const [condition, value] of Object.entries(target ?? {})) {
+        const path = ['node', 'import', 'default'].includes(condition) ? pick(value) : undefined;
+
+        if (path) {
+          return path;
+        }
+      }
+
+      return undefined;
+    };
+    const target = pick(fs.readJSONSync(join(root, 'package.json')).exports?.[`.${subpath}`]);
+
+    return target ? pathToFileURL(join(root, target)).href : undefined;
+  }
+
   static dumpTable(options: { columns: string[]; rows: string[][]; empty: string }): void {
     if (options.rows.length === 0) {
       return CLIHelper.dump(options.empty);
@@ -401,7 +433,9 @@ export class CLIHelper {
       let mod: any;
 
       try {
-        mod = await Utils.tryImport({ module });
+        const projectModule = this.resolveFromProject(module);
+        mod = projectModule ? await Utils.tryImport({ module: projectModule }) : undefined;
+        mod ??= await Utils.tryImport({ module });
       } catch (e: any) {
         const error = new Error(`Failed to load TypeScript loader \`${loader}\` (${module}): ${e.message}`, {
           cause: e,

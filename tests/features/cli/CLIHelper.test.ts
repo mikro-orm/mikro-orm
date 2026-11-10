@@ -1,4 +1,5 @@
 import { type MockInstance } from 'vitest';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import { MikroORM } from '@mikro-orm/core';
 import { configure, CLIHelper } from '@mikro-orm/cli';
@@ -325,6 +326,35 @@ describe('CLIHelper', () => {
       'The `nub` loader does not support a custom tsconfig path. Use the project tsconfig.json or select another loader.',
     );
     expect(tryImportMock).not.toHaveBeenCalled();
+  });
+
+  test('resolves the TS loader from the project when it is not resolvable from MikroORM', async () => {
+    // not installed in this repo, so only the project can provide it
+    const root = fs.normalizePath(process.cwd(), 'temp/ts-loader-project');
+    const loaderDir = `${root}/node_modules/@oxc-node/core`;
+    rmSync(root, { recursive: true, force: true });
+    mkdirSync(loaderDir, { recursive: true });
+    writeFileSync(`${root}/package.json`, JSON.stringify({ type: 'module' }));
+    // `require` is listed first, so this also checks that `import` wins
+    const exports = {
+      './register': { types: './register.d.mts', require: './register.cjs', import: './register.mjs' },
+    };
+    writeFileSync(`${loaderDir}/package.json`, JSON.stringify({ name: '@oxc-node/core', type: 'module', exports }));
+    writeFileSync(`${loaderDir}/register.mjs`, `globalThis.__projectTsLoader = 'import';`);
+    writeFileSync(`${loaderDir}/register.cjs`, `globalThis.__projectTsLoader = 'require';`);
+    readJSONSyncMock.mockRestore();
+    const cwdMock = vi.spyOn(process, 'cwd').mockReturnValue(root);
+
+    try {
+      await expect(Utils.tryImport({ module: '@oxc-node/core/register' })).resolves.toBeUndefined();
+      await expect(CLIHelper.registerTypeScriptSupport('tsconfig.json', 'oxc')).resolves.toBe(true);
+      expect(process.env.MIKRO_ORM_CLI_TS_LOADER).toBe('oxc');
+      expect((globalThis as any).__projectTsLoader).toBe('import');
+    } finally {
+      cwdMock.mockRestore();
+      delete (globalThis as any).__projectTsLoader;
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 
   test('configures yargs instance [swc and ts-paths] without baseUrl', async () => {
