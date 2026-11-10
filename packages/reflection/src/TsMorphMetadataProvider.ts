@@ -15,6 +15,15 @@ import {
 } from '@mikro-orm/core';
 import { fs } from '@mikro-orm/core/fs-utils';
 
+/** A property type as the TypeScript checker reports it, before the provider normalizes it. */
+export interface ReflectedPropertyType {
+  text: string;
+  optional: boolean;
+  array: boolean;
+  /** Enum values of the type, or of the element type for arrays. */
+  enumItems?: (string | number)[];
+}
+
 /** Metadata provider that uses ts-morph to infer property types from TypeScript source files or declaration files. */
 export class TsMorphMetadataProvider extends MetadataProvider {
   private project!: Project;
@@ -128,7 +137,8 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     }
   }
 
-  private readTypeFromSource(meta: EntityMetadata, prop: EntityProperty): { type: string; optional?: boolean } {
+  /** Reads the declared type of `prop`, or returns `undefined` when the entity class has no such property. */
+  protected reflectPropertyType(meta: EntityMetadata, prop: EntityProperty): ReflectedPropertyType | undefined {
     const source = this.getExistingSourceFile(meta.path);
     const cls = source.getClass(meta.className);
 
@@ -144,32 +154,41 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       cls.getType().getProperty(prop.name)?.getDeclarations()?.[0]) as PropertyDeclaration | undefined;
 
     if (!property) {
-      return { type: prop.type, optional: prop.nullable };
+      return undefined;
     }
 
     const tsType = property.getType();
-    const typeName = tsType.getText(property);
+    const array = tsType.isArray();
+    const enumType = array ? tsType.getArrayElementType()! : tsType;
 
-    if (prop.enum && tsType.isEnum()) {
-      prop.items = tsType.getUnionTypes().map(t => t.getLiteralValueOrThrow()) as string[];
+    return {
+      text: tsType.getText(property),
+      optional: !!property.hasQuestionToken?.() || tsType.isNullable(),
+      array,
+      enumItems: enumType.isEnum()
+        ? (enumType.getUnionTypes().map(t => t.getLiteralValueOrThrow()) as string[])
+        : undefined,
+    };
+  }
+
+  private readTypeFromSource(meta: EntityMetadata, prop: EntityProperty): { type: string; optional?: boolean } {
+    const reflected = this.reflectPropertyType(meta, prop);
+
+    if (!reflected) {
+      return { type: prop.type, optional: prop.nullable };
     }
 
-    if (tsType.isArray()) {
+    if (reflected.enumItems && (prop.enum || reflected.array)) {
+      prop.items = reflected.enumItems;
+    }
+
+    if (reflected.array) {
       prop.array = true;
-
-      /* v8 ignore next */
-      if (tsType.getArrayElementType()!.isEnum()) {
-        prop.items = tsType
-          .getArrayElementType()!
-          .getUnionTypes()
-          .map(t => t.getLiteralValueOrThrow()) as string[];
-      }
     }
 
-    let type = typeName;
+    let type = reflected.text;
     const union = type.split(' | ');
-    const optional =
-      property.hasQuestionToken?.() || union.includes('null') || union.includes('undefined') || tsType.isNullable();
+    const optional = reflected.optional || union.includes('null') || union.includes('undefined');
     type = union.filter(t => !['null', 'undefined'].includes(t)).join(' | ');
 
     prop.array ??= type.endsWith('[]') || !!/Array<(.*)>/.exec(type);
