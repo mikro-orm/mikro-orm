@@ -9,8 +9,6 @@
   },
   "imports": {
     "ts-morph": "npm:ts-morph@28.0.0",
-    "@mikro-orm/core": "jsr:@mikro-orm/core@7.2.8",
-    "tsrs": "npm:tsrs@*",
-    "typescript": "npm:typescript@*"
+    "@mikro-orm/core": "jsr:@mikro-orm/core@7.2.8"
   }
 }

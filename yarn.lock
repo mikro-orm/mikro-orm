@@ -1446,12 +1446,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/reflection@workspace:packages/reflection":
+"@mikro-orm/reflection-typescript@workspace:packages/reflection-typescript":
   version: 0.0.0-use.local
-  resolution: "@mikro-orm/reflection@workspace:packages/reflection"
+  resolution: "@mikro-orm/reflection-typescript@workspace:packages/reflection-typescript"
   dependencies:
     "@mikro-orm/core": "npm:^7.2.8"
-    ts-morph: "npm:28.0.0"
     typescript: "npm:7.1.0-beta"
   peerDependencies:
     "@mikro-orm/core": 7.2.8
@@ -1462,6 +1461,17 @@ __metadata:
       optional: true
     typescript:
       optional: true
+  languageName: unknown
+  linkType: soft
+
+"@mikro-orm/reflection@workspace:packages/reflection":
+  version: 0.0.0-use.local
+  resolution: "@mikro-orm/reflection@workspace:packages/reflection"
+  dependencies:
+    "@mikro-orm/core": "npm:^7.2.8"
+    ts-morph: "npm:28.0.0"
+  peerDependencies:
+    "@mikro-orm/core": 7.2.8
   languageName: unknown
   linkType: soft
 

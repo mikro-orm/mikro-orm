@@ -39,8 +39,6 @@ class Author {
 }
 ```
 
-`TypeScriptApiMetadataProvider` (experimental) reads the same types through the TypeScript 7 API and is several times faster on large projects. It needs `typescript` 7.1+, or [`tsrs`](https://github.com/oxc-project/tsrs) with `TypeScriptApiMetadataProvider.withPackage('tsrs')`.
-
 > Note: The default SWC-based metadata provider handles most use cases without needing `ts-morph`. This package is only needed for advanced scenarios where SWC metadata is insufficient.
 
 ## Documentation

@@ -6,7 +6,8 @@ import { Collection, type Opt, type Ref, type RequiredNullable } from '@mikro-or
 import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { MikroORM as MySqlORM } from '@mikro-orm/mysql';
 import { MikroORM, type Options } from '@mikro-orm/sqlite';
-import { TsMorphMetadataProvider, TypeScriptApiMetadataProvider } from '@mikro-orm/reflection';
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
+import { TypeScriptApiMetadataProvider } from '@mikro-orm/reflection-typescript';
 import * as sqlEntities from '../../entities-sql/index.js';
 
 enum Status {

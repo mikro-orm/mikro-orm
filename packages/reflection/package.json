@@ -50,21 +50,10 @@
     "ts-morph": "28.0.0"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^7.2.8",
-    "typescript": "7.1.0-beta"
+    "@mikro-orm/core": "^7.2.8"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "7.2.8",
-    "tsrs": "*",
-    "typescript": "*"
-  },
-  "peerDependenciesMeta": {
-    "tsrs": {
-      "optional": true
-    },
-    "typescript": {
-      "optional": true
-    }
+    "@mikro-orm/core": "7.2.8"
   },
   "engines": {
     "node": ">= 22.17.0"
