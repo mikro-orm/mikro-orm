@@ -2606,10 +2606,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const dataIsEntity = Utils.isEntity<Entity>(data);
+    // the factory snapshots a new entity from DB-form data like `em.find()` does, an empty `visited` skips the re-snapshot
+    const snapshotted = !entity && !dataIsEntity && options.convertCustomTypes;
     entity = dataIsEntity
       ? data
       : em.#entityFactory.create<Entity>(entityName, data as EntityData<Entity>, { merge: true, ...options });
-    const visited = options.cascade ? undefined : new Set([entity]);
+    const visited = options.cascade ? (snapshotted ? new Set<Entity>() : undefined) : new Set([entity]);
     em.#unitOfWork.merge(entity, visited);
 
     return entity;
