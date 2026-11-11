@@ -3049,9 +3049,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         ? em.eventManager.clone()
         : em.eventManager;
 
-    // we need to allow global context here as forking from global EM is fine
-    const allowGlobalContext = em.config.get('allowGlobalContext');
-    em.config.set('allowGlobalContext', true);
+    // forking from global EM is fine; toggled directly as `config.set()` also re-syncs env/logger state (hot path)
+    const configOptions = em.config.getAll();
+    const allowGlobalContext = configOptions.allowGlobalContext;
+    configOptions.allowGlobalContext = true;
     const fork = new (em.constructor as typeof EntityManager)(
       em.config,
       em.driver,
@@ -3062,14 +3063,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     fork.setFlushMode(options.flushMode ?? em.#flushMode);
     fork.#disableTransactions =
       options.disableTransactions ?? this.#disableTransactions ?? this.config.get('disableTransactions');
-    em.config.set('allowGlobalContext', allowGlobalContext);
+    configOptions.allowGlobalContext = allowGlobalContext;
 
     if (options.keepTransactionContext) {
       fork.#transactionContext = em.#transactionContext;
     }
 
     fork.#filters = { ...em.#filters };
-    fork.#filterParams = Utils.copy(em.#filterParams);
+    fork.#filterParams = Utils.hasObjectKeys(em.#filterParams) ? Utils.copy(em.#filterParams) : {};
 
     if (options.session) {
       // the fork's session replaces the parent context, but the copied `rls` filter params must stay consistent with
@@ -3088,7 +3089,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       fork.#sessionContext = Utils.copy(em.#sessionContext);
     }
 
-    fork.loggerContext = Utils.merge({}, em.loggerContext, options.loggerContext);
+    fork.loggerContext =
+      em.loggerContext || options.loggerContext ? Utils.merge({}, em.loggerContext, options.loggerContext) : {};
     fork.#schema = options.schema ?? em.#schema;
     fork.signal = options.signal ?? em.signal;
     fork.inflightQueryAbortStrategy = options.inflightQueryAbortStrategy ?? em.inflightQueryAbortStrategy;
