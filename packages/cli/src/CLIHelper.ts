@@ -312,7 +312,9 @@ export class CLIHelper {
 
   /** Resolves `id` from the project via its `exports`. `import.meta.resolve()` ignores `parent` without a flag. */
   private static resolveFromProject(id: string): string | undefined {
-    const [, name, subpath] = /^((?:@[^/]+\/)?[^/]+)(.*)$/.exec(id)!;
+    const slash = id.indexOf('/', id.startsWith('@') ? id.indexOf('/') + 1 : 0);
+    const name = slash === -1 ? id : id.slice(0, slash);
+    const subpath = slash === -1 ? '' : id.slice(slash);
     const root = createRequire(join(process.cwd(), 'noop.js'))
       .resolve.paths(name)
       ?.map(dir => join(dir, name))
