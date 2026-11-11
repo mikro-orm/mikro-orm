@@ -3,6 +3,7 @@ import type {
   Dictionary,
   EntityClass,
   EntityData,
+  EntityDataValue,
   EntityDictionary,
   EntityKey,
   EntityMetadata,
@@ -159,6 +160,11 @@ export class UnitOfWork {
           force: true,
         });
         data[key] = prop.customType.convertToDatabaseValue(converted, this.#platform, { key, mode: 'hydration' });
+      }
+
+      // the hydrator assigns this very instance to the entity, an in-place mutation would otherwise go unnoticed
+      if (data[key] instanceof Date) {
+        data[key] = new Date(data[key]) as EntityDataValue<T>;
       }
 
       if (forceUndefined) {
