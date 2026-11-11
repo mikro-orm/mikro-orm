@@ -1,4 +1,4 @@
-import { defineEntity, type EntityManager, MikroORM, p, Type, wrap } from '@mikro-orm/postgresql';
+import { defineEntity, type EntityManager, MikroORM, p, ref, Type, wrap } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers.js';
 
 class CsvType extends Type<string[], string> {
@@ -164,3 +164,20 @@ test('em.merge() of JS-form data and of an already managed entity keeps its beha
   await em.flush();
   expect(mock).not.toHaveBeenCalled();
 });
+
+test.each(['entity', 'reference'] as const)(
+  'em.merge() with convertCustomTypes and a relation given as %s does not flush',
+  async type => {
+    const em = orm.em.fork();
+    const author = await em.findOneOrFail(Author, 1);
+    em.merge(
+      Book,
+      { id: 1, title: 't', author: type === 'entity' ? author : ref(author) },
+      { convertCustomTypes: true },
+    );
+
+    const mock = mockLogger(orm);
+    await em.flush();
+    expect(mock).not.toHaveBeenCalled();
+  },
+);
