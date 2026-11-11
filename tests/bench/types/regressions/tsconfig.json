@@ -1,0 +1,14 @@
+{
+  "extends": "../../../../tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "declaration": false,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "typeRoots": ["../../../../node_modules/@types"],
+    "types": ["node"]
+  },
+  "files": ["repository-parameters.fixture.ts"],
+  "include": [],
+  "exclude": []
+}
