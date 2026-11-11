@@ -859,6 +859,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const ret = options.populate as PopulateOptions<T>[];
+    const hasGlobalFilters = Utils.hasObjectKeys(this.config.get('filters')) || Utils.hasObjectKeys(this.#filters);
 
     for (const prop of meta.relations) {
       if (
@@ -876,20 +877,22 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       options = { ...options, filters: QueryHelper.mergePropertyFilters(prop.filters, options.filters) };
 
       // For polymorphic relations, check all targets for filters (not just the first targetMeta)
+      const targets = prop.polymorphic && prop.polymorphTargets?.length ? prop.polymorphTargets : [prop.targetMeta!];
+
+      // `applyFilters()` can only return a condition when some filter is registered globally or on the target
+      if (!hasGlobalFilters && !targets.some(t => Utils.hasObjectKeys(t.filters))) {
+        continue;
+      }
+
       let hasActiveFilter = false;
 
-      if (prop.polymorphic && prop.polymorphTargets?.length) {
-        for (const targetMeta of prop.polymorphTargets) {
-          const cond = await this.applyFilters(targetMeta.class, {}, options.filters, 'read', options);
+      for (const targetMeta of targets) {
+        const cond = await this.applyFilters(targetMeta.class, {}, options.filters, 'read', options);
 
-          if (!Utils.isEmpty(cond)) {
-            hasActiveFilter = true;
-            break;
-          }
+        if (!Utils.isEmpty(cond)) {
+          hasActiveFilter = true;
+          break;
         }
-      } else {
-        const cond = await this.applyFilters(prop.targetMeta!.class, {}, options.filters, 'read', options);
-        hasActiveFilter = !Utils.isEmpty(cond);
       }
 
       if (hasActiveFilter) {
@@ -1335,6 +1338,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       options.orderBy = QueryHelper.mergeOrderBy(options.orderBy, meta.orderBy);
     }
 
+    const populateDisabled = options.populate === false;
     options.populate = (await em.preparePopulate(entityName, options)) as any;
     const cacheKey = em.cacheKey(entityName, options, 'em.findOne', where);
     const cached = await em.tryCache<Entity, Loaded<Entity, Hint, Fields, Excludes>>(
@@ -1389,7 +1393,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       convertCustomTypes: true,
     });
 
-    await em.lockAndPopulate(meta, entity, where, options);
+    // an empty prepared hint stays empty when prepared again, but `populate: false` skipped the eager relations
+    const prepared = options.populate as unknown as PopulateOptions<Entity>[];
+    await em.lockAndPopulate(
+      meta,
+      entity,
+      where,
+      options,
+      prepared.length === 0 && !populateDisabled ? prepared : undefined,
+    );
     await em.#unitOfWork.dispatchOnLoadEvent();
     await em.storeCache(options.cache, cached!, () => helper(entity).toPOJO());
 
@@ -3378,6 +3390,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     entity: T,
     where: FilterQuery<T>,
     options: FindOneOptions<T, P, F, E>,
+    preparedPopulate?: PopulateOptions<T>[],
   ): Promise<Loaded<T, P, F, E>> {
     if (!meta.virtual && options.lockMode === LockMode.OPTIMISTIC) {
       await this.lock(entity, options.lockMode, {
@@ -3386,7 +3399,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       });
     }
 
-    const preparedPopulate = await this.preparePopulate<T>(meta.class, options);
+    preparedPopulate ??= await this.preparePopulate<T>(meta.class, options);
     await this.#entityLoader.populate(meta.class, [entity], preparedPopulate, {
       ...(options as Dictionary),
       ...this.getPopulateWhere<T>(where as ObjectQuery<T>, options),
