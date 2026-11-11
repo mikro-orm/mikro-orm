@@ -5,7 +5,7 @@ import type * as Sync from 'typescript/sync';
 import type { API, Checker, Program, Type, TypeReference } from 'typescript/sync';
 import { type EntityMetadata, type EntityProperty, MetadataError, MetadataStorage, Utils } from '@mikro-orm/core';
 import { fs } from '@mikro-orm/core/fs-utils';
-import { type ReflectedPropertyType, TsMorphMetadataProvider } from './TsMorphMetadataProvider.js';
+import { AbstractTypeScriptMetadataProvider, type ReflectedPropertyType } from '@mikro-orm/core/reflection';
 
 interface Session {
   api: API;
@@ -18,7 +18,7 @@ interface Session {
 const require = createRequire(import.meta.url);
 
 /** Metadata provider that uses the TypeScript 7 API instead of ts-morph to infer property types. */
-export class TypeScriptApiMetadataProvider extends TsMorphMetadataProvider {
+export class TypeScriptApiMetadataProvider extends AbstractTypeScriptMetadataProvider {
   protected static apiPackage = 'typescript';
 
   /** Returns a provider that loads the TypeScript 7 API from another package, e.g. `withPackage('tsrs')`. */
