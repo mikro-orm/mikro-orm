@@ -746,8 +746,11 @@ export class UnitOfWork {
           } else if (prop.primary) {
             // the referrer's primary key contains the removed entity, so its identity cannot survive the removal
             this.unsetIdentity(referrer);
-          } else {
+          } else if ((prop.inversedBy || prop.mappedBy) && !prop.mapToPk) {
+            // relations with an inverse side are backed by `__data` to allow propagation
             delete helper(referrer).__data[prop.name];
+          } else {
+            delete referrer[prop.name];
           }
         }
       }

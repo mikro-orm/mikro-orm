@@ -240,7 +240,11 @@ export class TransactionManager {
             continue;
           }
 
-          if (prop.kind === ReferenceKind.SCALAR) {
+          // only to-one relations with an inverse side are backed by `__data`, other values live on the entity itself
+          if (
+            ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) &&
+            (!(prop.inversedBy || prop.mappedBy) || prop.mapToPk)
+          ) {
             (parentEntity as Dictionary)[prop.name] = entity[prop.name];
           }
         }
