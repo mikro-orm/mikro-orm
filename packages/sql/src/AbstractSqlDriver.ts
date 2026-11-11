@@ -594,8 +594,24 @@ export abstract class AbstractSqlDriver<
     }
 
     if (qb) {
+      const removed: string[] = [];
       // here we map the aliased results (cartesian product) to an object graph
-      this.mapJoinedProps<T>(ret, meta, populate, qb, ret, map);
+      this.mapJoinedProps<T>(ret, meta, populate, qb, ret, map, removed);
+
+      // rebuild without the consumed aliased columns, `delete` would switch the row to slow dictionary mode
+      if (removed.length > 0) {
+        const clean = {} as Dictionary;
+
+        for (const key in ret) {
+          const value = (ret as Dictionary)[key];
+
+          if (value !== undefined || !removed.includes(key)) {
+            clean[key] = value;
+          }
+        }
+
+        return clean as EntityData<T>;
+      }
     }
 
     return ret;
@@ -649,6 +665,7 @@ export abstract class AbstractSqlDriver<
     qb: AnyQueryBuilder<T>,
     root: EntityData<T>,
     map: Dictionary,
+    removed: string[],
     parentJoinPath?: string,
   ) {
     const joinedProps = this.joinedProps(meta, populate);
@@ -715,13 +732,15 @@ export abstract class AbstractSqlDriver<
             result[prop.name] = relationPojo as EntityDataValue<T>;
 
             const populateChildren = (hint.children as any) || [];
-            this.mapJoinedProps(relationPojo, meta2, populateChildren, qb, root, map, targetPath);
+            this.mapJoinedProps(relationPojo, meta2, populateChildren, qb, root, map, removed, targetPath);
           }
 
           // Clean up aliased columns for ALL targets (even non-matching ones)
           for (const p of targetProps) {
             for (const name of p.fieldNames) {
-              delete root[`${relationAlias}__${name}` as EntityKey<T>];
+              const key = `${relationAlias}__${name}`;
+              (root as Dictionary)[key] = undefined;
+              removed.push(key);
             }
           }
         }
@@ -766,8 +785,11 @@ export abstract class AbstractSqlDriver<
           item = root[alias] as EntityValue<T>;
         }
 
-        prop.joinColumns.forEach(name => delete root[`${relationAlias}__${name}` as EntityKey<T>]);
-        prop.inverseJoinColumns.forEach(name => delete root[`${relationAlias}__${name}` as EntityKey<T>]);
+        for (const name of [...prop.joinColumns, ...prop.inverseJoinColumns]) {
+          const key = `${relationAlias}__${name}`;
+          (root as Dictionary)[key] = undefined;
+          removed.push(key);
+        }
 
         result[prop.name] ??= [] as EntityDataValue<T>;
 
@@ -781,23 +803,34 @@ export abstract class AbstractSqlDriver<
       const mapToPk = !hint.dataOnly && !!(ref || prop.mapToPk);
       // all rows of a result share their columns, so resolve the mapped props once per join path
       const joinedTargets = ((map.joinedTargets as Dictionary) ??= {});
-      const { targetProps, virtualProps } = (joinedTargets[path] ??= {
-        targetProps: (mapToPk
-          ? meta2.getPrimaryProps()
-          : meta2.props.filter(prop => this.platform.shouldHaveColumn(prop, (hint.children as any) || []))
+      if (!joinedTargets[path]) {
+        const aliased = (props: EntityProperty<T>[]) =>
+          props.flatMap(prop => prop.fieldNames.map(name => `${relationAlias}__${name}`));
+        const targetProps = (
+          mapToPk
+            ? meta2.getPrimaryProps()
+            : meta2.props.filter(prop => this.platform.shouldHaveColumn(prop, (hint.children as any) || []))
         ).filter(prop =>
           prop.fieldNames.some(name => typeof root[`${relationAlias}__${name}` as EntityKey<T>] !== 'undefined'),
-        ),
-        virtualProps: meta2.props.filter(prop => !ref && prop.persist === false && prop.fieldNames),
-      }) as { targetProps: EntityProperty<T>[]; virtualProps: EntityProperty<T>[] };
+        );
+        joinedTargets[path] = {
+          targetProps,
+          targetKeys: aliased(targetProps),
+          pkKeys: aliased(meta2.getPrimaryProps()),
+          virtualProps: meta2.props.filter(prop => !ref && prop.persist === false && prop.fieldNames),
+        };
+      }
+
+      const { targetProps, virtualProps, pkKeys, targetKeys } = joinedTargets[path] as {
+        targetProps: EntityProperty<T>[];
+        virtualProps: EntityProperty<T>[];
+        pkKeys: string[];
+        targetKeys: string[];
+      };
 
       // If the primary key value for the relation is null, we know we haven't joined to anything
       // and therefore we don't return any record (since all values would be null)
-      const hasPK = meta2.getPrimaryProps().every(pk =>
-        pk.fieldNames.every(name => {
-          return root[`${relationAlias}__${name}` as EntityKey] != null;
-        }),
-      );
+      const hasPK = pkKeys.every(key => (root as Dictionary)[key] != null);
 
       if (!hasPK) {
         if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind)) {
@@ -808,10 +841,9 @@ export abstract class AbstractSqlDriver<
           result[prop.name] = null;
         }
 
-        for (const prop of targetProps) {
-          for (const name of prop.fieldNames) {
-            delete root[`${relationAlias}__${name}` as EntityKey<T>];
-          }
+        for (const key of targetKeys) {
+          (root as Dictionary)[key] = undefined;
+          removed.push(key);
         }
 
         return;
@@ -843,10 +875,9 @@ export abstract class AbstractSqlDriver<
 
       // properties can be mapped to multiple places, e.g. when sharing a column in multiple FKs,
       // so we need to delete them after everything is mapped from given level
-      for (const prop of targetProps) {
-        for (const name of prop.fieldNames) {
-          delete root[`${relationAlias}__${name}` as EntityKey<T>];
-        }
+      for (const key of targetKeys) {
+        (root as Dictionary)[key] = undefined;
+        removed.push(key);
       }
 
       if (mapToPk) {
@@ -863,7 +894,7 @@ export abstract class AbstractSqlDriver<
       }
 
       const populateChildren = (hint.children as any) || [];
-      this.mapJoinedProps(relationPojo, meta2, populateChildren, qb, root, map, path);
+      this.mapJoinedProps(relationPojo, meta2, populateChildren, qb, root, map, removed, path);
     });
   }
 
