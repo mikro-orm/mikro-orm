@@ -862,7 +862,7 @@ export class EntityLoader {
       : entities
           .map(e => e[field] as Collection<AnyEntity>)
           .filter(coll => Utils.isCollection(coll) && coll.isDirty())
-          .map(coll => [coll, coll.getItems(false), coll.isInitialized()] as const);
+          .map(coll => [coll, coll.getItems(false), coll.getSnapshot()] as const);
     // grouped by type, as a polymorphic collection can hold references of several entity types
     const references = new Map<EntityMetadata, AnyEntity[]>();
 
@@ -886,7 +886,7 @@ export class EntityLoader {
 
     const populated = await this.populateMany<Entity>(entityName, entities, populate, options);
 
-    for (const [coll, items, initialized] of dirty) {
+    for (const [coll, items, snapshot] of dirty) {
       // partially loaded collections can be readonly
       if (coll.isPartial()) {
         continue;
@@ -894,8 +894,9 @@ export class EntityLoader {
 
       const lost = items.filter(item => !coll.contains(item, false));
       const kept = new Set(items);
-      // removals are only known for collections that were loaded before
-      const removed = initialized ? coll.getItems(false).filter(item => !kept.has(item)) : [];
+      const known = snapshot && new Set(snapshot);
+      // only items known before were removed, a missing snapshot means the collection was overridden via `set()`
+      const removed = coll.getItems(false).filter(item => !kept.has(item) && (!known || known.has(item)));
 
       if (lost.length > 0) {
         coll.add(lost);
