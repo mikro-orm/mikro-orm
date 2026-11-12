@@ -51,13 +51,13 @@ The TypeScript 7 API is still in beta and may change.
 
 Works like `TsMorphMetadataProvider`, but reads types through the TypeScript 7 API instead of `ts-morph`, which makes discovery several times faster on large projects. The metadata is the same, except union members may be printed in a different order (`'a' | 'b'` instead of `'b' | 'a'`).
 
-To use it, install the `@mikro-orm/reflection-typescript` package, which does not depend on `ts-morph`, and `typescript` 7.1+ or [`tsrs`](https://github.com/oxc-project/tsrs), a Rust port of the TypeScript 7 checker that ships the same API:
+It is part of `@mikro-orm/core`, so `ts-morph` and `@mikro-orm/reflection` are not needed, only `typescript` 7.1+ has to be installed:
 
 ```ts
-import { TypeScriptApiMetadataProvider } from '@mikro-orm/reflection-typescript';
+import { TypeScriptApiMetadataProvider } from '@mikro-orm/core';
 
 await MikroORM.init({
-  metadataProvider: TypeScriptApiMetadataProvider, // or TypeScriptApiMetadataProvider.withPackage('tsrs')
+  metadataProvider: TypeScriptApiMetadataProvider,
   // ...
 });
 ```

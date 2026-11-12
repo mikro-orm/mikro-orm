@@ -1,11 +1,16 @@
-import { createRequire } from 'node:module';
 import type * as Ast from 'typescript/ast';
 import type { ClassDeclaration, Node } from 'typescript/ast';
 import type * as Sync from 'typescript/sync';
 import type { API, Checker, Program, Type, TypeReference } from 'typescript/sync';
-import { type EntityMetadata, type EntityProperty, MetadataError, MetadataStorage, Utils } from '@mikro-orm/core';
-import { fs } from '@mikro-orm/core/fs-utils';
-import { AbstractTypeScriptMetadataProvider, type ReflectedPropertyType } from '@mikro-orm/core/reflection';
+import { MetadataError } from '../errors.js';
+import type { EntityMetadata, EntityProperty } from '../typings.js';
+import { absolutePath, normalizePath, relativePath } from '../utils/path-utils.js';
+import { Utils } from '../utils/Utils.js';
+import {
+  AbstractTypeScriptMetadataProvider,
+  type ReflectedPropertyType,
+} from './AbstractTypeScriptMetadataProvider.js';
+import { MetadataStorage } from './MetadataStorage.js';
 
 interface Session {
   api: API;
@@ -15,22 +20,10 @@ interface Session {
   ast: typeof Ast;
 }
 
-const require = createRequire(import.meta.url);
-
 /** Metadata provider that uses the TypeScript 7 API instead of ts-morph to infer property types. */
 export class TypeScriptApiMetadataProvider extends AbstractTypeScriptMetadataProvider {
+  /** Package the TypeScript 7 API is loaded from. */
   protected static apiPackage = 'typescript';
-
-  /** Returns a provider that loads the TypeScript 7 API from another package, e.g. `withPackage('tsrs')`. */
-  static withPackage(apiPackage: string): typeof TypeScriptApiMetadataProvider {
-    const provider = class extends this {
-      protected static override apiPackage = apiPackage;
-    };
-    // the configuration caches services by class name
-    Object.defineProperty(provider, 'name', { value: `${this.name}(${apiPackage})` });
-
-    return provider;
-  }
 
   #session?: Session;
   // `undefined` when the class does not declare the property
@@ -62,11 +55,14 @@ export class TypeScriptApiMetadataProvider extends AbstractTypeScriptMetadataPro
   }
 
   private getKey(meta: EntityMetadata): string {
-    return `${fs.normalizePath(meta.path)}#${meta.className}`;
+    return `${normalizePath(meta.path)}#${meta.className}`;
   }
 
   private open(): Session {
     const { apiPackage } = this.constructor as typeof TypeScriptApiMetadataProvider;
+    // built-ins are loaded lazily to keep the main entry browser-safe
+    const require = globalThis.process.getBuiltinModule('node:module').createRequire(import.meta.url);
+    const { existsSync } = globalThis.process.getBuiltinModule('node:fs');
     let sync: typeof Sync;
     let ast: typeof Ast;
 
@@ -75,7 +71,7 @@ export class TypeScriptApiMetadataProvider extends AbstractTypeScriptMetadataPro
       ast = require(`${apiPackage}/ast`);
     } catch (e: any) {
       throw new MetadataError(
-        `TypeScriptApiMetadataProvider could not load the TypeScript 7 API from '${apiPackage}', install 'typescript' 7.1+ or 'tsrs': ${e.message}`,
+        `TypeScriptApiMetadataProvider could not load the TypeScript 7 API from '${apiPackage}', install 'typescript' 7.1+: ${e.message}`,
       );
     }
 
@@ -85,14 +81,14 @@ export class TypeScriptApiMetadataProvider extends AbstractTypeScriptMetadataPro
     let options = {};
 
     try {
-      options = api.parseConfigFile(fs.normalizePath(process.cwd(), tsConfigPath)).options;
+      options = api.parseConfigFile(normalizePath(process.cwd(), tsConfigPath)).options;
     } catch (e: any) {
       this.config.getLogger().warn('discovery', e.message);
     }
 
     const files = Utils.values(MetadataStorage.getMetadata())
-      .map(meta => fs.absolutePath(fs.normalizePath(meta.path).replace(/\.js$/, '.d.ts')))
-      .filter(path => fs.pathExists(path));
+      .map(meta => absolutePath(normalizePath(meta.path).replace(/\.js$/, '.d.ts')))
+      .filter(path => existsSync(path));
     const program = api.createProgram([...new Set(files)], {
       ...options,
       strictNullChecks: true,
@@ -104,7 +100,7 @@ export class TypeScriptApiMetadataProvider extends AbstractTypeScriptMetadataPro
 
   private findClass(meta: EntityMetadata, required: boolean): ClassDeclaration | undefined {
     const { program, ast } = this.#session!;
-    const path = fs.absolutePath(meta.path);
+    const path = absolutePath(meta.path);
     const source =
       program.getSourceFile(path.replace(/\.js$/, '.d.ts')) ?? program.getSourceFile(path.replace(/\.js$/, '.ts'));
     const cls = source?.statements.find(
@@ -117,7 +113,7 @@ export class TypeScriptApiMetadataProvider extends AbstractTypeScriptMetadataPro
 
     if (!source) {
       throw new MetadataError(
-        `Source file '${fs.relativePath(meta.path.replace(/\.js$/, '.ts'), this.config.get('baseDir'))}' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`,
+        `Source file '${relativePath(meta.path.replace(/\.js$/, '.ts'), this.config.get('baseDir'))}' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`,
       );
     }
 
