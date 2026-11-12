@@ -47,7 +47,8 @@
     },
     "./migrations": "./src/utils/AbstractMigrator.ts",
     "./schema": "./src/utils/AbstractSchemaGenerator.ts",
-    "./dataloader": "./src/utils/DataloaderUtils.ts"
+    "./dataloader": "./src/utils/DataloaderUtils.ts",
+    "./reflection": "./src/metadata/AbstractTypeScriptMetadataProvider.ts"
   },
   "publishConfig": {
     "access": "public"
