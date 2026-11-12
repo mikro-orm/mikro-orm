@@ -127,8 +127,8 @@ export class EntityHelper {
 
   /**
    * Defines getter and setter for every owning side of m:1 and 1:1 relation. This is then used for propagation of
-   * changes to the inverse side of bi-directional relations. Rest of the properties are also defined this way to
-   * achieve dirtiness, which is then used for fast checks whether we need to auto-flush because of managed entities.
+   * changes to the inverse side of bi-directional relations. Other properties stay plain data properties on the instance,
+   * unless the prototype already has an accessor for them (e.g. a getter-only property the hydrator needs to write to).
    *
    * First defines a setter on the prototype, once called, actual get/set handlers are registered on the instance rather
    * than on its prototype. Thanks to this we still have those properties enumerable (e.g. part of `Object.keys(entity)`).
@@ -151,6 +151,14 @@ export class EntityHelper {
       }
 
       if (prop.inherited || prop.primary || prop.accessor || prop.persist === false || prop.embedded || isCollection) {
+        return;
+      }
+
+      const desc = Object.getOwnPropertyDescriptor(meta.prototype, prop.name);
+
+      // a writable placeholder keeps `prop in entity` working, while assignments create plain own properties
+      if (!desc?.get && !desc?.set) {
+        Object.defineProperty(meta.prototype, prop.name, { value: undefined, writable: true, configurable: true });
         return;
       }
 

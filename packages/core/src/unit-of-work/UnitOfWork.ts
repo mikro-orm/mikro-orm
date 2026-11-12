@@ -3,6 +3,7 @@ import type {
   Dictionary,
   EntityClass,
   EntityData,
+  EntityDataValue,
   EntityDictionary,
   EntityKey,
   EntityMetadata,
@@ -160,6 +161,11 @@ export class UnitOfWork {
           force: true,
         });
         data[key] = prop.customType.convertToDatabaseValue(converted, this.#platform, { key, mode: 'hydration' });
+      }
+
+      // the hydrator assigns this very instance to the entity, an in-place mutation would otherwise go unnoticed
+      if (data[key] instanceof Date) {
+        data[key] = new Date(data[key]) as EntityDataValue<T>;
       }
 
       if (forceUndefined) {
@@ -747,8 +753,11 @@ export class UnitOfWork {
           } else if (prop.primary) {
             // the referrer's primary key contains the removed entity, so its identity cannot survive the removal
             this.unsetIdentity(referrer);
-          } else {
+          } else if ((prop.inversedBy || prop.mappedBy) && !prop.mapToPk) {
+            // relations with an inverse side are backed by `__data` to allow propagation
             delete helper(referrer).__data[prop.name];
+          } else {
+            delete referrer[prop.name];
           }
         }
       }

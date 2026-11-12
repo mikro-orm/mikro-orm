@@ -596,6 +596,17 @@ export abstract class AbstractSqlDriver<
     if (qb) {
       // here we map the aliased results (cartesian product) to an object graph
       this.mapJoinedProps<T>(ret, meta, populate, qb, ret, map);
+
+      // the aliased columns were deleted, which left the row in slow dictionary mode
+      if (populate.length > 0) {
+        const clean = {} as Dictionary;
+
+        for (const key in ret) {
+          clean[key] = ret[key as EntityKey<T>];
+        }
+
+        return clean as EntityData<T>;
+      }
     }
 
     return ret;
@@ -2445,9 +2456,12 @@ export abstract class AbstractSqlDriver<
       return Utils.asArray(orderBy).map(o => ({ [pivotProp.name]: o }) as QueryOrderMap<T>);
     }
 
-    if (prop.kind === ReferenceKind.MANY_TO_MANY && Utils.asArray(parentOrderBy).some(o => o[prop.name])) {
+    if (
+      prop.kind === ReferenceKind.MANY_TO_MANY &&
+      Utils.asArray(parentOrderBy).some(o => !Utils.isEmpty(o[prop.name]))
+    ) {
       return Utils.asArray(parentOrderBy)
-        .filter(o => o[prop.name])
+        .filter(o => !Utils.isEmpty(o[prop.name]))
         .map(o => ({ [pivotProp.name]: o[prop.name] }) as QueryOrderMap<T>);
     }
 

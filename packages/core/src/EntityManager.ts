@@ -859,6 +859,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const ret = options.populate as PopulateOptions<T>[];
+    const hasGlobalFilters = Utils.hasObjectKeys(this.config.get('filters')) || Utils.hasObjectKeys(this.#filters);
 
     for (const prop of meta.relations) {
       if (
@@ -876,20 +877,22 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       options = { ...options, filters: QueryHelper.mergePropertyFilters(prop.filters, options.filters) };
 
       // For polymorphic relations, check all targets for filters (not just the first targetMeta)
+      const targets = prop.polymorphic && prop.polymorphTargets?.length ? prop.polymorphTargets : [prop.targetMeta!];
+
+      // `applyFilters()` can only return a condition when some filter is registered globally or on the target
+      if (!hasGlobalFilters && !targets.some(t => Utils.hasObjectKeys(t.filters))) {
+        continue;
+      }
+
       let hasActiveFilter = false;
 
-      if (prop.polymorphic && prop.polymorphTargets?.length) {
-        for (const targetMeta of prop.polymorphTargets) {
-          const cond = await this.applyFilters(targetMeta.class, {}, options.filters, 'read', options);
+      for (const targetMeta of targets) {
+        const cond = await this.applyFilters(targetMeta.class, {}, options.filters, 'read', options);
 
-          if (!Utils.isEmpty(cond)) {
-            hasActiveFilter = true;
-            break;
-          }
+        if (!Utils.isEmpty(cond)) {
+          hasActiveFilter = true;
+          break;
         }
-      } else {
-        const cond = await this.applyFilters(prop.targetMeta!.class, {}, options.filters, 'read', options);
-        hasActiveFilter = !Utils.isEmpty(cond);
       }
 
       if (hasActiveFilter) {
@@ -2545,12 +2548,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    return this.merge<Entity>(entityName, data as EntityData<Entity>, {
-      convertCustomTypes: true,
-      refresh: true,
-      validate: false,
-      ...rest,
-    });
+    return this.mergeData<Entity>(
+      entityName,
+      data as EntityData<Entity>,
+      { convertCustomTypes: true, refresh: true, validate: false, ...rest },
+      true,
+    );
   }
 
   /**
@@ -2586,6 +2589,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       );
     }
 
+    return this.mergeData(entityName, data as EntityData<Entity> | EntityDTO<Entity>, options, false);
+  }
+
+  private mergeData<Entity extends object>(
+    entityName: EntityName<Entity>,
+    data: EntityData<Entity> | EntityDTO<Entity>,
+    options: MergeOptions,
+    driverData: boolean,
+  ): Entity {
     const em = options.disableContextResolution ? this : this.getContext();
     options = { ...options };
     options.schema ??= em.#schema;
@@ -2606,10 +2618,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const dataIsEntity = Utils.isEntity<Entity>(data);
+    // the factory snapshots a new entity from driver data like `em.find()` does, an empty `visited` skips the re-snapshot
+    const snapshotted = driverData && !entity;
     entity = dataIsEntity
       ? data
       : em.#entityFactory.create<Entity>(entityName, data as EntityData<Entity>, { merge: true, ...options });
-    const visited = options.cascade ? undefined : new Set([entity]);
+    const visited = options.cascade ? (snapshotted ? new Set<Entity>() : undefined) : new Set([entity]);
     em.#unitOfWork.merge(entity, visited);
 
     return entity;
@@ -3049,9 +3063,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         ? em.eventManager.clone()
         : em.eventManager;
 
-    // we need to allow global context here as forking from global EM is fine
-    const allowGlobalContext = em.config.get('allowGlobalContext');
-    em.config.set('allowGlobalContext', true);
+    // forking from global EM is fine; toggled directly as `config.set()` also re-syncs env/logger state (hot path)
+    const configOptions = em.config.getAll();
+    const allowGlobalContext = configOptions.allowGlobalContext;
+    configOptions.allowGlobalContext = true;
     const fork = new (em.constructor as typeof EntityManager)(
       em.config,
       em.driver,
@@ -3062,14 +3077,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     fork.setFlushMode(options.flushMode ?? em.#flushMode);
     fork.#disableTransactions =
       options.disableTransactions ?? this.#disableTransactions ?? this.config.get('disableTransactions');
-    em.config.set('allowGlobalContext', allowGlobalContext);
+    configOptions.allowGlobalContext = allowGlobalContext;
 
     if (options.keepTransactionContext) {
       fork.#transactionContext = em.#transactionContext;
     }
 
     fork.#filters = { ...em.#filters };
-    fork.#filterParams = Utils.copy(em.#filterParams);
+    fork.#filterParams = Utils.hasObjectKeys(em.#filterParams) ? Utils.copy(em.#filterParams) : {};
 
     if (options.session) {
       // the fork's session replaces the parent context, but the copied `rls` filter params must stay consistent with
@@ -3088,7 +3103,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       fork.#sessionContext = Utils.copy(em.#sessionContext);
     }
 
-    fork.loggerContext = Utils.merge({}, em.loggerContext, options.loggerContext);
+    fork.loggerContext =
+      em.loggerContext || options.loggerContext ? Utils.merge({}, em.loggerContext, options.loggerContext) : {};
     fork.#schema = options.schema ?? em.#schema;
     fork.signal = options.signal ?? em.signal;
     fork.inflightQueryAbortStrategy = options.inflightQueryAbortStrategy ?? em.inflightQueryAbortStrategy;

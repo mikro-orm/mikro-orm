@@ -1,4 +1,7 @@
 /* eslint-disable no-console */
+import { createHash } from 'node:crypto';
+import fs from 'node:fs';
+import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { MetadataStorage } from '@mikro-orm/core';
@@ -15,6 +18,69 @@ MetadataStorage.clear();
 delete (globalThis as any).dynamicImportProvider;
 
 const cwd = process.cwd();
+
+// Machine-wide per-file lock, as fixed DB names on shared servers would clash when two checkouts run the same file.
+const LOCK_DIR = path.join(os.tmpdir(), 'mikro-orm-test-locks');
+const LOCK_TTL = 30 * 60 * 1000;
+const LOCK_KEY = Symbol.for('mikro-orm-tests:file-lock');
+
+function isStaleLock(lock: string): boolean {
+  try {
+    const pid = Number(fs.readFileSync(lock, 'utf8'));
+
+    if (Date.now() - fs.statSync(lock).mtimeMs > LOCK_TTL) {
+      return true;
+    }
+
+    // signal 0 only probes, it throws ESRCH when the owning worker is gone
+    return pid > 0 && !process.kill(pid, 0);
+  } catch (e: any) {
+    return e.code === 'ESRCH';
+  }
+}
+
+function unlockTestFile(): void {
+  const lock: string | undefined = (globalThis as any)[LOCK_KEY];
+
+  if (lock) {
+    delete (globalThis as any)[LOCK_KEY];
+    fs.rmSync(lock, { force: true });
+  }
+}
+
+function lockTestFile(testPath: string): void {
+  // a file that died before its `afterAll` leaves the lock with this (still alive) worker
+  unlockTestFile();
+  fs.mkdirSync(LOCK_DIR, { recursive: true });
+  const lock = path.join(LOCK_DIR, createHash('sha1').update(path.relative(cwd, testPath)).digest('hex'));
+  const sleep = new Int32Array(new SharedArrayBuffer(4));
+
+  for (;;) {
+    try {
+      fs.writeFileSync(lock, `${process.pid}`, { flag: 'wx' });
+      (globalThis as any)[LOCK_KEY] = lock;
+      return;
+    } catch (e: any) {
+      if (e.code !== 'EEXIST') {
+        throw e;
+      }
+    }
+
+    if (isStaleLock(lock)) {
+      fs.rmSync(lock, { force: true });
+    } else {
+      // blocking wait on purpose, timers may still be faked by the previous file in this worker
+      Atomics.wait(sleep, 0, 0, 50);
+    }
+  }
+}
+
+const testPath = expect.getState().testPath;
+
+if (testPath) {
+  lockTestFile(testPath);
+  afterAll(unlockTestFile);
+}
 
 function getCallSite(): string | null {
   const stack = new Error().stack;

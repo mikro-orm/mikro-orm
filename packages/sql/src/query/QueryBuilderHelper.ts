@@ -1103,11 +1103,7 @@ export class QueryBuilderHelper {
           colPart = this.#platform.formatQuery(colPart.sql, colPart.params);
         }
 
-        if (Array.isArray(order)) {
-          order.forEach(part => ret.push(...this.getQueryOrderFromObject(type, part, populate, collation)));
-        } else {
-          ret.push(...this.#platform.getOrderByExpression(colPart, order, collation));
-        }
+        ret.push(...this.#platform.getOrderByExpression(colPart, order, collation));
       }
     }
 
@@ -1115,27 +1111,28 @@ export class QueryBuilderHelper {
   }
 
   splitField<T>(field: EntityKey<T>, greedyAlias = false): [string, EntityKey<T>, string | undefined] {
-    const parts = field.split('.') as EntityKey<T>[];
-    const ref = parts[parts.length - 1].split(':')[1];
+    const lastDot = field.lastIndexOf('.');
+    const colon = field.indexOf(':', lastDot + 1);
+    let end = field.length;
+    let ref: string | undefined;
 
-    if (ref) {
-      parts[parts.length - 1] = parts[parts.length - 1].substring(0, parts[parts.length - 1].indexOf(':')) as any;
+    // only the segment between the first and second colon of the last path part is the ref
+    if (colon !== -1) {
+      const nextColon = field.indexOf(':', colon + 1);
+      ref = field.substring(colon + 1, nextColon === -1 ? end : nextColon);
+
+      if (ref) {
+        end = colon;
+      }
     }
 
-    if (parts.length === 1) {
-      return [this.#alias, parts[0], ref];
+    if (lastDot === -1) {
+      return [this.#alias, field.substring(0, end) as EntityKey<T>, ref];
     }
 
-    if (greedyAlias) {
-      const fromField = parts.pop()!;
-      const fromAlias = parts.join('.');
-      return [fromAlias, fromField, ref];
-    }
+    const aliasEnd = greedyAlias ? lastDot : field.indexOf('.');
 
-    const fromAlias = parts.shift()!;
-    const fromField = parts.join('.') as EntityKey<T>;
-
-    return [fromAlias, fromField, ref];
+    return [field.substring(0, aliasEnd), field.substring(aliasEnd + 1, end) as EntityKey<T>, ref];
   }
 
   getLockSQL(
