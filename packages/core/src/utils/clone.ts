@@ -140,7 +140,8 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
         continue;
       }
 
-      (child as any)[i] = _clone(parent[i]);
+      // `Reflect.get` avoids V8's for-in enum cache load, which can fall into an endless deopt/reoptimize loop here
+      (child as any)[i] = _clone(Reflect.get(parent, i));
     }
 
     const symbols = Object.getOwnPropertySymbols(parent);

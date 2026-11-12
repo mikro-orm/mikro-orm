@@ -2820,7 +2820,6 @@ export class QueryBuilder<
 
     for (const row of res) {
       const entity = this.mapResult(row);
-      this.propagatePopulateHint(entity as Entity, this.#state.populate);
       entities.push(entity);
 
       if (limit != null && --limit === 0) {
@@ -2877,7 +2876,9 @@ export class QueryBuilder<
    * Executes the query, returning both array of results and total count query (without offset and limit).
    */
   async getResultAndCount(): Promise<[Loaded<Entity, Hint, Fields>[], number]> {
-    return [await this.clone().getResultList(), await this.clone().getCount()];
+    // `getCount()` clones by itself, except when the type is not set yet
+    const countQb = this.#state.type === undefined ? this.clone() : this;
+    return [await this.clone().getResultList(), await countQb.getCount()];
   }
 
   /**
