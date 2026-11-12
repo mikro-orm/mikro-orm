@@ -46,12 +46,26 @@ export class TypeScriptApiMetadataProvider extends AbstractTypeScriptMetadataPro
     return this.#types.get(key)!.get(prop.name);
   }
 
+  override loadEntityMetadata(meta: EntityMetadata): void {
+    try {
+      super.loadEntityMetadata(meta);
+    } catch (e) {
+      // discovery fails, so `combineCache` would never close the API process
+      this.closeSession();
+      throw e;
+    }
+  }
+
   // discovery calls this once it is done
   override combineCache(): void {
+    this.closeSession();
+    super.combineCache();
+  }
+
+  private closeSession(): void {
     this.#session?.api.close();
     this.#session = undefined;
     this.#types.clear();
-    super.combineCache();
   }
 
   private getKey(meta: EntityMetadata): string {
