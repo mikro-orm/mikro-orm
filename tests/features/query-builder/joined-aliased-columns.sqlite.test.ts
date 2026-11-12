@@ -82,3 +82,8 @@ test('joined aliased columns are removed from streamed rows', async () => {
 
   expect(rows).toStrictEqual(expected);
 });
+
+test('nested joined columns under a null parent are removed even when that row comes first', async () => {
+  const rows = await createQueryBuilder().orderBy({ id: 'desc' }).execute('all');
+  expect(rows).toStrictEqual([...expected].reverse());
+});

@@ -816,6 +816,11 @@ export abstract class AbstractSqlDriver<
           result[prop.name] = null;
         }
 
+        // resolve nested join paths too, so their columns are dropped from every row regardless of row order
+        if (hint.children?.length) {
+          this.mapJoinedProps({}, meta2, hint.children as any, qb, root, map, path);
+        }
+
         return;
       }
 
