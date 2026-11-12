@@ -861,11 +861,7 @@ export abstract class AbstractSqlDriver<
     });
   }
 
-  /**
-   * Resolves the mapped props of a join path and their aliased column keys, once per query since all rows share
-   * their columns. The keys are registered as consumed instead of deleted from each row, as deletes are slow and
-   * a column can be shared by several FKs, so it needs to stay readable until the whole row is mapped.
-   */
+  /** Keys are marked consumed, not deleted per row: deletes are slow and shared FK columns must stay readable. */
   private resolveJoinedTargets<T extends object>(
     meta: EntityMetadata<T>,
     hint: PopulateOptions<T>,
