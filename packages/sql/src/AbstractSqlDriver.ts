@@ -2456,9 +2456,12 @@ export abstract class AbstractSqlDriver<
       return Utils.asArray(orderBy).map(o => ({ [pivotProp.name]: o }) as QueryOrderMap<T>);
     }
 
-    if (prop.kind === ReferenceKind.MANY_TO_MANY && Utils.asArray(parentOrderBy).some(o => o[prop.name])) {
+    if (
+      prop.kind === ReferenceKind.MANY_TO_MANY &&
+      Utils.asArray(parentOrderBy).some(o => !Utils.isEmpty(o[prop.name]))
+    ) {
       return Utils.asArray(parentOrderBy)
-        .filter(o => o[prop.name])
+        .filter(o => !Utils.isEmpty(o[prop.name]))
         .map(o => ({ [pivotProp.name]: o[prop.name] }) as QueryOrderMap<T>);
     }
 
