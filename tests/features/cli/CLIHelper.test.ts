@@ -7,6 +7,7 @@ import { fs } from '@mikro-orm/core/fs-utils';
 import { Configuration, Options, Utils, MongoDriver } from '@mikro-orm/mongodb';
 import { Migrator as MongoMigrator } from '@mikro-orm/migrations-mongodb';
 import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory.js';
+import { TEMP_DIR } from '../../helpers.js';
 
 const pkg = { type: 'module', 'mikro-orm': {} } as any;
 vi.mock(`./package.json`, () => ({ default: pkg }));
@@ -330,11 +331,10 @@ describe('CLIHelper', () => {
 
   test('resolves the TS loader from the project when it is not resolvable from MikroORM', async () => {
     // not installed in this repo, so only the project can provide it
-    const root = fs.normalizePath(process.cwd(), 'temp/ts-loader-project');
+    const root = fs.normalizePath(TEMP_DIR, 'ts-loader-project');
     const loaderDir = `${root}/node_modules/@oxc-node/core`;
     rmSync(root, { recursive: true, force: true });
     mkdirSync(loaderDir, { recursive: true });
-    writeFileSync(`${root}/package.json`, JSON.stringify({ type: 'module' }));
     // `require` is listed first, so this also checks that `import` wins
     const exports = {
       './register': { types: './register.d.mts', require: './register.cjs', import: './register.mjs' },
