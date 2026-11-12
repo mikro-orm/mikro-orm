@@ -2058,7 +2058,7 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   referencingProperties: { meta: EntityMetadata<Entity>; prop: EntityProperty<Entity> }[];
   targetKeys?: EntityKey<Entity>[]; // properties other relations reference via `targetKey`, indexed in the identity map
   comparableProps: EntityProperty<Entity>[]; // for EntityComparator
-  trackingProps: EntityProperty<Entity>[]; // for change-tracking and propagation
+  trackingProps: EntityProperty<Entity>[]; // bidirectional to-one props that need propagation accessors
   hydrateProps: EntityProperty<Entity>[]; // for Hydrator
   validateProps: EntityProperty<Entity>[]; // for entity validation
   uniqueProps: EntityProperty<Entity>[];

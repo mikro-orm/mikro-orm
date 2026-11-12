@@ -407,13 +407,13 @@ export class EntityHelper {
     const wrapped = helper(entity);
     const meta = wrapped.__meta;
 
-    // nothing to define on the instance, skip the `defineProperties` call that would also push it to dictionary mode
+    // nothing to define on the instance
     if (meta.trackingProps.length === 0 && !meta.serializedPrimaryKey) {
       return;
     }
 
     const platform = wrapped.__platform;
-    const serializedPrimaryKey = meta.props.find(p => p.serializedPrimaryKey);
+    const serializedPrimaryKey = meta.serializedPrimaryKey ? meta.properties[meta.serializedPrimaryKey] : undefined;
     const values: any[] = [];
 
     if (serializedPrimaryKey) {
