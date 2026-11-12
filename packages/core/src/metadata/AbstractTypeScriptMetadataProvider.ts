@@ -56,7 +56,7 @@ export abstract class AbstractTypeScriptMetadataProvider extends MetadataProvide
   private extractType(meta: EntityMetadata, prop: EntityProperty): { type: string; target?: EntityClass } {
     /* v8 ignore next */
     if (typeof prop.entity === 'string') {
-      throw new Error(
+      throw new MetadataError(
         `Relation target needs to be an entity class or EntitySchema instance, '${prop.entity}' given instead for ${meta.className}.${prop.name}.`,
       );
     }

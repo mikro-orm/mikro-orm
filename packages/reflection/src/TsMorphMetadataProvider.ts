@@ -25,7 +25,6 @@ export class TsMorphMetadataProvider extends AbstractTypeScriptMetadataProvider 
     return this.getSourceFile(tsPath, validate)!;
   }
 
-  /** Reads the declared type of `prop`, or returns `undefined` when the entity class has no such property. */
   protected override reflectPropertyType(
     meta: EntityMetadata,
     prop: EntityProperty,
