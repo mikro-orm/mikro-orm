@@ -7,13 +7,13 @@
     "./fs-utils": "./src/utils/fs-utils.ts",
     "./migrations": "./src/utils/AbstractMigrator.ts",
     "./schema": "./src/utils/AbstractSchemaGenerator.ts",
-    "./dataloader": "./src/utils/DataloaderUtils.ts",
-    "./reflection": "./src/metadata/AbstractTypeScriptMetadataProvider.ts"
+    "./dataloader": "./src/utils/DataloaderUtils.ts"
   },
   "publish": {
     "exclude": ["dist/", "node_modules/", "tests/"]
   },
   "imports": {
-    "dataloader": "npm:dataloader@2.2.3"
+    "dataloader": "npm:dataloader@2.2.3",
+    "typescript": "npm:typescript@*"
   }
 }

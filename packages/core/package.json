@@ -47,8 +47,7 @@
     },
     "./migrations": "./src/utils/AbstractMigrator.ts",
     "./schema": "./src/utils/AbstractSchemaGenerator.ts",
-    "./dataloader": "./src/utils/DataloaderUtils.ts",
-    "./reflection": "./src/metadata/AbstractTypeScriptMetadataProvider.ts"
+    "./dataloader": "./src/utils/DataloaderUtils.ts"
   },
   "publishConfig": {
     "access": "public"
@@ -59,11 +58,18 @@
     "compile": "yarn run -T tsc -p tsconfig.build.json",
     "copy": "node ../../scripts/copy.mjs"
   },
+  "devDependencies": {
+    "typescript": "7.1.0-beta"
+  },
   "peerDependencies": {
-    "dataloader": "2.2.3"
+    "dataloader": "2.2.3",
+    "typescript": "*"
   },
   "peerDependenciesMeta": {
     "dataloader": {
+      "optional": true
+    },
+    "typescript": {
       "optional": true
     }
   },

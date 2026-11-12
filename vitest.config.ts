@@ -75,10 +75,6 @@ export default defineConfig({
       { find: '@mikro-orm/core/migrations', replacement: `${root}/core/src/utils/AbstractMigrator.ts` },
       { find: '@mikro-orm/core/schema', replacement: `${root}/core/src/utils/AbstractSchemaGenerator.ts` },
       { find: '@mikro-orm/core/dataloader', replacement: `${root}/core/src/utils/DataloaderUtils.ts` },
-      {
-        find: '@mikro-orm/core/reflection',
-        replacement: `${root}/core/src/metadata/AbstractTypeScriptMetadataProvider.ts`,
-      },
       { find: '@mikro-orm/decorators/es', replacement: `${root}/decorators/src/es/index.ts` },
       { find: '@mikro-orm/decorators/legacy', replacement: `${root}/decorators/src/legacy/index.ts` },
       { find: /^@mikro-orm\/(.*)$/, replacement: `${root}/$1/src` },

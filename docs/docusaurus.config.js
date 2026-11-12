@@ -18,7 +18,6 @@ const packages = [
   'entity-generator',
   'seeder',
   'reflection',
-  'reflection-typescript',
   'postgresql',
   'pglite',
   'mysql',

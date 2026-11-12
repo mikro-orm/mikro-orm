@@ -1259,10 +1259,15 @@ __metadata:
 "@mikro-orm/core@npm:7.2.8, @mikro-orm/core@npm:^7.2.8, @mikro-orm/core@workspace:*, @mikro-orm/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/core@workspace:packages/core"
+  dependencies:
+    typescript: "npm:7.1.0-beta"
   peerDependencies:
     dataloader: 2.2.3
+    typescript: "*"
   peerDependenciesMeta:
     dataloader:
+      optional: true
+    typescript:
       optional: true
   languageName: unknown
   linkType: soft
@@ -1443,24 +1448,6 @@ __metadata:
     postgres-interval: "npm:4.1.0"
   peerDependencies:
     "@mikro-orm/core": 7.2.8
-  languageName: unknown
-  linkType: soft
-
-"@mikro-orm/reflection-typescript@workspace:packages/reflection-typescript":
-  version: 0.0.0-use.local
-  resolution: "@mikro-orm/reflection-typescript@workspace:packages/reflection-typescript"
-  dependencies:
-    "@mikro-orm/core": "npm:^7.2.8"
-    typescript: "npm:7.1.0-beta"
-  peerDependencies:
-    "@mikro-orm/core": 7.2.8
-    tsrs: "*"
-    typescript: "*"
-  peerDependenciesMeta:
-    tsrs:
-      optional: true
-    typescript:
-      optional: true
   languageName: unknown
   linkType: soft
 

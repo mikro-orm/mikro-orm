@@ -1,9 +1,8 @@
-import { extname } from 'node:path';
 import { ReferenceKind } from '../enums.js';
 import { MetadataError } from '../errors.js';
 import type { EntityClass, EntityMetadata, EntityProperty } from '../typings.js';
 import { Type } from '../types/Type.js';
-import { fs } from '../utils/fs-utils.js';
+import { normalizePath, relativePath } from '../utils/path-utils.js';
 import { RawQueryFragment } from '../utils/RawQueryFragment.js';
 import { Utils } from '../utils/Utils.js';
 import { EntitySchema } from './EntitySchema.js';
@@ -43,7 +42,7 @@ export abstract class AbstractTypeScriptMetadataProvider extends MetadataProvide
   protected abstract reflectPropertyType(meta: EntityMetadata, prop: EntityProperty): ReflectedPropertyType | undefined;
 
   protected initProperties(meta: EntityMetadata): void {
-    meta.path = fs.normalizePath(meta.path);
+    meta.path = normalizePath(meta.path);
 
     // load types and column names
     for (const prop of Object.values(meta.properties)) {
@@ -222,13 +221,13 @@ export abstract class AbstractTypeScriptMetadataProvider extends MetadataProvide
 
     // base entity without properties might not have path, but nothing to cache there
     if (meta.path) {
-      meta.path = fs.relativePath(meta.path, this.config.get('baseDir'));
+      meta.path = relativePath(meta.path, this.config.get('baseDir'));
       this.config.getMetadataCacheAdapter().set(this.getCacheKey(meta), copy, meta.path);
     }
   }
 
   override getCacheKey(meta: Pick<EntityMetadata, 'className' | 'path'>): string {
     /* v8 ignore next */
-    return meta.className + (meta.path ? extname(meta.path) : '');
+    return meta.className + (meta.path ? globalThis.process.getBuiltinModule('node:path').extname(meta.path) : '');
   }
 }

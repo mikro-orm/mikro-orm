@@ -1,13 +1,11 @@
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
-import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { Collection, type Opt, type Ref, type RequiredNullable } from '@mikro-orm/core';
+import { Collection, type Opt, type Ref, type RequiredNullable, TypeScriptApiMetadataProvider } from '@mikro-orm/core';
 import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { MikroORM as MySqlORM } from '@mikro-orm/mysql';
 import { MikroORM, type Options } from '@mikro-orm/sqlite';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
-import { TypeScriptApiMetadataProvider } from '@mikro-orm/reflection-typescript';
 import * as sqlEntities from '../../entities-sql/index.js';
 
 enum Status {
@@ -101,23 +99,12 @@ async function discover(ORM: typeof MikroORM | typeof MySqlORM, options: Options
   }
 }
 
-function isInstalled(specifier: string) {
-  try {
-    createRequire(import.meta.url).resolve(specifier);
-    return true;
-  } catch {
-    return false;
-  }
+class MissingPackageMetadataProvider extends TypeScriptApiMetadataProvider {
+  protected static override apiPackage = 'mikro-orm-missing-package';
 }
 
-// tsrs is not a dev dependency: once installed, oxlint runs its type-aware rules with `tsrs-lint`
-describe.each([
-  ['typescript', TypeScriptApiMetadataProvider, true],
-  ['tsrs', TypeScriptApiMetadataProvider.withPackage('tsrs'), isInstalled('tsrs/sync')],
-] as const)('TypeScriptApiMetadataProvider (%s)', (_, metadataProvider, installed) => {
-  beforeEach(ctx => {
-    ctx.skip(!installed);
-  });
+describe('TypeScriptApiMetadataProvider', () => {
+  const metadataProvider = TypeScriptApiMetadataProvider;
 
   test('reads the same metadata and schema as ts-morph from TS sources', async () => {
     const options = { entities: [ApiParent, ApiChild], dbName: ':memory:' };
@@ -183,7 +170,7 @@ test('throws when the package does not provide the TypeScript 7 API', async () =
       entities: [ApiParent, ApiChild],
       dbName: ':memory:',
       metadataCache: { enabled: false },
-      metadataProvider: TypeScriptApiMetadataProvider.withPackage('mikro-orm-missing-package'),
+      metadataProvider: MissingPackageMetadataProvider,
     }),
   ).rejects.toThrow(`could not load the TypeScript 7 API from 'mikro-orm-missing-package'`);
 });

@@ -1,7 +1,14 @@
 import { ModuleKind, Project, type PropertyDeclaration, type SourceFile } from 'ts-morph';
-import { type EntityMetadata, type EntityProperty, MetadataError, MetadataStorage, Utils } from '@mikro-orm/core';
+import {
+  AbstractTypeScriptMetadataProvider,
+  type EntityMetadata,
+  type EntityProperty,
+  MetadataError,
+  MetadataStorage,
+  type ReflectedPropertyType,
+  Utils,
+} from '@mikro-orm/core';
 import { fs } from '@mikro-orm/core/fs-utils';
-import { AbstractTypeScriptMetadataProvider, type ReflectedPropertyType } from '@mikro-orm/core/reflection';
 
 /** Metadata provider that uses ts-morph to infer property types from TypeScript source files or declaration files. */
 export class TsMorphMetadataProvider extends AbstractTypeScriptMetadataProvider {
