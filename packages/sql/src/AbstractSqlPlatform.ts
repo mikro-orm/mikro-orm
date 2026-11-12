@@ -6,6 +6,7 @@ import {
   type EntityRepository,
   type FormulaColumns,
   type IDatabaseDriver,
+  inspect,
   type IsolationLevel,
   isRaw,
   JsonProperty,
@@ -238,10 +239,14 @@ export abstract class AbstractSqlPlatform extends Platform {
    * @internal
    */
   validateOrderByDirection(direction: string): string {
-    const dir = ('' + direction).toLowerCase().trim();
+    if (typeof direction !== 'string') {
+      throw new ValidationError(`Invalid order direction: ${inspect(direction)}`);
+    }
 
-    if (typeof direction !== 'string' || !AbstractSqlPlatform.ORDER_BY_DIRECTIONS.has(dir)) {
-      throw new Error(`Invalid order direction: '${direction}'`);
+    const dir = direction.toLowerCase().trim();
+
+    if (!AbstractSqlPlatform.ORDER_BY_DIRECTIONS.has(dir)) {
+      throw new ValidationError(`Invalid order direction: '${direction}'`);
     }
 
     return dir;

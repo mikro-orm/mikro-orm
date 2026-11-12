@@ -1,4 +1,4 @@
-import { defineEntity, MikroORM, p } from '@mikro-orm/sqlite';
+import { defineEntity, MikroORM, p, ValidationError } from '@mikro-orm/sqlite';
 
 const Author = defineEntity({
   name: 'Author',
@@ -41,21 +41,21 @@ const findBooks = (dir: unknown) => orm.em.fork().find(Book, {}, { orderBy: { au
 
 test('rejects an array as the order direction of a scalar property', async () => {
   await expect(findAuthors([{ email: 'asc' }])).rejects.toThrow(/Invalid order direction/);
-  await expect(findAuthors(['asc'])).rejects.toThrow(/Invalid order direction/);
+  await expect(findAuthors(['asc'])).rejects.toThrow(`Invalid order direction: [ 'asc' ]`);
   await expect(findAuthors([])).rejects.toThrow(/Invalid order direction/);
 });
 
 test('rejects an object as the order direction of a scalar property', async () => {
-  await expect(findAuthors({ email: 'asc' })).rejects.toThrow(/Invalid order direction/);
+  await expect(findAuthors({ email: 'asc' })).rejects.toThrow(ValidationError);
 });
 
 test('rejects an array as the order direction of a relation', async () => {
   await expect(findBooks([{ name: 'asc' }])).rejects.toThrow(/Invalid order direction/);
 });
 
-test('rejects a non-string order direction in the query builder', async () => {
+test('rejects a non-string order direction in the query builder', () => {
   const qb = orm.em.fork().createQueryBuilder(Author);
-  expect(() => qb.orderBy({ name: [{ email: 'asc' }] } as any).getQuery()).toThrow(/Invalid order direction/);
+  expect(() => qb.orderBy({ name: [{ email: 'asc' }] } as any).getQuery()).toThrow(ValidationError);
 });
 
 test('accepts a nested order map on a relation', async () => {
