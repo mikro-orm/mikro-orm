@@ -745,11 +745,7 @@ export class QueryBuilderHelper {
           colPart = this.platform.formatQuery(colPart.sql, colPart.params);
         }
 
-        if (Array.isArray(order)) {
-          order.forEach(part => ret.push(...this.getQueryOrderFromObject(type, part, populate)));
-        } else {
-          ret.push(...this.platform.getOrderByExpression(colPart, order));
-        }
+        ret.push(...this.platform.getOrderByExpression(colPart, order));
       }
     }
 
