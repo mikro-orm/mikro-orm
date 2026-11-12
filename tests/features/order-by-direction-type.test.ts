@@ -9,12 +9,21 @@ const Author = defineEntity({
   },
 });
 
+const Tag = defineEntity({
+  name: 'Tag',
+  properties: {
+    id: p.integer().primary(),
+    name: p.string(),
+  },
+});
+
 const Book = defineEntity({
   name: 'Book',
   properties: {
     id: p.integer().primary(),
     title: p.string(),
     author: () => p.manyToOne(Author),
+    tags: () => p.manyToMany(Tag),
   },
 });
 
@@ -22,14 +31,22 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [Author, Book],
+    entities: [Author, Book, Tag],
     dbName: ':memory:',
   });
   await orm.schema.create();
   const em = orm.em.fork();
   const a1 = em.create(Author, { id: 1, name: 'a', email: 'z' });
   const a2 = em.create(Author, { id: 2, name: 'b', email: 'y' });
-  em.create(Book, { id: 1, title: 't1', author: a1 });
+  em.create(Book, {
+    id: 1,
+    title: 't1',
+    author: a1,
+    tags: [
+      { id: 1, name: 'x' },
+      { id: 2, name: 'y' },
+    ],
+  });
   em.create(Book, { id: 2, title: 't2', author: a2 });
   await em.flush();
 });
@@ -61,4 +78,10 @@ test('rejects a non-string order direction in the query builder', () => {
 test('accepts a nested order map on a relation', async () => {
   const books = await findBooks({ email: 'asc' });
   expect(books.map(b => b.id)).toEqual([2, 1]);
+});
+
+test('accepts an empty order array when initializing a m:n collection', async () => {
+  const book = await orm.em.fork().findOneOrFail(Book, 1);
+  await book.tags.init({ orderBy: [] });
+  expect(book.tags.getItems().map(t => t.id)).toEqual([1, 2]);
 });
