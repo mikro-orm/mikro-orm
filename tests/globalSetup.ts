@@ -43,16 +43,16 @@ function isRunning(pid: number): boolean {
   }
 }
 
-/** Registers this run and returns the number of other live runs, dropping entries of dead ones. */
-function registerRun(): number {
+/** Registers this run and returns the pids of the other live runs, dropping entries of dead ones. */
+function registerRun(): number[] {
   fs.mkdirSync(RUN_REGISTRY_DIR, { recursive: true });
   fs.writeFileSync(path.join(RUN_REGISTRY_DIR, `${process.pid}`), '');
 
-  return countOtherRuns();
+  return otherRuns();
 }
 
-function countOtherRuns(): number {
-  let others = 0;
+function otherRuns(): number[] {
+  const others: number[] = [];
 
   for (const name of fs.readdirSync(RUN_REGISTRY_DIR)) {
     const pid = Number(name);
@@ -65,7 +65,7 @@ function countOtherRuns(): number {
 
     try {
       if (Number.isInteger(pid) && isRunning(pid) && Date.now() - fs.statSync(file).mtimeMs < RUN_REGISTRY_TTL) {
-        others++;
+        others.push(pid);
       } else {
         fs.unlinkSync(file);
       }
@@ -262,6 +262,30 @@ async function dropExtras(t: SqlTarget, extras: string[]): Promise<string[]> {
 // names (e.g. GH-issue numbers) are still cleaned up by the diff-baseline teardown below.
 const STALE_TEST_DB_PATTERN = /^mikro[_-]orm[_-]test/i;
 
+// Names from `randomDbName()` embed the pid of the run that created them, so unlike the passes
+// above, these can be dropped while other runs are active: nobody else will ever use that name.
+const RUN_DB_PATTERN = /^mikro_orm_test_r(\d+)_/;
+
+async function dropRunDbs(label: string, owned: (pid: number) => boolean): Promise<void> {
+  await Promise.all(
+    SQL_TARGETS.map(async t => {
+      const names = (await listDbs(t)) ?? [];
+      const dropped = await dropExtras(
+        t,
+        names.filter(name => {
+          const pid = RUN_DB_PATTERN.exec(name)?.[1];
+          return pid != null && owned(Number(pid));
+        }),
+      );
+
+      if (dropped.length > 0) {
+        // eslint-disable-next-line no-console
+        console.log(`[${label}] ${t.kind}:${t.port} dropped ${dropped.length} test DB(s) of finished runs`);
+      }
+    }),
+  );
+}
+
 // Default data directory inside the official `mssql/server` images. Orphan `.mdf`/`.ldf`
 // files accumulate here when previous runs aborted between `set offline` and `drop database`,
 // or when `drop database` was issued against an offline DB (which keeps the files). Subsequent
@@ -341,9 +365,13 @@ export async function setup() {
 
   // Registering before counting is deliberate: if two runs start at the same instant they both see
   // each other and both skip cleanup, which is the safe direction to lose the race in.
-  if (registerRun() > 0) {
+  process.env.MIKRO_ORM_TEST_RUN_ID = `${process.pid}`;
+  const others = registerRun();
+
+  if (others.length > 0) {
     // eslint-disable-next-line no-console
-    console.log('[globalSetup] another test run is in progress, skipping test database cleanup');
+    console.log('[globalSetup] another test run is in progress, cleaning up only databases of dead runs');
+    await dropRunDbs('globalSetup', pid => pid !== process.pid && !others.includes(pid));
     return;
   }
 
@@ -406,9 +434,10 @@ export async function teardown() {
 
   // Everything created since our baseline is assumed to be ours, which only holds while we are the
   // only run — a run that started after us owns databases we never saw.
-  if (countOtherRuns() > 0) {
+  if (otherRuns().length > 0) {
     // eslint-disable-next-line no-console
-    console.log('[globalTeardown] another test run is in progress, skipping leftover DB cleanup');
+    console.log('[globalTeardown] another test run is in progress, dropping only the databases of this run');
+    await dropRunDbs('globalTeardown', pid => pid === process.pid);
     return;
   }
 
