@@ -1514,7 +1514,9 @@ export class MetadataDiscovery {
     if (meta.inheritanceType !== 'tpt' || !meta.tptParent) {
       meta.indexes = Utils.unique([...base.indexes, ...meta.indexes], Utils.equals);
       meta.uniques = Utils.unique([...base.uniques, ...meta.uniques], Utils.equals);
-      meta.checks = Utils.unique([...base.checks, ...meta.checks], Utils.equals);
+      // the STI root also collects checks bound to properties of other subtypes
+      const baseChecks = base.checks.filter(check => !check.property || meta.properties[check.property]);
+      meta.checks = Utils.unique([...baseChecks, ...meta.checks], Utils.equals);
       meta.triggers = Utils.unique([...base.triggers, ...meta.triggers], Utils.equals);
     }
 
