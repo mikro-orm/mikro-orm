@@ -77,8 +77,10 @@ export class ChangeSetComputer {
     const changeSet = new ChangeSet(entity, type, this.computePayload(entity), meta);
     changeSet.originalEntity = wrapped.__originalEntityData;
 
-    for (const prop of meta.relations.filter(prop => prop.persist !== false || prop.userDefined === false)) {
-      this.processProperty(changeSet, prop);
+    for (const prop of meta.relations) {
+      if (prop.persist !== false || prop.userDefined === false) {
+        this.processProperty(changeSet, prop);
+      }
     }
 
     if (changeSet.type === ChangeSetType.UPDATE && !Utils.hasObjectKeys(changeSet.payload)) {
@@ -191,34 +193,37 @@ export class ChangeSetComputer {
     return data;
   }
 
-  private processProperty<T extends object>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, target?: unknown): void {
-    // check for `null`/`undefined` explicitly, the target can be a falsy raw PK value like `0` (e.g. with `mapToPk`)
-    if (target == null) {
-      const targets = Utils.unwrapProperty(changeSet.entity, changeSet.meta, prop);
-      targets.forEach(([t]) => this.processProperty(changeSet, prop, t));
+  private processProperty<T extends object>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
+    const targets = Utils.unwrapProperty(changeSet.entity, changeSet.meta, prop) as [AnyEntity, number[]][];
 
+    if (targets.length === 0) {
       return;
     }
 
-    if (Utils.isCollection(target)) {
-      // m:n or 1:m
-      this.processToMany(prop, changeSet);
+    if (prop.kind === ReferenceKind.MANY_TO_ONE || prop.kind === ReferenceKind.ONE_TO_ONE) {
+      this.processToOne(prop, changeSet, targets);
+      return;
     }
 
-    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
-      this.processToOne(prop, changeSet);
+    for (const [target] of targets) {
+      if (Utils.isCollection(target)) {
+        // m:n or 1:m
+        this.processToMany(prop, changeSet);
+      }
     }
   }
 
-  private processToOne<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
+  private processToOne<T extends object>(
+    prop: EntityProperty<T>,
+    changeSet: ChangeSet<T>,
+    targets: [AnyEntity, number[]][],
+  ): void {
     const isToOneOwner =
       prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner);
 
     if (!isToOneOwner || prop.mapToPk) {
       return;
     }
-
-    const targets = Utils.unwrapProperty(changeSet.entity, changeSet.meta, prop) as [AnyEntity, number[]][];
 
     targets.forEach(([rawTarget, idx]) => {
       const target = Reference.unwrapReference(rawTarget);

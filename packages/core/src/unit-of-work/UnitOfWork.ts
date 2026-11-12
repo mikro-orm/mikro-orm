@@ -937,6 +937,22 @@ export class UnitOfWork {
     this.initIdentifier(entity);
 
     for (const prop of wrapped.__meta.relations) {
+      // perf: a relation outside of embeddables has a single target, so skip the allocations of `unwrapProperty`
+      if (!prop.object && !prop.array && !prop.embedded) {
+        if (entity[prop.name] != null) {
+          this.processReference(
+            entity,
+            prop,
+            Reference.unwrapReference(entity[prop.name] as object),
+            visited,
+            processed,
+            idx,
+          );
+        }
+
+        continue;
+      }
+
       const targets = Utils.unwrapProperty(entity, wrapped.__meta, prop);
       for (const [target] of targets) {
         const kind = Reference.unwrapReference(target as object);
