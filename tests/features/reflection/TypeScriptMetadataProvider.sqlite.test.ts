@@ -2,7 +2,7 @@ import { execSync } from 'node:child_process';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { Collection, type Opt, type Ref, type RequiredNullable, TypeScriptApiMetadataProvider } from '@mikro-orm/core';
+import { Collection, type Opt, type Ref, type RequiredNullable, TypeScriptMetadataProvider } from '@mikro-orm/core';
 import { Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 import { MikroORM as MySqlORM } from '@mikro-orm/mysql';
 import { MikroORM, type Options } from '@mikro-orm/sqlite';
@@ -100,12 +100,12 @@ async function discover(ORM: typeof MikroORM | typeof MySqlORM, options: Options
   }
 }
 
-class MissingPackageMetadataProvider extends TypeScriptApiMetadataProvider {
+class MissingPackageMetadataProvider extends TypeScriptMetadataProvider {
   protected static override apiPackage = 'mikro-orm-missing-package';
 }
 
-describe('TypeScriptApiMetadataProvider', () => {
-  const metadataProvider = TypeScriptApiMetadataProvider;
+describe('TypeScriptMetadataProvider', () => {
+  const metadataProvider = TypeScriptMetadataProvider;
 
   test('reads the same metadata and schema as ts-morph from TS sources', async () => {
     const options = { entities: [ApiParent, ApiChild], dbName: ':memory:' };
@@ -203,7 +203,7 @@ test('falls back to default compiler options when the tsconfig is missing', asyn
     entities: [ApiParent, ApiChild],
     dbName: ':memory:',
     metadataCache: { enabled: false },
-    metadataProvider: TypeScriptApiMetadataProvider,
+    metadataProvider: TypeScriptMetadataProvider,
     discovery: { tsConfigPath: './missing-tsconfig.json' },
     debug: ['discovery'],
     logger,
