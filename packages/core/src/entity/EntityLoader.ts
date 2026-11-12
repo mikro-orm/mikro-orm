@@ -856,7 +856,33 @@ export class EntityLoader {
     }
 
     options = { ...options, filters: QueryHelper.mergePropertyFilters(prop.filters, options.filters)! };
+    // collections with unflushed changes, their items would be lost when reloading
+    const dirty = entities
+      .map(e => e[field] as Collection<AnyEntity>)
+      .filter(coll => !options.refresh && Utils.isCollection(coll) && coll.isDirty())
+      .map(coll => [coll, coll.getItems(false)] as const);
+    const references = dirty.flatMap(([, items]) => items).filter(item => !helper(item).__initialized);
+
+    if (references.length > 0 && !populate.field.includes(':')) {
+      // loading the references directly keeps an initialized collection from being reloaded
+      await this.populateScalar(prop.targetMeta!, Utils.unique(references), {
+        ...options,
+        where: {},
+        populateWhere: undefined,
+        fields: this.buildFields(options.fields as any, prop),
+      } as any);
+    }
+
     const populated = await this.populateMany<Entity>(entityName, entities, populate, options);
+
+    for (const [coll, items] of dirty) {
+      const lost = items.filter(item => !coll.contains(item, false));
+
+      // partially loaded collections can be readonly, as well as those that were not reloaded
+      if (lost.length > 0 && !coll.isPartial()) {
+        coll.add(lost);
+      }
+    }
 
     if (!populate.children && !populate.all) {
       return;
