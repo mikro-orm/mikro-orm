@@ -51,7 +51,7 @@ exports[`6865 1`] = `
     if (newEntity) {
       Collection.create(entity, 'allowedTokens', items, true).setDirty();
     } else {
-      Collection.create(entity, 'allowedTokens', undefined, false).hydrate(items, true);
+      Collection.create(entity, 'allowedTokens', undefined, false).hydrate(items, true, false, false, false);
     }
   } else if (!entity.allowedTokens && data.allowedTokens instanceof Collection) {
     entity.allowedTokens = data.allowedTokens;

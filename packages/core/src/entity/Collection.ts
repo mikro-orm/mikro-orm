@@ -660,7 +660,7 @@ export class Collection<T extends object, O extends object = object> {
   /**
    * @internal
    */
-  hydrate(items: T[], forcePropagate?: boolean, partial?: boolean, readonly?: boolean): void {
+  hydrate(items: T[], forcePropagate?: boolean, partial?: boolean, readonly?: boolean, count = true): void {
     for (let i = 0; i < this.#items.size; i++) {
       delete this[i];
     }
@@ -668,7 +668,7 @@ export class Collection<T extends object, O extends object = object> {
     this.#initialized = true;
     this.#partial = !!partial;
     this.#items.clear();
-    this.#count = 0;
+    this.#count = count ? 0 : undefined;
     // loaded items are not persisted, that would queue an auto-flush of their type on a read-only path
     const unwrapped = items.map(i => Reference.unwrapReference(i));
     this.addItems(unwrapped);

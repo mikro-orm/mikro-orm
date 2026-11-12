@@ -142,3 +142,27 @@ test('moving a loaded item to another collection still auto-flushes', async () =
   a1.books.add(book);
   await em.flush();
 });
+
+test('loadCount() after a joined populate counts the items in the database', async () => {
+  const a1 = await orm.em.fork().findOneOrFail(Author, 1, { populate: ['books'], strategy: LoadStrategy.JOINED });
+  expect(a1.books).toHaveLength(2);
+  expect(await a1.books.loadCount()).toBe(2);
+
+  const a2 = await orm.em
+    .fork()
+    .findOneOrFail(
+      Author,
+      { id: 1, books: { title: 'b1' } },
+      { populate: ['books'], populateWhere: 'infer', strategy: LoadStrategy.JOINED },
+    );
+  expect(a2.books).toHaveLength(1);
+  expect(await a2.books.loadCount()).toBe(2);
+
+  const a3 = await orm.em.fork().findOneOrFail(Author, 1, {
+    populate: ['books'],
+    populateFilter: { books: { title: 'b2' } },
+    strategy: LoadStrategy.JOINED,
+  });
+  expect(a3.books).toHaveLength(1);
+  expect(await a3.books.loadCount()).toBe(2);
+});
