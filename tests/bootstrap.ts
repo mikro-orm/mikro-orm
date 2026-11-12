@@ -42,7 +42,7 @@ import { Author2Subscriber } from './subscribers/Author2Subscriber.js';
 import { Test2Subscriber } from './subscribers/Test2Subscriber.js';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber.js';
 import { FlushSubscriber } from './subscribers/FlushSubscriber.js';
-import { BASE_DIR } from './helpers.js';
+import { BASE_DIR, randomDbName } from './helpers.js';
 import { Dummy2 } from './entities-sql/Dummy2.js';
 
 export const PLATFORMS = {
@@ -93,7 +93,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
   simple?: boolean,
   createSchema = true,
 ) {
-  const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(2)}`;
+  const dbName = randomDbName();
   let orm = new MikroORM<AbstractSqlDriver>(
     Utils.merge(
       {
@@ -170,7 +170,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 }
 
 export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, entities: any[] = [], cache = false) {
-  const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(2)}`;
+  const dbName = randomDbName();
   const orm = new MikroORM({
     entities: [
       Author2,
@@ -255,7 +255,7 @@ export async function initORMPglite(loadStrategy = LoadStrategy.SELECT_IN, entit
 }
 
 export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDriver>> = {}, createSchema = true) {
-  const dbName = `mikro_orm_test_${(Math.random() + 1).toString(36).substring(2)}`;
+  const dbName = randomDbName();
   const orm = await MikroORM.init({
     entities: ['entities-mssql'],
     dbName,
