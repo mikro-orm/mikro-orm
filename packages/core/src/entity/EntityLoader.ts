@@ -857,10 +857,12 @@ export class EntityLoader {
 
     options = { ...options, filters: QueryHelper.mergePropertyFilters(prop.filters, options.filters)! };
     // collections with unflushed changes, their items would be lost when reloading
-    const dirty = entities
-      .map(e => e[field] as Collection<AnyEntity>)
-      .filter(coll => !options.refresh && Utils.isCollection(coll) && coll.isDirty())
-      .map(coll => [coll, coll.getItems(false)] as const);
+    const dirty = options.refresh
+      ? []
+      : entities
+          .map(e => e[field] as Collection<AnyEntity>)
+          .filter(coll => Utils.isCollection(coll) && coll.isDirty())
+          .map(coll => [coll, coll.getItems(false), coll.isInitialized()] as const);
     // grouped by type, as a polymorphic collection can hold references of several entity types
     const references = new Map<EntityMetadata, AnyEntity[]>();
 
@@ -884,12 +886,23 @@ export class EntityLoader {
 
     const populated = await this.populateMany<Entity>(entityName, entities, populate, options);
 
-    for (const [coll, items] of dirty) {
-      const lost = items.filter(item => !coll.contains(item, false));
-
+    for (const [coll, items, initialized] of dirty) {
       // partially loaded collections can be readonly
-      if (lost.length > 0 && !coll.isPartial()) {
+      if (coll.isPartial()) {
+        continue;
+      }
+
+      const lost = items.filter(item => !coll.contains(item, false));
+      const kept = new Set(items);
+      // removals are only known for collections that were loaded before
+      const removed = initialized ? coll.getItems(false).filter(item => !kept.has(item)) : [];
+
+      if (lost.length > 0) {
         coll.add(lost);
+      }
+
+      if (removed.length > 0) {
+        coll.remove(removed);
       }
     }
 

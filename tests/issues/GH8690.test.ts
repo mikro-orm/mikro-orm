@@ -1,6 +1,7 @@
 import { Collection, MikroORM, type Ref } from '@mikro-orm/sqlite';
 import {
   Entity,
+  Filter,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -10,6 +11,7 @@ import {
 } from '@mikro-orm/decorators/legacy';
 
 @Entity()
+@Filter({ name: 'skip2', cond: { name: { $ne: '2' } } })
 class Item {
   @PrimaryKey()
   id!: number;
@@ -121,6 +123,22 @@ test.each(['items', 'owned'] as const)(
     await orm.em.populate(user, [`${prop}:ref`]);
     const ids = user[prop].getItems().map(i => i.id);
     expect(ids.sort()).toEqual([1, 2, 3]);
+  },
+);
+
+test.each(['items', 'owned'] as const)(
+  'populate keeps unflushed removals when an added reference cannot be loaded (%s)',
+  async prop => {
+    const user = await orm.em.findOneOrFail(User, 1, { populate: [prop] });
+    user[prop].remove(user[prop][1]);
+    user[prop].add(orm.em.getReference(Item, 2));
+    await orm.em.populate(user, [prop], { filters: ['skip2'] });
+    expect(user[prop].getItems().map(i => i.id)).toEqual([1, 2]);
+
+    await orm.em.flush();
+    orm.em.clear();
+    const reloaded = await orm.em.findOneOrFail(User, 1, { populate: [prop] });
+    expect(reloaded[prop].getItems().map(i => i.id)).toEqual([1, 2]);
   },
 );
 
