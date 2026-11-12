@@ -9,6 +9,7 @@ import {
   RawQueryFragment,
   ReferenceKind,
   Utils,
+  ValidationError,
 } from '@mikro-orm/core';
 import { CriteriaNode } from './CriteriaNode.js';
 import type { ICriteriaNodeProcessOptions, IQueryBuilder } from '../typings.js';
@@ -21,6 +22,10 @@ const COLLECTION_OPERATORS = ['$some', '$none', '$every', '$size', '$all'];
  */
 export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
   override process(qb: IQueryBuilder<T>, options?: ICriteriaNodeProcessOptions): any {
+    if (options?.type === 'orderBy' && this.prop?.kind === ReferenceKind.SCALAR) {
+      throw new ValidationError(`Invalid order direction for ${Utils.className(this.entityName)}.${this.prop.name}`);
+    }
+
     const matchPopulateJoins =
       options?.matchPopulateJoins ||
       (this.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop.kind));

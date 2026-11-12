@@ -240,7 +240,7 @@ export abstract class AbstractSqlPlatform extends Platform {
   validateOrderByDirection(direction: string): string {
     const dir = ('' + direction).toLowerCase().trim();
 
-    if (!AbstractSqlPlatform.ORDER_BY_DIRECTIONS.has(dir)) {
+    if (typeof direction !== 'string' || !AbstractSqlPlatform.ORDER_BY_DIRECTIONS.has(dir)) {
       throw new Error(`Invalid order direction: '${direction}'`);
     }
 
