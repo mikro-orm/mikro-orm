@@ -269,6 +269,8 @@ export class MikroORM<
     this.#metadata.decorate(this.em);
     // the newly discovered entities may declare `rls` filters the cached lookup was built without
     clearRlsFilterDefsCache(this.#metadata);
+    // queries compiled against the previous metadata may no longer be valid
+    this.config.getCompiledQueryCache()?.clear();
   }
 
   /**
