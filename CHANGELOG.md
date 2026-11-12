@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.18](https://github.com/mikro-orm/mikro-orm/compare/v6.6.17...v6.6.18) (2026-11-12)
+
+
+### Bug Fixes
+
+* **core:** allow falsy values in concurrency checks (backport to 6.x) ([#8524](https://github.com/mikro-orm/mikro-orm/issues/8524)) ([28a83f8](https://github.com/mikro-orm/mikro-orm/commit/28a83f8e9eaa83a7736ce8705c600a0054484ada)), closes [#8318](https://github.com/mikro-orm/mikro-orm/issues/8318) [#8318](https://github.com/mikro-orm/mikro-orm/issues/8318)
+* **core:** detect changes to decimal strings beyond double precision (backport to 6.x) ([#8566](https://github.com/mikro-orm/mikro-orm/issues/8566)) ([3a2b4f9](https://github.com/mikro-orm/mikro-orm/commit/3a2b4f989c4feb3db91d2caf27aafe058d6638eb)), closes [#8368](https://github.com/mikro-orm/mikro-orm/issues/8368) [#8368](https://github.com/mikro-orm/mikro-orm/issues/8368)
+* **core:** don't double-wrap `orderBy` in M:N dataloader batch load (backport to 6.x) ([#8563](https://github.com/mikro-orm/mikro-orm/issues/8563)) ([ca7d715](https://github.com/mikro-orm/mikro-orm/commit/ca7d715d545d68e11a99e4cba7cd53c9a9885198)), closes [#8193](https://github.com/mikro-orm/mikro-orm/issues/8193) [#8194](https://github.com/mikro-orm/mikro-orm/issues/8194)
+* **core:** escape entity property names in generated hydration/comparison code ([#8453](https://github.com/mikro-orm/mikro-orm/issues/8453)) ([193e462](https://github.com/mikro-orm/mikro-orm/commit/193e462e2c8a9c658bd060be458b89777bfc6c7d)), closes [#8221](https://github.com/mikro-orm/mikro-orm/issues/8221) [#8221](https://github.com/mikro-orm/mikro-orm/issues/8221)
+* **core:** evict referrers holding a removed entity in their primary key (backport to 6.x) ([#8525](https://github.com/mikro-orm/mikro-orm/issues/8525)) ([e57f3eb](https://github.com/mikro-orm/mikro-orm/commit/e57f3ebbb6f3a46a34c94d6ea3e010431efbf6d1)), closes [#8203](https://github.com/mikro-orm/mikro-orm/issues/8203) [#8205](https://github.com/mikro-orm/mikro-orm/issues/8205)
+* **core:** keep null custom type values in upsert results ([#8429](https://github.com/mikro-orm/mikro-orm/issues/8429)) ([a1f0334](https://github.com/mikro-orm/mikro-orm/commit/a1f033449cc12adf5d3d7b4e1ced24281a6b7e23)), closes [#8427](https://github.com/mikro-orm/mikro-orm/issues/8427) [#8428](https://github.com/mikro-orm/mikro-orm/issues/8428)
+* **core:** preserve existing groups when lifting relation filters (backport to 6.x) ([#8567](https://github.com/mikro-orm/mikro-orm/issues/8567)) ([0bf5b96](https://github.com/mikro-orm/mikro-orm/commit/0bf5b9618eaaca8edae485c0e729df01cc885758)), closes [#8304](https://github.com/mikro-orm/mikro-orm/issues/8304) [#8304](https://github.com/mikro-orm/mikro-orm/issues/8304) [#8291](https://github.com/mikro-orm/mikro-orm/issues/8291)
+* **core:** prevent hash collisions for nested composite keys ([#8473](https://github.com/mikro-orm/mikro-orm/issues/8473)) ([7eb62e2](https://github.com/mikro-orm/mikro-orm/commit/7eb62e282bbd3b5bd046c70b13cb75305f3a1af2)), closes [#8088](https://github.com/mikro-orm/mikro-orm/issues/8088) [#8078](https://github.com/mikro-orm/mikro-orm/issues/8078) [#8080](https://github.com/mikro-orm/mikro-orm/issues/8080) [#8082](https://github.com/mikro-orm/mikro-orm/issues/8082) [#8088](https://github.com/mikro-orm/mikro-orm/issues/8088) [#8078](https://github.com/mikro-orm/mikro-orm/issues/8078) [#8082](https://github.com/mikro-orm/mikro-orm/issues/8082) [#8080](https://github.com/mikro-orm/mikro-orm/issues/8080) [#8088](https://github.com/mikro-orm/mikro-orm/issues/8088) [#8078](https://github.com/mikro-orm/mikro-orm/issues/8078)
+* **core:** respect locally disabled transactions during flush (backport to 6.x) ([#8568](https://github.com/mikro-orm/mikro-orm/issues/8568)) ([80f8f43](https://github.com/mikro-orm/mikro-orm/commit/80f8f4325ec1f594d45d85b796ddc313f76a9461)), closes [#8306](https://github.com/mikro-orm/mikro-orm/issues/8306) [#8306](https://github.com/mikro-orm/mikro-orm/issues/8306)
+* **mssql:** use equality conditions for composite PK batch updates (backport to 6.x) ([#8543](https://github.com/mikro-orm/mikro-orm/issues/8543)) ([9092e73](https://github.com/mikro-orm/mikro-orm/commit/9092e73f5cab09888af660359b3841eded4e2bec)), closes [#7442](https://github.com/mikro-orm/mikro-orm/issues/7442) [#7442](https://github.com/mikro-orm/mikro-orm/issues/7442) [#7442](https://github.com/mikro-orm/mikro-orm/issues/7442)
+* **query-builder:** reject arrays as order direction in `orderBy` (backport to 6.x) ([#8681](https://github.com/mikro-orm/mikro-orm/issues/8681)) ([2bc69c1](https://github.com/mikro-orm/mikro-orm/commit/2bc69c17ce8a0b0acde27a2d850cd5bf3252b2d4))
+
+
+
+
+
 ## [6.6.17](https://github.com/mikro-orm/mikro-orm/compare/v6.6.16...v6.6.17) (2026-10-02)
 
 

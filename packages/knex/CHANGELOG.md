@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.18](https://github.com/mikro-orm/mikro-orm/compare/v6.6.17...v6.6.18) (2026-11-12)
+
+
+### Bug Fixes
+
+* **core:** prevent hash collisions for nested composite keys ([#8473](https://github.com/mikro-orm/mikro-orm/issues/8473)) ([7eb62e2](https://github.com/mikro-orm/mikro-orm/commit/7eb62e282bbd3b5bd046c70b13cb75305f3a1af2)), closes [#8088](https://github.com/mikro-orm/mikro-orm/issues/8088) [#8078](https://github.com/mikro-orm/mikro-orm/issues/8078) [#8080](https://github.com/mikro-orm/mikro-orm/issues/8080) [#8082](https://github.com/mikro-orm/mikro-orm/issues/8082) [#8088](https://github.com/mikro-orm/mikro-orm/issues/8088) [#8078](https://github.com/mikro-orm/mikro-orm/issues/8078) [#8082](https://github.com/mikro-orm/mikro-orm/issues/8082) [#8080](https://github.com/mikro-orm/mikro-orm/issues/8080) [#8088](https://github.com/mikro-orm/mikro-orm/issues/8088) [#8078](https://github.com/mikro-orm/mikro-orm/issues/8078)
+* **mssql:** use equality conditions for composite PK batch updates (backport to 6.x) ([#8543](https://github.com/mikro-orm/mikro-orm/issues/8543)) ([9092e73](https://github.com/mikro-orm/mikro-orm/commit/9092e73f5cab09888af660359b3841eded4e2bec)), closes [#7442](https://github.com/mikro-orm/mikro-orm/issues/7442) [#7442](https://github.com/mikro-orm/mikro-orm/issues/7442) [#7442](https://github.com/mikro-orm/mikro-orm/issues/7442)
+* **query-builder:** reject arrays as order direction in `orderBy` (backport to 6.x) ([#8681](https://github.com/mikro-orm/mikro-orm/issues/8681)) ([2bc69c1](https://github.com/mikro-orm/mikro-orm/commit/2bc69c17ce8a0b0acde27a2d850cd5bf3252b2d4))
+
+
+
+
+
 ## [6.6.17](https://github.com/mikro-orm/mikro-orm/compare/v6.6.16...v6.6.17) (2026-10-02)
 
 
