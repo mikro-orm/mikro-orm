@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -161,6 +162,27 @@ describe('TypeScriptApiMetadataProvider', () => {
         metadataProvider,
       }),
     ).rejects.toThrow('Source class for entity ApiNested not found.');
+  });
+
+  test.skipIf(process.platform === 'win32')('stops the TypeScript API process when discovery fails', async () => {
+    const childProcesses = () => {
+      try {
+        return execSync(`pgrep -P ${process.pid}`).toString().trim().split('\n').length;
+      } catch {
+        return 0; // pgrep exits with 1 when nothing matches
+      }
+    };
+    const before = childProcesses();
+
+    await expect(
+      MikroORM.init({
+        entities: [ApiParent, ApiChild, createNestedEntity()],
+        dbName: ':memory:',
+        metadataCache: { enabled: false },
+        metadataProvider,
+      }),
+    ).rejects.toThrow('Source class for entity ApiNested not found.');
+    expect(childProcesses()).toBe(before);
   });
 });
 
