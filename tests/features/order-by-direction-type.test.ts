@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 class Author {
@@ -15,6 +15,17 @@ class Author {
 }
 
 @Entity()
+class Tag {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+}
+
+@Entity()
 class Book {
 
   @PrimaryKey()
@@ -26,20 +37,23 @@ class Book {
   @ManyToOne(() => Author)
   author!: Author;
 
+  @ManyToMany(() => Tag)
+  tags = new Collection<Tag>(this);
+
 }
 
 let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [Author, Book],
+    entities: [Author, Book, Tag],
     dbName: ':memory:',
   });
   await orm.schema.createSchema();
   const em = orm.em.fork();
   const a1 = em.create(Author, { id: 1, name: 'a', email: 'z' });
   const a2 = em.create(Author, { id: 2, name: 'b', email: 'y' });
-  em.create(Book, { id: 1, title: 't1', author: a1 });
+  em.create(Book, { id: 1, title: 't1', author: a1, tags: [{ id: 1, name: 'x' }, { id: 2, name: 'y' }] });
   em.create(Book, { id: 2, title: 't2', author: a2 });
   await em.flush();
 });
@@ -61,4 +75,10 @@ test('rejects an array as the order direction of a relation', async () => {
 test('accepts a nested order map on a relation', async () => {
   const books = await findBooks({ email: 'asc' });
   expect(books.map(b => b.id)).toEqual([2, 1]);
+});
+
+test('accepts an empty order array when initializing a m:n collection', async () => {
+  const book = await orm.em.fork().findOneOrFail(Book, 1);
+  await book.tags.init({ orderBy: [] });
+  expect(book.tags.getItems().map(t => t.id)).toEqual([1, 2]);
 });
