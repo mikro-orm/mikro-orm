@@ -64,6 +64,20 @@ export function validateParams(params: any, type = 'search condition', field?: s
   }
 }
 
+/**
+ * Converts a `limit`/`offset`-like value to a non-negative integer, accepting numeric strings (e.g. from a query string).
+ * @internal
+ */
+export function validatePaginationValue(value: unknown, option: string): number {
+  const num = typeof value === 'string' && /^\d+$/.test(value) ? +value : value;
+
+  if (!Number.isSafeInteger(num) || (num as number) < 0) {
+    throw ValidationError.invalidPaginationValue(option, value);
+  }
+
+  return num as number;
+}
+
 /** @internal */
 export function validatePrimaryKey<T>(entity: EntityData<T>, meta: EntityMetadata<T>): void {
   const pkExists =

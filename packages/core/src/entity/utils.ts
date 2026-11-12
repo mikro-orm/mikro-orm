@@ -1,6 +1,7 @@
 import type { EntityKey, EntityMetadata, EntityProperty, PopulateHintOptions, PopulateOptions } from '../typings.js';
 import { LoadStrategy, PopulatePath, ReferenceKind } from '../enums.js';
 import { Utils } from '../utils/Utils.js';
+import { validatePaginationValue } from './validators.js';
 
 /**
  * Expands `books.perex` like populate to use `children` array instead of the dot syntax
@@ -133,7 +134,8 @@ export function applyPopulateHints<Entity>(
 
     for (const key of Object.keys(hint) as (keyof PopulateHintOptions)[]) {
       if (hint[key] != null) {
-        (entry as Record<string, unknown>)[key] = hint[key];
+        (entry as Record<string, unknown>)[key] =
+          key === 'limit' || key === 'offset' ? validatePaginationValue(hint[key], key) : hint[key];
       }
     }
   }

@@ -13,7 +13,13 @@ import { TransactionContext } from './utils/TransactionContext.js';
 import { isRaw, Raw } from './utils/RawQueryFragment.js';
 import { EntityFactory } from './entity/EntityFactory.js';
 import { type AssignOptions, EntityAssigner } from './entity/EntityAssigner.js';
-import { validateEmptyWhere, validateParams, validatePrimaryKey, validateProperty } from './entity/validators.js';
+import {
+  validateEmptyWhere,
+  validatePaginationValue,
+  validateParams,
+  validatePrimaryKey,
+  validateProperty,
+} from './entity/validators.js';
 import { type EntityRepository } from './entity/EntityRepository.js';
 import { EntityLoader, type EntityLoaderOptions } from './entity/EntityLoader.js';
 import { Reference } from './entity/Reference.js';
@@ -3679,6 +3685,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       opts.loggerContext,
       opts.logging,
     );
+
+    for (const key of ['limit', 'offset', 'first', 'last'] as const) {
+      if ((opts as Dictionary)[key] != null) {
+        (opts as Dictionary)[key] = validatePaginationValue((opts as Dictionary)[key], key);
+      }
+    }
 
     return opts;
   }
