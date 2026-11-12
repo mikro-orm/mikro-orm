@@ -170,6 +170,22 @@ test('populate does not remove items added in the meantime by someone else', asy
   expect(reloaded.items.getItems().map(i => i.id)).toEqual([1, 2, 3, 4]);
 });
 
+test('populate does not restore items removed in the meantime by someone else', async () => {
+  const user = await orm.em.findOneOrFail(User, 1, { populate: ['items'] });
+  user.items.add(orm.em.getReference(Item, 2));
+
+  const em2 = orm.em.fork();
+  const user2 = await em2.findOneOrFail(User, 1, { populate: ['items'] });
+  user2.items.remove(i => i.id === 3);
+  await em2.flush();
+
+  await orm.em.populate(user, ['items'], { filters: ['skip2'] });
+  await orm.em.flush();
+  orm.em.clear();
+  const reloaded = await orm.em.findOneOrFail(User, 1, { populate: ['items'] });
+  expect(reloaded.items.getItems().map(i => i.id)).toEqual([1, 2]);
+});
+
 test('populate keeps unflushed changes of a collection with references of several types', async () => {
   const user = await orm.em.findOneOrFail(User, 1, { populate: ['attachments'] });
   user.attachments.remove(user.attachments[0]);

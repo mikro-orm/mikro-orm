@@ -892,10 +892,10 @@ export class EntityLoader {
         continue;
       }
 
-      const lost = items.filter(item => !coll.contains(item, false));
       const kept = new Set(items);
+      // only the diff against the snapshot is restored, a missing snapshot means the collection was overridden via `set()`
       const known = snapshot && new Set(snapshot);
-      // only items known before were removed, a missing snapshot means the collection was overridden via `set()`
+      const lost = items.filter(item => !coll.contains(item, false) && !known?.has(item));
       const removed = coll.getItems(false).filter(item => !kept.has(item) && (!known || known.has(item)));
 
       if (lost.length > 0) {
