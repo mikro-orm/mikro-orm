@@ -122,23 +122,12 @@ describe.each(drivers)('numeric string limit and offset (%s)', (_, options) => {
     expect(orm.em.createQueryBuilder(Author).limit(undefined).offset(undefined).getParams()).toEqual([]);
   });
 
-  test.each([
-    ['abc'],
-    ['1; x'],
-    [''],
-    [' 1'],
-    ['1e1'],
-    ['-1'],
-    ['1.5'],
-    [NaN],
-    [Infinity],
-    [-1],
-    [1.5],
-    [{}],
-    [[1]],
-    [true],
-  ])('invalid value %j is rejected', async value => {
-    const err = /must be a non-negative integer/;
+  test('numbers are passed through as before', async () => {
+    expect(orm.em.createQueryBuilder(Author).limit(-1).offset(1.5).getParams()).toEqual([-1, 1.5]);
+  });
+
+  test.each(['abc', '1; x', '', ' 1', '1e1', '-1', '1.5'])('invalid string %j is rejected', async value => {
+    const err = /expected a number or a string with a non-negative integer/;
     await expect(orm.em.find(Author, {}, { limit: str(value) })).rejects.toThrow(ValidationError);
     await expect(orm.em.find(Author, {}, { limit: str(value) })).rejects.toThrow(err);
     await expect(orm.em.find(Author, {}, { offset: str(value) })).rejects.toThrow(err);

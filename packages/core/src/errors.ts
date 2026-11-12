@@ -245,7 +245,9 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   }
 
   static invalidPaginationValue(option: string, value: unknown): ValidationError {
-    return new ValidationError(`Invalid '${option}' value ${inspect(value)}, it must be a non-negative integer.`);
+    return new ValidationError(
+      `Invalid '${option}' value ${inspect(value)}, expected a number or a string with a non-negative integer.`,
+    );
   }
 }
 

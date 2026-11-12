@@ -2106,7 +2106,7 @@ export class QueryBuilder<
    */
   limit(limit?: number, offset = 0): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs> {
     this.ensureNotFinalized();
-    this.#state.limit = limit == null ? limit : validatePaginationValue(limit, 'limit');
+    this.#state.limit = validatePaginationValue(limit, 'limit');
 
     if (offset) {
       this.offset(offset);
@@ -2125,7 +2125,7 @@ export class QueryBuilder<
    */
   offset(offset?: number): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs> {
     this.ensureNotFinalized();
-    this.#state.offset = offset == null ? offset : validatePaginationValue(offset, 'offset');
+    this.#state.offset = validatePaginationValue(offset, 'offset');
     return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs>;
   }
 

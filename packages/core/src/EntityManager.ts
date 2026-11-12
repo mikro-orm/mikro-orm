@@ -3687,7 +3687,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     );
 
     for (const key of ['limit', 'offset', 'first', 'last'] as const) {
-      if ((opts as Dictionary)[key] != null) {
+      if (typeof (opts as Dictionary)[key] === 'string') {
         (opts as Dictionary)[key] = validatePaginationValue((opts as Dictionary)[key], key);
       }
     }

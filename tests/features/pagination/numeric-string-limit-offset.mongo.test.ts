@@ -34,6 +34,8 @@ describe('numeric string limit and offset (mongo)', () => {
   test('invalid values are rejected', async () => {
     const em = orm.em.fork();
     await expect(em.find(Author, {}, { limit: str('abc') })).rejects.toThrow(ValidationError);
-    await expect(em.find(Author, {}, { offset: str('-1') })).rejects.toThrow(/must be a non-negative integer/);
+    await expect(em.find(Author, {}, { offset: str('-1') })).rejects.toThrow(
+      /expected a number or a string with a non-negative integer/,
+    );
   });
 });
