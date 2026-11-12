@@ -22,6 +22,12 @@ class Item {
 }
 
 @Entity()
+class Video {
+  @PrimaryKey()
+  id!: number;
+}
+
+@Entity()
 class User {
   @PrimaryKey()
   id!: number;
@@ -34,6 +40,9 @@ class User {
 
   @OneToMany(() => Item, item => item.owner)
   owned = new Collection<Item>(this);
+
+  @ManyToMany({ entity: () => [Item, Video], pivotTable: 'attachables', discriminator: 'attachable', owner: true })
+  attachments = new Collection<Item | Video>(this);
 }
 
 let orm: MikroORM;
@@ -41,7 +50,7 @@ let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
     metadataProvider: ReflectMetadataProvider,
-    entities: [User, Item],
+    entities: [User, Item, Video],
     dbName: ':memory:',
   });
   await orm.schema.create();
@@ -50,7 +59,14 @@ beforeAll(async () => {
 beforeEach(async () => {
   await orm.schema.clear();
   const items = [1, 2, 3].map(id => orm.em.create(Item, { id, name: `${id}` }));
-  orm.em.create(User, { id: 1, name: 'Foo', items: [items[0], items[2]], owned: [items[0], items[2]] });
+  orm.em.create(Video, { id: 5 });
+  orm.em.create(User, {
+    id: 1,
+    name: 'Foo',
+    items: [items[0], items[2]],
+    owned: [items[0], items[2]],
+    attachments: [items[0]],
+  });
   await orm.em.flush();
   orm.em.clear();
 });
@@ -107,6 +123,14 @@ test.each(['items', 'owned'] as const)(
     expect(ids.sort()).toEqual([1, 2, 3]);
   },
 );
+
+test('populate keeps unflushed changes of a collection with references of several types', async () => {
+  const user = await orm.em.findOneOrFail(User, 1, { populate: ['attachments'] });
+  user.attachments.remove(user.attachments[0]);
+  user.attachments.add(orm.em.getReference(Video, 5));
+  await orm.em.populate(user, ['attachments']);
+  expect(user.attachments.getItems().map(i => i.id)).toEqual([5]);
+});
 
 test('populate does not touch a readonly collection changed via propagation', async () => {
   const user = await orm.em.findOneOrFail(User, 1);

@@ -861,11 +861,20 @@ export class EntityLoader {
       .map(e => e[field] as Collection<AnyEntity>)
       .filter(coll => !options.refresh && Utils.isCollection(coll) && coll.isDirty())
       .map(coll => [coll, coll.getItems(false)] as const);
-    const references = dirty.flatMap(([, items]) => items).filter(item => !helper(item).__initialized);
+    // grouped by type, as a polymorphic collection can hold references of several entity types
+    const references = new Map<EntityMetadata, AnyEntity[]>();
 
-    if (references.length > 0 && !populate.field.includes(':')) {
-      // loading the references directly keeps an initialized collection from being reloaded
-      await this.populateScalar(prop.targetMeta!, Utils.unique(references), {
+    for (const [, items] of populate.field.includes(':') ? [] : dirty) {
+      for (const item of items.filter(i => !helper(i).__initialized)) {
+        const group = references.get(helper(item).__meta.root) ?? [];
+        group.push(item);
+        references.set(helper(item).__meta.root, group);
+      }
+    }
+
+    // loading the references directly keeps an initialized collection from being reloaded
+    for (const [meta, items] of references) {
+      await this.populateScalar(meta, Utils.unique(items), {
         ...options,
         where: {},
         populateWhere: undefined,
@@ -878,7 +887,7 @@ export class EntityLoader {
     for (const [coll, items] of dirty) {
       const lost = items.filter(item => !coll.contains(item, false));
 
-      // partially loaded collections can be readonly, as well as those that were not reloaded
+      // partially loaded collections can be readonly
       if (lost.length > 0 && !coll.isPartial()) {
         coll.add(lost);
       }
