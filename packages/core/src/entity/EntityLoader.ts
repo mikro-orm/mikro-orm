@@ -332,6 +332,7 @@ export class EntityLoader {
     if (prop.kind === ReferenceKind.MANY_TO_MANY && this.#driver.getPlatform().usesPivotTable()) {
       const pivotOrderBy = QueryHelper.mergeOrderBy<Entity>(mergedOrderBy, prop.orderBy, prop.targetMeta?.orderBy);
       const res = await this.findChildrenFromPivotTable<Entity>(filtered, prop, options, pivotOrderBy, populate, !!ref);
+      await this.populateDirtyItems<Entity>(filtered, prop, options, !!ref);
       return Utils.flatten(res);
     }
 
@@ -359,8 +360,36 @@ export class EntityLoader {
     }
 
     this.initializeCollections<Entity>(filtered, prop, field, items, customOrder, isPartial, hasLimit);
+    await this.populateDirtyItems<Entity>(filtered, prop, options, !!(ref || prop.mapToPk));
 
     return items;
+  }
+
+  /**
+   * hydrating a dirty collection keeps its unflushed items, those can be uninitialized references
+   */
+  private async populateDirtyItems<Entity extends object>(
+    filtered: Entity[],
+    prop: EntityProperty<Entity>,
+    options: Required<EntityLoaderOptions<Entity>>,
+    ref: boolean,
+  ): Promise<void> {
+    if (ref || ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
+      return;
+    }
+
+    const references = filtered
+      .flatMap(e => (e[prop.name] as Collection<AnyEntity>).getItems(false))
+      .filter(item => !helper(item).__initialized);
+
+    if (references.length > 0) {
+      await this.populateScalar(prop.targetMeta!, Utils.unique(references), {
+        ...options,
+        where: {},
+        populateWhere: undefined,
+        fields: this.buildFields(options.fields, prop),
+      } as any);
+    }
   }
 
   private async populateScalar<Entity extends object>(
@@ -1221,7 +1250,16 @@ export class EntityLoader {
     ref?: string | boolean,
   ): Entity[] {
     if (options.refresh) {
-      return entities.filter(e => e[field]);
+      const filtered = entities.filter(e => e[field]);
+
+      // refreshing drops the unflushed changes, hydrating a dirty collection would keep them
+      for (const e of filtered) {
+        if (Utils.isCollection(e[field])) {
+          (e[field] as unknown as Collection<AnyEntity>).setDirty(false);
+        }
+      }
+
+      return filtered;
     }
 
     return entities.filter(

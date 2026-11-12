@@ -657,6 +657,9 @@ export class Collection<T extends object, O extends object = object> {
    * @internal
    */
   hydrate(items: T[], forcePropagate?: boolean, partial?: boolean, readonly?: boolean): void {
+    const current = this.#dirty && !partial ? [...this.#items] : undefined;
+    const snapshot = this.#snapshot;
+
     for (let i = 0; i < this.#items.size; i++) {
       delete this[i];
     }
@@ -667,6 +670,14 @@ export class Collection<T extends object, O extends object = object> {
     this.#count = 0;
     this.add(items);
     this.takeSnapshot(forcePropagate);
+
+    // keep the changes not flushed yet
+    if (current && snapshot) {
+      this.remove(snapshot.filter(item => !current.includes(item)));
+      this.add(current.filter(item => !snapshot.includes(item)));
+    } else if (current) {
+      this.set(current);
+    }
 
     if (readonly) {
       this.#readonly = true;
