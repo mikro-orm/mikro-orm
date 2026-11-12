@@ -45,7 +45,7 @@ After the discovery process ends, all [metadata will be cached](./metadata-cache
 
 :::caution Experimental
 
-The TypeScript 7 API is still in beta and may change.
+This provider is new and may still change. It requires TypeScript 7.1 or newer.
 
 :::
 
