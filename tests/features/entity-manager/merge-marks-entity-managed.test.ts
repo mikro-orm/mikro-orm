@@ -104,3 +104,53 @@ test('cascading merge still re-merges related managed entities', async () => {
   expect(queries.filter(q => q.includes('update')).length).toBe(2);
   expect(queries.some(q => q.includes('insert'))).toBe(false);
 });
+
+test('em.merge() with cascade: false marks the entity as managed', async () => {
+  const em = orm.em.fork();
+  const author = em.create(Author, { id: 1, name: 'a' }, { persist: false });
+  const book = em.create(Book, { id: 1, title: 'b', author }, { persist: false });
+
+  em.merge(book, { cascade: false });
+
+  expect(wrap(book).isManaged()).toBe(true);
+  expect(wrap(author).isManaged()).toBe(false);
+  const identityMap = em.getUnitOfWork().getIdentityMap().values();
+  expect(identityMap).toContain(book);
+  expect(identityMap).not.toContain(author);
+});
+
+test('merged entity serializes as a PK when nested and not populated', async () => {
+  const em = orm.em.fork();
+  const author = em.create(Author, { id: 1, name: 'a' }, { persist: false });
+  em.merge(author);
+  const book = em.create(Book, { id: 1, title: 'b', author }, { persist: false });
+
+  expect(wrap(book).toObject()).toEqual({ id: 1, title: 'b', author: 1 });
+});
+
+test('merging an already merged entity again keeps its pending changes', async () => {
+  await orm.em.fork().insert(Author, { id: 5, name: 'x' });
+
+  const em = orm.em.fork();
+  const a = em.create(Author, { id: 5, name: 'x' }, { persist: false });
+  em.merge(a);
+  a.name = 'y';
+  em.merge(a);
+  await em.flush();
+
+  const fresh = await orm.em.fork().findOneOrFail(Author, 5);
+  expect(fresh.name).toBe('y');
+});
+
+test('merged entity can be removed after being persisted', async () => {
+  await orm.em.fork().insert(Author, { id: 5, name: 'x' });
+
+  const em = orm.em.fork();
+  const a = em.create(Author, { id: 5, name: 'x' }, { persist: false });
+  em.merge(a);
+  em.persist(a);
+  em.remove(a);
+  await em.flush();
+
+  expect(await orm.em.fork().count(Author)).toBe(0);
+});
