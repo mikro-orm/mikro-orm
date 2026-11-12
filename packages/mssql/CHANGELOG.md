@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.9](https://github.com/mikro-orm/mikro-orm/compare/v7.2.8...v7.2.9) (2026-11-12)
+
+### Bug Fixes
+
+- **mssql:** raise the default request timeout to 60s ([#8647](https://github.com/mikro-orm/mikro-orm/issues/8647)) ([7ac45dc](https://github.com/mikro-orm/mikro-orm/commit/7ac45dce633e68bbaa0b35db4f1c62e149387313))
+
 ## [7.2.8](https://github.com/mikro-orm/mikro-orm/compare/v7.2.7...v7.2.8) (2026-11-06)
 
 ### Bug Fixes

@@ -4,6 +4,8 @@ import {
   defineEntity,
   EventArgs,
   EntityData,
+  Config,
+  DefineConfig,
   EntityDTO,
   EntityMetadata,
   EntityName,
@@ -1515,6 +1517,44 @@ describe('defineEntity', () => {
     expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
   });
 
+  it('should define entity with double property', () => {
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: p => ({
+        id: p.integer().primary().autoincrement(),
+        rate: p.double(),
+        ratio: p.double('number'),
+        precise: p.double('string'),
+      }),
+    });
+
+    type IFoo = InferEntity<typeof Foo>;
+    assert<
+      IsExact<
+        Omit<IFoo, typeof IndexHints>,
+        {
+          id: Opt<number>;
+          rate: number;
+          ratio: number;
+          precise: string;
+          [PrimaryKeyProp]?: 'id';
+        }
+      >
+    >(true);
+
+    const FooSchema = new EntitySchema({
+      name: 'Foo',
+      properties: {
+        id: { type: types.integer, primary: true, autoincrement: true },
+        rate: { type: new types.double() },
+        ratio: { type: new types.double('number') },
+        precise: { type: new types.double('string') },
+      },
+    });
+
+    expect(Foo.meta).toEqual(asSnapshot(FooSchema.meta));
+  });
+
   it('should define entity with unique constraint', () => {
     const Category = defineEntity({
       name: 'Category',
@@ -1733,6 +1773,19 @@ describe('defineEntity', () => {
 });
 
 describe('PropertyOptionsBuilder', () => {
+  it('should accept the start value as a short form of the sequence option', () => {
+    const Foo = defineEntity({
+      name: 'Foo',
+      properties: p => ({
+        id: p.integer().primary().sequence(1000),
+        counter: p.integer().autoincrement().sequence({ startWith: 5, incrementBy: 2 }),
+      }),
+    });
+
+    expect(Foo.meta.properties.id.sequence).toEqual({ startWith: 1000 });
+    expect(Foo.meta.properties.counter.sequence).toEqual({ startWith: 5, incrementBy: 2 });
+  });
+
   it('should define complex property options (1)', () => {
     const Foo = defineEntity({
       name: 'Foo',
@@ -1753,6 +1806,7 @@ describe('PropertyOptionsBuilder', () => {
         extra: p.string().extra('VIRTUAL'),
         ignoreChanges: p.string().ignoreSchemaChanges('type', 'extra', 'default'),
         collated: p.string().collation('utf8mb4_unicode_ci'),
+        counter: p.integer().autoincrement().sequence({ startWith: 100, incrementBy: 2 }),
       }),
     });
 
@@ -1772,6 +1826,7 @@ describe('PropertyOptionsBuilder', () => {
         extra: { type: types.string, extra: 'VIRTUAL' },
         ignoreChanges: { type: types.string, ignoreSchemaChanges: ['type', 'extra', 'default'] },
         collated: { type: types.string, collation: 'utf8mb4_unicode_ci' },
+        counter: { type: types.integer, autoincrement: true, sequence: { startWith: 100, incrementBy: 2 } },
       },
     });
 
@@ -2652,6 +2707,73 @@ describe('ManyToOneOptionsBuilder', () => {
 
     type BookFoDTO = EntityDTO<InferEntity<typeof BookFo>>;
     assert<IsExact<BookFoDTO, { id: number; title: string; author: { id: number } }>>(true);
+  });
+
+  it('should support forceUndefined option', () => {
+    const Author = defineEntity({
+      name: 'FuAuthor',
+      forceUndefined: true,
+      properties: {
+        id: p.integer().primary(),
+        name: p.string().nullable(),
+        bio: p.string().strictNullable(),
+        tags: p.array().nullable(),
+        nick: p.string().nullable().ref(),
+        email: p.string().nullable().default('n/a'),
+        secret: p.string().nullable().hidden(),
+        slug: p.string().nullable().ref().default('n/a'),
+      },
+    });
+
+    type Author = InferEntity<typeof Author>;
+    assert<IsExact<Author['name'], string | undefined>>(true);
+    assert<IsExact<Author['bio'], string | undefined>>(true);
+    assert<IsExact<Author['tags'], string[] | undefined>>(true);
+    assert<IsExact<Author['nick'], ScalarReference<string | undefined>>>(true);
+    assert<IsExact<Author['email'], Opt<string> | undefined>>(true);
+    assert<IsExact<Author['secret'], Hidden<string> | undefined>>(true);
+    assert<IsExact<Author['slug'], Opt<ScalarReference<string | undefined>>>>(true);
+    assert<IsExact<Author[typeof Config], DefineConfig<{ forceUndefined: true }> | undefined>>(true);
+
+    // relations and refs drop `null` too
+    const Book = defineEntity({
+      name: 'FuBook',
+      forceUndefined: true,
+      properties: p => ({
+        id: p.integer().primary(),
+        author: () => p.manyToOne(Author).nullable(),
+        coAuthor: () => p.manyToOne(Author).ref().nullable(),
+      }),
+    });
+
+    type Book = InferEntity<typeof Book>;
+    assert<IsExact<Book['author'], Author | undefined>>(true);
+    assert<IsExact<Book['coAuthor'], Ref<Author> | undefined>>(true);
+
+    // inherited from the base entity's `[Config]`
+    const Child = defineEntity({
+      name: 'FuChild',
+      extends: Author,
+      properties: {
+        alias: p.string().nullable(),
+      },
+    });
+
+    type Child = InferEntity<typeof Child>;
+    assert<IsExact<Child['alias'], string | undefined>>(true);
+    assert<IsExact<Child['name'], string | undefined>>(true);
+
+    // without the option, `null` stays in the union
+    const Plain = defineEntity({
+      name: 'FuPlain',
+      properties: {
+        id: p.integer().primary(),
+        name: p.string().nullable(),
+      },
+    });
+
+    type Plain = InferEntity<typeof Plain>;
+    assert<IsExact<Plain['name'], string | null | undefined>>(true);
   });
 });
 

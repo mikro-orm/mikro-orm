@@ -4,6 +4,7 @@ import type {
   DeferMode,
   Dictionary,
   EntityName,
+  EntityMetadata,
   EntityProperty,
   EntitySchemaWithMeta,
   ExtractDefineEntityProperties,
@@ -19,6 +20,7 @@ import type {
   RawQueryFragment,
   RoutineIgnoreField,
   Scalar,
+  SequenceOptions,
   Type,
 } from '@mikro-orm/core';
 import type { JoinType, QueryType } from './query/enums.js';
@@ -64,6 +66,8 @@ export interface Column {
   mappedType: Type<unknown>;
   unsigned?: boolean;
   autoincrement?: boolean;
+  /** applied only when the column is created, never diffed */
+  sequence?: SequenceOptions;
   nullable?: boolean;
   length?: number;
   precision?: number;
@@ -319,6 +323,16 @@ export interface IQueryBuilder<T> {
   scheduleFilterCheck(path: string): void;
   /** @internal */
   ensureTPTJoins(): void;
+  /** @internal */
+  addPolymorphicJoin(
+    prop: EntityProperty,
+    targetMeta: EntityMetadata,
+    ownerAlias: string,
+    alias: string,
+    type: JoinType,
+    path: string,
+    schema?: string,
+  ): void;
   withSchema(schema: string): this;
 }
 

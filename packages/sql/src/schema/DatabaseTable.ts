@@ -220,10 +220,13 @@ export class DatabaseTable {
         scale: prop.scale,
         default: prop.defaultRaw,
         enumItems:
-          prop.nativeEnumName || prop.items?.every(i => typeof i === 'string') ? (prop.items as string[]) : undefined,
+          prop.nativeEnumName || ((prop.enum || prop.array) && prop.items?.every(i => typeof i === 'string'))
+            ? (prop.items as string[])
+            : undefined,
         comment: prop.comment,
         collation: prop.collation,
         extra: prop.extra,
+        sequence: prop.sequence,
         ignoreSchemaChanges: prop.ignoreSchemaChanges,
       };
       this.#columns[field].unsigned ??= this.#columns[field].autoincrement;
@@ -1083,6 +1086,7 @@ export class DatabaseTable {
       nullable: column.nullable,
       primary: column.primary && persist,
       autoincrement: column.autoincrement,
+      sequence: column.sequence,
       fieldName: column.name,
       unsigned: column.unsigned,
       length: column.length,

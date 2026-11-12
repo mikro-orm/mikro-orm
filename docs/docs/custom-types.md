@@ -592,6 +592,20 @@ price1: string;
 price2: number;
 ```
 
+### DoubleType
+
+DoubleType represents a `double` column type. By default, it maps to a JS `number`, but you can force mapping to a `string` with its constructor (just like with the `DecimalType`). Without an explicit mode, it follows the declared property type.
+
+```ts
+@Property({ type: DoubleType })
+rate1: number;
+
+@Property({ type: new DoubleType('string') })
+rate2: string;
+```
+
+With `defineEntity`, use `p.double()` for `number` or `p.double('string')` for `string`.
+
 ### BlobType
 
 Blob type can be used to store binary data in the database.

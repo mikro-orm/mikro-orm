@@ -5,6 +5,7 @@ import {
   type EntityProperty,
   type EntitySchemaMetadata,
   ReferenceKind,
+  type SequenceOptions,
   types,
 } from '@mikro-orm/core';
 import { EntitySchemaSourceFile } from './EntitySchemaSourceFile.js';
@@ -172,6 +173,9 @@ export class DefineEntitySourceFile extends EntitySchemaSourceFile {
 
       if (key === 'enum') {
         builder += `(${options.items})`;
+      } else if (key === 'sequence') {
+        const sequence = options.sequence as SequenceOptions;
+        builder += `(${Object.keys(sequence).length === 1 && sequence.startWith != null ? sequence.startWith : this.serializeObject(sequence)})`;
       } else if (spreadOptions.has(key) && typeof params === 'string' && params.startsWith('[')) {
         builder += `(${params.slice(1, -1)})`;
       } else {

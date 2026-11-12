@@ -114,6 +114,8 @@ export type EntityOptions<T, E = T extends EntityClass<infer P> ? P : T> = {
   abstract?: boolean;
   /** Disables change tracking - such entities are ignored during flush. */
   readonly?: boolean;
+  /** Hydrate `null` values as `undefined` for this entity, overriding the global `forceUndefined` option. */
+  forceUndefined?: boolean;
   /** Marks entity as {@doclink virtual-entities | virtual}. This is set automatically when you use `expression` option (unless `view` is set). */
   virtual?: boolean;
   /**
@@ -214,6 +216,12 @@ export interface PropertyOptions<Owner> {
    * Explicitly specify the auto increment of the primary key.
    */
   autoincrement?: boolean;
+  /**
+   * Start value and increment of an autoincrement column. (SQL only)
+   * Applied only when the column is created (and by `orm.schema.clear()`), never diffed by the schema generator.
+   * `incrementBy` is not supported on MySQL, MariaDB and SQLite.
+   */
+  sequence?: SequenceOptions;
   /**
    * Add the property to the `returning` clause of inserts, updates and upserts, reloading the database value into the entity.
    */
@@ -754,6 +762,13 @@ export interface EnumOptions<T> extends PropertyOptions<T> {
   array?: boolean;
   /** for postgres, by default it uses text column with check constraint */
   nativeEnumName?: string;
+}
+
+export interface SequenceOptions {
+  /** The first value the autoincrement column generates. */
+  startWith?: number;
+  /** The step between generated values. Not supported on MySQL, MariaDB and SQLite. */
+  incrementBy?: number;
 }
 
 export interface PrimaryKeyOptions<T> extends PropertyOptions<T> {}

@@ -703,6 +703,17 @@ export type MigrationsOptions = {
    */
   allOrNothing?: boolean;
   /**
+   * Serialize concurrent `migrator.up()`/`migrator.down()` runs (e.g. several replicas migrating on start) with a
+   * database lock, held on a pooled connection of its own for the whole run (so `pool.max` needs to be at least 2).
+   * Supported on PostgreSQL, MySQL, MariaDB and MSSQL, ignored elsewhere.
+   * @default false
+   */
+  lock?: boolean;
+  /**
+   * How long to wait for the migration lock (in milliseconds) before failing. Waits indefinitely by default.
+   */
+  lockTimeout?: number;
+  /**
    * Allow dropping tables during schema diff.
    * @default true
    */
@@ -1082,7 +1093,7 @@ export interface Options<
   /**
    * Force `Date` values to be stored in UTC for datetime columns without timezone.
    * Works for MySQL (`datetime` type), PostgreSQL (`timestamp` type), and MSSQL (`datetime`/`datetime2` types).
-   * SQLite does this by default.
+   * SQLite does this by default. MySQL and MariaDB also get their session time zone set on every new connection.
    * @default true
    */
   forceUtcTimezone: boolean;

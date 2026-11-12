@@ -178,7 +178,7 @@
     "typescript": "7.0.2",
     "unplugin-swc": "2.0.0",
     "uuid": "14.0.3",
-    "vite": "8.3.7",
+    "vite": "8.3.8",
     "vitest": "5.1.0"
   },
   "resolutions": {

@@ -206,6 +206,22 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
           .withSchema(schema)
           .truncate()
           .execute();
+
+        // the counters of a TPT child's inherited columns (PK included) belong to the parent table
+        const props = meta.tptParent ? (meta.ownProps ?? []) : meta.props;
+
+        for (const prop of props.filter(prop => prop.autoincrement && prop.sequence?.startWith != null)) {
+          const sql = this.helper.getResetSequenceSQL(
+            meta.tableName,
+            this.getSchemaName(meta, { schema }),
+            prop.fieldNames[0],
+            prop.sequence!.startWith!,
+          );
+
+          if (sql) {
+            await this.execute(sql, { ctx: this.em?.getTransactionContext() });
+          }
+        }
       } catch (e) {
         if (this.platform.getExceptionConverter().convertException(e as Error) instanceof TableNotFoundException) {
           continue;
@@ -645,7 +661,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
       }
 
       // same boundary an empty line creates, for statements that have to start their own batch
-      if (groups[i]?.length > 0 && this.startsBatch(stmt)) {
+      if (groups[i]?.length > 0 && this.startsBatch(stmt, groups[i].at(-1)!)) {
         i++;
       }
 
@@ -698,8 +714,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     return parts;
   }
 
-  /** Whether the statement has to be the first one in a query batch, e.g. `create trigger` on MSSQL. */
-  protected startsBatch(_statement: string): boolean {
+  /** Whether the statement has to be the first one in a query batch, e.g. `create trigger` on MSSQL. `previous` is the line before it in the current batch. */
+  protected startsBatch(_statement: string, _previous: string): boolean {
     return false;
   }
 

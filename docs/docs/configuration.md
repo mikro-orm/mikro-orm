@@ -177,12 +177,12 @@ For SQL drivers, you can also use `driverOptions` to pass an existing Kysely ins
 
 ```ts
 // Reusing an existing Kysely instance
-const kysely = orm.em.getKysely();
+const db = orm.em.getKysely();
 
 MikroORM.init({
-  driverOptions: kysely,
+  driverOptions: db,
   // or as a function
-  driverOptions: () => kysely,
+  driverOptions: () => db,
 });
 
 // Using a custom Kysely dialect
@@ -403,6 +403,8 @@ MikroORM.init({
 
 The `forceUtcTimezone` option forces `Date` values to be stored in UTC for datetime columns without timezone. It works for MySQL (`datetime` type), PostgreSQL (`timestamp` type), and MSSQL (`datetime`/`datetime2` types). SQLite stores dates as numeric timestamps, which are inherently timezone-agnostic.
 
+With MySQL and MariaDB, the ORM also sets the session time zone (`SET time_zone`) on every new connection, so values the database computes on its own, such as `now()` or a `current_timestamp` column default, use the same time zone as values written from JavaScript. This applies to both `forceUtcTimezone` and the `timezone` option.
+
 This option is enabled by default since v7. To disable it and store dates in local timezone:
 
 ```ts
@@ -419,6 +421,21 @@ By default `null` values from nullable database columns are hydrated as `null`. 
 MikroORM.init({
   forceUndefined: true,
 });
+```
+
+The option can also be set per entity via `@Entity({ forceUndefined: true })`, `new EntitySchema({ forceUndefined: true })` or `defineEntity({ forceUndefined: true })`, which takes precedence over the global value. With decorators and `EntitySchema`, you declare the property types yourself, so type such properties as `name?: string` instead of `name?: string | null`. With `defineEntity`, the option also [drops `null` from the inferred types](./define-entity.md#nullable-properties-and-forceundefined).
+
+```ts
+@Entity({ forceUndefined: true })
+class Author {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  name?: string; // hydrated as `undefined` when the column is `NULL`
+
+}
 ```
 
 ## Initializing nullable properties to `null`
@@ -814,6 +831,8 @@ Full list of supported options:
 | `MIKRO_ORM_MIGRATIONS_TRANSACTIONAL`                        | `migrations.transactional`                     |
 | `MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS`                 | `migrations.disableForeignKeys`                |
 | `MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING`                       | `migrations.allOrNothing`                      |
+| `MIKRO_ORM_MIGRATIONS_LOCK`                                 | `migrations.lock`                              |
+| `MIKRO_ORM_MIGRATIONS_LOCK_TIMEOUT`                         | `migrations.lockTimeout`                       |
 | `MIKRO_ORM_MIGRATIONS_DROP_TABLES`                          | `migrations.dropTables`                        |
 | `MIKRO_ORM_MIGRATIONS_SAFE`                                 | `migrations.safe`                              |
 | `MIKRO_ORM_MIGRATIONS_EMIT`                                 | `migrations.emit`                              |
