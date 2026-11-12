@@ -792,35 +792,23 @@ export abstract class AbstractSqlDriver<
       const mapToPk = !hint.dataOnly && !!(ref || prop.mapToPk);
       // all rows of a result share their columns, so resolve the mapped props once per join path
       const joinedTargets = ((map.joinedTargets as Dictionary) ??= {});
-
-      if (!joinedTargets[path]) {
-        const aliased = (props: EntityProperty<T>[]) =>
-          props.flatMap(prop => prop.fieldNames.map(name => `${relationAlias}__${name}` as EntityKey<T>));
-        const targetProps = (
-          mapToPk
-            ? meta2.getPrimaryProps()
-            : meta2.props.filter(prop => this.platform.shouldHaveColumn(prop, (hint.children as any) || []))
+      const { targetProps, virtualProps } = (joinedTargets[path] ??= {
+        targetProps: (mapToPk
+          ? meta2.getPrimaryProps()
+          : meta2.props.filter(prop => this.platform.shouldHaveColumn(prop, (hint.children as any) || []))
         ).filter(prop =>
           prop.fieldNames.some(name => typeof root[`${relationAlias}__${name}` as EntityKey<T>] !== 'undefined'),
-        );
-        joinedTargets[path] = {
-          targetProps,
-          targetKeys: aliased(targetProps),
-          pkKeys: aliased(meta2.getPrimaryProps()),
-          virtualProps: meta2.props.filter(prop => !ref && prop.persist === false && prop.fieldNames),
-        };
-      }
-
-      const { targetProps, targetKeys, pkKeys, virtualProps } = joinedTargets[path] as {
-        targetProps: EntityProperty<T>[];
-        targetKeys: EntityKey<T>[];
-        pkKeys: EntityKey<T>[];
-        virtualProps: EntityProperty<T>[];
-      };
+        ),
+        virtualProps: meta2.props.filter(prop => !ref && prop.persist === false && prop.fieldNames),
+      }) as { targetProps: EntityProperty<T>[]; virtualProps: EntityProperty<T>[] };
 
       // If the primary key value for the relation is null, we know we haven't joined to anything
       // and therefore we don't return any record (since all values would be null)
-      const hasPK = pkKeys.every(key => root[key] != null);
+      const hasPK = meta2.getPrimaryProps().every(pk =>
+        pk.fieldNames.every(name => {
+          return root[`${relationAlias}__${name}` as EntityKey] != null;
+        }),
+      );
 
       if (!hasPK) {
         if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind)) {
@@ -831,8 +819,10 @@ export abstract class AbstractSqlDriver<
           result[prop.name] = null;
         }
 
-        for (const key of targetKeys) {
-          delete root[key];
+        for (const prop of targetProps) {
+          for (const name of prop.fieldNames) {
+            delete root[`${relationAlias}__${name}` as EntityKey<T>];
+          }
         }
 
         return;
@@ -864,8 +854,10 @@ export abstract class AbstractSqlDriver<
 
       // properties can be mapped to multiple places, e.g. when sharing a column in multiple FKs,
       // so we need to delete them after everything is mapped from given level
-      for (const key of targetKeys) {
-        delete root[key];
+      for (const prop of targetProps) {
+        for (const name of prop.fieldNames) {
+          delete root[`${relationAlias}__${name}` as EntityKey<T>];
+        }
       }
 
       if (mapToPk) {
