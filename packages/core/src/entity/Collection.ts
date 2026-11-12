@@ -207,6 +207,8 @@ export class Collection<T extends object, O extends object = object> {
     }
 
     if (options.store) {
+      // the stored items are only a subset, so the unflushed changes cannot be reapplied
+      this.#dirty = false;
       this.hydrate(items, true);
       this.setSerializationContext(options);
       this.populated();
@@ -671,7 +673,7 @@ export class Collection<T extends object, O extends object = object> {
     this.add(items);
     this.takeSnapshot(forcePropagate);
 
-    // keep the changes not flushed yet
+    // reapply the unflushed changes
     if (current && snapshot) {
       this.remove(snapshot.filter(item => !current.includes(item)));
       this.add(current.filter(item => !snapshot.includes(item)));
