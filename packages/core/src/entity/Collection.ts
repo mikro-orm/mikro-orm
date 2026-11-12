@@ -243,13 +243,23 @@ export class Collection<T extends object, O extends object = object> {
   ): number {
     entities = (Utils.asArray(entity) as (T | Reference<T>)[]).concat(entities);
     const unwrapped = entities.map(i => Reference.unwrapReference(i)) as T[];
-    this.validateModification(unwrapped);
+    const added = this.addItems(unwrapped);
     const em = this.getEntityManager(entities as T[], false);
+
+    if (this.property.kind === ReferenceKind.ONE_TO_MANY && em) {
+      em.persist(entities);
+    }
+
+    this.cancelOrphanRemoval(unwrapped);
+
+    return added;
+  }
+
+  private addItems(items: T[]): number {
+    this.validateModification(items);
     let added = 0;
 
-    for (const item of entities) {
-      const entity = Reference.unwrapReference(item) as T;
-
+    for (const entity of items) {
       if (!this.contains(entity, false)) {
         this.incrementCount(1);
         this[this.#items.size] = entity;
@@ -259,12 +269,6 @@ export class Collection<T extends object, O extends object = object> {
         this.propagate(entity, 'add');
       }
     }
-
-    if (this.property.kind === ReferenceKind.ONE_TO_MANY && em) {
-      em.persist(entities);
-    }
-
-    this.cancelOrphanRemoval(unwrapped);
 
     return added;
   }
@@ -665,7 +669,10 @@ export class Collection<T extends object, O extends object = object> {
     this.#partial = !!partial;
     this.#items.clear();
     this.#count = 0;
-    this.add(items);
+    // loaded items are not persisted, that would queue an auto-flush of their type on a read-only path
+    const unwrapped = items.map(i => Reference.unwrapReference(i));
+    this.addItems(unwrapped);
+    this.cancelOrphanRemoval(unwrapped);
     this.takeSnapshot(forcePropagate);
 
     if (readonly) {
