@@ -37,8 +37,8 @@ export interface MatchingOptions<T extends object, P extends string = never> ext
 }
 
 // Globally registered so the marker survives the CJS/ESM dual-package hazard
-// (see entitySymbol rationale in EntityHelper.ts and #7515/#7534). Installed on
-// the prototype rather than per instance, JSON payloads cannot forge it either way.
+// (see entitySymbol rationale in EntityHelper.ts and #7515/#7534). Lives on the
+// prototype; JSON payloads cannot produce symbol keys, so they cannot forge it.
 const collectionSymbol = Symbol.for('@mikro-orm/core/Collection');
 
 /** Represents a to-many relation (1:m or m:n) as an iterable, managed collection of entities. */
@@ -75,7 +75,8 @@ export class Collection<T extends object, O extends object = object> {
    * Creates new Collection instance, assigns it to the owning entity and sets the items to it (propagating them to their inverse sides)
    */
   static isCollection<T extends object, O extends object>(item: any): item is Collection<T, O> {
-    return item?.[collectionSymbol] === true;
+    // skipping primitives keeps the symbol lookup off their wrapper prototypes, which goes megamorphic
+    return typeof item === 'object' && item !== null && item[collectionSymbol] === true;
   }
 
   static create<T extends object, O extends object = object>(

@@ -21,8 +21,8 @@ import { NotFoundError } from '../errors.js';
 import { inspect } from '../logging/inspect.js';
 
 // Globally registered so the markers survive the CJS/ESM dual-package hazard
-// (see entitySymbol rationale in EntityHelper.ts and #7515/#7534). Installed on
-// the prototypes rather than per instance, JSON payloads cannot forge them either way.
+// (see entitySymbol rationale in EntityHelper.ts and #7515/#7534). Live on the
+// prototypes; JSON payloads cannot produce symbol keys, so they cannot forge them.
 const referenceSymbol = Symbol.for('@mikro-orm/core/Reference');
 const scalarReferenceSymbol = Symbol.for('@mikro-orm/core/ScalarReference');
 
@@ -104,7 +104,7 @@ export class Reference<T extends object> {
    * Checks whether the argument is instance of `Reference` wrapper.
    */
   static isReference<T extends object>(data: any): data is Reference<T> {
-    return data?.[referenceSymbol] === true;
+    return typeof data === 'object' && data !== null && data[referenceSymbol] === true;
   }
 
   /**
