@@ -479,6 +479,11 @@ export abstract class Platform {
   }
 
   /** Whether the platform supports the UNION WHERE optimization for multi-branch queries. */
+  /** Whether `em.find()`, `em.findOne()` and `em.count()` can reuse their compiled SQL between calls. */
+  supportsCompiledQueryCache(): boolean {
+    return false;
+  }
+
   supportsUnionWhere(): boolean {
     return false;
   }

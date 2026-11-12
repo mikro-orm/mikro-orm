@@ -1,3 +1,4 @@
+import { CompiledQueryCache } from './CompiledQueryCache.js';
 import type { NamingStrategy } from '../naming-strategy/NamingStrategy.js';
 import { NullCacheAdapter } from '../cache/NullCacheAdapter.js';
 import { type CacheAdapter, type SyncCacheAdapter } from '../cache/CacheAdapter.js';
@@ -159,6 +160,7 @@ const DEFAULTS = {
     useCoreBaseEntity: false,
   },
   metadataCache: {},
+  compiledQueryCache: { enabled: true, size: 1000 },
   resultCache: {
     adapter: MemoryCacheAdapter,
     expiration: 1000, // 1s
@@ -187,6 +189,7 @@ export class Configuration<
   readonly #driver!: D;
   readonly #platform!: ReturnType<D['getPlatform']>;
   readonly #cache = new Map<string, any>();
+  #compiledQueryCache?: CompiledQueryCache | false;
   readonly #extensions = new Map<string, () => unknown>();
   readonly #routines: Routine[] = [];
   #routinesNormalised = false;
@@ -303,6 +306,8 @@ export class Configuration<
   set<T extends keyof Options<D, EM>, U extends Options<D, EM>[T]>(key: T, value: U): void {
     this.#options[key] = value;
     this.sync();
+    // any option can change the generated SQL
+    this.#compiledQueryCache = undefined;
   }
 
   /**
@@ -425,6 +430,27 @@ export class Configuration<
   /**
    * Gets instance of CacheAdapter for result cache. (cached)
    */
+  /**
+   * Gets the compiled query cache, `undefined` when it is disabled or not supported by the driver.
+   *
+   * @internal
+   */
+  getCompiledQueryCache(): CompiledQueryCache | undefined {
+    if (this.#compiledQueryCache === undefined) {
+      const { enabled, size, verify } = this.#options.compiledQueryCache;
+      // the default `populateWhere` and the global result cache are not part of the cache key
+      const usable =
+        enabled &&
+        this.#platform.supportsCompiledQueryCache() &&
+        this.#options.populateWhere === PopulateHint.ALL &&
+        !this.#options.resultCache.global;
+      const env = globalThis.process?.env?.MIKRO_ORM_COMPILED_QUERY_CACHE_VERIFY;
+      this.#compiledQueryCache = usable && new CompiledQueryCache(size ?? 1000, verify ?? !!env);
+    }
+
+    return this.#compiledQueryCache || undefined;
+  }
+
   getResultCacheAdapter(): CacheAdapter {
     return this.getCachedService(this.#options.resultCache.adapter!, {
       expiration: this.#options.resultCache.expiration,
@@ -1429,6 +1455,27 @@ export interface Options<
      * @default { cacheDir: process.cwd() + '/temp' }
      */
     options?: Dictionary;
+  };
+  /**
+   * Cache of compiled SQL for `em.find()`, `em.findOne()` and `em.count()`. Calls of the same shape (entity,
+   * conditions, options) reuse the generated SQL and only bind their values. Queries are still executed every time.
+   */
+  compiledQueryCache: {
+    /**
+     * @default true
+     */
+    enabled?: boolean;
+    /**
+     * Maximum number of query shapes to keep.
+     * @default 1000
+     */
+    size?: number;
+    /**
+     * Compile every cached query the regular way too and throw if the results differ, for testing.
+     * Can be also enabled via `MIKRO_ORM_COMPILED_QUERY_CACHE_VERIFY` env var.
+     * @default false
+     */
+    verify?: boolean;
   };
   /**
    * Result cache configuration for query result caching.

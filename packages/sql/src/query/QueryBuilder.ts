@@ -29,6 +29,7 @@ import {
   LoadStrategy,
   LockMode,
   type LoggingOptions,
+  type QueryCompilation,
   type MetadataStorage,
   type PrimaryProperty,
   type ObjectQuery,
@@ -602,6 +603,7 @@ export class QueryBuilder<
   #helper?: QueryBuilderHelper;
   #query?: { sql?: string; params?: readonly unknown[]; qb: NativeQueryBuilder };
   #abortOptions?: AbortQueryOptions;
+  #compilation?: QueryCompilation;
 
   /** @internal */
   static createDefaultState<T extends object>(): QBState<T> {
@@ -2596,6 +2598,21 @@ export class QueryBuilder<
     }
 
     const query = this.toQuery();
+    const compilation = this.#compilation;
+
+    if (compilation) {
+      compilation.count = (compilation.count ?? 0) + 1;
+      compilation.sql = query.sql;
+      compilation.params = query.params;
+      compilation.state = { qb: this, method, mapResults: options.mapResults, mergeResults: options.mergeResults };
+
+      if (compilation.dry) {
+        // this instance is kept by the compiled query cache, so it must not hold on to the EntityManager
+        this.em = undefined;
+        return (method === 'all' ? [] : undefined) as U;
+      }
+    }
+
     const cacheKey: unknown[] = ['qb.execute', query.sql, query.params, method];
     // session context (row level security) scopes cached rows per tenant/role, avoiding cross-context serves
     const qbSessionContext = this.em?.getSessionContext();
@@ -2638,19 +2655,7 @@ export class QueryBuilder<
       return res as U;
     }
 
-    const joinedProps = this.driver.joinedProps(meta, this.#state.populate);
-    let mapped: EntityData<Entity>[];
-
-    if (Array.isArray(res)) {
-      const map: Dictionary = {};
-      mapped = res.map(r => this.driver.mapResult<Entity>(r as Entity, meta, this.#state.populate, this as any, map)!);
-
-      if (options.mergeResults && joinedProps.length > 0) {
-        mapped = this.driver.mergeJoinedResult(mapped, this.mainAlias.meta, joinedProps);
-      }
-    } else {
-      mapped = [this.driver.mapResult<Entity>(res, meta, joinedProps, this as any)!];
-    }
+    const mapped = this.mapRows(res, meta, options.mergeResults);
 
     if (method === 'get') {
       await this.em?.storeCache(this.#state.cache, cached!, mapped[0]);
@@ -2660,6 +2665,80 @@ export class QueryBuilder<
     await this.em?.storeCache(this.#state.cache, cached!, mapped);
 
     return mapped as U;
+  }
+
+  private mapRows(
+    res: EntityData<AnyEntity> | EntityData<AnyEntity>[],
+    meta: EntityMetadata<Entity>,
+    mergeResults?: boolean,
+  ): EntityData<Entity>[] {
+    const joinedProps = this.driver.joinedProps(meta, this.#state.populate);
+
+    if (!Array.isArray(res)) {
+      return [this.driver.mapResult<Entity>(res as Entity, meta, joinedProps, this as any)!];
+    }
+
+    const map: Dictionary = {};
+    const mapped = res.map(r =>
+      this.driver.mapResult<Entity>(r as Entity, meta, this.#state.populate, this as any, map)!,
+    );
+
+    if (mergeResults && joinedProps.length > 0) {
+      return this.driver.mergeJoinedResult(mapped, this.mainAlias.meta, joinedProps);
+    }
+
+    return mapped;
+  }
+
+  /** @internal */
+  setCompilation(compilation: QueryCompilation | undefined): void {
+    this.#compilation = compilation;
+  }
+
+  /**
+   * Executes SQL this query builder compiled earlier with other parameters, on behalf of another call.
+   * Mirrors `execute()`, taking everything call specific from `run` instead of the instance.
+   *
+   * @internal
+   */
+  async executeCompiled<U = any>(
+    sql: string,
+    params: readonly unknown[],
+    state: { method: 'all' | 'get' | 'run'; mapResults?: boolean; mergeResults?: boolean },
+    run: {
+      ctx?: Transaction;
+      em?: SqlEntityManager;
+      connectionType?: ConnectionType;
+      logging?: LoggingOptions;
+      abortOptions?: AbortQueryOptions;
+    },
+  ): Promise<U> {
+    const loggerContext = { id: run.em?.id, ...run.logging, ...run.abortOptions };
+    const write = run.ctx || !this.platform.getConfig().get('preferReadReplicas');
+    const conn = this.driver.getConnection(run.connectionType || (write ? 'write' : 'read'));
+    const sessionContext = run.ctx ? undefined : run.em?.getTransactionSessionContext();
+    let res: EntityData<AnyEntity>[];
+
+    try {
+      res = await (sessionContext
+        ? conn.transactional(trx => conn.execute(sql, params, state.method, trx, loggerContext), {
+            sessionContext,
+            loggerContext,
+          })
+        : conn.execute(sql, params, state.method, run.ctx, loggerContext));
+    } catch (e) {
+      throw this.driver.convertException(e as Error);
+    }
+
+    const meta = this.mainAlias.meta;
+
+    if (!state.mapResults || !meta) {
+      return res as unknown as U;
+    }
+
+    const mapped = this.mapRows(res, meta, state.mergeResults);
+
+    return (state.method === 'get' ? mapped[0] : mapped) as U;
   }
 
   /**

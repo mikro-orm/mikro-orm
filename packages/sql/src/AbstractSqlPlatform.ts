@@ -198,6 +198,10 @@ export abstract class AbstractSqlPlatform extends Platform {
     });
   }
 
+  override supportsCompiledQueryCache(): boolean {
+    return true;
+  }
+
   override supportsUnionWhere(): boolean {
     return true;
   }
