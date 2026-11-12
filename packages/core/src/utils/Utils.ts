@@ -1204,12 +1204,19 @@ export class Utils {
   static getObjectQueryKeys<T extends Dictionary, K extends string = Extract<keyof T, string>>(
     obj: T,
   ): (K | RawQueryFragmentSymbol)[] {
-    return Reflect.ownKeys(obj).filter(key => {
-      if (!Object.prototype.propertyIsEnumerable.call(obj, key)) {
-        return false;
-      }
+    const keys = Object.keys(obj) as (K | RawQueryFragmentSymbol)[];
+    const symbols = Object.getOwnPropertySymbols(obj);
 
-      return typeof key === 'string' || Raw.isKnownFragmentSymbol(key);
-    }) as (K | RawQueryFragmentSymbol)[];
+    if (symbols.length === 0) {
+      return keys;
+    }
+
+    for (const key of symbols) {
+      if (Raw.isKnownFragmentSymbol(key) && Object.prototype.propertyIsEnumerable.call(obj, key)) {
+        keys.push(key);
+      }
+    }
+
+    return keys;
   }
 }
