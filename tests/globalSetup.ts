@@ -26,7 +26,7 @@ const SETUP_DONE_KEY = '__DB_SETUP_DONE__';
 // Both cleanup passes below are destructive across the *whole* database server, which is shared
 // by every checkout/worktree on this machine. A concurrent run would have its in-flight databases
 // dropped from under it (`DROP DATABASE ... WITH (FORCE)` even kills the open connections), so we
-// register each run in a machine-wide directory and only clean up when we are the only run alive.
+// register each run in a machine-wide directory and only clean up fully when we are the only run alive.
 const RUN_REGISTRY_DIR = path.join(os.tmpdir(), 'mikro-orm-test-runs');
 
 // A pid file left behind by a `kill -9`d run is only trusted for this long — pids get recycled, so
@@ -365,7 +365,7 @@ export async function setup() {
   process.env.MIKRO_ORM_TEST_RUN_ID = `${process.pid}`;
 
   // Registering before counting is deliberate: if two runs start at the same instant they both see
-  // each other and both skip cleanup, which is the safe direction to lose the race in.
+  // each other and both skip the full cleanup, which is the safe direction to lose the race in.
   if (registerRun() > 0) {
     // eslint-disable-next-line no-console
     console.log('[globalSetup] another test run is in progress, cleaning up only databases of dead runs');
@@ -430,16 +430,17 @@ export async function teardown() {
 
   unregisterRun();
 
+  const baseline: Record<string, string[]> | undefined = (globalThis as any)[BASELINE_KEY];
+
   // Everything created since our baseline is assumed to be ours, which only holds while we are the
-  // only run — a run that started after us owns databases we never saw.
-  if (countOtherRuns() > 0) {
+  // only run — a run that started after us owns databases we never saw. No baseline means another
+  // run was active at setup, so only our run-tagged databases are known to be ours.
+  if (countOtherRuns() > 0 || !baseline) {
     // eslint-disable-next-line no-console
-    console.log('[globalTeardown] another test run is in progress, dropping only the databases of this run');
+    console.log('[globalTeardown] another test run was active, dropping only the databases of this run');
     await dropRunDbs('globalTeardown', pid => pid === process.pid);
     return;
   }
-
-  const baseline: Record<string, string[]> = (globalThis as any)[BASELINE_KEY] ?? {};
 
   await Promise.all(
     SQL_TARGETS.map(async t => {
