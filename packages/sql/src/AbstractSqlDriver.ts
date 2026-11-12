@@ -733,9 +733,11 @@ export abstract class AbstractSqlDriver<
           }
 
           // Clean up aliased columns for ALL targets (even non-matching ones)
+          const consumed = ((map.consumedKeys as Set<string>) ??= new Set());
+
           for (const p of targetProps) {
             for (const name of p.fieldNames) {
-              delete root[`${relationAlias}__${name}` as EntityKey<T>];
+              consumed.add(`${relationAlias}__${name}`);
             }
           }
         }
@@ -780,8 +782,9 @@ export abstract class AbstractSqlDriver<
           item = root[alias] as EntityValue<T>;
         }
 
-        prop.joinColumns.forEach(name => delete root[`${relationAlias}__${name}` as EntityKey<T>]);
-        prop.inverseJoinColumns.forEach(name => delete root[`${relationAlias}__${name}` as EntityKey<T>]);
+        const consumed = ((map.consumedKeys as Set<string>) ??= new Set());
+        prop.joinColumns.forEach(name => consumed.add(`${relationAlias}__${name}`));
+        prop.inverseJoinColumns.forEach(name => consumed.add(`${relationAlias}__${name}`));
 
         result[prop.name] ??= [] as EntityDataValue<T>;
 
@@ -796,12 +799,14 @@ export abstract class AbstractSqlDriver<
       // all rows of a result share their columns, so resolve the mapped props once per join path
       const joinedTargets = ((map.joinedTargets as Dictionary) ??= {});
       joinedTargets[path] ??= this.resolveJoinedTargets(meta2, hint, mapToPk, !!ref, relationAlias, root, map);
-      const { targetProps, targetKeys, pkKeys, virtualProps } = joinedTargets[path] as {
+      const targets = joinedTargets[path] as {
         targetProps: EntityProperty<T>[];
         targetKeys: string[][];
         pkKeys: string[];
         virtualProps: EntityProperty<T>[];
+        childrenResolved?: boolean;
       };
+      const { targetProps, targetKeys, pkKeys, virtualProps } = targets;
 
       // If the primary key value for the relation is null, we know we haven't joined to anything
       // and therefore we don't return any record (since all values would be null)
@@ -816,9 +821,10 @@ export abstract class AbstractSqlDriver<
           result[prop.name] = null;
         }
 
-        // resolve nested join paths too, so their columns are dropped from every row regardless of row order
-        if (hint.children?.length) {
+        // resolve nested join paths once, so their columns are dropped even when no row has this relation
+        if (hint.children?.length && !targets.childrenResolved) {
           this.mapJoinedProps({}, meta2, hint.children as any, qb, root, map, path);
+          targets.childrenResolved = true;
         }
 
         return;
@@ -863,6 +869,7 @@ export abstract class AbstractSqlDriver<
 
       const populateChildren = (hint.children as any) || [];
       this.mapJoinedProps(relationPojo, meta2, populateChildren, qb, root, map, path);
+      targets.childrenResolved = true;
     });
   }
 
