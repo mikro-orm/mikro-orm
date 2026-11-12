@@ -7,8 +7,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **oracledb:** keep fractional seconds on datetime values returned via OUT binds ([#8621](https://github.com/mikro-orm/mikro-orm/issues/8621)) ([0ab4a51](https://github.com/mikro-orm/mikro-orm/commit/0ab4a514f00be6de3ad1ec6586d2627b84df7a6c))
-
+- **oracledb:** keep fractional seconds on datetime values returned via OUT binds ([#8621](https://github.com/mikro-orm/mikro-orm/issues/8621)) ([0ab4a51](https://github.com/mikro-orm/mikro-orm/commit/0ab4a514f00be6de3ad1ec6586d2627b84df7a6c))
 
 ## [7.2.8](https://github.com/mikro-orm/mikro-orm/compare/v7.2.7...v7.2.8) (2026-11-06)
 

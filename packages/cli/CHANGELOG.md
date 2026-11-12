@@ -7,8 +7,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **cli:** resolve TS loaders from the project root ([#8669](https://github.com/mikro-orm/mikro-orm/issues/8669)) ([1b655f9](https://github.com/mikro-orm/mikro-orm/commit/1b655f9bcdf0b07e0922bb3a45e1f19fb28731bd))
-
+- **cli:** resolve TS loaders from the project root ([#8669](https://github.com/mikro-orm/mikro-orm/issues/8669)) ([1b655f9](https://github.com/mikro-orm/mikro-orm/commit/1b655f9bcdf0b07e0922bb3a45e1f19fb28731bd))
 
 ## [7.2.8](https://github.com/mikro-orm/mikro-orm/compare/v7.2.7...v7.2.8) (2026-11-06)
 
