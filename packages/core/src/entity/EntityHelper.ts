@@ -413,7 +413,7 @@ export class EntityHelper {
     }
 
     const platform = wrapped.__platform;
-    const serializedPrimaryKey = meta.serializedPrimaryKey ? meta.properties[meta.serializedPrimaryKey] : undefined;
+    const serializedPrimaryKey = meta.props.find(p => p.serializedPrimaryKey);
     const values: any[] = [];
 
     if (serializedPrimaryKey) {
