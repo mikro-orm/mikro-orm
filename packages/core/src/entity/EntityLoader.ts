@@ -868,9 +868,9 @@ export class EntityLoader {
 
     for (const [, items] of populate.field.includes(':') ? [] : dirty) {
       for (const item of items.filter(i => !helper(i).__initialized)) {
-        const group = references.get(helper(item).__meta.root) ?? [];
+        const group = references.get(helper(item).__meta) ?? [];
         group.push(item);
-        references.set(helper(item).__meta.root, group);
+        references.set(helper(item).__meta, group);
       }
     }
 
