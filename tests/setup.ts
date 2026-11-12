@@ -19,9 +19,7 @@ delete (globalThis as any).dynamicImportProvider;
 
 const cwd = process.cwd();
 
-// Most test files use fixed database names on servers shared by every checkout on the machine, so
-// the same file running in two checkouts at once would clobber its own schema. A machine-wide lock
-// per test file makes concurrent runs no different from one run, where a file never overlaps itself.
+// Machine-wide per-file lock, as fixed DB names on shared servers would clash when two checkouts run the same file.
 const LOCK_DIR = path.join(os.tmpdir(), 'mikro-orm-test-locks');
 const LOCK_TTL = 30 * 60 * 1000;
 const LOCK_KEY = Symbol.for('mikro-orm-tests:file-lock');

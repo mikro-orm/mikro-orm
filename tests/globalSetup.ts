@@ -43,16 +43,16 @@ function isRunning(pid: number): boolean {
   }
 }
 
-/** Registers this run and returns the pids of the other live runs, dropping entries of dead ones. */
-function registerRun(): number[] {
+/** Registers this run and returns the number of other live runs, dropping entries of dead ones. */
+function registerRun(): number {
   fs.mkdirSync(RUN_REGISTRY_DIR, { recursive: true });
   fs.writeFileSync(path.join(RUN_REGISTRY_DIR, `${process.pid}`), '');
 
-  return otherRuns();
+  return countOtherRuns();
 }
 
-function otherRuns(): number[] {
-  const others: number[] = [];
+function countOtherRuns(): number {
+  let others = 0;
 
   for (const name of fs.readdirSync(RUN_REGISTRY_DIR)) {
     const pid = Number(name);
@@ -65,7 +65,7 @@ function otherRuns(): number[] {
 
     try {
       if (Number.isInteger(pid) && isRunning(pid) && Date.now() - fs.statSync(file).mtimeMs < RUN_REGISTRY_TTL) {
-        others.push(pid);
+        others++;
       } else {
         fs.unlinkSync(file);
       }
@@ -262,8 +262,7 @@ async function dropExtras(t: SqlTarget, extras: string[]): Promise<string[]> {
 // names (e.g. GH-issue numbers) are still cleaned up by the diff-baseline teardown below.
 const STALE_TEST_DB_PATTERN = /^mikro[_-]orm[_-]test/i;
 
-// Names from `randomDbName()` embed the pid of the run that created them, so unlike the passes
-// above, these can be dropped while other runs are active: nobody else will ever use that name.
+// `randomDbName()` embeds the creating run's pid, so these are safe to drop while other runs are active.
 const RUN_DB_PATTERN = /^mikro_orm_test_r(\d+)_/;
 
 async function dropRunDbs(label: string, owned: (pid: number) => boolean): Promise<void> {
@@ -363,15 +362,14 @@ export async function setup() {
     }
   }
 
+  process.env.MIKRO_ORM_TEST_RUN_ID = `${process.pid}`;
+
   // Registering before counting is deliberate: if two runs start at the same instant they both see
   // each other and both skip cleanup, which is the safe direction to lose the race in.
-  process.env.MIKRO_ORM_TEST_RUN_ID = `${process.pid}`;
-  const others = registerRun();
-
-  if (others.length > 0) {
+  if (registerRun() > 0) {
     // eslint-disable-next-line no-console
     console.log('[globalSetup] another test run is in progress, cleaning up only databases of dead runs');
-    await dropRunDbs('globalSetup', pid => pid !== process.pid && !others.includes(pid));
+    await dropRunDbs('globalSetup', pid => !isRunning(pid));
     return;
   }
 
@@ -434,7 +432,7 @@ export async function teardown() {
 
   // Everything created since our baseline is assumed to be ours, which only holds while we are the
   // only run — a run that started after us owns databases we never saw.
-  if (otherRuns().length > 0) {
+  if (countOtherRuns() > 0) {
     // eslint-disable-next-line no-console
     console.log('[globalTeardown] another test run is in progress, dropping only the databases of this run');
     await dropRunDbs('globalTeardown', pid => pid === process.pid);
