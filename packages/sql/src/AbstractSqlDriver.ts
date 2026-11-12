@@ -597,7 +597,7 @@ export abstract class AbstractSqlDriver<
       // here we map the aliased results (cartesian product) to an object graph
       this.mapJoinedProps<T>(ret, meta, populate, qb, ret, map);
 
-      // drop the consumed aliased columns; a fresh object also avoids the slow dictionary mode left by deletes
+      // copy without the consumed aliased columns, deleting them would leave the row in slow dictionary mode
       if (populate.length > 0) {
         const clean = {} as Dictionary;
         const consumed = map.consumedKeys as Set<string> | undefined;
