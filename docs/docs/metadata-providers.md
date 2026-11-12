@@ -41,7 +41,7 @@ After the discovery process ends, all [metadata will be cached](./metadata-cache
 
 > You can implement custom cache adapter by implementing `CacheAdapter` interface.
 
-## TypeScriptApiMetadataProvider
+## TypeScriptMetadataProvider
 
 :::caution Experimental
 
@@ -54,10 +54,10 @@ Works like `TsMorphMetadataProvider`, but reads types through the TypeScript 7 A
 It is part of `@mikro-orm/core`, so `ts-morph` and `@mikro-orm/reflection` are not needed, only `typescript` 7.1+ has to be installed:
 
 ```ts
-import { TypeScriptApiMetadataProvider } from '@mikro-orm/core';
+import { TypeScriptMetadataProvider } from '@mikro-orm/core';
 
 await MikroORM.init({
-  metadataProvider: TypeScriptApiMetadataProvider,
+  metadataProvider: TypeScriptMetadataProvider,
   // ...
 });
 ```
