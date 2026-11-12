@@ -219,17 +219,25 @@ export function getWhereCondition<T extends object>(
 
   if (onConflictFields || where == null) {
     if (propIndex !== false && propIndex >= 0) {
-      let key = unique[propIndex];
+      // `onConflictFields` form one composite key, while the unique props are each unique on their own
+      const keys = onConflictFields
+        ? unique.filter(p => (data as Dictionary)[p] ?? (data as Dictionary)[p.substring(0, p.indexOf('.'))] != null)
+        : [unique[propIndex]];
+      where = {} as FilterQuery<T>;
 
-      if (key.includes('.')) {
-        const prop = meta.properties[key.substring(0, key.indexOf('.')) as EntityKey<T>];
+      for (const field of keys) {
+        let key = field;
 
-        if (prop) {
-          key = `${prop.fieldNames[0]}${key.substring(key.indexOf('.'))}`;
+        if (key.includes('.')) {
+          const prop = meta.properties[key.substring(0, key.indexOf('.')) as EntityKey<T>];
+
+          if (prop) {
+            key = `${prop.fieldNames[0]}${key.substring(key.indexOf('.'))}`;
+          }
         }
-      }
 
-      where = { [key]: getPropertyValue(data as Dictionary, unique[propIndex]) } as FilterQuery<T>;
+        (where as Dictionary)[key] = getPropertyValue(data as Dictionary, field);
+      }
     } else {
       for (const u of uniques) {
         if (Utils.asArray<EntityKey<T>>(u.properties).every(p => data[p] != null)) {
