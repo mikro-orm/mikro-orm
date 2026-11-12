@@ -20,6 +20,7 @@ import {
   type FilterValue,
   type FlatQueryOrderMap,
   type FlushMode,
+  type FormulaColumns,
   type GroupOperator,
   helper,
   inspect,
@@ -3905,16 +3906,17 @@ export class QueryBuilder<
       const schema = this.getSchema(this.mainAlias);
 
       // Per-column entries are unquoted (meant for `quote`), while `toString()` yields the quoted alias for plain template literals
-      // For TPT, use helper to resolve correct alias per property (inherited props use parent alias)
       const quotedMainAlias = this.platform.quoteIdentifier(this.mainAlias.aliasName).toString();
-      const columns = meta.createColumnMappingObject(
-        prop => this.helper.getTPTAliasForProperty(prop.name, this.mainAlias.aliasName),
-        quotedMainAlias,
-      );
+      let columns: FormulaColumns<Entity> | undefined;
 
       meta.props
         .filter(prop => prop.formula && (!prop.lazy || this.#state.flags.has(QueryFlag.INCLUDE_LAZY_FORMULAS)))
         .map(prop => {
+          // For TPT, use helper to resolve correct alias per property (inherited props use parent alias)
+          columns ??= meta.createColumnMappingObject(
+            p => this.helper.getTPTAliasForProperty(p.name, this.mainAlias.aliasName),
+            quotedMainAlias,
+          );
           const aliased = this.platform.quoteIdentifier(prop.fieldNames[0]);
           const table = this.helper.createFormulaTable(quotedMainAlias, meta, schema);
           return `${this.driver.evaluateFormula(prop.formula!, columns, table)} as ${aliased}`;

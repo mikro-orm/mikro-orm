@@ -596,6 +596,17 @@ export abstract class AbstractSqlDriver<
     if (qb) {
       // here we map the aliased results (cartesian product) to an object graph
       this.mapJoinedProps<T>(ret, meta, populate, qb, ret, map);
+
+      // the aliased columns were deleted, which left the row in slow dictionary mode
+      if (populate.length > 0) {
+        const clean = {} as Dictionary;
+
+        for (const key in ret) {
+          clean[key] = ret[key as EntityKey<T>];
+        }
+
+        return clean as EntityData<T>;
+      }
     }
 
     return ret;
