@@ -154,3 +154,25 @@ test('merged entity can be removed after being persisted', async () => {
 
   expect(await orm.em.fork().count(Author)).toBe(0);
 });
+
+test('em.assign() updates a merged entity in place when nested data match its PK', async () => {
+  await orm.em.fork().insert(Author, { id: 1, name: 'a' });
+  await orm.em.fork().insert(Book, { id: 1, title: 'b', author: 1 });
+
+  const em = orm.em.fork();
+  const author = em.create(Author, { id: 1, name: 'a' }, { persist: false });
+  em.merge(author);
+  const book = em.create(Book, { id: 1, title: 'b', author }, { persist: false });
+  em.merge(book);
+
+  em.assign(book, { author: { id: 1, name: 'a2' } });
+  expect(book.author).toBe(author);
+  expect(author.name).toBe('a2');
+
+  const mock = mockLogger(orm);
+  await em.flush();
+
+  const queries = mock.mock.calls.map(c => c[0]);
+  expect(queries.some(q => q.includes("update `author` set `name` = 'a2' where `id` = 1"))).toBe(true);
+  expect(queries.some(q => q.includes('insert'))).toBe(false);
+});
