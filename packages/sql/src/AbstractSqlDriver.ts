@@ -597,12 +597,15 @@ export abstract class AbstractSqlDriver<
       // here we map the aliased results (cartesian product) to an object graph
       this.mapJoinedProps<T>(ret, meta, populate, qb, ret, map);
 
-      // the aliased columns were deleted, which left the row in slow dictionary mode
+      // drop the consumed aliased columns; a fresh object also avoids the slow dictionary mode left by deletes
       if (populate.length > 0) {
         const clean = {} as Dictionary;
+        const consumed = map.consumedKeys as Set<string> | undefined;
 
         for (const key in ret) {
-          clean[key] = ret[key as EntityKey<T>];
+          if (!consumed?.has(key)) {
+            clean[key] = ret[key as EntityKey<T>];
+          }
         }
 
         return clean as EntityData<T>;
@@ -711,7 +714,7 @@ export abstract class AbstractSqlDriver<
             const tz = this.platform.getTimezone();
 
             for (const p of targetProps) {
-              this.mapJoinedProp(relationPojo, p, relationAlias, root, tz, meta2);
+              this.mapJoinedProp(relationPojo, p, this.aliasedKeys(p, relationAlias), root, tz, meta2);
             }
 
             // For TPT base targets, map child-specific fields and resolve the
@@ -792,23 +795,17 @@ export abstract class AbstractSqlDriver<
       const mapToPk = !hint.dataOnly && !!(ref || prop.mapToPk);
       // all rows of a result share their columns, so resolve the mapped props once per join path
       const joinedTargets = ((map.joinedTargets as Dictionary) ??= {});
-      const { targetProps, virtualProps } = (joinedTargets[path] ??= {
-        targetProps: (mapToPk
-          ? meta2.getPrimaryProps()
-          : meta2.props.filter(prop => this.platform.shouldHaveColumn(prop, (hint.children as any) || []))
-        ).filter(prop =>
-          prop.fieldNames.some(name => typeof root[`${relationAlias}__${name}` as EntityKey<T>] !== 'undefined'),
-        ),
-        virtualProps: meta2.props.filter(prop => !ref && prop.persist === false && prop.fieldNames),
-      }) as { targetProps: EntityProperty<T>[]; virtualProps: EntityProperty<T>[] };
+      joinedTargets[path] ??= this.resolveJoinedTargets(meta2, hint, mapToPk, !!ref, relationAlias, root, map);
+      const { targetProps, targetKeys, pkKeys, virtualProps } = joinedTargets[path] as {
+        targetProps: EntityProperty<T>[];
+        targetKeys: string[][];
+        pkKeys: string[];
+        virtualProps: EntityProperty<T>[];
+      };
 
       // If the primary key value for the relation is null, we know we haven't joined to anything
       // and therefore we don't return any record (since all values would be null)
-      const hasPK = meta2.getPrimaryProps().every(pk =>
-        pk.fieldNames.every(name => {
-          return root[`${relationAlias}__${name}` as EntityKey] != null;
-        }),
-      );
+      const hasPK = pkKeys.every(key => root[key as EntityKey] != null);
 
       if (!hasPK) {
         if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind)) {
@@ -817,12 +814,6 @@ export abstract class AbstractSqlDriver<
 
         if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
           result[prop.name] = null;
-        }
-
-        for (const prop of targetProps) {
-          for (const name of prop.fieldNames) {
-            delete root[`${relationAlias}__${name}` as EntityKey<T>];
-          }
         }
 
         return;
@@ -845,20 +836,12 @@ export abstract class AbstractSqlDriver<
 
       const tz = this.platform.getTimezone();
 
-      for (const prop of targetProps) {
-        this.mapJoinedProp(relationPojo, prop, relationAlias, root, tz, meta2);
+      for (let i = 0; i < targetProps.length; i++) {
+        this.mapJoinedProp(relationPojo, targetProps[i], targetKeys[i], root, tz, meta2);
       }
 
       // Handle TPT polymorphic child fields - map fields from child table aliases
       this.mapTPTChildFields(relationPojo, meta2, relationAlias, qb, root);
-
-      // properties can be mapped to multiple places, e.g. when sharing a column in multiple FKs,
-      // so we need to delete them after everything is mapped from given level
-      for (const prop of targetProps) {
-        for (const name of prop.fieldNames) {
-          delete root[`${relationAlias}__${name}` as EntityKey<T>];
-        }
-      }
 
       if (mapToPk) {
         const tmp = Object.values(relationPojo);
@@ -879,19 +862,58 @@ export abstract class AbstractSqlDriver<
   }
 
   /**
+   * Resolves the mapped props of a join path and their aliased column keys, once per query since all rows share
+   * their columns. The keys are registered as consumed instead of deleted from each row, as deletes are slow and
+   * a column can be shared by several FKs, so it needs to stay readable until the whole row is mapped.
+   */
+  private resolveJoinedTargets<T extends object>(
+    meta: EntityMetadata<T>,
+    hint: PopulateOptions<T>,
+    mapToPk: boolean,
+    ref: boolean,
+    relationAlias: string,
+    root: EntityData<T>,
+    map: Dictionary,
+  ) {
+    const targetProps = (
+      mapToPk
+        ? meta.getPrimaryProps()
+        : meta.props.filter(prop => this.platform.shouldHaveColumn(prop, (hint.children as any) || []))
+    ).filter(prop =>
+      prop.fieldNames.some(name => typeof root[`${relationAlias}__${name}` as EntityKey<T>] !== 'undefined'),
+    );
+    const targetKeys = targetProps.map(prop => this.aliasedKeys(prop, relationAlias));
+    const consumed = ((map.consumedKeys as Set<string>) ??= new Set());
+    targetKeys.forEach(keys => keys.forEach(key => consumed.add(key)));
+
+    return {
+      targetProps,
+      targetKeys,
+      pkKeys: meta.getPrimaryProps().flatMap(pk => this.aliasedKeys(pk, relationAlias)),
+      virtualProps: meta.props.filter(prop => !ref && prop.persist === false && prop.fieldNames),
+    };
+  }
+
+  private aliasedKeys(prop: EntityProperty, relationAlias: string): string[] {
+    return prop.fieldNames.map(name => `${relationAlias}__${name}`);
+  }
+
+  /**
    * Maps a single property from a joined result row into the relation pojo.
    * Handles polymorphic FKs, composite keys, Date parsing, and embedded objects.
    */
   private mapJoinedProp<T extends object>(
     relationPojo: EntityData<T>,
     prop: EntityProperty<T>,
-    relationAlias: string,
+    keys: string[],
     root: EntityData<T>,
     tz: string | undefined,
     meta: EntityMetadata<T>,
     options?: { deleteFromRoot?: boolean },
   ): void {
-    if (prop.fieldNames.every(name => typeof root[`${relationAlias}__${name}` as EntityKey<T>] === 'undefined')) {
+    const row = root as Dictionary;
+
+    if (keys.every(key => typeof row[key] === 'undefined')) {
       return;
     }
 
@@ -902,10 +924,8 @@ export abstract class AbstractSqlDriver<
     }
 
     if (prop.polymorphic && prop.kind !== ReferenceKind.EMBEDDED) {
-      const discriminatorAlias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
-      const discriminatorValue = root[discriminatorAlias] as string;
-      const pkFieldNames = prop.fieldNames.slice(1);
-      const pkValues = pkFieldNames.map(name => root[`${relationAlias}__${name}` as EntityKey<T>]);
+      const discriminatorValue = row[keys[0]] as string;
+      const pkValues = keys.slice(1).map(key => row[key]);
       const pkValue = pkValues.length === 1 ? pkValues[0] : pkValues;
 
       if (discriminatorValue != null && pkValue != null) {
@@ -915,15 +935,14 @@ export abstract class AbstractSqlDriver<
       }
     } else if (prop.fieldNames.length > 1) {
       // composite keys
-      const fk = prop.fieldNames.map(name => root[`${relationAlias}__${name}` as EntityKey<T>]) as Primary<T>[];
+      const fk = keys.map(key => row[key]) as Primary<T>[];
       // `mapFlatCompositePrimaryKey` collapses to a scalar when the target PK is a single prop
       // (e.g. a relation referencing a composite unique key on a single-PK target).
       const pk = Utils.mapFlatCompositePrimaryKey(fk, prop);
       const valid = Array.isArray(pk) ? pk.every(val => val != null) : pk != null;
       relationPojo[prop.name] = valid ? (pk as EntityDataValue<T>) : null;
     } else if (prop.runtimeType === 'Date') {
-      const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
-      const value = root[alias] as unknown;
+      const value = row[keys[0]] as unknown;
 
       if (
         tz &&
@@ -940,8 +959,7 @@ export abstract class AbstractSqlDriver<
         relationPojo[prop.name] = value as EntityDataValue<T>;
       }
     } else {
-      const alias = `${relationAlias}__${prop.fieldNames[0]}` as EntityKey<T>;
-      relationPojo[prop.name] = root[alias];
+      relationPojo[prop.name] = row[keys[0]];
 
       if (prop.kind === ReferenceKind.EMBEDDED && (prop.object || meta.embeddable)) {
         const item = parseJsonSafe(relationPojo[prop.name]);
@@ -958,8 +976,8 @@ export abstract class AbstractSqlDriver<
     }
 
     if (options?.deleteFromRoot) {
-      for (const name of prop.fieldNames) {
-        delete root[`${relationAlias}__${name}` as EntityKey<T>];
+      for (const key of keys) {
+        delete row[key];
       }
     }
   }
@@ -3071,9 +3089,17 @@ export abstract class AbstractSqlDriver<
       if (childAlias) {
         // Map fields using same filtering as joined loading, plus skip PKs
         for (const prop of currentMeta.ownProps!.filter(p => !p.primary && this.platform.shouldHaveColumn(p, []))) {
-          this.mapJoinedProp(relationPojo, prop, childAlias, root, tz, currentMeta as EntityMetadata<T>, {
-            deleteFromRoot: true,
-          });
+          this.mapJoinedProp(
+            relationPojo,
+            prop,
+            this.aliasedKeys(prop, childAlias),
+            root,
+            tz,
+            currentMeta as EntityMetadata<T>,
+            {
+              deleteFromRoot: true,
+            },
+          );
         }
       }
 
