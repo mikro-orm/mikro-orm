@@ -876,7 +876,7 @@ export class EntityLoader {
 
     // loading the references directly keeps an initialized collection from being reloaded
     for (const [meta, items] of references) {
-      await this.populateScalar(meta, Utils.unique(items), {
+      await this.populateScalar(meta, items, {
         ...options,
         where: {},
         populateWhere: undefined,
