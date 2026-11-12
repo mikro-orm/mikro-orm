@@ -594,20 +594,15 @@ export abstract class AbstractSqlDriver<
     }
 
     if (qb) {
-      const removed: string[] = [];
       // here we map the aliased results (cartesian product) to an object graph
-      this.mapJoinedProps<T>(ret, meta, populate, qb, ret, map, removed);
+      this.mapJoinedProps<T>(ret, meta, populate, qb, ret, map);
 
-      // rebuild without the consumed aliased columns, `delete` would switch the row to slow dictionary mode
-      if (removed.length > 0) {
+      // the aliased columns were deleted, which left the row in slow dictionary mode
+      if (populate.length > 0) {
         const clean = {} as Dictionary;
 
         for (const key in ret) {
-          const value = (ret as Dictionary)[key];
-
-          if (value !== undefined || !removed.includes(key)) {
-            clean[key] = value;
-          }
+          clean[key] = ret[key as EntityKey<T>];
         }
 
         return clean as EntityData<T>;
@@ -665,7 +660,6 @@ export abstract class AbstractSqlDriver<
     qb: AnyQueryBuilder<T>,
     root: EntityData<T>,
     map: Dictionary,
-    removed: string[],
     parentJoinPath?: string,
   ) {
     const joinedProps = this.joinedProps(meta, populate);
@@ -732,15 +726,13 @@ export abstract class AbstractSqlDriver<
             result[prop.name] = relationPojo as EntityDataValue<T>;
 
             const populateChildren = (hint.children as any) || [];
-            this.mapJoinedProps(relationPojo, meta2, populateChildren, qb, root, map, removed, targetPath);
+            this.mapJoinedProps(relationPojo, meta2, populateChildren, qb, root, map, targetPath);
           }
 
           // Clean up aliased columns for ALL targets (even non-matching ones)
           for (const p of targetProps) {
             for (const name of p.fieldNames) {
-              const key = `${relationAlias}__${name}`;
-              (root as Dictionary)[key] = undefined;
-              removed.push(key);
+              delete root[`${relationAlias}__${name}` as EntityKey<T>];
             }
           }
         }
@@ -785,11 +777,8 @@ export abstract class AbstractSqlDriver<
           item = root[alias] as EntityValue<T>;
         }
 
-        for (const name of [...prop.joinColumns, ...prop.inverseJoinColumns]) {
-          const key = `${relationAlias}__${name}`;
-          (root as Dictionary)[key] = undefined;
-          removed.push(key);
-        }
+        prop.joinColumns.forEach(name => delete root[`${relationAlias}__${name}` as EntityKey<T>]);
+        prop.inverseJoinColumns.forEach(name => delete root[`${relationAlias}__${name}` as EntityKey<T>]);
 
         result[prop.name] ??= [] as EntityDataValue<T>;
 
@@ -803,9 +792,10 @@ export abstract class AbstractSqlDriver<
       const mapToPk = !hint.dataOnly && !!(ref || prop.mapToPk);
       // all rows of a result share their columns, so resolve the mapped props once per join path
       const joinedTargets = ((map.joinedTargets as Dictionary) ??= {});
+
       if (!joinedTargets[path]) {
         const aliased = (props: EntityProperty<T>[]) =>
-          props.flatMap(prop => prop.fieldNames.map(name => `${relationAlias}__${name}`));
+          props.flatMap(prop => prop.fieldNames.map(name => `${relationAlias}__${name}` as EntityKey<T>));
         const targetProps = (
           mapToPk
             ? meta2.getPrimaryProps()
@@ -821,16 +811,16 @@ export abstract class AbstractSqlDriver<
         };
       }
 
-      const { targetProps, virtualProps, pkKeys, targetKeys } = joinedTargets[path] as {
+      const { targetProps, targetKeys, pkKeys, virtualProps } = joinedTargets[path] as {
         targetProps: EntityProperty<T>[];
+        targetKeys: EntityKey<T>[];
+        pkKeys: EntityKey<T>[];
         virtualProps: EntityProperty<T>[];
-        pkKeys: string[];
-        targetKeys: string[];
       };
 
       // If the primary key value for the relation is null, we know we haven't joined to anything
       // and therefore we don't return any record (since all values would be null)
-      const hasPK = pkKeys.every(key => (root as Dictionary)[key] != null);
+      const hasPK = pkKeys.every(key => root[key] != null);
 
       if (!hasPK) {
         if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind)) {
@@ -842,8 +832,7 @@ export abstract class AbstractSqlDriver<
         }
 
         for (const key of targetKeys) {
-          (root as Dictionary)[key] = undefined;
-          removed.push(key);
+          delete root[key];
         }
 
         return;
@@ -876,8 +865,7 @@ export abstract class AbstractSqlDriver<
       // properties can be mapped to multiple places, e.g. when sharing a column in multiple FKs,
       // so we need to delete them after everything is mapped from given level
       for (const key of targetKeys) {
-        (root as Dictionary)[key] = undefined;
-        removed.push(key);
+        delete root[key];
       }
 
       if (mapToPk) {
@@ -894,7 +882,7 @@ export abstract class AbstractSqlDriver<
       }
 
       const populateChildren = (hint.children as any) || [];
-      this.mapJoinedProps(relationPojo, meta2, populateChildren, qb, root, map, removed, path);
+      this.mapJoinedProps(relationPojo, meta2, populateChildren, qb, root, map, path);
     });
   }
 
