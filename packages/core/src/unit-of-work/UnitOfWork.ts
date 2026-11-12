@@ -107,6 +107,7 @@ export class UnitOfWork {
     }
 
     this.#identityMap.store(entity);
+    wrapped.__managed = true;
 
     // if visited is available, we are cascading, and need to be careful when resetting the entity data
     // as there can be some entity with already changed state that is not yet flushed

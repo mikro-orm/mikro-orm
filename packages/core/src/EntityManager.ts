@@ -2624,6 +2624,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       ? data
       : em.#entityFactory.create<Entity>(entityName, data as EntityData<Entity>, { merge: true, ...options });
     const visited = options.cascade ? (snapshotted ? new Set<Entity>() : undefined) : new Set([entity]);
+
+    // with `visited` set, the unit of work would skip the explicitly merged entity as if it was a cascaded one
+    if (!options.cascade) {
+      helper(entity).__managed = true;
+    }
+
     em.#unitOfWork.merge(entity, visited);
 
     return entity;
