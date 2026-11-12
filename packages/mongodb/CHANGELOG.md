@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.9](https://github.com/mikro-orm/mikro-orm/compare/v7.2.8...v7.2.9) (2026-11-12)
+
+### Bug Fixes
+
+* **core:** accept `FindOptions<T>` typed options in generic `find()` wrappers ([#8662](https://github.com/mikro-orm/mikro-orm/issues/8662)) ([932227e](https://github.com/mikro-orm/mikro-orm/commit/932227ea6669bf6e7ec359d4da3463765109c35e)), closes [#8655](https://github.com/mikro-orm/mikro-orm/issues/8655)
+* **mongo:** map property names to field names in the partial index `where` ([#8635](https://github.com/mikro-orm/mikro-orm/issues/8635)) ([1dd8144](https://github.com/mikro-orm/mikro-orm/commit/1dd8144f49f0b259873025a0aa629c23ee1e7765)), closes [#7593](https://github.com/mikro-orm/mikro-orm/issues/7593)
+* **mongo:** return the stored version from `em.upsert()` and `em.upsertMany()` ([#8623](https://github.com/mikro-orm/mikro-orm/issues/8623)) ([3af6998](https://github.com/mikro-orm/mikro-orm/commit/3af6998b33714cb438bc1fbe9ac94f8a112c2509)), closes [#8620](https://github.com/mikro-orm/mikro-orm/issues/8620)
+
+
 ## [7.2.8](https://github.com/mikro-orm/mikro-orm/compare/v7.2.7...v7.2.8) (2026-11-06)
 
 ### Bug Fixes

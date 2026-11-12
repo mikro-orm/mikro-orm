@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.9](https://github.com/mikro-orm/mikro-orm/compare/v7.2.8...v7.2.9) (2026-11-12)
+
+### Bug Fixes
+
+* **core:** accept `FindOptions<T>` typed options in generic `find()` wrappers ([#8662](https://github.com/mikro-orm/mikro-orm/issues/8662)) ([932227e](https://github.com/mikro-orm/mikro-orm/commit/932227ea6669bf6e7ec359d4da3463765109c35e)), closes [#8655](https://github.com/mikro-orm/mikro-orm/issues/8655)
+* **core:** clean up the serialization context when `toObject()` or `serialize()` throws ([#8636](https://github.com/mikro-orm/mikro-orm/issues/8636)) ([70ce74e](https://github.com/mikro-orm/mikro-orm/commit/70ce74e908472ed6943e04d97d2556e04ce4e010))
+* **core:** detect in-place mutations of Date properties on loaded entities ([#8675](https://github.com/mikro-orm/mikro-orm/issues/8675)) ([2a02c9f](https://github.com/mikro-orm/mikro-orm/commit/2a02c9f0f6edabd551181bdf23e80aa60ebb7588)), closes [#4391](https://github.com/mikro-orm/mikro-orm/issues/4391)
+* **core:** do not propagate STI sibling property checks to other subtypes ([#8688](https://github.com/mikro-orm/mikro-orm/issues/8688)) ([b0b2303](https://github.com/mikro-orm/mikro-orm/commit/b0b2303b98abccaabb976e2431c05c745d4c398d)), closes [#8687](https://github.com/mikro-orm/mikro-orm/issues/8687)
+* **core:** don't re-query empty inverse 1:1 relations on repeated populate ([#8627](https://github.com/mikro-orm/mikro-orm/issues/8627)) ([b074921](https://github.com/mikro-orm/mikro-orm/commit/b074921516d0e58ae190688986a4e81b34238323)), closes [#8624](https://github.com/mikro-orm/mikro-orm/issues/8624)
+* **core:** fill extra columns of a composite FK referencing non-PK target columns ([#8646](https://github.com/mikro-orm/mikro-orm/issues/8646)) ([14737a2](https://github.com/mikro-orm/mikro-orm/commit/14737a2349c834dbb39e1dc82bd5adf32fb2531c)), closes [#8641](https://github.com/mikro-orm/mikro-orm/issues/8641) [#8640](https://github.com/mikro-orm/mikro-orm/issues/8640)
+* **core:** keep unrefreshed properties in the snapshot on partial refresh ([#8633](https://github.com/mikro-orm/mikro-orm/issues/8633)) ([254f21f](https://github.com/mikro-orm/mikro-orm/commit/254f21f2450f69e9887b5de17e59237bcbff9eb6)), closes [#8632](https://github.com/mikro-orm/mikro-orm/issues/8632)
+* **core:** mark entities managed when merged via em.merge() ([#8666](https://github.com/mikro-orm/mikro-orm/issues/8666)) ([1969694](https://github.com/mikro-orm/mikro-orm/commit/1969694e0b522ca9c4b6b9067c6dc2a3bbac2a71))
+* **core:** reject unparseable date strings with ValidationError in assign() ([#8658](https://github.com/mikro-orm/mikro-orm/issues/8658)) ([092e0ba](https://github.com/mikro-orm/mikro-orm/commit/092e0ba5e03428ee57a4f60d63e57554899e9b19)), closes [#8656](https://github.com/mikro-orm/mikro-orm/issues/8656)
+* **core:** reuse managed entity in `findOne` when `fields` name an inline embeddable ([#8626](https://github.com/mikro-orm/mikro-orm/issues/8626)) ([6b79fad](https://github.com/mikro-orm/mikro-orm/commit/6b79fadc823d05fb80af98a2f4230847ba937018)), closes [#8625](https://github.com/mikro-orm/mikro-orm/issues/8625)
+* **core:** store the database value of the FK in the snapshot set during hydration ([#8661](https://github.com/mikro-orm/mikro-orm/issues/8661)) ([a868c92](https://github.com/mikro-orm/mikro-orm/commit/a868c92cb82051bf48ff44f8ca00e04eff3ea8e7)), closes [#8657](https://github.com/mikro-orm/mikro-orm/issues/8657)
+* **core:** treat copies of a custom type instance as the same type in polymorphic embeddables ([#8651](https://github.com/mikro-orm/mikro-orm/issues/8651)) ([10a0998](https://github.com/mikro-orm/mikro-orm/commit/10a0998390e36e5a3d22d4d997e234992e702267)), closes [#8650](https://github.com/mikro-orm/mikro-orm/issues/8650)
+* **core:** write a scalar composite FK value to the column referencing the target PK ([#8645](https://github.com/mikro-orm/mikro-orm/issues/8645)) ([c9cbb76](https://github.com/mikro-orm/mikro-orm/commit/c9cbb76ec85f817a6032dd25168e94f662a68789)), closes [#8644](https://github.com/mikro-orm/mikro-orm/issues/8644) [#7764](https://github.com/mikro-orm/mikro-orm/issues/7764) [#8640](https://github.com/mikro-orm/mikro-orm/issues/8640) [#8641](https://github.com/mikro-orm/mikro-orm/issues/8641)
+* **mongo:** return the stored version from `em.upsert()` and `em.upsertMany()` ([#8623](https://github.com/mikro-orm/mikro-orm/issues/8623)) ([3af6998](https://github.com/mikro-orm/mikro-orm/commit/3af6998b33714cb438bc1fbe9ac94f8a112c2509)), closes [#8620](https://github.com/mikro-orm/mikro-orm/issues/8620)
+
+### Performance Improvements
+
+* **core:** avoid deopt loop when cloning query builder state ([#8686](https://github.com/mikro-orm/mikro-orm/issues/8686)) ([20ea3cb](https://github.com/mikro-orm/mikro-orm/commit/20ea3cb2ad18f74238dab56eed456ff2aa0d3115))
+* **core:** keep scalar properties as plain data properties ([#8671](https://github.com/mikro-orm/mikro-orm/issues/8671)) ([e312571](https://github.com/mikro-orm/mikro-orm/commit/e312571bc5071a7df8ed41bbb48a416e739847b6)), closes [#6982](https://github.com/mikro-orm/mikro-orm/issues/6982)
+* **core:** skip re-snapshotting entities freshly mapped via em.map() ([#8676](https://github.com/mikro-orm/mikro-orm/issues/8676)) ([e5e655c](https://github.com/mikro-orm/mikro-orm/commit/e5e655cf02d5f0eb7c55356840b768e1418c4e3c))
+* **core:** use Object.keys in getObjectQueryKeys ([#8672](https://github.com/mikro-orm/mikro-orm/issues/8672)) ([c6c1903](https://github.com/mikro-orm/mikro-orm/commit/c6c1903d8512fc69b8d83fd4f2b6e15b30d26d13))
+
+
 ## [7.2.8](https://github.com/mikro-orm/mikro-orm/compare/v7.2.7...v7.2.8) (2026-11-06)
 
 ### Bug Fixes
