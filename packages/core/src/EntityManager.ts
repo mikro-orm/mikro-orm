@@ -2548,12 +2548,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    return this.merge<Entity>(entityName, data as EntityData<Entity>, {
-      convertCustomTypes: true,
-      refresh: true,
-      validate: false,
-      ...rest,
-    });
+    return this.mergeData<Entity>(
+      entityName,
+      data as EntityData<Entity>,
+      { convertCustomTypes: true, refresh: true, validate: false, ...rest },
+      true,
+    );
   }
 
   /**
@@ -2589,6 +2589,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       );
     }
 
+    return this.mergeData(entityName, data as EntityData<Entity> | EntityDTO<Entity>, options, false);
+  }
+
+  private mergeData<Entity extends object>(
+    entityName: EntityName<Entity>,
+    data: EntityData<Entity> | EntityDTO<Entity>,
+    options: MergeOptions,
+    driverData: boolean,
+  ): Entity {
     const em = options.disableContextResolution ? this : this.getContext();
     options = { ...options };
     options.schema ??= em.#schema;
@@ -2609,10 +2618,12 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const dataIsEntity = Utils.isEntity<Entity>(data);
+    // the factory snapshots a new entity from driver data like `em.find()` does, an empty `visited` skips the re-snapshot
+    const snapshotted = driverData && !entity;
     entity = dataIsEntity
       ? data
       : em.#entityFactory.create<Entity>(entityName, data as EntityData<Entity>, { merge: true, ...options });
-    const visited = options.cascade ? undefined : new Set([entity]);
+    const visited = options.cascade ? (snapshotted ? new Set<Entity>() : undefined) : new Set([entity]);
     em.#unitOfWork.merge(entity, visited);
 
     return entity;
