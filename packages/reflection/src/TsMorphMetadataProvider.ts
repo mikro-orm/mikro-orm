@@ -1,17 +1,14 @@
 import { ModuleKind, Project, type PropertyDeclaration, type SourceFile } from 'ts-morph';
 import {
-  AbstractTypeScriptMetadataProvider,
   type EntityMetadata,
   type EntityProperty,
-  MetadataError,
-  MetadataStorage,
   type ReflectedPropertyType,
-  Utils,
+  TypeScriptMetadataProvider,
 } from '@mikro-orm/core';
 import { fs } from '@mikro-orm/core/fs-utils';
 
 /** Metadata provider that uses ts-morph to infer property types from TypeScript source files or declaration files. */
-export class TsMorphMetadataProvider extends AbstractTypeScriptMetadataProvider {
+export class TsMorphMetadataProvider extends TypeScriptMetadataProvider {
   private project!: Project;
   private sources!: SourceFile[];
 
@@ -34,9 +31,7 @@ export class TsMorphMetadataProvider extends AbstractTypeScriptMetadataProvider 
 
     /* v8 ignore next */
     if (!cls) {
-      throw new MetadataError(
-        `Source class for entity ${meta.className} not found. Verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`,
-      );
+      throw this.sourceClassNotFound(meta);
     }
 
     const property = (cls.getInstanceProperty(prop.name) ??
@@ -80,9 +75,7 @@ export class TsMorphMetadataProvider extends AbstractTypeScriptMetadataProvider 
     const source = this.sources.find(s => s.getFilePath().endsWith(path));
 
     if (!source && validate) {
-      throw new MetadataError(
-        `Source file '${fs.relativePath(tsPath, baseDir)}' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`,
-      );
+      throw this.sourceFileNotFound(tsPath);
     }
 
     return source;
@@ -93,12 +86,9 @@ export class TsMorphMetadataProvider extends AbstractTypeScriptMetadataProvider 
   }
 
   private initProject(): void {
-    /* v8 ignore next */
-    const tsConfigFilePath = this.config.get('discovery').tsConfigPath ?? './tsconfig.json';
-
     try {
       this.project = new Project({
-        tsConfigFilePath: fs.normalizePath(process.cwd(), tsConfigFilePath),
+        tsConfigFilePath: this.getTsConfigPath(),
         skipAddingFilesFromTsConfig: true,
         compilerOptions: {
           strictNullChecks: true,
@@ -124,10 +114,7 @@ export class TsMorphMetadataProvider extends AbstractTypeScriptMetadataProvider 
     // metadata storage. We know the path thanks to the decorators being executed. In case we are running the TS code, the extension
     // will be already `.ts`, so no change is needed. `.js` files will get renamed to `.d.ts` files as they will be used as a source for
     // the ts-morph reflection.
-    for (const meta of Utils.values(MetadataStorage.getMetadata())) {
-      const metaPath = fs.normalizePath(meta.path);
-      /* v8 ignore next */
-      const path = /\.[jt]s$/.exec(metaPath) ? metaPath.replace(/\.js$/, '.d.ts') : `${metaPath}.d.ts`; // when entities are bundled, their paths are just their names
+    for (const path of this.getSourcePaths()) {
       const sourceFile = this.project.addSourceFileAtPathIfExists(path);
 
       if (sourceFile) {
