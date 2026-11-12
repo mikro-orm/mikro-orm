@@ -1338,7 +1338,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       options.orderBy = QueryHelper.mergeOrderBy(options.orderBy, meta.orderBy);
     }
 
-    const populateDisabled = options.populate === false;
     options.populate = (await em.preparePopulate(entityName, options)) as any;
     const cacheKey = em.cacheKey(entityName, options, 'em.findOne', where);
     const cached = await em.tryCache<Entity, Loaded<Entity, Hint, Fields, Excludes>>(
@@ -1393,15 +1392,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       convertCustomTypes: true,
     });
 
-    // an empty prepared hint stays empty when prepared again, but `populate: false` skipped the eager relations
-    const prepared = options.populate as unknown as PopulateOptions<Entity>[];
-    await em.lockAndPopulate(
-      meta,
-      entity,
-      where,
-      options,
-      prepared.length === 0 && !populateDisabled ? prepared : undefined,
-    );
+    await em.lockAndPopulate(meta, entity, where, options);
     await em.#unitOfWork.dispatchOnLoadEvent();
     await em.storeCache(options.cache, cached!, () => helper(entity).toPOJO());
 
@@ -3390,7 +3381,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     entity: T,
     where: FilterQuery<T>,
     options: FindOneOptions<T, P, F, E>,
-    preparedPopulate?: PopulateOptions<T>[],
   ): Promise<Loaded<T, P, F, E>> {
     if (!meta.virtual && options.lockMode === LockMode.OPTIMISTIC) {
       await this.lock(entity, options.lockMode, {
@@ -3399,7 +3389,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       });
     }
 
-    preparedPopulate ??= await this.preparePopulate<T>(meta.class, options);
+    const preparedPopulate = await this.preparePopulate<T>(meta.class, options);
     await this.#entityLoader.populate(meta.class, [entity], preparedPopulate, {
       ...(options as Dictionary),
       ...this.getPopulateWhere<T>(where as ObjectQuery<T>, options),
