@@ -17,16 +17,14 @@ import type { Reference } from '../entity/Reference.js';
 import { SerializationContext } from './SerializationContext.js';
 import { isRaw } from '../utils/RawQueryFragment.js';
 
-function isVisible<Entity extends object>(
-  meta: EntityMetadata<Entity>,
-  propName: EntityKey<Entity>,
-  ignoreFields: string[] = [],
-): boolean {
-  const prop = meta.properties[propName];
-  const visible = prop && !prop.hidden;
-  const prefixed = prop && !prop.primary && !prop.accessor && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
+function isPropertyVisible<Entity>(prop: EntityProperty<Entity>, ignoreFields?: readonly string[]): boolean {
+  const prefixed = !prop.primary && !prop.accessor && prop.name.startsWith('_'); // ignore prefixed properties, if it's not a PK
+  return !prop.hidden && !prefixed && !ignoreFields?.includes(prop.name);
+}
 
-  return visible && !prefixed && !ignoreFields.includes(propName);
+function isVisible<Entity extends object>(meta: EntityMetadata<Entity>, propName: EntityKey<Entity>): boolean {
+  const prop = meta.properties[propName];
+  return !!prop && isPropertyVisible(prop);
 }
 
 /** Converts entity instances to plain objects via `toObject()`, respecting populate hints, hidden fields, and serialization context. */
@@ -63,26 +61,24 @@ export class EntityTransformer {
       SerializationContext.propagate(root, entity, isVisible);
       const meta = wrapped.__meta;
       const ret = {} as Dictionary;
-      const props = new Set<EntityKey<Entity>>();
+      const pks = meta.serializedPrimaryKey && !meta.compositePK ? [meta.serializedPrimaryKey] : meta.primaryKeys;
+      const props: EntityProperty<Entity>[] = [];
 
-      if (meta.serializedPrimaryKey && !meta.compositePK) {
-        props.add(meta.serializedPrimaryKey);
-      } else {
-        meta.primaryKeys.forEach(pk => props.add(pk));
+      for (const pk of pks) {
+        if (meta.properties[pk]) {
+          props.push(meta.properties[pk]);
+        }
       }
 
+      // own keys that are not entity properties are never visible, so only the metadata properties are collected
       if (wrapped.isInitialized() || !wrapped.hasPrimaryKey()) {
-        const entityKeys = new Set(Object.keys(entity) as EntityKey<Entity>[]);
-
         for (const prop of meta.props) {
-          if (entityKeys.has(prop.name) || (prop.getter && prop.accessor === prop.name)) {
-            props.add(prop.name);
-          }
-        }
-
-        for (const key of entityKeys) {
-          if (!meta.properties[key as EntityKey]) {
-            props.add(key);
+          if (
+            (Object.prototype.propertyIsEnumerable.call(entity, prop.name) ||
+              (prop.getter && prop.accessor === prop.name)) &&
+            !pks.includes(prop.name)
+          ) {
+            props.push(prop);
           }
         }
       }
@@ -94,10 +90,10 @@ export class EntityTransformer {
         root.visited.add(entity);
       }
 
-      for (const prop of props) {
-        const visible = raw ? meta.properties[prop] : isVisible<Entity>(meta, prop, ignoreFields);
+      for (const property of props) {
+        const prop = property.name;
 
-        if (!visible) {
+        if (!raw && !isPropertyVisible(property, ignoreFields)) {
           continue;
         }
 
@@ -105,7 +101,7 @@ export class EntityTransformer {
 
         if (!raw) {
           const partiallyLoaded = root.isPartiallyLoaded(meta.class, prop);
-          const isPrimary = includePrimaryKeys && meta.properties[prop].primary;
+          const isPrimary = includePrimaryKeys && property.primary;
 
           if (!partiallyLoaded && !populated && !isPrimary) {
             continue;
@@ -140,7 +136,7 @@ export class EntityTransformer {
           continue;
         }
 
-        ret[this.propertyName(meta, prop, raw) as any] = val;
+        ret[this.propertyName(meta, property, raw)] = val;
       }
 
       if (!wrapped.isInitialized() && wrapped.hasPrimaryKey()) {
@@ -154,7 +150,7 @@ export class EntityTransformer {
           const populated = root.isMarkedAsPopulated(meta.class, prop.name);
 
           if (visible) {
-            ret[this.propertyName(meta, prop.name, raw)] = this.processProperty(
+            ret[this.propertyName(meta, prop, raw)] = this.processProperty(
               prop.getterName as EntityKey,
               entity,
               raw,
@@ -167,12 +163,7 @@ export class EntityTransformer {
           const populated = root.isMarkedAsPopulated(meta.class, prop.name);
 
           if (visible) {
-            ret[this.propertyName(meta, prop.name, raw) as any] = this.processProperty(
-              prop.name,
-              entity,
-              raw,
-              populated,
-            );
+            ret[this.propertyName(meta, prop, raw)] = this.processProperty(prop.name, entity, raw, populated);
           }
         }
       }
@@ -187,22 +178,22 @@ export class EntityTransformer {
 
   private static propertyName<Entity>(
     meta: EntityMetadata<Entity>,
-    prop: EntityKey<Entity>,
+    prop: EntityProperty<Entity>,
     raw?: boolean,
   ): EntityKey<Entity> {
     if (raw) {
-      return prop;
+      return prop.name;
     }
 
-    if (meta.properties[prop].serializedName) {
-      return meta.properties[prop].serializedName as EntityKey<Entity>;
+    if (prop.serializedName) {
+      return prop.serializedName as EntityKey<Entity>;
     }
 
-    if (meta.properties[prop].primary && meta.serializedPrimaryKey) {
+    if (prop.primary && meta.serializedPrimaryKey) {
       return meta.serializedPrimaryKey;
     }
 
-    return prop;
+    return prop.name;
   }
 
   private static processProperty<Entity extends object>(

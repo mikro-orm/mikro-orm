@@ -170,15 +170,16 @@ export class EntitySerializer {
       }
 
       if (wrapped.isInitialized() || !wrapped.hasPrimaryKey()) {
-        const entityKeys = new Set(Object.keys(entity) as EntityKey<T>[]);
-
         for (const prop of meta.props) {
-          if (entityKeys.has(prop.name) || (prop.getter && prop.accessor === prop.name)) {
+          if (
+            Object.prototype.propertyIsEnumerable.call(entity, prop.name) ||
+            (prop.getter && prop.accessor === prop.name)
+          ) {
             props.add(prop.name);
           }
         }
 
-        for (const key of entityKeys) {
+        for (const key of Object.keys(entity) as EntityKey<T>[]) {
           if (!meta.properties[key as EntityKey]) {
             props.add(key);
           }
