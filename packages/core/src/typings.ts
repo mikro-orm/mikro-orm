@@ -1841,7 +1841,13 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
       return !prop.inherited && prop.hydrate !== false && !discriminator && !prop.embedded && !onlyGetter;
     });
     this.trackingProps = this.hydrateProps.filter(prop => {
-      return !prop.getter && !prop.setter && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind);
+      return (
+        !prop.getter &&
+        !prop.setter &&
+        [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
+        (prop.inversedBy || prop.mappedBy) &&
+        !prop.mapToPk
+      );
     });
     this.selfReferencing = this.relations.some(prop => {
       return this.root.uniqueName === prop.targetMeta?.root.uniqueName;
@@ -1904,47 +1910,43 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
 
     this.definedProperties = this.trackingProps.reduce(
       (o, prop) => {
-        const hasInverse = (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const meta = this;
+        o[prop.name] = {
+          get() {
+            return this.__helper.__data[prop.name];
+          },
+          set(val: AnyEntity) {
+            const wrapped = this.__helper;
+            const hydrator = wrapped.hydrator as IHydrator;
+            const entity = Reference.unwrapReference(val ?? wrapped.__data[prop.name]);
+            const old = Reference.unwrapReference(wrapped.__data[prop.name]);
 
-        if (hasInverse) {
-          // eslint-disable-next-line @typescript-eslint/no-this-alias
-          const meta = this;
-          o[prop.name] = {
-            get() {
-              return this.__helper.__data[prop.name];
-            },
-            set(val: AnyEntity) {
-              const wrapped = this.__helper;
-              const hydrator = wrapped.hydrator as IHydrator;
-              const entity = Reference.unwrapReference(val ?? wrapped.__data[prop.name]);
-              const old = Reference.unwrapReference(wrapped.__data[prop.name]);
+            if (
+              old &&
+              old !== entity &&
+              prop.kind === ReferenceKind.MANY_TO_ONE &&
+              prop.inversedBy &&
+              old[prop.inversedBy]
+            ) {
+              old[prop.inversedBy].removeWithoutPropagation(this);
+            }
 
-              if (
-                old &&
-                old !== entity &&
-                prop.kind === ReferenceKind.MANY_TO_ONE &&
-                prop.inversedBy &&
-                old[prop.inversedBy]
-              ) {
-                old[prop.inversedBy].removeWithoutPropagation(this);
+            wrapped.__data[prop.name] = Reference.wrapReference(val, prop as EntityProperty);
+
+            // when propagation from inside hydration, we set the FK to the entity data immediately
+            if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
+              const targetMeta = prop.targetMeta ?? helper(entity)?.__meta;
+              if (targetMeta) {
+                wrapped.__originalEntityData[prop.name] = EntityHelper.getForeignKeyValue(entity, prop, targetMeta);
               }
+            }
 
-              wrapped.__data[prop.name] = Reference.wrapReference(val, prop as EntityProperty);
-
-              // when propagation from inside hydration, we set the FK to the entity data immediately
-              if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
-                const targetMeta = prop.targetMeta ?? helper(entity)?.__meta;
-                if (targetMeta) {
-                  wrapped.__originalEntityData[prop.name] = EntityHelper.getForeignKeyValue(entity, prop, targetMeta);
-                }
-              }
-
-              EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val), old);
-            },
-            enumerable: true,
-            configurable: true,
-          };
-        }
+            EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val), old);
+          },
+          enumerable: true,
+          configurable: true,
+        };
 
         return o;
       },
