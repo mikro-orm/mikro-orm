@@ -857,15 +857,26 @@ export class EntityLoader {
 
     options = { ...options, filters: QueryHelper.mergePropertyFilters(prop.filters, options.filters)! };
     // collections with unflushed changes, their items would be lost when reloading
-    const dirty = entities
-      .map(e => e[field] as Collection<AnyEntity>)
-      .filter(coll => !options.refresh && Utils.isCollection(coll) && coll.isDirty())
-      .map(coll => [coll, coll.getItems(false)] as const);
-    const references = dirty.flatMap(([, items]) => items).filter(item => !helper(item).__initialized);
+    const dirty = options.refresh
+      ? []
+      : entities
+          .map(e => e[field] as Collection<AnyEntity>)
+          .filter(coll => Utils.isCollection(coll) && coll.isDirty())
+          .map(coll => [coll, coll.getItems(false), coll.getSnapshot()] as const);
+    // grouped by type, as a polymorphic collection can hold references of several entity types
+    const references = new Map<EntityMetadata, AnyEntity[]>();
 
-    if (references.length > 0 && !populate.field.includes(':')) {
-      // loading the references directly keeps an initialized collection from being reloaded
-      await this.populateScalar(prop.targetMeta!, Utils.unique(references), {
+    for (const [, items] of populate.field.includes(':') ? [] : dirty) {
+      for (const item of items.filter(i => !helper(i).__initialized)) {
+        const group = references.get(helper(item).__meta) ?? [];
+        group.push(item);
+        references.set(helper(item).__meta, group);
+      }
+    }
+
+    // loading the references directly keeps an initialized collection from being reloaded
+    for (const [meta, items] of references) {
+      await this.populateScalar(meta, items, {
         ...options,
         where: {},
         populateWhere: undefined,
@@ -875,12 +886,24 @@ export class EntityLoader {
 
     const populated = await this.populateMany<Entity>(entityName, entities, populate, options);
 
-    for (const [coll, items] of dirty) {
-      const lost = items.filter(item => !coll.contains(item, false));
+    for (const [coll, items, snapshot] of dirty) {
+      // partially loaded collections can be readonly
+      if (coll.isPartial()) {
+        continue;
+      }
 
-      // partially loaded collections can be readonly, as well as those that were not reloaded
-      if (lost.length > 0 && !coll.isPartial()) {
+      const kept = new Set(items);
+      // only the diff against the snapshot is restored, a missing snapshot means the collection was overridden via `set()`
+      const known = snapshot && new Set(snapshot);
+      const lost = items.filter(item => !coll.contains(item, false) && !known?.has(item));
+      const removed = coll.getItems(false).filter(item => !kept.has(item) && (!known || known.has(item)));
+
+      if (lost.length > 0) {
         coll.add(lost);
+      }
+
+      if (removed.length > 0) {
+        coll.remove(removed);
       }
     }
 
