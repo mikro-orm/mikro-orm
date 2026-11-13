@@ -24,6 +24,8 @@ const IGNORED_OPTIONS = new Set([
   'strict',
   'failHandler',
   '_compile',
+  // `findAll()` passes its condition as the `where` argument too
+  'where',
 ]);
 // options whose handling depends on runtime values in ways the cache does not model
 const BYPASS_OPTIONS = new Set([

@@ -256,6 +256,7 @@ const cacheable: Record<string, Scenario> = {
   'find by custom type collapsing to null': (em, i) => em.find(Author, { code: i === 4 ? '' : `code${i + 1}` }),
   'find with limit and offset': (em, i) =>
     em.find(Author, { id: { $gt: i } }, { limit: 2 + (i % 2), offset: i + 1, orderBy: { name: 'asc' } }),
+  'findAll with where': (em, i) => em.findAll(Author, { where: { id: { $gt: i } }, limit: 3 }),
   'find with zero and non-zero offset': (em, i) => em.find(Author, {}, { limit: 3, offset: i % 2 ? 0 : i }),
   'find with fields, exclude and populate': async (em, i) => [
     await em.find(Book, { id: { $gt: i * 10 } }, { fields: ['title', 'author.name'], limit: 3 }),
