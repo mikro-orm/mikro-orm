@@ -243,6 +243,12 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   static invalidQueryCondition(cond: unknown): ValidationError {
     return new ValidationError(`Invalid query condition: ${inspect(cond, { depth: 5 })}`);
   }
+
+  static invalidPaginationValue(option: string, value: unknown): ValidationError {
+    return new ValidationError(
+      `Invalid '${option}' value ${inspect(value)}, expected a number or a string with a non-negative integer.`,
+    );
+  }
 }
 
 /** Error thrown when cursor-based pagination encounters missing or invalid cursor values. */

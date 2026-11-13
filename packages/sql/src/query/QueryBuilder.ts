@@ -53,6 +53,7 @@ import {
   SUBQUERY_BRAND,
   type Transaction,
   Utils,
+  validatePaginationValue,
   ValidationError,
 } from '@mikro-orm/core';
 import { JoinType, QueryType } from './enums.js';
@@ -2105,7 +2106,7 @@ export class QueryBuilder<
    */
   limit(limit?: number, offset = 0): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs> {
     this.ensureNotFinalized();
-    this.#state.limit = limit;
+    this.#state.limit = validatePaginationValue(limit, 'limit');
 
     if (offset) {
       this.offset(offset);
@@ -2124,7 +2125,7 @@ export class QueryBuilder<
    */
   offset(offset?: number): SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs> {
     this.ensureNotFinalized();
-    this.#state.offset = offset;
+    this.#state.offset = validatePaginationValue(offset, 'offset');
     return this as SelectQueryBuilder<Entity, RootAlias, Hint, Context, RawAliases, Fields, CTEs>;
   }
 

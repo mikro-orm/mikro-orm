@@ -64,6 +64,23 @@ export function validateParams(params: any, type = 'search condition', field?: s
   }
 }
 
+/**
+ * Converts a numeric string passed as `limit`/`offset`-like value (e.g. from a query string) to a number,
+ * other strings are rejected, non-string values are returned as is.
+ * @internal
+ */
+export function validatePaginationValue<T>(value: T, option: string): T {
+  if (typeof value !== 'string') {
+    return value;
+  }
+
+  if (!/^\d+$/.test(value)) {
+    throw ValidationError.invalidPaginationValue(option, value);
+  }
+
+  return +value as T;
+}
+
 /** @internal */
 export function validatePrimaryKey<T>(entity: EntityData<T>, meta: EntityMetadata<T>): void {
   const pkExists =
