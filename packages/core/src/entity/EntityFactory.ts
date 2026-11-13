@@ -119,8 +119,13 @@ export class EntityFactory {
     if (wrapped && !options.refresh) {
       const wasInitialized = wrapped.isInitialized();
       wrapped.__processing = true;
-      Utils.dropUndefinedProperties(data);
-      this.mergeData(meta2, exists!, data, options);
+
+      // the no-op check rejects `undefined` values itself, so the recursive cleanup is only needed for a real merge
+      if (!this.isNoopMerge(meta2, exists!, data, options)) {
+        Utils.dropUndefinedProperties(data);
+        this.mergeData(meta2, exists!, data, options);
+      }
+
       wrapped.__processing = false;
 
       // index a merged `targetKey` value, `getByKey` ignores the old one as stale
