@@ -48,11 +48,10 @@ exports[`6865 1`] = `
   }
   if (Array.isArray(data.allowedTokens)) {
     const items = data.allowedTokens.map(value => createCollectionItem_allowedTokens(value, entity));
-    const coll = Collection.create(entity, 'allowedTokens', items, newEntity);
     if (newEntity) {
-      coll.setDirty();
+      Collection.create(entity, 'allowedTokens', items, true).setDirty();
     } else {
-      coll.takeSnapshot(true);
+      Collection.create(entity, 'allowedTokens', undefined, false).hydrate(items, true, false, false, false);
     }
   } else if (!entity.allowedTokens && data.allowedTokens instanceof Collection) {
     entity.allowedTokens = data.allowedTokens;

@@ -344,11 +344,13 @@ export class ObjectHydrator extends Hydrator {
       ret.push(
         `    const items = data${dataKey}.map(value => createCollectionItem_${this.safeKey(prop.name)}(value, entity));`,
       );
-      ret.push(`    const coll = Collection.create(entity, ${this.quote(prop.name)}, items, newEntity);`);
       ret.push(`    if (newEntity) {`);
-      ret.push(`      coll.setDirty();`);
+      ret.push(`      Collection.create(entity, ${this.quote(prop.name)}, items, true).setDirty();`);
       ret.push(`    } else {`);
-      ret.push(`      coll.takeSnapshot(true);`);
+      // loaded items go through `hydrate()`, as `set()` would persist them and queue an auto-flush; the count stays unset, joined results can be filtered
+      ret.push(
+        `      Collection.create(entity, ${this.quote(prop.name)}, undefined, false).hydrate(items, true, false, false, false);`,
+      );
       ret.push(`    }`);
       ret.push(`  } else if (!entity${entityKey} && data${dataKey} instanceof Collection) {`);
       ret.push(`    entity${entityKey} = data${dataKey};`);
