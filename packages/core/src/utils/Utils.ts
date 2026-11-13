@@ -837,6 +837,19 @@ export class Utils {
    * Checks whether the value is POJO (e.g. `{ foo: 'bar' }`, and not instance of `Foo`)
    */
   static isPlainObject<T extends Dictionary>(value: any): value is T {
+    // fast paths with the same result as the full check below, which functions still need (null prototype)
+    if (typeof value === 'object') {
+      if (value === null) {
+        return false;
+      }
+
+      if (value.constructor === Object) {
+        return true;
+      }
+    } else if (typeof value !== 'function') {
+      return false;
+    }
+
     return (
       (value !== null &&
         typeof value === 'object' &&
