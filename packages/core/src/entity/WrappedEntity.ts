@@ -228,7 +228,7 @@ export class WrappedEntity<Entity extends object> {
 
   /** Returns the primary key value, optionally converting custom types to their database representation. */
   getPrimaryKey(convertCustomTypes = false): Primary<Entity> | null {
-    const prop = this.__meta.getPrimaryProps()[0];
+    const prop = this.__meta.getPrimaryProp();
 
     if (!prop) {
       return null;

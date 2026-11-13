@@ -28,6 +28,11 @@ function getPropertyDescriptor<T>(obj: T, prop: keyof T): PropertyDescriptor | n
 const TypedArray = Object.getPrototypeOf(Uint8Array);
 
 export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
+  // perf: snapshots clone every scalar, skip the cycle map for primitives
+  if (parent === null || typeof parent !== 'object') {
+    return parent;
+  }
+
   // already cloned objects, so shared references and cycles map to a single clone
   const clones = new Map<unknown, unknown>();
 

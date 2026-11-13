@@ -778,21 +778,25 @@ export class UnitOfWork {
     }
 
     visited.clear();
+    const persistOptions = { checkRemoveStack: true };
 
     for (const entity of this.#identityMap) {
       if (!this.#removeStack.has(entity) && !this.#persistStack.has(entity) && !this.#orphanRemoveStack.has(entity)) {
-        this.cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack: true });
+        this.cascade(entity, Cascade.PERSIST, visited, persistOptions);
       }
     }
 
     for (const entity of this.#persistStack) {
-      this.cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack: true });
+      this.cascade(entity, Cascade.PERSIST, visited, persistOptions);
     }
 
     visited.clear();
+    // perf: every traversal starts with an empty `processed` set, reuse one instead of allocating it per entity
+    const processed = new Set<AnyEntity>();
 
     for (const entity of this.#persistStack) {
-      this.findNewEntities(entity, visited);
+      processed.clear();
+      this.findNewEntities(entity, visited, 0, processed);
     }
 
     for (const entity of this.#orphanRemoveStack) {
@@ -921,8 +925,8 @@ export class UnitOfWork {
   private findNewEntities<T extends object>(
     entity: T,
     visited: Set<AnyEntity>,
-    idx = 0,
-    processed = new Set<AnyEntity>(),
+    idx: number,
+    processed: Set<AnyEntity>,
   ): void {
     if (visited.has(entity)) {
       return;
@@ -1151,13 +1155,12 @@ export class UnitOfWork {
     }
 
     if (Utils.isCollection<any>(kind)) {
-      kind
-        .getItems(false)
-        .filter(item => !item.__helper!.__originalEntityData)
-        .forEach(item => {
-          // propagate schema from parent
+      for (const item of kind.getItems(false)) {
+        // propagate schema from parent
+        if (!item.__helper!.__originalEntityData) {
           item.__helper!.__schema ??= helper(parent).__schema;
-        });
+        }
+      }
 
       if (prop.kind === ReferenceKind.MANY_TO_MANY && kind.isDirty()) {
         this.processToManyReference(kind, visited, processed, parent, prop);
@@ -1294,13 +1297,13 @@ export class UnitOfWork {
 
     const kind = Reference.unwrapReference(entity[prop.name] as object) as T | Collection<AnyEntity>;
 
-    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isEntity(kind)) {
+    if ((prop.kind === ReferenceKind.MANY_TO_ONE || prop.kind === ReferenceKind.ONE_TO_ONE) && Utils.isEntity(kind)) {
       return this.cascade(kind as T, type, visited, options);
     }
 
     const collection = kind as Collection<AnyEntity>;
 
-    if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) && collection) {
+    if ((prop.kind === ReferenceKind.ONE_TO_MANY || prop.kind === ReferenceKind.MANY_TO_MANY) && collection) {
       for (const item of collection.getItems(false)) {
         this.cascade(item, type, visited, options);
       }
@@ -1314,8 +1317,11 @@ export class UnitOfWork {
 
   private shouldCascade(prop: EntityProperty, type: Cascade): boolean {
     if (
-      [Cascade.REMOVE, Cascade.SCHEDULE_ORPHAN_REMOVAL, Cascade.CANCEL_ORPHAN_REMOVAL, Cascade.ALL].includes(type) &&
-      prop.orphanRemoval
+      prop.orphanRemoval &&
+      (type === Cascade.REMOVE ||
+        type === Cascade.SCHEDULE_ORPHAN_REMOVAL ||
+        type === Cascade.CANCEL_ORPHAN_REMOVAL ||
+        type === Cascade.ALL)
     ) {
       return true;
     }
@@ -1366,7 +1372,11 @@ export class UnitOfWork {
     const reference = entity[prop.name] as object;
     const target = Reference.unwrapReference(reference);
 
-    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && target && !prop.mapToPk) {
+    if (
+      (prop.kind === ReferenceKind.MANY_TO_ONE || prop.kind === ReferenceKind.ONE_TO_ONE) &&
+      target &&
+      !prop.mapToPk
+    ) {
       if (!Utils.isEntity(target)) {
         entity[prop.name] = this.#em.getReference(prop.targetMeta!.class, target, {
           wrapped: !!prop.ref,
@@ -1384,7 +1394,7 @@ export class UnitOfWork {
       target.property = prop as EntityProperty;
     }
 
-    const isCollection = [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind);
+    const isCollection = prop.kind === ReferenceKind.ONE_TO_MANY || prop.kind === ReferenceKind.MANY_TO_MANY;
 
     if (isCollection && Array.isArray(target)) {
       const collection = new Collection<AnyEntity>(entity);
