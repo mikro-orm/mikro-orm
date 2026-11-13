@@ -22,6 +22,20 @@ class UpperCaseType extends Type<string | null, string | null> {
   }
 }
 
+class TruthyType extends Type<string | null, number | null> {
+  override convertToDatabaseValue(value: string | null): number | null {
+    return value == null ? null : value ? 1 : 0;
+  }
+
+  override convertToJSValue(value: number | null): string | null {
+    return value == null ? null : value ? 'yes' : '';
+  }
+
+  override getColumnType(): string {
+    return 'integer';
+  }
+}
+
 // ambient state read by a filter callback, like a clock or an async context would be
 let clock = 0;
 const minAge = (args: Dictionary) => ({ age: { $gte: args.min } });
@@ -61,6 +75,7 @@ const Author = defineEntity({
     balance: p.decimal().nullable(),
     active: p.boolean(),
     code: p.type(UpperCaseType).nullable(),
+    rank: p.type(TruthyType).nullable(),
     meta: p.json<{ level: number; label: string }>().nullable(),
     createdAt: p.datetime(),
     address: () => p.embedded(Address),
@@ -119,6 +134,7 @@ async function init(enabled: boolean) {
       balance: `${i * 10}.50`,
       active: i % 2 === 0,
       code: i % 2 === 0 ? `code${i}` : null,
+      rank: i % 2 ? 'yes' : '',
       meta: { level: i % 3, label: `label ${i % 2}` },
       createdAt: new Date(Date.UTC(2020, i, i)),
       address: { city: `city ${i % 3}`, zip: `${10000 + i}` },
@@ -362,6 +378,17 @@ describe('compiled query cache', () => {
     await cached.em.fork().find(Author, where);
     expect(mock.mock.calls[0][0]).toMatch("in (1, 2, 3, 3) and `a0`.`name` not in ('a', 'b', 'c', 'c')");
     expect(where).toEqual({ id: { $in: [1, 2, 3] }, name: { $nin: ['a', 'b', 'c'] } });
+  });
+
+  test('custom type mapping values to a constant of the query is not cached', async () => {
+    // both `'yes'` and the placeholder convert to 1, the same value as the `limit 1` of `findOne()`
+    await run((em, i) => em.findOne(Author, { rank: i < 3 ? 'yes' : '' }, { orderBy: { id: 'asc' } }));
+  });
+
+  test('names containing the separators of the key do not share the compiled query', async () => {
+    const scenario: Scenario = (em, i) =>
+      em.find(Author, { meta: i % 2 ? { 'level:n,label': 'label 1' } : { level: i % 3, label: 'label 0' } } as any);
+    await expect(run(scenario, 8)).resolves.toBeGreaterThan(0);
   });
 
   test('changing the configuration drops the compiled queries', async () => {
