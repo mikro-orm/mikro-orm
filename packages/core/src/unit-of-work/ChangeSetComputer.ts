@@ -46,14 +46,13 @@ export class ChangeSetComputer {
 
     const wrapped = helper(entity);
     const type = wrapped.__originalEntityData ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
-    const map = new Map<T, [EntityKey<T>, unknown][]>();
 
     // Execute `onCreate` and `onUpdate` on properties recursively, saves `onUpdate` results
     // to the `map` as we want to apply those only if something else changed.
     if (type === ChangeSetType.CREATE) {
       // run update hooks only after we know there are other changes
       for (const prop of meta.hydrateProps) {
-        this.processPropertyInitializers(entity, prop, type, map);
+        this.processPropertyInitializers(entity, prop, type);
       }
     }
 
@@ -88,6 +87,7 @@ export class ChangeSetComputer {
     }
 
     validateEntity(changeSet.entity, meta);
+    const map = new Map<T, [EntityKey<T>, unknown][]>();
 
     // Execute `onCreate` and `onUpdate` on properties recursively, saves `onUpdate` results
     // to the `map` as we want to apply those only if something else changed.
@@ -119,7 +119,7 @@ export class ChangeSetComputer {
     entity: T,
     prop: EntityProperty<T>,
     type: ChangeSetType,
-    map: Map<T, [string, unknown][]>,
+    map?: Map<T, [string, unknown][]>,
     nested?: boolean,
   ): void {
     if (
@@ -140,9 +140,9 @@ export class ChangeSetComputer {
     }
 
     if (prop.onUpdate && type === ChangeSetType.UPDATE) {
-      const pairs = map.get(entity) ?? [];
+      const pairs = map!.get(entity) ?? [];
       pairs.push([prop.name, prop.onUpdate(entity, this.#em)]);
-      map.set(entity, pairs);
+      map!.set(entity, pairs);
     }
 
     if (prop.kind === ReferenceKind.EMBEDDED && entity[prop.name]) {
@@ -194,19 +194,32 @@ export class ChangeSetComputer {
   }
 
   private processProperty<T extends object>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
+    const isToOne = prop.kind === ReferenceKind.MANY_TO_ONE || prop.kind === ReferenceKind.ONE_TO_ONE;
+
+    // only owning to-one sides referencing an entity can add an FK value to the payload
+    if (isToOne && ((prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner) || prop.mapToPk)) {
+      return;
+    }
+
+    // perf: a relation outside of embeddables has a single target, so skip the allocations of `unwrapProperty`
+    if (!prop.object && !prop.array && !prop.embedded) {
+      const target = changeSet.entity[prop.name] as AnyEntity;
+
+      if (isToOne && target != null) {
+        this.processToOne(prop, changeSet, target, []);
+      } else if (Utils.isCollection(target)) {
+        this.processToMany(prop, changeSet);
+      }
+
+      return;
+    }
+
     const targets = Utils.unwrapProperty(changeSet.entity, changeSet.meta, prop) as [AnyEntity, number[]][];
 
-    if (targets.length === 0) {
-      return;
-    }
-
-    if (prop.kind === ReferenceKind.MANY_TO_ONE || prop.kind === ReferenceKind.ONE_TO_ONE) {
-      this.processToOne(prop, changeSet, targets);
-      return;
-    }
-
-    for (const [target] of targets) {
-      if (Utils.isCollection(target)) {
+    for (const [target, idx] of targets) {
+      if (isToOne) {
+        this.processToOne(prop, changeSet, target, idx);
+      } else if (Utils.isCollection(target)) {
         // m:n or 1:m
         this.processToMany(prop, changeSet);
       }
@@ -216,49 +229,43 @@ export class ChangeSetComputer {
   private processToOne<T extends object>(
     prop: EntityProperty<T>,
     changeSet: ChangeSet<T>,
-    targets: [AnyEntity, number[]][],
+    rawTarget: AnyEntity,
+    idx: number[],
   ): void {
-    const isToOneOwner =
-      prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner);
+    const target = Reference.unwrapReference(rawTarget);
+    // a same-named scalar of another polymorphic embeddable variant is not a reference
+    const needsProcessing = Utils.isEntity(target) && (prop.targetKey != null || !target.__helper!.hasPrimaryKey());
 
-    if (!isToOneOwner || prop.mapToPk) {
+    if (!needsProcessing) {
       return;
     }
 
-    targets.forEach(([rawTarget, idx]) => {
-      const target = Reference.unwrapReference(rawTarget);
-      // a same-named scalar of another polymorphic embeddable variant is not a reference
-      const needsProcessing = Utils.isEntity(target) && (prop.targetKey != null || !target.__helper!.hasPrimaryKey());
+    // a reference known only by its `targetKey` has no PK, and is never inserted to generate one
+    if (!prop.targetKey && !target.__helper!.__initialized) {
+      throw ValidationError.referenceWithoutPK(target);
+    }
 
-      if (needsProcessing) {
-        // a reference known only by its `targetKey` has no PK, and is never inserted to generate one
-        if (!prop.targetKey && !target.__helper!.__initialized) {
-          throw ValidationError.referenceWithoutPK(target);
-        }
+    // use the actual target's meta, a polymorphic relation has several
+    let value = prop.targetKey
+      ? EntityHelper.getForeignKeyValue(target, prop, target.__meta!)
+      : target.__helper!.__identifier;
 
-        // use the actual target's meta, a polymorphic relation has several
-        let value = prop.targetKey
-          ? EntityHelper.getForeignKeyValue(target, prop, target.__meta!)
-          : target.__helper!.__identifier;
+    if (prop.polymorphic) {
+      const discriminator = QueryHelper.findDiscriminatorValue(prop.discriminatorMap!, target.constructor)!;
+      value = new PolymorphicRef(discriminator, value);
+    }
 
-        if (prop.polymorphic) {
-          const discriminator = QueryHelper.findDiscriminatorValue(prop.discriminatorMap!, target.constructor)!;
-          value = new PolymorphicRef(discriminator, value);
-        }
+    // an unchanged `targetKey` FK is not part of the diff
+    if (
+      prop.targetKey &&
+      changeSet.type === ChangeSetType.UPDATE &&
+      !(prop.name in changeSet.payload) &&
+      Utils.equals(changeSet.originalEntity?.[prop.name], value)
+    ) {
+      return;
+    }
 
-        // an unchanged `targetKey` FK is not part of the diff
-        if (
-          prop.targetKey &&
-          changeSet.type === ChangeSetType.UPDATE &&
-          !(prop.name in changeSet.payload) &&
-          Utils.equals(changeSet.originalEntity?.[prop.name], value)
-        ) {
-          return;
-        }
-
-        Utils.setPayloadProperty<T>(changeSet.payload, changeSet.meta, prop, value, idx);
-      }
-    });
+    Utils.setPayloadProperty<T>(changeSet.payload, changeSet.meta, prop, value, idx);
   }
 
   private processToMany<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
