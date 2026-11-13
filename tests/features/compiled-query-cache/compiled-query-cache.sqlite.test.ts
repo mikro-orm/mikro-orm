@@ -1,5 +1,5 @@
+import * as sqlite from '@mikro-orm/sqlite';
 import {
-  CompiledQuery,
   defineEntity,
   LockMode,
   MikroORM,
@@ -11,6 +11,7 @@ import {
   type Dictionary,
   type EntityManager,
 } from '@mikro-orm/sqlite';
+import { CompiledQuery } from '../../../packages/core/src/utils/CompiledQueryCache.js';
 import { mockLogger } from '../../helpers.js';
 
 class UpperCaseType extends Type<string | null, string | null> {
@@ -450,6 +451,32 @@ describe('compiled query cache', () => {
     }
 
     await expect(run(scenario)).resolves.toBeGreaterThan(0);
+  });
+
+  test('the internals of the cache are not exported', () => {
+    // the drivers re-export kysely too, which has its own `CompiledQuery`
+    expect(sqlite).not.toHaveProperty('CompiledQuery');
+    expect(sqlite).not.toHaveProperty('CompiledQueryCache');
+  });
+
+  test('compiled queries do not keep the logger context of the call they were recorded for', async () => {
+    const qbs: QueryBuilder<any>[] = [];
+    const setCompilation = QueryBuilder.prototype.setCompilation;
+    vi.spyOn(QueryBuilder.prototype, 'setCompilation').mockImplementation(function (this: QueryBuilder<any>, c) {
+      if (c?.dry) {
+        qbs.push(this);
+      }
+
+      setCompilation.call(this, c);
+    });
+    const user = { name: 'request scoped' };
+
+    for (let i = 0; i < 3; i++) {
+      await cached.em.fork({ loggerContext: { user } }).find(Author, { id: i, name: { $ne: 'logger context' } });
+    }
+
+    expect(qbs).toHaveLength(1);
+    expect(qbs[0].getLoggerContext()).not.toHaveProperty('user');
   });
 
   test('verify mode compiles every cached query again', async () => {
