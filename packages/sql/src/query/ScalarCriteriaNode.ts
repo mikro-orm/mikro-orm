@@ -12,7 +12,10 @@ export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
     const matchPopulateJoins =
       options?.matchPopulateJoins ||
       (this.prop && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(this.prop.kind));
-    const nestedAlias = qb.getAliasForJoinPath(this.getPath(options), { ...options, matchPopulateJoins });
+    // nodes without a property (e.g. `$in` items) never join, so the alias lookup is not needed
+    const nestedAlias = this.prop
+      ? qb.getAliasForJoinPath(this.getPath(options), { ...options, matchPopulateJoins })
+      : undefined;
 
     if (this.shouldJoin(qb, nestedAlias)) {
       const path = this.getPath();
