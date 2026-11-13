@@ -1379,7 +1379,7 @@ __metadata:
     "@mikro-orm/sql": "npm:7.2.9"
     kysely: "npm:0.29.8"
     tarn: "npm:3.1.2"
-    tedious: "npm:20.3.8"
+    tedious: "npm:20.3.9"
     tsqlstring: "npm:1.0.1"
   peerDependencies:
     "@mikro-orm/core": 7.2.9
@@ -1563,7 +1563,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.9"
     "@mikro-orm/sql": "npm:7.2.9"
-    better-sqlite3: "npm:13.0.3"
+    better-sqlite3: "npm:13.1.1"
     kysely: "npm:0.29.8"
   peerDependencies:
     "@mikro-orm/core": 7.2.9
@@ -3806,13 +3806,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:13.0.3":
-  version: 13.0.3
-  resolution: "better-sqlite3@npm:13.0.3"
+"better-sqlite3@npm:13.1.1":
+  version: 13.1.1
+  resolution: "better-sqlite3@npm:13.1.1"
   dependencies:
     node-addon-api: "npm:^8.0.0"
     node-gyp: "npm:latest"
-  checksum: 10/035f8fa70784762fd73e1dbeb6f157186abb97705ff759b312cfb0dc1c675fd1c6b5378d2c036758000ce9da1d49bf61689531aa2718a7e32dc272c114a4c71f
+  checksum: 10/6fc6ecc7bdbb09ac3f70ca4e4330671ec9ef943ca9117ab5c8f408ecffbff17c5a20cca0e7ed049b953ea0e1b2a596608a43b3465873fd23c8b0e2bd779ce51f
   languageName: node
   linkType: hard
 
@@ -8286,16 +8286,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tar@npm:7.5.22":
-  version: 7.5.22
-  resolution: "tar@npm:7.5.22"
+"tar@npm:7.5.23":
+  version: 7.5.23
+  resolution: "tar@npm:7.5.23"
   dependencies:
     "@isaacs/fs-minipass": "npm:^4.0.0"
     chownr: "npm:^3.0.0"
     minipass: "npm:^7.1.2"
     minizlib: "npm:^3.1.0"
     yallist: "npm:^5.0.0"
-  checksum: 10/129606384b3c895f422aaca48bf316357be6dc7aa35c1066c3f06c28acfff0be5b356e1b0a0be7c53a7a8945534ac06cec6d8e296d170d8a09c8bff67b29300e
+  checksum: 10/b8550890576aa494ae1e3bfa85040bb302fb592fd9c64de9972c937ee9a54b3302cac5906d4c81cc0855eabd23b8ef3d0f0d90e499d9d7bc8d17fed3aa81d4f1
   languageName: node
   linkType: hard
 
@@ -8306,9 +8306,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tedious@npm:20.3.8":
-  version: 20.3.8
-  resolution: "tedious@npm:20.3.8"
+"tedious@npm:20.3.9":
+  version: 20.3.9
+  resolution: "tedious@npm:20.3.9"
   dependencies:
     "@azure/core-auth": "npm:^1.10.1"
     "@azure/identity": "npm:^4.13.1"
@@ -8319,7 +8319,7 @@ __metadata:
     iconv-lite: "npm:^0.7.0"
     js-md4: "npm:^0.3.2"
     native-duplexpair: "npm:^1.0.0"
-  checksum: 10/54b6fa77a72ce77258fba3c75b6058d15d169935d14e5496b4ec9250eb5c9aaf33e76096f92093d6f40a62785fdea570d8399cc6aaccc1e4cd4f97baed89929a
+  checksum: 10/4cc636df7701c2de1b5a141e1fcfaf8a773ca67e06eb627f116ca40cc1e4392998a8170c36654e5dcb058c7431a0c7a9a17bdfe0f9eb96fef0967e0b74d3ed48
   languageName: node
   linkType: hard
 
