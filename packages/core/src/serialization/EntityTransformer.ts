@@ -26,7 +26,7 @@ interface PlanEntry<Entity> {
   prop: EntityProperty<Entity>;
   visible: boolean;
   key: string;
-  /** scalar without getter or serializer, so a primitive or `Date` value can skip the relation and embeddable checks */
+  /** scalar without getter, accessor or serializer, so a primitive or `Date` value can skip the relation and embeddable checks */
   scalar: boolean;
 }
 
@@ -313,17 +313,7 @@ export class EntityTransformer {
       return wrapped ? (wrapped.toJSON() as EntityValue<Entity>) : value;
     }
 
-    const customType = property?.customType;
-
-    if (customType) {
-      return customType.toJSON(value, wrapped.__platform);
-    }
-
-    if (property?.primary) {
-      return wrapped.__platform.normalizePrimaryKey(value as unknown as IPrimaryKey) as unknown as EntityValue<Entity>;
-    }
-
-    return value;
+    return EntityTransformer.processScalar(property as EntityProperty<Entity>, value, wrapped.__platform);
   }
 
   private static processEntity<Entity extends object>(
