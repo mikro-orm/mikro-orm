@@ -17,7 +17,7 @@ import { helper, wrap } from './wrap.js';
 import { Utils } from '../utils/Utils.js';
 import { QueryHelper } from '../utils/QueryHelper.js';
 import type { FindOneOptions, FindOneOrFailOptions } from '../drivers/IDatabaseDriver.js';
-import { NotFoundError } from '../errors.js';
+import { NotFoundError, ValidationError } from '../errors.js';
 import { inspect } from '../logging/inspect.js';
 
 // Globally registered so the markers survive the CJS/ESM dual-package hazard
@@ -142,6 +142,11 @@ export class Reference<T extends object> {
     const wrapped = helper(this.entity as TT & object);
 
     if (!wrapped.__em) {
+      // a detached reference (e.g. from `em.map(..., { managed: false })`) has no way to load itself
+      if (!wrapped.__managed && !wrapped.__initialized) {
+        throw ValidationError.unmanagedReference(this.entity);
+      }
+
       return this.entity as Loaded<TT, P, F, E>;
     }
 

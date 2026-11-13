@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`polymorphic embeddables in sqlite > diffing 1`] = `
-"function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
+"function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors, managed) {
   if (data.id === null) {
     entity.id = null;
   } else if (typeof data.id !== 'undefined') {

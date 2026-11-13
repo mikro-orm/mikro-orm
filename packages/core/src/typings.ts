@@ -2784,6 +2784,7 @@ export interface IHydrator {
   /**
    * Hydrates the whole entity. This process handles custom type conversions, creating missing Collection instances,
    * mapping FKs to entity instances, as well as merging those entities.
+   * With `managed: false`, relations and nested entities are created detached, without touching the identity map.
    */
   hydrate<T extends object>(
     entity: T,
@@ -2796,6 +2797,7 @@ export interface IHydrator {
     schema?: string,
     parentSchema?: string,
     normalizeAccessors?: boolean,
+    managed?: boolean,
   ): void;
 
   /**
@@ -2810,6 +2812,7 @@ export interface IHydrator {
     schema?: string,
     parentSchema?: string,
     normalizeAccessors?: boolean,
+    managed?: boolean,
   ): void;
 
   isRunning(): boolean;

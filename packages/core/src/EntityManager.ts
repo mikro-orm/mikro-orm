@@ -2522,12 +2522,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Maps raw database result to an entity and merges it to this EntityManager by default.
    * Use `disableIdentityMap` to return an isolated entity without affecting the current context.
+   * Use `managed: false` to get a detached entity without any identity map or unit of work bookkeeping,
+   * its relations are detached references which cannot be loaded.
    */
   map<Entity extends object>(
     entityName: EntityName<Entity>,
     result: EntityDictionary<Entity>,
     options: MapOptions = {},
   ): Entity {
+    if (options.managed === false) {
+      return this.mapUnmanaged(entityName, result, options);
+    }
+
     if (options.disableIdentityMap ?? this.config.get('disableIdentityMap')) {
       const em = this.getContext(false);
       const fork = em.fork({ keepTransactionContext: true });
@@ -2537,7 +2543,40 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return ret;
     }
 
-    const { mapped, disableIdentityMap, ...rest } = options;
+    const { mapped, disableIdentityMap, managed, ...rest } = options;
+    const data = this.prepareMapData(entityName, result, mapped);
+
+    return this.mergeData<Entity>(
+      entityName,
+      data,
+      { convertCustomTypes: true, refresh: true, validate: false, ...rest },
+      true,
+    );
+  }
+
+  /** Builds a detached entity from a raw result, without touching the identity map. */
+  private mapUnmanaged<Entity extends object>(
+    entityName: EntityName<Entity>,
+    result: EntityDictionary<Entity>,
+    options: MapOptions,
+  ): Entity {
+    const em = this.getContext();
+    const data = this.prepareMapData(entityName, result, options.mapped);
+
+    return em.#entityFactory.create<Entity>(entityName, data, {
+      managed: false,
+      merge: false,
+      initialized: true,
+      convertCustomTypes: true,
+      schema: options.schema ?? em.#schema,
+    }) as Entity;
+  }
+
+  private prepareMapData<Entity extends object>(
+    entityName: EntityName<Entity>,
+    result: EntityDictionary<Entity>,
+    mapped?: boolean,
+  ): EntityData<Entity> {
     const meta = this.metadata.get(entityName);
     const data = (mapped ? result : this.driver.mapResult(result, meta)) as Dictionary;
 
@@ -2554,12 +2593,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    return this.mergeData<Entity>(
-      entityName,
-      data as EntityData<Entity>,
-      { convertCustomTypes: true, refresh: true, validate: false, ...rest },
-      true,
-    );
+    return data as EntityData<Entity>;
   }
 
   /**
@@ -2716,6 +2750,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options.schema ??= em.#schema;
     const entity = em.#entityFactory.create(entityName, data as EntityData<Entity>, {
       ...options,
+      // `CreateOptions.managed` picks between a new and a managed entity, it does not mean the factory's detached mode
+      managed: undefined,
       newEntity: !options.managed,
       merge: options.managed,
       normalizeAccessors: true,
@@ -3043,6 +3079,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     if (arr.length === 0) {
       return entities as any;
+    }
+
+    // entities mapped via `em.map(..., { managed: false })` have no EntityManager to load their relations into,
+    // new entities (`__managed` not set) and removed ones (still bound to their EntityManager) are fine
+    // non-entities are left for the populate validation below
+    const unmanaged = arr.find(e => {
+      const wrapped = helper(e) as { __managed?: boolean; __em?: unknown } | undefined;
+      return wrapped?.__managed === false && !wrapped.__em;
+    });
+
+    if (unmanaged) {
+      throw ValidationError.unmanagedPopulate(unmanaged);
     }
 
     const em = this.getContext();
@@ -3903,6 +3951,12 @@ export interface MapOptions {
   mapped?: boolean;
   /** map the entity in an isolated context without adding it to the identity map */
   disableIdentityMap?: boolean;
+  /**
+   * Set to `false` to get a detached entity: no identity map lookup or registration, no fork and no merge.
+   * Relations and nested entities are detached as well, so references cannot be loaded. Takes precedence
+   * over `disableIdentityMap`. Defaults to `true`.
+   */
+  managed?: boolean;
 }
 
 export interface MergeOptions {
