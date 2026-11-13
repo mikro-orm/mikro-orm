@@ -9,6 +9,8 @@ const SEP = '\u0001';
 const SLOT_KINDS = new Set(['string', 'number', 'bigint', 'date']);
 // longer `$in` lists are not cached, padding them would get close to the parameter limits of some drivers
 const MAX_LIST_SIZE = 512;
+// every size of a list that is not padded is a separate entry, so longer ones are not cached
+const MAX_UNPADDED_LIST_SIZE = 32;
 // options that never change the generated SQL, they are read from the live call on every execution
 const IGNORED_OPTIONS = new Set([
   'ctx',
@@ -153,6 +155,11 @@ function whereKey(value: unknown, leaves: unknown[], list = false): string {
   }
 
   if (Array.isArray(value)) {
+    if (pads && value.length > MAX_LIST_SIZE) {
+      bail = true;
+      return '';
+    }
+
     const start = leaves.length;
     let key = '[';
     let uniform = true;
@@ -167,12 +174,8 @@ function whereKey(value: unknown, leaves: unknown[], list = false): string {
 
     // only lists of scalar values (or entities) of the same kind, each contributing a single value
     if (!list || !pads || !uniform || value.length === 0 || leaves.length - start !== value.length) {
+      bail ||= !!pads && value.length > MAX_UNPADDED_LIST_SIZE;
       return key + ']';
-    }
-
-    if (value.length > MAX_LIST_SIZE) {
-      bail = true;
-      return '';
     }
 
     const size = 2 ** (32 - Math.clz32(value.length - 1));
