@@ -23,7 +23,6 @@ const IGNORED_OPTIONS = new Set([
   'visited',
   'strict',
   'failHandler',
-  '_compile',
   // `findAll()` passes its condition as the `where` argument too
   'where',
 ]);
@@ -817,7 +816,7 @@ export function captureOptions(compilation: QueryCompilation, options: Dictionar
   for (const k of Object.keys(options)) {
     if (k === 'populate') {
       compilation.populate = clonePopulate(options[k]);
-    } else if (k !== '_compile' && options[k] !== compilation.prepared[k]) {
+    } else if (options[k] !== compilation.prepared[k]) {
       compilation.overrides[k] = deepFreeze(Utils.copy(options[k]));
     }
   }

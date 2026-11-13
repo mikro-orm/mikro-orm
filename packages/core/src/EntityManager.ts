@@ -2922,7 +2922,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     if (lookup?.params) {
       const opts = await useCompiledQuery(em, 'count', entityName, lookup, options);
-      delete (opts as FindOptions<Entity>).orderBy;
       const ctx = opts.ctx ?? em.#transactionContext;
 
       return +(await em.withSessionContext(ctx, ctx =>
