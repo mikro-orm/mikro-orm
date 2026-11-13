@@ -313,6 +313,11 @@ const bypassed: Record<string, Scenario> = {
   'callback filter without its arguments': (em, i) => em.find(Book, { id: { $gt: i } }, { filters: ['expensive'] }),
   '$in list over the size limit': (em, i) =>
     em.find(Author, { id: { $in: Array.from({ length: 600 }, (_, idx) => idx + i) } }),
+  'long list that is not padded': (em, i) =>
+    em.find(
+      Author,
+      Array.from({ length: 40 }, (_, idx) => idx + i),
+    ),
   'pessimistic lock': (em, i) =>
     em.transactional(() => em.findOne(Author, { id: i + 1 }, { lockMode: LockMode.PESSIMISTIC_WRITE })),
   'cursor pagination': (em, i) => em.findByCursor(Author, { first: 2 + (i % 2), orderBy: { id: 'asc' } }),
