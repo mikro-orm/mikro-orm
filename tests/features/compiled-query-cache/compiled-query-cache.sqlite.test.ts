@@ -453,6 +453,13 @@ describe('compiled query cache', () => {
     await expect(run(scenario)).resolves.toBeGreaterThan(0);
   });
 
+  test('resetting an option drops the compiled queries', async () => {
+    await run((em, i) => em.find(Book, { id: { $gt: i } }, { limit: 2 }));
+    expect(cached.config.getCompiledQueryCache()!.size).toBeGreaterThan(0);
+    cached.config.reset('loadStrategy');
+    expect(cached.config.getCompiledQueryCache()!.size).toBe(0);
+  });
+
   test('the internals of the cache are not exported', () => {
     // the drivers re-export kysely too, which has its own `CompiledQuery`
     expect(sqlite).not.toHaveProperty('CompiledQuery');

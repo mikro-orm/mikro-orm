@@ -315,6 +315,7 @@ export class Configuration<
    */
   reset<T extends keyof Options<D, EM>>(key: T): void {
     this.#options[key] = DEFAULTS[key as keyof typeof DEFAULTS] as Options<D, EM>[T];
+    this.#compiledQueryCache = undefined;
   }
 
   /**
