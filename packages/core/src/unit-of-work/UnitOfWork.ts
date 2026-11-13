@@ -1210,7 +1210,8 @@ export class UnitOfWork {
     for (const cs of this.#changeSets.values()) {
       const wrapped = helper(cs.entity);
       wrapped.__processing = false;
-      delete wrapped.__pk;
+      // `delete` would switch the wrapper to dictionary mode for the rest of the entity's life
+      wrapped.__pk = undefined;
     }
 
     this.#persistStack.clear();

@@ -52,7 +52,7 @@ export class SerializationContext<T extends object> {
   /** Cleans up the serialization context by removing root references from all tracked entities. */
   close() {
     for (const entity of this.#entities) {
-      delete helper(entity).__serializationContext.root;
+      helper(entity).__serializationContext.root = undefined;
     }
   }
 
