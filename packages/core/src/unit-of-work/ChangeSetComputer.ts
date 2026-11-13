@@ -90,7 +90,7 @@ export class ChangeSetComputer {
     // Execute `onCreate` and `onUpdate` on properties recursively, saves `onUpdate` results
     // to the `map` as we want to apply those only if something else changed.
     if (type === ChangeSetType.UPDATE) {
-      for (const prop of meta.hydrateProps) {
+      for (const prop of meta.updateHookProps) {
         this.processPropertyInitializers(entity, prop, type, map);
       }
     }
@@ -145,9 +145,11 @@ export class ChangeSetComputer {
 
     if (prop.kind === ReferenceKind.EMBEDDED && entity[prop.name]) {
       const items = prop.array ? (entity[prop.name] as T[]) : [entity[prop.name] as T];
+      const embeddedProps =
+        type === ChangeSetType.UPDATE ? prop.targetMeta!.updateHookProps : prop.targetMeta!.hydrateProps;
 
       for (const item of items) {
-        for (const embeddedProp of prop.targetMeta!.hydrateProps) {
+        for (const embeddedProp of embeddedProps) {
           this.processPropertyInitializers(item, embeddedProp, type, map, nested || prop.object);
         }
       }
