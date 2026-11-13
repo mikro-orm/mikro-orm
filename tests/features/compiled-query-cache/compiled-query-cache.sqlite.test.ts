@@ -4,6 +4,7 @@ import {
   LockMode,
   MikroORM,
   p,
+  QueryBuilder,
   raw,
   ref,
   Type,
@@ -174,7 +175,8 @@ type Scenario = (em: EntityManager, i: number) => Promise<unknown>;
 async function run(scenario: Scenario, iterations = 6): Promise<number> {
   const cachedLog = mockLogger(cached);
   const plainLog = mockLogger(plain);
-  const bind = vi.spyOn(CompiledQuery.prototype, 'bind');
+  // `bind()` also runs when a recording is built, only executions of the cached SQL are hits
+  const hits = vi.spyOn(QueryBuilder.prototype, 'executeCompiled');
   // `findAndCount()` runs its two queries concurrently, so their order is not stable
   const queries = (mock: typeof cachedLog) =>
     mock.mock.calls
@@ -188,10 +190,10 @@ async function run(scenario: Scenario, iterations = 6): Promise<number> {
     expect(queries(cachedLog)).toEqual(queries(plainLog));
   }
 
-  const hits = bind.mock.calls.length;
-  bind.mockRestore();
+  const count = hits.mock.calls.length;
+  hits.mockRestore();
 
-  return hits;
+  return count;
 }
 
 /** Drops the repeated last value of `in (...)` lists, as the cache pads them to a power of two. */
@@ -428,7 +430,9 @@ describe('compiled query cache', () => {
 
   test('custom type mapping values to a constant of the query is not cached', async () => {
     // both `'yes'` and the placeholder convert to 1, the same value as the `limit 1` of `findOne()`
-    await run((em, i) => em.findOne(Author, { rank: i < 3 ? 'yes' : '' }, { orderBy: { id: 'asc' } }));
+    await expect(
+      run((em, i) => em.findOne(Author, { rank: i < 3 ? 'yes' : '' }, { orderBy: { id: 'asc' } })),
+    ).resolves.toBe(0);
   });
 
   test('names containing the separators of the key do not share the compiled query', async () => {
