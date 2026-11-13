@@ -211,7 +211,7 @@ async function verifyCompiledQuery(
 
 /**
  * Replaces the option processing with the outcome stored in the compiled query.
- * The joined filters are computed for every call, as the loader passes them to the child queries.
+ * Joined filters holding values of filter callbacks are computed for every call, as the loader passes them to the child queries.
  * @internal
  */
 export async function useCompiledQuery<Options extends Dictionary>(

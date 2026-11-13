@@ -323,6 +323,15 @@ const bypassed: Record<string, Scenario> = {
 };
 
 describe('compiled query cache', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    cached.config.set('compiledQueryCache', { enabled: true });
+
+    for (const orm of [cached, plain]) {
+      orm.config.set('loadStrategy', 'balanced');
+    }
+  });
+
   test.each(Object.keys(cacheable))('%s produces the same queries and hits the cache', async name => {
     await expect(run(cacheable[name])).resolves.toBeGreaterThan(0);
   });
@@ -396,7 +405,6 @@ describe('compiled query cache', () => {
     expect(bind).toHaveBeenCalledTimes(4);
     bind.mockRestore();
     expect(calls).toBe(4);
-    cached.config.set('compiledQueryCache', { enabled: true });
   });
 
   test('$in lists are padded to share the compiled query', async () => {
@@ -433,10 +441,6 @@ describe('compiled query cache', () => {
     }
 
     await expect(run(scenario)).resolves.toBeGreaterThan(0);
-
-    for (const orm of [cached, plain]) {
-      orm.config.set('loadStrategy', 'balanced');
-    }
   });
 
   test('verify mode compiles every cached query again', async () => {
@@ -453,6 +457,5 @@ describe('compiled query cache', () => {
     }
 
     expect(cache.size).toBe(10);
-    cached.config.set('compiledQueryCache', { enabled: true });
   });
 });
