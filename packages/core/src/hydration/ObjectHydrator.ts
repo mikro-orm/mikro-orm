@@ -23,11 +23,13 @@ type EntityHydrator<T extends object> = (
 
 /** @internal JIT-compiled hydrator that converts raw database rows into entity instances with optimized generated code. */
 export class ObjectHydrator extends Hydrator {
+  // keyed by type and `normalizeAccessors` without building a string key on every lookup
   readonly #hydrators = {
-    'full~true': new Map<EntityName, EntityHydrator<any>>(),
-    'full~false': new Map<EntityName, EntityHydrator<any>>(),
-    'reference~true': new Map<EntityName, EntityHydrator<any>>(),
-    'reference~false': new Map<EntityName, EntityHydrator<any>>(),
+    full: { normalized: new Map<EntityName, EntityHydrator<any>>(), raw: new Map<EntityName, EntityHydrator<any>>() },
+    reference: {
+      normalized: new Map<EntityName, EntityHydrator<any>>(),
+      raw: new Map<EntityName, EntityHydrator<any>>(),
+    },
   };
 
   #tmpIndex = 0;
@@ -104,8 +106,8 @@ export class ObjectHydrator extends Hydrator {
     type: 'full' | 'reference',
     normalizeAccessors = false,
   ): EntityHydrator<T> {
-    const key = `${type}~${normalizeAccessors}` as const;
-    const exists = this.#hydrators[key].get(meta.class);
+    const cache = this.#hydrators[type][normalizeAccessors ? 'normalized' : 'raw'];
+    const exists = cache.get(meta.class);
 
     if (exists) {
       return exists;
@@ -588,7 +590,7 @@ export class ObjectHydrator extends Hydrator {
       `${lines.join('\n')}\n}`;
     const fnKey = `hydrator-${meta.compiledName}-${type}-${normalizeAccessors}`;
     const hydrator = Utils.createFunction(context, code, this.config.get('compiledFunctions'), fnKey);
-    this.#hydrators[key].set(meta.class, hydrator);
+    cache.set(meta.class, hydrator);
 
     return hydrator;
   }
