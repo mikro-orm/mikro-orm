@@ -179,6 +179,18 @@ describe('row level security session context', () => {
     await orm.em.fork().nativeDelete(Article, { id: { $gt: 3 } });
   });
 
+  test('queries served from the compiled query cache still set the session variables', async () => {
+    const mock = mockLogger(orm, ['query']);
+
+    for (const tenant of [1, 2, 1, 2]) {
+      const em = orm.em.fork({ session: { variables: { 'app.tenant_id': tenant }, role: 'rls_sc_role' } });
+      const articles = await em.find(Article, { title: { $ne: `none ${tenant}` } }, { orderBy: { id: 'asc' } });
+      expect(articles.map(a => a.tenantId)).toEqual(tenant === 1 ? [1, 1] : [2]);
+    }
+
+    expect(mock.mock.calls.filter(c => c[0].includes('set_config'))).toHaveLength(4);
+  });
+
   test('fork with session variables wraps queries in a transaction that sets them', async () => {
     const em = orm.em.fork({ session: { variables: { 'app.tenant_id': 5 } } });
     const mock = mockLogger(orm, ['query']);

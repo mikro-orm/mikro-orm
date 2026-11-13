@@ -1,3 +1,4 @@
+import { CompiledQueryCache } from './CompiledQueryCache.js';
 import { Reference } from '../entity/Reference.js';
 import { DANGEROUS_PROPERTY_NAMES, Utils } from './Utils.js';
 import type {
@@ -826,7 +827,10 @@ export class QueryHelper {
       return cond;
     }
 
-    return prop.customType!.convertToDatabaseValue(cond, platform, { fromQuery, key, mode: 'query' });
+    const ret = prop.customType!.convertToDatabaseValue(cond, platform, { fromQuery, key, mode: 'query' });
+    CompiledQueryCache.recording?.onConvert(cond, ret, prop, key, fromQuery);
+
+    return ret;
   }
 
   /**

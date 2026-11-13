@@ -9,6 +9,16 @@ import { computeRemovedRlsVariables, computeRlsFilterVariables, findRlsFilterDef
 import { Utils } from './utils/Utils.js';
 import { Cursor } from './utils/Cursor.js';
 import { QueryHelper } from './utils/QueryHelper.js';
+import { CompiledQueryCache } from './utils/CompiledQueryCache.js';
+import {
+  finishCompilation,
+  lookupCompiledQuery,
+  recordFilterCall,
+  replayFilterCalls,
+  startCompilation,
+  takeReplayedFilterCond,
+  useCompiledQuery,
+} from './utils/compiled-query-utils.js';
 import { TransactionContext } from './utils/TransactionContext.js';
 import { isRaw, Raw } from './utils/RawQueryFragment.js';
 import { EntityFactory } from './entity/EntityFactory.js';
@@ -134,6 +144,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   readonly #resultCache: CacheAdapter;
   #filters: Dictionary<FilterDef> = {};
   #filterParams: Dictionary<Dictionary> = {};
+  #filtersKey?: string;
   #sessionContext?: SessionContext;
   protected loggerContext?: Dictionary;
   #transactionContext?: Transaction;
@@ -251,47 +262,74 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options = em.prepareOptions(options);
     const meta = this.metadata.get<Entity>(entityName);
     em.validateIndexUsage(meta, where, options);
+
     await em.tryFlush(entityName, options);
-    where = await em.processWhere(entityName, where, options, 'read');
-    validateParams(where);
-    if (meta.orderBy) {
-      options.orderBy = QueryHelper.mergeOrderBy(options.orderBy, meta.orderBy);
+
+    const lookup = lookupCompiledQuery(em, this, 'find', meta, where, options);
+
+    where = (lookup?.where ?? where) as typeof where;
+
+    if (lookup?.query?.filterCalls) {
+      await replayFilterCalls(em, lookup, options);
+    }
+
+    let cached: { data?: Loaded<Entity, Hint, Fields, Excludes>[] | null; key: string } | undefined;
+
+    if (lookup?.params) {
+      options = await useCompiledQuery(em, 'find', entityName, lookup, options, o => this.getJoinedFilters(meta, o));
     } else {
-      options.orderBy ??= {};
+      where = await em.processWhere(entityName, where, options, 'read');
+      validateParams(where);
+      if (meta.orderBy) {
+        options.orderBy = QueryHelper.mergeOrderBy(options.orderBy, meta.orderBy);
+      } else {
+        options.orderBy ??= {};
+      }
+      options.populate = (await em.preparePopulate(entityName, options)) as any;
+      const populate = options.populate as unknown as PopulateOptions<Entity>[];
+      const cacheKey = em.cacheKey(entityName, options, 'em.find', where);
+      cached = await em.tryCache<Entity, Loaded<Entity, Hint, Fields, Excludes>[]>(
+        entityName,
+        options.cache,
+        cacheKey,
+        options.refresh,
+        true,
+        options.schema,
+      );
+
+      if (cached?.data) {
+        await em.#entityLoader.populate<Entity>(entityName, cached.data as Entity[], populate, {
+          ...(options as Dictionary),
+          ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
+          orderBy: options.populateOrderBy ?? options.orderBy,
+          ignoreLazyScalarProperties: true,
+          lookup: false,
+        });
+
+        return cached.data;
+      }
+
+      options = { ...options };
+      // save the original hint value so we know it was infer/all
+      (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
+      options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
+      options.populateFilter = await this.getJoinedFilters(meta, options);
+
+      await em.processUnionWhere(entityName, options, 'read');
+      startCompilation(lookup, options);
     }
-    options.populate = (await em.preparePopulate(entityName, options)) as any;
+
     const populate = options.populate as unknown as PopulateOptions<Entity>[];
-    const cacheKey = em.cacheKey(entityName, options, 'em.find', where);
-    const cached = await em.tryCache<Entity, Loaded<Entity, Hint, Fields, Excludes>[]>(
-      entityName,
-      options.cache,
-      cacheKey,
-      options.refresh,
-      true,
-      options.schema,
-    );
+    const results = await em.driver.find(entityName, where, {
+      ctx: em.#transactionContext,
+      em,
+      ...options,
+      ...lookup?.internal,
+    });
 
-    if (cached?.data) {
-      await em.#entityLoader.populate<Entity>(entityName, cached.data as Entity[], populate, {
-        ...(options as Dictionary),
-        ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
-        orderBy: options.populateOrderBy ?? options.orderBy,
-        ignoreLazyScalarProperties: true,
-        lookup: false,
-      });
-
-      return cached.data;
+    if (lookup?.recording) {
+      await finishCompilation(em, 'find', entityName, lookup);
     }
-
-    options = { ...options };
-    // save the original hint value so we know it was infer/all
-    (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
-    options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
-    options.populateFilter = await this.getJoinedFilters(meta, options);
-
-    await em.processUnionWhere(entityName, options, 'read');
-
-    const results = await em.driver.find(entityName, where, { ctx: em.#transactionContext, em, ...options });
 
     if (results.length === 0) {
       await em.storeCache(options.cache, cached!, []);
@@ -470,7 +508,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     options.default ??= true;
-    this.getContext(false).#filters[options.name] = options as any;
+    const em = this.getContext(false);
+    em.#filters[options.name] = options as any;
+    em.#filtersKey = undefined;
   }
 
   /**
@@ -524,6 +564,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     if (Object.keys(variables).length > 0) {
       em.mergeSessionContext({ variables });
     }
+  }
+
+  /** @internal */
+  getFiltersKey(): string {
+    return (this.#filtersKey ??= CompiledQueryCache.filtersKey(this.#filters));
   }
 
   /**
@@ -989,7 +1034,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     for (const filter of filters) {
       let cond: Dictionary;
 
-      if (filter.cond instanceof Function) {
+      const replayed = takeReplayedFilterCond(findOptions, filter, type, Utils.className(entityName));
+
+      if (replayed) {
+        cond = replayed;
+      } else if (filter.cond instanceof Function) {
         // @ts-ignore
         // oxfmt-ignore
         const args = Utils.isPlainObject(options?.[filter.name]) ? options[filter.name] : this.getContext().#filterParams[filter.name];
@@ -999,6 +1048,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         }
 
         cond = await filter.cond(args, type, this, findOptions, Utils.className(entityName));
+        cond = recordFilterCall(this, filter, cond, args, type, Utils.className(entityName));
       } else {
         cond = filter.cond;
       }
@@ -1319,10 +1369,22 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     await em.tryFlush(entityName, options);
+
     const meta = em.metadata.get<Entity>(entityName);
     em.validateIndexUsage(meta, where, options);
-    where = await em.processWhere(entityName, where, options, 'read');
-    validateEmptyWhere(where);
+    const lookup = lookupCompiledQuery(em, this, 'findOne', meta, where, options);
+
+    where = (lookup?.where ?? where) as typeof where;
+
+    if (lookup?.query?.filterCalls) {
+      await replayFilterCalls(em, lookup, options);
+    }
+
+    if (!lookup?.params) {
+      where = await em.processWhere(entityName, where, options, 'read');
+      validateEmptyWhere(where);
+    }
+
     em.checkLockRequirements(options.lockMode, meta);
     const isOptimisticLocking =
       options.lockMode == null || options.lockMode === LockMode.NONE || options.lockMode === LockMode.OPTIMISTIC;
@@ -1331,54 +1393,66 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return em.lockAndPopulate(meta, entity, where, options);
     }
 
-    validateParams(where);
+    let cached: { data?: Loaded<Entity, Hint, Fields, Excludes> | null; key: string } | undefined;
 
-    // before the cache key so cached results share the merged orderBy
-    if (meta.orderBy) {
-      options.orderBy = QueryHelper.mergeOrderBy(options.orderBy, meta.orderBy);
-    }
+    if (lookup?.params) {
+      options = await useCompiledQuery(em, 'findOne', entityName, lookup, options, o => this.getJoinedFilters(meta, o));
+    } else {
+      validateParams(where);
 
-    options.populate = (await em.preparePopulate(entityName, options)) as any;
-    const cacheKey = em.cacheKey(entityName, options, 'em.findOne', where);
-    const cached = await em.tryCache<Entity, Loaded<Entity, Hint, Fields, Excludes>>(
-      entityName,
-      options.cache,
-      cacheKey,
-      options.refresh,
-      true,
-      options.schema,
-    );
-
-    if (cached?.data !== undefined) {
-      if (cached.data) {
-        await em.#entityLoader.populate<Entity, Fields>(
-          entityName,
-          [cached.data as Entity],
-          options.populate as unknown as PopulateOptions<Entity>[],
-          {
-            ...(options as Dictionary),
-            ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
-            ignoreLazyScalarProperties: true,
-            lookup: false,
-          },
-        );
+      // before the cache key so cached results share the merged orderBy
+      if (meta.orderBy) {
+        options.orderBy = QueryHelper.mergeOrderBy(options.orderBy, meta.orderBy);
       }
 
-      return cached.data;
-    }
+      options.populate = (await em.preparePopulate(entityName, options)) as any;
+      const cacheKey = em.cacheKey(entityName, options, 'em.findOne', where);
+      cached = await em.tryCache<Entity, Loaded<Entity, Hint, Fields, Excludes>>(
+        entityName,
+        options.cache,
+        cacheKey,
+        options.refresh,
+        true,
+        options.schema,
+      );
 
-    options = { ...options };
-    // save the original hint value so we know it was infer/all
-    (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
-    options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
-    options.populateFilter = await this.getJoinedFilters(meta, options);
-    await em.processUnionWhere(entityName, options, 'read');
+      if (cached?.data !== undefined) {
+        if (cached.data) {
+          await em.#entityLoader.populate<Entity, Fields>(
+            entityName,
+            [cached.data as Entity],
+            options.populate as unknown as PopulateOptions<Entity>[],
+            {
+              ...(options as Dictionary),
+              ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
+              ignoreLazyScalarProperties: true,
+              lookup: false,
+            },
+          );
+        }
+
+        return cached.data;
+      }
+
+      options = { ...options };
+      // save the original hint value so we know it was infer/all
+      (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
+      options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
+      options.populateFilter = await this.getJoinedFilters(meta, options);
+      await em.processUnionWhere(entityName, options, 'read');
+      startCompilation(lookup, options);
+    }
 
     const data = await em.driver.findOne(entityName, where, {
       ctx: em.#transactionContext,
       em,
       ...options,
+      ...lookup?.internal,
     });
+
+    if (lookup?.recording) {
+      await finishCompilation(em, 'findOne', entityName, lookup);
+    }
 
     if (!data) {
       await em.storeCache(options.cache, cached!, null);
@@ -2836,10 +2910,28 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     options = em.prepareOptions(options);
 
     await em.tryFlush(entityName, options);
+
+    const meta = em.metadata.find(entityName)!;
+    const lookup = lookupCompiledQuery(em, this, 'count', meta, where, options);
+
+    where = (lookup?.where ?? where) as typeof where;
+
+    if (lookup?.query?.filterCalls) {
+      await replayFilterCalls(em, lookup, options);
+    }
+
+    if (lookup?.params) {
+      const opts = await useCompiledQuery(em, 'count', entityName, lookup, options);
+      const ctx = opts.ctx ?? em.#transactionContext;
+
+      return +(await em.withSessionContext(ctx, ctx =>
+        em.driver.count(entityName, where, { em, ...opts, ...lookup.internal, ctx }),
+      ));
+    }
+
     where = await em.processWhere(entityName, where, options as FindOptions<Entity, Hint>, 'read');
     options.populate = (await em.preparePopulate(entityName, options as FindOptions<Entity, Hint>)) as any;
     // save the original hint value so we know it was infer/all
-    const meta = em.metadata.find(entityName)!;
     (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
     options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
     options.populateFilter = await this.getJoinedFilters(meta, options as FindOptions<Entity>);
@@ -2856,9 +2948,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return cached.data as number;
     }
 
-    const count = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
-      em.driver.count(entityName, where, { em, ...options, ctx }),
-    );
+    startCompilation(lookup, options);
+
+    // a dry run only compiles the query, so it must not open the implicit session context transaction
+    const count = (options as Dictionary)._compile
+      ? await em.driver.count(entityName, where, { em, ...options })
+      : await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
+          em.driver.count(entityName, where, { em, ...options, ...lookup?.internal, ctx }),
+        );
+
+    if (lookup?.recording) {
+      await finishCompilation(em, 'count', entityName, lookup);
+    }
     await em.storeCache(options.cache, cached!, () => +count);
 
     return +count;
@@ -2967,6 +3068,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     entityName: EntityName<Entity>,
     options: { flushMode?: FlushMode | AnyString },
   ): Promise<void> {
+    // a dry run only compiles the query
+    if ((options as Dictionary)._compile) {
+      return;
+    }
+
     const em = this.getContext();
     const flushMode = options.flushMode ?? em.#flushMode ?? em.config.get('flushMode');
     const meta = em.metadata.get(entityName);
@@ -3090,6 +3196,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     fork.#filters = { ...em.#filters };
+    fork.#filtersKey = em.#filtersKey;
     fork.#filterParams = Utils.hasObjectKeys(em.#filterParams) ? Utils.copy(em.#filterParams) : {};
 
     if (options.session) {

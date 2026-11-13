@@ -4,6 +4,7 @@ import {
   type AnyEntity,
   type Collection,
   type Configuration,
+  type CompiledQueryLookup,
   type ConnectionType,
   type Constructor,
   type CountOptions,
@@ -294,6 +295,8 @@ export abstract class AbstractSqlDriver<
       qb.setPartitionLimit((options as Dictionary)._partitionLimit);
     }
 
+    qb.setCompilation((options as Dictionary)._compile);
+
     return qb;
   }
 
@@ -302,6 +305,12 @@ export abstract class AbstractSqlDriver<
     where: ObjectQuery<T>,
     options: FindOptions<T, P, F, E> = {},
   ): Promise<EntityData<T>[]> {
+    const compiled = (options as Dictionary)._compiled as CompiledQueryLookup | undefined;
+
+    if (compiled) {
+      return this.executeCompiled<EntityData<T>[]>(compiled, options, options.em as SqlEntityManager);
+    }
+
     options = { populate: [], orderBy: [], ...options };
     const meta = this.metadata.get(entityName);
 
@@ -328,6 +337,11 @@ export abstract class AbstractSqlDriver<
     where: ObjectQuery<T>,
     options?: FindOneOptions<T, P, F, E>,
   ): Promise<EntityData<T> | null> {
+    if ((options as Dictionary)?._compiled) {
+      const res = await this.find<T>(entityName, where, options as FindOptions<T>);
+      return res[0] || null;
+    }
+
     const opts = { populate: [], ...options } as FindOptions<T>;
     const meta = this.metadata.find(entityName)!;
     const populate = this.autoJoinOneToOneOwner(meta, opts.populate as unknown as PopulateOptions<T>[], opts.fields);
@@ -346,6 +360,30 @@ export abstract class AbstractSqlDriver<
     const res = await this.find<T>(entityName, where, opts);
 
     return res[0] || null;
+  }
+
+  /** Executes a query from the compiled query cache with the context of the current call. */
+  private executeCompiled<R>(
+    compiled: CompiledQueryLookup,
+    options: FindOptions<any, any, any, any> | CountOptions<any>,
+    em?: SqlEntityManager,
+  ): Promise<R> {
+    const state = compiled.query!.state as {
+      qb: AnyQueryBuilder;
+      method: 'all' | 'get';
+      mapResults?: boolean;
+      mergeResults?: boolean;
+    };
+
+    return this.rethrow(
+      state.qb.executeCompiled<R>(compiled.query!.sql, compiled.params!, state, {
+        ctx: options.ctx,
+        em,
+        connectionType: this.resolveConnectionType({ ctx: options.ctx, connectionType: options.connectionType }),
+        logging: options.logging,
+        abortOptions: pickAbortOptions(options),
+      }),
+    );
   }
 
   protected hasToManyJoins<T extends object>(hint: PopulateOptions<T>, meta: EntityMetadata<T>): boolean {
@@ -965,6 +1003,13 @@ export abstract class AbstractSqlDriver<
   }
 
   async count<T extends object>(entityName: EntityName<T>, where: any, options: CountOptions<T> = {}): Promise<number> {
+    const compiled = (options as Dictionary)._compiled as CompiledQueryLookup | undefined;
+
+    if (compiled) {
+      const res = await this.executeCompiled<{ count: number }>(compiled, options);
+      return res ? +res.count : 0;
+    }
+
     const meta = this.metadata.get(entityName);
 
     if (meta.virtual) {
@@ -1007,6 +1052,8 @@ export abstract class AbstractSqlDriver<
     if (options.em) {
       await qb.applyJoinedFilters(options.em, options.filters);
     }
+
+    qb.setCompilation((options as Dictionary)._compile);
 
     return this.rethrow(qb.getCount());
   }
