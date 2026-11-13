@@ -1337,7 +1337,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.9"
     "@mikro-orm/sql": "npm:7.2.9"
-    kysely: "npm:0.29.8"
+    kysely: "npm:0.29.9"
     libsql: "npm:0.5.29"
   peerDependencies:
     "@mikro-orm/core": 7.2.9
@@ -1350,7 +1350,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.9"
     "@mikro-orm/mysql": "npm:7.2.9"
-    kysely: "npm:0.29.8"
+    kysely: "npm:0.29.9"
   peerDependencies:
     "@mikro-orm/core": 7.2.9
   languageName: unknown
@@ -1362,7 +1362,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.9"
     "@mikro-orm/mongodb": "npm:7.2.9"
-    mongodb: "npm:7.8.0"
+    mongodb: "npm:7.9.0"
   peerDependencies:
     "@mikro-orm/core": 7.2.9
   languageName: unknown
@@ -1393,7 +1393,7 @@ __metadata:
   resolution: "@mikro-orm/mongodb@workspace:packages/mongodb"
   dependencies:
     "@mikro-orm/core": "npm:^7.2.9"
-    mongodb: "npm:7.8.0"
+    mongodb: "npm:7.9.0"
   peerDependencies:
     "@mikro-orm/core": 7.2.9
   languageName: unknown
@@ -1405,7 +1405,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.9"
     "@mikro-orm/sql": "npm:7.2.9"
-    kysely: "npm:0.29.8"
+    kysely: "npm:0.29.9"
     tarn: "npm:3.1.2"
     tedious: "npm:20.3.9"
     tsqlstring: "npm:1.0.1"
@@ -1420,7 +1420,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.9"
     "@mikro-orm/sql": "npm:7.2.9"
-    kysely: "npm:0.29.8"
+    kysely: "npm:0.29.9"
     mysql2: "npm:3.24.6"
     sqlstring: "npm:2.3.3"
   peerDependencies:
@@ -1434,7 +1434,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.9"
     "@mikro-orm/sql": "npm:7.2.9"
-    kysely: "npm:0.29.8"
+    kysely: "npm:0.29.9"
     oracledb: "npm:26.0.0"
   peerDependencies:
     "@mikro-orm/core": 7.2.9
@@ -1448,7 +1448,7 @@ __metadata:
     "@electric-sql/pglite": "npm:0.5.16"
     "@mikro-orm/core": "npm:^7.2.9"
     "@mikro-orm/sql": "npm:7.2.9"
-    kysely: "npm:0.29.8"
+    kysely: "npm:0.29.9"
     postgres-array: "npm:3.0.4"
     postgres-date: "npm:2.1.0"
     postgres-interval: "npm:4.1.0"
@@ -1463,7 +1463,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.9"
     "@mikro-orm/sql": "npm:7.2.9"
-    kysely: "npm:0.29.8"
+    kysely: "npm:0.29.9"
     pg: "npm:8.23.1"
     pg-cursor: "npm:2.22.1"
     postgres-array: "npm:3.0.4"
@@ -1567,7 +1567,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.9"
     "@mikro-orm/sql": "npm:7.2.9"
-    kysely: "npm:0.29.8"
+    kysely: "npm:0.29.9"
     sql.js: "npm:1.16.0"
   peerDependencies:
     "@mikro-orm/core": 7.2.9
@@ -1579,7 +1579,7 @@ __metadata:
   resolution: "@mikro-orm/sql@workspace:packages/sql"
   dependencies:
     "@mikro-orm/core": "npm:^7.2.9"
-    kysely: "npm:0.29.8"
+    kysely: "npm:0.29.9"
   peerDependencies:
     "@mikro-orm/core": 7.2.9
   languageName: unknown
@@ -1592,7 +1592,7 @@ __metadata:
     "@mikro-orm/core": "npm:^7.2.9"
     "@mikro-orm/sql": "npm:7.2.9"
     better-sqlite3: "npm:13.1.1"
-    kysely: "npm:0.29.8"
+    kysely: "npm:0.29.9"
   peerDependencies:
     "@mikro-orm/core": 7.2.9
   languageName: unknown
@@ -5744,10 +5744,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"kysely@npm:0.29.8":
-  version: 0.29.8
-  resolution: "kysely@npm:0.29.8"
-  checksum: 10/c1a50635ac1a91186763a33c416f1dc86bcf92832d5b62cd235e039e7e28e5245fd955bcc2ade2ea70f874b3f8bdc8cd5eaee18c3100371e67d458a6863e0b5b
+"kysely@npm:0.29.9":
+  version: 0.29.9
+  resolution: "kysely@npm:0.29.9"
+  checksum: 10/e0d7de941e5f0cb2988626881973d8d0b3243d89ace4129e5f047225cc759eb2e5b867bc79ce3a2350e01612704c29b313d2dc4d6e8979abdca456c451708715
   languageName: node
   linkType: hard
 
@@ -6375,9 +6375,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:7.8.0":
-  version: 7.8.0
-  resolution: "mongodb@npm:7.8.0"
+"mongodb@npm:7.9.0":
+  version: 7.9.0
+  resolution: "mongodb@npm:7.9.0"
   dependencies:
     "@mongodb-js/saslprep": "npm:^1.5.0"
     bson: "npm:^7.3.2"
@@ -6405,7 +6405,7 @@ __metadata:
       optional: true
     socks:
       optional: true
-  checksum: 10/adf0577d07a0dfc588a2103010ddbbdee840df5b2f6866890825005540f500224a4a7ea2f793879c66288997dceb64b2f2be68ee3c0ea664da29593711e47359
+  checksum: 10/cd29fb0608776b0ccda3213b07acb0ca97a8a29c6acd23ce3e9b07f8e45e8d9af9dd00c10e230853cdcaa8d9e1ec479fcad7e0f45e2e6d4d3de38f57a49b7271
   languageName: node
   linkType: hard
 
