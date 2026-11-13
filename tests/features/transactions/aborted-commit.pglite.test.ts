@@ -42,7 +42,7 @@ describe.each([
 
   test('transactional() rejects', async () => {
     await expect(orm.em.fork().transactional(insertDuplicateAndCatch)).rejects.toThrow(
-      'current transaction is aborted',
+      'Transaction was rolled back instead of committed',
     );
 
     expect(await orm.em.fork().count(User)).toBe(1);
@@ -53,7 +53,7 @@ describe.each([
     await em.begin();
     await insertDuplicateAndCatch(em);
 
-    await expect(em.commit()).rejects.toThrow('current transaction is aborted');
+    await expect(em.commit()).rejects.toThrow('Transaction was rolled back instead of committed');
     await em.rollback();
 
     expect(await orm.em.fork().count(User)).toBe(1);
