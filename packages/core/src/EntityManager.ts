@@ -2636,7 +2636,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       helper(entity).__managed = true;
     }
 
-    em.#unitOfWork.merge(entity, visited);
+    // the factory already registered it with everything it hydrated, and `em.find()` does not cascade a merge either
+    if (!(snapshotted && helper(entity).__managed)) {
+      em.#unitOfWork.merge(entity, visited);
+    }
 
     return entity;
   }
