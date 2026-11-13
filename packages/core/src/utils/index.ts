@@ -5,7 +5,7 @@ export * from './RequestContext.js';
 export * from './TransactionContext.js';
 export * from './TransactionManager.js';
 export * from './QueryHelper.js';
-export * from './CompiledQueryCache.js';
+export type { CompiledQueryLookup, QueryCompilation } from './CompiledQueryCache.js';
 export * from './NullHighlighter.js';
 export * from './EntityComparator.js';
 export * from './RawQueryFragment.js';
