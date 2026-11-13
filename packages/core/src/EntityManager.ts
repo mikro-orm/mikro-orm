@@ -17,6 +17,7 @@ import {
   CompiledQueryRecording,
   type CompiledQueryKind,
   type CompiledQueryLookup,
+  type ReplayedFilterCond,
   type QueryCompilation,
 } from './utils/CompiledQueryCache.js';
 import { TransactionContext } from './utils/TransactionContext.js';
@@ -286,7 +287,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       internal = { _compiled: lookup };
 
       if (lookup.query!.joinedFilters) {
-        options.populateFilter = await this.getJoinedFilters(meta, options);
+        // the replayed callbacks already returned the conditions, do not invoke them again
+        options.populateFilter = await this.getJoinedFilters(meta, {
+          ...options,
+          _filterConds: lookup.filterConds,
+        } as typeof options);
       }
 
       if (lookup.verify) {
@@ -1048,7 +1053,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     for (const filter of filters) {
       let cond: Dictionary;
 
-      if (filter.cond instanceof Function) {
+      const replayed = (findOptions as Dictionary | undefined)?._filterConds as ReplayedFilterCond[] | undefined;
+      const idx = replayed?.findIndex(
+        ({ call }) =>
+          call.filter.name === filter.name && call.type === type && call.entity === Utils.className(entityName),
+      );
+
+      if (idx != null && idx >= 0) {
+        cond = replayed!.splice(idx, 1)[0].cond;
+      } else if (filter.cond instanceof Function) {
         const args = this.getFilterArgs(options, filter.name);
 
         if (!args && filter.cond.length > 0 && filter.args !== false) {
@@ -1416,7 +1429,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       internal = { _compiled: lookup };
 
       if (lookup.query!.joinedFilters) {
-        options.populateFilter = await this.getJoinedFilters(meta, options);
+        // the replayed callbacks already returned the conditions, do not invoke them again
+        options.populateFilter = await this.getJoinedFilters(meta, {
+          ...options,
+          _filterConds: lookup.filterConds,
+        } as typeof options);
       }
 
       if (lookup.verify) {
@@ -3902,6 +3919,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   /** Invokes the filter callbacks of a compiled query and binds its parameters when they return the same shapes. */
   private async replayFilterCalls(lookup: CompiledQueryLookup, options: Dictionary): Promise<void> {
     const { leaves, query } = lookup;
+    const conds: ReplayedFilterCond[] = [];
 
     for (const call of query!.filterCalls!) {
       const cond = call.filter.cond as Function;
@@ -3912,14 +3930,17 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         return;
       }
 
-      if (
-        CompiledQueryCache.filterKey(await cond(args, call.type, this, options, call.entity), leaves) !== call.shape
-      ) {
+      const ret = await cond(args, call.type, this, options, call.entity);
+
+      if (CompiledQueryCache.filterKey(ret, leaves) !== call.shape) {
         return;
       }
+
+      conds.push({ call, cond: ret });
     }
 
     lookup.params = query!.bind(leaves, this.getPlatform());
+    lookup.filterConds = conds;
   }
 
   /** Compiles the query the regular way and compares it with the one served from the cache. */

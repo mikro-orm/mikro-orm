@@ -360,6 +360,12 @@ export interface CompiledFilterCall {
   shape: string;
 }
 
+/** @internal condition a filter callback returned when replayed for a cache hit */
+export interface ReplayedFilterCond {
+  call: CompiledFilterCall;
+  cond: Dictionary;
+}
+
 /** @internal state of one query compilation, shared between the EntityManager and the driver */
 export interface QueryCompilation {
   /** compile only, do not execute */
@@ -401,6 +407,8 @@ export interface CompiledQueryLookup {
   /** compile the query the regular way too and compare */
   verify?: boolean;
   recording?: CompiledQueryRecording;
+  /** conditions of the replayed filter callbacks, reused for the joined filters */
+  filterConds?: ReplayedFilterCond[];
 }
 
 /** @internal */

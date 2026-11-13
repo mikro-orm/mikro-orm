@@ -366,6 +366,38 @@ describe('compiled query cache', () => {
     await expect(run(scenario)).resolves.toBeGreaterThan(0);
   });
 
+  test('filter callbacks on a joined relation run once per call on a cache hit', async () => {
+    // verify mode compiles every hit again, which invokes the callbacks too
+    cached.config.set('compiledQueryCache', { enabled: true, verify: false });
+    let calls = 0;
+    const cond = (args: Dictionary) => {
+      calls++;
+      return { price: { $gte: args.min } };
+    };
+    const find = (i: number) => {
+      const em = cached.em.fork();
+      em.addFilter({ name: 'counted', cond, entity: Book, default: false });
+      em.setFilterParams('counted', { min: i });
+
+      return em.find(Author, { id: { $gt: i } }, { populate: ['books'], strategy: 'joined', filters: ['counted'] });
+    };
+
+    // the second call records the compiled query, invoking the callbacks again
+    await find(0);
+    await find(1);
+    calls = 0;
+    const bind = vi.spyOn(CompiledQuery.prototype, 'bind');
+
+    for (let i = 2; i < 6; i++) {
+      await find(i);
+    }
+
+    expect(bind).toHaveBeenCalledTimes(4);
+    bind.mockRestore();
+    expect(calls).toBe(4);
+    cached.config.set('compiledQueryCache', { enabled: true });
+  });
+
   test('$in lists are padded to share the compiled query', async () => {
     cached.config.getCompiledQueryCache()!.clear();
     const scenario: Scenario = (em, i) =>
