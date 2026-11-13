@@ -843,8 +843,11 @@ export class UnitOfWork {
         }
       }
 
-      const deletePkHash = [wrapped.getSerializedPrimaryKey(), ...this.expandUniqueProps(entity)];
-      const type = deletePkHash.some(hash => hashes.has(hash)) ? ChangeSetType.DELETE_EARLY : ChangeSetType.DELETE;
+      // without inserts of this type (the common case), there is nothing to match the removed entity against
+      const early =
+        hashes.size > 0 &&
+        [wrapped.getSerializedPrimaryKey(), ...this.expandUniqueProps(entity)].some(hash => hashes.has(hash));
+      const type = early ? ChangeSetType.DELETE_EARLY : ChangeSetType.DELETE;
 
       this.computeChangeSet(entity, type);
     }
