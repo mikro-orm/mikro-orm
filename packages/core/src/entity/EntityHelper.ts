@@ -406,6 +406,12 @@ export class EntityHelper {
 
     const wrapped = helper(entity);
     const meta = wrapped.__meta;
+
+    // nothing to define on the instance
+    if (meta.trackingProps.length === 0 && !meta.serializedPrimaryKey) {
+      return;
+    }
+
     const platform = wrapped.__platform;
     const serializedPrimaryKey = meta.props.find(p => p.serializedPrimaryKey);
     const values: any[] = [];
