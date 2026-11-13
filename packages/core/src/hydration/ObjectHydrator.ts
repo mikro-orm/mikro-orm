@@ -191,6 +191,9 @@ export class ObjectHydrator extends Hydrator {
         );
       } else if (prop.runtimeType === 'boolean') {
         ret.push(`    entity${entityKey} = !!data${dataKey};`);
+      } else if (prop.formula && prop.runtimeType === 'number') {
+        // drivers can return numeric expressions as strings, e.g. `count(*)` is a bigint in postgres
+        ret.push(`    entity${entityKey} = Number(data${dataKey});`);
       } else if (prop.runtimeType === 'Date' && !this.platform.isNumericProperty(prop)) {
         ret.push(`    if (data${dataKey} instanceof Date) {`);
         ret.push(`      entity${entityKey} = data${dataKey};`);

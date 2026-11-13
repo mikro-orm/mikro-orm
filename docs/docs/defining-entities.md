@@ -1218,12 +1218,6 @@ The `table` parameter provides:
 - `qualifiedName`: The schema-qualified table name (`schema.table` or just `table`)
 - `toString()`: Returns the alias for convenience in template literals
 
-:::info
-
-In PostgreSQL, `count(*)` returns a `bigint`, which the driver maps to a string. Cast the value in the formula (e.g. `count(*)::int`) to get a number.
-
-:::
-
 ## Indexes
 
 You can define indexes via `@Index()` decorator, for unique indexes, you can use `@Unique()` decorator. You can use it either on entity class, or on entity property.
