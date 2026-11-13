@@ -7,11 +7,13 @@ import {
   QueryBuilder,
   raw,
   ref,
+  RequestContext,
+  TableNotFoundException,
   Type,
   type Dictionary,
   type EntityManager,
 } from '@mikro-orm/sqlite';
-import { CompiledQuery } from '../../../packages/core/src/utils/CompiledQueryCache.js';
+import { CompiledQuery, CompiledQueryRecording } from '../../../packages/core/src/utils/CompiledQueryCache.js';
 import { mockLogger } from '../../helpers.js';
 
 class UpperCaseType extends Type<string | null, string | null> {
@@ -35,6 +37,19 @@ class TruthyType extends Type<string | null, number | null> {
 
   override getColumnType(): string {
     return 'integer';
+  }
+}
+
+// a conversion that is not repeatable, so binding the values cannot reproduce the parameters of the real query
+class SequenceType extends Type<string | null, string | null> {
+  static counter = 0;
+
+  override convertToDatabaseValue(value: string | null): string | null {
+    return value == null ? null : `${value}#${SequenceType.counter++}`;
+  }
+
+  override getColumnType(): string {
+    return 'text';
   }
 }
 
@@ -78,6 +93,7 @@ const Author = defineEntity({
     active: p.boolean(),
     code: p.type(UpperCaseType).nullable(),
     rank: p.type(TruthyType).nullable(),
+    seq: p.type(SequenceType).nullable(),
     meta: p.json<{ level: number; label: string }>().nullable(),
     createdAt: p.datetime(),
     address: () => p.embedded(Address),
@@ -255,6 +271,14 @@ const cacheable: Record<string, Scenario> = {
     await em.find(Book, { publisher: BigInt((i % 2) + 1) }),
     await em.find(Book, { publisher: { id: { $in: [1n, BigInt(i)] } } }),
   ],
+  'find with a date next to a padded list': (em, i) =>
+    em.find(Author, { createdAt: { $lt: new Date(Date.UTC(2021, i, 1)) }, id: { $in: [i, i + 1, i + 2] } }),
+  'find with options unknown to the key': async (em, i) => [
+    await em.find(Author, { id: i + 1 }, { marker: 1n } as Dictionary),
+    await em.find(Author, { id: i + 1 }, { marker: new Date(0) } as Dictionary),
+  ],
+  'find by a padded list of a custom type': (em, i) =>
+    em.find(Author, { code: { $in: ['code2', `code${i}`, 'code6'] } }),
   'find by custom type': (em, i) => em.find(Author, { code: `code${i + 1}` }),
   'find by custom type collapsing to null': (em, i) => em.find(Author, { code: i === 4 ? '' : `code${i + 1}` }),
   'find with limit and offset': (em, i) =>
@@ -321,6 +345,9 @@ const bypassed: Record<string, Scenario> = {
       Author,
       Array.from({ length: 40 }, (_, idx) => idx + i),
     ),
+  'function as a value': (em, i) => em.find(Author, { id: i, name: (() => 'author') as unknown as string }),
+  'function in an unknown option': (em, i) => em.find(Author, { id: i }, { marker: () => i } as Dictionary),
+  'limit that is not a number': (em, i) => em.find(Author, { id: { $gt: i } }, { limit: '2' as unknown as number }),
   'pessimistic lock': (em, i) =>
     em.transactional(() => em.findOne(Author, { id: i + 1 }, { lockMode: LockMode.PESSIMISTIC_WRITE })),
   'cursor pagination': (em, i) => em.findByCursor(Author, { first: 2 + (i % 2), orderBy: { id: 'asc' } }),
@@ -458,6 +485,101 @@ describe('compiled query cache', () => {
     expect(cached.config.getCompiledQueryCache()!.size).toBeGreaterThan(0);
     cached.config.reset('loadStrategy');
     expect(cached.config.getCompiledQueryCache()!.size).toBe(0);
+  });
+
+  test('custom type with a conversion that is not repeatable is not cached', async () => {
+    const hits = vi.spyOn(QueryBuilder.prototype, 'executeCompiled');
+
+    for (let i = 0; i < 6; i++) {
+      await cached.em.fork().find(Author, { seq: `seq ${i}` });
+    }
+
+    expect(hits).not.toHaveBeenCalled();
+  });
+
+  test('one value converted by two custom types is not cached', () => {
+    const { code, rank } = cached.getMetadata(Author).properties;
+    const build = (...props: (typeof code)[]) => {
+      const recording = new CompiledQueryRecording(['a'], { code: 'a' }, {});
+      const sentinel = (recording.where as Dictionary).code;
+      props.forEach(prop => recording.onConvert(sentinel, 'X', prop));
+      Object.assign(recording.compilation, { count: 1, sql: 'select ?', params: ['A'], overrides: {} });
+
+      return recording.build({ dry: true, count: 1, sql: 'select ?', params: ['X'] }, cached.em.getPlatform());
+    };
+
+    expect(build(code, code)).toBeInstanceOf(CompiledQuery);
+    expect(build(code, rank)).toBeUndefined();
+  });
+
+  test('entries in use survive the eviction of older ones', async () => {
+    cached.config.set('compiledQueryCache', { enabled: true, size: 4 });
+    const hits = vi.spyOn(QueryBuilder.prototype, 'executeCompiled');
+    const used = () => cached.em.fork().find(Author, { id: 1 });
+    const other = (i: number) =>
+      cached.em.fork().find(Author, { ['id age name active balance born'.split(' ')[i]]: null });
+    await used();
+    await used();
+
+    for (let i = 0; i < 3; i++) {
+      await other(i);
+    }
+
+    await used();
+
+    for (let i = 3; i < 6; i++) {
+      await other(i);
+    }
+
+    hits.mockClear();
+    await used();
+    expect(hits).toHaveBeenCalledTimes(1);
+  });
+
+  test('missing filter arguments are reported on a cache hit too', async () => {
+    const find = (em: EntityManager) => em.find(Book, { id: { $gt: 20 } }, { filters: { expensive: true } });
+
+    for (let i = 0; i < 4; i++) {
+      const em = cached.em.fork();
+      em.setFilterParams('expensive', { min: i });
+      await find(em);
+    }
+
+    await expect(find(cached.em.fork())).rejects.toThrow(`No arguments provided for filter 'expensive'`);
+  });
+
+  test('entity manager with other filters than the context does not use the cache', async () => {
+    const hits = vi.spyOn(QueryBuilder.prototype, 'executeCompiled');
+    const em = cached.em.fork({ useContext: true });
+    em.addFilter({ name: 'adult', entity: Author, cond: { age: { $gte: 18 } } });
+
+    for (let i = 0; i < 4; i++) {
+      await RequestContext.create(cached.em.fork(), () => em.find(Author, { id: { $gt: i } }));
+    }
+
+    expect(hits).not.toHaveBeenCalled();
+  });
+
+  test('errors of a compiled query are converted to driver exceptions', async () => {
+    const orm = await MikroORM.init({ entities: [Tag], dbName: ':memory:' });
+    await orm.schema.create();
+
+    for (let i = 0; i < 3; i++) {
+      await orm.em.fork().find(Tag, { id: i });
+    }
+
+    await orm.em.execute('drop table tag');
+    await expect(orm.em.fork().find(Tag, { id: 1 })).rejects.toThrow(TableNotFoundException);
+    await orm.close(true);
+  });
+
+  test('verify mode reports a compiled query that differs from the regular one', async () => {
+    cached.config.set('compiledQueryCache', { enabled: true, verify: true });
+    const find = (i: number) => cached.em.fork().find(Tag, { id: i });
+    await find(1);
+    await find(2);
+    vi.spyOn(CompiledQuery.prototype, 'bind').mockReturnValue([100]);
+    await expect(find(3)).rejects.toThrow('Compiled query cache mismatch in find(Tag)');
   });
 
   test('the internals of the cache are not exported', () => {
