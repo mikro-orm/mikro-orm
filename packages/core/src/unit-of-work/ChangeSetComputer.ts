@@ -192,10 +192,17 @@ export class ChangeSetComputer {
   }
 
   private processProperty<T extends object>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
-    const isToOne = prop.kind === ReferenceKind.MANY_TO_ONE || prop.kind === ReferenceKind.ONE_TO_ONE;
+    if (prop.kind !== ReferenceKind.MANY_TO_ONE && prop.kind !== ReferenceKind.ONE_TO_ONE) {
+      // m:n or 1:m
+      if (Utils.isCollection(changeSet.entity[prop.name])) {
+        this.processToMany(prop, changeSet);
+      }
+
+      return;
+    }
 
     // only owning to-one sides referencing an entity can add an FK value to the payload
-    if (isToOne && ((prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner) || prop.mapToPk)) {
+    if ((prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner) || prop.mapToPk) {
       return;
     }
 
@@ -203,10 +210,8 @@ export class ChangeSetComputer {
     if (!prop.object && !prop.array && !prop.embedded) {
       const target = changeSet.entity[prop.name] as AnyEntity;
 
-      if (isToOne && target != null) {
+      if (target != null) {
         this.processToOne(prop, changeSet, target, []);
-      } else if (Utils.isCollection(target)) {
-        this.processToMany(prop, changeSet);
       }
 
       return;
@@ -215,12 +220,7 @@ export class ChangeSetComputer {
     const targets = Utils.unwrapProperty(changeSet.entity, changeSet.meta, prop) as [AnyEntity, number[]][];
 
     for (const [target, idx] of targets) {
-      if (isToOne) {
-        this.processToOne(prop, changeSet, target, idx);
-      } else if (Utils.isCollection(target)) {
-        // m:n or 1:m
-        this.processToMany(prop, changeSet);
-      }
+      this.processToOne(prop, changeSet, target, idx);
     }
   }
 
