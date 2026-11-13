@@ -58,6 +58,11 @@ function kindOf(value: unknown): string {
   return value instanceof Date ? 'date' : typeof value;
 }
 
+/** Prefixes a name with its length, so names containing the separators of the key cannot collide with other shapes. */
+function nameKey(name: string): string {
+  return name.length + '#' + name;
+}
+
 function valueKey(value: unknown): unknown {
   return value instanceof Date ? `date:${value.getTime()}` : value;
 }
@@ -200,7 +205,7 @@ function whereKey(value: unknown, leaves: unknown[], list = false): string {
     let key = '{';
 
     for (const k in value) {
-      key += k + ':' + whereKey((value as Dictionary)[k], leaves, k === '$in' || k === '$nin') + ',';
+      key += nameKey(k) + ':' + whereKey((value as Dictionary)[k], leaves, k === '$in' || k === '$nin') + ',';
     }
 
     return key + '}';
@@ -250,7 +255,7 @@ function substitute(value: unknown, sentinels: unknown[], pos: { idx: number }):
 function optionKey(value: unknown): string {
   switch (typeof value) {
     case 'string':
-      return '"' + value + '"';
+      return '"' + nameKey(value);
     case 'number':
     case 'boolean':
       return '' + value;
@@ -293,7 +298,7 @@ function optionKey(value: unknown): string {
   let key = '{';
 
   for (const k in value) {
-    key += k + ':' + optionKey((value as Dictionary)[k]) + ',';
+    key += nameKey(k) + ':' + optionKey((value as Dictionary)[k]) + ',';
   }
 
   return key + '}';
@@ -308,7 +313,7 @@ function filtersOptionKey(value: unknown): string {
   let key = '{';
 
   for (const k in value) {
-    key += k + ':' + (Utils.isPlainObject(value[k]) ? 'O' : optionKey(value[k])) + ',';
+    key += nameKey(k) + ':' + (Utils.isPlainObject(value[k]) ? 'O' : optionKey(value[k])) + ',';
   }
 
   return key + '}';
@@ -632,6 +637,11 @@ export class CompiledQueryRecording {
       return undefined;
     }
 
+    // a conversion mapping the value and its placeholder to the same parameter cannot be told apart from a constant
+    if (hasConversions && conversions.some((c, i) => c && Utils.equals(bound[i], dry.params![i]))) {
+      return undefined;
+    }
+
     return query;
   }
 }
@@ -784,7 +794,7 @@ export class CompiledQueryCache {
   }
 }
 
-/** Stores the processed options of a compilation, before the driver or the loader get to touch them. */
+/** @internal Stores the processed options of a compilation, before the driver or the loader get to touch them. */
 export function captureOptions(compilation: QueryCompilation, options: Dictionary): void {
   if (!compilation.prepared) {
     return;
