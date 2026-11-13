@@ -192,7 +192,8 @@ export class Configuration<
   #routinesNormalised = false;
 
   constructor(options: Partial<Options<any, any, any>>, validate = true) {
-    if (options.dynamicImportProvider) {
+    // the default is present when re-creating from `getAll()`, it must not override an already registered provider
+    if (options.dynamicImportProvider && options.dynamicImportProvider !== DEFAULTS.dynamicImportProvider) {
       (globalThis as any).dynamicImportProvider = options.dynamicImportProvider;
     }
 

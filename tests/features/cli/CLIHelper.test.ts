@@ -865,6 +865,22 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
 
       expect(typeof (globalThis as any).dynamicImportProvider).toBe('function');
     });
+
+    test('keeps dynamicImportProvider after ORM init', async () => {
+      tryImportMock.mockReturnValueOnce({});
+      delete (globalThis as any).dynamicImportProvider;
+      pathExistsMock.mockImplementation(async path => {
+        const str = path as string;
+        return str.includes('/mikro-orm.config.js') && !str.includes('/src/mikro-orm.config.js');
+      });
+
+      await CLIHelper.registerTypeScriptSupport('tsconfig.json', loader);
+      const provider = (globalThis as any).dynamicImportProvider;
+      const orm = await CLIHelper.getORM(undefined, undefined, { discovery: { warnWhenNoEntities: false } });
+
+      expect((globalThis as any).dynamicImportProvider).toBe(provider);
+      await orm.close(true);
+    });
   });
 
   test('dumpTable', async () => {
