@@ -1206,8 +1206,8 @@ For more complex scenarios, you can use an enhanced callback signature that prov
 
 ```ts
 @Formula((cols, table) => {
-  return `(select count(*) from other_table where other_table.ref_id = ${table.qualifiedName}.${cols.id})`;
-}, { type: new BigIntType('number') })
+  return `(select count(*)::int from other_table where other_table.ref_id = ${table.qualifiedName}.${cols.id})`;
+})
 relatedCount?: number;
 ```
 
@@ -1218,7 +1218,7 @@ The `table` parameter provides:
 - `qualifiedName`: The schema-qualified table name (`schema.table` or just `table`)
 - `toString()`: Returns the alias for convenience in template literals
 
-The property type needs to match what the formula returns, the value is not cast to the declared TypeScript type. For example, `count(*)` is a `bigint` in PostgreSQL, which the driver returns as a string, so the example above maps it via `BigIntType` in `number` mode. Alternatively, cast the value in the SQL, e.g. `count(*)::int`.
+The property type needs to match what the formula returns, the value is not cast to the declared TypeScript type. For example, `count(*)` is a `bigint` in PostgreSQL, which the driver returns as a string, hence the `::int` cast in the example above. Alternatively, map the property via `BigIntType` in `number` mode, e.g. `{ type: new BigIntType('number') }`.
 
 ## Indexes
 
