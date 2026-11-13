@@ -359,11 +359,14 @@ export class EntityFactory {
         [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
         Utils.isPlainObject(data[prop.name])
       ) {
-        // oxfmt-ignore
-        diff2[key] = entity[prop.name] ? helper(entity[prop.name]!).getPrimaryKey(options.convertCustomTypes) as EntityDataValue<T> : null;
-      }
-
-      if (
+        diff2[key] = entity[prop.name]
+          ? (EntityHelper.getForeignKeyValue(
+              Reference.unwrapReference(entity[prop.name]!),
+              prop,
+              prop.targetMeta!,
+            ) as EntityDataValue<T>)
+          : null;
+      } else if (
         !options.convertCustomTypes &&
         [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE, ReferenceKind.SCALAR].includes(prop.kind) &&
         prop.customType?.ensureComparable(meta, prop) &&
