@@ -2646,7 +2646,7 @@ export class QueryBuilder<
       const map: Dictionary = {};
       mapped = res.map(r => this.driver.mapResult<Entity>(r as Entity, meta, this.#state.populate, this as any, map)!);
 
-      if (options.mergeResults && joinedProps.length > 0) {
+      if (options.mergeResults && joinedProps.length > 0 && this.canRepeatRootRows()) {
         mapped = this.driver.mergeJoinedResult(mapped, this.mainAlias.meta, joinedProps);
       }
     } else {
@@ -4226,6 +4226,18 @@ export class QueryBuilder<
   private hasToManyJoins(): boolean {
     return Object.values(this.#state.joins).some(join => {
       return [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(join.prop.kind);
+    });
+  }
+
+  /**
+   * Whether a join can match more than one row per root row. Only owning to-one joins target a unique key; inverse 1:1
+   * relies on an unenforced unique FK, and sub-query or table reference joins match arbitrary rows.
+   */
+  private canRepeatRootRows(): boolean {
+    return Object.values(this.#state.joins).some(join => {
+      const { kind, owner, name } = join.prop;
+      const uniqueTarget = kind === ReferenceKind.MANY_TO_ONE || (kind === ReferenceKind.ONE_TO_ONE && owner);
+      return !uniqueTarget || join.subquery != null || name === '__subquery__';
     });
   }
 
