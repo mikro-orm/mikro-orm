@@ -2607,8 +2607,10 @@ export class QueryBuilder<
       compilation.state = { qb: this, method, mapResults: options.mapResults, mergeResults: options.mergeResults };
 
       if (compilation.dry) {
-        // this instance is kept by the compiled query cache, so it must not hold on to the EntityManager
+        // this instance is kept by the compiled query cache, so it must not hold on to the context of the call
         this.em = undefined;
+        this.loggerContext = undefined;
+        this.#abortOptions = undefined;
         return (method === 'all' ? [] : undefined) as U;
       }
     }
@@ -2708,14 +2710,13 @@ export class QueryBuilder<
     run: {
       ctx?: Transaction;
       em?: SqlEntityManager;
-      connectionType?: ConnectionType;
+      connectionType: ConnectionType;
       logging?: LoggingOptions;
       abortOptions?: AbortQueryOptions;
     },
   ): Promise<U> {
     const loggerContext = { id: run.em?.id, ...run.logging, ...run.abortOptions };
-    const write = run.ctx || !this.platform.getConfig().get('preferReadReplicas');
-    const conn = this.driver.getConnection(run.connectionType || (write ? 'write' : 'read'));
+    const conn = this.driver.getConnection(run.connectionType);
     const sessionContext = run.ctx ? undefined : run.em?.getTransactionSessionContext();
     let res: EntityData<AnyEntity>[];
 
