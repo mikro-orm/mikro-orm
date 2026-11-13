@@ -683,6 +683,26 @@ The `global` option can be:
 - `number` - cache all queries with the specified expiration in ms
 - `[string, number]` - cache all queries with the specified key prefix and expiration
 
+## Compiled Query Cache
+
+SQL drivers cache the compiled SQL of `em.find()`, `em.findOne()` and `em.count()`. Calls of the same shape (entity, structure of the conditions, options) reuse the generated SQL and only bind their values, which skips most of the query building. This is not a result cache, the query is still executed every time.
+
+```ts
+MikroORM.init({
+  compiledQueryCache: {
+    enabled: true,
+    size: 1000, // maximum number of query shapes to keep
+    verify: false, // compile every cached query the regular way too and throw if they differ, for testing
+  },
+});
+```
+
+A few things to be aware of:
+
+- `$in` and `$nin` lists are padded to the next power of two by repeating the last value (`in (1, 2, 3)` becomes `in (1, 2, 3, 3)`), so lists of different lengths share one cached query. Lists with more than 512 items are not cached.
+- Filters with a callback condition are supported. The callback is invoked again for every call and its values are bound as parameters, so it has to be free of side effects. Callbacks that declare more than two parameters (using the `EntityManager`, the find options or the entity name) are not cached.
+- Queries with raw SQL fragments, subqueries, locking, cursor pagination, `groupBy`/`having`, `populateWhere: 'infer'` or the result cache always take the regular path, as well as everything when `populateWhere: 'infer'` or the global result cache is configured.
+
 ## Metadata Cache
 
 By default, metadata discovery results are cached. You can either disable caching, or adjust how it works. Following example shows all possible options and their defaults:
