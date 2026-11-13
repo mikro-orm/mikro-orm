@@ -921,8 +921,8 @@ export class UnitOfWork {
   private findNewEntities<T extends object>(
     entity: T,
     visited: Set<AnyEntity>,
-    idx = 0,
-    processed = new Set<AnyEntity>(),
+    idx: number,
+    processed: Set<AnyEntity>,
   ): void {
     if (visited.has(entity)) {
       return;

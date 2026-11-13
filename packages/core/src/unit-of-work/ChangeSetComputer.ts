@@ -47,10 +47,8 @@ export class ChangeSetComputer {
     const wrapped = helper(entity);
     const type = wrapped.__originalEntityData ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
 
-    // Execute `onCreate` and `onUpdate` on properties recursively, saves `onUpdate` results
-    // to the `map` as we want to apply those only if something else changed.
+    // execute `onCreate` on properties recursively, update hooks run only after we know there are other changes
     if (type === ChangeSetType.CREATE) {
-      // run update hooks only after we know there are other changes
       for (const prop of meta.hydrateProps) {
         this.processPropertyInitializers(entity, prop, type);
       }
