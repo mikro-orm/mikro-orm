@@ -21,7 +21,8 @@ import { NotFoundError } from '../errors.js';
 import { inspect } from '../logging/inspect.js';
 
 // Globally registered so the markers survive the CJS/ESM dual-package hazard
-// (see entitySymbol rationale in EntityHelper.ts and #7515/#7534).
+// (see entitySymbol rationale in EntityHelper.ts and #7515/#7534). Live on the
+// prototypes; JSON payloads cannot produce symbol keys, so they cannot forge them.
 const referenceSymbol = Symbol.for('@mikro-orm/core/Reference');
 const scalarReferenceSymbol = Symbol.for('@mikro-orm/core/ScalarReference');
 
@@ -30,7 +31,6 @@ export class Reference<T extends object> {
   private property?: EntityProperty;
 
   constructor(private entity: T) {
-    Object.defineProperty(this, referenceSymbol, { value: true, enumerable: false });
     this.set(entity);
     const meta = helper(this.entity).__meta;
 
@@ -104,7 +104,7 @@ export class Reference<T extends object> {
    * Checks whether the argument is instance of `Reference` wrapper.
    */
   static isReference<T extends object>(data: any): data is Reference<T> {
-    return data != null && Object.hasOwn(data, referenceSymbol);
+    return typeof data === 'object' && data !== null && data[referenceSymbol] === true;
   }
 
   /**
@@ -262,7 +262,6 @@ export class ScalarReference<Value> {
     private value?: Value,
     initialized = value != null,
   ) {
-    Object.defineProperty(this, scalarReferenceSymbol, { value: true, enumerable: false });
     this.#initialized = initialized;
   }
 
@@ -330,7 +329,7 @@ export class ScalarReference<Value> {
   }
 
   static isScalarReference(data: any): data is ScalarReference<any> {
-    return data != null && typeof data === 'object' && Object.hasOwn(data, scalarReferenceSymbol);
+    return data != null && typeof data === 'object' && data[scalarReferenceSymbol] === true;
   }
 
   /** @ignore */
@@ -341,6 +340,7 @@ export class ScalarReference<Value> {
 }
 
 Object.defineProperties(Reference.prototype, {
+  [referenceSymbol]: { value: true },
   __meta: {
     get() {
       return this.entity.__meta!;
@@ -369,6 +369,7 @@ Object.defineProperties(Reference.prototype, {
 });
 
 Object.defineProperties(ScalarReference.prototype, {
+  [scalarReferenceSymbol]: { value: true },
   $: {
     get() {
       return this.value;
