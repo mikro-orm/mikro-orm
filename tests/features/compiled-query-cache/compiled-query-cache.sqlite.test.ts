@@ -22,6 +22,10 @@ class UpperCaseType extends Type<string | null, string | null> {
   }
 }
 
+// ambient state read by a filter callback, like a clock or an async context would be
+let clock = 0;
+const minAge = (args: Dictionary) => ({ age: { $gte: args.min } });
+
 const Address = defineEntity({
   name: 'Address',
   embeddable: true,
@@ -78,6 +82,17 @@ const Book = defineEntity({
   filters: {
     softDelete: { name: 'softDelete', cond: { deletedAt: null }, default: true },
     expensive: { name: 'expensive', cond: (args: Dictionary) => ({ price: { $gte: args.min } }), default: false },
+    cheap: {
+      name: 'cheap',
+      cond: async (args: Dictionary) => (args.max % 2 ? { price: { $lte: args.max } } : {}),
+      default: false,
+    },
+    recent: { name: 'recent', cond: () => ({ id: { $lt: clock } }), default: false, args: false },
+    ownTitle: {
+      name: 'ownTitle',
+      cond: (args: Dictionary, type: string, em: EntityManager) => ({ title: { $ne: em.name + args.title } }),
+      default: false,
+    },
   },
 });
 
@@ -148,7 +163,7 @@ async function run(scenario: Scenario, iterations = 6): Promise<number> {
   const queries = (mock: typeof cachedLog) =>
     mock.mock.calls
       .splice(0)
-      .map(call => call[0].replace(/ \[took .*$/, ''))
+      .map(call => unpad(call[0].replace(/ \[took .*$/, '')))
       .sort();
 
   for (let i = 0; i < iterations; i++) {
@@ -161,6 +176,19 @@ async function run(scenario: Scenario, iterations = 6): Promise<number> {
   bind.mockRestore();
 
   return hits;
+}
+
+/** Drops the repeated last value of `in (...)` lists, as the cache pads them to a power of two. */
+function unpad(sql: string): string {
+  return sql.replace(/ in \(([^()]+)\)/g, (_, list: string) => {
+    const items = list.split(', ');
+
+    while (items.length > 1 && items.at(-1) === items.at(-2)) {
+      items.pop();
+    }
+
+    return ` in (${items.join(', ')})`;
+  });
 }
 
 async function capture(scenario: Scenario, orm: MikroORM, i: number): Promise<string> {
@@ -224,6 +252,29 @@ const cacheable: Record<string, Scenario> = {
     await em.find(Book, { author: i + 1 }, { filters: false }),
     await em.find(Author, { id: i + 1 }, { populate: ['books'], strategy: 'joined' }),
   ],
+  'find with callback filter': (em, i) =>
+    em.find(Book, { author: { $ne: null } }, { filters: { expensive: { min: i } } }),
+  'find with async callback filter changing its shape': (em, i) =>
+    em.find(Book, { id: { $gt: i } }, { filters: { cheap: { max: i } } }),
+  'find with callback filter reading ambient state': (em, i) => {
+    clock = 40 + i * 5;
+    return em.find(Book, { id: { $gt: i } }, { filters: { recent: true } });
+  },
+  'find with callback filter on a joined relation': async (em, i) => [
+    await em.find(
+      Author,
+      { id: { $gt: i } },
+      { populate: ['books'], strategy: 'joined', filters: { expensive: { min: i } } },
+    ),
+    await em.find(Book, { id: { $gt: i } }, { populate: ['author.books'], filters: { expensive: { min: i } } }),
+  ],
+  'find with callback filter on a select-in relation': (em, i) =>
+    em.find(
+      Author,
+      { id: { $gt: i } },
+      { populate: ['books.tags'], strategy: 'select-in', filters: { expensive: { min: i } } },
+    ),
+  'count with callback filter': (em, i) => em.count(Book, { id: { $gt: i } }, { filters: { expensive: { min: i } } }),
   'findAndCount with paginated to-many join': (em, i) =>
     em.findAndCount(
       Author,
@@ -240,7 +291,11 @@ const cacheable: Record<string, Scenario> = {
 const bypassed: Record<string, Scenario> = {
   'raw fragment as a key': (em, i) => em.find(Author, { [raw('lower(name)')]: `author ${i}` }),
   'raw fragment as a value': (em, i) => em.find(Author, { age: raw('? + 20', [i]) }),
-  'filter with callback': (em, i) => em.find(Book, { author: { $ne: null } }, { filters: { expensive: { min: i } } }),
+  'callback filter reading the entity manager': (em, i) =>
+    em.find(Book, { id: { $gt: i } }, { filters: { ownTitle: { title: ` ${i}` } } }),
+  'callback filter without its arguments': (em, i) => em.find(Book, { id: { $gt: i } }, { filters: ['expensive'] }),
+  '$in list over the size limit': (em, i) =>
+    em.find(Author, { id: { $in: Array.from({ length: 600 }, (_, idx) => idx + i) } }),
   'pessimistic lock': (em, i) =>
     em.transactional(() => em.findOne(Author, { id: i + 1 }, { lockMode: LockMode.PESSIMISTIC_WRITE })),
   'cursor pagination': (em, i) => em.findByCursor(Author, { first: 2 + (i % 2), orderBy: { id: 'asc' } }),
@@ -287,12 +342,26 @@ describe('compiled query cache', () => {
 
   test('filter params are passed to the callback on every call', async () => {
     const scenario: Scenario = (em, i) => {
-      em.addFilter({ name: 'minAge', cond: (args: Dictionary) => ({ age: { $gte: args.min } }), entity: Author });
+      em.addFilter({ name: 'minAge', cond: minAge, entity: Author });
       em.setFilterParams('minAge', { min: 21 + i });
 
       return em.find(Author, { active: true }, { populate: ['books'] });
     };
-    await expect(run(scenario)).resolves.toBe(0);
+    await expect(run(scenario)).resolves.toBeGreaterThan(0);
+  });
+
+  test('$in lists are padded to share the compiled query', async () => {
+    cached.config.getCompiledQueryCache()!.clear();
+    const scenario: Scenario = (em, i) =>
+      em.find(Author, { id: { $in: Array.from({ length: 5 + (i % 4) }, (_, idx) => idx + i) } });
+    await expect(run(scenario, 8)).resolves.toBeGreaterThan(5);
+    expect(cached.config.getCompiledQueryCache()!.size).toBe(1);
+
+    const mock = mockLogger(cached);
+    const where = { id: { $in: [1, 2, 3] }, name: { $nin: ['a', 'b', 'c'] } };
+    await cached.em.fork().find(Author, where);
+    expect(mock.mock.calls[0][0]).toMatch("in (1, 2, 3, 3) and `a0`.`name` not in ('a', 'b', 'c', 'c')");
+    expect(where).toEqual({ id: { $in: [1, 2, 3] }, name: { $nin: ['a', 'b', 'c'] } });
   });
 
   test('changing the configuration drops the compiled queries', async () => {
@@ -320,7 +389,7 @@ describe('compiled query cache', () => {
 
     // the oldest shapes are evicted once the cache is full
     for (let i = 1; i <= 30; i++) {
-      await cached.em.fork().find(Author, { id: { $in: Array.from({ length: i }, (_, idx) => idx) } });
+      await cached.em.fork().find(Author, { $or: Array.from({ length: i }, (_, id) => ({ id })) });
     }
 
     expect(cache.size).toBe(10);

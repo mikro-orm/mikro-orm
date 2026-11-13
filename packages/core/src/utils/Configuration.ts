@@ -160,7 +160,7 @@ const DEFAULTS = {
     useCoreBaseEntity: false,
   },
   metadataCache: {},
-  compiledQueryCache: { enabled: true, size: 1000 },
+  compiledQueryCache: { enabled: false, size: 1000 },
   resultCache: {
     adapter: MemoryCacheAdapter,
     expiration: 1000, // 1s
@@ -439,12 +439,12 @@ export class Configuration<
     if (this.#compiledQueryCache === undefined) {
       const { enabled, size, verify } = this.#options.compiledQueryCache;
       // the default `populateWhere` and the global result cache are not part of the cache key
+      const env = globalThis.process?.env?.MIKRO_ORM_COMPILED_QUERY_CACHE_VERIFY;
       const usable =
-        enabled &&
+        (enabled || !!env) &&
         this.#platform.supportsCompiledQueryCache() &&
         this.#options.populateWhere === PopulateHint.ALL &&
         !this.#options.resultCache.global;
-      const env = globalThis.process?.env?.MIKRO_ORM_COMPILED_QUERY_CACHE_VERIFY;
       this.#compiledQueryCache = usable && new CompiledQueryCache(size ?? 1000, verify ?? !!env);
     }
 
@@ -1462,7 +1462,7 @@ export interface Options<
    */
   compiledQueryCache: {
     /**
-     * @default true
+     * @default false
      */
     enabled?: boolean;
     /**
@@ -1472,7 +1472,7 @@ export interface Options<
     size?: number;
     /**
      * Compile every cached query the regular way too and throw if the results differ, for testing.
-     * Can be also enabled via `MIKRO_ORM_COMPILED_QUERY_CACHE_VERIFY` env var.
+     * The `MIKRO_ORM_COMPILED_QUERY_CACHE_VERIFY` env var enables both the cache and this check.
      * @default false
      */
     verify?: boolean;
