@@ -428,9 +428,6 @@ export class Configuration<
   }
 
   /**
-   * Gets instance of CacheAdapter for result cache. (cached)
-   */
-  /**
    * Gets the compiled query cache, `undefined` when it is disabled or not supported by the driver.
    *
    * @internal
@@ -451,6 +448,9 @@ export class Configuration<
     return this.#compiledQueryCache || undefined;
   }
 
+  /**
+   * Gets instance of CacheAdapter for result cache. (cached)
+   */
   getResultCacheAdapter(): CacheAdapter {
     return this.getCachedService(this.#options.resultCache.adapter!, {
       expiration: this.#options.resultCache.expiration,
