@@ -53,8 +53,6 @@ MikroORM.init({
     checkDuplicateTableNames: false, 
     // by default, discovery throws when duplicate field names are found
     checkDuplicateFieldNames: false,
-    // by default, discovery throws when duplicate entities are found
-    checkDuplicateEntities: false, 
     // by default, discovery throws when composite primary keys are marked as `persist: false`
     checkNonPersistentCompositeProps: false,
     // by default, default values are inferred from property initializers (if it's possible to invoke the constructor without parameters)
@@ -789,8 +787,8 @@ Full list of supported options:
 | `MIKRO_ORM_BATCH_SIZE`                                      | `batchSize`                                    |
 | `MIKRO_ORM_USE_BATCH_INSERTS`                               | `useBatchInserts`                              |
 | `MIKRO_ORM_USE_BATCH_UPDATES`                               | `useBatchUpdates`                              |
+| `MIKRO_ORM_ALLOW_GLOBAL_CONTEXT`                            | `allowGlobalContext`                           |
 | `MIKRO_ORM_AUTO_JOIN_ONE_TO_ONE_OWNER`                      | `autoJoinOneToOneOwner`                        |
-| `MIKRO_ORM_PROPAGATE_TO_ONE_OWNER`                          | `propagateToOneOwner`                          |
 | `MIKRO_ORM_POPULATE_AFTER_FLUSH`                            | `populateAfterFlush`                           |
 | `MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR`                        | `forceEntityConstructor`                       |
 | `MIKRO_ORM_FORCE_UNDEFINED`                                 | `forceUndefined`                               |
@@ -803,7 +801,6 @@ Full list of supported options:
 | `MIKRO_ORM_DISCOVERY_WARN_WHEN_NO_ENTITIES`                 | `discovery.warnWhenNoEntities`                 |
 | `MIKRO_ORM_DISCOVERY_CHECK_DUPLICATE_TABLE_NAMES`           | `discovery.checkDuplicateTableNames`           |  
 | `MIKRO_ORM_DISCOVERY_CHECK_DUPLICATE_FIELD_NAMES`           | `discovery.checkDuplicateFieldNames`           |  
-| `MIKRO_ORM_DISCOVERY_CHECK_DUPLICATE_ENTITIES`              | `discovery.checkDuplicateEntities`             |  
 | `MIKRO_ORM_DISCOVERY_CHECK_NON_PERSISTENT_COMPOSITE_PROPS`  | `discovery.checkNonPersistentCompositeProps`   |  
 | `MIKRO_ORM_DISCOVERY_INFER_DEFAULT_VALUES`                  | `discovery.inferDefaultValues`                 |  
 | `MIKRO_ORM_DISCOVERY_TS_CONFIG_PATH`                        | `discovery.tsConfigPath`                       |  
@@ -816,9 +813,13 @@ Full list of supported options:
 | `MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING`                       | `migrations.allOrNothing`                      |
 | `MIKRO_ORM_MIGRATIONS_DROP_TABLES`                          | `migrations.dropTables`                        |
 | `MIKRO_ORM_MIGRATIONS_SAFE`                                 | `migrations.safe`                              |
+| `MIKRO_ORM_MIGRATIONS_SILENT`                               | `migrations.silent`                            |
 | `MIKRO_ORM_MIGRATIONS_EMIT`                                 | `migrations.emit`                              |
-| `MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS`           | `migrations.disableForeignKeys`                |
-| `MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS` | `migrations.createForeignKeyConstraints`       |
+| `MIKRO_ORM_MIGRATIONS_SNAPSHOT`                             | `migrations.snapshot`                          |
+| `MIKRO_ORM_MIGRATIONS_SNAPSHOT_ON_MIGRATE`                  | `migrations.snapshotOnMigrate`                 |
+| `MIKRO_ORM_MIGRATIONS_SNAPSHOT_NAME`                        | `migrations.snapshotName`                      |
+| `MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS`           | `schemaGenerator.disableForeignKeys`           |
+| `MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS` | `schemaGenerator.createForeignKeyConstraints`  |
 | `MIKRO_ORM_SCHEMA_GENERATOR_IGNORE_TRIGGERS`               | `schemaGenerator.ignoreTriggers`               |
 | `MIKRO_ORM_SCHEMA_GENERATOR_IGNORE_ROUTINES`               | `schemaGenerator.ignoreRoutines`               |
 | `MIKRO_ORM_SCHEMA_GENERATOR_IGNORE_POLICIES`               | `schemaGenerator.ignorePolicies`               |
