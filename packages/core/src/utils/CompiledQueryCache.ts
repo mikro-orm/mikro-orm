@@ -380,8 +380,6 @@ export interface QueryCompilation {
   params?: readonly unknown[];
   /** driver specific state needed to execute and map the query again */
   state?: unknown;
-  /** prepared options before the EntityManager processed them, set when the options should be captured */
-  prepared?: Dictionary;
   /** processed options that differ from the prepared ones */
   overrides?: Dictionary;
   populate?: PopulateOptions<any>[];
@@ -500,11 +498,11 @@ export class CompiledQueryRecording {
   readonly #sentinels = new Map<unknown, { slot: number; raw?: boolean; conversion?: CompiledQueryConversion }>();
   readonly #seed = 2 ** 40 + Math.floor(Math.random() * 2 ** 40);
   #slots = 0;
+  #ambiguous = false;
   /** capture of the real query */
   readonly compilation: QueryCompilation;
-  ambiguous = false;
-  where: unknown;
-  options!: Dictionary;
+  readonly where: unknown;
+  readonly options: Dictionary;
 
   constructor(
     readonly leaves: unknown[],
@@ -512,14 +510,14 @@ export class CompiledQueryRecording {
     /** prepared options before the EntityManager processed them */
     readonly prepared: Dictionary,
   ) {
-    this.compilation = { dry: false, prepared };
+    this.compilation = { dry: false };
     const sentinels = this.createSentinels(leaves);
     const pos = { idx: 0 };
     this.where = substitute(where, sentinels, pos);
     this.options = { ...prepared };
 
     for (const k in prepared) {
-      if ((k === 'limit' || k === 'offset') && prepared[k] !== undefined) {
+      if ((k === 'limit' || k === 'offset') && prepared[k] !== undefined && prepared[k] !== 0) {
         this.options[k] = sentinels[pos.idx++];
       }
     }
@@ -546,6 +544,20 @@ export class CompiledQueryRecording {
     });
   }
 
+  /** Stores the processed options of the real query, before the driver or the loader get to touch them. */
+  capture(options: Dictionary): void {
+    const compilation = this.compilation;
+    compilation.overrides = {};
+
+    for (const k of Object.keys(options)) {
+      if (k === 'populate') {
+        compilation.populate = clonePopulate(options[k]);
+      } else if (options[k] !== this.prepared[k]) {
+        compilation.overrides[k] = deepFreeze(Utils.copy(options[k]));
+      }
+    }
+  }
+
   /** Replaces the values of a condition returned by a filter callback with placeholders. */
   substituteFilter(cond: unknown, leaves: unknown[]): unknown {
     return substitute(cond, this.createSentinels(leaves), { idx: 0 });
@@ -564,10 +576,10 @@ export class CompiledQueryRecording {
     const conversion = { type: prop.customType!, key, fromQuery, kind };
 
     if (!SLOT_KINDS.has(kind) || !source.raw || (existing && existing.slot !== source.slot)) {
-      this.ambiguous = true;
+      this.#ambiguous = true;
     } else if (existing?.conversion) {
       const c = existing.conversion;
-      this.ambiguous ||= c.type !== conversion.type || c.key !== key || !c.fromQuery !== !fromQuery;
+      this.#ambiguous ||= c.type !== conversion.type || c.key !== key || !c.fromQuery !== !fromQuery;
     } else if (existing) {
       existing.conversion = conversion;
     } else {
@@ -585,7 +597,7 @@ export class CompiledQueryRecording {
     const ref = reference ?? real;
 
     if (
-      this.ambiguous ||
+      this.#ambiguous ||
       dry.dynamic ||
       ref.dynamic ||
       real.count !== 1 ||
@@ -719,8 +731,14 @@ export class CompiledQueryCache {
           return undefined;
         }
 
+        // a zero offset is left out of the SQL, so a zero is part of the key instead of a parameter
+        if (value === 0) {
+          key += SEP + k + '0';
+          continue;
+        }
+
         leaves.push(value);
-        key += SEP + k + (value === 0 ? '0' : 'n');
+        key += SEP + k + 'n';
       } else if (k === 'populateWhere') {
         // an empty condition is what the loader passes to child queries
         if (value !== 'all' && !(Utils.isPlainObject(value) && Reflect.ownKeys(value).length === 0)) {
@@ -805,22 +823,5 @@ export class CompiledQueryCache {
     }
 
     return key;
-  }
-}
-
-/** @internal Stores the processed options of a compilation, before the driver or the loader get to touch them. */
-export function captureOptions(compilation: QueryCompilation, options: Dictionary): void {
-  if (!compilation.prepared) {
-    return;
-  }
-
-  compilation.overrides = {};
-
-  for (const k of Object.keys(options)) {
-    if (k === 'populate') {
-      compilation.populate = clonePopulate(options[k]);
-    } else if (options[k] !== compilation.prepared[k]) {
-      compilation.overrides[k] = deepFreeze(Utils.copy(options[k]));
-    }
   }
 }

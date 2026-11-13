@@ -3,7 +3,6 @@ import { ValidationError } from '../errors.js';
 import { inspect } from '../logging/inspect.js';
 import type { Dictionary, EntityMetadata, EntityName, FilterDef, FilterQuery } from '../typings.js';
 import {
-  captureOptions,
   clonePopulate,
   CompiledQueryCache,
   CompiledQueryRecording,
@@ -202,9 +201,8 @@ async function verifyCompiledQuery(
   const params = query.bind(leaves, em.getPlatform());
 
   if (dry.sql !== query.sql || !Utils.equals(dry.params, params)) {
-    const dump = (params?: readonly unknown[]) => inspect(params);
     throw new ValidationError(
-      `Compiled query cache mismatch in ${kind}(${Utils.className(entityName)}): expected '${dry.sql}' with ${dump(dry.params)}, got '${query.sql}' with ${dump(params)}`,
+      `Compiled query cache mismatch in ${kind}(${Utils.className(entityName)}): expected '${dry.sql}' with ${inspect(dry.params)}, got '${query.sql}' with ${inspect(params)}`,
     );
   }
 }
@@ -257,7 +255,7 @@ export function startCompilation(lookup: CompiledQueryLookup | undefined, option
 
   entry.pending = entry.seen;
   lookup.recording = new CompiledQueryRecording(lookup.leaves, lookup.where, lookup.prepared);
-  captureOptions(lookup.recording.compilation, options);
+  lookup.recording.capture(options);
 
   lookup.internal = { _compile: lookup.recording.compilation };
 }
