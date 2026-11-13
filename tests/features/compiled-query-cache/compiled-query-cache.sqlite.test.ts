@@ -476,6 +476,7 @@ describe('compiled query cache', () => {
 
       setCompilation.call(this, c);
     });
+    cached.config.set('compiledQueryCache', { enabled: true, verify: false });
     const user = { name: 'request scoped' };
 
     for (let i = 0; i < 3; i++) {
