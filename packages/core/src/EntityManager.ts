@@ -9,17 +9,16 @@ import { computeRemovedRlsVariables, computeRlsFilterVariables, findRlsFilterDef
 import { Utils } from './utils/Utils.js';
 import { Cursor } from './utils/Cursor.js';
 import { QueryHelper } from './utils/QueryHelper.js';
-import { inspect } from './logging/inspect.js';
+import { CompiledQueryCache } from './utils/CompiledQueryCache.js';
 import {
-  captureOptions,
-  clonePopulate,
-  CompiledQueryCache,
-  CompiledQueryRecording,
-  type CompiledQueryKind,
-  type CompiledQueryLookup,
-  type ReplayedFilterCond,
-  type QueryCompilation,
-} from './utils/CompiledQueryCache.js';
+  finishCompilation,
+  lookupCompiledQuery,
+  recordFilterCall,
+  replayFilterCalls,
+  startCompilation,
+  takeReplayedFilterCond,
+  useCompiledQuery,
+} from './utils/compiled-query-utils.js';
 import { TransactionContext } from './utils/TransactionContext.js';
 import { isRaw, Raw } from './utils/RawQueryFragment.js';
 import { EntityFactory } from './entity/EntityFactory.js';
@@ -146,7 +145,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
   #filters: Dictionary<FilterDef> = {};
   #filterParams: Dictionary<Dictionary> = {};
   #filtersKey?: string;
-  #compilation?: QueryCompilation;
   #sessionContext?: SessionContext;
   protected loggerContext?: Dictionary;
   #transactionContext?: Transaction;
@@ -265,38 +263,20 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const meta = this.metadata.get<Entity>(entityName);
     em.validateIndexUsage(meta, where, options);
 
-    if (!(options as Dictionary)._compile) {
-      await em.tryFlush(entityName, options);
-    }
+    await em.tryFlush(entityName, options);
 
-    const lookup = em.lookupCompiledQuery(this, 'find', meta, where, options);
+    const lookup = lookupCompiledQuery(em, this, 'find', meta, where, options);
 
-    if (lookup) {
-      where = lookup.where as typeof where;
+    where = (lookup?.where ?? where) as typeof where;
 
-      if (lookup.query?.filterCalls) {
-        await em.replayFilterCalls(lookup, options);
-      }
+    if (lookup?.query?.filterCalls) {
+      await replayFilterCalls(em, lookup, options);
     }
 
     let cached: { data?: Loaded<Entity, Hint, Fields, Excludes>[] | null; key: string } | undefined;
-    let internal: Dictionary | undefined;
 
     if (lookup?.params) {
-      options = em.useCompiledQuery(lookup, options);
-      internal = { _compiled: lookup };
-
-      if (lookup.query!.joinedFilters) {
-        // the replayed callbacks already returned the conditions, do not invoke them again
-        options.populateFilter = await this.getJoinedFilters(meta, {
-          ...options,
-          _filterConds: lookup.filterConds,
-        } as typeof options);
-      }
-
-      if (lookup.verify) {
-        await em.verifyCompiledQuery('find', entityName, lookup);
-      }
+      options = await useCompiledQuery(em, 'find', entityName, lookup, options, o => this.getJoinedFilters(meta, o));
     } else {
       where = await em.processWhere(entityName, where, options, 'read');
       validateParams(where);
@@ -306,6 +286,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         options.orderBy ??= {};
       }
       options.populate = (await em.preparePopulate(entityName, options)) as any;
+      const populate = options.populate as unknown as PopulateOptions<Entity>[];
       const cacheKey = em.cacheKey(entityName, options, 'em.find', where);
       cached = await em.tryCache<Entity, Loaded<Entity, Hint, Fields, Excludes>[]>(
         entityName,
@@ -317,18 +298,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       );
 
       if (cached?.data) {
-        await em.#entityLoader.populate<Entity>(
-          entityName,
-          cached.data as Entity[],
-          options.populate as unknown as PopulateOptions<Entity>[],
-          {
-            ...(options as Dictionary),
-            ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
-            orderBy: options.populateOrderBy ?? options.orderBy,
-            ignoreLazyScalarProperties: true,
-            lookup: false,
-          },
-        );
+        await em.#entityLoader.populate<Entity>(entityName, cached.data as Entity[], populate, {
+          ...(options as Dictionary),
+          ...em.getPopulateWhere(where as ObjectQuery<Entity>, options),
+          orderBy: options.populateOrderBy ?? options.orderBy,
+          ignoreLazyScalarProperties: true,
+          lookup: false,
+        });
 
         return cached.data;
       }
@@ -340,7 +316,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       options.populateFilter = await this.getJoinedFilters(meta, options);
 
       await em.processUnionWhere(entityName, options, 'read');
-      internal = em.startCompilation(lookup, options);
+      startCompilation(lookup, options);
     }
 
     const populate = options.populate as unknown as PopulateOptions<Entity>[];
@@ -348,11 +324,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       ctx: em.#transactionContext,
       em,
       ...options,
-      ...internal,
+      ...lookup?.internal,
     });
 
     if (lookup?.recording) {
-      await em.finishCompilation('find', entityName, lookup);
+      await finishCompilation(em, 'find', entityName, lookup);
     }
 
     if (results.length === 0) {
@@ -588,6 +564,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     if (Object.keys(variables).length > 0) {
       em.mergeSessionContext({ variables });
     }
+  }
+
+  /** @internal */
+  getFiltersKey(): string {
+    return (this.#filtersKey ??= CompiledQueryCache.filtersKey(this.#filters));
   }
 
   /**
@@ -1053,26 +1034,21 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     for (const filter of filters) {
       let cond: Dictionary;
 
-      const replayed = (findOptions as Dictionary | undefined)?._filterConds as ReplayedFilterCond[] | undefined;
-      const idx = replayed?.findIndex(
-        ({ call }) =>
-          call.filter.name === filter.name && call.type === type && call.entity === Utils.className(entityName),
-      );
+      const replayed = takeReplayedFilterCond(findOptions, filter, type, Utils.className(entityName));
 
-      if (idx != null && idx >= 0) {
-        cond = replayed!.splice(idx, 1)[0].cond;
+      if (replayed) {
+        cond = replayed;
       } else if (filter.cond instanceof Function) {
-        const args = this.getFilterArgs(options, filter.name);
+        // @ts-ignore
+        // oxfmt-ignore
+        const args = Utils.isPlainObject(options?.[filter.name]) ? options[filter.name] : this.getContext().#filterParams[filter.name];
 
         if (!args && filter.cond.length > 0 && filter.args !== false) {
           throw new Error(`No arguments provided for filter '${filter.name}'`);
         }
 
-        cond = await filter.cond(args as Dictionary, type, this, findOptions, Utils.className(entityName));
-
-        if (this.#compilation) {
-          cond = this.recordFilterCall(this.#compilation, filter, cond, args, type, Utils.className(entityName));
-        }
+        cond = await filter.cond(args, type, this, findOptions, Utils.className(entityName));
+        cond = recordFilterCall(this, filter, cond, args, type, Utils.className(entityName));
       } else {
         cond = filter.cond;
       }
@@ -1392,20 +1368,16 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       return entity as Loaded<Entity, Hint, Fields, Excludes>;
     }
 
-    if (!(options as Dictionary)._compile) {
-      await em.tryFlush(entityName, options);
-    }
+    await em.tryFlush(entityName, options);
 
     const meta = em.metadata.get<Entity>(entityName);
     em.validateIndexUsage(meta, where, options);
-    const lookup = em.lookupCompiledQuery(this, 'findOne', meta, where, options);
+    const lookup = lookupCompiledQuery(em, this, 'findOne', meta, where, options);
 
-    if (lookup) {
-      where = lookup.where as typeof where;
+    where = (lookup?.where ?? where) as typeof where;
 
-      if (lookup.query?.filterCalls) {
-        await em.replayFilterCalls(lookup, options);
-      }
+    if (lookup?.query?.filterCalls) {
+      await replayFilterCalls(em, lookup, options);
     }
 
     if (!lookup?.params) {
@@ -1422,23 +1394,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     let cached: { data?: Loaded<Entity, Hint, Fields, Excludes> | null; key: string } | undefined;
-    let internal: Dictionary | undefined;
 
     if (lookup?.params) {
-      options = em.useCompiledQuery(lookup, options);
-      internal = { _compiled: lookup };
-
-      if (lookup.query!.joinedFilters) {
-        // the replayed callbacks already returned the conditions, do not invoke them again
-        options.populateFilter = await this.getJoinedFilters(meta, {
-          ...options,
-          _filterConds: lookup.filterConds,
-        } as typeof options);
-      }
-
-      if (lookup.verify) {
-        await em.verifyCompiledQuery('findOne', entityName, lookup);
-      }
+      options = await useCompiledQuery(em, 'findOne', entityName, lookup, options, o => this.getJoinedFilters(meta, o));
     } else {
       validateParams(where);
 
@@ -1482,18 +1440,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
       options.populateFilter = await this.getJoinedFilters(meta, options);
       await em.processUnionWhere(entityName, options, 'read');
-      internal = em.startCompilation(lookup, options);
+      startCompilation(lookup, options);
     }
 
     const data = await em.driver.findOne(entityName, where, {
       ctx: em.#transactionContext,
       em,
       ...options,
-      ...internal,
+      ...lookup?.internal,
     });
 
     if (lookup?.recording) {
-      await em.finishCompilation('findOne', entityName, lookup);
+      await finishCompilation(em, 'findOne', entityName, lookup);
     }
 
     if (!data) {
@@ -2951,64 +2909,57 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     options = em.prepareOptions(options);
 
-    if (!(options as Dictionary)._compile) {
-      await em.tryFlush(entityName, options);
-    }
+    await em.tryFlush(entityName, options);
 
     const meta = em.metadata.find(entityName)!;
-    const lookup = em.lookupCompiledQuery(this, 'count', meta, where, options);
+    const lookup = lookupCompiledQuery(em, this, 'count', meta, where, options);
 
-    if (lookup) {
-      where = lookup.where as typeof where;
+    where = (lookup?.where ?? where) as typeof where;
 
-      if (lookup.query?.filterCalls) {
-        await em.replayFilterCalls(lookup, options);
-      }
+    if (lookup?.query?.filterCalls) {
+      await replayFilterCalls(em, lookup, options);
     }
-
-    let cached: { data?: unknown; key: string } | undefined;
-    let internal: Dictionary | undefined;
 
     if (lookup?.params) {
-      options = em.useCompiledQuery(lookup, options);
-      internal = { _compiled: lookup };
-      delete (options as FindOptions<Entity>).orderBy;
+      const opts = await useCompiledQuery(em, 'count', entityName, lookup, options);
+      delete (opts as FindOptions<Entity>).orderBy;
+      const ctx = opts.ctx ?? em.#transactionContext;
 
-      if (lookup.verify) {
-        await em.verifyCompiledQuery('count', entityName, lookup);
-      }
-    } else {
-      where = await em.processWhere(entityName, where, options as FindOptions<Entity, Hint>, 'read');
-      options.populate = (await em.preparePopulate(entityName, options as FindOptions<Entity, Hint>)) as any;
-      // save the original hint value so we know it was infer/all
-      (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
-      options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
-      options.populateFilter = await this.getJoinedFilters(meta, options as FindOptions<Entity>);
-      validateParams(where);
-      em.validateIndexUsage(meta, where, options);
-      delete (options as FindOptions<Entity>).orderBy;
-
-      await em.processUnionWhere(entityName, options as FindOptions<Entity, Hint>, 'read');
-
-      const cacheKey = em.cacheKey(entityName, options, 'em.count', where);
-      cached = await em.tryCache(entityName, options.cache, cacheKey);
-
-      if (cached?.data !== undefined) {
-        return cached.data as number;
-      }
-
-      internal = em.startCompilation(lookup, options);
+      return +(await em.withSessionContext(ctx, ctx =>
+        em.driver.count(entityName, where, { em, ...opts, ...lookup.internal, ctx }),
+      ));
     }
+
+    where = await em.processWhere(entityName, where, options as FindOptions<Entity, Hint>, 'read');
+    options.populate = (await em.preparePopulate(entityName, options as FindOptions<Entity, Hint>)) as any;
+    // save the original hint value so we know it was infer/all
+    (options as Dictionary)._populateWhere = options.populateWhere ?? this.config.get('populateWhere');
+    options.populateWhere = this.createPopulateWhere({ ...where } as ObjectQuery<Entity>, options);
+    options.populateFilter = await this.getJoinedFilters(meta, options as FindOptions<Entity>);
+    validateParams(where);
+    em.validateIndexUsage(meta, where, options);
+    delete (options as FindOptions<Entity>).orderBy;
+
+    await em.processUnionWhere(entityName, options as FindOptions<Entity, Hint>, 'read');
+
+    const cacheKey = em.cacheKey(entityName, options, 'em.count', where);
+    const cached = await em.tryCache(entityName, options.cache, cacheKey);
+
+    if (cached?.data !== undefined) {
+      return cached.data as number;
+    }
+
+    startCompilation(lookup, options);
 
     // a dry run only compiles the query, so it must not open the implicit session context transaction
     const count = (options as Dictionary)._compile
       ? await em.driver.count(entityName, where, { em, ...options })
       : await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
-          em.driver.count(entityName, where, { em, ...options, ...internal, ctx }),
+          em.driver.count(entityName, where, { em, ...options, ...lookup?.internal, ctx }),
         );
 
     if (lookup?.recording) {
-      await em.finishCompilation('count', entityName, lookup);
+      await finishCompilation(em, 'count', entityName, lookup);
     }
     await em.storeCache(options.cache, cached!, () => +count);
 
@@ -3118,6 +3069,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     entityName: EntityName<Entity>,
     options: { flushMode?: FlushMode | AnyString },
   ): Promise<void> {
+    // a dry run only compiles the query
+    if ((options as Dictionary)._compile) {
+      return;
+    }
+
     const em = this.getContext();
     const flushMode = options.flushMode ?? em.#flushMode ?? em.config.get('flushMode');
     const meta = em.metadata.get(entityName);
@@ -3242,7 +3198,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     fork.#filters = { ...em.#filters };
     fork.#filtersKey = em.#filtersKey;
-    fork.#compilation = em.#compilation;
     fork.#filterParams = Utils.hasObjectKeys(em.#filterParams) ? Utils.copy(em.#filterParams) : {};
 
     if (options.session) {
@@ -3834,220 +3789,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     );
 
     return opts;
-  }
-
-  /** Looks up the compiled query for this call. The result carries `params` on a cache hit. */
-  private lookupCompiledQuery(
-    caller: EntityManager,
-    kind: CompiledQueryKind,
-    meta: EntityMetadata,
-    where: unknown,
-    options: Dictionary,
-  ): CompiledQueryLookup | undefined {
-    const cache = this.config.getCompiledQueryCache();
-
-    // a dry run only compiles the query on a throwaway fork
-    if (!cache || options._compile || meta.virtual) {
-      return undefined;
-    }
-
-    const filters = (this.#filtersKey ??= CompiledQueryCache.filtersKey(this.#filters));
-
-    // the joined filters are resolved on the caller, a compiled query only knows the filters of the context
-    if (caller !== this && (caller.#filtersKey ??= CompiledQueryCache.filtersKey(caller.#filters)) !== filters) {
-      return undefined;
-    }
-
-    const leaves: unknown[] = [];
-    const entry = cache.lookup(kind, meta, where, options, filters, leaves);
-
-    if (!entry) {
-      return undefined;
-    }
-
-    where = cache.pad(where);
-    const query = entry.query;
-    const base = leaves.length;
-
-    if (!query) {
-      return { entry, leaves, base, where, prepared: { ...options } };
-    }
-
-    const lookup: CompiledQueryLookup = { entry, leaves, base, where, prepared: options, query, verify: cache.verify };
-
-    if (!query.filterCalls) {
-      lookup.params = query.bind(leaves, this.getPlatform());
-    }
-
-    return lookup;
-  }
-
-  private getFilterArgs(options: FilterOptions | undefined, name: string): Dictionary | undefined {
-    const args = (options as Dictionary | undefined)?.[name];
-
-    return Utils.isPlainObject(args) ? args : this.getContext().#filterParams[name];
-  }
-
-  /** Records a filter callback invoked by a dry run, so it can be invoked again when the compiled query is used. */
-  private recordFilterCall(
-    compilation: QueryCompilation,
-    filter: FilterDef,
-    cond: Dictionary,
-    args: Dictionary | undefined,
-    type: 'read' | 'update' | 'delete',
-    entity: string,
-  ): Dictionary {
-    const leaves: unknown[] = [];
-    const shape = CompiledQueryCache.filterKey(cond, leaves);
-
-    // callbacks reading the EntityManager or the options, and arguments overridden on a relation, cannot be repeated
-    if (
-      shape === undefined ||
-      (filter.cond as Function).length > 2 ||
-      args !== this.getFilterArgs(compilation.filters as FilterOptions, filter.name)
-    ) {
-      compilation.dynamic = true;
-      return cond;
-    }
-
-    (compilation.filterCalls ??= []).push({ filter, entity, type, shape });
-    (compilation.filterLeaves ??= []).push(...leaves);
-
-    return compilation.recording ? (compilation.recording.substituteFilter(cond, leaves) as Dictionary) : cond;
-  }
-
-  /** Invokes the filter callbacks of a compiled query and binds its parameters when they return the same shapes. */
-  private async replayFilterCalls(lookup: CompiledQueryLookup, options: Dictionary): Promise<void> {
-    const { leaves, query } = lookup;
-    const conds: ReplayedFilterCond[] = [];
-
-    for (const call of query!.filterCalls!) {
-      const cond = call.filter.cond as Function;
-      const args = this.getFilterArgs(options.filters, call.filter.name);
-
-      // the regular path reports the missing arguments
-      if (!args && cond.length > 0 && call.filter.args !== false) {
-        return;
-      }
-
-      const ret = await cond(args, call.type, this, options, call.entity);
-
-      if (CompiledQueryCache.filterKey(ret, leaves) !== call.shape) {
-        return;
-      }
-
-      conds.push({ call, cond: ret });
-    }
-
-    lookup.params = query!.bind(leaves, this.getPlatform());
-    lookup.filterConds = conds;
-  }
-
-  /** Compiles the query the regular way and compares it with the one served from the cache. */
-  private async verifyCompiledQuery(
-    kind: CompiledQueryKind,
-    entityName: EntityName,
-    lookup: CompiledQueryLookup,
-  ): Promise<void> {
-    const dry = await this.compileDry(kind, entityName, lookup.where, lookup.prepared);
-    const query = lookup.query!;
-    // the callbacks can return other values every time, so the parameters are compared for the ones of the dry run
-    const leaves = [...lookup.leaves.slice(0, lookup.base), ...(dry.filterLeaves ?? [])];
-    const params = query.bind(leaves, this.getPlatform());
-
-    if (dry.sql !== query.sql || !Utils.equals(dry.params, params)) {
-      const dump = (params?: readonly unknown[]) => inspect(params);
-      throw new ValidationError(
-        `Compiled query cache mismatch in ${kind}(${Utils.className(entityName)}): expected '${dry.sql}' with ${dump(dry.params)}, got '${query.sql}' with ${dump(params)}`,
-      );
-    }
-  }
-
-  /** Replaces the option processing with the outcome stored in the compiled query. */
-  private useCompiledQuery<Options extends Dictionary>(lookup: CompiledQueryLookup, options: Options): Options {
-    const query = lookup.query!;
-    const ret: Dictionary = { ...options, ...query.overrides };
-
-    if (query.populate) {
-      ret.populate = clonePopulate(query.populate);
-    }
-
-    return ret as Options;
-  }
-
-  /**
-   * Starts recording the query when its shape was seen before, and captures the processed options.
-   * Returns the internal options for the driver call only, so they do not leak to the queries of the loader.
-   */
-  private startCompilation(lookup: CompiledQueryLookup | undefined, options: Dictionary): Dictionary | undefined {
-    const entry = lookup?.entry;
-
-    // a recording that never finished (e.g. the query failed) is retried after a while
-    if (!entry || lookup.query || entry.seen < 2 || (entry.pending && entry.seen - entry.pending < 64)) {
-      return undefined;
-    }
-
-    entry.pending = entry.seen;
-    lookup.recording = new CompiledQueryRecording(lookup.leaves, lookup.where, lookup.prepared);
-    captureOptions(lookup.recording.compilation, options);
-
-    return { _compile: lookup.recording.compilation };
-  }
-
-  /** Compiles the recorded query again with placeholder values to learn where its parameters come from. */
-  private async finishCompilation(
-    kind: CompiledQueryKind,
-    entityName: EntityName,
-    lookup: CompiledQueryLookup,
-  ): Promise<void> {
-    const entry = lookup.entry;
-    const recording = lookup.recording!;
-    entry.pending = undefined;
-
-    // only one recording at a time can observe the custom type conversions, retry on the next call
-    if (CompiledQueryCache.recording) {
-      return;
-    }
-
-    CompiledQueryCache.recording = recording;
-
-    try {
-      const dry = await this.compileDry(kind, entityName, recording.where, recording.options, recording).finally(
-        () => (CompiledQueryCache.recording = undefined),
-      );
-      // the values the callbacks returned for the real query are not known, so compile it once more to learn them
-      const reference = dry.filterCalls
-        ? await this.compileDry(kind, entityName, lookup.where, lookup.prepared)
-        : undefined;
-      entry.query = recording.build(dry, this.getPlatform(), reference);
-    } catch {
-      // the query cannot be built with placeholder values
-    }
-
-    entry.bypass = !entry.query;
-  }
-
-  private async compileDry(
-    kind: CompiledQueryKind,
-    entityName: EntityName,
-    where: unknown,
-    options: Dictionary,
-    recording?: CompiledQueryRecording,
-  ): Promise<QueryCompilation> {
-    const compilation: QueryCompilation = { dry: true, filters: options.filters, recording };
-    const fork = this.fork();
-    fork.#compilation = compilation;
-    const opts = { ...options, ctx: undefined, _compile: compilation };
-
-    if (kind === 'find') {
-      await fork.find(entityName, where as FilterQuery<object>, opts);
-    } else if (kind === 'findOne') {
-      await fork.findOne(entityName, where as FilterQuery<object>, opts);
-    } else {
-      await fork.count(entityName, where as FilterQuery<object>, opts);
-    }
-
-    return compilation;
   }
 
   /**

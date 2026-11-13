@@ -409,6 +409,8 @@ export interface CompiledQueryLookup {
   /** compile the query the regular way too and compare */
   verify?: boolean;
   recording?: CompiledQueryRecording;
+  /** options for the driver call only, so they do not leak to the queries of the loader */
+  internal?: Dictionary;
   /** conditions of the replayed filter callbacks, reused for the joined filters */
   filterConds?: ReplayedFilterCond[];
 }
