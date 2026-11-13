@@ -763,8 +763,9 @@ export class UnitOfWork {
       }
     }
 
-    delete wrapped.__identifier;
-    delete wrapped.__originalEntityData;
+    // `delete` would switch the wrapper to dictionary mode
+    wrapped.__identifier = undefined;
+    wrapped.__originalEntityData = undefined;
     wrapped.__managed = false;
   }
 
