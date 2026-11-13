@@ -192,8 +192,7 @@ export class Configuration<
   #routinesNormalised = false;
 
   constructor(options: Partial<Options<any, any, any>>, validate = true) {
-    // skip the default provider, as it is present when re-creating the config from `getAll()`,
-    // and it would override the one registered by the CLI (e.g. for jiti or tsimp)
+    // the default is present when re-creating from `getAll()`, it must not override an already registered provider
     if (options.dynamicImportProvider && options.dynamicImportProvider !== DEFAULTS.dynamicImportProvider) {
       (globalThis as any).dynamicImportProvider = options.dynamicImportProvider;
     }
