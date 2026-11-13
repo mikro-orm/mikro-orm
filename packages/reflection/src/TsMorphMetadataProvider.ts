@@ -128,7 +128,12 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     }
   }
 
-  private readTypeFromSource(meta: EntityMetadata, prop: EntityProperty): { type: string; optional?: boolean } {
+  /**
+   * Reads the declared type of a property from its source file, as text, and whether it is optional. Override it to
+   * read types with something other than ts-morph: the result still goes through the same normalization (wrappers like
+   * `Ref` or `Collection` are unwrapped, `Record` and `Dictionary` become `json`).
+   */
+  protected readTypeFromSource(meta: EntityMetadata, prop: EntityProperty): { type: string; optional?: boolean } {
     const source = this.getExistingSourceFile(meta.path);
     const cls = source.getClass(meta.className);
 
