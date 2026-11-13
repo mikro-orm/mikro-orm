@@ -7,6 +7,8 @@ import { Utils } from './Utils.js';
 
 const SEP = '\u0001';
 const SLOT_KINDS = new Set(['string', 'number', 'bigint', 'date']);
+// longer `$in` lists are not cached, padding them would get close to the parameter limits of some drivers
+const MAX_LIST_SIZE = 512;
 // options that never change the generated SQL, they are read from the live call on every execution
 const IGNORED_OPTIONS = new Set([
   'ctx',
@@ -43,6 +45,8 @@ const BYPASS_OPTIONS = new Set([
 ]);
 
 let bail = false;
+// `$in` lists of the last key that need padding, `undefined` when padding is disabled
+let pads: unknown[][] | undefined;
 let functionIds: WeakMap<object, number> | undefined;
 let functionCounter = 0;
 
@@ -75,7 +79,48 @@ function entityKey(value: object): string | number | bigint | undefined {
   return typeof pk === 'string' || typeof pk === 'number' || typeof pk === 'bigint' ? pk : undefined;
 }
 
-function whereKey(value: unknown, leaves: unknown[]): string {
+/** Returns a copy of the condition with the lists collected by the last `whereKey()` call padded. */
+function padLists(value: unknown, lists: unknown[][]): unknown {
+  if (typeof value !== 'object' || value === null) {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    if (lists.includes(value)) {
+      const size = 2 ** (32 - Math.clz32(value.length - 1));
+      const ret = value.slice();
+
+      while (ret.length < size) {
+        ret.push(value[value.length - 1]);
+      }
+
+      return ret;
+    }
+
+    return value.map(item => padLists(item, lists));
+  }
+
+  const proto = Object.getPrototypeOf(value);
+
+  if (proto !== Object.prototype && proto !== null) {
+    return value;
+  }
+
+  const ret: Dictionary = {};
+
+  for (const k in value) {
+    ret[k] = padLists((value as Dictionary)[k], lists);
+  }
+
+  return ret;
+}
+
+/**
+ * Describes the shape of a condition and collects its values into `leaves`. A `$in`/`$nin` list is keyed by its size
+ * rounded up to a power of two, so lists of similar sizes share the SQL. The missing items are filled with the last
+ * value, which does not change what the list matches.
+ */
+function whereKey(value: unknown, leaves: unknown[], list = false): string {
   switch (typeof value) {
     case 'string':
       leaves.push(value);
@@ -102,13 +147,40 @@ function whereKey(value: unknown, leaves: unknown[]): string {
   }
 
   if (Array.isArray(value)) {
+    const start = leaves.length;
     let key = '[';
+    let uniform = true;
+    let first: string | undefined;
 
     for (let i = 0; i < value.length; i++) {
-      key += whereKey(value[i], leaves) + ',';
+      const item = whereKey(value[i], leaves);
+      first ??= item;
+      uniform &&= item === first;
+      key += item + ',';
     }
 
-    return key + ']';
+    // only lists of scalar values (or entities) of the same kind, each contributing a single value
+    if (!list || !pads || !uniform || value.length === 0 || leaves.length - start !== value.length) {
+      return key + ']';
+    }
+
+    if (value.length > MAX_LIST_SIZE) {
+      bail = true;
+      return '';
+    }
+
+    const size = 2 ** (32 - Math.clz32(value.length - 1));
+
+    if (size !== value.length) {
+      const last = leaves[leaves.length - 1];
+      pads.push(value);
+
+      for (let i = value.length; i < size; i++) {
+        leaves.push(last);
+      }
+    }
+
+    return '(' + size + first + ')';
   }
 
   if (value instanceof Date) {
@@ -128,7 +200,7 @@ function whereKey(value: unknown, leaves: unknown[]): string {
     let key = '{';
 
     for (const k in value) {
-      key += k + ':' + whereKey((value as Dictionary)[k], leaves) + ',';
+      key += k + ':' + whereKey((value as Dictionary)[k], leaves, k === '$in' || k === '$nin') + ',';
     }
 
     return key + '}';
@@ -227,6 +299,21 @@ function optionKey(value: unknown): string {
   return key + '}';
 }
 
+/** Keys the `filters` option, the arguments of a filter are only passed to its callback so they are not part of it. */
+function filtersOptionKey(value: unknown): string {
+  if (!Utils.isPlainObject(value)) {
+    return optionKey(value);
+  }
+
+  let key = '{';
+
+  for (const k in value) {
+    key += k + ':' + (Utils.isPlainObject(value[k]) ? 'O' : optionKey(value[k])) + ',';
+  }
+
+  return key + '}';
+}
+
 /** @internal */
 export function clonePopulate<T>(populate: PopulateOptions<T>[]): PopulateOptions<T>[] {
   const ret = new Array(populate.length);
@@ -259,6 +346,15 @@ export interface CompiledQueryConversion {
   kind: string;
 }
 
+/** @internal invocation of a filter callback, repeated on every execution of the compiled query */
+export interface CompiledFilterCall {
+  filter: FilterDef;
+  entity: string;
+  type: 'read' | 'update' | 'delete';
+  /** shape of the returned condition */
+  shape: string;
+}
+
 /** @internal state of one query compilation, shared between the EntityManager and the driver */
 export interface QueryCompilation {
   /** compile only, do not execute */
@@ -276,12 +372,22 @@ export interface QueryCompilation {
   populate?: PopulateOptions<any>[];
   /** set when the outcome depends on something the cache key cannot see */
   dynamic?: boolean;
+  /** `filters` option of the call, set for dry runs */
+  filters?: unknown;
+  /** set for the dry run that replaces the values with placeholders */
+  recording?: CompiledQueryRecording;
+  /** filter callbacks invoked by a dry run, in order, and the values of the conditions they returned */
+  filterCalls?: CompiledFilterCall[];
+  filterLeaves?: unknown[];
 }
 
 /** @internal outcome of a cache lookup, with `params` when the compiled query can be executed */
 export interface CompiledQueryLookup {
   entry: CompiledQueryEntry;
   leaves: unknown[];
+  /** number of `leaves` coming from the call itself, the rest comes from the filter callbacks */
+  base: number;
+  /** condition of the call with its `$in` lists padded */
   where: unknown;
   /** options before the EntityManager processed them */
   prepared: Dictionary;
@@ -303,6 +409,10 @@ export class CompiledQuery {
     readonly constants: unknown[],
     readonly conversions: (CompiledQueryConversion | undefined)[],
     readonly hasConversions: boolean,
+    /** filter callbacks to invoke before binding, their values follow the ones of the call */
+    readonly filterCalls: CompiledFilterCall[] | undefined,
+    /** whether the joined filters hold values of the filter callbacks, so they need to be computed for every call */
+    readonly joinedFilters: boolean,
   ) {}
 
   /** Returns the parameters for given leaf values, or `undefined` when a converted value changes its kind. */
@@ -347,9 +457,30 @@ export interface CompiledQueryEntry {
   query?: CompiledQuery;
 }
 
+function sameFilterCalls(a?: CompiledFilterCall[], b?: CompiledFilterCall[]): boolean {
+  if (!a || !b) {
+    return a === b;
+  }
+
+  return (
+    a.length === b.length &&
+    a.every((call, i) => {
+      const other = b[i];
+      return (
+        call.filter === other.filter &&
+        call.entity === other.entity &&
+        call.type === other.type &&
+        call.shape === other.shape
+      );
+    })
+  );
+}
+
 /** @internal recording of the second sighting of a cache key */
 export class CompiledQueryRecording {
   readonly #sentinels = new Map<unknown, { slot: number; raw?: boolean; conversion?: CompiledQueryConversion }>();
+  readonly #seed = 2 ** 40 + Math.floor(Math.random() * 2 ** 40);
+  #slots = 0;
   /** capture of the real query */
   readonly compilation: QueryCompilation;
   ambiguous = false;
@@ -363,25 +494,7 @@ export class CompiledQueryRecording {
     readonly prepared: Dictionary,
   ) {
     this.compilation = { dry: false, prepared };
-    const seed = 2 ** 40 + Math.floor(Math.random() * 2 ** 40);
-    const sentinels = leaves.map((leaf, idx) => {
-      let sentinel: unknown;
-
-      if (typeof leaf === 'string') {
-        sentinel = `__mikro_orm_slot_${seed}_${idx}__`;
-      } else if (typeof leaf === 'number') {
-        sentinel = seed + idx;
-      } else if (typeof leaf === 'bigint') {
-        sentinel = BigInt(seed + idx);
-      } else {
-        // spread by days so date-only types keep the values distinct
-        sentinel = new Date((seed % 1e12) + idx * 86_400_000 * 3);
-      }
-
-      this.#sentinels.set(valueKey(sentinel), { slot: idx, raw: true });
-      return sentinel;
-    });
-
+    const sentinels = this.createSentinels(leaves);
     const pos = { idx: 0 };
     this.where = substitute(where, sentinels, pos);
     this.options = { ...prepared };
@@ -391,6 +504,32 @@ export class CompiledQueryRecording {
         this.options[k] = sentinels[pos.idx++];
       }
     }
+  }
+
+  private createSentinels(leaves: unknown[]): unknown[] {
+    return leaves.map(leaf => {
+      const idx = this.#slots++;
+      let sentinel: unknown;
+
+      if (typeof leaf === 'string') {
+        sentinel = `__mikro_orm_slot_${this.#seed}_${idx}__`;
+      } else if (typeof leaf === 'number') {
+        sentinel = this.#seed + idx;
+      } else if (typeof leaf === 'bigint') {
+        sentinel = BigInt(this.#seed + idx);
+      } else {
+        // spread by days so date-only types keep the values distinct
+        sentinel = new Date((this.#seed % 1e12) + idx * 86_400_000 * 3);
+      }
+
+      this.#sentinels.set(valueKey(sentinel), { slot: idx, raw: true });
+      return sentinel;
+    });
+  }
+
+  /** Replaces the values of a condition returned by a filter callback with placeholders. */
+  substituteFilter(cond: unknown, leaves: unknown[]): unknown {
+    return substitute(cond, this.createSentinels(leaves), { idx: 0 });
   }
 
   /** Called for every custom type conversion while this recording is active. */
@@ -417,20 +556,39 @@ export class CompiledQueryRecording {
     }
   }
 
-  /** Builds the compiled query from the real and the dry compilation, `undefined` when they cannot be reconciled. */
-  build(dry: QueryCompilation, platform: Platform): CompiledQuery | undefined {
+  /**
+   * Builds the compiled query from the real and the dry compilation, `undefined` when they cannot be reconciled.
+   * With filter callbacks, the `reference` is another dry run with the values those callbacks returned, as the ones
+   * used by the real query are not known.
+   */
+  build(dry: QueryCompilation, platform: Platform, reference?: QueryCompilation): CompiledQuery | undefined {
     const real = this.compilation;
+    const ref = reference ?? real;
 
     if (
       this.ambiguous ||
       dry.dynamic ||
+      ref.dynamic ||
       real.count !== 1 ||
       dry.count !== 1 ||
+      ref.count !== 1 ||
       !real.overrides ||
       real.sql !== dry.sql ||
-      real.params!.length !== dry.params!.length
+      ref.sql !== dry.sql ||
+      ref.params!.length !== dry.params!.length ||
+      !!dry.filterCalls !== !!reference ||
+      !sameFilterCalls(dry.filterCalls, reference?.filterCalls)
     ) {
       return undefined;
+    }
+
+    const leaves = reference ? [...this.leaves, ...reference.filterLeaves!] : this.leaves;
+    let overrides = real.overrides;
+    let joinedFilters = false;
+
+    if (reference && overrides.populateFilter !== undefined) {
+      overrides = { ...overrides, populateFilter: undefined };
+      joinedFilters = true;
     }
 
     const slots: number[] = [];
@@ -446,9 +604,9 @@ export class CompiledQueryRecording {
         constants.push(undefined);
         conversions.push(source.conversion);
         hasConversions ||= !!source.conversion;
-      } else if (Utils.equals(dry.params![i], real.params![i])) {
+      } else if (Utils.equals(dry.params![i], ref.params![i])) {
         slots.push(-1);
-        constants.push(real.params![i]);
+        constants.push(ref.params![i]);
         conversions.push(undefined);
       } else {
         return undefined;
@@ -458,17 +616,19 @@ export class CompiledQueryRecording {
     const query = new CompiledQuery(
       real.sql!,
       dry.state,
-      real.overrides!,
+      overrides,
       real.populate,
       slots,
       constants,
       conversions,
       hasConversions,
+      dry.filterCalls,
+      joinedFilters,
     );
-    const bound = query.bind(this.leaves, platform);
+    const bound = query.bind(leaves, platform);
 
     // the recipe has to reproduce the parameters of the real query, otherwise some value was transformed on the way
-    if (!bound || !Utils.equals(bound, real.params)) {
+    if (!bound || !Utils.equals(bound, ref.params)) {
       return undefined;
     }
 
@@ -490,6 +650,7 @@ export class CompiledQueryCache {
   readonly #entries = new Map<string, CompiledQueryEntry>();
   readonly #size: number;
   #tick = 0;
+  #pads: unknown[][] = [];
   readonly verify: boolean;
 
   constructor(size: number, verify: boolean) {
@@ -518,7 +679,9 @@ export class CompiledQueryCache {
     leaves: unknown[],
   ): CompiledQueryEntry | undefined {
     bail = false;
+    pads = this.#pads = [];
     let key = kind + meta._id + SEP + filters + SEP + whereKey(where, leaves);
+    pads = undefined;
 
     for (const k in options) {
       const value = options[k];
@@ -541,6 +704,8 @@ export class CompiledQueryCache {
         }
 
         key += SEP + (value === 'all' ? 'pw' : 'pw{}');
+      } else if (k === 'filters') {
+        key += SEP + k + '=' + filtersOptionKey(value);
       } else if (BYPASS_OPTIONS.has(k)) {
         if (value != null && value !== false) {
           return undefined;
@@ -573,6 +738,22 @@ export class CompiledQueryCache {
     entry.seen++;
 
     return entry.bypass ? undefined : entry;
+  }
+
+  /** Returns the condition of the last `lookup()` call with its `$in` lists padded to the sizes used in the key. */
+  pad<T>(where: T): T {
+    return this.#pads.length > 0 ? (padLists(where, this.#pads) as T) : where;
+  }
+
+  /**
+   * Computes the shape of a condition returned by a filter callback and collects its values into `leaves`.
+   * Returns `undefined` when the condition cannot be part of a compiled query.
+   */
+  static filterKey(cond: unknown, leaves: unknown[]): string | undefined {
+    bail = false;
+    const key = whereKey(cond, leaves);
+
+    return bail ? undefined : key;
   }
 
   /** Describes the set of filters registered on an EntityManager, part of the cache key. */
