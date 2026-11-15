@@ -545,7 +545,7 @@ Following example shows all possible options and their defaults:
 ```ts
 MikroORM.init({
   schemaGenerator: {
-    disableForeignKeys: true, // try to disable foreign_key_checks (or equivalent)
+    disableForeignKeys: false, // try to disable foreign_key_checks (or equivalent)
     createForeignKeyConstraints: true, // do not generate FK constraints
     ignoreSchema: [], // allows ignoring some schemas when diffing
     skipTables: [], // ignore some database tables during schema generation
@@ -565,7 +565,7 @@ MikroORM.init({
     path: process.cwd() + '/migrations', // path to folder with migration files
     glob: '!(*.d).{js,ts}', // how to match migration files (all .js and .ts files, but not .d.ts)
     transactional: true, // run each migration inside transaction
-    disableForeignKeys: true, // try to disable foreign_key_checks (or equivalent)
+    disableForeignKeys: false, // try to disable foreign_key_checks (or equivalent)
     allOrNothing: true, // run all migrations in current batch in master transaction
     emit: 'ts', // migration generation mode
   },
