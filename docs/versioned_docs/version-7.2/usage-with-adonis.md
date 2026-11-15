@@ -40,7 +40,7 @@ Add the CLI configuration to your `package.json`:
 ```json
 {
   "mikro-orm": {
-    "useTsNode": true,
+    "preferTs": true,
     "configPaths": [
       "./config/mikro-orm.config.ts",
       "./build/config/mikro-orm.config.js"
