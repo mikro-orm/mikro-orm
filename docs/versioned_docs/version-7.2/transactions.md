@@ -60,7 +60,8 @@ try {
 Another way to handle explicit transactions is by using the `@Transactional()` decorator.
 
 ```ts
-import { EntityManager, MikroORM, Transactional } from '@mikro-orm/core';
+import { EntityManager, MikroORM } from '@mikro-orm/core';
+import { Transactional } from '@mikro-orm/decorators/legacy';
 
 export class MyService {
 

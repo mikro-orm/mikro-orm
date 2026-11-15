@@ -332,7 +332,6 @@ Another way to control these CLI-related settings is with the environment variab
 - `MIKRO_ORM_CLI_PREFER_TS`: enforce use of the TS paths (e.g. `entitiesTs` or `pathTs`)
 - `MIKRO_ORM_CLI_TS_LOADER`: set preferred TS loader (one of `oxc`, `swc`, `tsx`, `jiti`, `tsimp`, `nub`), see [TypeScript loaders in CLI](./typescript-loaders.md)
 - `MIKRO_ORM_CLI_TS_CONFIG_PATH`: path to the tsconfig.json (for TS support)
-- `MIKRO_ORM_CLI_ALWAYS_ALLOW_TS`: enable `.ts` files to use without detected TS support
 - `MIKRO_ORM_CLI_VERBOSE`: enable verbose logging (e.g. print queries used in seeder or schema diffing)
 
 MikroORM will always try to load the first available config file, based on the order in `configPaths`. When the TypeScript support is not detected, the default TS config paths are ignored. If a TS file listed in `configPaths` exists but no other config file is found, the CLI fails with an explicit error instead of silently skipping it. You can enforce using TS config files via `MIKRO_ORM_CLI_PREFER_TS` environment variable or `preferTs` flag in your `package.json`:

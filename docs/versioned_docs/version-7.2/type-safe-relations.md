@@ -89,7 +89,8 @@ export const Book = defineEntity({
 <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Book.ts"
-import { Entity, Ref, ManyToOne, PrimaryKey, ref } from '@mikro-orm/core';
+import { Ref, ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Book {
@@ -111,7 +112,8 @@ export class Book {
 <TabItem value="ts-morph">
 
 ```ts title="./entities/Book.ts"
-import { Entity, Ref, ManyToOne, PrimaryKey, ref } from '@mikro-orm/core';
+import { Ref, ref } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Book {
@@ -356,7 +358,8 @@ export const User = defineEntity({
 <TabItem value="reflect-metadata">
 
 ```ts title="./entities/User.ts"
-import { Entity, PrimaryKey, ManyToOne, ManyToMany, Collection, Ref, ref } from '@mikro-orm/core';
+import { Collection, Ref, ref } from '@mikro-orm/core';
+import { Entity, PrimaryKey, ManyToOne, ManyToMany } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class User {
@@ -381,7 +384,8 @@ export class User {
 <TabItem value="ts-morph">
 
 ```ts title="./entities/User.ts"
-import { Entity, PrimaryKey, ManyToOne, ManyToMany, Collection, Ref, ref } from '@mikro-orm/core';
+import { Collection, Ref, ref } from '@mikro-orm/core';
+import { Entity, PrimaryKey, ManyToOne, ManyToMany } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class User {
@@ -544,7 +548,8 @@ const book = em.create(Book, { author: rel(Author, authorId) });
 <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Book.ts"
-import { Entity, ManyToOne, PrimaryKey, Ref, rel } from '@mikro-orm/core';
+import { Ref, rel } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Book {
@@ -566,7 +571,8 @@ export class Book {
 <TabItem value="ts-morph">
 
 ```ts title="./entities/Book.ts"
-import { Entity, ManyToOne, PrimaryKey, Ref, rel } from '@mikro-orm/core';
+import { Ref, rel } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Book {
@@ -655,7 +661,8 @@ export const Author = defineEntity({
 <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Author.ts"
-import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Author {
@@ -672,7 +679,8 @@ export class Author {
 <TabItem value="ts-morph">
 
 ```ts title="./entities/Author.ts"
-import { Entity, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
+import { PrimaryKeyProp } from '@mikro-orm/core';
+import { Entity, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Author {
@@ -746,7 +754,8 @@ export const Book = defineEntity({
 <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Book.ts"
-import { Entity, PrimaryKey, SerializedPrimaryKey, ManyToOne, Ref } from '@mikro-orm/core';
+import { Ref } from '@mikro-orm/core';
+import { Entity, PrimaryKey, SerializedPrimaryKey, ManyToOne } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Book {
@@ -767,7 +776,8 @@ export class Book {
 <TabItem value="ts-morph">
 
 ```ts title="./entities/Book.ts"
-import { Entity, PrimaryKey, SerializedPrimaryKey, ManyToOne, Ref } from '@mikro-orm/core';
+import { Ref } from '@mikro-orm/core';
+import { Entity, PrimaryKey, SerializedPrimaryKey, ManyToOne } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Book {

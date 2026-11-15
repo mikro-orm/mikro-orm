@@ -471,7 +471,8 @@ There are few types provided by MikroORM. All of them aim to provide similar exp
 You can also use the `type` map exported from the `core` package. It contains a map of all mapped types provided by the ORM, allowing autocomplete.
 
 ```ts
-import { Property, types } from '@mikro-orm/core';
+import { types } from '@mikro-orm/core';
+import { Property } from '@mikro-orm/decorators/legacy';
 
 @Property({ type: types.bigint, nullable: true })
 largeNumber?: string; // bigints are mapped to strings so we don't loose precision

@@ -1085,7 +1085,8 @@ Regenerating the entities should now work. However, the code doesn't build for n
 To fix this, first, let's add the actual custom entity class. We'll add a slug function as part of the custom constructor.
 
 ```ts title="src/modules/article/article.customEntity.ts"
-import { Entity, type Rel } from '@mikro-orm/core';
+import { type Rel } from '@mikro-orm/core';
+import { Entity } from '@mikro-orm/decorators/legacy';
 import { _Article } from './article.entity.js';
 import { User } from '../user/user.entity.js';
 
@@ -2551,8 +2552,9 @@ Try to implement these solutions as well. Step back as soon as you can build the
 And the third one is to declare those properties as optional. The best way to do that is to declare them as optional in our mapped superclass.
 
 ```diff title="src/modules/article/article.customEntity.ts"
--import { Entity, type Rel } from '@mikro-orm/core';
-+import { Entity, OptionalProps, type Rel } from '@mikro-orm/core';
+-import { type Rel } from '@mikro-orm/core';
++import { OptionalProps, type Rel } from '@mikro-orm/core';
+import { Entity } from '@mikro-orm/decorators/legacy';
 import { _Article } from './article.entity.js';
 import { User } from '../user/user.entity.js';
 
