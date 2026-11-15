@@ -1758,11 +1758,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     if (column.autoincrement) {
       const seqName = this.platform.getIndexName(tableName, [column.name], 'sequence');
+      // the regclass text needs the quoted name too, otherwise postgres folds a mixed case name to lower case
+      const seq = this.platform.quoteValue(this.quote(seqName));
       ret.push(`create sequence if not exists ${this.quote(seqName)}`);
-      ret.push(`select setval('${seqName}', (select max(${this.quote(column.name)}) from ${this.quote(name)}))`);
-      ret.push(
-        `alter table ${this.quote(name)} alter column ${this.quote(column.name)} set default nextval('${seqName}')`,
-      );
+      ret.push(`select setval(${seq}, (select max(${this.quote(column.name)}) from ${this.quote(name)}))`);
+      ret.push(`alter table ${this.quote(name)} alter column ${this.quote(column.name)} set default nextval(${seq})`);
     }
 
     return ret;
