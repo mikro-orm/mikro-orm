@@ -7,7 +7,11 @@ import { ChangeSetType } from '../unit-of-work/ChangeSet.js';
 import { TransactionStateError } from '../errors.js';
 import type { Transaction } from '../connections/Connection.js';
 import { helper } from '../entity/wrap.js';
-import type { Dictionary, EntityProperty } from '../typings.js';
+import type { Collection } from '../entity/Collection.js';
+import type { AnyEntity, Dictionary, EntityData, EntityProperty } from '../typings.js';
+
+/** Maps a transactional fork to the fork that started its database transaction, savepoints share the root. */
+const transactionRoots = new WeakMap<EntityManager, EntityManager>();
 
 /**
  * Manages transaction lifecycle and propagation for EntityManager.
@@ -286,20 +290,94 @@ export class TransactionManager {
   }
 
   /**
-   * Registers a deletion handler to unset entity identities after flush.
+   * Tracks entities deleted by the fork, the returned callback unsets their identity in the parent.
    */
-  private registerDeletionHandler(fork: EntityManager, parent: EntityManager): void {
+  private registerDeletionHandler(fork: EntityManager, parent: EntityManager): () => void {
+    const deleted = new Set<AnyEntity>();
     fork.getEventManager().registerSubscriber({
       afterFlush: (args: FlushEventArgs) => {
-        const deletionChangeSets = args.uow
-          .getChangeSets()
-          .filter(cs => cs.type === ChangeSetType.DELETE || cs.type === ChangeSetType.DELETE_EARLY);
-
-        for (const cs of deletionChangeSets) {
-          parent.getUnitOfWork(false).unsetIdentity(cs.entity);
+        for (const cs of args.uow.getChangeSets()) {
+          if (cs.type === ChangeSetType.DELETE || cs.type === ChangeSetType.DELETE_EARLY) {
+            deleted.add(cs.entity);
+          } else if (cs.type === ChangeSetType.CREATE) {
+            deleted.delete(cs.entity);
+          }
         }
       },
     });
+
+    return () => deleted.forEach(entity => parent.getUnitOfWork(false).unsetIdentity(entity));
+  }
+
+  /**
+   * Tracks the state of everything the fork flushes, the returned callback reverts it. Entities are shared
+   * with the parent, so once the fork's transaction is rolled back, they would be seen as already persisted.
+   */
+  private registerRollbackHandler(fork: EntityManager, parent: EntityManager): () => void {
+    const entities = new Map<
+      AnyEntity,
+      { snapshot?: EntityData<AnyEntity>; managed: boolean; pks: string[]; version: unknown }
+    >();
+    const collections = new Map<Collection<AnyEntity>, AnyEntity[] | undefined>();
+    const root = transactionRoots.get(fork);
+    fork.getEventManager().registerSubscriber({
+      onFlush: (args: FlushEventArgs) => {
+        // nested forks inherit this subscriber, but those outside of this transaction are not rolled back with it
+        if (transactionRoots.get(args.em) !== root) {
+          return;
+        }
+
+        for (const cs of args.uow.getChangeSets()) {
+          if (entities.has(cs.entity)) {
+            continue;
+          }
+
+          const wrapped = helper(cs.entity);
+          const deletion = cs.type === ChangeSetType.DELETE || cs.type === ChangeSetType.DELETE_EARLY;
+          entities.set(cs.entity, {
+            // the snapshot of created and updated entities is already overwritten when the change set is computed
+            snapshot: deletion ? wrapped.__originalEntityData : cs.originalEntity,
+            managed: wrapped.__managed,
+            pks: cs.meta.primaryKeys.filter(pk => cs.entity[pk] == null),
+            version: cs.entity[wrapped.__meta.versionProperty],
+          });
+        }
+
+        for (const coll of args.uow.getCollectionUpdates()) {
+          if (!collections.has(coll)) {
+            collections.set(coll, coll.getSnapshot());
+          }
+        }
+      },
+    });
+
+    return () => {
+      const parentUoW = parent.getUnitOfWork(false);
+
+      for (const [entity, { snapshot, managed, pks, version }] of entities) {
+        const wrapped = helper(entity);
+
+        // entities created by the fork could be already merged to the parent if the commit itself failed
+        if (!managed && !parentUoW.getPersistStack().has(entity)) {
+          parentUoW.getIdentityMap().delete(entity);
+        }
+
+        wrapped.__originalEntityData = snapshot;
+        wrapped.__managed = managed;
+
+        // the version was bumped by the flush, and would no longer match the database
+        if (wrapped.__meta.versionProperty) {
+          entity[wrapped.__meta.versionProperty] = version;
+        }
+
+        if (pks.length > 0) {
+          pks.forEach(pk => delete entity[pk]);
+          wrapped.__identifier = undefined;
+        }
+      }
+
+      collections.forEach((snapshot, coll) => coll.restoreSnapshot(snapshot));
+    };
   }
 
   /**
@@ -313,16 +391,23 @@ export class TransactionManager {
   ): Promise<T> {
     const propagateToUpperContext = this.shouldPropagateToUpperContext(em);
     const eventBroadcaster = new TransactionEventBroadcaster(fork, undefined);
+    transactionRoots.set(fork, (options.ctx && transactionRoots.get(em)) || fork);
+    const revertFlushedState = this.registerRollbackHandler(fork, em);
 
-    return TransactionContext.create(fork, () =>
-      fork.getConnection().transactional(
-        async (trx: Transaction) => {
-          fork.setTransactionContext(trx);
-          return this.executeTransactionFlow(fork, cb, propagateToUpperContext, em);
-        },
-        { sessionContext: fork.getTransactionSessionContext(), ...options, eventBroadcaster },
-      ),
-    );
+    try {
+      return await TransactionContext.create(fork, () =>
+        fork.getConnection().transactional(
+          async (trx: Transaction) => {
+            fork.setTransactionContext(trx);
+            return this.executeTransactionFlow(fork, cb, propagateToUpperContext, em);
+          },
+          { sessionContext: fork.getTransactionSessionContext(), ...options, eventBroadcaster },
+        ),
+      );
+    } catch (e) {
+      revertFlushedState();
+      throw e;
+    }
   }
 
   /**
@@ -341,13 +426,14 @@ export class TransactionManager {
     }
 
     // Setup: Register deletion handler before execution
-    this.registerDeletionHandler(fork, parentEm);
+    const unsetDeletedEntities = this.registerDeletionHandler(fork, parentEm);
 
     // Execute callback and flush
     const ret = await cb(fork);
     await fork.flush();
 
     // Synchronization: Merge entities back to the parent
+    unsetDeletedEntities();
     this.mergeEntitiesToParent(fork, parentEm);
 
     return ret;

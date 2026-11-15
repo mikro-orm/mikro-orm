@@ -278,6 +278,30 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     expect(entities[0].name).toBe('inner-success');
   });
 
+  test('REQUIRES_NEW propagation should keep the state of committed entities when outer fails', async () => {
+    const em = orm.em.fork();
+    let inner!: TestEntity;
+
+    await expect(
+      em.transactional(async em1 => {
+        await em1.transactional(
+          async em2 => {
+            inner = em2.create(TestEntity, { name: 'inner' });
+          },
+          { propagation: TransactionPropagation.REQUIRES_NEW },
+        );
+
+        throw new Error('Outer transaction failed');
+      }),
+    ).rejects.toThrow('Outer transaction failed');
+
+    expect(inner.id).toBeDefined();
+    inner.value = 123;
+    await em.persist(inner).flush();
+
+    expect(await orm.em.fork().findAll(TestEntity)).toMatchObject([{ name: 'inner', value: 123 }]);
+  });
+
   test('REQUIRES_NEW propagation should handle multiple REQUIRES_NEW transactions in sequence', async () => {
     const em = orm.em.fork();
     const contexts: any[] = [];
