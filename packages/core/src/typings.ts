@@ -1840,6 +1840,7 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
       const onlyGetter = prop.getter && !prop.setter && prop.persist === false;
       return !prop.inherited && prop.hydrate !== false && !discriminator && !prop.embedded && !onlyGetter;
     });
+    this.updateHookProps = this.hydrateProps.filter(prop => prop.onUpdate || prop.kind === ReferenceKind.EMBEDDED);
     this.trackingProps = this.hydrateProps.filter(prop => {
       return (
         !prop.getter &&
@@ -2060,6 +2061,7 @@ export interface EntityMetadata<Entity = any, Class extends EntityCtor<Entity> =
   comparableProps: EntityProperty<Entity>[]; // for EntityComparator
   trackingProps: EntityProperty<Entity>[]; // bidirectional to-one props that need propagation accessors
   hydrateProps: EntityProperty<Entity>[]; // for Hydrator
+  updateHookProps: EntityProperty<Entity>[]; // hydrate props with `onUpdate` or embeddables that may contain one
   validateProps: EntityProperty<Entity>[]; // for entity validation
   uniqueProps: EntityProperty<Entity>[];
   getterProps: EntityProperty<Entity>[];
