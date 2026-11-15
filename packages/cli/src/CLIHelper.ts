@@ -222,7 +222,7 @@ export class CLIHelper {
     /* v8 ignore next */
     switch (process.env.MIKRO_ORM_TYPE) {
       case 'mongo':
-        ret.driver ??= await import('@mikro-orm/sqlite').then(m => m.SqliteDriver);
+        ret.driver ??= await import('@mikro-orm/mongodb').then(m => m.MongoDriver);
         break;
       case 'mysql':
         ret.driver ??= await import('@mikro-orm/mysql').then(m => m.MySqlDriver);

@@ -442,6 +442,17 @@ describe('CLIHelper', () => {
       .forEach(k => delete process.env[k]);
   });
 
+  test('MIKRO_ORM_TYPE=mongo resolves to the mongo driver', async () => {
+    process.env.MIKRO_ORM_TYPE = 'mongo';
+    process.env.MIKRO_ORM_ENTITIES = './entities-schema';
+    process.env.MIKRO_ORM_DB_NAME = 'foo_bar';
+    const config = await CLIHelper.getConfiguration();
+    expect(config.getDriver()).toBeInstanceOf(MongoDriver);
+    Object.keys(process.env)
+      .filter(k => k.startsWith('MIKRO_ORM_'))
+      .forEach(k => delete process.env[k]);
+  });
+
   test('disallows version mismatch of ORM packages', async () => {
     delete process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH;
     const spy = vi.spyOn(fs, 'getORMPackages');
