@@ -60,7 +60,6 @@ const DEFAULTS = {
     warnWhenNoEntities: true,
     checkDuplicateTableNames: true,
     checkDuplicateFieldNames: true,
-    checkDuplicateEntities: true,
     checkNonPersistentCompositeProps: true,
     inferDefaultValues: true,
   },
