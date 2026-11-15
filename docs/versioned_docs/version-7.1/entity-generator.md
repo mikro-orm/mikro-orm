@@ -103,7 +103,7 @@ Example configuration:
 
 ```ts
 const dump = await orm.entityGenerator.generate({
-  entityDefinition: 'entitySchema',
+  entitySchema: true,
   bidirectionalRelations: true,
   identifiedReferences: true,
   esmImport: true,
