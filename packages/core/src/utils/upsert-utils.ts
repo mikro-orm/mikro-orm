@@ -221,7 +221,7 @@ export function getWhereCondition<T extends object>(
     if (propIndex !== false && propIndex >= 0) {
       // `onConflictFields` form one composite key, while the unique props are each unique on their own
       const keys = onConflictFields
-        ? unique.filter(p => (data as Dictionary)[p] ?? (data as Dictionary)[p.substring(0, p.indexOf('.'))] != null)
+        ? unique.filter(p => ((data as Dictionary)[p] ?? (data as Dictionary)[p.substring(0, p.indexOf('.'))]) != null)
         : [unique[propIndex]];
       where = {} as FilterQuery<T>;
 

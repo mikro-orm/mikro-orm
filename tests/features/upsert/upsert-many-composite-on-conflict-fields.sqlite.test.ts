@@ -11,10 +11,21 @@ const Run = defineEntity({
   },
 });
 
+const Build = defineEntity({
+  name: 'Build',
+  uniques: [{ properties: ['env', 'version'] }],
+  properties: {
+    id: p.integer().primary().autoincrement(),
+    env: p.string(),
+    version: p.integer(),
+    name: p.string(),
+  },
+});
+
 let orm: MikroORM;
 
 beforeAll(async () => {
-  orm = await MikroORM.init({ entities: [Run], dbName: ':memory:' });
+  orm = await MikroORM.init({ entities: [Run, Build], dbName: ':memory:' });
   await orm.schema.create();
 });
 
@@ -39,3 +50,22 @@ test.each(['ignore', 'merge'] as const)('reloads each row by all onConflictField
   const rows = await orm.em.fork().find(Run, {}, { orderBy: { key: 'asc' } });
   expect(res.map(r => [r.id, r.key, r.name])).toEqual(rows.map(r => [r.id, r.key, r.name]));
 });
+
+test.each(['ignore', 'merge'] as const)(
+  'keeps falsy values in the composite condition (%s)',
+  async onConflictAction => {
+    await orm.em.fork().insert(Build, { env: 'prod', version: -1, name: 'existing' });
+    const res = await orm.em.fork().upsertMany(
+      Build,
+      [
+        { env: 'prod', version: -1, name: 'new -1' },
+        { env: 'prod', version: 0, name: 'new 0' },
+        { env: 'prod', version: 1, name: 'new 1' },
+      ],
+      { onConflictFields: ['env', 'version'], onConflictAction },
+    );
+
+    const rows = await orm.em.fork().find(Build, {}, { orderBy: { version: 'asc' } });
+    expect(res.map(r => [r.id, r.version, r.name])).toEqual(rows.map(r => [r.id, r.version, r.name]));
+  },
+);
