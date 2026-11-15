@@ -773,7 +773,7 @@ Full list of supported options:
 |-------------------------------------------------------------|------------------------------------------------|
 | `MIKRO_ORM_CONTEXT_NAME`                                    | `contextName`                                  |
 | `MIKRO_ORM_BASE_DIR`                                        | `baseDir`                                      |
-| `MIKRO_ORM_TYPE`                                            | `type`                                         |
+| `MIKRO_ORM_TYPE`                                            | `driver` (CLI only)                            |
 | `MIKRO_ORM_ENTITIES`                                        | `entities`                                     |
 | `MIKRO_ORM_ENTITIES_TS`                                     | `entitiesTs`                                   |
 | `MIKRO_ORM_CLIENT_URL`                                      | `clientUrl`                                    |
