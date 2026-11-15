@@ -495,7 +495,7 @@ export abstract class Platform {
 
   /** Serializes a string array into its database storage format. */
   marshallArray(values: string[]): string {
-    return values.map(v => (/[,",\\]/.test(v) ? JSON.stringify(v) : v)).join(',');
+    return values.map(v => (/[,",\\]/.test(v) || (v === '' && values.length === 1) ? JSON.stringify(v) : v)).join(',');
   }
 
   /** Deserializes a database-stored array string back into a string array. */
@@ -535,6 +535,10 @@ export abstract class Platform {
         result.push(value.substring(i, comma));
         i = comma + 1;
       }
+    }
+
+    if (value.endsWith(',')) {
+      result.push('');
     }
 
     return result;
