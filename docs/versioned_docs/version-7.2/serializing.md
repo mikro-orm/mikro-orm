@@ -150,7 +150,8 @@ Unpopulated relations are serialized as foreign key values, e.g. `{ author: 1 }`
 For strict typings to respect the global config option, you need to define it on your entity class via `Config` symbol:
 
 ```ts
-import { Config, Entity, ManyToOne, PrimaryKey, Ref, wrap } from '@mikro-orm/core';
+import { Config, Ref, wrap } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class Book {

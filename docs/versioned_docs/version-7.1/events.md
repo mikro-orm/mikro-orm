@@ -118,7 +118,7 @@ Article.addHook('beforeUpdate', async (args: EventArgs<IArticle>) => {
 With decorators, mark entity methods with hook decorators like `@BeforeCreate()`, `@BeforeUpdate()`, etc.:
 
 ```ts title="./entities/Article.ts"
-import { Entity, PrimaryKey, Property, BeforeCreate, BeforeUpdate } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, BeforeCreate, BeforeUpdate } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Article {
@@ -158,7 +158,7 @@ Multiple methods can have the same hook decorator. Inside hook methods, `this` r
 With decorators, mark entity methods with hook decorators like `@BeforeCreate()`, `@BeforeUpdate()`, etc.:
 
 ```ts title="./entities/Article.ts"
-import { Entity, PrimaryKey, Property, BeforeCreate, BeforeUpdate } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, BeforeCreate, BeforeUpdate } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class Article {

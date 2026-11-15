@@ -396,7 +396,8 @@ With `defineEntity`, the `repository` option provides both the runtime binding a
 <TabItem value="reflect-metadata">
 
 ```ts
-import { EntityRepositoryType, PrimaryKey } from '@mikro-orm/core';
+import { EntityRepositoryType } from '@mikro-orm/core';
+import { PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 export abstract class BaseEntity {
 
@@ -412,7 +413,8 @@ export abstract class BaseEntity {
 <TabItem value="ts-morph">
 
 ```ts
-import { EntityRepositoryType, PrimaryKey } from '@mikro-orm/core';
+import { EntityRepositoryType } from '@mikro-orm/core';
+import { PrimaryKey } from '@mikro-orm/decorators/legacy';
 
 export abstract class BaseEntity {
 

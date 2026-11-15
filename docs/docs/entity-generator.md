@@ -229,7 +229,7 @@ An alternative approach that is perhaps less error-prone (at entity generation t
 Either way, you would end up with a file similar to
 
 ```ts title="./my-entities/IdentitiesContainer.ts"
-import { Embeddable, Property } from '@mikro-orm/core';
+import { Embeddable, Property } from '@mikro-orm/decorators/legacy';
 
 @Embeddable()
 export class IdentitiesContainer {
@@ -246,7 +246,7 @@ export class IdentitiesContainer {
 and then in the reference, you will end up with something similar to
 
 ```ts title="./my-entities/Author.ts"
-import { Embedded, Entity } from '@mikro-orm/core';
+import { Embedded, Entity } from '@mikro-orm/decorators/legacy';
 import { IdentitiesContainer } from './IdentitiesContainer';
 
 @Entity()

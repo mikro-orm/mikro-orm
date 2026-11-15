@@ -84,7 +84,7 @@ If you want to have a filter condition that does not need arguments, but you wan
 
 ## Global filters
 
-You can also register filters dynamically via `EntityManager` API. These are called global filters. They are enabled by default (unless disabled via last parameter in `addFilter()` method), and applied to all entities. You can limit the global filter to only specified entities.
+You can also register filters dynamically via `EntityManager` API. These are called global filters. They are enabled by default (unless disabled via the `default: false` option in `addFilter()` method), and applied to all entities. You can limit the global filter to only specified entities.
 
 Each global filter name must be unique within a single `EntityManager`. Calling `addFilter()` again with the same name replaces the previous definition.
 
@@ -92,13 +92,13 @@ Each global filter name must be unique within a single `EntityManager`. Calling 
 
 ```ts
 // bound to entity, enabled by default
-em.addFilter('writtenBy', args => ({ author: args.id }), Book);
+em.addFilter({ name: 'writtenBy', cond: args => ({ author: args.id }), entity: Book });
 
 // global, enabled by default, for all entities
-em.addFilter('tenant', args => { ... });
+em.addFilter({ name: 'tenant', cond: args => { ... } });
 
 // global, enabled by default, for only specified entities
-em.addFilter('tenant', args => { ... }, [Author, Book]);
+em.addFilter({ name: 'tenant', cond: args => { ... }, entity: [Author, Book] });
 ...
 
 // set params (probably in some middleware)
@@ -110,7 +110,7 @@ Global filters can be also registered via ORM configuration:
 
 ```ts
 MikroORM.init({
-  filters: { tenant: { cond: args => ({ tenant: args.tenant }), entity: ['Author', 'User'] } },
+  filters: { tenant: { cond: args => ({ tenant: args.tenant }), entity: [Author, User] } },
   ...
 })
 ```
@@ -157,7 +157,7 @@ book!: Book;
 Filters can be also marked as `strict`, which results in discarding the owning entity even if a nullable relation is filtered out. This is handy for other use cases, like checking for a tenant.
 
 ```ts
-em.addFilter('tenant', { tenant: tenantId }, User, { strict: true });
+em.addFilter({ name: 'tenant', cond: { tenant: tenantId }, entity: User, strict: true });
 ```
 
 A strict filter will still issue a `LEFT JOIN` on the nullable relation, adding a `WHERE` query that will discard the owning entity if the value is defined and the filter disallows it.

@@ -32,7 +32,8 @@ level?: number = 1;
 Or use `OptionalProps` symbol, specially designed to help with this use case. It should be defined as optional property on the entity and its type needs to be a union of all the properties you want to mark as optional.
 
 ```ts
-import { OptionalProps, Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { OptionalProps } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
@@ -100,7 +101,8 @@ Both will work the same, and can be combined with the `OptionalProps` symbol app
 > With `ReflectMetadataProvider`, intersection types are emitted as `Object`, so the property type needs to be provided explicitly (e.g. `@PrimaryKey({ type: 'number' })`), unless it can be inferred from a default value. See [Metadata Providers](./metadata-providers.md#intersection-types-opt-hidden).
 
 ```ts
-import { Opt, Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Opt } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {

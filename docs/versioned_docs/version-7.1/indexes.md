@@ -104,10 +104,10 @@ export class Author {
   @Property()
   title!: string;
 
-  // Expression callback with table and column references
+  // Expression callback with column and table references
   @Index({
     name: 'custom_index_country',
-    expression: (table, columns, indexName) =>
+    expression: (columns, table, indexName) =>
       `create index \`${indexName}\` on \`${table.name}\` (\`${columns.country}\`)`
   })
   @Property()
@@ -763,7 +763,7 @@ em.find(Article, { views: 100 }, { using: 'idx_article_title' });
 Decorator metadata doesn't carry the index names into the entity type, so you spell the index map out as a phantom property using the `IndexHints` symbol (same pattern as `[PrimaryKeyProp]` or `[OptionalProps]`):
 
 ```ts
-import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Entity, Index, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { IndexHints, PrimaryKeyProp } from '@mikro-orm/core';
 
 @Entity()

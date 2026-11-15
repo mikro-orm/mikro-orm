@@ -535,18 +535,9 @@ MikroORM.init({
 
 Read more about this in [Repositories](./repositories.md) section.
 
-## Strict Mode and property validation
+## Property validation
 
-> The validation needs to be explicitly enabled via `validate: true`. It has performance implications and usually should not be needed, as long as you don't modify your entities via `Object.assign()`.
-
-`MikroORM` will validate your properties before actual persisting happens. It will try to fix wrong data types for you automatically. If automatic conversion fails, it will throw an error. You can enable strict mode to disable this feature and let ORM throw errors instead. Validation is triggered when persisting the entity.
-
-```ts
-MikroORM.init({
-  validate: true,
-  strict: true,
-});
-```
+`MikroORM` validates your properties before actual persisting happens, and throws an error if a value does not match the property type. The validation is always enabled, and wrong data types are no longer fixed automatically.
 
 Read more about this in [Property Validation](property-validation.md) section.
 
@@ -579,7 +570,7 @@ Read more about this in [Debugging](./logging.md) section.
 
 ## Custom Fail Handler
 
-When no entity is found during `em.findOneOrFail()` call, a `NotFoundError` will be thrown. You can customize how the `Error` instance is created via `findOneOrFailHandler` (or `findExactlyOneOrFailHandler` if [strict mode](#strict-mode-and-property-validation) is enabled):
+When no entity is found during `em.findOneOrFail()` call, a `NotFoundError` will be thrown. You can customize how the `Error` instance is created via `findOneOrFailHandler` (or `findExactlyOneOrFailHandler` when the `strict` option is passed to `em.findOneOrFail()`):
 
 ```ts
 MikroORM.init({
@@ -860,7 +851,6 @@ There are also env vars you can use to control the CLI settings (those you can s
 |---------------------------------|------------|
 | `MIKRO_ORM_CLI_CONFIG`          | (CLI only) |
 | `MIKRO_ORM_CLI_TS_CONFIG_PATH`  | (CLI only) |
-| `MIKRO_ORM_CLI_ALWAYS_ALLOW_TS` | (CLI only) |
 | `MIKRO_ORM_CLI_PREFER_TS`       | (CLI only) |
 | `MIKRO_ORM_CLI_TS_LOADER`       | (CLI only) |
 | `MIKRO_ORM_CLI_VERBOSE`         | (CLI only) |

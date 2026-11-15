@@ -192,6 +192,8 @@ Install the following:
 npm install @mikro-orm/core \
             @mikro-orm/mysql \
             @mikro-orm/migrations \
+            @mikro-orm/decorators \
+            reflect-metadata \
             fastify
 ```
 
@@ -224,7 +226,7 @@ in your package.json file.
 
 ### Configuring TypeScript
 
-We will use almost the same config [as the "code first" guide one](./guide/01-first-entity.md#configuring-typescript). As mentioned there, already, adjust this config if you know what you're doing.
+We will use almost the same config [as the "code first" guide one](./guide/01-first-entity.md#configuring-typescript). As mentioned there, already, adjust this config if you know what you're doing. The entities in this guide are generated as classes with [legacy decorators](./using-decorators.md), so we also enable `experimentalDecorators` and `emitDecoratorMetadata`.
 
 ```json title='tsconfig.json'
 {
@@ -234,7 +236,9 @@ We will use almost the same config [as the "code first" guide one](./guide/01-fi
     "target": "ES2024",
     "strict": true,
     "outDir": "dist",
-    "declaration": true
+    "declaration": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": [
     "./src/**/*.ts"
@@ -252,10 +256,13 @@ Here's a basic config we'll start with (and later extend to take full advantage 
 import { defineConfig } from '@mikro-orm/mysql';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { Migrator } from '@mikro-orm/migrations';
+import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 
 export default defineConfig({
     multipleStatements: true,
     extensions: [EntityGenerator, Migrator],
+    // infer property types from the metadata emitted via `emitDecoratorMetadata`
+    metadataProvider: ReflectMetadataProvider,
     discovery: {
         // we need to disable validation for no entities, due to the entity generation
         warnWhenNoEntities: false,
@@ -275,6 +282,9 @@ export default defineConfig({
     entityGenerator: {
         save: true,
         path: 'src/modules',
+        // the generator outputs `defineEntity` by default, this guide builds on entity classes
+        entityDefinition: 'decorators',
+        identifiedReferences: false,
         esmImport: true,
         readOnlyPivotTables: true,
         outputPurePivotTables: true,
@@ -1085,7 +1095,8 @@ Regenerating the entities should now work. However, the code doesn't build for n
 To fix this, first, let's add the actual custom entity class. We'll add a slug function as part of the custom constructor.
 
 ```ts title="src/modules/article/article.customEntity.ts"
-import { Entity, type Rel } from '@mikro-orm/core';
+import { type Rel } from '@mikro-orm/core';
+import { Entity } from '@mikro-orm/decorators/legacy';
 import { _Article } from './article.entity.js';
 import { User } from '../user/user.entity.js';
 
@@ -1508,7 +1519,7 @@ import { Migrator } from '@mikro-orm/migrations';
 import pluralize from 'pluralize';
 import { join } from 'node:path';
 
-const isInMikroOrmCli = process.argv[1]?.endsWith(join('@mikro-orm', 'cli', 'esm')) ?? false;
+const isInMikroOrmCli = process.argv[1]?.endsWith(join('@mikro-orm', 'cli', 'cli.js')) ?? false;
 const isRunningGenerateEntities = isInMikroOrmCli && process.argv[2] === 'generate-entities';
 
 const mikroOrmExtensions: MikroORMOptions['extensions'] = [Migrator];
@@ -1687,7 +1698,7 @@ export async function initTestApp(port: number) {
 And now, trying to run it again... you should see a different error:
 
 ```
-Error: Please provide either 'type' or 'entity' attribute in User.id. If you are using decorators, ensure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.
+Error: Please provide either 'type' or 'entity' attribute in User.id. Make sure you have 'emitDecoratorMetadata' enabled in your tsconfig.json.
 ```
 
 But we did add `emitDecoratorMetadata` in our `tsconfig.json`, right? Yes, but vitest uses ESBuild to transpile the sources, and ESBuild doesn’t support this out of the box. There are several solutions to this problem. We may either
@@ -1708,7 +1719,7 @@ Add to your config
   }
 ```
 
-and regenerate the entities. You can now run the test without an error. You may also remove `emitDecoratorMetadata` from `tsconfig.json` at this point, unless you need it for another library.
+and regenerate the entities. You can now run the test without an error. You may also remove `emitDecoratorMetadata` from `tsconfig.json` and the `metadataProvider` option from the ORM config at this point, unless you need them for something else.
 
 Now that the article test is working, let's also add tests for the user endpoint. You'll register a user, try to log in with them, see their profile, and remove the user at the end, to keep the test repeatable.
 
@@ -2353,7 +2364,7 @@ const settings: GenerateOptions = {
 export default settings;
 ```
 
-And finally, let's hook them up in our config. We'll use `globby` to match all `*.gen.ts` files relative to the config itself. We're using `globby`, because it is already present - it is what MikroORM uses when searching for entities by a path. We'll pre-filter the results at the top, so that the actual entity processing is faster. Our full config is thus:
+And finally, let's hook them up in our config. We'll use the native `globSync` from `node:fs` to match all `*.gen.ts` files relative to the config itself - it is what MikroORM uses when searching for entities by a path. We'll pre-filter the results at the top, so that the actual entity processing is faster. Our full config is thus:
 
 ```ts title="src/mikro-orm.config.ts"
 import {
@@ -2364,10 +2375,10 @@ import { UnderscoreNamingStrategy, type GenerateOptions } from '@mikro-orm/core'
 import { Migrator } from '@mikro-orm/migrations';
 import pluralize from 'pluralize';
 import { join, dirname } from 'node:path';
-import { sync } from 'globby';
-import { fileURLToPath } from 'node:url';
+import { globSync } from 'node:fs';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const isInMikroOrmCli = process.argv[1]?.endsWith(join('@mikro-orm', 'cli', 'esm')) ?? false;
+const isInMikroOrmCli = process.argv[1]?.endsWith(join('@mikro-orm', 'cli', 'cli.js')) ?? false;
 const isRunningGenerateEntities = isInMikroOrmCli && process.argv[2] === 'generate-entities';
 
 const mikroOrmExtensions: MikroORMOptions['extensions'] = [Migrator];
@@ -2380,9 +2391,9 @@ if (isInMikroOrmCli) {
   mikroOrmExtensions.push((await import('@mikro-orm/entity-generator')).EntityGenerator);
   if (isRunningGenerateEntities) {
     const fileDir = dirname(fileURLToPath(import.meta.url));
-    const genExtensionFiles = sync('./modules/**/*.gen.ts', { cwd: fileDir });
+    const genExtensionFiles = globSync('modules/**/*.gen.ts', { cwd: fileDir });
     for (const file of genExtensionFiles) {
-      const genExtension = (await import(file)).default as GenerateOptions;
+      const genExtension = (await import(pathToFileURL(join(fileDir, file)).href)).default as GenerateOptions;
       if (genExtension.fileName) {
         fileNameFunctions.push(genExtension.fileName);
       }
@@ -2439,6 +2450,8 @@ export default defineConfig({
     },
     save: true,
     path: 'src/modules',
+    entityDefinition: 'decorators',
+    identifiedReferences: false,
     esmImport: true,
     outputPurePivotTables: true,
     readOnlyPivotTables: true,
@@ -2551,8 +2564,9 @@ Try to implement these solutions as well. Step back as soon as you can build the
 And the third one is to declare those properties as optional. The best way to do that is to declare them as optional in our mapped superclass.
 
 ```diff title="src/modules/article/article.customEntity.ts"
--import { Entity, type Rel } from '@mikro-orm/core';
-+import { Entity, OptionalProps, type Rel } from '@mikro-orm/core';
+-import { type Rel } from '@mikro-orm/core';
++import { OptionalProps, type Rel } from '@mikro-orm/core';
+import { Entity } from '@mikro-orm/decorators/legacy';
 import { _Article } from './article.entity.js';
 import { User } from '../user/user.entity.js';
 
@@ -2804,7 +2818,8 @@ Execute the migration and regenerate the entities. You should see the "social" c
 You can define the embeddable class manually:
 
 ```ts title="src/modules/user/social.customEntity.ts"
-import { Embeddable, Property, type Opt } from "@mikro-orm/mysql";
+import { type Opt } from "@mikro-orm/mysql";
+import { Embeddable, Property } from "@mikro-orm/decorators/legacy";
 
 @Embeddable()
 export class Social {

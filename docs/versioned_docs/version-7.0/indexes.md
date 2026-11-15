@@ -104,10 +104,10 @@ export class Author {
   @Property()
   title!: string;
 
-  // Expression callback with table and column references
+  // Expression callback with column and table references
   @Index({
     name: 'custom_index_country',
-    expression: (table, columns, indexName) =>
+    expression: (columns, table, indexName) =>
       `create index \`${indexName}\` on \`${table.name}\` (\`${columns.country}\`)`
   })
   @Property()

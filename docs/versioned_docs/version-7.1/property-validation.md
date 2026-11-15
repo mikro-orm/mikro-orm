@@ -32,7 +32,8 @@ level?: number = 1;
 Or use `OptionalProps` symbol, specially designed to help with this use case. It should be defined as optional property on the entity and its type needs to be a union of all the properties you want to mark as optional.
 
 ```ts
-import { OptionalProps, Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { OptionalProps } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {
@@ -98,7 +99,8 @@ An alternative approach is using the `Opt` type, which can be used in two ways:
 Both will work the same, and can be combined with the `OptionalProps` symbol approach.
 
 ```ts
-import { Opt, Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Opt } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 class User {

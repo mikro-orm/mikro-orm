@@ -68,7 +68,7 @@ export type IOutboxEvent = InferEntity<typeof OutboxEvent>;
   <TabItem value="reflect-metadata">
 
 ```ts title="./entities/OutboxEvent.ts"
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class OutboxEvent {
@@ -95,7 +95,7 @@ export class OutboxEvent {
   <TabItem value="ts-morph">
 
 ```ts title="./entities/OutboxEvent.ts"
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
 
 @Entity()
 export class OutboxEvent {
