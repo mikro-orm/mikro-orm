@@ -49,8 +49,8 @@ exports[`changing PK column type [postgres] (GH 1480) > changing PK type > 4. ch
   "down": "alter table "user" alter column "id" drop default;
 ",
   "up": "create sequence if not exists "user_id_seq";
-select setval('user_id_seq', (select max("id") from "user"));
-alter table "user" alter column "id" set default nextval('user_id_seq');
+select setval('"user_id_seq"', (select max("id") from "user"));
+alter table "user" alter column "id" set default nextval('"user_id_seq"');
 ",
 }
 `;
@@ -62,8 +62,8 @@ exports[`changing PK column type [postgres] (GH 1480) > changing PK type > 5. ch
 alter table "user" alter column "id" type int4 using ("id"::int4);
 
 create sequence if not exists "user_id_seq";
-select setval('user_id_seq', (select max("id") from "user"));
-alter table "user" alter column "id" set default nextval('user_id_seq');
+select setval('"user_id_seq"', (select max("id") from "user"));
+alter table "user" alter column "id" set default nextval('"user_id_seq"');
 ",
   "up": "alter table "user" alter column "id" drop default;
 

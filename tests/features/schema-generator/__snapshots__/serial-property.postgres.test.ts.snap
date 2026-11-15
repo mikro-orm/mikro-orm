@@ -18,8 +18,8 @@ exports[`schema generator works with non-pk autoincrement columns (serial) 3`] =
 "set names 'utf8';
 
 create sequence if not exists "something__id_seq";
-select setval('something__id_seq', (select max("_id") from "something"));
-alter table "something" alter column "_id" set default nextval('something__id_seq');
+select setval('"something__id_seq"', (select max("_id") from "something"));
+alter table "something" alter column "_id" set default nextval('"something__id_seq"');
 "
 `;
 
