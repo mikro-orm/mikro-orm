@@ -309,12 +309,12 @@ npx mikro-orm seeder:run
 npx mikro-orm seeder:run --class=BookSeeder
 ```
 
-You may also seed your database using the [`migrate:fresh`](./migrations.md#using-via-cli) or [`schema:fresh`](schema-generator.md) command in combination with the `--seed` option, which will drop all tables and re-run all of your migrations or generate the database based on the current entities. This command is useful for completely re-building your database:
+You may also seed your database using the [`migration:fresh`](./migrations.md#using-via-cli) or [`schema:fresh`](schema-generator.md) command in combination with the `--seed` option, which will drop all tables and re-run all of your migrations or generate the database based on the current entities. This command is useful for completely re-building your database:
 
 ```shell script
 npx mikro-orm migration:fresh --seed    # will drop the database, run all migrations and the DatabaseSeeder class
 
-npx mikro-orm schema:fresh --seed       # will recreate the database and run the DatabaseSeeder class
+npx mikro-orm schema:fresh --run --seed # will recreate the database and run the DatabaseSeeder class
 ```
 
 If you do not want to run the `DatabaseSeeder` class you can either specify what the default seeder class should be. This can be done by changing the [default settings](./configuration.md#seeder). Another option is to explicitly define the seeder class you want to run.
@@ -322,7 +322,7 @@ If you do not want to run the `DatabaseSeeder` class you can either specify what
 ```shell script
 npx mikro-orm migration:fresh --seed TestSeeder       # will drop the database, run all migrations and the TestSeeder class
 
-npx mikro-orm schema:fresh --seed ProjectsSeeder      # will recreate the database and run the ProjectsSeeder class
+npx mikro-orm schema:fresh --run --seed ProjectsSeeder # will recreate the database and run the ProjectsSeeder class
 ```
 
 ## Use in tests
