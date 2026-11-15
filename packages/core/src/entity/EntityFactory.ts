@@ -1,5 +1,6 @@
 import { Utils } from '../utils/Utils.js';
 import type {
+  AnyEntity,
   Constructor,
   Dictionary,
   EntityData,
@@ -20,6 +21,7 @@ import { Reference } from './Reference.js';
 import { helper } from './wrap.js';
 import type { EntityComparator } from '../utils/EntityComparator.js';
 import { EntityHelper } from './EntityHelper.js';
+import { PolymorphicRef } from './PolymorphicRef.js';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver.js';
 import type { Platform } from '../platforms/Platform.js';
 import type { Configuration } from '../utils/Configuration.js';
@@ -355,17 +357,22 @@ export class EntityFactory {
     Utils.keys(diff2).forEach(key => {
       const prop = meta.properties[key];
 
-      if (
-        [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
-        Utils.isPlainObject(data[prop.name])
-      ) {
-        diff2[key] = entity[prop.name]
-          ? (EntityHelper.getForeignKeyValue(
-              Reference.unwrapReference(entity[prop.name]!),
-              prop,
-              prop.targetMeta!,
-            ) as EntityDataValue<T>)
-          : null;
+      // a joined polymorphic row carries its target class in `constructor`, so it is not a plain object
+      const joined =
+        Utils.isPlainObject(data[prop.name]) ||
+        (prop.polymorphic && Utils.isObject(data[prop.name]) && !(data[prop.name] instanceof PolymorphicRef));
+
+      if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && joined) {
+        const target = entity[prop.name] ? Reference.unwrapReference(entity[prop.name] as AnyEntity) : null;
+        // use the actual target's meta, a polymorphic relation has several
+        let value = target ? EntityHelper.getForeignKeyValue(target, prop, helper(target).__meta) : null;
+
+        if (target && prop.polymorphic) {
+          const discriminator = QueryHelper.findDiscriminatorValue(prop.discriminatorMap!, target.constructor)!;
+          value = new PolymorphicRef(discriminator, value);
+        }
+
+        diff2[key] = value;
       } else if (
         !options.convertCustomTypes &&
         [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE, ReferenceKind.SCALAR].includes(prop.kind) &&

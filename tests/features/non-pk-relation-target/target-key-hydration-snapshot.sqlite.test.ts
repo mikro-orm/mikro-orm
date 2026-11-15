@@ -1,5 +1,4 @@
 import { defineEntity, MikroORM, p, Type } from '@mikro-orm/sqlite';
-import { afterAll, beforeAll, expect, test } from 'vitest';
 import { mockLogger } from '../../helpers.js';
 
 class UpperCaseType extends Type<string, string> {
