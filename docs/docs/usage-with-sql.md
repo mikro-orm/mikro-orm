@@ -271,6 +271,10 @@ await MikroORM.init({
 - No support for tuple comparison in `WHERE` clauses
 - Foreign keys are not automatically indexed
 
+## Community drivers
+
+The community-maintained [YDB driver](https://github.com/rozenstein94/mikro-orm-ydb) provides native YQL access to YDB through the core driver API. See its repository for installation, compatibility, and supported features.
+
 ## Custom driver
 
 If you need to support a database that is not included, you can implement your own driver. See the [custom driver documentation](./custom-driver.md) for details.

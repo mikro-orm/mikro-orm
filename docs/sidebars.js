@@ -157,7 +157,6 @@ module.exports = {
         'usage-with-sql-js',
         'usage-with-cockroachdb',
         'usage-with-mongo',
-        'usage-with-ydb',
         'usage-with-nestjs',
         'usage-with-nextjs',
         'usage-with-adonis',
