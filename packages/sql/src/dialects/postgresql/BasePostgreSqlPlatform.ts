@@ -351,8 +351,10 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   override marshallArray(values: string[]): string {
-    const quote = (v: string) => (v === '' || /["{},\\]/.exec(v) ? JSON.stringify(v) : v);
-    return `{${values.map(v => quote('' + v)).join(',')}}`;
+    // Quote what Postgres would read differently unquoted: empty, `NULL`, delimiters and whitespace.
+    const quote = (v: string) =>
+      v === '' || /^null$/i.test(v) || /["{},\\\s]/.test(v) ? `"${v.replace(/["\\]/g, '\\$&')}"` : v;
+    return `{${values.map(v => (v === null ? 'NULL' : quote('' + v))).join(',')}}`;
   }
 
   /* v8 ignore next */
