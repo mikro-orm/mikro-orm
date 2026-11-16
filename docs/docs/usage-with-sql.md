@@ -263,6 +263,18 @@ await MikroORM.init({
 });
 ```
 
+`driverOptions` also takes two options of Kysely's `MssqlDialect`, which are not passed on to `tedious`:
+
+- `validateConnections` (default `true`) runs `select 1` on every connection taken from the pool, so each query outside of a transaction costs an extra round trip. With `false`, Kysely also skips its check for connections that were closed or hit a socket error, so a connection dropped by the server keeps being handed out, and fails every query, until it stays idle long enough for the pool to close it (`pool.idleTimeoutMillis`).
+- `resetConnectionsOnRelease` (default `false`) resets the session state of every connection returned to the pool, which is another request to the database.
+
+```ts
+await MikroORM.init({
+  driver: MsSqlDriver,
+  driverOptions: { validateConnections: false },
+});
+```
+
 ## Oracle limitations
 
 - Cycles in cascade paths are not supported

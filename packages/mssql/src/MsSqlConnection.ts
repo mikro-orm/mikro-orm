@@ -59,8 +59,12 @@ class MsSqlReserveDialect extends MssqlDialect {
  * `Tedious.Connection`s through the `onCreateConnection`/`onReserveConnection` hooks instead.
  */
 export class MsSqlConnection extends AbstractSqlConnection {
-  override createKyselyDialect(overrides: ConnectionConfiguration): MssqlDialect {
-    const options = this.mapOptions(overrides);
+  override createKyselyDialect(
+    overrides: ConnectionConfiguration & Pick<MssqlDialectConfig, 'validateConnections' | 'resetConnectionsOnRelease'>,
+  ): MssqlDialect {
+    // these two are options of kysely's dialect, not of the `tedious` connection
+    const { validateConnections, resetConnectionsOnRelease, ...connectionOverrides } = overrides ?? {};
+    const options = this.mapOptions(connectionOverrides);
     const poolOptions = Utils.mergeConfig(
       {
         min: 0,
@@ -86,6 +90,8 @@ export class MsSqlConnection extends AbstractSqlConnection {
             return connection;
           },
         },
+        validateConnections,
+        resetConnectionsOnRelease,
       },
       onReserveConnection,
     );
