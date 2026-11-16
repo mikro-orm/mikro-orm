@@ -35,7 +35,7 @@ If you use folder-based discovery, you should specify paths to the compiled enti
 
 > When running via `node`, `.d.ts` files are used to obtain the type, so you need to ship them in the production build. TS source files are not needed. Be sure to enable `compilerOptions.declaration` in your `tsconfig.json`.
 
-After the discovery process ends, all [metadata will be cached](./metadata-cache.md). By default, `FileCacheAdapter` will be used to store the cache inside `./temp` folder in JSON files.
+After the discovery process ends, all [metadata will be cached](./metadata-cache.md), as `TsMorphMetadataProvider` enables the metadata cache by default. By default, `FileCacheAdapter` will be used to store the cache inside `./temp` folder in JSON files.
 
 > You can generate production cache via CLI command `mikro-orm cache:generate`.
 

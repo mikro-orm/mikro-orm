@@ -351,7 +351,7 @@ export class Book {
 
 ## Entity Relationships
 
-All relationship decorators have `entity`, `cascade` and `eager` optional parameters. If you use the default `ReflectMetadataProvider`, then `entity` parameter might be required You will be warned about it being not defined while required during discovery process if you use `ReflectMetadataProvider`.
+All relationship decorators have `entity`, `cascade` and `eager` optional parameters. If you use `ReflectMetadataProvider`, then `entity` parameter might be required You will be warned about it being not defined while required during discovery process if you use `ReflectMetadataProvider`.
 
 You can also use `type` parameter instead of it - the difference being that `type` parameter needs to be string, while in `entity` parameter you can provide a reference (wrapped in a callback to overcome issues with circular dependencies) to the entity, which plays nice with refactoring features in IDEs like WebStorm.
 
