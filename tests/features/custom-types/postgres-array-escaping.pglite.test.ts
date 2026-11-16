@@ -27,7 +27,7 @@ test('postgres string arrays keep NULL strings, surrounding whitespace and contr
   const tags = [
     ['NULL', 'null', 'Null'],
     [' padded ', 'a b', '\t'],
-    ['a,b\nc', 'tab\there', 'back\\slash', 'quote"d'],
+    ['a,b\nc', 'new\nline', 'tab\there', 'back\\slash', 'quote"d'],
     ['', '{}', 'plain'],
   ];
   tags.forEach((t, i) => orm.em.create(Post, { id: i + 1, tags: t }));
@@ -39,7 +39,7 @@ test('postgres string arrays keep NULL strings, surrounding whitespace and contr
 
   const platform = orm.em.getPlatform();
   expect(platform.marshallArray(['NULL', ' a ', 'a\nb', 'x"y\\z', 'plain'])).toBe(
-    '{"NULL"," a ","a\nb","x\\"y\\\\z",plain}',
+    '{"NULL"," a ",a\nb,"x\\"y\\\\z",plain}',
   );
 });
 

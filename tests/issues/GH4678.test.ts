@@ -102,7 +102,7 @@ test('GH #4678 ($hasSomeKeys operator)', async () => {
     `select "u0".* from "user" as "u0" left join "book" as "b1" on "u0"."id" = "b1"."user_id" where "b1"."parameters" ?| '{seasons,pages}'`,
   );
   expect(mock.mock.calls[2][0]).toMatch(
-    `select "b0".* from "book" as "b0" where "b0"."authors" ?| '{"Lewis Carroll","Stephen King"}'`,
+    `select "b0".* from "book" as "b0" where "b0"."authors" ?| '{Lewis Carroll,Stephen King}'`,
   );
 });
 
@@ -128,6 +128,6 @@ test('GH #4678 ($hasKeys operator)', async () => {
     `select "u0".* from "user" as "u0" left join "book" as "b1" on "u0"."id" = "b1"."user_id" where "b1"."parameters" ?& '{seasons,pages}'`,
   );
   expect(mock.mock.calls[2][0]).toMatch(
-    `select "b0".* from "book" as "b0" where "b0"."authors" ?& '{"Lewis Carroll","Stephen King"}'`,
+    `select "b0".* from "book" as "b0" where "b0"."authors" ?& '{Lewis Carroll,Stephen King}'`,
   );
 });
