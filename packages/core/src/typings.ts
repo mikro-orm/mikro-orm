@@ -467,8 +467,13 @@ export type OperatorMap<T> = {
 /** A single filter value: the raw value, its expanded scalar form, its primary key, or a raw SQL expression. */
 export type FilterItemValue<T> = T | ExpandScalar<T> | Primary<T> | Raw;
 
-/** A complete filter value: an operator map, a single value, an array of values, or null. */
-export type FilterValue<T> = OperatorMap<FilterItemValue<T>> | FilterItemValue<T> | FilterItemValue<T>[] | null;
+/** A complete filter value: an operator map, a single value, an array of values, a collection whose items' primary keys are matched, or null. */
+export type FilterValue<T> =
+  | OperatorMap<FilterItemValue<T>>
+  | FilterItemValue<T>
+  | FilterItemValue<T>[]
+  | Collection<any, any>
+  | null;
 
 type FilterObjectProp<T, K extends PropertyKey> = K extends keyof MergeUnion<T>
   ? MergeUnion<T>[K]
