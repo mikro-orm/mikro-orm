@@ -1081,7 +1081,8 @@ export class EntityLoader {
           convertCustomTypes: true,
           schema: options.schema ?? this.#em.config.get('schema'),
         });
-        return this.#em.getUnitOfWork().register(entity as AnyEntity, item, { refresh, loaded: true });
+        // the factory already registered the snapshot, the raw row is not comparable
+        return this.#em.getUnitOfWork().register(entity as AnyEntity, undefined, { loaded: true });
       });
       const hasLimit = populate?.limit != null;
       (entity[prop.name] as unknown as Collection<AnyEntity>).hydrate(items, true, hasLimit, hasLimit);
