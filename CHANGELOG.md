@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.10](https://github.com/mikro-orm/mikro-orm/compare/v7.2.9...v7.2.10) (2026-11-16)
+
+### Bug Fixes
+
+* **cli:** resolve `MIKRO_ORM_TYPE=mongo` to the mongo driver ([#8723](https://github.com/mikro-orm/mikro-orm/issues/8723)) ([daf5d62](https://github.com/mikro-orm/mikro-orm/commit/daf5d62669ed9fac1351ee428eaa47fbc22104c3))
+* **core:** accept numeric strings in `limit` and `offset` options ([#8697](https://github.com/mikro-orm/mikro-orm/issues/8697)) ([8693316](https://github.com/mikro-orm/mikro-orm/commit/86933164f9481fe15eb5cfd3138b35ea7dd6581f))
+* **core:** do not mark refreshed m:n items with custom types as dirty ([#8742](https://github.com/mikro-orm/mikro-orm/issues/8742)) ([aabaa17](https://github.com/mikro-orm/mikro-orm/commit/aabaa170337d6d6f621e78636b0d64701460911f)), closes [#8739](https://github.com/mikro-orm/mikro-orm/issues/8739)
+* **core:** do not queue auto-flush when loading 1:m collections ([#8699](https://github.com/mikro-orm/mikro-orm/issues/8699)) ([263b7ed](https://github.com/mikro-orm/mikro-orm/commit/263b7ede514388465993e30533e9e77f19fae778)), closes [#6982](https://github.com/mikro-orm/mikro-orm/issues/6982)
+* **core:** hydrate formulas typed as number to numbers ([#8711](https://github.com/mikro-orm/mikro-orm/issues/8711)) ([fb1ad05](https://github.com/mikro-orm/mikro-orm/commit/fb1ad0571464703c6bedea196134bb7741192208)), closes [#8694](https://github.com/mikro-orm/mikro-orm/issues/8694)
+* **core:** keep the CLI's dynamicImportProvider when re-creating Configuration ([#8714](https://github.com/mikro-orm/mikro-orm/issues/8714)) ([f54d8b6](https://github.com/mikro-orm/mikro-orm/commit/f54d8b633154de4e6dfa0843faf929261d2a3fac))
+* **core:** keep trailing empty strings in string arrays on non-postgres platforms ([#8720](https://github.com/mikro-orm/mikro-orm/issues/8720)) ([de1ad6f](https://github.com/mikro-orm/mikro-orm/commit/de1ad6f4a8a770708ae4b9822492a8e71b4bde72)), closes [#8719](https://github.com/mikro-orm/mikro-orm/issues/8719)
+* **core:** keep unflushed collection changes in `em.populate()` ([#8692](https://github.com/mikro-orm/mikro-orm/issues/8692)) ([149a957](https://github.com/mikro-orm/mikro-orm/commit/149a9572466931b1291f436e2ae54da6768709b9)), closes [#8690](https://github.com/mikro-orm/mikro-orm/issues/8690)
+* **core:** match upserted rows by all onConflictFields ([#8696](https://github.com/mikro-orm/mikro-orm/issues/8696)) ([43943c2](https://github.com/mikro-orm/mikro-orm/commit/43943c270cdeb91d7942e05507b5954d735f09cf)), closes [#8695](https://github.com/mikro-orm/mikro-orm/issues/8695) [#8294](https://github.com/mikro-orm/mikro-orm/issues/8294)
+* **core:** snapshot merged `targetKey` and polymorphic to-one relations correctly ([#8715](https://github.com/mikro-orm/mikro-orm/issues/8715)) ([faf7597](https://github.com/mikro-orm/mikro-orm/commit/faf7597e35f02565c011b50444ca4a66778d6836)), closes [#8661](https://github.com/mikro-orm/mikro-orm/issues/8661)
+* **mssql:** do not mark string properties with a custom column type as dirty after load ([#8747](https://github.com/mikro-orm/mikro-orm/issues/8747)) ([b5adf83](https://github.com/mikro-orm/mikro-orm/commit/b5adf839c0d1a1c67198c0b2d3bf78ca17fc2076)), closes [#8740](https://github.com/mikro-orm/mikro-orm/issues/8740)
+* **mssql:** map date results of joined relations to strings ([#8734](https://github.com/mikro-orm/mikro-orm/issues/8734)) ([f93338d](https://github.com/mikro-orm/mikro-orm/commit/f93338dba79527b88ccab01afc5bc90a52c29c73)), closes [#8540](https://github.com/mikro-orm/mikro-orm/issues/8540) [#8733](https://github.com/mikro-orm/mikro-orm/issues/8733)
+* **mssql:** validate pooled connections without a query ([#8743](https://github.com/mikro-orm/mikro-orm/issues/8743)) ([5ca2b66](https://github.com/mikro-orm/mikro-orm/commit/5ca2b66f66770aa6534f2f32478450948206d2b1)), closes [#8741](https://github.com/mikro-orm/mikro-orm/issues/8741)
+* **postgres:** quote array elements that postgres would read differently ([#8748](https://github.com/mikro-orm/mikro-orm/issues/8748)) ([fab35eb](https://github.com/mikro-orm/mikro-orm/commit/fab35ebec7685eac20711a9f209ea1d585fb0504)), closes [#8730](https://github.com/mikro-orm/mikro-orm/issues/8730)
+* **postgres:** quote the sequence name in setval and nextval when adding autoincrement ([#8731](https://github.com/mikro-orm/mikro-orm/issues/8731)) ([06d42e4](https://github.com/mikro-orm/mikro-orm/commit/06d42e43686e01eac7942ece08e9d64000689584))
+
+### Performance Improvements
+
+* **core:** avoid per-entity sets and repeated property lookups in `toObject()` ([#8701](https://github.com/mikro-orm/mikro-orm/issues/8701)) ([4dd6f2c](https://github.com/mikro-orm/mikro-orm/commit/4dd6f2cf253d37f6cfb3c17067aeb861cc2c4377))
+* **core:** cut per-entity allocations when computing change sets ([#8707](https://github.com/mikro-orm/mikro-orm/issues/8707)) ([111ed44](https://github.com/mikro-orm/mikro-orm/commit/111ed44f4499eed268c569b46e1ae7404ed0d927))
+* **core:** mark collections and references on the prototype ([#8700](https://github.com/mikro-orm/mikro-orm/issues/8700)) ([2e2b1a1](https://github.com/mikro-orm/mikro-orm/commit/2e2b1a1e5797452742d8da0e92664f3e3a9877bf))
+* **core:** reset wrapper fields instead of deleting them ([#8698](https://github.com/mikro-orm/mikro-orm/issues/8698)) ([90373ae](https://github.com/mikro-orm/mikro-orm/commit/90373aec6dd8270d98ba81cdfdadd73281746934))
+* **core:** skip `ensurePropagation()` for entities without bidirectional to-one relations ([#8702](https://github.com/mikro-orm/mikro-orm/issues/8702)) ([137a009](https://github.com/mikro-orm/mikro-orm/commit/137a009ddeeefaeafd9a18483740df30447d9c68)), closes [#8671](https://github.com/mikro-orm/mikro-orm/issues/8671)
+* **core:** skip the merge cascade for entities freshly mapped via `em.map()` ([#8708](https://github.com/mikro-orm/mikro-orm/issues/8708)) ([5ab8e1d](https://github.com/mikro-orm/mikro-orm/commit/5ab8e1deb657a4d91a894bdc0184617aa62939cd))
+* **core:** speed up flushing removed entities ([#8709](https://github.com/mikro-orm/mikro-orm/issues/8709)) ([e9012dc](https://github.com/mikro-orm/mikro-orm/commit/e9012dcfff60c81ad599b04d207ebbc2593976b1)), closes [#8698](https://github.com/mikro-orm/mikro-orm/issues/8698)
+* **core:** trim per-row overhead when reading entities ([#8710](https://github.com/mikro-orm/mikro-orm/issues/8710)) ([70777a3](https://github.com/mikro-orm/mikro-orm/commit/70777a36bc4be802ad37bada5b11dc5571c90d77))
+* **core:** walk only props with `onUpdate` hooks when computing update change sets ([#8718](https://github.com/mikro-orm/mikro-orm/issues/8718)) ([0599484](https://github.com/mikro-orm/mikro-orm/commit/05994849edba9a45540b6edc3f1b2c65bc879435))
+* **sql:** precompute joined column aliases and stop deleting them per row ([#8704](https://github.com/mikro-orm/mikro-orm/issues/8704)) ([21d7c6f](https://github.com/mikro-orm/mikro-orm/commit/21d7c6fc0fd3cd8880e62f5f0aa8bcf23a6f5170))
+
+
 ## [7.2.9](https://github.com/mikro-orm/mikro-orm/compare/v7.2.8...v7.2.9) (2026-11-12)
 
 ### Bug Fixes

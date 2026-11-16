@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.10](https://github.com/mikro-orm/mikro-orm/compare/v7.2.9...v7.2.10) (2026-11-16)
+
+### Bug Fixes
+
+* **cli:** resolve `MIKRO_ORM_TYPE=mongo` to the mongo driver ([#8723](https://github.com/mikro-orm/mikro-orm/issues/8723)) ([daf5d62](https://github.com/mikro-orm/mikro-orm/commit/daf5d62669ed9fac1351ee428eaa47fbc22104c3))
+
+
 ## [7.2.9](https://github.com/mikro-orm/mikro-orm/compare/v7.2.8...v7.2.9) (2026-11-12)
 
 ### Bug Fixes
