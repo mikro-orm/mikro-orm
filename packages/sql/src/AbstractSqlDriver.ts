@@ -8,6 +8,7 @@ import {
   type Constructor,
   type CountOptions,
   DatabaseDriver,
+  DateType,
   type DeleteOptions,
   type Dictionary,
   type DriverMethodOptions,
@@ -966,6 +967,12 @@ export abstract class AbstractSqlDriver<
       } else {
         relationPojo[prop.name] = value as EntityDataValue<T>;
       }
+    } else if (prop.customType instanceof DateType) {
+      // tedious returns DATE columns as `Date`, map them to the string the entity holds, so the snapshot matches it
+      const value = row[keys[0]];
+      relationPojo[prop.name] = (
+        value instanceof Date ? this.platform.convertDateToJSValue(value) : value
+      ) as EntityDataValue<T>;
     } else {
       relationPojo[prop.name] = row[keys[0]];
 
