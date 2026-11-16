@@ -5,6 +5,7 @@ import {
   DoubleType,
   type EntityManager,
   type EntityMetadata,
+  type EntityProperty,
   FloatType,
   type IDatabaseDriver,
   type IPrimaryKey,
@@ -13,6 +14,7 @@ import {
   type Primary,
   QueryOrder,
   raw,
+  ReferenceKind,
   RawQueryFragment,
   type TransformContext,
   Type,
@@ -232,15 +234,36 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
     super.validateMetadata(meta);
 
     for (const prop of meta.props) {
+      this.initUnicodeType(meta, prop);
+
       if (
-        (prop.runtimeType === 'string' || ['string', 'nvarchar'].includes(prop.type)) &&
-        !['uuid'].includes(prop.type) &&
-        !prop.columnTypes[0].startsWith('varchar')
+        !prop.customType &&
+        [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
+        prop.fieldNames?.length === 1 &&
+        !prop.polymorphic
       ) {
-        prop.customType ??= new UnicodeStringType();
-        prop.customType.prop = prop;
-        prop.customType.platform = this;
-        prop.customType.meta = meta;
+        // discovery copies the custom type of the target column to the relation before it is set here
+        const target = prop.targetKey ? prop.targetMeta!.properties[prop.targetKey] : prop.targetMeta!.getPrimaryProp();
+        this.initUnicodeType(prop.targetMeta!, target);
+        prop.customType = target.customType;
+      }
+    }
+  }
+
+  private initUnicodeType(meta: EntityMetadata, prop: EntityProperty): void {
+    if (
+      (prop.runtimeType === 'string' || ['string', 'nvarchar'].includes(prop.type)) &&
+      !['uuid'].includes(prop.type) &&
+      !prop.columnTypes[0].startsWith('varchar')
+    ) {
+      prop.customType ??= new UnicodeStringType();
+      prop.customType.prop = prop;
+      prop.customType.platform = this;
+      prop.customType.meta = meta;
+
+      // the comparator skips the custom type for plain `string` props, while the hydrator snapshots its converted value
+      if (prop.type === 'string') {
+        prop.type = prop.customType.name;
       }
     }
   }
