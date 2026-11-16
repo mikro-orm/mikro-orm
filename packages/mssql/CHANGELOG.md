@@ -7,9 +7,8 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **mssql:** do not mark string properties with a custom column type as dirty after load ([#8747](https://github.com/mikro-orm/mikro-orm/issues/8747)) ([b5adf83](https://github.com/mikro-orm/mikro-orm/commit/b5adf839c0d1a1c67198c0b2d3bf78ca17fc2076)), closes [#8740](https://github.com/mikro-orm/mikro-orm/issues/8740)
-* **mssql:** validate pooled connections without a query ([#8743](https://github.com/mikro-orm/mikro-orm/issues/8743)) ([5ca2b66](https://github.com/mikro-orm/mikro-orm/commit/5ca2b66f66770aa6534f2f32478450948206d2b1)), closes [#8741](https://github.com/mikro-orm/mikro-orm/issues/8741)
-
+- **mssql:** do not mark string properties with a custom column type as dirty after load ([#8747](https://github.com/mikro-orm/mikro-orm/issues/8747)) ([b5adf83](https://github.com/mikro-orm/mikro-orm/commit/b5adf839c0d1a1c67198c0b2d3bf78ca17fc2076)), closes [#8740](https://github.com/mikro-orm/mikro-orm/issues/8740)
+- **mssql:** validate pooled connections without a query ([#8743](https://github.com/mikro-orm/mikro-orm/issues/8743)) ([5ca2b66](https://github.com/mikro-orm/mikro-orm/commit/5ca2b66f66770aa6534f2f32478450948206d2b1)), closes [#8741](https://github.com/mikro-orm/mikro-orm/issues/8741)
 
 ## [7.2.9](https://github.com/mikro-orm/mikro-orm/compare/v7.2.8...v7.2.9) (2026-11-12)
 

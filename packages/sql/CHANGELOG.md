@@ -7,17 +7,16 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **core:** accept numeric strings in `limit` and `offset` options ([#8697](https://github.com/mikro-orm/mikro-orm/issues/8697)) ([8693316](https://github.com/mikro-orm/mikro-orm/commit/86933164f9481fe15eb5cfd3138b35ea7dd6581f))
-* **mssql:** map date results of joined relations to strings ([#8734](https://github.com/mikro-orm/mikro-orm/issues/8734)) ([f93338d](https://github.com/mikro-orm/mikro-orm/commit/f93338dba79527b88ccab01afc5bc90a52c29c73)), closes [#8540](https://github.com/mikro-orm/mikro-orm/issues/8540) [#8733](https://github.com/mikro-orm/mikro-orm/issues/8733)
-* **postgres:** quote array elements that postgres would read differently ([#8748](https://github.com/mikro-orm/mikro-orm/issues/8748)) ([fab35eb](https://github.com/mikro-orm/mikro-orm/commit/fab35ebec7685eac20711a9f209ea1d585fb0504)), closes [#8730](https://github.com/mikro-orm/mikro-orm/issues/8730)
-* **postgres:** quote the sequence name in setval and nextval when adding autoincrement ([#8731](https://github.com/mikro-orm/mikro-orm/issues/8731)) ([06d42e4](https://github.com/mikro-orm/mikro-orm/commit/06d42e43686e01eac7942ece08e9d64000689584))
+- **core:** accept numeric strings in `limit` and `offset` options ([#8697](https://github.com/mikro-orm/mikro-orm/issues/8697)) ([8693316](https://github.com/mikro-orm/mikro-orm/commit/86933164f9481fe15eb5cfd3138b35ea7dd6581f))
+- **mssql:** map date results of joined relations to strings ([#8734](https://github.com/mikro-orm/mikro-orm/issues/8734)) ([f93338d](https://github.com/mikro-orm/mikro-orm/commit/f93338dba79527b88ccab01afc5bc90a52c29c73)), closes [#8540](https://github.com/mikro-orm/mikro-orm/issues/8540) [#8733](https://github.com/mikro-orm/mikro-orm/issues/8733)
+- **postgres:** quote array elements that postgres would read differently ([#8748](https://github.com/mikro-orm/mikro-orm/issues/8748)) ([fab35eb](https://github.com/mikro-orm/mikro-orm/commit/fab35ebec7685eac20711a9f209ea1d585fb0504)), closes [#8730](https://github.com/mikro-orm/mikro-orm/issues/8730)
+- **postgres:** quote the sequence name in setval and nextval when adding autoincrement ([#8731](https://github.com/mikro-orm/mikro-orm/issues/8731)) ([06d42e4](https://github.com/mikro-orm/mikro-orm/commit/06d42e43686e01eac7942ece08e9d64000689584))
 
 ### Performance Improvements
 
-* **core:** speed up flushing removed entities ([#8709](https://github.com/mikro-orm/mikro-orm/issues/8709)) ([e9012dc](https://github.com/mikro-orm/mikro-orm/commit/e9012dcfff60c81ad599b04d207ebbc2593976b1)), closes [#8698](https://github.com/mikro-orm/mikro-orm/issues/8698)
-* **core:** trim per-row overhead when reading entities ([#8710](https://github.com/mikro-orm/mikro-orm/issues/8710)) ([70777a3](https://github.com/mikro-orm/mikro-orm/commit/70777a36bc4be802ad37bada5b11dc5571c90d77))
-* **sql:** precompute joined column aliases and stop deleting them per row ([#8704](https://github.com/mikro-orm/mikro-orm/issues/8704)) ([21d7c6f](https://github.com/mikro-orm/mikro-orm/commit/21d7c6fc0fd3cd8880e62f5f0aa8bcf23a6f5170))
-
+- **core:** speed up flushing removed entities ([#8709](https://github.com/mikro-orm/mikro-orm/issues/8709)) ([e9012dc](https://github.com/mikro-orm/mikro-orm/commit/e9012dcfff60c81ad599b04d207ebbc2593976b1)), closes [#8698](https://github.com/mikro-orm/mikro-orm/issues/8698)
+- **core:** trim per-row overhead when reading entities ([#8710](https://github.com/mikro-orm/mikro-orm/issues/8710)) ([70777a3](https://github.com/mikro-orm/mikro-orm/commit/70777a36bc4be802ad37bada5b11dc5571c90d77))
+- **sql:** precompute joined column aliases and stop deleting them per row ([#8704](https://github.com/mikro-orm/mikro-orm/issues/8704)) ([21d7c6f](https://github.com/mikro-orm/mikro-orm/commit/21d7c6fc0fd3cd8880e62f5f0aa8bcf23a6f5170))
 
 ## [7.2.9](https://github.com/mikro-orm/mikro-orm/compare/v7.2.8...v7.2.9) (2026-11-12)
 
