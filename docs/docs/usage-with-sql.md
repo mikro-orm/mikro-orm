@@ -273,7 +273,7 @@ await MikroORM.init({
 
 ## Community drivers
 
-The community-maintained [YDB driver](https://github.com/rozenstein94/mikro-orm-ydb) provides native YQL access to YDB through the core driver API. See its repository for installation, compatibility, and supported features.
+The community-maintained [YDB driver](https://github.com/rozenstein94/mikro-orm-ydb) integrates native YQL with MikroORM's SQL API using a Kysely dialect. See its repository for installation, compatibility, and supported features.
 
 ## Custom driver
 
