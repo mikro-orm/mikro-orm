@@ -120,7 +120,7 @@ A value provided on a specific query overrides whatever default is specified glo
 
 ## Loading strategies
 
-The way that MikroORM fetches the data based on populate hint is also configurable. By default, MikroORM uses a "select in" strategy which runs one separate query for each level of a populate. If you're using an SQL database you can also ask MikroORM to use a join for all tables involved in the populate and run it as a single query. This is again configurable globally or per query.
+The way that MikroORM fetches the data based on populate hint is also configurable. By default, SQL drivers use the "balanced" strategy: to-one relations are joined, and to-many relations use the "select in" strategy, which runs one separate query for each level of a populate (MongoDB always uses "select in"). If you're using an SQL database you can also ask MikroORM to use a join for all tables involved in the populate and run it as a single query. This is again configurable globally or per query.
 
 You can also use `populateHints` to override the strategy or join type for individual relations:
 

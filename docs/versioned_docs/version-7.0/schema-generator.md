@@ -47,7 +47,7 @@ You can configure the schema generator globally via the ORM config:
 const orm = await MikroORM.init({
   // default values:
   schemaGenerator: {
-    disableForeignKeys: true,
+    disableForeignKeys: false,
     createForeignKeyConstraints: true,
     ignoreSchema: [],
     skipTables: [],
@@ -60,7 +60,7 @@ const orm = await MikroORM.init({
 
 | Option                                                     | Description                                                                                                                                                                                                                                                                                                                                                              |
 |------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `disableForeignKeys: boolean`                             | Whether to wrap schema statements with `set foreign_key_checks = 0` or equivalent. Defaults to `true`. This disables foreign key checks during schema operations to avoid constraint violations during table creation/modification.                                                                                                                                    |
+| `disableForeignKeys: boolean`                             | Whether to wrap schema statements with `set foreign_key_checks = 0` or equivalent. Defaults to `false`. This disables foreign key checks during schema operations to avoid constraint violations during table creation/modification.                                                                                                                                    |
 | `createForeignKeyConstraints: boolean`                    | Whether to generate foreign key constraints. Defaults to `true`. When set to `false`, foreign key relationships will not create database-level constraints.                                                                                                                                                                                                           |
 | `ignoreSchema: string[]`                                  | Array of schema names to ignore during schema diffing. Useful when working with databases that have multiple schemas and you want to exclude certain schemas from being managed by MikroORM.                                                                                                                                                                          |
 | `skipTables: (string \| RegExp)[]`                        | Array of table names and patterns to exclude from schema generation. Accepts exact table names (case-insensitive) and RegExp patterns. Can include schema-qualified names like `'schema.table'`. Tables matching these names or patterns will be completely ignored during schema operations.                                                                      |

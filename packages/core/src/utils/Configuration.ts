@@ -1446,8 +1446,8 @@ export interface Options<
   };
   /**
    * Metadata provider class for entity discovery.
-   * Built-in options: `ReflectMetadataProvider` (default), `TsMorphMetadataProvider`.
-   * @default ReflectMetadataProvider
+   * Built-in options: `MetadataProvider` (default), `ReflectMetadataProvider` (from `@mikro-orm/decorators/legacy`), `TsMorphMetadataProvider`.
+   * @default MetadataProvider
    * @see https://mikro-orm.io/docs/metadata-providers
    */
   metadataProvider: { new (config: Configuration): MetadataProvider; useCache?: MetadataProvider['useCache'] };

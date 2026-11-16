@@ -29,7 +29,7 @@ MikroORM.init({
 
 > You can also use the `mikro-orm discovery:export` CLI command to generate a barrel file with all entity imports from your source files. This works as a middle ground between folder-based discovery and manual entity arrays — see [Folder-based Discovery](./folder-based-discovery.md#generating-a-barrel-file-with-discoveryexport) for details.
 
-By default, `ReflectMetadataProvider` is used that leverages the `reflect-metadata`. You can also use `TsMorphMetadataProvider` by installing `@mikro-orm/reflection`. This provider will analyse your entity source files (or `.d.ts` type definition files). If you aim to use plain JavaScript instead of TypeScript, use `EntitySchema`.
+By default, the base `MetadataProvider` is used, which reads types from the entity definitions. To read them via `reflect-metadata` with legacy decorators, use `ReflectMetadataProvider` from `@mikro-orm/decorators/legacy`. You can also use `TsMorphMetadataProvider` by installing `@mikro-orm/reflection`. This provider will analyse your entity source files (or `.d.ts` type definition files). If you aim to use plain JavaScript instead of TypeScript, use `EntitySchema`.
 
 > You can also implement your own metadata provider and use it instead. To do so, extend the `MetadataProvider` class.
 
@@ -559,8 +559,8 @@ You can enable logging with `debug` option. Either set it to `true` to log every
 MikroORM.init({
   logger: (message: string) => myLogger.info(message), // defaults to `console.log()`
   debug: true, // or provide array like `['query', 'query-params']`
-  highlight: false, // defaults to true
-  highlightTheme: { ... }, // you can also provide custom highlight there
+  colors: false, // defaults to true
+  highlighter: new SqlHighlighter(), // defaults to no highlighting
 });
 ```
 
@@ -587,7 +587,7 @@ Following example shows all possible options and their defaults:
 ```ts
 MikroORM.init({
   schemaGenerator: {
-    disableForeignKeys: true, // try to disable foreign_key_checks (or equivalent)
+    disableForeignKeys: false, // try to disable foreign_key_checks (or equivalent)
     createForeignKeyConstraints: true, // do not generate FK constraints
     ignoreSchema: [], // allows ignoring some schemas when diffing
     ignoreTriggers: false, // leave triggers unmanaged (never drop or alter existing ones)
@@ -607,10 +607,10 @@ Under the `migrations` namespace, you can adjust how the integrated migrations s
 MikroORM.init({
   migrations: {
     tableName: 'mikro_orm_migrations', // migrations table name
-    path: process.cwd() + '/migrations', // path to folder with migration files
-    glob: '!(*.d).{js,ts}', // how to match migration files (all .js and .ts files, but not .d.ts)
+    path: './migrations', // path to folder with migration files (relative to `baseDir`)
+    glob: '!(*.d).{js,ts,cjs}', // how to match migration files (all .js, .ts and .cjs files, but not .d.ts)
     transactional: true, // run each migration inside transaction
-    disableForeignKeys: true, // try to disable foreign_key_checks (or equivalent)
+    disableForeignKeys: false, // try to disable foreign_key_checks (or equivalent)
     allOrNothing: true, // run all migrations in current batch in master transaction
     emit: 'ts', // migration generation mode
   },
@@ -657,7 +657,7 @@ The `global` option can be:
 
 ## Metadata Cache
 
-By default, metadata discovery results are cached. You can either disable caching, or adjust how it works. Following example shows all possible options and their defaults:
+Metadata discovery results are cached only when the metadata cache is enabled, which is the default with `TsMorphMetadataProvider`. You can enable or disable caching, or adjust how it works. Following example shows all possible options and their defaults (with `TsMorphMetadataProvider`):
 
 ```ts
 MikroORM.init({
