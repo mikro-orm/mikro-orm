@@ -72,20 +72,36 @@ export class MsSqlConnection extends AbstractSqlConnection {
     const onCreateConnection = this.options.onCreateConnection ?? this.config.get('onCreateConnection');
     const onReserveConnection = this.options.onReserveConnection ?? this.config.get('onReserveConnection');
 
-    return new MsSqlReserveDialect(
-      {
-        tarn: { ...Tarn, options: poolOptions },
-        tedious: {
-          ...Tedious,
-          connectionFactory: async () => {
+    const connections = new WeakMap<object, Tedious.Connection>();
+    let pending: Tedious.Connection;
+
+    // Kysely validates with a `select 1` on every checkout, a state check is enough.
+    class Pool<T> extends Tarn.Pool<T> {
+      constructor(poolOptions: ConstructorParameters<typeof Tarn.Pool<T>>[0]) {
+        const create = poolOptions.create as () => Promise<T>;
+        super({
+          ...poolOptions,
+          create: async () => {
             options.authentication!.options.password = typeof password === 'function' ? await password() : password;
             const connection = new Tedious.Connection(options);
             /* v8 ignore next */
             await onCreateConnection?.(connection);
+            // kysely calls the `connectionFactory` synchronously
+            pending = connection;
+            const resource = await create();
+            connections.set(resource as object, connection);
 
-            return connection;
+            return resource;
           },
-        },
+          validate: resource => !connections.get(resource as object)!.closed,
+        });
+      }
+    }
+
+    return new MsSqlReserveDialect(
+      {
+        tarn: { ...Tarn, Pool, options: poolOptions },
+        tedious: { ...Tedious, connectionFactory: () => pending },
       },
       onReserveConnection,
     );
