@@ -1591,7 +1591,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": "npm:^7.2.9"
     "@mikro-orm/sql": "npm:7.2.9"
-    better-sqlite3: "npm:13.1.1"
+    better-sqlite3: "npm:13.2.0"
     kysely: "npm:0.29.9"
   peerDependencies:
     "@mikro-orm/core": 7.2.9
@@ -3872,13 +3872,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:13.1.1":
-  version: 13.1.1
-  resolution: "better-sqlite3@npm:13.1.1"
+"better-sqlite3@npm:13.2.0":
+  version: 13.2.0
+  resolution: "better-sqlite3@npm:13.2.0"
   dependencies:
     node-addon-api: "npm:^8.0.0"
     node-gyp: "npm:latest"
-  checksum: 10/6fc6ecc7bdbb09ac3f70ca4e4330671ec9ef943ca9117ab5c8f408ecffbff17c5a20cca0e7ed049b953ea0e1b2a596608a43b3465873fd23c8b0e2bd779ce51f
+  checksum: 10/6d17fadc80725f5d1b8df88b6be034277ddfbeac2df987e6655a72139df12ddcd764658d636d6a32b58738bab379d52a68e6afa979fd26e5cffe6e52977f5e4d
   languageName: node
   linkType: hard
 
