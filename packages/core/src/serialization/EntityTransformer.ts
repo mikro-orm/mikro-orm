@@ -16,7 +16,7 @@ import { ReferenceKind } from '../enums.js';
 import type { Reference } from '../entity/Reference.js';
 import { SerializationContext } from './SerializationContext.js';
 import { isRaw } from '../utils/RawQueryFragment.js';
-import { getPlan, isPlainValue } from './SerializationPlan.js';
+import { convertCustomType, getPlan, getPropertyKey, isPlainValue, referencePrimaryKey } from './SerializationPlan.js';
 
 function isVisible<Entity extends object>(meta: EntityMetadata<Entity>, propName: EntityKey<Entity>): boolean {
   return getPlan(meta).visible.has(propName);
@@ -175,19 +175,7 @@ export class EntityTransformer {
     prop: EntityProperty<Entity>,
     raw?: boolean,
   ): EntityKey<Entity> {
-    if (raw) {
-      return prop.name;
-    }
-
-    if (prop.serializedName) {
-      return prop.serializedName as EntityKey<Entity>;
-    }
-
-    if (prop.primary && meta.serializedPrimaryKey) {
-      return meta.serializedPrimaryKey;
-    }
-
-    return prop.name;
+    return (raw ? prop.name : getPropertyKey(meta, prop)) as EntityKey<Entity>;
   }
 
   private static processScalar<Entity>(
@@ -274,7 +262,6 @@ export class EntityTransformer {
     const child = entity[prop.name] as Entity | Reference<Entity>;
     const wrapped = helper(child as Entity);
     const meta = wrapped.__meta;
-    const visible = meta.primaryKeys.filter(prop => isVisible(meta, prop));
 
     if (raw && wrapped.isInitialized() && child !== entity) {
       return wrapped.toPOJO() as unknown as EntityValue<Entity>;
@@ -296,29 +283,11 @@ export class EntityTransformer {
       return wrap(child).toJSON() as EntityValue<Entity>;
     }
 
-    let pk = wrapped.getPrimaryKey()!;
+    const pk = convertCustomType(prop, wrapped.getPrimaryKey()!, wrapped.__platform);
+    const visible = meta.primaryKeys.filter(prop => isVisible(meta, prop));
+    const forceObject = wrapped.__config.get('serialization').forceObject;
 
-    if (prop.customType) {
-      pk = prop.customType.toJSON(pk, wrapped.__platform);
-    }
-
-    if (wrapped.__config.get('serialization').forceObject) {
-      return Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<Entity>;
-    }
-
-    if (Utils.isPlainObject(pk)) {
-      const pruned = Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<Entity>;
-
-      if (visible.length === 1) {
-        return platform.normalizePrimaryKey(
-          pruned[visible[0] as keyof typeof pruned] as IPrimaryKey,
-        ) as EntityValue<Entity>;
-      }
-
-      return pruned;
-    }
-
-    return platform.normalizePrimaryKey(pk as IPrimaryKey) as EntityValue<Entity>;
+    return referencePrimaryKey(meta, pk, visible, platform, forceObject) as EntityValue<Entity>;
   }
 
   private static processCollection<Entity extends object>(

@@ -1,10 +1,21 @@
-import type { EntityMetadata, EntityProperty } from '../typings.js';
+import type { EntityMetadata, EntityProperty, IPrimaryKey, Primary } from '../typings.js';
+import type { Platform } from '../platforms/Platform.js';
 import { ReferenceKind } from '../enums.js';
+import { Utils } from '../utils/Utils.js';
 
-/** Whether a property is serialized by default, i.e. it is not hidden and not `_` prefixed (unless it is a PK). */
+/** `_` prefixed properties are not serialized, unless it is a PK or an accessor. */
+export function isPrefixed<Entity>(prop: EntityProperty<Entity>): boolean {
+  return !prop.primary && !prop.accessor && prop.name.startsWith('_');
+}
+
+/** Whether a property is serialized by default, i.e. it is not hidden and not `_` prefixed. */
 export function isPropertyVisible<Entity>(prop: EntityProperty<Entity>): boolean {
-  const prefixed = !prop.primary && !prop.accessor && prop.name.startsWith('_'); // ignore prefixed properties, if it's not a PK
-  return !prop.hidden && !prefixed;
+  return !prop.hidden && !isPrefixed(prop);
+}
+
+/** Output key of a property, its `serializedName` or the serialized PK name. */
+export function getPropertyKey<Entity>(meta: EntityMetadata<Entity>, prop: EntityProperty<Entity>): string {
+  return prop.serializedName || (prop.primary && meta.serializedPrimaryKey ? meta.serializedPrimaryKey : prop.name);
 }
 
 export interface PlanEntry<Entity> {
@@ -37,7 +48,7 @@ export function getPlan<Entity>(meta: EntityMetadata<Entity>): SerializationPlan
   const entry = (prop: EntityProperty<Entity>): PlanEntry<Entity> => ({
     prop,
     visible: isPropertyVisible(prop),
-    key: prop.serializedName || (prop.primary && meta.serializedPrimaryKey ? meta.serializedPrimaryKey : prop.name),
+    key: getPropertyKey(meta, prop),
     scalar: prop.kind === ReferenceKind.SCALAR && !prop.serializer && !prop.getter && !prop.accessor,
   });
   const plan: SerializationPlan<Entity> = {
@@ -53,4 +64,47 @@ export function getPlan<Entity>(meta: EntityMetadata<Entity>): SerializationPlan
 
 export function isPlainValue(value: unknown): boolean {
   return value == null || (typeof value !== 'object' && typeof value !== 'function') || value instanceof Date;
+}
+
+/** Converts a custom type value via `toJSON()`, or to its database value with `convertCustomTypes`. */
+export function convertCustomType<Entity, V>(
+  prop: EntityProperty<Entity>,
+  value: V,
+  platform: Platform,
+  convertCustomTypes?: boolean,
+): V {
+  if (!prop.customType) {
+    return value;
+  }
+
+  if (convertCustomTypes) {
+    return prop.customType.convertToDatabaseValue(value, platform, { mode: 'serialization' });
+  }
+
+  return prop.customType.toJSON(value, platform);
+}
+
+/** Serializes the PK of a reference that is not expanded, a composite one is pruned to its `visible` properties. */
+export function referencePrimaryKey<Entity>(
+  meta: EntityMetadata<Entity>,
+  pk: Primary<Entity>,
+  visible: string[],
+  platform: Platform,
+  forceObject?: boolean,
+): unknown {
+  if (forceObject) {
+    return Utils.primaryKeyToObject(meta, pk, visible as any);
+  }
+
+  if (Utils.isPlainObject(pk)) {
+    const pruned = Utils.primaryKeyToObject(meta, pk, visible as any);
+
+    if (visible.length === 1) {
+      return platform.normalizePrimaryKey(pruned[visible[0] as keyof typeof pruned] as IPrimaryKey);
+    }
+
+    return pruned;
+  }
+
+  return platform.normalizePrimaryKey(pk as IPrimaryKey);
 }
