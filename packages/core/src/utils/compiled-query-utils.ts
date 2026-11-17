@@ -24,6 +24,16 @@ function getFilterArgs(em: EntityManager, options: unknown, name: string): Dicti
   return Utils.isPlainObject(args) ? args : em.getFilterParams(name);
 }
 
+/** Binds the values to the compiled query and resolves the SQL for the sizes of its lists. */
+function bindCompiledQuery(lookup: CompiledQueryLookup, leaves: unknown[], em: EntityManager): void {
+  const params = lookup.query!.bind(leaves, em.getPlatform());
+
+  if (params) {
+    lookup.sql = lookup.query!.resolve(lookup.lists, params);
+    lookup.params = params;
+  }
+}
+
 /**
  * Looks up the compiled query for this call. The result carries `params` on a cache hit.
  * @internal
@@ -57,18 +67,27 @@ export function lookupCompiledQuery(
     return undefined;
   }
 
-  where = cache.pad(where);
+  const lists = cache.lists;
   const query = entry.query;
   const base = leaves.length;
 
   if (!query) {
-    return { entry, leaves, base, where, prepared: { ...options } };
+    return { entry, leaves, base, where, lists, prepared: { ...options } };
   }
 
-  const lookup: CompiledQueryLookup = { entry, leaves, base, where, prepared: options, query, verify: cache.verify };
+  const lookup: CompiledQueryLookup = {
+    entry,
+    leaves,
+    base,
+    where,
+    lists,
+    prepared: options,
+    query,
+    verify: cache.verify,
+  };
 
   if (!query.filterCalls) {
-    lookup.params = query.bind(leaves, em.getPlatform());
+    bindCompiledQuery(lookup, leaves, em);
   }
 
   return lookup;
@@ -159,7 +178,7 @@ export async function replayFilterCalls(
     conds.push({ call, cond: ret });
   }
 
-  lookup.params = query!.bind(leaves, em.getPlatform());
+  bindCompiledQuery(lookup, leaves, em);
   lookup.filterConds = conds;
 }
 
@@ -199,10 +218,11 @@ async function verifyCompiledQuery(
   // the callbacks can return other values every time, so the parameters are compared for the ones of the dry run
   const leaves = [...lookup.leaves.slice(0, lookup.base), ...(dry.filterLeaves ?? [])];
   const params = query.bind(leaves, em.getPlatform());
+  const sql = params && query.resolve(lookup.lists, params);
 
-  if (dry.sql !== query.sql || !Utils.equals(dry.params, params)) {
+  if (dry.sql !== sql || !Utils.equals(dry.params, params)) {
     throw new ValidationError(
-      `Compiled query cache mismatch in ${kind}(${Utils.className(entityName)}): expected '${dry.sql}' with ${inspect(dry.params)}, got '${query.sql}' with ${inspect(params)}`,
+      `Compiled query cache mismatch in ${kind}(${Utils.className(entityName)}): expected '${dry.sql}' with ${inspect(dry.params)}, got '${sql}' with ${inspect(params)}`,
     );
   }
 }
@@ -254,7 +274,7 @@ export function startCompilation(lookup: CompiledQueryLookup | undefined, option
   }
 
   entry.pending = entry.seen;
-  lookup.recording = new CompiledQueryRecording(lookup.leaves, lookup.where, lookup.prepared);
+  lookup.recording = new CompiledQueryRecording(lookup.leaves, lookup.where, lookup.prepared, lookup.lists);
   lookup.recording.capture(options);
 
   lookup.internal = { _compile: lookup.recording.compilation };

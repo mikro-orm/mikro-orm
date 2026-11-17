@@ -7,10 +7,10 @@ import { Utils } from './Utils.js';
 
 const SEP = '\u0001';
 const SLOT_KINDS = new Set(['string', 'number', 'bigint', 'date']);
-// longer `$in` lists are not cached, padding them would get close to the parameter limits of some drivers
+// longer `$in` lists are not cached
 const MAX_LIST_SIZE = 512;
-// every size of a list that is not padded is a separate entry, so longer ones are not cached
-const MAX_UNPADDED_LIST_SIZE = 32;
+// every size of a list that is not keyed by its bucket is a separate entry, so longer ones are not cached
+const MAX_UNBUCKETED_LIST_SIZE = 32;
 // options that never change the generated SQL, they are read from the live call on every execution
 const IGNORED_OPTIONS = new Set([
   'ctx',
@@ -48,8 +48,8 @@ const BYPASS_OPTIONS = new Set([
 ]);
 
 let bail = false;
-// `$in` lists of the last key that need padding, `undefined` when padding is disabled
-let pads: unknown[][] | undefined;
+// `$in` lists of the last key that are keyed by their size bucket, `undefined` when bucketing is disabled
+let lists: CompiledQueryList[] | undefined;
 let functionIds: WeakMap<object, number> | undefined;
 let functionCounter = 0;
 
@@ -87,46 +87,10 @@ function entityKey(value: object): string | number | bigint | undefined {
   return typeof pk === 'string' || typeof pk === 'number' || typeof pk === 'bigint' ? pk : undefined;
 }
 
-/** Returns a copy of the condition with the lists collected by the last `whereKey()` call padded. */
-function padLists(value: unknown, lists: unknown[][]): unknown {
-  if (typeof value !== 'object' || value === null) {
-    return value;
-  }
-
-  if (Array.isArray(value)) {
-    if (lists.includes(value)) {
-      const size = 2 ** (32 - Math.clz32(value.length - 1));
-      const ret = value.slice();
-
-      while (ret.length < size) {
-        ret.push(value[value.length - 1]);
-      }
-
-      return ret;
-    }
-
-    return value.map(item => padLists(item, lists));
-  }
-
-  const proto = Object.getPrototypeOf(value);
-
-  if (proto !== Object.prototype && proto !== null) {
-    return value;
-  }
-
-  const ret: Dictionary = {};
-
-  for (const k in value) {
-    ret[k] = padLists((value as Dictionary)[k], lists);
-  }
-
-  return ret;
-}
-
 /**
  * Describes the shape of a condition and collects its values into `leaves`. A `$in`/`$nin` list is keyed by its size
- * rounded up to a power of two, so lists of similar sizes share the SQL. The missing items are filled with the last
- * value, which does not change what the list matches.
+ * rounded up to a power of two, so lists of similar sizes share one entry. Its leaves are filled up to that size, the
+ * placeholders of the missing items are cut from the SQL again before the query is executed.
  */
 function whereKey(value: unknown, leaves: unknown[], list = false): string {
   switch (typeof value) {
@@ -155,7 +119,7 @@ function whereKey(value: unknown, leaves: unknown[], list = false): string {
   }
 
   if (Array.isArray(value)) {
-    if (pads && value.length > MAX_LIST_SIZE) {
+    if (lists && value.length > MAX_LIST_SIZE) {
       bail = true;
       return '';
     }
@@ -173,20 +137,17 @@ function whereKey(value: unknown, leaves: unknown[], list = false): string {
     }
 
     // only lists of scalar values (or entities) of the same kind, each contributing a single value
-    if (!list || !pads || !uniform || value.length === 0 || leaves.length - start !== value.length) {
-      bail ||= !!pads && value.length > MAX_UNPADDED_LIST_SIZE;
+    if (!list || !lists || !uniform || value.length === 0 || leaves.length - start !== value.length) {
+      bail ||= !!lists && value.length > MAX_UNBUCKETED_LIST_SIZE;
       return key + ']';
     }
 
     const size = 2 ** (32 - Math.clz32(value.length - 1));
+    const last = leaves[leaves.length - 1];
+    lists.push({ start, length: value.length, size });
 
-    if (size !== value.length) {
-      const last = leaves[leaves.length - 1];
-      pads.push(value);
-
-      for (let i = value.length; i < size; i++) {
-        leaves.push(last);
-      }
+    for (let i = value.length; i < size; i++) {
+      leaves.push(last);
     }
 
     return '(' + size + first + ')';
@@ -227,8 +188,13 @@ function whereKey(value: unknown, leaves: unknown[], list = false): string {
   return 'e' + helper(Reference.unwrapReference(value)).__meta._id + (typeof pk)[0];
 }
 
-/** Mirrors `whereKey()`, replacing every collected leaf with its sentinel. */
-function substitute(value: unknown, sentinels: unknown[], pos: { idx: number }): unknown {
+/** Mirrors `whereKey()`, replacing every collected leaf with its sentinel. Bucketed lists get all sentinels of their bucket. */
+function substitute(
+  value: unknown,
+  sentinels: unknown[],
+  pos: { idx: number; sizes?: Map<number, number> },
+  list = false,
+): unknown {
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'bigint') {
     return sentinels[pos.idx++];
   }
@@ -238,6 +204,12 @@ function substitute(value: unknown, sentinels: unknown[], pos: { idx: number }):
   }
 
   if (Array.isArray(value)) {
+    const size = list ? pos.sizes?.get(pos.idx) : undefined;
+
+    if (size !== undefined) {
+      return sentinels.slice(pos.idx, (pos.idx += size));
+    }
+
     return value.map(item => substitute(item, sentinels, pos));
   }
 
@@ -247,7 +219,7 @@ function substitute(value: unknown, sentinels: unknown[], pos: { idx: number }):
     const ret: Dictionary = {};
 
     for (const k in value) {
-      ret[k] = substitute((value as Dictionary)[k], sentinels, pos);
+      ret[k] = substitute((value as Dictionary)[k], sentinels, pos, k === '$in' || k === '$nin');
     }
 
     return ret;
@@ -394,14 +366,37 @@ export interface QueryCompilation {
   filterLeaves?: unknown[];
 }
 
+/** @internal `$in`/`$nin` list keyed by its size bucket */
+export interface CompiledQueryList {
+  /** index of its first value in the leaves */
+  start: number;
+  /** number of values in the call */
+  length: number;
+  /** size of the bucket, the leaves are filled up to it */
+  size: number;
+}
+
+/** @internal placeholders of a bucketed list in the compiled SQL */
+interface CompiledQueryListRun {
+  /** index of the list in the key */
+  list: number;
+  /** index of its first parameter */
+  param: number;
+  /** end offsets of its placeholders in the SQL */
+  ends: number[];
+}
+
 /** @internal outcome of a cache lookup, with `params` when the compiled query can be executed */
 export interface CompiledQueryLookup {
   entry: CompiledQueryEntry;
   leaves: unknown[];
   /** number of `leaves` coming from the call itself, the rest comes from the filter callbacks */
   base: number;
-  /** condition of the call with its `$in` lists padded */
   where: unknown;
+  /** bucketed lists of the condition */
+  lists: CompiledQueryList[];
+  /** SQL for the sizes of the lists of this call, set together with `params` */
+  sql?: string;
   /** options before the EntityManager processed them */
   prepared: Dictionary;
   query?: CompiledQuery;
@@ -430,7 +425,39 @@ export class CompiledQuery {
     readonly filterCalls: CompiledFilterCall[] | undefined,
     /** whether the joined filters hold values of the filter callbacks, so they need to be computed for every call */
     readonly joinedFilters: boolean,
+    /** placeholders of the bucketed lists, in the order they appear in the SQL */
+    readonly runs: CompiledQueryListRun[] = [],
   ) {}
+
+  /**
+   * Returns the SQL for the actual sizes of the lists and removes the parameters filling their buckets,
+   * so the query is the same as the one compiled the regular way.
+   */
+  resolve(lists: CompiledQueryList[], params: unknown[]): string {
+    const { sql, runs } = this;
+    let ret = '';
+    let pos = 0;
+
+    // backwards, so the parameter indexes stay valid
+    for (let i = runs.length - 1; i >= 0; i--) {
+      const { length, size } = lists[runs[i].list];
+
+      if (length < size) {
+        params.splice(runs[i].param + length, size - length);
+      }
+    }
+
+    for (const run of runs) {
+      const { length, size } = lists[run.list];
+
+      if (length < size) {
+        ret += sql.substring(pos, run.ends[length - 1]);
+        pos = run.ends[size - 1];
+      }
+    }
+
+    return pos === 0 ? sql : ret + sql.substring(pos);
+  }
 
   /** Returns the parameters for given leaf values, or `undefined` when a converted value changes its kind. */
   bind(leaves: unknown[], platform: Platform): unknown[] | undefined {
@@ -509,10 +536,11 @@ export class CompiledQueryRecording {
     where: unknown,
     /** prepared options before the EntityManager processed them */
     readonly prepared: Dictionary,
+    readonly lists: CompiledQueryList[] = [],
   ) {
     this.compilation = { dry: false };
     const sentinels = this.createSentinels(leaves);
-    const pos = { idx: 0 };
+    const pos = { idx: 0, sizes: new Map(lists.map(list => [list.start, list.size])) };
     this.where = substitute(where, sentinels, pos);
     this.options = { ...prepared };
 
@@ -542,6 +570,54 @@ export class CompiledQueryRecording {
       this.#sentinels.set(valueKey(sentinel), { slot: idx, raw: true });
       return sentinel;
     });
+  }
+
+  /**
+   * Finds the placeholders of the bucketed lists in the SQL compiled for full buckets. Returns `undefined` when
+   * they cannot be cut out reliably, i.e. when a list is not rendered as its values separated by commas.
+   */
+  private findListRuns(sql: string, slots: number[]): CompiledQueryListRun[] | undefined {
+    const runs: CompiledQueryListRun[] = [];
+
+    if (this.lists.length === 0) {
+      return runs;
+    }
+
+    const starts: number[] = [];
+    const ends: number[] = [];
+
+    // same rules as `Platform.formatQuery()`: `?` is a value, `??` an identifier and `\\?` a literal question mark
+    for (let idx = sql.indexOf('?'); idx !== -1; idx = sql.indexOf('?', idx)) {
+      if (sql[idx - 1] === '\\') {
+        idx++;
+        continue;
+      }
+
+      starts.push(idx);
+      ends.push((idx += sql[idx + 1] === '?' ? 2 : 1));
+    }
+
+    for (let i = 0; i < slots.length; i++) {
+      const idx = this.lists.findIndex(list => slots[i] >= list.start && slots[i] < list.start + list.size);
+
+      if (idx === -1) {
+        continue;
+      }
+
+      const { start, size } = this.lists[idx];
+
+      // the whole list has to follow, value by value, otherwise a part of it would be left behind when it shrinks
+      for (let k = 0; k < size; k++) {
+        if (slots[i + k] !== start + k || (k > 0 && sql.substring(ends[i + k - 1], starts[i + k]) !== ', ')) {
+          return undefined;
+        }
+      }
+
+      runs.push({ list: idx, param: i, ends: ends.slice(i, i + size) });
+      i += size - 1;
+    }
+
+    return runs;
   }
 
   /** Stores the processed options of the real query, before the driver or the loader get to touch them. */
@@ -604,9 +680,7 @@ export class CompiledQueryRecording {
       dry.count !== 1 ||
       ref.count !== 1 ||
       !real.overrides ||
-      real.sql !== dry.sql ||
-      ref.sql !== dry.sql ||
-      ref.params!.length !== dry.params!.length ||
+      real.sql !== ref.sql ||
       !!dry.filterCalls !== !!reference ||
       !sameFilterCalls(dry.filterCalls, reference?.filterCalls)
     ) {
@@ -629,23 +703,20 @@ export class CompiledQueryRecording {
 
     for (let i = 0; i < dry.params!.length; i++) {
       const source = this.#sentinels.get(valueKey(dry.params![i]));
+      slots.push(source ? source.slot : -1);
+      constants.push(source ? undefined : dry.params![i]);
+      conversions.push(source?.conversion);
+      hasConversions ||= !!source?.conversion;
+    }
 
-      if (source) {
-        slots.push(source.slot);
-        constants.push(undefined);
-        conversions.push(source.conversion);
-        hasConversions ||= !!source.conversion;
-      } else if (Utils.equals(dry.params![i], ref.params![i])) {
-        slots.push(-1);
-        constants.push(ref.params![i]);
-        conversions.push(undefined);
-      } else {
-        return undefined;
-      }
+    const runs = this.findListRuns(dry.sql!, slots);
+
+    if (!runs) {
+      return undefined;
     }
 
     const query = new CompiledQuery(
-      real.sql!,
+      dry.sql!,
       dry.state,
       overrides,
       real.populate,
@@ -655,11 +726,13 @@ export class CompiledQueryRecording {
       hasConversions,
       dry.filterCalls,
       joinedFilters,
+      runs,
     );
     const bound = query.bind(leaves, platform);
+    const params = bound && [...bound];
 
-    // the recipe has to reproduce the parameters of the real query, otherwise some value was transformed on the way
-    if (!bound || !Utils.equals(bound, ref.params)) {
+    // the recipe has to reproduce the real query, otherwise some value was transformed on the way
+    if (!bound || query.resolve(this.lists, params!) !== ref.sql || !Utils.equals(params, ref.params)) {
       return undefined;
     }
 
@@ -686,7 +759,7 @@ export class CompiledQueryCache {
   readonly #entries = new Map<string, CompiledQueryEntry>();
   readonly #size: number;
   #tick = 0;
-  #pads: unknown[][] = [];
+  #lists: CompiledQueryList[] = [];
   readonly verify: boolean;
 
   constructor(size: number, verify: boolean) {
@@ -715,9 +788,9 @@ export class CompiledQueryCache {
     leaves: unknown[],
   ): CompiledQueryEntry | undefined {
     bail = false;
-    pads = this.#pads = [];
+    lists = this.#lists = [];
     let key = kind + meta._id + SEP + filters + SEP + whereKey(where, leaves);
-    pads = undefined;
+    lists = undefined;
 
     for (const k in options) {
       const value = options[k];
@@ -782,9 +855,9 @@ export class CompiledQueryCache {
     return entry.bypass ? undefined : entry;
   }
 
-  /** Returns the condition of the last `lookup()` call with its `$in` lists padded to the sizes used in the key. */
-  pad<T>(where: T): T {
-    return this.#pads.length > 0 ? (padLists(where, this.#pads) as T) : where;
+  /** Bucketed `$in`/`$nin` lists of the last `lookup()` call. */
+  get lists(): CompiledQueryList[] {
+    return this.#lists;
   }
 
   /**

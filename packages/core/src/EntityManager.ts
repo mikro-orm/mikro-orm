@@ -273,8 +273,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const lookup = lookupCompiledQuery(em, this, 'find', meta, where, options);
 
-    where = (lookup?.where ?? where) as typeof where;
-
     if (lookup?.query?.filterCalls) {
       await replayFilterCalls(em, lookup, options);
     }
@@ -1383,8 +1381,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
     const meta = em.metadata.get<Entity>(entityName);
     em.validateIndexUsage(meta, where, options);
     const lookup = lookupCompiledQuery(em, this, 'findOne', meta, where, options);
-
-    where = (lookup?.where ?? where) as typeof where;
 
     if (lookup?.query?.filterCalls) {
       await replayFilterCalls(em, lookup, options);
@@ -2926,8 +2922,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const meta = em.metadata.find(entityName)!;
     const lookup = lookupCompiledQuery(em, this, 'count', meta, where, options);
-
-    where = (lookup?.where ?? where) as typeof where;
 
     if (lookup?.query?.filterCalls) {
       await replayFilterCalls(em, lookup, options);
