@@ -87,9 +87,11 @@ jobs:
           git config --global user.email 'noreply@mikro-orm.io'
 
       - name: Bump version
+        env:
+          VERSION: ${{ inputs.custom_version || inputs.version }}
         run: |
           git pull --rebase
-          yarn lerna version ${{ github.event.inputs.custom_version || github.event.inputs.version }} --force-publish --yes
+          yarn lerna version "$VERSION" --force-publish --yes
 
       - name: Pin versions
         run: |
@@ -102,11 +104,13 @@ jobs:
 
       - name: Determine dist-tag
         id: dist-tag
+        env:
+          REF: ${{ inputs.ref }}
         run: |
-          if [[ "${{ inputs.ref }}" == "master" ]]; then
+          if [[ "$REF" == "master" ]]; then
             echo "tag=" >> "$GITHUB_OUTPUT"
           else
-            MAJOR=$(echo "${{ inputs.ref }}" | grep -oP '^\d+')
+            MAJOR=$(echo "$REF" | grep -oP '^\d+')
             echo "tag=--dist-tag latest-v${MAJOR}" >> "$GITHUB_OUTPUT"
           fi
 
@@ -148,14 +152,19 @@ jobs:
       - run: yarn build
 
       - name: Bump version
+        env:
+          DIST_TAG: ${{ inputs.dist-tag }}
+          CANARY_BUMP: ${{ inputs.canary-bump }}
         run: |
           PREID=${{ inputs.dist-tag == 'rc' && 'rc' || 'dev' }}
-          yarn lerna run copy -- -- --canary=${{ inputs.canary-bump }} --preid=$PREID
-          git commit -am 'chore: bump ${{ inputs.dist-tag }} versions [skip ci]'
+          yarn lerna run copy -- -- --canary="$CANARY_BUMP" --preid=$PREID
+          git commit -am "chore: bump $DIST_TAG versions [skip ci]"
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
 
       - name: Publish to npm
-        run: ./scripts/publish-with-retry.sh yarn lerna publish from-package --contents dist --dist-tag ${{ inputs.dist-tag }} --force-publish --yes
+        env:
+          DIST_TAG: ${{ inputs.dist-tag }}
+        run: ./scripts/publish-with-retry.sh yarn lerna publish from-package --contents dist --dist-tag "$DIST_TAG" --force-publish --yes
 
       - name: Create git tag
         if: inputs.dist-tag == 'rc'
@@ -208,9 +217,11 @@ jobs:
           yarn docusaurus api:version $MAJOR_MINOR
 
       - name: Commit and push the version snapshot
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
           git config --global user.name 'MikroORM Release Bot'
           git config --global user.email 'noreply@mikro-orm.io'
           git add .
-          git diff-index --quiet HEAD || git commit -m 'docs: update docs for ${{ inputs.version }} version'
+          git diff-index --quiet HEAD || git commit -m "docs: update docs for $VERSION version"
           git push
