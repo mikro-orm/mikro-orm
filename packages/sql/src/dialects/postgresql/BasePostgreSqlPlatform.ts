@@ -71,6 +71,10 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
+  override supportsConstraintTriggers(): boolean {
+    return true;
+  }
+
   override getCurrentSettingCast(mappedType: Type<unknown>): string | null {
     if (mappedType instanceof UuidType) {
       return '::uuid';

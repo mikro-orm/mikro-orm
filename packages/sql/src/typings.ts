@@ -162,6 +162,8 @@ export interface SqlTriggerDef {
   body: string;
   when?: string;
   expression?: string;
+  constraint?: boolean;
+  deferMode?: DeferMode | `${DeferMode}`;
 }
 
 /** Resolved routine definition for schema operations (callback bodies resolved to strings). */

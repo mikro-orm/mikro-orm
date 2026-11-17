@@ -1595,6 +1595,45 @@ For full control over the generated DDL, use the `expression` escape hatch inste
 })
 ```
 
+### Constraint triggers (PostgreSQL)
+
+Set `constraint: true` to create a `CONSTRAINT TRIGGER`, the only kind of trigger that can run at commit time instead of at the end of the statement. Combine it with `deferMode` to control when the check runs:
+
+| Option       | Description |
+| ------------ | ----------- |
+| `constraint` | Creates a `CONSTRAINT TRIGGER`. Requires `timing: 'after'` and `forEach: 'row'` (the default), and cannot be combined with `expression`. |
+| `deferMode`  | `'deferred'` or `'immediate'`, the same option as `deferMode` on unique constraints and foreign keys. Makes the trigger deferrable with that initial check time. Requires `constraint: true`; unset means not deferrable. |
+
+Constraint triggers use `body` like regular triggers, so they are created, introspected and diffed in the same way: changing `body`, `constraint` or `deferMode` drops and recreates the trigger.
+
+```ts
+@Trigger({
+  name: 'check_balance',
+  timing: 'after',
+  events: ['insert', 'update'],
+  constraint: true,
+  deferMode: 'deferred',
+  body: `
+    IF EXISTS (SELECT 1 FROM account WHERE id = NEW.id AND balance < 0) THEN
+      RAISE EXCEPTION 'balance of account % must not be negative', NEW.id;
+    END IF;
+    RETURN NULL;
+  `,
+})
+@Entity()
+class Account {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  balance!: number;
+}
+```
+
+A violating write now fails when the transaction commits, so intermediate states inside the transaction are allowed. A deferred trigger runs once per queued row event with the `NEW` row as it was at that event, so re-read the table (as above) when the check must see the final state.
+
+> Constraint triggers are only supported by PostgreSQL (including PGlite). Declaring `constraint` or `deferMode` with any other driver throws a `MetadataError` during discovery.
+
 > Database triggers are only supported by SQL drivers. Defining triggers on a MongoDB entity will throw an error.
 
 > When using `expression`, changes to the expression value are not detected by subsequent schema diffs. To update an expression-based trigger, drop and recreate it manually. Prefer `body` for triggers that should be fully managed by the migration system.

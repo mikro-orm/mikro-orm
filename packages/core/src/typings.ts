@@ -1208,6 +1208,10 @@ export interface TriggerDef<T = any> {
   when?: string;
   /** Raw DDL escape hatch — full CREATE TRIGGER statement. Mutually exclusive with `body`. */
   expression?: string;
+  /** Creates a `CONSTRAINT TRIGGER` (PostgreSQL only). Requires `timing: 'after'` and `forEach: 'row'`. */
+  constraint?: boolean;
+  /** Makes the constraint trigger deferrable with the given initial check time. Requires `constraint: true`; unset means not deferrable. */
+  deferMode?: DeferMode | `${DeferMode}`;
 }
 
 export type RoutineParamDirection = 'in' | 'out' | 'inout';

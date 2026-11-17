@@ -384,6 +384,8 @@ export class DatabaseSchema {
           body: body ?? '',
           when: trigger.when,
           expression: trigger.expression,
+          constraint: trigger.constraint,
+          deferMode: trigger.deferMode,
         });
       }
 

@@ -1,6 +1,6 @@
 import { defineEntity, EntitySchema, MikroORM, p, quote, SchemaComparator } from '@mikro-orm/sqlite';
 import { MikroORM as MongoMikroORM } from '@mikro-orm/mongodb';
-import { MetadataError } from '@mikro-orm/core';
+import { MetadataError, type TriggerDef } from '@mikro-orm/core';
 
 const AuditSchema = defineEntity({
   name: 'AuditTable',
@@ -589,5 +589,41 @@ describe('trigger (defineEntity)', () => {
     expect(diff).toContain('drop trigger');
 
     await orm2.close();
+  });
+
+  describe('constraint trigger validation', () => {
+    const base: TriggerDef = { name: 'trg', timing: 'after', events: ['insert'], body: 'SELECT 1' };
+    const init = (trigger: Partial<TriggerDef>) =>
+      MikroORM.init({
+        dbName: ':memory:',
+        entities: [
+          new EntitySchema({
+            name: 'ConstraintTrg',
+            properties: { id: { type: 'number', primary: true } },
+            triggers: [{ ...base, ...trigger }],
+          }),
+        ],
+      });
+
+    it.each<[Partial<TriggerDef>, RegExp]>([
+      [{ constraint: true, timing: 'before' }, /must use `timing: 'after'`/],
+      [{ constraint: true, timing: 'instead of' }, /must use `timing: 'after'`/],
+      [{ constraint: true, forEach: 'statement' }, /must use `forEach: 'row'`/],
+      [
+        { constraint: true, body: undefined, expression: 'create trigger ...' },
+        /'constraint' together with 'expression'/,
+      ],
+      [{ deferMode: 'deferred' }, /without 'constraint: true'/],
+      [{ constraint: false, deferMode: 'immediate' }, /without 'constraint: true'/],
+    ])('should reject invalid combination %j', async (trigger, message) => {
+      await expect(init(trigger)).rejects.toThrow(message);
+    });
+
+    it('should reject constraint triggers on drivers without support', async () => {
+      await expect(init({ constraint: true })).rejects.toThrow(
+        /Constraint triggers are only available with the PostgreSQL and PGlite drivers/,
+      );
+      await expect(init({ constraint: true, deferMode: 'deferred' })).rejects.toThrow(MetadataError);
+    });
   });
 });

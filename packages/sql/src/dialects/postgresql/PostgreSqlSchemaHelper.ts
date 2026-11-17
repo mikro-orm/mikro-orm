@@ -824,11 +824,13 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const events = trigger.events.map(e => e.toUpperCase()).join(' OR ');
     const forEach = trigger.forEach === 'statement' ? 'STATEMENT' : 'ROW';
     const when = trigger.when ? `\n  when (${trigger.when})` : '';
+    const kind = trigger.constraint ? 'create constraint trigger' : 'create trigger';
+    const deferral = trigger.deferMode ? ` deferrable initially ${trigger.deferMode}` : '';
     const fnName = this.getSchemaQualifiedTriggerFnName(table, trigger);
     const triggerName = this.platform.quoteIdentifier(trigger.name);
 
     const fnSql = `create or replace function ${fnName}() returns trigger as $$ begin ${this.normalizeTriggerBody(trigger.body)} end; $$ language plpgsql`;
-    const triggerSql = `create trigger ${triggerName} ${timing} ${events} on ${table.getQuotedName()} for each ${forEach}${when} execute function ${fnName}()`;
+    const triggerSql = `${kind} ${triggerName} ${timing} ${events} on ${table.getQuotedName()}${deferral} for each ${forEach}${when} execute function ${fnName}()`;
 
     return `${fnSql};\n${triggerSql}`;
   }
@@ -1146,6 +1148,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         for_each: string;
         when_clause: string | null;
         function_body: string | null;
+        is_constraint: boolean | null;
+        is_deferrable: boolean | null;
+        is_initially_deferred: boolean | null;
       }[]
     >(sql);
     const ret = {} as Dictionary<SqlTriggerDef[]>;
@@ -1182,6 +1187,15 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         body,
         when: row.when_clause ?? undefined,
       };
+
+      if (row.is_constraint) {
+        trigger.constraint = true;
+
+        if (row.is_deferrable) {
+          trigger.deferMode = row.is_initially_deferred ? DeferMode.INITIALLY_DEFERRED : DeferMode.INITIALLY_IMMEDIATE;
+        }
+      }
+
       ret[key].push(trigger);
       triggerMap.set(dedupeKey, trigger);
     }
@@ -1206,9 +1220,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       t.action_orientation as for_each,
       t.action_condition as when_clause,
       pg_get_functiondef(p.oid) as function_def,
-      p.prosrc as function_body
+      p.prosrc as function_body,
+      tg.tgconstraint <> 0 as is_constraint,
+      tg.tgdeferrable as is_deferrable,
+      tg.tginitdeferred as is_initially_deferred
     from information_schema.triggers t
     left join pg_namespace n on n.nspname = t.event_object_schema
+    left join pg_class c on c.relname = t.event_object_table and c.relnamespace = n.oid
+    left join pg_trigger tg on tg.tgrelid = c.oid and tg.tgname = t.trigger_name and not tg.tgisinternal
     left join pg_proc p on p.proname = t.event_object_table || '_' || t.trigger_name || '_fn' and p.pronamespace = n.oid
     where (${conditions.join(' or ')})
     order by t.trigger_name, t.event_manipulation`;

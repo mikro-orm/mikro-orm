@@ -8,6 +8,7 @@ import {
   type EntityName,
   type EntityProperty,
   type SchemaTable,
+  type TriggerDef,
 } from '../typings.js';
 import { compareArrays, Utils } from '../utils/Utils.js';
 import { QueryHelper } from '../utils/QueryHelper.js';
@@ -2410,6 +2411,7 @@ export class MetadataDiscovery {
         );
       }
 
+      this.validateConstraintTrigger(meta, trigger);
       trigger.name ??= this.#namingStrategy.indexName(meta.tableName, trigger.events, 'trigger');
       trigger.forEach ??= 'row';
 
@@ -2419,6 +2421,32 @@ export class MetadataDiscovery {
     }
 
     meta.hasTriggers = true;
+  }
+
+  private validateConstraintTrigger(meta: EntityMetadata, trigger: TriggerDef): void {
+    const label = `Trigger "${trigger.name ?? '(unnamed)'}" on entity ${meta.className}`;
+
+    if (!trigger.constraint) {
+      if (trigger.deferMode !== undefined) {
+        throw new MetadataError(`${label} sets 'deferMode' without 'constraint: true'.`);
+      }
+
+      return;
+    }
+
+    if (trigger.expression) {
+      throw new MetadataError(
+        `${label} sets 'constraint' together with 'expression'. Declare the constraint trigger in the raw DDL instead.`,
+      );
+    }
+
+    if (trigger.timing !== 'after') {
+      throw new MetadataError(`${label} is a constraint trigger and must use \`timing: 'after'\`.`);
+    }
+
+    if (trigger.forEach === 'statement') {
+      throw new MetadataError(`${label} is a constraint trigger and must use \`forEach: 'row'\`.`);
+    }
   }
 
   private initPolicies(meta: EntityMetadata): void {

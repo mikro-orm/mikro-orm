@@ -1479,6 +1479,8 @@ export interface EntityMetadataWithProperties<
     body?: string | Raw | TriggerCallback<InferEntityFromProperties<TProperties, TPK, TBase>>;
     when?: string;
     expression?: string;
+    constraint?: boolean;
+    deferMode?: DeferMode | `${DeferMode}`;
   }[];
 }
 
