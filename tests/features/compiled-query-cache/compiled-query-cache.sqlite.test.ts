@@ -347,7 +347,7 @@ const bypassed: Record<string, Scenario> = {
     ),
   'function as a value': (em, i) => em.find(Author, { id: i, name: (() => 'author') as unknown as string }),
   'function in an unknown option': (em, i) => em.find(Author, { id: i }, { marker: () => i } as Dictionary),
-  'limit that is not a number': (em, i) => em.find(Author, { id: { $gt: i } }, { limit: 2n as unknown as number }),
+  'limit that is not a number': (em, i) => em.find(Author, { id: { $gt: i } }, { limit: null as unknown as number }),
   'pessimistic lock': (em, i) =>
     em.transactional(() => em.findOne(Author, { id: i + 1 }, { lockMode: LockMode.PESSIMISTIC_WRITE })),
   'cursor pagination': (em, i) => em.findByCursor(Author, { first: 2 + (i % 2), orderBy: { id: 'asc' } }),
