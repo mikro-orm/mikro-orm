@@ -60,6 +60,7 @@ import {
   type UpsertManyOptions,
   type UpsertOptions,
   Utils,
+  ValidationError,
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection.js';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform.js';
@@ -224,6 +225,13 @@ export abstract class AbstractSqlDriver<
     where: FilterQuery<T>,
     options: FindOptions<T, any, any, any> = {},
   ): Promise<AnyQueryBuilder<T>> {
+    // the condition and options of a compiled query were never processed, so building a query from them would be wrong
+    if ((options as Dictionary)._compiled) {
+      throw new ValidationError(
+        `${this.constructor.name} does not support the compiled query cache, its find methods have to call the parent implementation, or the cache has to be disabled via 'compiledQueryCache.enabled'`,
+      );
+    }
+
     const connectionType = this.resolveConnectionType({ ctx: options.ctx, connectionType: options.connectionType });
     const populate = this.autoJoinOneToOneOwner(
       meta,
