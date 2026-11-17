@@ -8,6 +8,7 @@ import {
   raw,
   ref,
   RequestContext,
+  SqliteDriver,
   TableNotFoundException,
   Type,
   type Dictionary,
@@ -582,6 +583,23 @@ describe('compiled query cache', () => {
     }
 
     expect(hits).not.toHaveBeenCalled();
+  });
+
+  test('driver that builds its queries without the parent implementation is told to disable the cache', async () => {
+    class CustomDriver extends SqliteDriver {
+      override async find(entityName: any, where: any, options: any): Promise<any> {
+        const qb = await (this as any).createQueryBuilderFromOptions(this.metadata.get(entityName), where, options);
+        return this.rethrow(qb.execute('all'));
+      }
+    }
+
+    const orm = await MikroORM.init({ entities: [Tag], dbName: ':memory:', driver: CustomDriver });
+    await orm.schema.create();
+    const find = (i: number) => orm.em.fork().find(Tag, { id: i });
+    await find(1);
+    await find(2);
+    await expect(find(3)).rejects.toThrow(/CustomDriver does not support the compiled query cache/);
+    await orm.close(true);
   });
 
   test('errors of a compiled query are converted to driver exceptions', async () => {
