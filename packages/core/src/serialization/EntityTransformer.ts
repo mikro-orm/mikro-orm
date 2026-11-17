@@ -58,7 +58,7 @@ export class EntityTransformer {
       const ret = {} as Dictionary;
       const plan = getPlan(meta);
       const pkCount = plan.pks.length;
-      // own keys that are not entity properties are never visible, so only the metadata properties are collected
+      // own keys that are not entity properties are never visible, so only the metadata properties are iterated
       const total = wrapped.isInitialized() || !wrapped.hasPrimaryKey() ? pkCount + plan.rest.length : pkCount;
       const visited = root.visited.has(entity);
       const includePrimaryKeys = wrapped.__config.get('serialization').includePrimaryKeys;
