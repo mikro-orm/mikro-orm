@@ -377,7 +377,7 @@ export abstract class AbstractSqlDriver<
     };
 
     return this.rethrow(
-      state.qb.executeCompiled<R>(compiled.query!.sql, compiled.params!, state, {
+      state.qb.executeCompiled<R>(compiled.sql!, compiled.params!, state, {
         ctx: options.ctx,
         em,
         connectionType: this.resolveConnectionType({ ctx: options.ctx, connectionType: options.connectionType }),

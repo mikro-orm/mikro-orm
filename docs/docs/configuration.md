@@ -688,8 +688,10 @@ MikroORM.init({
 
 A few things to be aware of:
 
-- `$in` and `$nin` lists are padded to the next power of two by repeating the last value (`in (1, 2, 3)` becomes `in (1, 2, 3, 3)`), so lists of different lengths share one cached query. Lists with more than 512 items are not cached, and neither are lists that cannot be padded (e.g. the implicit `{ id: [1, 2, 3] }` form) with more than 32 items.
+- The cached SQL is the same SQL the query builder would generate, the cache never changes what gets executed or logged. `$in` and `$nin` lists of similar sizes share one cached query (sizes are grouped by powers of two) and get their own number of placeholders. Lists with more than 512 items are not cached, and neither are lists in other places (e.g. the implicit `{ id: [1, 2, 3] }` form) with more than 32 items.
 - Filters with a callback condition are supported. The callback is invoked again for every call and its values are bound as parameters, so it has to be free of side effects. Callbacks that declare more than two parameters (using the `EntityManager`, the find options or the entity name) are not cached.
+- When a query shape is seen for the second time, it is compiled once more with placeholder values to learn where its parameters come from. Custom types see those placeholder values in `convertToDatabaseValue()`, and filter callbacks are invoked two more times for that call.
+- Anything evaluated while the SQL is generated is evaluated once per query shape: `@Formula()` callbacks, `convertToDatabaseValueSQL()` and `convertToJSValueSQL()` of custom types have to return the same SQL every time.
 - Queries with raw SQL fragments, subqueries, locking, cursor pagination, `groupBy`/`having`, a `populateWhere` condition or `populateWhere: 'infer'`, or the result cache always take the regular path, as well as everything when `populateWhere: 'infer'` or the global result cache is configured.
 
 ## Metadata Cache

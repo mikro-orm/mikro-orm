@@ -204,19 +204,6 @@ function createOptions(random: Random): Dictionary<unknown> {
   return options;
 }
 
-/** Drops the repeated last value of `in (...)` lists, as the cache pads them to a power of two. */
-function unpad(sql: string): string {
-  return sql.replace(/ in \(([^()]+)\)/g, (_, list: string) => {
-    const items = list.split(', ');
-
-    while (items.length > 1 && items.at(-1) === items.at(-2)) {
-      items.pop();
-    }
-
-    return ` in (${items.join(', ')})`;
-  });
-}
-
 async function capture(orm: MikroORM, kind: string, where: Dictionary, options: Dictionary): Promise<string> {
   const em = orm.em.fork();
 
@@ -231,7 +218,7 @@ async function capture(orm: MikroORM, kind: string, where: Dictionary, options: 
 
     return JSON.stringify(await em.find(Item, where, options));
   } catch (e) {
-    return unpad(`error: ${(e as Error).message}`);
+    return `error: ${(e as Error).message}`;
   }
 }
 
@@ -242,7 +229,7 @@ test('random conditions and options produce the same queries and results with th
   const queries = (mock: typeof cachedLog) =>
     mock.mock.calls
       .splice(0)
-      .map(call => unpad(call[0].replace(/ \[took .*$/, '')))
+      .map(call => call[0].replace(/ \[took .*$/, ''))
       .sort();
 
   for (let shape = 0; shape < 250; shape++) {

@@ -198,7 +198,7 @@ async function run(scenario: Scenario, iterations = 6): Promise<number> {
   const queries = (mock: typeof cachedLog) =>
     mock.mock.calls
       .splice(0)
-      .map(call => unpad(call[0].replace(/ \[took .*$/, '')))
+      .map(call => call[0].replace(/ \[took .*$/, ''))
       .sort();
 
   for (let i = 0; i < iterations; i++) {
@@ -211,19 +211,6 @@ async function run(scenario: Scenario, iterations = 6): Promise<number> {
   hits.mockRestore();
 
   return count;
-}
-
-/** Drops the repeated last value of `in (...)` lists, as the cache pads them to a power of two. */
-function unpad(sql: string): string {
-  return sql.replace(/ in \(([^()]+)\)/g, (_, list: string) => {
-    const items = list.split(', ');
-
-    while (items.length > 1 && items.at(-1) === items.at(-2)) {
-      items.pop();
-    }
-
-    return ` in (${items.join(', ')})`;
-  });
 }
 
 async function capture(scenario: Scenario, orm: MikroORM, i: number): Promise<string> {
@@ -442,18 +429,20 @@ describe('compiled query cache', () => {
     expect(calls).toBe(4);
   });
 
-  test('$in lists are padded to share the compiled query', async () => {
-    cached.config.getCompiledQueryCache()!.clear();
-    const scenario: Scenario = (em, i) =>
-      em.find(Author, { id: { $in: Array.from({ length: 5 + (i % 4) }, (_, idx) => idx + i) } });
-    await expect(run(scenario, 8)).resolves.toBeGreaterThan(5);
-    expect(cached.config.getCompiledQueryCache()!.size).toBe(1);
-
+  test('$in lists of similar sizes share the compiled query and keep their own SQL', async () => {
     const mock = mockLogger(cached);
-    const where = { id: { $in: [1, 2, 3] }, name: { $nin: ['a', 'b', 'c'] } };
-    await cached.em.fork().find(Author, where);
-    expect(mock.mock.calls[0][0]).toMatch("in (1, 2, 3, 3) and `a0`.`name` not in ('a', 'b', 'c', 'c')");
-    expect(where).toEqual({ id: { $in: [1, 2, 3] }, name: { $nin: ['a', 'b', 'c'] } });
+    const sizes = [3, 4, 3, 4, 3, 4, 2];
+
+    for (const size of sizes) {
+      const ids = Array.from({ length: size }, (_, i) => i + 1);
+      const authors = await cached.em.fork().find(Author, { id: { $in: ids }, name: { $ne: 'bucket' } });
+      expect(authors.map(a => a.id)).toEqual(ids);
+    }
+
+    const lists = mock.mock.calls.map(call => / in \(([^)]*)\)/.exec(call[0])![1]);
+    expect(lists).toEqual(['1, 2, 3', '1, 2, 3, 4', '1, 2, 3', '1, 2, 3, 4', '1, 2, 3', '1, 2, 3, 4', '1, 2']);
+    // sizes 3 and 4 are one entry, size 2 is another one
+    expect(cached.config.getCompiledQueryCache()!.size).toBe(2);
   });
 
   test('custom type mapping values to a constant of the query is not cached', async () => {
@@ -521,6 +510,30 @@ describe('compiled query cache', () => {
 
     expect(build(code, code)).toBeInstanceOf(CompiledQuery);
     expect(build(code, rank)).toBeUndefined();
+  });
+
+  test('lists that are not rendered as plain values are not cached', () => {
+    const build = (render: (placeholders: string[]) => string, reverse = false) => {
+      const lists = [{ start: 0, length: 3, size: 4 }];
+      const recording = new CompiledQueryRecording([1, 2, 3, 3], { id: { $in: [1, 2, 3] } }, {}, lists);
+      const sentinels = [...((recording.where as Dictionary).id.$in as number[])];
+      const sql = (size: number) =>
+        `select * from t where c = '\\\\?' and id in (${render(new Array(size).fill('?'))})`;
+      Object.assign(recording.compilation, { count: 1, sql: sql(3), params: [1, 2, 3], overrides: {} });
+      const params = reverse ? sentinels.reverse() : sentinels;
+
+      return recording.build({ dry: true, count: 1, sql: sql(4), params }, cached.em.getPlatform());
+    };
+
+    const query = build(placeholders => placeholders.join(', '))!;
+    expect(query).toBeInstanceOf(CompiledQuery);
+    const params = [1, 2, 2, 2];
+    expect(query.resolve([{ start: 0, length: 2, size: 4 }], params)).toBe(
+      "select * from t where c = '\\\\?' and id in (?, ?)",
+    );
+    expect(params).toEqual([1, 2]);
+    expect(build(placeholders => placeholders.map(p => `lower(${p})`).join(', '))).toBeUndefined();
+    expect(build(placeholders => placeholders.join(', '), true)).toBeUndefined();
   });
 
   test('entries in use survive the eviction of older ones', async () => {
