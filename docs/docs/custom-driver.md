@@ -4,6 +4,8 @@ title: Creating Custom Driver
 
 If you want to use a database that is not currently supported, you can implement your own driver. The driver architecture is split into several classes, each handling a different concern.
 
+Before writing your own, check the [community drivers](./usage-with-sql.md#community-drivers), the database you need might already be covered.
+
 ## Architecture Overview
 
 MikroORM drivers are composed of 3 main classes:
