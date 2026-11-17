@@ -254,6 +254,13 @@ describe('Utils', () => {
     expect(Utils.getConstructorParams(Author4)).toEqual(['name', 'email']);
     expect(Utils.getConstructorParams('')).toEqual(undefined);
     expect(Utils.getConstructorParams('constructor')).toEqual(undefined);
+    expect(Utils.getConstructorParams('constructor(name, tags = [1, 2], meta = { a: 1, b: 2 }, email) {}')).toEqual([
+      'name',
+      'tags',
+      'meta',
+      'email',
+    ]);
+    expect(Utils.getConstructorParams('constructor({ name, email }, tags = [1, 2])')).toEqual(['', 'tags']);
   });
 
   test('defaultValue', () => {

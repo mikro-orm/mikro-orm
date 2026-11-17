@@ -425,26 +425,32 @@ export class Utils {
 
     let depth = 0;
     let end = start;
+    let paramStart = start + 1;
+    const params: string[] = [];
 
     for (; end < source.length; end++) {
-      if (source[end] === '(') {
+      if ('([{'.includes(source[end])) {
         depth++;
       }
 
-      if (source[end] === ')') {
+      if (')]}'.includes(source[end])) {
         depth--;
       }
 
       if (depth === 0) {
         break;
       }
+
+      if (depth === 1 && source[end] === ',') {
+        params.push(source.slice(paramStart, end));
+        paramStart = end + 1;
+      }
     }
 
-    const raw = source.slice(start + 1, end);
+    params.push(source.slice(paramStart, end));
 
-    return raw
-      .split(',')
-      .map(s => s.trim().replace(/=.*$/, '').trim())
+    return params
+      .map(s => s.trim().replace(/=.*$/s, '').trim())
       .filter(Boolean)
       .map(raw => (raw.startsWith('{') && raw.endsWith('}') ? '' : raw));
   }
