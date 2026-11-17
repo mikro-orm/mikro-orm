@@ -517,7 +517,7 @@ export class CompiledQueryRecording {
     this.options = { ...prepared };
 
     for (const k in prepared) {
-      if ((k === 'limit' || k === 'offset') && prepared[k] !== undefined && prepared[k] !== 0) {
+      if ((k === 'limit' || k === 'offset') && prepared[k] > 0) {
         this.options[k] = sentinels[pos.idx++];
       }
     }
@@ -731,9 +731,9 @@ export class CompiledQueryCache {
           return undefined;
         }
 
-        // a zero offset is left out of the SQL, so a zero is part of the key instead of a parameter
-        if (value === 0) {
-          key += SEP + k + '0';
+        // only positive values are plain parameters, zero, negative and `NaN` change the generated SQL
+        if (!(value > 0)) {
+          key += SEP + k + '=' + value;
           continue;
         }
 

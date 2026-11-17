@@ -487,6 +487,17 @@ describe('compiled query cache', () => {
     expect(cached.config.getCompiledQueryCache()!.size).toBe(0);
   });
 
+  test.each(['limit', 'offset'])('%s values that change the shape of the query are not bound', async option => {
+    const values = [2, 3, 4, 5, -1, 0, NaN, -5, 3];
+    const scenario: Scenario = (em, i) =>
+      em.find(
+        Author,
+        { id: { $gt: 0 } },
+        { populate: ['books'], strategy: 'joined', limit: 4, [option]: values[i], orderBy: { id: 'asc' } },
+      );
+    await expect(run(scenario, values.length)).resolves.toBeGreaterThan(0);
+  });
+
   test('custom type with a conversion that is not repeatable is not cached', async () => {
     const hits = vi.spyOn(QueryBuilder.prototype, 'executeCompiled');
 
