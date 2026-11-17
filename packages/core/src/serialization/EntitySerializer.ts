@@ -128,43 +128,6 @@ function isVisible<T extends object>(
   return !!prop && (options.includeHidden ? !isPrefixed(prop) : isPropertyVisible(prop));
 }
 
-function getVisibility<T extends object>(
-  meta: EntityMetadata<T>,
-  plan: SerializationPlan<T>,
-  options: SerializeOptions<T, any, any, any>,
-): boolean[] | undefined {
-  // without these options, the visibility is the base one from the plan
-  if (
-    !options.groups &&
-    !options.includeHidden &&
-    !options.fields?.length &&
-    !Array.isArray(options.populate) &&
-    !options.exclude?.length
-  ) {
-    return undefined;
-  }
-
-  const prepared = preparedOptions.get(options)!;
-  prepared.visibility ??= new Map();
-  let visibility = prepared.visibility.get(plan);
-
-  if (!visibility) {
-    visibility = [];
-
-    for (const entry of plan.pks) {
-      visibility.push(isVisible(meta, entry.prop.name, options));
-    }
-
-    for (const entry of plan.rest) {
-      visibility.push(isVisible(meta, entry.prop.name, options));
-    }
-
-    prepared.visibility.set(plan, visibility);
-  }
-
-  return visibility;
-}
-
 function isRelation(meta: EntityMetadata<any>, prop: string): boolean {
   return meta.properties[prop]?.kind !== ReferenceKind.SCALAR;
 }
@@ -209,7 +172,7 @@ export class EntitySerializer {
     try {
       SerializationContext.propagate(root, entity, isRelation);
       const plan = getPlan(meta);
-      const visibility = getVisibility(meta, plan, options);
+      const visibility = this.getVisibility(meta, plan, options);
       const pkCount = plan.pks.length;
       const complete = wrapped.isInitialized() || !wrapped.hasPrimaryKey();
       const total = complete ? pkCount + plan.rest.length : pkCount;
@@ -272,6 +235,43 @@ export class EntitySerializer {
     }
 
     return ret as SerializeDTO<T, P, E, never, ResolveSerializeFields<F>, SerializeFieldsKeepPK<F>>;
+  }
+
+  private static getVisibility<T extends object>(
+    meta: EntityMetadata<T>,
+    plan: SerializationPlan<T>,
+    options: SerializeOptions<T, any, any, any>,
+  ): boolean[] | undefined {
+    // without these options, the visibility is the base one from the plan
+    if (
+      !options.groups &&
+      !options.includeHidden &&
+      !options.fields?.length &&
+      !Array.isArray(options.populate) &&
+      !options.exclude?.length
+    ) {
+      return undefined;
+    }
+
+    const prepared = preparedOptions.get(options)!;
+    prepared.visibility ??= new Map();
+    let visibility = prepared.visibility.get(plan);
+
+    if (!visibility) {
+      visibility = [];
+
+      for (const entry of plan.pks) {
+        visibility.push(isVisible(meta, entry.prop.name, options));
+      }
+
+      for (const entry of plan.rest) {
+        visibility.push(isVisible(meta, entry.prop.name, options));
+      }
+
+      prepared.visibility.set(plan, visibility);
+    }
+
+    return visibility;
   }
 
   private static serializeProperty<T extends object>(
