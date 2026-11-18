@@ -254,6 +254,57 @@ describe('Utils', () => {
     expect(Utils.getConstructorParams(Author4)).toEqual(['name', 'email']);
     expect(Utils.getConstructorParams('')).toEqual(undefined);
     expect(Utils.getConstructorParams('constructor')).toEqual(undefined);
+    expect(Utils.getConstructorParams('constructor(name, tags = [1, 2], meta = { a: 1, b: 2 }, email) {}')).toEqual([
+      'name',
+      'tags',
+      'meta',
+      'email',
+    ]);
+    expect(Utils.getConstructorParams('constructor({ name, email }, tags = [1, 2])')).toEqual(['', 'tags']);
+    expect(Utils.getConstructorParams('constructor(name, meta = {\n a: 1,\n b: 2,\n}, email) {}')).toEqual([
+      'name',
+      'meta',
+      'email',
+    ]);
+    expect(Utils.getConstructorParams(`constructor(name /* don't trim */, email) { this.foo = 'x'; }`)).toEqual([
+      'name',
+      'email',
+    ]);
+    expect(Utils.getConstructorParams(`constructor(\n name, // user's [name\n email,\n) {}`)).toEqual([
+      'name',
+      'email',
+    ]);
+    expect(Utils.getConstructorParams('constructor(name // unterminated')).toEqual(['name']);
+    expect(Utils.getConstructorParams(`constructor(name, re = /^['"]/, email) { this.foo = 'x'; }`)).toEqual([
+      'name',
+      're',
+      'email',
+    ]);
+    expect(Utils.getConstructorParams('constructor(name, re = /[{/,]\\/(/gi, email) {}')).toEqual([
+      'name',
+      're',
+      'email',
+    ]);
+    expect(Utils.getConstructorParams('constructor(name, half = total / 2, rest = (a) / b, email) {}')).toEqual([
+      'name',
+      'half',
+      'rest',
+      'email',
+    ]);
+    expect(Utils.getConstructorParams('constructor({ name = 1, email }, tags) {}')).toEqual(['', 'tags']);
+    expect(Utils.getConstructorParams('constructor([a, b] = [], tags) {}')).toEqual(['', 'tags']);
+    expect(Utils.getConstructorParams(`constructor(name, open = '{', email) { this.foo = [1, 2]; }`)).toEqual([
+      'name',
+      'open',
+      'email',
+    ]);
+    expect(Utils.getConstructorParams(`constructor(name, sep = "]", email) {}`)).toEqual(['name', 'sep', 'email']);
+    expect(Utils.getConstructorParams('constructor(name, tpl = `(,`, email) {}')).toEqual(['name', 'tpl', 'email']);
+    expect(Utils.getConstructorParams(`constructor(name, quote = '\\'(', email) {}`)).toEqual([
+      'name',
+      'quote',
+      'email',
+    ]);
   });
 
   test('defaultValue', () => {

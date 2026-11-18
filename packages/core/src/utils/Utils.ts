@@ -425,28 +425,66 @@ export class Utils {
 
     let depth = 0;
     let end = start;
+    let paramStart = start + 1;
+    const params: string[] = [];
+    let quote: string | undefined;
 
     for (; end < source.length; end++) {
-      if (source[end] === '(') {
+      if (quote) {
+        if (source[end] === '\\') {
+          end++;
+        } else if (source[end] === quote) {
+          quote = undefined;
+        }
+
+        continue;
+      }
+
+      const commentEnd = source.startsWith('/*', end) ? '*/' : source.startsWith('//', end) ? '\n' : undefined;
+
+      if (commentEnd) {
+        const close = source.indexOf(commentEnd, end + 2);
+        end = close === -1 ? source.length : close + commentEnd.length - 1;
+        continue;
+      }
+
+      // a slash that does not follow an operand starts a regex literal
+      if (source[end] === '/' && !/[\w$)\]]\s*$/.test(source.slice(start, end))) {
+        const regex = /\/(?:\\.|\[(?:\\.|[^\]\\])*\]|[^/\\[\n])+\//y;
+        regex.lastIndex = end;
+        end += (regex.exec(source)?.[0].length ?? 1) - 1;
+        continue;
+      }
+
+      if (`'"\``.includes(source[end])) {
+        quote = source[end];
+        continue;
+      }
+
+      if ('([{'.includes(source[end])) {
         depth++;
       }
 
-      if (source[end] === ')') {
+      if (')]}'.includes(source[end])) {
         depth--;
       }
 
       if (depth === 0) {
         break;
       }
+
+      if (depth === 1 && source[end] === ',') {
+        params.push(source.slice(paramStart, end));
+        paramStart = end + 1;
+      }
     }
 
-    const raw = source.slice(start + 1, end);
+    params.push(source.slice(paramStart, end));
 
-    return raw
-      .split(',')
-      .map(s => s.trim().replace(/=.*$/, '').trim())
+    return params
+      .map(s => s.replace(/\/\*.*?\*\/|\/\/[^\n]*/gs, '').trim())
       .filter(Boolean)
-      .map(raw => (raw.startsWith('{') && raw.endsWith('}') ? '' : raw));
+      .map(raw => (/^[{[]/.test(raw) ? '' : raw.replace(/=.*$/s, '').trim()));
   }
 
   /**
