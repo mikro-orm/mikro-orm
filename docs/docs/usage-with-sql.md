@@ -172,7 +172,7 @@ const sqlite = await orm.em.getConnection().getNativeClient();
 sqlite.loadExtension('/path/to/sqlean');
 ```
 
-The `onCreateConnection` hook receives a Kysely `DatabaseConnection`, not the native SQLite client. Use [`getNativeClient()`](./configuration.md#accessing-the-native-client) for vendor methods such as `loadExtension()`. Load the extension again if you create a new database connection. If you supply your own database through a custom dialect in `driverOptions`, load the extension on that database instead.
+The `onCreateConnection` hook receives a Kysely `DatabaseConnection`, not the native SQLite client. Use [`getNativeClient()`](./configuration.md#accessing-the-native-client) for vendor methods such as `loadExtension()`. The extension is tied to that database handle, so load it again after `orm.reconnect()`. If you supply your own database through a custom dialect in `driverOptions`, load the extension on that database instead.
 
 ## Using Turso database
 
