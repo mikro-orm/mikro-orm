@@ -4818,12 +4818,11 @@ type JoinDTO<T, K extends keyof T, F extends string> =
       : DirectDTO<U, (SubFields<F, K & string> | PrimaryProperty<U>) & keyof U>[]
     : SubFields<F, K & string> extends never
       ? EntityDTOProp<T, T[K]>
-      :
-          | DirectDTO<
-              NonNullable<T[K]>,
-              (SubFields<F, K & string> | PrimaryProperty<NonNullable<T[K]>>) & keyof NonNullable<T[K]>
-            >
-          | Extract<T[K], null | undefined>;
+      : | DirectDTO<
+            NonNullable<T[K]>,
+            (SubFields<F, K & string> | PrimaryProperty<NonNullable<T[K]>>) & keyof NonNullable<T[K]>
+          >
+        | Extract<T[K], null | undefined>;
 
 /**
  * Raw aliases (`sql`...`.as('x')`, `'col as x'`, or aliased sub-queries) are not entity keys,
