@@ -448,6 +448,14 @@ export class Utils {
         continue;
       }
 
+      // a slash that does not follow an operand starts a regex literal
+      if (source[end] === '/' && !/[\w$)\]]\s*$/.test(source.slice(start, end))) {
+        const regex = /\/(?:\\.|\[(?:\\.|[^\]\\])*\]|[^/\\[\n])+\//y;
+        regex.lastIndex = end;
+        end += (regex.exec(source)?.[0].length ?? 1) - 1;
+        continue;
+      }
+
       if (`'"\``.includes(source[end])) {
         quote = source[end];
         continue;
