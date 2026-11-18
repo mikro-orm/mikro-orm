@@ -606,8 +606,11 @@ export class EntityLoader {
     // When targetKey is set, use it for FK lookup instead of the PK
     let fk: string | string[] = prop.targetKey ?? Utils.getPrimaryKeyHash(meta.primaryKeys);
     let schema: string | undefined = options.schema;
-    const partial =
-      !Utils.isEmpty(prop.where) || !Utils.isEmpty(options.where) || !Utils.isEmpty(options.populateFilter);
+    const childFilter = options.populateFilter ? await this.extractChildPopulateFilter(options, prop) : undefined;
+    // conditions on the populated entity itself have no sink in the child query (the joined strategy puts
+    // them on the join), only the nested relation ones can be forwarded as its own `populateFilter`
+    const [ownFilter, nestedFilter] = this.splitPopulateFilter(childFilter, meta);
+    const partial = !Utils.isEmpty(prop.where) || !Utils.isEmpty(options.where) || !!ownFilter;
     let polymorphicOwnerProp: EntityProperty | undefined;
     const ownerProp =
       prop.kind === ReferenceKind.ONE_TO_MANY || (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner)
@@ -686,11 +689,6 @@ export class EntityLoader {
     if (!Utils.isEmpty(prop.where) || Raw.hasObjectFragments(prop.where)) {
       where = { $and: [where, prop.where] } as FilterQuery<Entity>;
     }
-
-    const childFilter = options.populateFilter ? await this.extractChildPopulateFilter(options, prop) : undefined;
-    // conditions on the populated entity itself have no sink in the child query (the joined strategy puts
-    // them on the join), only the nested relation ones can be forwarded as its own `populateFilter`
-    const [ownFilter, nestedFilter] = this.splitPopulateFilter(childFilter, meta);
 
     if (ownFilter) {
       where = { $and: [where, ownFilter] } as FilterQuery<Entity>;
