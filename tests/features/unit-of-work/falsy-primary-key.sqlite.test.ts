@@ -1,4 +1,5 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/sqlite';
+import { mockLogger } from '../../helpers.js';
 
 for (const [type, id] of [
   ['integer', 0],
@@ -13,13 +14,11 @@ for (const [type, id] of [
         name: { type: 'string' },
       },
     });
-    const logger = vi.fn();
     const orm = await MikroORM.init({
       entities: [Entity],
       dbName: ':memory:',
-      debug: ['query'],
-      logger,
     });
+    const logger = mockLogger(orm, ['query']);
 
     try {
       await orm.schema.create();
@@ -39,6 +38,10 @@ for (const [type, id] of [
 
       expect(await em.findOne(Entity, { id, name: 'different' })).toBeNull();
       expect(logger).toHaveBeenCalledOnce();
+
+      const merged = em.merge(Entity, { id, name: 'changed' });
+      expect(merged).toBe(entity);
+      expect(merged.name).toBe('original');
     } finally {
       await orm.close(true);
     }
