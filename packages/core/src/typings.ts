@@ -538,17 +538,16 @@ export type IndexFilterQuery<T, Using extends string> = [Using] extends [never]
   ? FilterQuery<T>
   : string extends Using
     ? FilterQuery<T>
-    :
-        | (OperatorMap<T> & {
-            -readonly [K in Extract<EntityKey<T>, IndexColumns<T, Using>>]?:
-              | ExpandQuery<ExpandProperty<FilterObjectProp<T, K>>>
-              | ExpandQueryMerged<ExpandProperty<FilterObjectProp<T, K>>>
-              | FilterValue<ExpandProperty<FilterObjectProp<T, K>>>
-              | ArrayFilter<FilterObjectProp<T, K>>
-              | null;
-          })
-        | NonNullable<ExpandScalar<Primary<T>>>
-        | IndexFilterQuery<T, Using>[];
+    : | (OperatorMap<T> & {
+          -readonly [K in Extract<EntityKey<T>, IndexColumns<T, Using>>]?:
+            | ExpandQuery<ExpandProperty<FilterObjectProp<T, K>>>
+            | ExpandQueryMerged<ExpandProperty<FilterObjectProp<T, K>>>
+            | FilterValue<ExpandProperty<FilterObjectProp<T, K>>>
+            | ArrayFilter<FilterObjectProp<T, K>>
+            | null;
+        })
+      | NonNullable<ExpandScalar<Primary<T>>>
+      | IndexFilterQuery<T, Using>[];
 
 /** Replaces `where` and `using` on an options type with index-aware variants when `Using` is specified. */
 export type WithUsingOptions<Opts, Entity, Using extends string> = Omit<Opts, 'where' | 'using'> & {
@@ -675,14 +674,13 @@ export type PolymorphicPrimary<T> = true extends IsUnion<T> ? PolymorphicPrimary
 export type EntityDataPropValue<T> = T | Primary<T> | PolymorphicPrimary<T>;
 type ExpandEntityProp<T, C extends boolean = false> =
   T extends Record<string, any>
-    ?
-        | {
-            [K in keyof T as CleanKeys<T, K>]?:
-              | EntityDataProp<ExpandProperty<T[K]>, C>
-              | EntityDataPropValue<ExpandProperty<T[K]>>
-              | null;
-          }
-        | EntityDataPropValue<ExpandProperty<T>>
+    ? | {
+          [K in keyof T as CleanKeys<T, K>]?:
+            | EntityDataProp<ExpandProperty<T[K]>, C>
+            | EntityDataPropValue<ExpandProperty<T[K]>>
+            | null;
+        }
+      | EntityDataPropValue<ExpandProperty<T>>
     : T;
 type ExpandRequiredEntityProp<T, I, C extends boolean> =
   T extends Record<string, any> ? ExpandRequiredEntityPropObject<T, I, C> | EntityDataPropValue<ExpandProperty<T>> : T;
@@ -1017,16 +1015,15 @@ type SerializePropValueWithFields<
           SerializeSubFields<K & string, F>,
           KeepPK
         >[]
-      :
-          | SerializeDTO<
-              ExpandProperty<T[K]>,
-              SerializeSubHints<K & string, H>,
-              never,
-              C,
-              SerializeSubFields<K & string, F>,
-              KeepPK
-            >
-          | Extract<T[K], null | undefined>
+      : | SerializeDTO<
+            ExpandProperty<T[K]>,
+            SerializeSubHints<K & string, H>,
+            never,
+            C,
+            SerializeSubFields<K & string, F>,
+            KeepPK
+          >
+        | Extract<T[K], null | undefined>
     : EntityDTOProp<T, T[K], C>;
 
 /**
@@ -2554,13 +2551,12 @@ export type AutoPath<
             ? `${A}.${AutoPath<NonNullable<GetStringKey<O, A, E>>, B, E, Prev[D]>}`
             : never
           : P extends StringKeys<O, E>
-            ?
-                | (NonNullable<GetStringKey<O, P & StringKeys<O, E>, E>> extends unknown
-                    ? Exclude<P, `${string}.`>
-                    : never)
-                | (StringKeys<NonNullable<GetStringKey<O, P & StringKeys<O, E>, E>>, E> extends never
-                    ? never
-                    : `${P & string}.`)
+            ? | (NonNullable<GetStringKey<O, P & StringKeys<O, E>, E>> extends unknown
+                  ? Exclude<P, `${string}.`>
+                  : never)
+              | (StringKeys<NonNullable<GetStringKey<O, P & StringKeys<O, E>, E>>, E> extends never
+                  ? never
+                  : `${P & string}.`)
             : StringKeys<O, E> | `${RelationKeys<O>}:ref`
         : never
       : never;
