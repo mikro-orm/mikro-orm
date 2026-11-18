@@ -159,16 +159,20 @@ These methods execute SQL directly and do not trigger lifecycle hooks.
 
 ## Using SQLite extensions
 
-SQLite extensions like [sqlean](https://github.com/nalgeon/sqlean) can add features that are missing by default (e.g., regexp). Load them via the `onCreateConnection` hook:
+SQLite extensions like [sqlean](https://github.com/nalgeon/sqlean) can add features that are missing by default (e.g., regexp). With `@mikro-orm/sqlite`, load them on the native `better-sqlite3` client before running queries that use the extension:
 
 ```ts
+import { MikroORM } from '@mikro-orm/sqlite';
+
 const orm = await MikroORM.init({
   // ...
-  onCreateConnection(connection) {
-    connection.loadExtension('/path/to/sqlean');
-  },
 });
+
+const sqlite = await orm.em.getConnection().getNativeClient();
+sqlite.loadExtension('/path/to/sqlean');
 ```
+
+The `onCreateConnection` hook receives a Kysely `DatabaseConnection`, not the native SQLite client. Use [`getNativeClient()`](./configuration.md#accessing-the-native-client) for vendor methods such as `loadExtension()`. The extension is tied to that database handle, so load it again after `orm.reconnect()`. If you supply your own database through a custom dialect in `driverOptions`, load the extension on that database instead.
 
 ## Using Turso database
 

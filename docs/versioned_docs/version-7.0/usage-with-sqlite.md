@@ -169,16 +169,25 @@ const orm = await MikroORM.init({
 
 SQLite extensions like [sqlean](https://github.com/nalgeon/sqlean) can add many useful features that are notably missing by default (e.g. regexp).
 
-Once you've downloaded the binaries for the extensions you wish to use, they can be added via the `onCreateConnection` hook:
+Once you've downloaded the binaries for the extensions you wish to use, load them on your own `better-sqlite3` database and pass it to the ORM via a Kysely dialect:
 
 ```ts
+import { MikroORM, SqliteDriver } from '@mikro-orm/sql';
+import { SqliteDialect } from 'kysely';
+import Database from 'better-sqlite3';
+
+const database = new Database('local.db');
+database.loadExtension('/.../sqlean-macos-arm64/sqlean');
+
 const orm = await MikroORM.init({
   // ...
-  onCreateConnection(connection) {
-    connection.loadExtension('/.../sqlean-macos-arm64/sqlean');
-  },
+  driver: SqliteDriver,
+  dbName: 'local.db',
+  driverOptions: new SqliteDialect({ database }),
 });
 ```
+
+The `onCreateConnection` hook receives a Kysely `DatabaseConnection`, not the native SQLite client, so it cannot be used to call `loadExtension()`.
 
 ## Custom SQLite dialect
 
