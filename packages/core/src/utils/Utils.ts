@@ -427,8 +427,24 @@ export class Utils {
     let end = start;
     let paramStart = start + 1;
     const params: string[] = [];
+    let quote: string | undefined;
 
     for (; end < source.length; end++) {
+      if (quote) {
+        if (source[end] === '\\') {
+          end++;
+        } else if (source[end] === quote) {
+          quote = undefined;
+        }
+
+        continue;
+      }
+
+      if (`'"\``.includes(source[end])) {
+        quote = source[end];
+        continue;
+      }
+
       if ('([{'.includes(source[end])) {
         depth++;
       }
@@ -450,9 +466,9 @@ export class Utils {
     params.push(source.slice(paramStart, end));
 
     return params
-      .map(s => s.trim().replace(/=.*$/s, '').trim())
+      .map(s => s.trim())
       .filter(Boolean)
-      .map(raw => (raw.startsWith('{') && raw.endsWith('}') ? '' : raw));
+      .map(raw => (/^[{[]/.test(raw) ? '' : raw.replace(/=.*$/s, '').trim()));
   }
 
   /**

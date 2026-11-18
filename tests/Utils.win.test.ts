@@ -261,6 +261,20 @@ describe('Utils', () => {
       'email',
     ]);
     expect(Utils.getConstructorParams('constructor({ name, email }, tags = [1, 2])')).toEqual(['', 'tags']);
+    expect(Utils.getConstructorParams('constructor({ name = 1, email }, tags) {}')).toEqual(['', 'tags']);
+    expect(Utils.getConstructorParams('constructor([a, b] = [], tags) {}')).toEqual(['', 'tags']);
+    expect(Utils.getConstructorParams(`constructor(name, open = '{', email) { this.foo = [1, 2]; }`)).toEqual([
+      'name',
+      'open',
+      'email',
+    ]);
+    expect(Utils.getConstructorParams(`constructor(name, sep = "]", email) {}`)).toEqual(['name', 'sep', 'email']);
+    expect(Utils.getConstructorParams('constructor(name, tpl = `(,`, email) {}')).toEqual(['name', 'tpl', 'email']);
+    expect(Utils.getConstructorParams(`constructor(name, quote = '\\'(', email) {}`)).toEqual([
+      'name',
+      'quote',
+      'email',
+    ]);
   });
 
   test('defaultValue', () => {
