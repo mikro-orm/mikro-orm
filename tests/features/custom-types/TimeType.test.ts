@@ -20,6 +20,20 @@ describe('TimeType', () => {
     );
   });
 
+  test.each(['00:00:01.1', '12:34:56.123', '23:59:59.123456', '12:34:56.1234567', '123:45:56.123'])(
+    'preserves fractional seconds in %s',
+    value => {
+      expect(type.convertToDatabaseValue(value, platform)).toBe(value);
+    },
+  );
+
+  test.each(['12:34.123', '12:34:56.', '12:34:56.123x', '12:60:56.123', '12:34:60.123'])(
+    'rejects invalid fractional time %s',
+    value => {
+      expect(() => type.convertToDatabaseValue(value, platform)).toThrow('Could not convert JS value');
+    },
+  );
+
   test('getColumnType', () => {
     expect(type.getColumnType({ columnType: 'asd' } as any, platform)).toBe('time');
   });
