@@ -440,6 +440,14 @@ export class Utils {
         continue;
       }
 
+      const commentEnd = source.startsWith('/*', end) ? '*/' : source.startsWith('//', end) ? '\n' : undefined;
+
+      if (commentEnd) {
+        const close = source.indexOf(commentEnd, end + 2);
+        end = close === -1 ? source.length : close + commentEnd.length - 1;
+        continue;
+      }
+
       if (`'"\``.includes(source[end])) {
         quote = source[end];
         continue;
@@ -466,7 +474,7 @@ export class Utils {
     params.push(source.slice(paramStart, end));
 
     return params
-      .map(s => s.trim())
+      .map(s => s.replace(/\/\*.*?\*\/|\/\/[^\n]*/gs, '').trim())
       .filter(Boolean)
       .map(raw => (/^[{[]/.test(raw) ? '' : raw.replace(/=.*$/s, '').trim()));
   }

@@ -261,6 +261,20 @@ describe('Utils', () => {
       'email',
     ]);
     expect(Utils.getConstructorParams('constructor({ name, email }, tags = [1, 2])')).toEqual(['', 'tags']);
+    expect(Utils.getConstructorParams('constructor(name, meta = {\n a: 1,\n b: 2,\n}, email) {}')).toEqual([
+      'name',
+      'meta',
+      'email',
+    ]);
+    expect(Utils.getConstructorParams(`constructor(name /* don't trim */, email) { this.foo = 'x'; }`)).toEqual([
+      'name',
+      'email',
+    ]);
+    expect(Utils.getConstructorParams(`constructor(\n name, // user's [name\n email,\n) {}`)).toEqual([
+      'name',
+      'email',
+    ]);
+    expect(Utils.getConstructorParams('constructor(name // unterminated')).toEqual(['name']);
     expect(Utils.getConstructorParams('constructor({ name = 1, email }, tags) {}')).toEqual(['', 'tags']);
     expect(Utils.getConstructorParams('constructor([a, b] = [], tags) {}')).toEqual(['', 'tags']);
     expect(Utils.getConstructorParams(`constructor(name, open = '{', email) { this.foo = [1, 2]; }`)).toEqual([
