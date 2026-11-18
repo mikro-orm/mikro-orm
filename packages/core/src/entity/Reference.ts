@@ -297,8 +297,13 @@ export class ScalarReference<Value> {
 
     if (ret == null) {
       const wrapped = helper(this.entity!);
-      options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
+      const failHandler = options.failHandler ?? wrapped.__em!.config.get('findOneOrFailHandler');
       const entityName = this.entity!.constructor.name;
+
+      if (options.failHandler || failHandler !== NotFoundError.findOneFailed) {
+        throw failHandler(entityName, wrapped.getPrimaryKey() as any);
+      }
+
       throw NotFoundError.failedToLoadProperty(entityName, this.#property!, wrapped.getPrimaryKey());
     }
 

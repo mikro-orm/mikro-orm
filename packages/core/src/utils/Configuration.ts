@@ -70,8 +70,7 @@ const DEFAULTS = {
   // eslint-disable-next-line no-console
   logger: console.log.bind(console),
   colors: true,
-  findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) =>
-    NotFoundError.findOneFailed(entityName, where),
+  findOneOrFailHandler: NotFoundError.findOneFailed,
   findExactlyOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) =>
     NotFoundError.findExactlyOneFailed(entityName, where),
   baseDir: globalThis.process?.cwd?.(),
