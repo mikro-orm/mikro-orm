@@ -355,7 +355,7 @@ export class UnitOfWork {
   ): T | null {
     const pk = Utils.extractPK(where, this.#metadata.find<T>(entityName), strict);
 
-    if (!pk) {
+    if (pk == null) {
       return null;
     }
 
