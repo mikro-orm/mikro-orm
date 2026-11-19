@@ -1338,11 +1338,13 @@ export class EntityLoader {
           .filter(parts => parts[1] === 'ref')
           .map(parts => parts[0]),
       );
+      // the same for every target, so compute it only once
+      let childFields: string[] | undefined;
       return children
         .map(e => Reference.unwrapReference(e[field] as AnyEntity) as Entity)
         .filter(target => {
           const wrapped = helper(target);
-          const childFields = (options.fields as unknown as string[])
+          childFields ??= (options.fields as unknown as string[])
             .filter(f => f.startsWith(`${field}.`))
             .map(f => f.substring(field.length + 1))
             .filter(cf => !refChildren.has(cf.split('.')[0]));
@@ -1368,6 +1370,8 @@ export class EntityLoader {
     }
 
     const field = prop.name as keyof Entity;
+    // the same for every entity, so compute it only once
+    let childFields: string[] | undefined;
     return entities.filter(e => {
       const value = e[field] as AnyEntity | null | undefined;
 
@@ -1396,7 +1400,7 @@ export class EntityLoader {
       }
 
       if (options.fields) {
-        const childFields = (options.fields as unknown as string[])
+        childFields ??= (options.fields as unknown as string[])
           .filter(f => f.startsWith(`${prop.name}.`))
           .map(f => f.substring(prop.name.length + 1));
 
