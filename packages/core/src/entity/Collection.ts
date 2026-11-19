@@ -699,15 +699,27 @@ export class Collection<T extends object, O extends object = object> {
   /**
    * @internal
    */
-  removeWithoutPropagation(entity: T): void {
+  removeWithoutPropagation(entity: T, reindex = true): boolean {
     if (!this.#items.delete(entity)) {
-      return;
+      return false;
     }
 
     this.incrementCount(-1);
     delete this[this.#items.size];
-    Object.assign(this, [...this.#items]);
+
+    if (reindex) {
+      this.reindex();
+    }
+
     this.#dirty = true;
+    return true;
+  }
+
+  /**
+   * @internal
+   */
+  reindex(): void {
+    Object.assign(this, [...this.#items]); // reassign array access
   }
 
   /**
