@@ -104,6 +104,20 @@ describe.each([
       }
     });
 
+    test('lists and stringified objects', async () => {
+      class Label {
+        toString() {
+          return `it's a\\b`;
+        }
+      }
+
+      const connection = orm.em.getConnection();
+      const sql = 'select ? in (?) as flat, (?, ?) in (?) as nested, ? as label';
+      const params = [`it's`, [`a\\b`, `it's`], `x\\`, `''`, [[`x\\`, `''`]], new Label()];
+      const res = await connection.execute(sql, params);
+      expect(res).toEqual([{ flat: 1, nested: 1, label: `it's a\\b` }]);
+    });
+
     test('batch insert', async () => {
       titles.forEach(title => orm.em.create(Book, { title }));
       await orm.em.flush();
