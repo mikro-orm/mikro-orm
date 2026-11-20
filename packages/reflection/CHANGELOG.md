@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.19](https://github.com/mikro-orm/mikro-orm/compare/v6.6.18...v6.6.19) (2026-11-20)
+
+**Note:** Version bump only for package @mikro-orm/reflection
+
+
+
+
+
 ## [6.6.18](https://github.com/mikro-orm/mikro-orm/compare/v6.6.17...v6.6.18) (2026-11-12)
 
 **Note:** Version bump only for package @mikro-orm/reflection

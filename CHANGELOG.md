@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.19](https://github.com/mikro-orm/mikro-orm/compare/v6.6.18...v6.6.19) (2026-11-20)
+
+
+### Bug Fixes
+
+* **core:** do not replace entity methods with unknown keys in `assign()` ([#8773](https://github.com/mikro-orm/mikro-orm/issues/8773)) ([039b436](https://github.com/mikro-orm/mikro-orm/commit/039b436b2b6c85f349278d73ee98141c9b93492a)), closes [#8771](https://github.com/mikro-orm/mikro-orm/issues/8771)
+* **core:** include filter params in the result cache key of queries loading relations ([#8772](https://github.com/mikro-orm/mikro-orm/issues/8772)) ([ba86f48](https://github.com/mikro-orm/mikro-orm/commit/ba86f48e59ab32bb44453cbcb9a42aa6ccaf4b59)), closes [#8770](https://github.com/mikro-orm/mikro-orm/issues/8770)
+* **sql:** reject queries with more placeholders than parameters ([#8774](https://github.com/mikro-orm/mikro-orm/issues/8774)) ([4a68331](https://github.com/mikro-orm/mikro-orm/commit/4a683312363728627eb99ef152a7549bba2467d0)), closes [#8769](https://github.com/mikro-orm/mikro-orm/issues/8769)
+
+
+
+
+
 ## [6.6.18](https://github.com/mikro-orm/mikro-orm/compare/v6.6.17...v6.6.18) (2026-11-12)
 
 
