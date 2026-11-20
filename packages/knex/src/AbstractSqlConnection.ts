@@ -4,6 +4,7 @@ import {
   Connection,
   EventType,
   Utils,
+  ValidationError,
   type AnyEntity,
   type Configuration,
   type ConnectionOptions,
@@ -177,6 +178,16 @@ export abstract class AbstractSqlConnection extends Connection {
     }
 
     queryOrKnex = this.config.get('onQuery')(queryOrKnex, params);
+
+    if (params.length > 0) {
+      const placeholders = queryOrKnex.match(/\\\?|\?\??/g)?.filter(m => m[0] !== '\\').length ?? 0;
+
+      // e.g. a question mark in an identifier, the parameters would end up in wrong places
+      if (placeholders > params.length) {
+        throw new ValidationError(`Query has more placeholders than parameters (${placeholders} > ${params.length}), question marks that are not placeholders need to be escaped as \\?`);
+      }
+    }
+
     const formatted = this.platform.formatQuery(queryOrKnex, params);
     const sql = this.getSql(queryOrKnex, formatted, loggerContext);
     return this.executeQuery<T>(sql, async () => {
