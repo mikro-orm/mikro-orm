@@ -331,7 +331,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       return super.quoteIdentifier(id);
     }
 
-    return `[${id.toString().replaceAll(']', ']]').replace('.', `].[`)}]`;
+    return `[${id.toString().replaceAll(']', ']]').replaceAll('.', `].[`)}]`;
   }
 
   override escape(value: any): string {

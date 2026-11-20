@@ -509,7 +509,7 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
     }
 
     const escaped = id.toString().replaceAll(quote, quote + quote);
-    return `${quote}${escaped.replace('.', `${quote}.${quote}`)}${quote}`;
+    return `${quote}${escaped.replaceAll('.', `${quote}.${quote}`)}${quote}`;
   }
 
   private pad(number: number, digits: number): string {
