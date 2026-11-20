@@ -153,7 +153,8 @@ export class OracleConnection extends AbstractSqlConnection {
     ret.poolMax = pool?.max;
     ret.poolTimeout = pool?.idleTimeoutMillis;
     const user = this.config.get('user', dbName)!;
-    ret.user = user.startsWith('"') || user === 'system' ? user : this.platform.quoteIdentifier(user);
+    ret.user =
+      user.startsWith('"') || user === 'system' ? user : this.platform.quoteIdentifier(user).replaceAll('\\?', '?');
     ret.connectionString = this.options.clientUrl ?? this.platform.getDefaultClientUrl();
     Reflect.deleteProperty(ret, 'database');
     Reflect.deleteProperty(ret, 'port');
@@ -172,6 +173,8 @@ export class OracleConnection extends AbstractSqlConnection {
     loggerContext?: LoggingOptions,
   ): Promise<T> {
     await this.ensureConnection();
+    // a plain string without params is not a template, so it is sent as is
+    const verbatim = typeof query === 'string' && params.length === 0;
 
     if (query instanceof NativeQueryBuilder) {
       query = query.toRaw();
@@ -196,7 +199,7 @@ export class OracleConnection extends AbstractSqlConnection {
     }
 
     query = this.config.get('onQuery')(query, params);
-    const formatted = this.platform.formatQuery(query, params);
+    const formatted = verbatim ? query : this.platform.formatQuery(query, params);
     const sql = this.getSql(rawQuery ?? query, formatted, loggerContext);
 
     return this.executeQuery<T>(

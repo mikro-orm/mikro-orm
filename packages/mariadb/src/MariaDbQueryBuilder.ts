@@ -74,7 +74,7 @@ export class MariaDbQueryBuilder<
     // Transfer WHERE conditions to ORDER BY joins (GH #6160)
     this.transferConditionsForOrderByJoins(meta, originalCond, populatePaths);
 
-    const subquerySql = subSubQuery.toString();
+    const subquerySql = this.platform.quoteIdentifier(subSubQuery.toRaw());
     const key =
       meta.getPrimaryProps()[0].runtimeType === 'string'
         ? `concat('"', ${quotedPKs.join(', ')}, '"')`

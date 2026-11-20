@@ -748,7 +748,9 @@ export class MikroTransformer extends OperationNodeTransformer {
   }
 
   wrapRead(customType: Type<any>, fieldName: string, tableName: string | undefined): SelectionNode {
-    const key = this.#platform.quoteIdentifier(tableName ? `${tableName}.${fieldName}` : fieldName);
+    const key = this.#platform
+      .quoteIdentifier(tableName ? `${tableName}.${fieldName}` : fieldName)
+      .replaceAll('\\?', '?');
     const sql = customType.convertToJSValueSQL!(key, this.#platform);
     return SelectionNode.create(AliasNode.create(RawNode.createWithSql(sql), IdentifierNode.create(fieldName)));
   }

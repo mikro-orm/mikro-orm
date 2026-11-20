@@ -730,12 +730,11 @@ export class NativeQueryBuilder implements Subquery {
 
   protected quote(id: string | RawQueryFragment | NativeQueryBuilder): string {
     if (isRaw(id)) {
-      return this.platform.formatQuery(id.sql, id.params);
+      return this.platform.quoteIdentifier(id);
     }
 
     if (id instanceof NativeQueryBuilder) {
-      const { sql, params } = id.compile();
-      return this.platform.formatQuery(sql, params);
+      return this.platform.quoteIdentifier(id.toRaw());
     }
 
     if (id.endsWith('.*')) {

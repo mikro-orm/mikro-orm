@@ -41,7 +41,7 @@ export class BaseSqliteConnection extends AbstractSqlConnection {
 
     return attachDatabases.map(db => {
       const path = fs.absolutePath(db.path, baseDir);
-      return `attach database '${path}' as ${this.platform.quoteIdentifier(db.name)}`;
+      return `attach database '${path}' as ${this.platform.quoteIdentifier(db.name).replaceAll('\\?', '?')}`;
     });
   }
 }

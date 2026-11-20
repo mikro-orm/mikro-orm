@@ -114,7 +114,7 @@ export class OracleNativeQueryBuilder extends NativeQueryBuilder {
       }
 
       // we need to interpolate to allow proper escaping
-      const formatted = this.platform.formatQuery(sql, params).replaceAll(`'`, `''`);
+      const formatted = this.platform.formatQuery(sql, params).replaceAll(`'`, `''`).replaceAll('?', '\\?');
       /* v8 ignore next 3: returning field type branches */
       const using = this.options.returning!.map(field => {
         const name = Array.isArray(field) ? field[0] : field;

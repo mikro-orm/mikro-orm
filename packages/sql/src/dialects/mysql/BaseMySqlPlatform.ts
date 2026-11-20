@@ -119,7 +119,7 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
       }
 
       const [root, ...path] = column.split('.');
-      return `(json_value(${this.quoteIdentifier(root)}, '$.${path.join('.')}' returning ${index.options?.returning ?? 'char(255)'}))`;
+      return `(json_value(${this.quoteIdentifier(root).replaceAll('\\?', '?')}, '$.${path.join('.')}' returning ${index.options?.returning ?? 'char(255)'}))`;
     });
   }
 
@@ -193,7 +193,10 @@ export class BaseMySqlPlatform extends AbstractSqlPlatform {
     const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
     const quotedIndexName = this.quoteIdentifier(indexName);
 
-    return `alter table ${quotedTableName} add fulltext index ${quotedIndexName}(${quotedColumnNames.join(',')})`;
+    return `alter table ${quotedTableName} add fulltext index ${quotedIndexName}(${quotedColumnNames.join(',')})`.replaceAll(
+      '\\?',
+      '?',
+    );
   }
 
   override getOrderByExpression(column: string, direction: string, collation?: string): string[] {

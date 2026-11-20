@@ -192,10 +192,16 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
     const quotedIndexName = this.quoteIdentifier(indexName);
 
     if (columns.length === 1 && columns[0].type === 'tsvector') {
-      return `create index ${quotedIndexName} on ${quotedTableName} using gin(${quotedColumnNames[0]})`;
+      return `create index ${quotedIndexName} on ${quotedTableName} using gin(${quotedColumnNames[0]})`.replaceAll(
+        '\\?',
+        '?',
+      );
     }
 
-    return `create index ${quotedIndexName} on ${quotedTableName} using gin(to_tsvector('simple', ${quotedColumnNames.join(` || ' ' || `)}))`;
+    return `create index ${quotedIndexName} on ${quotedTableName} using gin(to_tsvector('simple', ${quotedColumnNames.join(` || ' ' || `)}))`.replaceAll(
+      '\\?',
+      '?',
+    );
   }
 
   override normalizeColumnType(
@@ -478,11 +484,13 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
       lastOperator = '->';
     }
 
+    const quote = (key: unknown) => this.quoteValue(key).replaceAll('?', '\\?');
+
     if (path.length === 0) {
-      return cast(`${root}${lastOperator}${this.quoteValue(last)}`);
+      return cast(`${root}${lastOperator}${quote(last)}`);
     }
 
-    return cast(`${root}->${path.map(a => this.quoteValue(a)).join('->')}${lastOperator}${this.quoteValue(last)}`);
+    return cast(`${root}->${path.map(quote).join('->')}${lastOperator}${quote(last)}`);
   }
 
   override getJsonIndexDefinition(index: IndexDef): string[] {
@@ -494,12 +502,13 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
       const path = column.split('.');
       const first = path.shift()!;
       const last = path.pop()!;
+      const root = this.quoteIdentifier(first).replaceAll('\\?', '?');
 
       if (path.length === 0) {
-        return `(${this.quoteIdentifier(first)}->>${this.quoteValue(last)})`;
+        return `(${root}->>${this.quoteValue(last)})`;
       }
 
-      return `(${this.quoteIdentifier(first)}->${path.map(c => this.quoteValue(c)).join('->')}->>${this.quoteValue(last)})`;
+      return `(${root}->${path.map(c => this.quoteValue(c)).join('->')}->>${this.quoteValue(last)})`;
     });
   }
 
@@ -508,7 +517,10 @@ export class BasePostgreSqlPlatform extends AbstractSqlPlatform {
       return super.quoteIdentifier(id);
     }
 
-    const escaped = id.toString().replaceAll(quote, quote + quote);
+    const escaped = id
+      .toString()
+      .replaceAll(quote, quote + quote)
+      .replaceAll('?', '\\?');
     return `${quote}${escaped.replaceAll('.', `${quote}.${quote}`)}${quote}`;
   }
 

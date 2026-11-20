@@ -67,7 +67,7 @@ export class DatabaseTable {
   }
 
   getQuotedName(): string {
-    return this.#platform.quoteIdentifier(this.getShortestName());
+    return this.#platform.quoteIdentifier(this.getShortestName()).replaceAll('\\?', '?');
   }
 
   getColumns(): Column[] {

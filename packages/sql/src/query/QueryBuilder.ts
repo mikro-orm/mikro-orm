@@ -1253,7 +1253,7 @@ export class QueryBuilder<
 
     if (Array.isArray(field)) {
       const rawFragment = field[1] instanceof QueryBuilder ? field[1].toRaw() : field[1];
-      subquery = this.platform.formatQuery(rawFragment.sql, rawFragment.params);
+      subquery = this.platform.quoteIdentifier(rawFragment);
       field = field[0];
     }
 
@@ -1610,11 +1610,7 @@ export class QueryBuilder<
   withSubQuery(subQuery: RawQueryFragment | NativeQueryBuilder, alias: string): this {
     this.ensureNotFinalized();
 
-    if (isRaw(subQuery)) {
-      this.#state.subQueries[alias] = this.platform.formatQuery(subQuery.sql, subQuery.params);
-    } else {
-      this.#state.subQueries[alias] = subQuery.toString();
-    }
+    this.#state.subQueries[alias] = this.platform.quoteIdentifier(isRaw(subQuery) ? subQuery : subQuery.toRaw());
 
     return this;
   }
@@ -1667,7 +1663,7 @@ export class QueryBuilder<
     let processedCond: FilterQuery<Entity>;
 
     if (isRaw(cond)) {
-      const sql = this.platform.formatQuery(cond.sql, cond.params);
+      const sql = this.platform.quoteIdentifier(cond);
       processedCond = { [raw(`(${sql})`)]: Utils.asArray(params) } as FilterQuery<Entity>;
       operator ??= '$and';
     } else if (typeof cond === 'string') {
@@ -2418,7 +2414,9 @@ export class QueryBuilder<
    * Returns the query with parameters as wildcards.
    */
   getQuery(): string {
-    return this.toQuery().sql;
+    const { sql, params } = this.toQuery();
+    // nothing gets bound without params, so the escaped question marks are resolved here
+    return params.length === 0 ? this.platform.formatQuery(sql, []) : sql;
   }
 
   /**
@@ -2615,16 +2613,17 @@ export class QueryBuilder<
     const conn = this.getConnection();
     // outside a transaction, wrap in a short implicit one so RLS `set local` session context applies (no-op when unset)
     const sessionContext = this.context ? undefined : this.em?.getTransactionSessionContext();
+    const sql = this.getQuery();
     let res: EntityData<AnyEntity>[];
 
     // a QueryBuilder used directly must honour the same `convertException` contract as the driver methods
     try {
       res = await (sessionContext
-        ? conn.transactional(trx => conn.execute(query.sql, query.params, method, trx, loggerContext), {
+        ? conn.transactional(trx => conn.execute(sql, query.params, method, trx, loggerContext), {
             sessionContext,
             loggerContext,
           })
-        : conn.execute(query.sql, query.params, method, this.context, loggerContext));
+        : conn.execute(sql, query.params, method, this.context, loggerContext));
     } catch (e) {
       throw this.driver.convertException(e as Error);
     }
@@ -2716,7 +2715,7 @@ export class QueryBuilder<
     const query = this.toQuery();
     const loggerContext = { id: this.em?.id, ...this.loggerContext, ...this.#abortOptions };
     const res = this.convertStreamExceptions(
-      this.getConnection().stream(query.sql, query.params, this.context, loggerContext, chunkSize),
+      this.getConnection().stream(this.getQuery(), query.params, this.context, loggerContext, chunkSize),
     );
     const meta = this.mainAlias.meta;
 
@@ -3146,11 +3145,11 @@ export class QueryBuilder<
     }
 
     if (res instanceof QueryBuilder) {
-      return `(${res.getFormattedQuery()}) as ${this.platform.quoteIdentifier(this.alias)}`;
+      return `(${this.platform.quoteIdentifier(res.toRaw())}) as ${this.platform.quoteIdentifier(this.alias)}`;
     }
 
     if (isRaw(res)) {
-      const query = this.platform.formatQuery(res.sql, res.params);
+      const query = this.platform.quoteIdentifier(res);
       return `(${query}) as ${this.platform.quoteIdentifier(this.alias)}`;
     }
 
@@ -3212,11 +3211,7 @@ export class QueryBuilder<
       if (isRaw(field) && field.sql === '??' && field.params.length === 1) {
         join.table = String(field.params[0]);
       } else {
-        if (isRaw(field)) {
-          field = this.platform.formatQuery(field.sql, field.params);
-        }
-
-        join.subquery = field.toString();
+        join.subquery = this.platform.quoteIdentifier(isRaw(field) ? field : field.toRaw());
       }
 
       this.#state.joins[key] = join;
@@ -4260,21 +4255,21 @@ export class QueryBuilder<
 
     if (field instanceof NativeQueryBuilder) {
       const alias = (field as any)[VirtualFieldAlias] as string;
-      const rendered = field.toString();
+      const rendered = this.platform.quoteIdentifier(field.toRaw());
       // strip the known trailing alias via the platform quoting, so it works on every dialect (mssql uses `[...]`)
       const suffix = ` as ${this.platform.quoteIdentifier(alias)}`;
       return { alias, expr: rendered.endsWith(suffix) ? rendered.slice(0, -suffix.length) : rendered };
     }
 
     if (isRaw(field)) {
-      const compiled = this.platform.formatQuery(field.sql, field.params);
+      const compiled = this.platform.quoteIdentifier(field);
       const close = compiled[compiled.length - 1];
       const open = close === ']' ? '[' : close === '"' ? '"' : close === '`' ? '`' : undefined;
       // scan back for the trailing `as <quoted alias>` (linear, avoids regex backtracking on user SQL)
       const start = open ? compiled.lastIndexOf(open, compiled.length - 2) : -1;
 
       if (start >= 4 && compiled.slice(start - 4, start) === ' as ') {
-        return { alias: compiled.slice(start + 1, -1), expr: compiled.slice(0, start - 4) };
+        return { alias: compiled.slice(start + 1, -1).replaceAll('\\?', '?'), expr: compiled.slice(0, start - 4) };
       }
 
       return { alias: fieldName, expr: compiled };

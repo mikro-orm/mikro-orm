@@ -1073,9 +1073,7 @@ export class QueryBuilderHelper {
 
       if (Raw.isKnownFragmentSymbol(key)) {
         const raw = Raw.getKnownFragment(key)!;
-        ret.push(
-          ...this.#platform.getOrderByExpression(this.#platform.formatQuery(raw.sql, raw.params), order, collation),
-        );
+        ret.push(...this.#platform.getOrderByExpression(this.#platform.quoteIdentifier(raw), order, collation));
         continue;
       }
 
@@ -1100,7 +1098,7 @@ export class QueryBuilderHelper {
         let colPart = customOrder ? this.#platform.generateCustomOrder(rawColumn, customOrder) : rawColumn;
 
         if (isRaw(colPart)) {
-          colPart = this.#platform.formatQuery(colPart.sql, colPart.params);
+          colPart = this.#platform.quoteIdentifier(colPart);
         }
 
         ret.push(...this.#platform.getOrderByExpression(colPart, order, collation));
