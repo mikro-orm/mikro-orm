@@ -1898,6 +1898,56 @@ export abstract class AbstractSqlDriver<
     return true;
   }
 
+  /**
+   * Returns a fast membership check for the PK arrays in `arr`. Uses a Set of string keys when all values are scalars,
+   * and the linear scan via `comparePrimaryKeyArrays()` otherwise (e.g. for Buffer PKs).
+   */
+  private createPrimaryKeyArrayLookup(arr: unknown[][]): (item: unknown[]) => boolean {
+    const scan = (item: unknown[]) => arr.some(i => this.comparePrimaryKeyArrays(i, item));
+    const keys = new Set<string>();
+
+    for (const item of arr) {
+      const key = this.getPrimaryKeyArrayKey(item);
+
+      if (key === undefined) {
+        return scan;
+      }
+
+      keys.add(key);
+    }
+
+    return item => {
+      const key = this.getPrimaryKeyArrayKey(item);
+      return key === undefined ? scan(item) : keys.has(key);
+    };
+  }
+
+  /**
+   * Builds a string key of a PK array, so two scalar PK arrays of the same entity get the same key exactly when
+   * `comparePrimaryKeyArrays()` sees them as equal. Returns `undefined` when the PK is missing or a value is not
+   * a scalar. The type and length prefix keep `1` and `'1'` apart, and make the key unambiguous for composite PKs.
+   */
+  private getPrimaryKeyArrayKey(item: unknown[]): string | undefined {
+    if (!Array.isArray(item)) {
+      return undefined;
+    }
+
+    let key = '';
+
+    for (const value of item) {
+      const type = typeof value;
+
+      if (type !== 'number' && type !== 'string' && type !== 'bigint' && type !== 'boolean') {
+        return undefined;
+      }
+
+      const str = String(value);
+      key += `${type}:${str.length}:${str}`;
+    }
+
+    return key;
+  }
+
   override async syncCollections<T extends object, O extends object>(
     collections: Iterable<Collection<T, O>>,
     options?: DriverMethodOptions,
@@ -1909,7 +1959,6 @@ export abstract class AbstractSqlDriver<
       const meta = wrapped.__meta;
       const pks = wrapped.getPrimaryKeys(true)!;
       const snap = coll.getSnapshot();
-      const includes = <T>(arr: T[][], item: T[]) => !!arr.find(i => this.comparePrimaryKeyArrays(i, item));
       // For union-target polymorphic M:N, prepend the per-row discriminator value so the pivot
       // persister can write it alongside the FK id. Memoized per sync-run because a collection can
       // hold hundreds of items of the same few types, and findDiscriminatorValue walks the prototype
@@ -1937,9 +1986,11 @@ export abstract class AbstractSqlDriver<
       };
       const snapshot = snap ? snap.map(toDiff) : [];
       const current = coll.getItems(false).map(toDiff);
-      const deleteDiff = snap ? snapshot.filter(item => !includes(current, item)) : true;
-      const insertDiff = current.filter(item => !includes(snapshot, item));
-      const target = snapshot.filter(item => includes(current, item)).concat(...insertDiff);
+      const inCurrent = this.createPrimaryKeyArrayLookup(current);
+      const inSnapshot = this.createPrimaryKeyArrayLookup(snapshot);
+      const deleteDiff = snap ? snapshot.filter(item => !inCurrent(item)) : true;
+      const insertDiff = current.filter(item => !inSnapshot(item));
+      const target = snapshot.filter(item => inCurrent(item)).concat(...insertDiff);
       const equals = Utils.equals(current, target);
 
       // wrong order if we just delete and insert to the end (only owning sides can have fixed order)
