@@ -49,7 +49,7 @@ export function lookupCompiledQuery(
   const cache = em.config.getCompiledQueryCache();
 
   // a dry run only compiles the query on a throwaway fork
-  if (!cache || options._compile || meta.virtual) {
+  if (!cache || options._compile || options.compiledQueryCache === false || meta.virtual) {
     return undefined;
   }
 

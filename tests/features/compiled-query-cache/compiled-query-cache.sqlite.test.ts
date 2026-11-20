@@ -602,6 +602,23 @@ describe('compiled query cache', () => {
     await orm.close(true);
   });
 
+  test('the cache can be skipped for a single call', async () => {
+    const scenario: Scenario = async (em, i) => [
+      await em.find(
+        Author,
+        { id: { $gt: i } },
+        { compiledQueryCache: false, populate: ['books'], strategy: 'select-in' },
+      ),
+      await em.findOne(Author, { name: `author ${i + 1}` }, { compiledQueryCache: false }),
+      await em.count(Author, { id: { $gt: i } }, { compiledQueryCache: false }),
+    ];
+    await expect(run(scenario)).resolves.toBe(0);
+    expect(cached.config.getCompiledQueryCache()!.size).toBe(0);
+    // the option is not part of the shape, so calls with and without it share the compiled query
+    const shared: Scenario = (em, i) => em.find(Author, { id: { $lt: i } }, { compiledQueryCache: i % 2 === 0 });
+    await expect(run(shared, 8)).resolves.toBe(2);
+  });
+
   test('errors of a compiled query are converted to driver exceptions', async () => {
     const orm = await MikroORM.init({ entities: [Tag], dbName: ':memory:' });
     await orm.schema.create();

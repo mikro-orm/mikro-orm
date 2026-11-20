@@ -368,6 +368,11 @@ export interface FindOptions<
   refresh?: boolean;
   convertCustomTypes?: boolean;
   disableIdentityMap?: boolean;
+  /**
+   * Set to `false` to skip the compiled query cache for this call (and the queries populating its relations),
+   * so its SQL is always generated the regular way.
+   */
+  compiledQueryCache?: boolean;
   schema?: string;
   flags?: QueryFlag[];
   /** sql only */
@@ -506,6 +511,8 @@ export interface CountOptions<T extends object, P extends string = never> extend
   ctx?: Transaction;
   connectionType?: ConnectionType;
   flushMode?: FlushMode | `${FlushMode}`;
+  /** @see FindOptions.compiledQueryCache */
+  compiledQueryCache?: boolean;
   /** SQL: appended to FROM clause (e.g. `'force index(my_index)'`); MongoDB: index name or spec passed as `hint`. */
   indexHint?: string | Dictionary;
   /** @see FindOptions.using */
