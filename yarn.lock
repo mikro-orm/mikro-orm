@@ -1568,7 +1568,7 @@ __metadata:
     "@mikro-orm/core": "npm:^7.2.10"
     "@mikro-orm/sql": "npm:7.2.10"
     kysely: "npm:0.29.9"
-    sql.js: "npm:1.16.0"
+    sql.js: "npm:1.17.0"
   peerDependencies:
     "@mikro-orm/core": 7.2.10
   languageName: unknown
@@ -8242,10 +8242,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sql.js@npm:1.16.0":
-  version: 1.16.0
-  resolution: "sql.js@npm:1.16.0"
-  checksum: 10/e675674a205771c0ed16a464c88ccb787468d0f832acf69026956286b67874de333cbaaf0e49afabfeeac03fd3420006a43303e1e66f7d17c37eea97ed30af88
+"sql.js@npm:1.17.0":
+  version: 1.17.0
+  resolution: "sql.js@npm:1.17.0"
+  checksum: 10/4d4b1aca02226e8347d43e11e97876802c7409f48a7efa2623d1917e752cd9281527eafb02b33aba56afdd41f2a96cefe06dfe544293d65596ea10aa0415e9bf
   languageName: node
   linkType: hard
 
