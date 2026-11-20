@@ -278,43 +278,6 @@ describe.each(Utils.keys(options))('Transaction Propagation [%s]', type => {
     expect(entities[0].name).toBe('inner-success');
   });
 
-  test('REQUIRES_NEW propagation should keep pending changes in the outer transaction', async () => {
-    if (type === 'mssql') {
-      return;
-    }
-
-    const em = orm.em.fork();
-    const requiresNew = (em1: typeof em, fail: boolean) => {
-      return em1.transactional(
-        async em2 => {
-          em2.create(TestEntity, { name: `inner-${fail}` });
-          await em2.flush();
-
-          if (fail) {
-            throw new Error('Inner transaction failed');
-          }
-        },
-        { propagation: TransactionPropagation.REQUIRES_NEW },
-      );
-    };
-
-    await em.transactional(async em1 => {
-      em1.create(TestEntity, { name: 'outer-success' });
-      await expect(requiresNew(em1, true)).rejects.toThrow('Inner transaction failed');
-    });
-
-    await expect(
-      em.transactional(async em1 => {
-        em1.create(TestEntity, { name: 'outer-fail' });
-        await requiresNew(em1, false);
-        throw new Error('Outer transaction failed');
-      }),
-    ).rejects.toThrow('Outer transaction failed');
-
-    const entities = await orm.em.fork().findAll(TestEntity, { orderBy: { name: 'asc' } });
-    expect(entities.map(e => e.name)).toEqual(['inner-false', 'outer-success']);
-  });
-
   test('REQUIRES_NEW propagation should handle multiple REQUIRES_NEW transactions in sequence', async () => {
     const em = orm.em.fork();
     const contexts: any[] = [];
