@@ -764,7 +764,7 @@ export abstract class Platform {
     }
 
     const escaped = id.toString().replaceAll(quote, quote + quote);
-    return `${quote}${escaped.replace('.', `${quote}.${quote}`)}${quote}`;
+    return `${quote}${escaped.replaceAll('.', `${quote}.${quote}`)}${quote}`;
   }
 
   /** Quotes a literal value for safe embedding in SQL. */

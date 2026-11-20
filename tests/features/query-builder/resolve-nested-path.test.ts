@@ -191,7 +191,7 @@ describe('resolveNestedPath', () => {
     // Using type assertion since we're intentionally testing invalid paths
     const qb = orm.em.qb(Author, 'a').select(['a.id', 'a.nonexistent.field'] as const as any);
     // The field should be passed through (may cause SQL error but that's expected)
-    expect(qb.getFormattedQuery()).toContain('nonexistent.field');
+    expect(qb.getFormattedQuery()).toContain('`a`.`nonexistent`.`field`');
   });
 
   test('embedded property without alias prefix', async () => {
