@@ -13,6 +13,7 @@
     "exclude": ["dist/", "node_modules/", "tests/"]
   },
   "imports": {
-    "dataloader": "npm:dataloader@2.2.3"
+    "dataloader": "npm:dataloader@2.2.3",
+    "typescript": "npm:typescript@*"
   }
 }

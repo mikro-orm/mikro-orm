@@ -12,7 +12,7 @@ For a comprehensive guide on using decorators with metadata providers, including
 
 :::
 
-There are 3 built-in metadata providers you can use:
+There are 4 built-in metadata providers you can use:
 
 ## TsMorphMetadataProvider
 
@@ -40,6 +40,27 @@ After the discovery process ends, all [metadata will be cached](./metadata-cache
 > You can generate production cache via CLI command `mikro-orm cache:generate`.
 
 > You can implement custom cache adapter by implementing `CacheAdapter` interface.
+
+## TypeScriptMetadataProvider
+
+:::caution Experimental
+
+This provider is new and may still change. It requires TypeScript 7.1 or newer.
+
+:::
+
+Works like `TsMorphMetadataProvider`, but reads types through the TypeScript 7 API instead of `ts-morph`, which makes discovery several times faster on large projects. The metadata is the same, except union members may be printed in a different order (`'a' | 'b'` instead of `'b' | 'a'`).
+
+It is part of `@mikro-orm/core`, so `ts-morph` and `@mikro-orm/reflection` are not needed, only `typescript` 7.1+ has to be installed:
+
+```ts
+import { TypeScriptMetadataProvider } from '@mikro-orm/core';
+
+await MikroORM.init({
+  metadataProvider: TypeScriptMetadataProvider,
+  // ...
+});
+```
 
 ## ReflectMetadataProvider
 
