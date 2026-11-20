@@ -478,6 +478,11 @@ export abstract class Platform {
     return this.config.get('multipleStatements');
   }
 
+  /** Whether `em.find()`, `em.findOne()` and `em.count()` can reuse their compiled SQL between calls. */
+  supportsCompiledQueryCache(): boolean {
+    return false;
+  }
+
   /** Whether the platform supports the UNION WHERE optimization for multi-branch queries. */
   supportsUnionWhere(): boolean {
     return false;

@@ -672,6 +672,30 @@ The `global` option can be:
 - `number` - cache all queries with the specified expiration in ms
 - `[string, number]` - cache all queries with the specified key prefix and expiration
 
+## Compiled Query Cache
+
+SQL drivers cache the compiled SQL of `em.find()`, `em.findOne()` and `em.count()`. Calls of the same shape (entity, structure of the conditions, options) reuse the generated SQL and only bind their values, which skips most of the query building. This is not a result cache, the query is still executed every time.
+
+```ts
+MikroORM.init({
+  compiledQueryCache: {
+    enabled: true,
+    size: 1000, // maximum number of query shapes to keep
+    verify: false, // compile every cached query the regular way too and throw if they differ, for testing
+  },
+});
+```
+
+The cache can be skipped for a single call via the `compiledQueryCache: false` option of `em.find()`, `em.findOne()` and `em.count()`.
+
+A few things to be aware of:
+
+- The cached SQL is the same SQL the query builder would generate, the cache never changes what gets executed or logged. `$in` and `$nin` lists of similar sizes share one cached query (sizes are grouped by powers of two) and get their own number of placeholders. Lists with more than 512 items are not cached, and neither are lists in other places (e.g. the implicit `{ id: [1, 2, 3] }` form) with more than 32 items.
+- Filters with a callback condition are supported. The callback is invoked again for every call and its values are bound as parameters, so it has to be free of side effects. Callbacks that declare more than two parameters (using the `EntityManager`, the find options or the entity name) are not cached.
+- When a query shape is seen for the second time, it is compiled once more with placeholder values to learn where its parameters come from. Custom types see those placeholder values in `convertToDatabaseValue()`, and filter callbacks are invoked two more times for that call.
+- Anything evaluated while the SQL is generated is evaluated once per query shape: `@Formula()` callbacks, `convertToDatabaseValueSQL()` and `convertToJSValueSQL()` of custom types have to return the same SQL every time.
+- Queries with raw SQL fragments, subqueries, locking, cursor pagination, `groupBy`/`having`, a `populateWhere` condition or `populateWhere: 'infer'`, or the result cache always take the regular path, as well as everything when `populateWhere: 'infer'` or the global result cache is configured.
+
 ## Metadata Cache
 
 Metadata discovery results are cached only when the metadata cache is enabled, which is the default with `TsMorphMetadataProvider`. You can enable or disable caching, or adjust how it works. Following example shows all possible options and their defaults (with `TsMorphMetadataProvider`):
