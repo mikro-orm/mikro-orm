@@ -235,14 +235,14 @@ describe('GH issue 1175', () => {
               expect.objectContaining({ em: em1!, transaction: trx1 }),
             );
             expect(afterCommitCreate).toHaveBeenCalledTimes(2);
-            // only inner transaction is actually flushing stuff
+            // pending changes of the outer transaction are flushed before the savepoint is created
             expect(afterCommitCreate).toHaveBeenNthCalledWith(
               1,
-              expect.objectContaining({ em: em2!, entity: expect.objectContaining({ username: 'nested1' }) }),
+              expect.objectContaining({ em: em2!, entity: expect.objectContaining({ username: 'nested2' }) }),
             );
             expect(afterCommitCreate).toHaveBeenNthCalledWith(
               2,
-              expect.objectContaining({ em: em2!, entity: expect.objectContaining({ username: 'nested2' }) }),
+              expect.objectContaining({ em: em1!, entity: expect.objectContaining({ username: 'nested1' }) }),
             );
             expect(afterTransactionRollback).toHaveBeenCalledTimes(0);
           });
@@ -281,7 +281,7 @@ describe('GH issue 1175', () => {
             expect(afterTransactionStart).toHaveBeenCalledWith(
               expect.objectContaining({ em: em2!, transaction: trx2 }),
             );
-            expect(afterCreate).toHaveBeenCalledTimes(0);
+            expect(afterCreate).toHaveBeenCalledTimes(1);
             expect(afterTransactionCommit).toHaveBeenCalledTimes(0);
             expect(afterCommitCreate).toHaveBeenCalledTimes(0);
             expect(afterTransactionRollback).toHaveBeenCalledTimes(2);
@@ -541,11 +541,11 @@ describe('GH issue 1175', () => {
             expect(afterCommitCreate).toHaveBeenCalledTimes(2);
             expect(afterCommitCreate).toHaveBeenNthCalledWith(
               1,
-              expect.objectContaining({ entity: expect.objectContaining({ username: 'dnested1' }) }),
+              expect.objectContaining({ entity: expect.objectContaining({ username: 'dnested2' }) }),
             );
             expect(afterCommitCreate).toHaveBeenNthCalledWith(
               2,
-              expect.objectContaining({ entity: expect.objectContaining({ username: 'dnested2' }) }),
+              expect.objectContaining({ entity: expect.objectContaining({ username: 'dnested1' }) }),
             );
             expect(afterTransactionRollback).toHaveBeenCalledTimes(0);
           });
@@ -586,7 +586,7 @@ describe('GH issue 1175', () => {
             );
             expect(afterCreate).toHaveBeenCalledTimes(2);
             expect(afterTransactionCommit).toHaveBeenCalledTimes(1);
-            expect(afterCommitCreate).toHaveBeenCalledTimes(2);
+            expect(afterCommitCreate).toHaveBeenCalledTimes(1);
             expect(afterTransactionRollback).toHaveBeenCalledTimes(1);
             expect(afterTransactionRollback).toHaveBeenCalledWith(
               expect.objectContaining({ em: em1!, transaction: trx1 }),
@@ -837,7 +837,7 @@ describe('GH issue 1175', () => {
           };
           await expect(work()).rejects.toThrow(/Transaction already in progress/);
           expect(beforeTransactionStart).toHaveBeenCalledTimes(1);
-          expect(afterCreate).toHaveBeenCalledTimes(0);
+          expect(afterCreate).toHaveBeenCalledTimes(1);
           expect(afterTransactionCommit).toHaveBeenCalledTimes(0);
           expect(afterCommitCreate).toHaveBeenCalledTimes(0);
           expect(afterTransactionRollback).toHaveBeenCalledTimes(1);

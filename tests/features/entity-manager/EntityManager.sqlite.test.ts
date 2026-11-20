@@ -188,7 +188,7 @@ describe.each(['sqlite', 'libsql', 'node-sqlite', 'sql-js'] as const)('EntityMan
   });
 
   test('transactions', async () => {
-    const god1 = orm.em.create(Author4, { name: 'God1', email: 'hello@heaven1.god' }, { persist: false });
+    const god1 = orm.em.create(Author4, { name: 'God1', email: 'hello@heaven1.god' });
 
     try {
       await orm.em.transactional(async em => {

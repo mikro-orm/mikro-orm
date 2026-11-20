@@ -135,6 +135,8 @@ class BookService {
 
 Creates a savepoint when a transaction exists, otherwise creates a new transaction. This is the default behavior.
 
+Pending changes of the outer transaction are flushed before the savepoint is created, so they are not lost when the inner transaction rolls back. This means the entities you persisted in the outer transaction need to be valid by the time you start the inner one. The same applies to `REQUIRES_NEW` when called inside an existing transaction.
+
 ```ts
 // Using em.transactional()
 await em.transactional(async (em1) => {
