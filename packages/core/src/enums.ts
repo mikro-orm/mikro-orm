@@ -355,6 +355,12 @@ export interface TransactionOptions {
   clear?: boolean;
   flushMode?: FlushMode | `${FlushMode}`;
   ignoreNestedTransactions?: boolean;
+  /**
+   * Flush pending changes of the outer transaction before a nested one (savepoint) starts.
+   * Without this, the nested transaction writes them inside its savepoint, and they are lost if it rolls back.
+   * Defaults to the `flushBeforeNestedTransaction` ORM option.
+   */
+  flushBeforeNestedTransaction?: boolean;
   loggerContext?: LogContext;
   /** @internal database session context applied on `begin()` (set via `em.setSessionContext()`). */
   sessionContext?: SessionContext;
