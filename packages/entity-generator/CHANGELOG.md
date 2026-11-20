@@ -7,10 +7,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package @mikro-orm/entity-generator
 
-
-
-
-
 ## [7.2.10](https://github.com/mikro-orm/mikro-orm/compare/v7.2.9...v7.2.10) (2026-11-16)
 
 **Note:** Version bump only for package @mikro-orm/entity-generator
