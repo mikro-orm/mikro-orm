@@ -925,14 +925,6 @@ export class Collection<T extends object, O extends object = object> {
   /**
    * @internal
    */
-  restoreSnapshot(snapshot: T[] | undefined): void {
-    this.#snapshot = snapshot;
-    this.#dirty = true;
-  }
-
-  /**
-   * @internal
-   */
   getSnapshot(): T[] | undefined {
     return this.#snapshot;
   }

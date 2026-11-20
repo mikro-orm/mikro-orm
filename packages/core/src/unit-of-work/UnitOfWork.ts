@@ -410,6 +410,11 @@ export class UnitOfWork {
     return this.#extraUpdates;
   }
 
+  /** @internal */
+  isInsideFlush(): boolean {
+    return !!insideFlush.getStore();
+  }
+
   /** Checks whether an auto-flush is needed before querying the given entity type. */
   shouldAutoFlush<T extends object>(meta: EntityMetadata<T>): boolean {
     if (insideFlush.getStore()) {
