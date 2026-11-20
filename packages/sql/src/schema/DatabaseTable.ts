@@ -1127,10 +1127,11 @@ export class DatabaseTable {
 
     if (fk) {
       const idx = fk.columnNames.indexOf(baseName);
-      let replacedFieldName = field.replace(new RegExp(`_${fk.referencedColumnNames[idx]}$`), '');
+      const stripSuffix = (suffix: string) => (field.endsWith(suffix) ? field.slice(0, -suffix.length) : field);
+      let replacedFieldName = stripSuffix(`_${fk.referencedColumnNames[idx]}`);
 
       if (replacedFieldName === field) {
-        replacedFieldName = field.replace(new RegExp(`_${namingStrategy.referenceColumnName()}$`), '');
+        replacedFieldName = stripSuffix(`_${namingStrategy.referenceColumnName()}`);
       }
 
       field = replacedFieldName;

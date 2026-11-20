@@ -127,7 +127,10 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
     ownerTableName: string,
     schemaName?: string,
   ): string {
-    return this.columnNameToProperty(pivotTableName.replace(new RegExp('^' + ownerTableName + '_'), ''));
+    const prefix = ownerTableName + '_';
+    return this.columnNameToProperty(
+      pivotTableName.startsWith(prefix) ? pivotTableName.slice(prefix.length) : pivotTableName,
+    );
   }
 
   /**
