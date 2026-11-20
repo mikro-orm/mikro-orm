@@ -135,7 +135,20 @@ class BookService {
 
 Creates a savepoint when a transaction exists, otherwise creates a new transaction. This is the default behavior.
 
-Pending changes of the outer transaction are flushed before the savepoint is created, so they are not lost when the inner transaction rolls back. This means the entities you persisted in the outer transaction need to be valid by the time you start the inner one. The same applies to `REQUIRES_NEW` when called inside an existing transaction.
+The inner transaction inherits the pending changes of the outer one. If it flushes them (explicitly, via auto-flush, or at the end of its callback) and then fails, they are rolled back with the savepoint and the outer transaction commits without them. To prevent this, flush the outer transaction before starting the inner one, or enable `flushBeforeNestedTransaction` to do it automatically:
+
+```ts
+MikroORM.init({
+  flushBeforeNestedTransaction: true, // defaults to false
+});
+
+// or for a single call
+await em1.transactional(async em2 => {
+  // ...
+}, { flushBeforeNestedTransaction: true });
+```
+
+With the option enabled, the entities you persisted in the outer transaction need to be valid by the time you start the inner one, and a failure of this flush is not covered by the savepoint.
 
 ```ts
 // Using em.transactional()

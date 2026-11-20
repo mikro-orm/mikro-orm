@@ -127,15 +127,13 @@ export class TransactionManager {
     options: TransactionOptions,
     hasExistingTransaction: boolean,
   ): Promise<T> {
+    const fork = this.createFork(em, options);
     let suspended: unknown = null;
 
     // Suspend existing transaction if present
     if (hasExistingTransaction) {
-      await this.flushPendingChanges(em);
       suspended = this.suspendTransaction(em);
     }
-
-    const fork = this.createFork(em, options);
 
     const newOptions = { ...options, ctx: undefined };
 
@@ -168,22 +166,19 @@ export class TransactionManager {
     cb: (em: EntityManager) => T | Promise<T>,
     options: TransactionOptions,
   ): Promise<T> {
-    await this.flushPendingChanges(em);
+    // a hook of the outer flush can start a transaction too, the outer flush is already writing the changes then
+    if (
+      (options.flushBeforeNestedTransaction ?? em.config.get('flushBeforeNestedTransaction')) &&
+      !em.getUnitOfWork(false).isInsideFlush()
+    ) {
+      await em.flush();
+    }
+
     const fork = this.createFork(em, options);
 
     // Pass existing context to create savepoint
     const nestedOptions = { ...options, ctx: em.getTransactionContext() };
     return this.processTransaction(em, fork, cb, nestedOptions);
-  }
-
-  /**
-   * Flushes pending changes of the outer transaction, so the fork that inherits them cannot write them in its own one.
-   */
-  private async flushPendingChanges(em: EntityManager): Promise<void> {
-    // a hook of the outer flush can start a transaction too, the outer flush is already writing the changes then
-    if (!em.getUnitOfWork(false).isInsideFlush()) {
-      await em.flush();
-    }
   }
 
   /**

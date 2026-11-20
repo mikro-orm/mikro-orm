@@ -247,7 +247,7 @@ describe.each(['sqlite', 'libsql', 'node-sqlite', 'sql-js'] as const)('EntityMan
 
   test('nested transactions with save-points', async () => {
     await orm.em.transactional(async em => {
-      const god1 = orm.em.create(Author4, { name: 'God1', email: 'hello1@heaven.god' }, { persist: false });
+      const god1 = orm.em.create(Author4, { name: 'God1', email: 'hello1@heaven.god' });
 
       try {
         await em.transactional(async em2 => {

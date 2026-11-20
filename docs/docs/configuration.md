@@ -725,6 +725,16 @@ MikroORM.init({
 });
 ```
 
+## Flushing before nested transactions
+
+A nested `em.transactional()` call creates a savepoint and inherits the pending changes of the outer transaction. If it flushes them and then fails, they are rolled back with the savepoint and the outer transaction commits without them. Set `flushBeforeNestedTransaction: true` to flush the outer transaction before the savepoint is created, either globally or locally via `em.transactional(cb, { flushBeforeNestedTransaction: true })`. See the [transactions guide](./transactions.md#nested-propagation) for details.
+
+```ts
+MikroORM.init({
+  flushBeforeNestedTransaction: true, // defaults to false
+});
+```
+
 ## Processing property `onCreate` hooks in `em.create()`
 
 Property `onCreate` hooks are executed inside `em.create` (if used explicitly), or later during `flush` operation. You can use the `processOnCreateHooksEarly` option to disable this behavior and delay them to `em.flush()` method. This option can also be overridden locally via `em.create(Type, data, { processOnCreateHooks: false })`.

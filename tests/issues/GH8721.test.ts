@@ -1,4 +1,4 @@
-import { Collection, MikroORM } from '@mikro-orm/sqlite';
+import { Collection, MikroORM, type TransactionOptions } from '@mikro-orm/sqlite';
 import {
   Entity,
   ManyToMany,
@@ -68,6 +68,7 @@ describe('GH issue 8721', () => {
       metadataProvider: ReflectMetadataProvider,
       entities: [Author, Book, Tag],
       dbName: ':memory:',
+      flushBeforeNestedTransaction: true,
     });
     await orm.schema.create();
   });
@@ -76,14 +77,23 @@ describe('GH issue 8721', () => {
 
   beforeEach(() => orm.schema.clear());
 
-  const failAfterFlush = async (em: MikroORM['em']) => {
+  const failAfterFlush = async (em: MikroORM['em'], options?: TransactionOptions) => {
     await expect(
       em.transactional(async inner => {
         await inner.flush();
         throw new Error('Nested transaction failed');
-      }),
+      }, options),
     ).rejects.toThrow('Nested transaction failed');
   };
+
+  test('pending insert is lost when the flush before a nested transaction is disabled', async () => {
+    await orm.em.fork().transactional(async em => {
+      em.create(Book, { title: 'b1' });
+      await failAfterFlush(em, { flushBeforeNestedTransaction: false });
+    });
+
+    expect(await orm.em.fork().count(Book)).toBe(0);
+  });
 
   test('pending insert survives a failed nested transaction that flushed', async () => {
     await orm.em.fork().transactional(async em => {
