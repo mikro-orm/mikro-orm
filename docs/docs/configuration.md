@@ -686,6 +686,8 @@ MikroORM.init({
 });
 ```
 
+The cache can be skipped for a single call via the `compiledQueryCache: false` option of `em.find()`, `em.findOne()` and `em.count()`.
+
 A few things to be aware of:
 
 - The cached SQL is the same SQL the query builder would generate, the cache never changes what gets executed or logged. `$in` and `$nin` lists of similar sizes share one cached query (sizes are grouped by powers of two) and get their own number of placeholders. Lists with more than 512 items are not cached, and neither are lists in other places (e.g. the implicit `{ id: [1, 2, 3] }` form) with more than 32 items.

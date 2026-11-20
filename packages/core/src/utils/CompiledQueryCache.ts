@@ -25,6 +25,7 @@ const IGNORED_OPTIONS = new Set([
   'visited',
   'strict',
   'failHandler',
+  'compiledQueryCache',
   // `findAll()` passes its condition as the `where` argument too
   'where',
 ]);
