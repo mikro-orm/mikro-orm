@@ -469,12 +469,12 @@ export class MySqlSchemaHelper extends SchemaHelper {
       return routine.expression;
     }
 
-    const name = this.platform.quoteIdentifier(routine.name);
+    const name = this.quote(routine.name);
     // MySQL functions reject direction prefixes (function params are always IN); procedures use them.
     const params = routine.params
       .map(p => {
         const dir = routine.type === 'procedure' ? `${p.direction.toUpperCase()} ` : '';
-        return `${dir}${this.platform.quoteIdentifier(p.name)} ${p.type}`;
+        return `${dir}${this.quote(p.name)} ${p.type}`;
       })
       .join(', ');
     const determinism =
@@ -499,7 +499,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
 
   override dropRoutine(routine: SqlRoutineDef): string {
     const kind = routine.type === 'procedure' ? 'procedure' : 'function';
-    return `drop ${kind} if exists ${this.platform.quoteIdentifier(routine.name)}`;
+    return `drop ${kind} if exists ${this.quote(routine.name)}`;
   }
 
   override async getAllRoutines(connection: AbstractSqlConnection): Promise<SqlRoutineDef[]> {

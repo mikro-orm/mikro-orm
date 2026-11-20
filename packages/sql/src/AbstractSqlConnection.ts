@@ -367,6 +367,9 @@ export abstract class AbstractSqlConnection extends Connection {
     query: string | NativeQueryBuilder | RawQueryFragment,
     params: readonly unknown[] | Dictionary<unknown> = [],
   ): { query: string; params: readonly unknown[]; formatted: string } {
+    // a plain string without params is not a template, so it is sent as is
+    const verbatim = typeof query === 'string' && Array.isArray(params) && params.length === 0;
+
     if (query instanceof NativeQueryBuilder) {
       query = query.toRaw();
     }
@@ -382,7 +385,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
 
     query = this.config.get('onQuery')(query as string, params as readonly unknown[]);
-    const formatted = this.platform.formatQuery(query, params as readonly unknown[]);
+    const formatted = verbatim ? query : this.platform.formatQuery(query, params as readonly unknown[]);
 
     return { query, params: params as readonly unknown[], formatted };
   }

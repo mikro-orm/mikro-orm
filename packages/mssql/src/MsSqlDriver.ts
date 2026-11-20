@@ -10,6 +10,7 @@ import {
   type NativeInsertUpdateManyOptions,
   QueryFlag,
   type QueryResult,
+  raw,
   type Transaction,
   Utils,
   type Constructor,
@@ -58,7 +59,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
         sql = this.appendOutputTable(entityName, returningFields, sql, sql.length - 1, options);
       }
 
-      const res = await this.execute<QueryResult<T>>(sql, [], 'run', options.ctx);
+      const res = await this.execute<QueryResult<T>>(raw(sql), [], 'run', options.ctx);
       this.resolveInsertedPrimaryKeys(meta, data, res);
 
       return res;

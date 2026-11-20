@@ -825,7 +825,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const forEach = trigger.forEach === 'statement' ? 'STATEMENT' : 'ROW';
     const when = trigger.when ? `\n  when (${trigger.when})` : '';
     const fnName = this.getSchemaQualifiedTriggerFnName(table, trigger);
-    const triggerName = this.platform.quoteIdentifier(trigger.name);
+    const triggerName = this.quote(trigger.name);
 
     const fnSql = `create or replace function ${fnName}() returns trigger as $$ begin ${this.normalizeTriggerBody(trigger.body)} end; $$ language plpgsql`;
     const triggerSql = `create trigger ${triggerName} ${timing} ${events} on ${table.getQuotedName()} for each ${forEach}${when} execute function ${fnName}()`;
@@ -835,7 +835,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   /** Generates SQL to drop a PostgreSQL trigger and its associated function. */
   override dropTrigger(table: DatabaseTable, trigger: SqlTriggerDef): string {
-    const triggerName = this.platform.quoteIdentifier(trigger.name);
+    const triggerName = this.quote(trigger.name);
     const fnName = this.getSchemaQualifiedTriggerFnName(table, trigger);
     return `drop trigger if exists ${triggerName} on ${table.getQuotedName()};\ndrop function if exists ${fnName}()`;
   }
@@ -1061,7 +1061,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       .map(p => {
         const dir = p.direction === 'in' ? '' : `${p.direction.toUpperCase()} `;
         const def = p.defaultRaw ? ` default ${p.defaultRaw}` : '';
-        const name = p.name ? `${this.platform.quoteIdentifier(p.name)} ` : '';
+        const name = p.name ? `${this.quote(p.name)} ` : '';
         return `${dir}${name}${p.type}${def}`;
       })
       .join(', ');
@@ -1110,10 +1110,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const defaultSchema = this.platform.getDefaultSchemaName();
 
     if (table.schema && table.schema !== defaultSchema) {
-      return `${this.platform.quoteIdentifier(table.schema)}.${this.platform.quoteIdentifier(rawName)}`;
+      return `${this.quote(table.schema)}.${this.quote(rawName)}`;
     }
 
-    return this.platform.quoteIdentifier(rawName);
+    return this.quote(rawName);
   }
 
   /**

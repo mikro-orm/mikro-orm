@@ -297,7 +297,9 @@ export class DatabaseSchema {
 
       if (meta.partitionBy) {
         table.setPartitioning(
-          getTablePartitioning(meta, this.getSchemaName(meta, config, schemaName), id => platform.quoteIdentifier(id)),
+          getTablePartitioning(meta, this.getSchemaName(meta, config, schemaName), id =>
+            platform.quoteIdentifier(id).replaceAll('\\?', '?'),
+          ),
         );
       }
 
@@ -486,7 +488,7 @@ export class DatabaseSchema {
       }
       // native enum columns compare against the enum type itself, `current_setting()` text won't coerce implicitly
       const cast = col.nativeEnumName
-        ? `::${platform.quoteIdentifier(col.nativeEnumName)}`
+        ? `::${platform.quoteIdentifier(col.nativeEnumName).replaceAll('\\?', '?')}`
         : platform.getCurrentSettingCast(col.mappedType);
 
       if (cast === null) {

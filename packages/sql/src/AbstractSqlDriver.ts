@@ -126,7 +126,7 @@ export abstract class AbstractSqlDriver<
   /** Evaluates a formula callback, handling both string and Raw return values. */
   evaluateFormula(formula: (...args: any[]) => string | Raw, columns: any, table: FormulaTable): string {
     const result = formula(columns, table);
-    return isRaw(result) ? this.platform.formatQuery(result.sql, result.params) : result;
+    return isRaw(result) ? this.platform.quoteIdentifier(result) : result;
   }
 
   /** For TPT entities, returns ownProps (columns in this table); otherwise returns all props. */
@@ -411,7 +411,7 @@ export abstract class AbstractSqlDriver<
     if (res instanceof QueryBuilder) {
       return this.wrapVirtualExpressionInSubquery(
         meta,
-        res.getFormattedQuery(),
+        this.platform.quoteIdentifier(res.toRaw()),
         where,
         options as FindOptions<T, any>,
         type,
@@ -419,7 +419,7 @@ export abstract class AbstractSqlDriver<
     }
 
     if (isRaw(res)) {
-      const expr = this.platform.formatQuery(res.sql, res.params);
+      const expr = this.platform.quoteIdentifier(res);
       return this.wrapVirtualExpressionInSubquery(meta, expr, where, options as FindOptions<T, any>, type);
     }
 
@@ -457,7 +457,7 @@ export abstract class AbstractSqlDriver<
     if (res instanceof QueryBuilder) {
       yield* this.wrapVirtualExpressionInSubqueryStream(
         meta,
-        res.getFormattedQuery(),
+        this.platform.quoteIdentifier(res.toRaw()),
         where,
         options,
         QueryType.SELECT,
@@ -466,7 +466,7 @@ export abstract class AbstractSqlDriver<
     }
 
     if (isRaw(res)) {
-      const expr = this.platform.formatQuery(res.sql, res.params);
+      const expr = this.platform.quoteIdentifier(res);
       yield* this.wrapVirtualExpressionInSubqueryStream(meta, expr, where, options, QueryType.SELECT);
       return;
     }
@@ -493,18 +493,17 @@ export abstract class AbstractSqlDriver<
 
     const asKeyword = this.platform.usesAsKeyword() ? ' as ' : ' ';
     native.from(raw(`(${expression})${asKeyword}${this.platform.quoteIdentifier(qb.alias)}`));
-    const query = native.compile();
     const loggerContext = withAbortContext(options.loggerContext, options);
     // virtual entities execute directly (not via QueryBuilder), so wrap in a short implicit transaction outside an
     // existing one when a session context (row level security) needs to apply — mirrors the QueryBuilder wrap
     const sessionContext = options.ctx ? undefined : options.em?.getTransactionSessionContext();
     const conn = this.getConnection(this.resolveConnectionType(options));
     const res = await (sessionContext
-      ? conn.transactional(trx => this.execute<T[]>(query.sql, query.params, 'all', trx, loggerContext), {
+      ? conn.transactional(trx => this.execute<T[]>(native, [], 'all', trx, loggerContext), {
           sessionContext,
           loggerContext,
         })
-      : this.execute<T[]>(query.sql, query.params, 'all', options.ctx, loggerContext));
+      : this.execute<T[]>(native, [], 'all', options.ctx, loggerContext));
 
     if (type === QueryType.COUNT) {
       return (res[0] as Dictionary).count;
@@ -529,12 +528,11 @@ export abstract class AbstractSqlDriver<
     const native = qb.getNativeQuery(false);
     const asKeyword = this.platform.usesAsKeyword() ? ' as ' : ' ';
     native.from(raw(`(${expression})${asKeyword}${this.platform.quoteIdentifier(qb.alias)}`));
-    const query = native.compile();
 
     const connectionType = this.resolveConnectionType({ ctx: options.ctx, connectionType: options.connectionType });
     const res = this.getConnection(connectionType).stream<T>(
-      query.sql,
-      query.params,
+      native,
+      [],
       options.ctx,
       withAbortContext(options.loggerContext, options),
       options.chunkSize,
@@ -1449,8 +1447,8 @@ export abstract class AbstractSqlDriver<
     }
 
     const res = await this.execute<QueryResult<T>>(
-      sql,
-      params,
+      raw(sql, params),
+      [],
       'run',
       options.ctx,
       withAbortContext(options.loggerContext, options),

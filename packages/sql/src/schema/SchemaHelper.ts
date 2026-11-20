@@ -1301,10 +1301,10 @@ export abstract class SchemaHelper {
     const defaultSchema = this.platform.getDefaultSchemaName();
 
     if (routine.schema && routine.schema !== defaultSchema) {
-      return `${this.platform.quoteIdentifier(routine.schema)}.${this.platform.quoteIdentifier(routine.name)}`;
+      return `${this.quote(routine.schema)}.${this.quote(routine.name)}`;
     }
 
-    return this.platform.quoteIdentifier(routine.name);
+    return this.quote(routine.name);
   }
 
   /** @internal */
@@ -1337,7 +1337,8 @@ export abstract class SchemaHelper {
   }
 
   protected quote(...keys: (string | undefined)[]): string {
-    return this.platform.quoteIdentifier(keys.filter(Boolean).join('.'));
+    // DDL is not a query template, so question marks need no escaping there
+    return this.platform.quoteIdentifier(keys.filter(Boolean).join('.')).replaceAll('\\?', '?');
   }
 
   dropForeignKey(tableName: string, constraintName: string): string {

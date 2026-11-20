@@ -755,15 +755,22 @@ export abstract class Platform {
     return value as string;
   }
 
-  /** Wraps a table or column identifier with the platform-specific quote character. */
+  /**
+   * Wraps a table or column identifier with the platform-specific quote character. The result is meant to be embedded
+   * in a query template, so question marks in it are escaped as `\?` to not be mistaken for placeholders.
+   */
   quoteIdentifier(id: string | { toString: () => string }, quote = '`'): string {
     const raw = Raw.getKnownFragment(id);
 
     if (raw) {
-      return this.formatQuery(raw.sql, raw.params);
+      // fragments without params are kept as is, their placeholders can be bound by the outer query
+      return raw.params.length === 0 ? raw.sql : this.formatQuery(raw.sql, raw.params).replaceAll('?', '\\?');
     }
 
-    const escaped = id.toString().replaceAll(quote, quote + quote);
+    const escaped = id
+      .toString()
+      .replaceAll(quote, quote + quote)
+      .replaceAll('?', '\\?');
     return `${quote}${escaped.replaceAll('.', `${quote}.${quote}`)}${quote}`;
   }
 
@@ -782,10 +789,10 @@ export abstract class Platform {
     return value;
   }
 
-  /** Replaces `?` placeholders in SQL with quoted parameter values. */
+  /** Replaces `?` placeholders in SQL with quoted parameter values, `\?` stands for a literal question mark. */
   formatQuery(sql: string, params: readonly any[]): string {
     if (params.length === 0) {
-      return sql;
+      return sql.replaceAll('\\?', '?');
     }
 
     // fast string replace without regexps
@@ -795,7 +802,7 @@ export abstract class Platform {
 
     if (sql.startsWith('?')) {
       if (sql[1] === '?') {
-        ret += this.quoteIdentifier(params[j++]);
+        ret += this.quoteIdentifier(params[j++]).replaceAll('\\?', '?');
         pos = 2;
       } else {
         ret += this.quoteValue(params[j++]);
@@ -815,7 +822,7 @@ export abstract class Platform {
         ret += sql.substring(pos, idx - 1) + '?';
         pos = idx + 1;
       } else if (sql.substring(idx, idx + 2) === '??') {
-        ret += sql.substring(pos, idx) + this.quoteIdentifier(params[j++]);
+        ret += sql.substring(pos, idx) + this.quoteIdentifier(params[j++]).replaceAll('\\?', '?');
         pos = idx + 2;
       } else {
         ret += sql.substring(pos, idx) + this.quoteValue(params[j++]);

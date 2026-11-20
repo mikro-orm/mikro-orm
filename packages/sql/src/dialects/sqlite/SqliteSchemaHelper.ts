@@ -384,7 +384,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     if (!schemaName || schemaName === 'main') {
       return '';
     }
-    return `${this.platform.quoteIdentifier(schemaName)}.`;
+    return `${this.quote(schemaName)}.`;
   }
 
   /**

@@ -282,7 +282,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       boolean: 'bit',
     } as Dictionary;
     const cast = (key: string) => raw(type in types ? `cast(${key} as ${types[type]})` : key);
-    const jsonPath = this.quoteValue(`$.${b.map(this.quoteJsonKey).join('.')}`);
+    const jsonPath = this.quoteValue(`$.${b.map(this.quoteJsonKey).join('.')}`).replaceAll('?', '\\?');
 
     /* v8 ignore next */
     if (path.length === 0) {
@@ -331,7 +331,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       return super.quoteIdentifier(id);
     }
 
-    return `[${id.toString().replaceAll(']', ']]').replaceAll('.', `].[`)}]`;
+    return `[${id.toString().replaceAll(']', ']]').replaceAll('?', '\\?').replaceAll('.', `].[`)}]`;
   }
 
   override escape(value: any): string {

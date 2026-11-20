@@ -98,7 +98,7 @@ export abstract class AbstractSqlPlatform extends Platform {
     }
 
     qb.select(through.targetProperty ?? throughMeta.primaryKeys[0]).limit(1);
-    const sql = qb.getFormattedQuery();
+    const sql = this.quoteIdentifier(qb.toRaw());
 
     if (Object.keys(qb.state.joins).length > 0) {
       throw new ValidationError(
@@ -160,7 +160,7 @@ export abstract class AbstractSqlPlatform extends Platform {
     value?: unknown,
   ): string | RawQueryFragment {
     const [a, ...b] = path;
-    const jsonPath = this.quoteValue(`$.${b.map(this.quoteJsonKey).join('.')}`);
+    const jsonPath = this.quoteValue(`$.${b.map(this.quoteJsonKey).join('.')}`).replaceAll('?', '\\?');
 
     if (typeof aliased === 'string') {
       return raw(`json_extract(${this.quoteIdentifier(`${aliased}.${a}`)}, ${jsonPath})`);
