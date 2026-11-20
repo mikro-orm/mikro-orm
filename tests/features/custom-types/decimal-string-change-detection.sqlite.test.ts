@@ -105,6 +105,10 @@ test('high precision string decimals are rounded to scale like the database does
   expect(type.compareValues!('-1.0000000000000000015', '-1.000000000000000002')).toBe(true);
   expect(type.compareValues!('-1.0000000000000000015', '-1.000000000000000001')).toBe(false);
   expect(type.compareValues!('-0.0000000000000000001', '0')).toBe(true);
+  // leading plus signs and surrounding whitespace still use exact high-precision comparison
+  expect(type.compareValues!('+1.000000000000000001', '1.000000000000000001')).toBe(true);
+  expect(type.compareValues!('+1.000000000000000001', '1.000000000000000002')).toBe(false);
+  expect(type.compareValues!(' 1.000000000000000001 ', '1.000000000000000002')).toBe(false);
   // other notations fall back to the numeric comparison
   expect(type.compareValues!('1.000000000000000001e0', '1')).toBe(true);
   expect(type.compareValues!(1 as unknown as string, '1.000000000000000001')).toBe(true);

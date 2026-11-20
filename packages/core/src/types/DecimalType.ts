@@ -8,9 +8,21 @@ function toScaledInteger(value: unknown, scale: number): bigint | undefined {
     return undefined;
   }
 
-  const negative = value.startsWith('-');
-  const [int, fraction = ''] = (negative ? value.slice(1) : value).split('.');
+  const trimmed = value.trim();
+  const negative = trimmed.startsWith('-');
+  const unsigned = negative || trimmed.startsWith('+') ? trimmed.slice(1) : trimmed;
+  const parts = unsigned.split('.');
+
+  if (parts.length > 2) {
+    return undefined;
+  }
+
+  const [int, fraction = ''] = parts;
   const digits = int + fraction;
+
+  if (digits.length === 0) {
+    return undefined;
+  }
 
   for (let i = 0; i < digits.length; i++) {
     const code = digits.charCodeAt(i);
