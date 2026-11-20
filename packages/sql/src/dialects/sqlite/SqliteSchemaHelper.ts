@@ -362,8 +362,9 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
       for (let i = cols.length - 1; i >= 0; i--) {
         const col = cols[i];
+        const name = col.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         // the first column is not preceded by a comma
-        const re = ` *(?:^|,) *[\`"']?${col.name}[\`"']? (.*)`;
+        const re = ` *(?:^|,) *[\`"']?${name}[\`"']? (.*)`;
         const columnDef = new RegExp(re, 'i').exec(columnsDef);
 
         if (columnDef) {
@@ -411,7 +412,12 @@ export class SqliteSchemaHelper extends SchemaHelper {
     ctx?: Transaction,
   ): Promise<any[]> {
     const prefix = this.getSchemaPrefix(schemaName);
-    const columns = await connection.execute<any[]>(`pragma ${prefix}table_xinfo('${tableName}')`, [], 'all', ctx);
+    const columns = await connection.execute<any[]>(
+      `pragma ${prefix}table_xinfo(${this.platform.quoteValue(tableName)})`,
+      [],
+      'all',
+      ctx,
+    );
     const sql = `select sql from ${prefix}sqlite_master where type = ? and name = ?`;
     const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get', ctx);
     const composite = columns.reduce((count, col) => count + (col.pk ? 1 : 0), 0) > 1;
@@ -522,7 +528,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     ctx?: Transaction,
   ): Promise<string[]> {
     const prefix = this.getSchemaPrefix(schemaName);
-    const sql = `pragma ${prefix}table_info(\`${tableName}\`)`;
+    const sql = `pragma ${prefix}table_info(${this.platform.quoteValue(tableName)})`;
     const cols = await connection.execute<{ pk: number; name: string }[]>(sql, [], 'all', ctx);
 
     return cols.filter(col => !!col.pk).map(col => col.name);
@@ -535,9 +541,14 @@ export class SqliteSchemaHelper extends SchemaHelper {
     ctx?: Transaction,
   ): Promise<IndexDef[]> {
     const prefix = this.getSchemaPrefix(schemaName);
-    const sql = `pragma ${prefix}table_info(\`${tableName}\`)`;
+    const sql = `pragma ${prefix}table_info(${this.platform.quoteValue(tableName)})`;
     const cols = await connection.execute<{ pk: number; name: string }[]>(sql, [], 'all', ctx);
-    const indexes = await connection.execute<any[]>(`pragma ${prefix}index_list(\`${tableName}\`)`, [], 'all', ctx);
+    const indexes = await connection.execute<any[]>(
+      `pragma ${prefix}index_list(${this.platform.quoteValue(tableName)})`,
+      [],
+      'all',
+      ctx,
+    );
     // sqlite_master.sql holds the original CREATE INDEX statement — the only place a partial
     // index's WHERE predicate is preserved (PRAGMA index_* don't expose it).
     const indexSqls = await connection.execute<{ name: string; sql: string | null }[]>(
@@ -568,7 +579,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
     for (const index of indexes.filter(index => !this.isImplicitIndex(index.name))) {
       const res = await connection.execute<{ name: string }[]>(
-        `pragma ${prefix}index_info(\`${index.name}\`)`,
+        `pragma ${prefix}index_info(${this.platform.quoteValue(index.name)})`,
         [],
         'all',
         ctx,
@@ -634,7 +645,12 @@ export class SqliteSchemaHelper extends SchemaHelper {
     ctx?: Transaction,
   ): Promise<{ columns: Dictionary<{ name: string; definition: string }>; constraints: string[] }> {
     const prefix = this.getSchemaPrefix(schemaName);
-    const columns = await connection.execute<any[]>(`pragma ${prefix}table_xinfo('${tableName}')`, [], 'all', ctx);
+    const columns = await connection.execute<any[]>(
+      `pragma ${prefix}table_xinfo(${this.platform.quoteValue(tableName)})`,
+      [],
+      'all',
+      ctx,
+    );
     const sql = `select sql from ${prefix}sqlite_master where type = ? and name = ?`;
     const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get', ctx);
 
@@ -649,7 +665,12 @@ export class SqliteSchemaHelper extends SchemaHelper {
   ): Promise<Dictionary> {
     const { constraints } = await this.getColumnDefinitions(connection, tableName, schemaName, ctx);
     const prefix = this.getSchemaPrefix(schemaName);
-    const fks = await connection.execute<any[]>(`pragma ${prefix}foreign_key_list(\`${tableName}\`)`, [], 'all', ctx);
+    const fks = await connection.execute<any[]>(
+      `pragma ${prefix}foreign_key_list(${this.platform.quoteValue(tableName)})`,
+      [],
+      'all',
+      ctx,
+    );
     const qualifiedTableName = schemaName ? `${schemaName}.${tableName}` : tableName;
 
     return fks.reduce((ret, fk: any) => {

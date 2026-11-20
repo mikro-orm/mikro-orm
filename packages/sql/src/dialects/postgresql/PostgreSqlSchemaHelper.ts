@@ -153,7 +153,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return (
       `select table_name, table_schema as schema_name, ` +
       `(select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c
-          where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment ` +
+          where c.oid = (select format('%I.%I', table_schema, table_name)::regclass::oid) and c.relname = table_name) as table_comment ` +
       `from information_schema.tables t ` +
       `where ${this.getIgnoredNamespacesConditionSQL('table_schema')} ` +
       `and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' ` +
@@ -1078,7 +1078,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       // mis-parsed as a direction keyword. The name is optional — `pg_get_function_arguments`
       // omits it for unnamed parameters (e.g. `text`), leaving just the type.
       const match =
-        /^(?:(INOUT|VARIADIC|IN|OUT)\s+)?(?:(?:"((?:[^"]|"")+)"|([\w$]+))\s+)?(.+?)(?:\s+default\s+.+)?$/i.exec(
+        /^(?:(INOUT|VARIADIC|IN|OUT)\s+)?(?:(?:"((?:[^"]|"")+)"|([\w$]+))\s+)?(.+?)(?:\s+default\s+.+)?$/is.exec(
           trimmed,
         );
 
