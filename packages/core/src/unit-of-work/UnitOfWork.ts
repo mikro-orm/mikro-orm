@@ -69,6 +69,7 @@ export class UnitOfWork {
   readonly #loadedEntities = new Set<AnyEntity>();
   readonly #flushQueue: (() => Promise<void>)[] = [];
   #working = false;
+  #reindexQueue?: Set<Collection<AnyEntity>>;
 
   readonly #em: EntityManager;
 
@@ -605,7 +606,7 @@ export class UnitOfWork {
           const ownerColl = (owner as Dictionary)[inverseProp];
 
           if (Utils.isCollection(ownerColl)) {
-            ownerColl.removeWithoutPropagation(entity);
+            this.removeFromCollection(ownerColl, entity);
           }
         }
 
@@ -615,12 +616,39 @@ export class UnitOfWork {
       const target = relation?.[inverseProp as keyof typeof relation] as unknown;
 
       if (relation && Utils.isCollection(target)) {
-        target.removeWithoutPropagation(entity);
+        this.removeFromCollection(target, entity);
       }
     }
 
     if (options.cascade ?? true) {
       this.cascade(entity, Cascade.REMOVE, visited);
+    }
+  }
+
+  /**
+   * Runs `cb` and updates the array indexes of the collections that `remove()` changed only once at the end,
+   * so removing many items of one loaded collection stays linear.
+   * @internal
+   */
+  batchRemovals(cb: () => void): void {
+    if (this.#reindexQueue) {
+      cb();
+      return;
+    }
+
+    const queue = (this.#reindexQueue = new Set());
+
+    try {
+      cb();
+    } finally {
+      this.#reindexQueue = undefined;
+      queue.forEach(coll => coll.reindex());
+    }
+  }
+
+  private removeFromCollection(coll: Collection<AnyEntity>, entity: AnyEntity): void {
+    if (coll.removeWithoutPropagation(entity, !this.#reindexQueue)) {
+      this.#reindexQueue?.add(coll);
     }
   }
 
@@ -773,8 +801,12 @@ export class UnitOfWork {
     this.#changeSets.clear();
     const visited = new Set<AnyEntity>();
 
-    for (const entity of this.#removeStack) {
-      this.cascade(entity, Cascade.REMOVE, visited);
+    if (this.#removeStack.size > 0) {
+      this.batchRemovals(() => {
+        for (const entity of this.#removeStack) {
+          this.cascade(entity, Cascade.REMOVE, visited);
+        }
+      });
     }
 
     visited.clear();

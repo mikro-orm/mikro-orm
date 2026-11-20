@@ -2947,16 +2947,18 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
     const entities = Utils.asArray(entity, true);
 
-    for (const ent of entities) {
-      if (!Utils.isEntity(ent, true)) {
-        throw new Error(
-          `You need to pass entity instance or reference to 'em.remove()'. To remove entities by condition, use 'em.nativeDelete()'.`,
-        );
-      }
+    em.#unitOfWork.batchRemovals(() => {
+      for (const ent of entities) {
+        if (!Utils.isEntity(ent, true)) {
+          throw new Error(
+            `You need to pass entity instance or reference to 'em.remove()'. To remove entities by condition, use 'em.nativeDelete()'.`,
+          );
+        }
 
-      // do not cascade just yet, cascading of entities in remove stack is done when flushing
-      em.#unitOfWork.remove(Reference.unwrapReference(ent), undefined, { cascade: false });
-    }
+        // do not cascade just yet, cascading of entities in remove stack is done when flushing
+        em.#unitOfWork.remove(Reference.unwrapReference(ent), undefined, { cascade: false });
+      }
+    });
 
     return em;
   }
