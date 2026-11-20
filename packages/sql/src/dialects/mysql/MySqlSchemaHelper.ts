@@ -779,14 +779,15 @@ export class MySqlSchemaHelper extends SchemaHelper {
   ): Promise<Dictionary<Dictionary<string[]>>> {
     const sql = `select column_name as column_name, column_type as column_type, table_name as table_name
       from information_schema.columns
-      where data_type = 'enum' and table_name in (${tables.map(t => `'${t.table_name}'`).join(', ')}) and table_schema = database()`;
+      where data_type = 'enum' and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')}) and table_schema = database()`;
     const enums = await connection.execute<any[]>(sql, [], 'all', ctx);
 
     return enums.reduce(
       (o, item) => {
-        o[item.table_name] ??= {};
+        const key = this.getTableKey(item);
+        o[key] ??= {};
         // items can hold commas, doubled quotes and backslash escapes
-        o[item.table_name][item.column_name] = [...item.column_type.matchAll(/'((?:''|\\.|[^'\\])*)'/g)].map(
+        o[key][item.column_name] = [...item.column_type.matchAll(/'((?:''|\\.|[^'\\])*)'/g)].map(
           ([, value]: string[]) => this.unescapeDefault(value.replaceAll("''", "'")),
         );
         return o;
