@@ -24,6 +24,7 @@ export class MigrationCommandFactory {
     log: 'Mark a migration as executed without running it',
     unlog: 'Remove a migration from the executed list without reverting it',
     rollup: 'Combine multiple migrations into a single migration',
+    breakpoint: 'Set or remove a rollback breakpoint on an executed migration',
   };
 
   static create<const T extends MigratorMethod>(command: T) {
@@ -56,6 +57,10 @@ export class MigrationCommandFactory {
       return this.configureLogUnlogCommand(args);
     }
 
+    if (method === 'breakpoint') {
+      return this.configureBreakpointCommand(args);
+    }
+
     return args;
   }
 
@@ -68,6 +73,27 @@ export class MigrationCommandFactory {
     });
 
     return args as Argv<MigratorLogUnlogOptions>;
+  }
+
+  private static configureBreakpointCommand(args: Argv<BaseArgs>): Argv<MigratorBreakpointOptions> {
+    args.option('name', {
+      alias: 'n',
+      type: 'string',
+      desc: 'Name of the executed migration to protect',
+      demandOption: true,
+    });
+    args.option('remove', {
+      type: 'boolean',
+      desc: 'Remove the breakpoint instead of setting it',
+      default: false,
+    });
+    args.option('schema', {
+      alias: 's',
+      type: 'string',
+      desc: 'Target schema containing the migration history',
+    });
+
+    return args as Argv<MigratorBreakpointOptions>;
   }
 
   private static configureUpDownCommand(args: Argv<BaseArgs>, method: 'up' | 'down'): Argv<CliUpDownOptions> {
@@ -158,6 +184,10 @@ export class MigrationCommandFactory {
       case 'rollup':
         await this.handleRollupCommand(orm.migrator);
         break;
+      case 'breakpoint':
+        await orm.migrator.setBreakpoint(args.name!, !args.remove, { schema: args.schema });
+        CLIHelper.info(colors.green(`Breakpoint ${args.remove ? 'removed from' : 'set on'} migration '${args.name}'`));
+        break;
     }
 
     await orm.close(true);
@@ -200,11 +230,11 @@ export class MigrationCommandFactory {
     const executed = await migrator.getExecuted();
 
     CLIHelper.dumpTable({
-      columns: ['Name', 'Executed at'],
+      columns: ['Name', 'Executed at', 'Breakpoint'],
       rows: executed.map(row => {
         /* v8 ignore next */
         const executedAt = (row.executed_at ?? (row as Dictionary).created_at)?.toISOString() ?? '';
-        return [row.name.replace(/\.[jt]s$/, ''), executedAt];
+        return [row.name.replace(/\.[jt]s$/, ''), executedAt, row.breakpoint ? 'Yes' : 'No'];
       }),
       empty: 'No migrations executed yet',
     });
@@ -334,6 +364,7 @@ type MigratorCreateOptions = BaseArgs & {
   name?: string;
 };
 type MigratorLogUnlogOptions = BaseArgs & { name?: string };
+type MigratorBreakpointOptions = BaseArgs & { name?: string; remove?: boolean; schema?: string };
 
 type MigrationOptionsMap = {
   create: MigratorCreateOptions;
@@ -346,6 +377,12 @@ type MigrationOptionsMap = {
   log: MigratorLogUnlogOptions;
   unlog: MigratorLogUnlogOptions;
   rollup: BaseArgs;
+  breakpoint: MigratorBreakpointOptions;
 };
 type MigratorMethod = keyof MigrationOptionsMap;
-type Opts = BaseArgs & MigratorCreateOptions & CliUpDownOptions & MigratorFreshOptions & MigratorLogUnlogOptions;
+type Opts = BaseArgs &
+  MigratorCreateOptions &
+  CliUpDownOptions &
+  MigratorFreshOptions &
+  MigratorLogUnlogOptions &
+  MigratorBreakpointOptions;

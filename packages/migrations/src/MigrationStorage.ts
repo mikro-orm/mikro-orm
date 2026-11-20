@@ -5,6 +5,7 @@ import {
   type AbstractSqlPlatform,
   type SchemaHelper,
   DatabaseTable,
+  SchemaComparator,
 } from '@mikro-orm/sql';
 import type { MigrationRow } from './typings.js';
 
@@ -50,6 +51,35 @@ export class MigrationStorage {
     );
   }
 
+  async setBreakpoint(params: { name: string; breakpoint: boolean }): Promise<void> {
+    const rows = await this.getExecutedMigrations();
+    const name = this.getMigrationName(params.name);
+    const row = rows.find(migration => this.getMigrationName(migration.name) === name);
+
+    if (!row) {
+      throw new Error(`Cannot set breakpoint on a migration that has not been executed: ${name}`);
+    }
+
+    const { entity, tableName, schemaName } = this.getTableName();
+
+    // Legacy tracking tables are upgraded only when explicitly setting a breakpoint.
+    if (!('breakpoint' in row)) {
+      const fromTable = new DatabaseTable(this.#platform, tableName, schemaName);
+      const toTable = new DatabaseTable(this.#platform, tableName, schemaName);
+      this.addBreakpointColumn(toTable);
+      const diff = new SchemaComparator(this.#platform).diffTable(fromTable, toTable);
+      const sql = this.#helper.alterTable(diff as Exclude<typeof diff, false>);
+      await this.#connection.execute(sql.join(';\n'), [], 'run', this.#masterTransaction);
+    }
+
+    await this.driver.nativeUpdate(
+      entity,
+      { name: { $in: [name, `${name}.js`, `${name}.ts`] } },
+      { breakpoint: params.breakpoint },
+      { ctx: this.#masterTransaction },
+    );
+  }
+
   async getExecutedMigrations(): Promise<MigrationRow[]> {
     await this.ensureTable();
     const { entity, schemaName } = this.getTableName();
@@ -62,6 +92,10 @@ export class MigrationStorage {
     return res.map(row => {
       if (typeof row.executed_at === 'string' || typeof row.executed_at === 'number') {
         row.executed_at = new Date(row.executed_at);
+      }
+
+      if ('breakpoint' in row) {
+        row.breakpoint = Boolean(row.breakpoint);
       }
 
       return row;
@@ -110,6 +144,7 @@ export class MigrationStorage {
       default: this.#platform.getCurrentTimestampSQL(length),
       length,
     });
+    this.addBreakpointColumn(table);
     const sql = this.#helper.createTable(table);
     await this.#connection.execute(sql.join(';\n'), [], 'run', this.#masterTransaction);
     this.#ensuredSchemas.add(cacheKey);
@@ -152,11 +187,22 @@ export class MigrationStorage {
         id: p.integer().primary().fieldNames('id'),
         name: p.string().fieldNames('name'),
         executedAt: p.datetime().defaultRaw('current_timestamp').fieldNames('executed_at'),
+        breakpoint: p.boolean().default(false),
       },
     }).init();
     entity.meta.sync();
 
     return { tableName, schemaName, entity };
+  }
+
+  private addBreakpointColumn(table: DatabaseTable): void {
+    table.addColumn({
+      name: 'breakpoint',
+      type: this.#platform.getBooleanTypeDeclarationSQL(),
+      mappedType: this.#platform.getMappedType('boolean'),
+      default: String(this.#helper.normalizeDefaultValue('false')),
+      nullable: false,
+    });
   }
 
   private resolveTableName(): { tableName: string; schemaName: string } {
