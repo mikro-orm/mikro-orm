@@ -142,6 +142,8 @@ export class SeedManager implements ISeedManager {
     await this.init();
     const { fs } = await import('@mikro-orm/core/fs-utils');
     fs.ensureDir(this.#absolutePath);
+    // the name becomes a class identifier and a file name
+    className = className.replace(/[^$\p{ID_Continue}]+/gu, '_').replace(/^(?![$\p{ID_Start}_])/u, '_');
     return this.generate(fs, className);
   }
 
