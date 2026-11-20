@@ -104,4 +104,29 @@ describe('Seeder', () => {
     expect(fileContents).toContain('exports.Publisher3Seeder = Publisher3Seeder;');
     await rm(seederFile);
   });
+
+  test('createSeeder normalizes names that are not valid class identifiers', async () => {
+    const root = fs.normalizePath(process.cwd()) + '/temp/seeder-names';
+    const options = orm.config.get('seeder');
+    options.path = root + '/seeders';
+    options.emit = 'ts';
+    orm.config.set('seeder', options);
+
+    try {
+      const names = {
+        Publisher3Seeder: 'Publisher3Seeder',
+        '../OutsideSeeder': '_OutsideSeeder',
+        'a/b\\c.d-e fSeeder': 'a_b_c_d_e_fSeeder',
+        '1st\'"Seeder': '_1st_Seeder',
+      };
+
+      for (const [name, className] of Object.entries(names)) {
+        const seederFile = await orm.seeder.create(name);
+        expect(seederFile).toBe(`${root}/seeders/${className}.ts`);
+        expect(await readFile(seederFile, 'utf8')).toContain(`export class ${className} extends Seeder {`);
+      }
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
 });
