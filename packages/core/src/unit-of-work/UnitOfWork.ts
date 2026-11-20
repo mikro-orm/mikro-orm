@@ -631,11 +631,6 @@ export class UnitOfWork {
    * @internal
    */
   batchRemovals(cb: () => void): void {
-    if (this.#reindexQueue) {
-      cb();
-      return;
-    }
-
     const queue = (this.#reindexQueue = new Set());
 
     try {
