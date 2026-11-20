@@ -4,7 +4,7 @@ services:
     expose:
       - 27017
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     restart: always
     security_opt:
       # blocks the `rseq` syscall so tcmalloc falls back to per-thread caches, working around
@@ -17,7 +17,7 @@ services:
     image: mysql:9.0-oracle
     restart: unless-stopped
     ports:
-      - "3308:3306"
+      - "127.0.0.1:3308:3306"
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
     command: [
@@ -35,7 +35,7 @@ services:
   mariadb:
     image: mariadb:13
     ports:
-      - "3309:3306"
+      - "127.0.0.1:3309:3306"
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
     volumes:
@@ -46,7 +46,7 @@ services:
   postgre:
     image: pgvector/pgvector:pg16
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgre:/var/lib/postgresql/data
     environment:
@@ -57,7 +57,7 @@ services:
   postgis:
     image: imresamu/postgis:16-3.4
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - postgis:/var/lib/postgresql/data
     environment:
@@ -69,8 +69,8 @@ services:
     image: cockroachdb/cockroach:latest-v24.3
     restart: unless-stopped
     ports:
-      - "26257:26257"
-      - "8080:8080"
+      - "127.0.0.1:26257:26257"
+      - "127.0.0.1:8080:8080"
     volumes:
       - cockroachdb:/cockroach/cockroach-data
     command: start-single-node --insecure
@@ -82,7 +82,7 @@ services:
     platform: linux/amd64
     restart: always
     ports:
-      - '1433:1433'
+      - '127.0.0.1:1433:1433'
     cap_add:
       - SYS_PTRACE
     environment:
@@ -99,7 +99,7 @@ services:
   oracledb:
     image: container-registry.oracle.com/database/free:latest-lite
     ports:
-      - '1521:1521'
+      - '127.0.0.1:1521:1521'
     environment:
       - ORACLE_ALLOW_REMOTE=true
       - ORACLE_PWD=oracle123
