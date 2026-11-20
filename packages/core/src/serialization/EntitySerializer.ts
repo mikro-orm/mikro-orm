@@ -15,6 +15,7 @@ import type {
   EntityProperty,
   EntityValue,
   IPrimaryKey,
+  IWrappedEntityInternal,
   TypeConfig,
   UnboxArray,
 } from '../typings.js';
@@ -25,6 +26,16 @@ import { type PopulatePath, ReferenceKind } from '../enums.js';
 import { Reference } from '../entity/Reference.js';
 import { SerializationContext } from './SerializationContext.js';
 import { isRaw } from '../utils/RawQueryFragment.js';
+import {
+  convertCustomType,
+  getPlan,
+  getPropertyKey,
+  isPlainValue,
+  isPrefixed,
+  isPropertyVisible,
+  referencePrimaryKey,
+  type SerializationPlan,
+} from './SerializationPlan.js';
 
 /** First segments of a path list, so a property can be matched without scanning the whole list. */
 interface PathLookup {
@@ -39,6 +50,8 @@ interface PreparedOptions {
   children: Map<string, SerializeOptions<any, any, any, any>>;
   fields?: PathLookup;
   populate?: PathLookup;
+  /** Options-dependent visibility of each plan entry (PKs first), shared by all entities of the same type in the call. */
+  visibility?: Map<SerializationPlan<any>, boolean[]>;
 }
 
 // Keyed by option objects created for a single `serialize()` call, so caller-owned options are never cached.
@@ -112,10 +125,11 @@ function isVisible<T extends object>(
     return false;
   }
 
-  const visible = prop && !(prop.hidden && !options.includeHidden);
-  const prefixed = prop && !prop.primary && !prop.accessor && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
+  return !!prop && (options.includeHidden ? !isPrefixed(prop) : isPropertyVisible(prop));
+}
 
-  return visible && !prefixed;
+function isRelation(meta: EntityMetadata<any>, prop: string): boolean {
+  return meta.properties[prop]?.kind !== ReferenceKind.SCALAR;
 }
 
 function isPopulated(propName: string, options: SerializeOptions<any, any, any, any>): boolean {
@@ -156,75 +170,40 @@ export class EntitySerializer {
     const ret = {} as Dictionary;
 
     try {
-      SerializationContext.propagate(
-        root,
-        entity,
-        (meta, prop) => meta.properties[prop]?.kind !== ReferenceKind.SCALAR,
-      );
-      const props = new Set<EntityKey<T>>();
-
-      if (meta.serializedPrimaryKey && !meta.compositePK) {
-        props.add(meta.serializedPrimaryKey);
-      } else {
-        meta.primaryKeys.forEach(pk => props.add(pk));
-      }
-
-      if (wrapped.isInitialized() || !wrapped.hasPrimaryKey()) {
-        for (const prop of meta.props) {
-          if (
-            Object.prototype.propertyIsEnumerable.call(entity, prop.name) ||
-            (prop.getter && prop.accessor === prop.name)
-          ) {
-            props.add(prop.name);
-          }
-        }
-
-        for (const key of Object.keys(entity) as EntityKey<T>[]) {
-          if (!meta.properties[key as EntityKey]) {
-            props.add(key);
-          }
-        }
-      }
-
+      SerializationContext.propagate(root, entity, isRelation);
+      const plan = getPlan(meta);
+      const visibility = this.getVisibility(meta, plan, options);
+      const pkCount = plan.pks.length;
+      const complete = wrapped.isInitialized() || !wrapped.hasPrimaryKey();
+      const total = complete ? pkCount + plan.rest.length : pkCount;
       const visited = root.visited.has(entity);
 
       if (!visited) {
         root.visited.add(entity);
       }
 
-      for (const prop of props) {
-        if (!isVisible<T>(meta, prop, options)) {
+      for (let i = 0; i < total; i++) {
+        const entry = i < pkCount ? plan.pks[i] : plan.rest[i - pkCount];
+        const prop = entry.prop.name;
+
+        if (
+          i >= pkCount &&
+          !Object.prototype.propertyIsEnumerable.call(entity, prop) &&
+          !(entry.prop.getter && entry.prop.accessor === prop)
+        ) {
           continue;
         }
 
-        const cycle = root.visit(meta.class, prop);
-
-        if (cycle && visited) {
-          continue;
+        if (visibility ? visibility[i] : entry.visible) {
+          this.serializeProperty(ret, entity, wrapped, root, visited, options, prop, entry.key, entry.scalar);
         }
+      }
 
-        let val: EntityValue<T> | undefined;
-
-        try {
-          val = this.processProperty<T>(prop, entity, options);
-        } finally {
-          if (!cycle) {
-            root.leave(meta.class, prop);
+      if (complete) {
+        for (const key of Object.keys(entity) as EntityKey<T>[]) {
+          if (!meta.properties[key] && isVisible(meta, key, options)) {
+            this.serializeProperty(ret, entity, wrapped, root, visited, options, key, key, false);
           }
-        }
-
-        if (options.skipNull && Utils.isPlainObject(val)) {
-          Utils.dropUndefinedProperties(val, null);
-        }
-
-        if (isRaw(val)) {
-          throw new Error(`Trying to serialize raw SQL fragment: '${val.sql}'`);
-        }
-
-        const visible = typeof val !== 'undefined' && !(val === null && options.skipNull);
-
-        if (visible) {
-          ret[this.propertyName(meta, prop)] = val as EntityDTOProp<T, EntityValue<T>>;
         }
       }
     } finally {
@@ -243,14 +222,14 @@ export class EntitySerializer {
         const visible = (entity[prop.getterName] as unknown) instanceof Function && isVisible(meta, prop.name, options);
 
         if (visible) {
-          ret[this.propertyName(meta, prop.name)] = this.processProperty(prop.getterName as EntityKey, entity, options);
+          ret[getPropertyKey(meta, prop)] = this.processProperty(prop.getterName as EntityKey, entity, options);
         }
       } else {
         // decorated getters
         const visible = typeof entity[prop.name] !== 'undefined' && isVisible(meta, prop.name, options);
 
         if (visible) {
-          ret[this.propertyName(meta, prop.name) as any] = this.processProperty(prop.name, entity, options);
+          ret[getPropertyKey(meta, prop)] = this.processProperty(prop.name, entity, options);
         }
       }
     }
@@ -258,17 +237,88 @@ export class EntitySerializer {
     return ret as SerializeDTO<T, P, E, never, ResolveSerializeFields<F>, SerializeFieldsKeepPK<F>>;
   }
 
-  private static propertyName<T>(meta: EntityMetadata<T>, prop: EntityKey<T>): EntityKey<T> {
-    /* v8 ignore next */
-    if (meta.properties[prop]?.serializedName) {
-      return meta.properties[prop].serializedName as EntityKey<T>;
+  private static getVisibility<T extends object>(
+    meta: EntityMetadata<T>,
+    plan: SerializationPlan<T>,
+    options: SerializeOptions<T, any, any, any>,
+  ): boolean[] | undefined {
+    // without these options, the visibility is the base one from the plan
+    if (
+      !options.groups &&
+      !options.includeHidden &&
+      !options.fields?.length &&
+      !Array.isArray(options.populate) &&
+      !options.exclude?.length
+    ) {
+      return undefined;
     }
 
-    if (meta.properties[prop]?.primary && meta.serializedPrimaryKey) {
-      return meta.serializedPrimaryKey;
+    const prepared = preparedOptions.get(options)!;
+    prepared.visibility ??= new Map();
+    let visibility = prepared.visibility.get(plan);
+
+    if (!visibility) {
+      visibility = [];
+
+      for (const entry of plan.pks) {
+        visibility.push(isVisible(meta, entry.prop.name, options));
+      }
+
+      for (const entry of plan.rest) {
+        visibility.push(isVisible(meta, entry.prop.name, options));
+      }
+
+      prepared.visibility.set(plan, visibility);
     }
 
-    return prop;
+    return visibility;
+  }
+
+  private static serializeProperty<T extends object>(
+    ret: Dictionary,
+    entity: T,
+    wrapped: IWrappedEntityInternal<T>,
+    root: SerializationContext<any>,
+    visited: boolean,
+    options: SerializeOptions<T, any, any, any>,
+    prop: EntityKey<T>,
+    key: string,
+    scalar: boolean,
+  ): void {
+    const meta = wrapped.__meta;
+    const cycle = root.visit(meta.class, prop);
+
+    if (cycle && visited) {
+      return;
+    }
+
+    let val: EntityValue<T> | undefined;
+
+    try {
+      const value = scalar ? entity[prop] : undefined;
+
+      if (scalar && isPlainValue(value)) {
+        val = this.processScalar(meta.properties[prop], value, wrapped.__platform, options);
+      } else {
+        val = this.processProperty<T>(prop, entity, options);
+      }
+    } finally {
+      if (!cycle) {
+        root.leave(meta.class, prop);
+      }
+    }
+
+    if (options.skipNull && Utils.isPlainObject(val)) {
+      Utils.dropUndefinedProperties(val, null);
+    }
+
+    if (isRaw(val)) {
+      throw new Error(`Trying to serialize raw SQL fragment: '${val.sql}'`);
+    }
+
+    if (typeof val !== 'undefined' && !(val === null && options.skipNull)) {
+      ret[key] = val as EntityDTOProp<T, EntityValue<T>>;
+    }
   }
 
   private static processProperty<T extends object>(
@@ -322,28 +372,20 @@ export class EntitySerializer {
       }
     }
 
-    if (property.customType) {
-      return this.processCustomType(value, property, wrapped.__platform, options.convertCustomTypes);
-    }
-
-    return wrapped.__platform.normalizePrimaryKey(value as unknown as IPrimaryKey) as unknown as EntityValue<T>;
+    return this.processScalar(property as EntityProperty<T>, value, wrapped.__platform, options);
   }
 
-  private static processCustomType<T, V>(
-    value: V,
+  private static processScalar<T>(
     prop: EntityProperty<T>,
+    value: unknown,
     platform: Platform,
-    convertCustomTypes?: boolean,
-  ): V {
-    if (!prop.customType) {
-      return value;
+    options: SerializeOptions<T, any, any, any>,
+  ): EntityValue<T> | undefined {
+    if (prop.customType) {
+      return convertCustomType(prop, value, platform, options.convertCustomTypes) as EntityValue<T>;
     }
 
-    if (convertCustomTypes) {
-      return prop.customType.convertToDatabaseValue(value, platform, { mode: 'serialization' });
-    }
-
-    return prop.customType.toJSON(value, platform);
+    return platform.normalizePrimaryKey(value as IPrimaryKey) as unknown as EntityValue<T>;
   }
 
   private static extractChildOptions<T extends object, U extends object>(
@@ -406,29 +448,16 @@ export class EntitySerializer {
     const expand = populated || !wrapped.__managed;
     const meta = wrapped.__meta;
     const childOptions = this.extractChildOptions(options, prop.name) as Dictionary;
-    const visible = meta.primaryKeys.filter(prop => isVisible(meta, prop, childOptions));
 
     if (expand) {
       return this.serialize(child, childOptions) as EntityValue<T>;
     }
 
-    const pk = this.processCustomType(wrapped.getPrimaryKey()!, prop, wrapped.__platform, options.convertCustomTypes);
+    const pk = convertCustomType(prop, wrapped.getPrimaryKey()!, wrapped.__platform, options.convertCustomTypes);
+    const visible = meta.primaryKeys.filter(prop => isVisible(meta, prop, childOptions));
+    const forceObject = options.forceObject ?? wrapped.__config.get('serialization').forceObject;
 
-    if (options.forceObject ?? wrapped.__config.get('serialization').forceObject) {
-      return Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<T>;
-    }
-
-    if (Utils.isPlainObject(pk)) {
-      const pruned = Utils.primaryKeyToObject(meta, pk, visible) as EntityValue<T>;
-
-      if (visible.length === 1) {
-        return platform.normalizePrimaryKey(pruned[visible[0] as keyof typeof pruned] as IPrimaryKey) as EntityValue<T>;
-      }
-
-      return pruned;
-    }
-
-    return platform.normalizePrimaryKey(pk as IPrimaryKey) as EntityValue<T>;
+    return referencePrimaryKey(meta, pk, visible, platform, forceObject) as EntityValue<T>;
   }
 
   private static processCollection<T extends object>(
@@ -450,7 +479,7 @@ export class EntitySerializer {
         return this.serialize(item, this.extractChildOptions(options, prop.name));
       }
 
-      const pk = this.processCustomType(wrapped.getPrimaryKey()!, prop, wrapped.__platform, options.convertCustomTypes);
+      const pk = convertCustomType(prop, wrapped.getPrimaryKey()!, wrapped.__platform, options.convertCustomTypes);
 
       if (options.forceObject ?? wrapped.__config.get('serialization').forceObject) {
         return Utils.primaryKeyToObject(wrapped.__meta, pk) as EntityValue<T>;
