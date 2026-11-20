@@ -177,10 +177,10 @@ export class Reference<T extends object> {
 
     if (!ret) {
       const wrapped = helper(this.entity);
-      options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
+      const failHandler = options.failHandler ?? wrapped.__em!.config.get('findOneOrFailHandler');
       const entityName = this.entity.constructor.name;
       const where = wrapped.getPrimaryKey() as any;
-      throw options.failHandler(entityName, where);
+      throw failHandler(entityName, where);
     }
 
     return ret;
@@ -288,7 +288,7 @@ export class ScalarReference<Value> {
 
   /**
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
-   * Returns the entity or throws an error just like `em.findOneOrFail()` (and respects the same config options).
+   * Returns the value or throws an error naming the property, unless a `failHandler` is passed in the options.
    */
   async loadOrFail(
     options: Omit<LoadReferenceOrFailOptions<any, any>, 'populate' | 'fields' | 'exclude'> = {},
@@ -297,9 +297,12 @@ export class ScalarReference<Value> {
 
     if (ret == null) {
       const wrapped = helper(this.entity!);
-      options.failHandler ??= wrapped.__em!.config.get('findOneOrFailHandler');
       const entityName = this.entity!.constructor.name;
-      throw NotFoundError.failedToLoadProperty(entityName, this.#property!, wrapped.getPrimaryKey());
+      const where = wrapped.getPrimaryKey();
+      throw (
+        options.failHandler?.(entityName, where) ??
+        NotFoundError.failedToLoadProperty(entityName, this.#property!, where)
+      );
     }
 
     return ret;
