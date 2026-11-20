@@ -68,6 +68,11 @@ export class EntityAssigner {
       return;
     }
 
+    // keys that are not entity properties must not replace methods of the entity, e.g. `toJSON`
+    if (!Object.hasOwn(props, propName) && typeof (entity as Dictionary)[propName] === 'function') {
+      return;
+    }
+
     let value = data[propName];
 
     const onlyProperties = options.onlyProperties && !(propName in props);
