@@ -68,6 +68,10 @@ class OracleQueryCompiler extends DefaultQueryCompiler {
     return '';
   }
 
+  protected override getCurrentParameterPlaceholder(): string {
+    return ':' + (this.numParameters - 1);
+  }
+
   protected override visitAlias(node: AliasNode): void {
     this.visitNode(node.node);
     this.append(' ');
@@ -111,8 +115,7 @@ class OracleConnection implements DatabaseConnection {
   }
 
   async executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> {
-    const { sql, bindParams } = this.formatQuery(compiledQuery);
-    const result = await this.#connection.execute<R>(sql, bindParams, {
+    const result = await this.#connection.execute<R>(compiledQuery.sql, compiledQuery.parameters as unknown[], {
       autoCommit: (compiledQuery as any).autoCommit,
       outFormat: OUT_FORMAT_OBJECT,
       ...this.#executeOptions,
@@ -126,16 +129,8 @@ class OracleConnection implements DatabaseConnection {
     };
   }
 
-  formatQuery(query: CompiledQuery): { sql: string; bindParams: unknown[] } {
-    return {
-      sql: query.sql.replace(/\$(\d+)/g, (_match, p1) => `:${parseInt(p1, 10) - 1}`), // Format bind params in Oracle syntax :0, :1, etc.
-      bindParams: query.parameters as unknown[],
-    };
-  }
-
   async *streamQuery<R>(compiledQuery: CompiledQuery, chunkSize?: number): AsyncIterableIterator<QueryResult<R>> {
-    const { sql, bindParams } = this.formatQuery(compiledQuery);
-    const result = await this.#connection.execute<R>(sql, bindParams, {
+    const result = await this.#connection.execute<R>(compiledQuery.sql, compiledQuery.parameters as unknown[], {
       resultSet: true,
       autoCommit: (compiledQuery as any).autoCommit,
       outFormat: OUT_FORMAT_OBJECT,
