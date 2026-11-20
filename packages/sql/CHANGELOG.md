@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.11](https://github.com/mikro-orm/mikro-orm/compare/v7.2.10...v7.2.11) (2026-11-20)
+
+### Bug Fixes
+
+* **mysql:** read enum items of tables with a quote in their name ([#8779](https://github.com/mikro-orm/mikro-orm/issues/8779)) ([4938fee](https://github.com/mikro-orm/mikro-orm/commit/4938fee733528fbf6bfecb19181ec29a791fdfa7))
+* **oracle:** keep dollar signs followed by digits in values intact ([#8782](https://github.com/mikro-orm/mikro-orm/issues/8782)) ([da3a550](https://github.com/mikro-orm/mikro-orm/commit/da3a550ed90faae782532e500eb7f896c9b41d67))
+* **sql:** handle unusual identifier names in schema introspection ([#8783](https://github.com/mikro-orm/mikro-orm/issues/8783)) ([b382fd8](https://github.com/mikro-orm/mikro-orm/commit/b382fd800a64a177175d4c17f87222b2a06d11c3))
+* **sql:** keep question marks in identifiers and inlined values out of placeholder matching ([#8769](https://github.com/mikro-orm/mikro-orm/issues/8769)) ([84b4ac6](https://github.com/mikro-orm/mikro-orm/commit/84b4ac643256e235da9f0e6b55482085421c57f8))
+* **sql:** quote every part of dotted identifiers ([#8765](https://github.com/mikro-orm/mikro-orm/issues/8765)) ([527a554](https://github.com/mikro-orm/mikro-orm/commit/527a55475a7f293b6253bc9dc00f3996e41c7d05)), closes [#8760](https://github.com/mikro-orm/mikro-orm/issues/8760)
+
+
 ## [7.2.10](https://github.com/mikro-orm/mikro-orm/compare/v7.2.9...v7.2.10) (2026-11-16)
 
 ### Bug Fixes

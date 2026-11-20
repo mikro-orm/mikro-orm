@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.11](https://github.com/mikro-orm/mikro-orm/compare/v7.2.10...v7.2.11) (2026-11-20)
+
+### Bug Fixes
+
+* **mssql:** quote schema, table and column names in schema helper queries ([#8784](https://github.com/mikro-orm/mikro-orm/issues/8784)) ([bd0e282](https://github.com/mikro-orm/mikro-orm/commit/bd0e282e3448f52e3cc3a1aeacae01e555a1acd3))
+* **sql:** keep question marks in identifiers and inlined values out of placeholder matching ([#8769](https://github.com/mikro-orm/mikro-orm/issues/8769)) ([84b4ac6](https://github.com/mikro-orm/mikro-orm/commit/84b4ac643256e235da9f0e6b55482085421c57f8))
+* **sql:** quote every part of dotted identifiers ([#8765](https://github.com/mikro-orm/mikro-orm/issues/8765)) ([527a554](https://github.com/mikro-orm/mikro-orm/commit/527a55475a7f293b6253bc9dc00f3996e41c7d05)), closes [#8760](https://github.com/mikro-orm/mikro-orm/issues/8760)
+
+
 ## [7.2.10](https://github.com/mikro-orm/mikro-orm/compare/v7.2.9...v7.2.10) (2026-11-16)
 
 ### Bug Fixes

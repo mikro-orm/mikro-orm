@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.11](https://github.com/mikro-orm/mikro-orm/compare/v7.2.10...v7.2.11) (2026-11-20)
+
+### Bug Fixes
+
+* **seeder:** normalize the seeder name to a valid class identifier in `seeder:create` ([#8780](https://github.com/mikro-orm/mikro-orm/issues/8780)) ([107748d](https://github.com/mikro-orm/mikro-orm/commit/107748d8a47b2d08e4a8d5f67d864dbe9ecbab67))
+
+
 ## [7.2.10](https://github.com/mikro-orm/mikro-orm/compare/v7.2.9...v7.2.10) (2026-11-16)
 
 **Note:** Version bump only for package @mikro-orm/seeder

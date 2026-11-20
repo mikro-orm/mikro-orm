@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.11](https://github.com/mikro-orm/mikro-orm/compare/v7.2.10...v7.2.11) (2026-11-20)
+
+### Bug Fixes
+
+* **core:** do not replace entity methods with unknown keys in `assign()` ([#8771](https://github.com/mikro-orm/mikro-orm/issues/8771)) ([d411df7](https://github.com/mikro-orm/mikro-orm/commit/d411df7eae79c27ff12b56c474c615149851fe49))
+* **core:** honor the per-call fail handler in `ScalarReference.loadOrFail()` ([#8767](https://github.com/mikro-orm/mikro-orm/issues/8767)) ([3728594](https://github.com/mikro-orm/mikro-orm/commit/3728594f52bfc2e10df4b259bfd523ec77492c9a)), closes [#8758](https://github.com/mikro-orm/mikro-orm/issues/8758)
+* **core:** ignore commas inside default values when reading constructor params ([#8752](https://github.com/mikro-orm/mikro-orm/issues/8752)) ([be50fca](https://github.com/mikro-orm/mikro-orm/commit/be50fca3baae0749dc0e99efe0818b53a4d43fc0))
+* **core:** include filter params in the result cache key of queries loading relations ([#8770](https://github.com/mikro-orm/mikro-orm/issues/8770)) ([dfedae2](https://github.com/mikro-orm/mikro-orm/commit/dfedae260b8b7f245820c5bda9ab34867cb8b596))
+* **core:** mark populated collection partial only when the populate filter targets it ([#8755](https://github.com/mikro-orm/mikro-orm/issues/8755)) ([f882683](https://github.com/mikro-orm/mikro-orm/commit/f882683f0c055cace50cf395f44f629e4ec90655)), closes [#8753](https://github.com/mikro-orm/mikro-orm/issues/8753)
+* **core:** reuse identity-map entries with falsy primary keys ([#8757](https://github.com/mikro-orm/mikro-orm/issues/8757)) ([8a9cc31](https://github.com/mikro-orm/mikro-orm/commit/8a9cc318a76210bbee55bc0679409c6c9f4e4393))
+* **mssql:** quote schema, table and column names in schema helper queries ([#8784](https://github.com/mikro-orm/mikro-orm/issues/8784)) ([bd0e282](https://github.com/mikro-orm/mikro-orm/commit/bd0e282e3448f52e3cc3a1aeacae01e555a1acd3))
+* **mysql:** read enum items of tables with a quote in their name ([#8779](https://github.com/mikro-orm/mikro-orm/issues/8779)) ([4938fee](https://github.com/mikro-orm/mikro-orm/commit/4938fee733528fbf6bfecb19181ec29a791fdfa7))
+* **oracle:** keep dollar signs followed by digits in values intact ([#8782](https://github.com/mikro-orm/mikro-orm/issues/8782)) ([da3a550](https://github.com/mikro-orm/mikro-orm/commit/da3a550ed90faae782532e500eb7f896c9b41d67))
+* **seeder:** normalize the seeder name to a valid class identifier in `seeder:create` ([#8780](https://github.com/mikro-orm/mikro-orm/issues/8780)) ([107748d](https://github.com/mikro-orm/mikro-orm/commit/107748d8a47b2d08e4a8d5f67d864dbe9ecbab67))
+* **sql:** handle unusual identifier names in schema introspection ([#8783](https://github.com/mikro-orm/mikro-orm/issues/8783)) ([b382fd8](https://github.com/mikro-orm/mikro-orm/commit/b382fd800a64a177175d4c17f87222b2a06d11c3))
+* **sql:** keep question marks in identifiers and inlined values out of placeholder matching ([#8769](https://github.com/mikro-orm/mikro-orm/issues/8769)) ([84b4ac6](https://github.com/mikro-orm/mikro-orm/commit/84b4ac643256e235da9f0e6b55482085421c57f8))
+* **sql:** quote every part of dotted identifiers ([#8765](https://github.com/mikro-orm/mikro-orm/issues/8765)) ([527a554](https://github.com/mikro-orm/mikro-orm/commit/527a55475a7f293b6253bc9dc00f3996e41c7d05)), closes [#8760](https://github.com/mikro-orm/mikro-orm/issues/8760)
+
+### Performance Improvements
+
+* **core:** compute populate child fields once per relation instead of per entity ([#8764](https://github.com/mikro-orm/mikro-orm/issues/8764)) ([0f555cf](https://github.com/mikro-orm/mikro-orm/commit/0f555cf0f2ac6975f15dbf490bbd4d21c413efaa))
+* **core:** reassign collection indexes once when removing many items ([#8761](https://github.com/mikro-orm/mikro-orm/issues/8761)) ([01861d0](https://github.com/mikro-orm/mikro-orm/commit/01861d033252621d980c37ae1968f7940b073527))
+
+
 ## [7.2.10](https://github.com/mikro-orm/mikro-orm/compare/v7.2.9...v7.2.10) (2026-11-16)
 
 ### Bug Fixes

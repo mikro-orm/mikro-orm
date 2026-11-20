@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.11](https://github.com/mikro-orm/mikro-orm/compare/v7.2.10...v7.2.11) (2026-11-20)
+
+### Bug Fixes
+
+* **sql:** keep question marks in identifiers and inlined values out of placeholder matching ([#8769](https://github.com/mikro-orm/mikro-orm/issues/8769)) ([84b4ac6](https://github.com/mikro-orm/mikro-orm/commit/84b4ac643256e235da9f0e6b55482085421c57f8))
+
+
 ## [7.2.10](https://github.com/mikro-orm/mikro-orm/compare/v7.2.9...v7.2.10) (2026-11-16)
 
 **Note:** Version bump only for package @mikro-orm/mariadb
