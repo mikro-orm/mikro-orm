@@ -387,7 +387,7 @@ jobs:
           fi
 
       - name: Publish packages
-        uses: apify/actions/execute-workflow@6a234394aa4b2a753d3ed294c3e069d044656406 # v1.6.2
+        uses: apify/actions/execute-workflow@48ab27d3d0de7744c20dd783b83245dfae2cddfd # v1.7.0
         with:
           workflow: release.yml
           inputs: >
