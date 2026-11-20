@@ -1338,17 +1338,15 @@ export class EntityLoader {
           .filter(parts => parts[1] === 'ref')
           .map(parts => parts[0]),
       );
-      // the same for every target, so compute it only once
-      let childFields: string[] | undefined;
+      const childFields = (options.fields as unknown as string[])
+        .filter(f => f.startsWith(`${field}.`))
+        .map(f => f.substring(field.length + 1))
+        .filter(cf => !refChildren.has(cf.split('.')[0]));
+
       return children
         .map(e => Reference.unwrapReference(e[field] as AnyEntity) as Entity)
         .filter(target => {
           const wrapped = helper(target);
-          childFields ??= (options.fields as unknown as string[])
-            .filter(f => f.startsWith(`${field}.`))
-            .map(f => f.substring(field.length + 1))
-            .filter(cf => !refChildren.has(cf.split('.')[0]));
-
           return !wrapped.__initialized || !childFields.every(cf => this.isPropertyLoaded(target, cf));
         }) as Entity[keyof Entity][];
     }
