@@ -83,7 +83,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   override getDatabaseExistsSQL(name: string): string {
-    return `select 1 from sys.databases where name = N'${name}'`;
+    return `select 1 from sys.databases where name = N${this.platform.quoteValue(name)}`;
   }
 
   override getListTablesSQL(): string {
@@ -181,11 +181,11 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       columnproperty(sc.object_id, column_name, 'IsIdentity') is_identity,
       nullif(ic.collation_name, convert(nvarchar(128), databasepropertyex(db_name(), 'Collation'))) as collation_name
       from information_schema.columns ic
-      inner join sys.columns sc on sc.name = ic.column_name and sc.object_id = object_id(ic.table_schema + '.' + ic.table_name)
-      left join sys.computed_columns cmp on cmp.name = ic.column_name and cmp.object_id = object_id(ic.table_schema + '.' + ic.table_name)
-      left join sys.extended_properties t4 on t4.major_id = object_id(ic.table_schema + '.' + ic.table_name) and t4.name = 'MS_Description' and t4.minor_id = sc.column_id
+      inner join sys.columns sc on sc.name = ic.column_name and sc.object_id = object_id(quotename(ic.table_schema) + '.' + quotename(ic.table_name))
+      left join sys.computed_columns cmp on cmp.name = ic.column_name and cmp.object_id = object_id(quotename(ic.table_schema) + '.' + quotename(ic.table_name))
+      left join sys.extended_properties t4 on t4.major_id = object_id(quotename(ic.table_schema) + '.' + quotename(ic.table_name)) and t4.name = 'MS_Description' and t4.minor_id = sc.column_id
       left join sys.default_constraints t5 on sc.default_object_id = t5.object_id
-      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(ic.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and ic.table_schema = '${schema}')`).join(' or ')})
+      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(ic.table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and ic.table_schema = ${this.platform.quoteValue(schema)})`).join(' or ')})
       order by ordinal_position`;
     const allColumns = await connection.execute<any[]>(sql, [], 'all', ctx);
     const str = (val?: string | number) => (val != null ? '' + val : val);
@@ -269,7 +269,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       inner join sys.columns col on ic.object_id = col.object_id and ic.column_id = col.column_id
       inner join sys.tables t on ind.object_id = t.object_id
       where
-      (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(t.name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and schema_name(t.schema_id) = '${schema}')`).join(' OR ')})
+      (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(t.name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and schema_name(t.schema_id) = ${this.platform.quoteValue(schema)})`).join(' OR ')})
       order by t.name, ind.name, ic.is_included_column, ic.key_ordinal`;
     const allIndexes = await connection.execute<any[]>(sql, [], 'all', ctx);
     const ret = {} as Dictionary;
@@ -362,7 +362,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       inner join sys.tables rt on rt.object_id = fk.referenced_object_id
       inner join sys.schemas rs on rs.schema_id = rt.schema_id
       inner join sys.columns rc on rc.object_id = fkc.referenced_object_id and rc.column_id = fkc.referenced_column_id
-      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(t.name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and s.name = '${schema}')`).join(' or ')})
+      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `(t.name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and s.name = ${this.platform.quoteValue(schema)})`).join(' or ')})
       order by rs.name, rt.name, fkc.constraint_column_id, fk.name`;
     const allFks = await connection.execute<any[]>(sql, [], 'all', ctx);
     const ret = {} as Dictionary;
@@ -394,7 +394,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
 
         if (item.columnName && hasItems) {
           items = items!
-            .map(val => /^\(?'(.*)'/.exec(val.trim().replace(`[${item.columnName}]=`, ''))?.[1])
+            .map(val => /^\(?'(.*)'/.exec(val.trim().replace(`${this.quote(item.columnName)}=`, ''))?.[1])
             .filter(Boolean) as string[];
 
           if (items.length > 0) {
@@ -417,7 +417,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       from sys.check_constraints con
       left outer join sys.objects t on con.parent_object_id = t.object_id
       left outer join sys.all_columns col on con.parent_column_id = col.column_id and con.parent_object_id = col.object_id
-      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `t.name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and schema_name(t.schema_id) = '${schema}'`).join(' or ')})
+      where (${[...tablesBySchemas.entries()].map(([schema, tables]) => `t.name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(',')}) and schema_name(t.schema_id) = ${this.platform.quoteValue(schema)}`).join(' or ')})
       order by con.name`;
   }
 
@@ -788,7 +788,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   override getCreateNamespaceSQL(name: string): string {
-    return `if (schema_id(${this.platform.quoteValue(name)}) is null) begin exec ('create schema ${this.quote(name)} authorization [dbo]') end`;
+    return `if (schema_id(${this.platform.quoteValue(name)}) is null) begin exec (${this.platform.quoteValue(`create schema ${this.quote(name)} authorization [dbo]`)}) end`;
   }
 
   override getDropNamespaceSQL(name: string): string {
@@ -840,12 +840,12 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       (globalThis as Dictionary).idx++;
 
       constraints.push(
-        `declare @constraint${i} varchar(100) = (select default_constraints.name from sys.all_columns` +
+        `declare @constraint${i} nvarchar(258) = (select quotename(default_constraints.name) from sys.all_columns` +
           ' join sys.tables on all_columns.object_id = tables.object_id' +
           ' join sys.schemas on tables.schema_id = schemas.schema_id' +
           ' join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id' +
-          ` where schemas.name = '${schemaName}' and tables.name = '${tableName}' and all_columns.name = '${column.name}')` +
-          ` if @constraint${i} is not null exec('alter table ${tableNameRaw} drop constraint ' + @constraint${i})`,
+          ` where schemas.name = ${this.platform.quoteValue(schemaName)} and tables.name = ${this.platform.quoteValue(tableName)} and all_columns.name = ${this.platform.quoteValue(column.name)})` +
+          ` if @constraint${i} is not null exec(${this.platform.quoteValue(`alter table ${tableNameRaw} drop constraint `)} + @constraint${i})`,
       );
     }
 
@@ -861,7 +861,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       oldColumnName;
     const columnName = this.platform.quoteValue(to.name);
 
-    return `exec sp_rename ${this.platform.quoteValue(oldName)}, ${columnName}, 'COLUMN'`;
+    return `exec sp_rename ${this.platform.quoteValue(this.quote(oldName))}, ${columnName}, 'COLUMN'`;
   }
 
   override createTableColumn(
@@ -1058,12 +1058,12 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       schema = undefined;
     }
 
-    return `if object_id('${this.quote(schema, name)}', 'U') is not null drop table ${this.quote(schema, name)}`;
+    return `if object_id(${this.platform.quoteValue(this.quote(schema, name))}, 'U') is not null drop table ${this.quote(schema, name)}`;
   }
 
   override dropViewIfExists(name: string, schema?: string): string {
     const viewName = this.quote(this.getTableName(name, schema));
-    return `if object_id('${viewName}', 'V') is not null drop view ${viewName}`;
+    return `if object_id(${this.platform.quoteValue(viewName)}, 'V') is not null drop view ${viewName}`;
   }
 
   override getAddColumnsSQL(table: DatabaseTable, columns: Column[]): string[] {
