@@ -2318,7 +2318,15 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       delete opts[k as keyof typeof opts];
     }
 
-    return [entityName, method, opts, where];
+    const key: unknown[] = [entityName, method, opts, where];
+    // filters of the root entity are part of `where`, but those of its relations are applied only when loading them
+    const filterParams = this.getContext(false).filterParams;
+
+    if (options.filters !== false && Utils.hasObjectKeys(filterParams) && Utils.asArray(opts.populate).length > 0) {
+      key.push({ filterParams });
+    }
+
+    return key;
   }
 
   /**
