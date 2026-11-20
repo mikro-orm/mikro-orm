@@ -79,6 +79,7 @@ test('MySqlConnection forwards onReserveConnection to Kysely MysqlDialect', asyn
 
   expect(pool.calls).toEqual([
     'getConnection',
+    'query:select @@sql_mode as mode',
     'reserve',
     'query:set @app_tenant_id = ?',
     'query:select 1 as count',

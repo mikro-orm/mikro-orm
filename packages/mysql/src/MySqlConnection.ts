@@ -1,5 +1,7 @@
 import {
+  CompiledQuery,
   type ControlledTransaction,
+  type DatabaseConnection,
   type MysqlDialectConfig,
   type MysqlPool,
   type MysqlPoolConnection,
@@ -14,15 +16,36 @@ import {
   AbstractSqlConnection,
   type TransactionEventBroadcaster,
 } from '@mikro-orm/sql';
+import type { MySqlPlatform } from './MySqlPlatform.js';
 
 /** MySQL database connection using the `mysql2` driver. */
 export class MySqlConnection extends AbstractSqlConnection {
+  declare protected platform: MySqlPlatform;
+
   // Kysely sends `cancel query`/`kill session` over this connection rather than over the pool, so an
   // abort doesn't have to wait for an idle pool connection — or, inside a transaction, for the very
   // query it is meant to cancel. Postgres gets one from its pool by default, mysql2 does not.
   static readonly #controlConnection = createConnection as unknown as MysqlDialectConfig['controlConnection'];
 
   #pool?: Pool;
+  #sqlModeRead = false;
+
+  /** A query is formatted before its pool connection exists, so one is opened up front to learn the `sql_mode`. */
+  override async ensureConnection(): Promise<void> {
+    await super.ensureConnection();
+
+    if (!this.#sqlModeRead) {
+      try {
+        await this.getClient()
+          .connection()
+          .execute(async () => {
+            this.#sqlModeRead = true;
+          });
+      } catch {
+        // left for the query that follows to report
+      }
+    }
+  }
 
   override async createKyselyDialect(overrides: PoolOptions): Promise<MysqlDialect> {
     const options = this.mapOptions(overrides);
@@ -60,7 +83,7 @@ export class MySqlConnection extends AbstractSqlConnection {
       return new MysqlDialect({
         pool,
         controlConnection: MySqlConnection.#controlConnection,
-        onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
+        onCreateConnection: connection => this.onCreateConnection(connection),
         onReserveConnection: this.options.onReserveConnection ?? this.config.get('onReserveConnection'),
       });
     }
@@ -70,9 +93,16 @@ export class MySqlConnection extends AbstractSqlConnection {
     return new MysqlDialect({
       pool: this.#pool as any,
       controlConnection: MySqlConnection.#controlConnection,
-      onCreateConnection: this.options.onCreateConnection ?? this.config.get('onCreateConnection'),
+      onCreateConnection: connection => this.onCreateConnection(connection),
       onReserveConnection: this.options.onReserveConnection ?? this.config.get('onReserveConnection'),
     });
+  }
+
+  /** Runs the user hook, then reads the session `sql_mode` it may have changed, as that decides how strings are escaped. */
+  private async onCreateConnection(connection: DatabaseConnection): Promise<void> {
+    await (this.options.onCreateConnection ?? this.config.get('onCreateConnection'))?.(connection);
+    const res = await connection.executeQuery<{ mode?: string }>(CompiledQuery.raw('select @@sql_mode as mode'));
+    this.platform.noBackslashEscapes = !!res.rows[0]?.mode?.includes('NO_BACKSLASH_ESCAPES');
   }
 
   /** Returns the `mysql2` connection pool backing this connection. */
