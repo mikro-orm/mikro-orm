@@ -187,8 +187,8 @@ exports[`SchemaGenerator > rename column [mssql] > mssql-update-schema-rename-co
 "alter table [author2] drop constraint [author2_favourite_author_id_foreign];
 
 drop index [author2_name_age_index] on [author2];
-exec sp_rename 'author2.age', 'age_in_years', 'COLUMN';
-exec sp_rename 'author2.favourite_author_id', 'favourite_writer_id', 'COLUMN';
+exec sp_rename '[author2].[age]', 'age_in_years', 'COLUMN';
+exec sp_rename '[author2].[favourite_author_id]', 'favourite_writer_id', 'COLUMN';
 alter table [author2] add constraint [author2_favourite_writer_id_foreign] foreign key ([favourite_writer_id]) references [author2] ([id]);
 create index [author2_name_age_in_years_index] on [author2] ([name], [age_in_years]);
 "
@@ -219,9 +219,9 @@ exports[`SchemaGenerator > update schema [mssql] > mssql-update-schema-alter-col
 alter table [author2] alter column [born] nvarchar(max);
 alter table [author2] drop constraint [author2_favourite_author_id_foreign];
 
-declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'author2' and all_columns.name = 'age') if @constraint0 is not null exec('alter table [author2] drop constraint ' + @constraint0);
+declare @constraint0 nvarchar(258) = (select quotename(default_constraints.name) from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'author2' and all_columns.name = 'age') if @constraint0 is not null exec('alter table [author2] drop constraint ' + @constraint0);
 alter table [author2] add constraint [author2_age_default] default 42 for [age];
-declare @constraint1 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'author2' and all_columns.name = 'born') if @constraint1 is not null exec('alter table [author2] drop constraint ' + @constraint1);
+declare @constraint1 nvarchar(258) = (select quotename(default_constraints.name) from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'author2' and all_columns.name = 'born') if @constraint1 is not null exec('alter table [author2] drop constraint ' + @constraint1);
 alter table [author2] alter column [born] int not null;
 alter table [author2] add constraint [author2_born_default] default 42 for [born];
 alter table [author2] add constraint [author2_favourite_author_id_foreign] foreign key ([favourite_author_id]) references [foo_bar2] ([id]) on delete set null;
@@ -239,7 +239,7 @@ exports[`SchemaGenerator > update schema [mssql] > mssql-update-schema-drop-1:1 
 "alter table [foo_bar2] drop constraint [foo_bar2_baz_id_foreign];
 
 drop index [foo_bar2_baz_id_unique] on [foo_bar2];
-declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'foo_bar2' and all_columns.name = 'baz_id') if @constraint0 is not null exec('alter table [foo_bar2] drop constraint ' + @constraint0);
+declare @constraint0 nvarchar(258) = (select quotename(default_constraints.name) from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'foo_bar2' and all_columns.name = 'baz_id') if @constraint0 is not null exec('alter table [foo_bar2] drop constraint ' + @constraint0);
 alter table [foo_bar2] drop column [baz_id];
 "
 `;
@@ -248,11 +248,11 @@ exports[`SchemaGenerator > update schema [mssql] > mssql-update-schema-drop-colu
 "alter table [author2] drop constraint [author2_favourite_book_uuid_pk_foreign];
 
 alter table [new_table] drop constraint [new_table_pkey];
-declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'new_table' and all_columns.name = 'id') if @constraint0 is not null exec('alter table [new_table] drop constraint ' + @constraint0);
+declare @constraint0 nvarchar(258) = (select quotename(default_constraints.name) from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'new_table' and all_columns.name = 'id') if @constraint0 is not null exec('alter table [new_table] drop constraint ' + @constraint0);
 alter table [new_table] drop constraint [new_table_updated_at_default];
 alter table [new_table] drop column [id], [updated_at];
 
-declare @constraint1 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'author2' and all_columns.name = 'favourite_book_uuid_pk') if @constraint1 is not null exec('alter table [author2] drop constraint ' + @constraint1);
+declare @constraint1 nvarchar(258) = (select quotename(default_constraints.name) from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'author2' and all_columns.name = 'favourite_book_uuid_pk') if @constraint1 is not null exec('alter table [author2] drop constraint ' + @constraint1);
 alter table [author2] drop column [favourite_book_uuid_pk];
 "
 `;

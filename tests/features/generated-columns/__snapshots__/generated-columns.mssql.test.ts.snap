@@ -9,7 +9,7 @@ create table [user] ([id] int identity(1,1) not null constraint [user_pkey] prim
 `;
 
 exports[`schema 2`] = `
-"declare @constraint0 varchar(100) = (select default_constraints.name from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'user' and all_columns.name = 'full_name') if @constraint0 is not null exec('alter table [user] drop constraint ' + @constraint0);
+"declare @constraint0 nvarchar(258) = (select quotename(default_constraints.name) from sys.all_columns join sys.tables on all_columns.object_id = tables.object_id join sys.schemas on tables.schema_id = schemas.schema_id join sys.default_constraints on all_columns.default_object_id = default_constraints.object_id where schemas.name = 'dbo' and tables.name = 'user' and all_columns.name = 'full_name') if @constraint0 is not null exec('alter table [user] drop constraint ' + @constraint0);
 alter table [user] drop column [full_name];
 alter table [user] add [full_name] as (concat([last_name],' ',[first_name])) persisted;
 "
