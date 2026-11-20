@@ -140,5 +140,8 @@
     "typescript-eslint": "8.56.1",
     "uuid": "11.1.0"
   },
-  "packageManager": "yarn@4.12.0"
+  "packageManager": "yarn@4.12.0",
+  "resolutions": {
+    "sigstore": "patch:sigstore@npm%3A4.0.0#~/.yarn/patches/sigstore-npm-4.0.0-53b73532ef.patch"
+  }
 }
