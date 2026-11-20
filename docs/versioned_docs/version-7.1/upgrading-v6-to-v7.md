@@ -156,6 +156,10 @@ Or override it via `MIKRO_ORM_CLI_TS_LOADER` env var.
 +npm install @swc-node/register
 ```
 
+Jiti cannot transpile a decorated property that uses the definite assignment assertion (`id!: number`) or the `declare` modifier, it fails with `TRANSFORM_ERROR: Definitely assigned fields cannot be initialized here, but only in the constructor` ([unjs/jiti#367](https://github.com/unjs/jiti/issues/367)). That is how most decorator-based entities are written, so pick another loader for those. Entities defined via `defineEntity` or `EntitySchema` are not affected.
+
+Jiti is often present only as a transitive dependency of another tool, and the automatic selection still picks it up when none of the loaders ahead of it is installed. Installing one of those (e.g. `@oxc-node/core`) is enough to move away from it.
+
 Other relevant changes:
 - `tsNode` config option removed in favor of `preferTs`
 - `useTsNode` is renamed to `preferTs`
