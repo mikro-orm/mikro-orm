@@ -647,10 +647,8 @@ export class UnitOfWork {
   }
 
   private removeFromCollection(coll: Collection<AnyEntity>, entity: AnyEntity): void {
-    if (!this.#reindexQueue) {
-      coll.removeWithoutPropagation(entity);
-    } else if (coll.removeWithoutPropagation(entity, false)) {
-      this.#reindexQueue.add(coll);
+    if (coll.removeWithoutPropagation(entity, !this.#reindexQueue)) {
+      this.#reindexQueue?.add(coll);
     }
   }
 
@@ -803,11 +801,13 @@ export class UnitOfWork {
     this.#changeSets.clear();
     const visited = new Set<AnyEntity>();
 
-    this.batchRemovals(() => {
-      for (const entity of this.#removeStack) {
-        this.cascade(entity, Cascade.REMOVE, visited);
-      }
-    });
+    if (this.#removeStack.size > 0) {
+      this.batchRemovals(() => {
+        for (const entity of this.#removeStack) {
+          this.cascade(entity, Cascade.REMOVE, visited);
+        }
+      });
+    }
 
     visited.clear();
     const persistOptions = { checkRemoveStack: true };

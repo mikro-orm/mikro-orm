@@ -46,6 +46,8 @@ beforeEach(async () => {
   orm.em.clear();
 });
 
+afterEach(() => vi.restoreAllMocks());
+
 afterAll(async () => {
   await orm.close(true);
 });
@@ -66,7 +68,6 @@ test('em.remove() of many inverse M:N items updates the array indexes of each ow
 
   orm.em.remove([tags[0], tags[2], tags[3], tags[5]]);
   expect(reindex).toHaveBeenCalledTimes(2);
-  reindex.mockRestore();
   expectIndexes(b1.tags, ['t2', 't5']);
   expectIndexes(b2.tags, ['t5']);
   expect(b1.tags.isDirty()).toBe(true);

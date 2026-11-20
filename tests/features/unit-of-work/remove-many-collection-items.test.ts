@@ -65,6 +65,8 @@ beforeEach(async () => {
   orm.em.clear();
 });
 
+afterEach(() => vi.restoreAllMocks());
+
 afterAll(async () => {
   await orm.close(true);
 });
@@ -145,5 +147,4 @@ test('removing many items reassigns the array indexes once per collection', asyn
   orm.em.remove(author);
   await orm.em.flush();
   expect(reindex).toHaveBeenCalledTimes(2);
-  reindex.mockRestore();
 });
