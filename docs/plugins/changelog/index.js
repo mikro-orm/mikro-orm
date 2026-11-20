@@ -2,9 +2,30 @@
 
 const path = require('node:path');
 const { marked } = require('marked');
+const sanitizeHtml = require('sanitize-html');
 const { fetchReleases } = require('./fetch-releases');
 
 marked.setOptions({ gfm: true, breaks: true });
+
+const sanitizeOptions = {
+  allowedTags: [...sanitizeHtml.defaults.allowedTags, 'img', 'del', 'input'],
+  allowedAttributes: {
+    a: ['href', 'title'],
+    img: ['src', 'alt', 'title', 'width', 'height'],
+    code: ['class'],
+    th: ['align'],
+    td: ['align'],
+    input: ['type', 'checked', 'disabled'],
+  },
+  allowedClasses: { code: ['language-*'] },
+  allowedSchemes: ['http', 'https', 'mailto'],
+  allowProtocolRelative: false,
+  exclusiveFilter: frame => frame.tag === 'input' && frame.attribs.type !== 'checkbox',
+};
+
+function renderBody(markdown) {
+  return externalizeLinks(sanitizeHtml(marked.parse(markdown), sanitizeOptions));
+}
 
 function externalizeLinks(html) {
   return html.replace(/<a (?![^>]*\btarget=)/g, '<a target="_blank" rel="noopener noreferrer" ');
@@ -29,7 +50,7 @@ module.exports = function changelogPlugin(context, options = {}) {
           publishedAt: r.publishedAt,
           htmlUrl: r.htmlUrl,
           prerelease: !!r.prerelease,
-          bodyHtml: externalizeLinks(marked.parse(r.body || '')),
+          bodyHtml: renderBody(r.body || ''),
         }));
     },
 
