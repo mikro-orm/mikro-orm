@@ -996,6 +996,11 @@ export abstract class Platform {
     return false;
   }
 
+  /** Whether the platform supports constraint triggers (deferrable triggers, PostgreSQL). */
+  supportsConstraintTriggers(): boolean {
+    return false;
+  }
+
   /** Whether the driver can apply the session context on every pooled connection acquire (`sessionContext: 'connection'`). */
   supportsConnectionSessionContext(): boolean {
     return false;
@@ -1015,6 +1020,10 @@ export abstract class Platform {
       throw new MetadataError(
         `Entity ${meta.className} uses partitionBy, but ${this.constructor.name} does not support partitioned tables`,
       );
+    }
+
+    if (!this.supportsConstraintTriggers() && meta.triggers?.some(t => t.constraint || t.deferMode)) {
+      throw MetadataError.constraintTriggersNotSupportedByDriver(meta);
     }
 
     const declaresRls = meta.policies.length > 0 || !!meta.rowLevelSecurity;
