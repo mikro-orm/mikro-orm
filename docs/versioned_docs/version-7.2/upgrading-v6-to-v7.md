@@ -584,7 +584,7 @@ The `where` parameter is now moved to the options object.
 
 ## `qb.as()` signature changed
 
-Previosly, it was possible to prefix the alias with target entity name. This is now done via two parameter signature instead:
+Previously, it was possible to prefix the alias with target entity name. This is now done via two parameter signature instead:
 
 ```diff
 -qb.as('User.fullName');

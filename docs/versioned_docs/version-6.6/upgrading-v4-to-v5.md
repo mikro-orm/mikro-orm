@@ -138,7 +138,7 @@ In v4 this behaviour was disabled by default, so even after the new entity was f
 
 ## `migrations.pattern` is removed in favour of `migrations.glob`
 
-Migrations are using `umzug` under the hood, which is now upgraded to v3.0. With this version, the `pattern` configuration options is no longer available, and has been replaced with `glob`. This change is also reflected in MikroORM.
+Migrations are using `umzug` under the hood, which is now upgraded to v3.0. With this version, the `pattern` configuration option is no longer available, and has been replaced with `glob`. This change is also reflected in MikroORM.
 
 The default value for `glob` is `!(*.d).{js,ts}`, so both JS and TS files are matched (but not .d.ts files). You should usually not need to change this option as this default suits both development and production environments.
 

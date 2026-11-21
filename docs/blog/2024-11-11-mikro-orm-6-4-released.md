@@ -58,7 +58,7 @@ console.log(user1 === user2); // true
 
 By default, MikroORM names your embedded columns by prefixing them based on the embedded property name. While you were always in control of the prefix, the behavior of nested embeddables was a bit buggy, since the prefix override was considered as absolute. This was rather an omission in the initial design, which is now resolved.
 
-You can use the new `prefixMode` option in your ORM config to opt in to the correct behavior, which is to respect all the levels of nesting and their `prefix` options respectively, concatenating them when computing the final colum name. There are two prefix modes available:
+You can use the new `prefixMode` option in your ORM config to opt in to the correct behavior, which is to respect all the levels of nesting and their `prefix` options respectively, concatenating them when computing the final column name. There are two prefix modes available:
 
 - `absolute` mode (default) sets the prefix at the beginning of the column.
 - `relative` mode concatenates the prefix with its parent's prefix. This will be the default in v7.
@@ -237,7 +237,7 @@ create table `user` (
 );
 ```
 
-This was working for quite some time now, what changed is how such properties are internally handled during runtime, namely when you try to unset a value of such relation. Previously, this was interpretted as setting both the `invited_by_id` and `organization_id` to `null`, and resulted in foreign key constraint failures, since the `organization_id` column was `not null`. Now the ORM will understand better what you wanted and only set the owned columns to `null`.
+This was working for quite some time now, what changed is how such properties are internally handled during runtime, namely when you try to unset a value of such relation. Previously, this was interpreted as setting both the `invited_by_id` and `organization_id` to `null`, and resulted in foreign key constraint failures, since the `organization_id` column was `not null`. Now the ORM will understand better what you wanted and only set the owned columns to `null`.
 
 There is a new `ownColumns` option on the property level to control this, but its value is set automatically during discovery if we see a column that is shared between the primary key and a foreign key.
 
@@ -314,7 +314,7 @@ This is now validated, and such entity definition will cause an error during ent
 
 ## Renamed `tsNode` option to `preferTs`
 
-One small change to wrap this up - the `tsNode` option is now renamed to `preferTs`, to reflect better what it is actually about. Its name could give people a false sense of it enabling `ts-node`, or TypeScript support in general. Yet all it does is forcing the ORM to use the TypeScript related options for folder-based entity discovery (`entitiesTs`) and for migrations and seeders folder (`pathTs`) when they provided. Its value is normally automatically detected, but this can sometimes fail, or you might want to set its value to `false` for production builds.
+One small change to wrap this up - the `tsNode` option is now renamed to `preferTs`, to reflect better what it is actually about. Its name could give people a false sense of it enabling `ts-node`, or TypeScript support in general. Yet all it does is forcing the ORM to use the TypeScript related options for folder-based entity discovery (`entitiesTs`) and for migrations and seeders folder (`pathTs`) when they are provided. Its value is normally automatically detected, but this can sometimes fail, or you might want to set its value to `false` for production builds.
 
 ## What do you think?
 

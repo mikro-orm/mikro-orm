@@ -573,7 +573,7 @@ This strategy is very efficient for querying across all types in the hierarchy o
 
 ### SQL Schema considerations
 
-For Single-Table-Inheritance to work in scenarios where you are using either a legacy database schema or a self-written database schema, you have to make sure that all columns that are not in the root entity but in any of the different sub-entities has to allow null values. Columns that have NOT NULL constraints have to be on the root entity of the single-table inheritance hierarchy.
+For Single-Table-Inheritance to work in scenarios where you are using either a legacy database schema or a self-written database schema, you have to make sure that all columns that are not in the root entity but in any of the different sub-entities have to allow null values. Columns that have NOT NULL constraints have to be on the root entity of the single-table inheritance hierarchy.
 
 > This part of documentation is highly inspired by [doctrine docs](https://www.doctrine-project.org/projects/doctrine-orm/en/latest/reference/inheritance-mapping.html) as the behaviour here is pretty much the same.
 
