@@ -1,4 +1,4 @@
-import { EntitySchema, QueryFlag, ReferenceKind, raw, sql, SimpleLogger } from '@mikro-orm/core';
+import { EntitySchema, FilterQueryOverride, QueryFlag, ReferenceKind, raw, sql, SimpleLogger } from '@mikro-orm/core';
 import { ReflectMetadataProvider } from '@mikro-orm/decorators/legacy';
 import { EntityManager, MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../bootstrap.js';
@@ -121,6 +121,22 @@ const BookWithAuthor2 = new EntitySchema<IBookWithAuthor>({
   },
 });
 
+class BookByAuthor {
+  title!: string;
+
+  // `author_id` and `price` are output columns of the expression but not entity properties
+  readonly [FilterQueryOverride]?: { author_id: number };
+}
+
+const BookByAuthorSchema = new EntitySchema({
+  class: BookByAuthor,
+  name: 'BookByAuthor',
+  expression: 'select b.title as title, b.author_id as author_id from book4 b',
+  properties: {
+    title: { type: 'string' },
+  },
+});
+
 describe('virtual entities (sqlite)', () => {
   let orm: MikroORM;
 
@@ -142,6 +158,7 @@ describe('virtual entities (sqlite)', () => {
         AuthorProfileSchema2,
         AuthorProfileSchema3,
         BookWithAuthor2,
+        BookByAuthorSchema,
         IdentitySchema,
       ],
       loggerFactory: SimpleLogger.create,
@@ -438,5 +455,20 @@ describe('virtual entities (sqlite)', () => {
       ]);
       expect(total).toBe(9);
     }
+  });
+
+  test('filter by a key that is not an entity property (GH #5971)', async () => {
+    await createEntities(1);
+    await createEntities(2);
+
+    const authors = await orm.em.findAll(Author4, { orderBy: { name: 1 } });
+    const first = authors[0];
+
+    const books = await orm.em.find(BookByAuthor, { author_id: first.id });
+    expect(books).toHaveLength(3);
+    expect(books.every(b => b.title.startsWith('My Life on the Wall, part'))).toBe(true);
+
+    const books2 = await orm.em.find(BookByAuthor, { author_id: { $ne: first.id } });
+    expect(books2).toHaveLength(3);
   });
 });
