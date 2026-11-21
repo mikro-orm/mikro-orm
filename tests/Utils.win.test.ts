@@ -90,6 +90,11 @@ describe('Utils', () => {
     );
     expect(() => compareObjects(new Date(NaN), new Date(NaN))).toThrowError('Comparing invalid dates is not supported');
     expect(Utils.equals(NaN, NaN)).toBe(true);
+    expect(Utils.equals([], { length: 0 })).toBe(false);
+    expect(Utils.equals({ length: 0 }, [])).toBe(false);
+    expect(Utils.equals([1, 2], { 0: 1, 1: 2, length: 2 })).toBe(false);
+    expect(Utils.equals([1, 2], new Uint8Array([1, 2]))).toBe(false);
+    expect(Utils.equals(new Uint8Array([1, 2]), [1, 2])).toBe(false);
   });
 
   test('merge', () => {
