@@ -3172,13 +3172,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tufjs/models@npm:5.0.2":
-  version: 5.0.2
-  resolution: "@tufjs/models@npm:5.0.2"
+"@tufjs/models@npm:5.0.3":
+  version: 5.0.3
+  resolution: "@tufjs/models@npm:5.0.3"
   dependencies:
     "@tufjs/canonical-json": "npm:2.0.0"
-    minimatch: "npm:^10.2.6"
-  checksum: 10/f3c44ebe09ba4d2f8718cd023c2ee2b838797f43778a3c0f03c89aae7e14d8dfdf3f2f3c3dd62244d4ef165d799fba8249684ffc7c65760bec94161118d50cc8
+    minimatch: "npm:^11.0.9"
+  checksum: 10/4cb3ca14754ce8bb1841aca42b0dab073c494b22f8770ca26975295f6a3d2d14c8ebc596a13ada05dedf6cc99cdb96eddd36562d83ad80c868491ab15093f775
   languageName: node
   linkType: hard
 
@@ -3554,19 +3554,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/istanbul-lib-coverage@npm:2.1.0, @vitest/istanbul-lib-coverage@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "@vitest/istanbul-lib-coverage@npm:2.1.0"
-  checksum: 10/2c5dc3a1ecb270d5510a0451d716703107f40d70654711939be4b5154f8c7d2eff3eabfb68c5c4aa8d4425016b67156a4d07a28b294ee9dcb5c42d2c4d7298c1
+"@vitest/istanbul-lib-coverage@npm:2.1.1, @vitest/istanbul-lib-coverage@npm:^2.1.0":
+  version: 2.1.1
+  resolution: "@vitest/istanbul-lib-coverage@npm:2.1.1"
+  checksum: 10/77a4293047370425e8c1b50ddc3ca8a30fcd4a580622e44613659d7b40386272658590f2f614c8110999635e662d50544abcdd6a96b582079b72ff48216a89a1
   languageName: node
   linkType: hard
 
 "@vitest/istanbul-lib-report@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "@vitest/istanbul-lib-report@npm:2.1.0"
+  version: 2.1.1
+  resolution: "@vitest/istanbul-lib-report@npm:2.1.1"
   dependencies:
-    "@vitest/istanbul-lib-coverage": "npm:2.1.0"
-  checksum: 10/c5c5657181d2809caebdd3065e06c3cc6c3a083188419c27f55ba79db5a856ca4045496f9267db1a6bf5ed7116e546e22af3a13dd53b353a3a5421a6af96c351
+    "@vitest/istanbul-lib-coverage": "npm:2.1.1"
+  checksum: 10/abb2b629805403be666420baf0b401258860ca01a6def5afe102d2c6e9032dbbaa483d23a7b26a1fa5c85dc217385aba74f416cdd70915bfbb5242124aeecb28
   languageName: node
   linkType: hard
 
@@ -3822,8 +3822,8 @@ __metadata:
   linkType: hard
 
 "bare-fs@npm:^4.8.2":
-  version: 4.8.4
-  resolution: "bare-fs@npm:4.8.4"
+  version: 4.8.5
+  resolution: "bare-fs@npm:4.8.5"
   dependencies:
     bare-events: "npm:^2.5.4"
     bare-path: "npm:^3.0.0"
@@ -3835,7 +3835,7 @@ __metadata:
   peerDependenciesMeta:
     bare-buffer:
       optional: true
-  checksum: 10/b3bc1f2122aca3d63899c2b5d007e22e72636573be3dd2cc3a8c31c9fcc27a5b1e2fe7cc7db013cac7eea31835ca9dfd3b27156320c05085a736702413aa09b2
+  checksum: 10/23d53c2fa53ac838413b376f6e86b6a4714f68512e8eb74ea7220dfb41a2e2665632096ac5c04cf63a5eec4e58af0eeda07115df6def5570d76d38bdc8fa3ebe
   languageName: node
   linkType: hard
 
@@ -6265,7 +6265,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimatch@npm:^10.0.3, minimatch@npm:^10.2.2, minimatch@npm:^10.2.6":
+"minimatch@npm:^10.0.3, minimatch@npm:^10.2.2":
   version: 10.2.6
   resolution: "minimatch@npm:10.2.6"
   dependencies:
@@ -6274,7 +6274,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimatch@npm:^11.0.1, minimatch@npm:^11.0.2, minimatch@npm:^11.0.5":
+"minimatch@npm:^11.0.1, minimatch@npm:^11.0.2, minimatch@npm:^11.0.5, minimatch@npm:^11.0.9":
   version: 11.0.9
   resolution: "minimatch@npm:11.0.9"
   dependencies:
@@ -8153,19 +8153,19 @@ __metadata:
   linkType: hard
 
 "socks@npm:^2.8.3":
-  version: 2.8.10
-  resolution: "socks@npm:2.8.10"
+  version: 2.8.11
+  resolution: "socks@npm:2.8.11"
   dependencies:
     ip-address: "npm:^10.1.1"
     smart-buffer: "npm:^4.2.0"
-  checksum: 10/05ea32c55a4428babaab97f5419e130d2aec4836bc36a1505cd2d5c36ecf447609f5bbe95243b5e0cba46b4b2fea9d8d2b5031cc13005b3146da53f86b5e1128
+  checksum: 10/6e04a51e3c56561007abeed6e7424586726a774082b91cb4c69defcbd9b286e160dac8bc07830b31b8ff8ad972e916de0f8212873cc65dd70ae99344d507c2b8
   languageName: node
   linkType: hard
 
 "source-map-js@npm:^1.2.1, source-map-js@npm:^1.2.2":
-  version: 1.2.3
-  resolution: "source-map-js@npm:1.2.3"
-  checksum: 10/6bdcc0db7facfcd2db59e0b45bb7134744ebd90098e501465c36ba0704e8d978e12b0b9aa92890e0601aeb2f37ad9477585ed6eba2460259baa0427bedaf22eb
+  version: 1.2.4
+  resolution: "source-map-js@npm:1.2.4"
+  checksum: 10/65ac88fed07bc58f78203b5b0cbfa9ecc978f738423e83e8b8f035bb15a2efd949e1c6b6697bad8ed6dd38fe6cb624b2ce1ba3c550479980d4e77ec3b5cd028d
   languageName: node
   linkType: hard
 
@@ -8633,13 +8633,13 @@ __metadata:
   linkType: hard
 
 "tuf-js@npm:^6.0.2":
-  version: 6.0.2
-  resolution: "tuf-js@npm:6.0.2"
+  version: 6.0.3
+  resolution: "tuf-js@npm:6.0.3"
   dependencies:
     "@gar/promise-retry": "npm:^1.0.3"
-    "@tufjs/models": "npm:5.0.2"
+    "@tufjs/models": "npm:5.0.3"
     debug: "npm:^4.4.3"
-  checksum: 10/88833a63c63047d96b49df8988b8a22781d8c0f3af6347a320ffba1cb1e279cc6ec73f3f10a2f3153eea683661412bbad3b4a238c38ef3d04384b4978c76b0c3
+  checksum: 10/83847b53f44d7a099314d6318a15e9fa214459a0fa8c1488db0e204e3ccf0a0afecb5a8610380ec37e98afc519014620c3028ef3f3eb23a80dd48df144218b9e
   languageName: node
   linkType: hard
 
