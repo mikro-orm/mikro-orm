@@ -192,6 +192,34 @@ describe('CompileCommand', () => {
     expect(dts).toContain('export default compiledFunctions');
   });
 
+  test.each([
+    { ext: 'mjs', dtsExt: 'd.mts', projectEsm: false, esm: true },
+    { ext: 'cjs', dtsExt: 'd.cts', projectEsm: true, esm: false },
+  ])('handler respects the `.$ext` extension of the output path', async ({ ext, dtsExt, projectEsm, esm }) => {
+    vi.spyOn(CLIHelper, 'getConfiguration').mockResolvedValue(
+      new Configuration(
+        { driver: MySqlDriver, metadataCache: { enabled: true }, getDriver: () => ({ getPlatform: vi.fn() }) } as any,
+        false,
+      ),
+    );
+    vi.spyOn(MetadataDiscovery.prototype, 'discover').mockResolvedValue(createSimpleMetadata());
+    const infoMock = vi.spyOn(CLIHelper, 'info').mockImplementation(i => i);
+    vi.spyOn(CLIHelper, 'isESM').mockReturnValue(projectEsm);
+
+    const out = join(tmpDir, `compiled-functions.${ext}`);
+    const cmd = new CompileCommand();
+    await cmd.handler({ out } as any);
+
+    // the declaration file must not overwrite the generated functions
+    const content = readFileSync(out, 'utf-8');
+    expect(content).toContain(esm ? 'export default {' : 'module.exports = {');
+    expect(content).toContain("'comparator-User': function(");
+
+    const dts = readFileSync(join(tmpDir, `compiled-functions.${dtsExt}`), 'utf-8');
+    expect(dts).toContain(esm ? 'export default compiledFunctions' : 'export = compiledFunctions');
+    expect(infoMock).toHaveBeenCalledWith(expect.stringContaining(`compiled-functions.${ext}'`));
+  });
+
   test('handler outputs next to ORM config file by default', async () => {
     vi.spyOn(CLIHelper, 'getConfiguration').mockResolvedValue(
       new Configuration(
