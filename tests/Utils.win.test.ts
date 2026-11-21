@@ -159,6 +159,21 @@ describe('Utils', () => {
       expect(c.inner.p).toBeInstanceOf(Promise);
     });
 
+    test('should preserve all RegExp flags and clone resolved/rejected Promise values', async () => {
+      const re = /foo.bar/dgimsuy;
+      const clonedRe = Utils.copy(re);
+      expect(clonedRe).toEqual(re);
+      expect(clonedRe.flags).toBe(re.flags);
+
+      const original = { a: 1 };
+      const clonedResolved = await Utils.copy(Promise.resolve(original));
+      expect(clonedResolved).toEqual({ a: 1 });
+      expect(clonedResolved).not.toBe(original);
+
+      const rejection = { reason: 'boom' };
+      await expect(Utils.copy(Promise.reject(rejection))).rejects.toEqual({ reason: 'boom' });
+    });
+
     test('should honor a sync custom clone method but keep async-clonable resources by reference', () => {
       const sync = {
         value: 1,
