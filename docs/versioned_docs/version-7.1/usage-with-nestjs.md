@@ -166,7 +166,7 @@ When using custom repositories, you can get around the need for `@InjectReposito
 export const getRepositoryToken = <T> (entity: EntityName<T>) => `${Utils.className(entity)}Repository`;
 ```
 
-In other words, as long as you name the repository same was as the entity is called, appending `Repository` suffix, the repository will be registered automatically in the Nest.js DI container.
+In other words, as long as you name the repository same way as the entity is called, appending `Repository` suffix, the repository will be registered automatically in the Nest.js DI container.
 
 `**./author.entity.ts**`
 

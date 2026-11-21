@@ -2836,7 +2836,7 @@ export class Social {
 }
 ```
 
-In fairness, this class is simple enough that we may as well define it dynamically. But if you'd like to add helper methods (e.g. for getting the full link, our of just a username), you may want to define it manually.
+In fairness, this class is simple enough that we may as well define it dynamically. But if you'd like to add helper methods (e.g. for getting the full link, out of just a username), you may want to define it manually.
 
 Now, let's modify our `user.gen.ts` to reference the embeddable:
 
