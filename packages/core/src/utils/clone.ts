@@ -66,26 +66,15 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
       child = new Set();
     } else if (parent instanceof Promise) {
       child = new Promise((resolve, reject) => {
-        parent.then(resolve.bind(null, _clone), reject.bind(null, _clone));
+        parent.then(
+          value => resolve(_clone(value)),
+          reason => reject(_clone(reason)),
+        );
       });
     } else if (Array.isArray(parent)) {
       child = [];
     } else if (parent instanceof RegExp) {
-      let flags = '';
-
-      if (parent.global) {
-        flags += 'g';
-      }
-
-      if (parent.ignoreCase) {
-        flags += 'i';
-      }
-
-      if (parent.multiline) {
-        flags += 'm';
-      }
-
-      child = new RegExp(parent.source, flags);
+      child = new RegExp(parent.source, parent.flags);
 
       if (parent.lastIndex) {
         (child as RegExp).lastIndex = parent.lastIndex;
