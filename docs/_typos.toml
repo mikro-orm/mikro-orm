@@ -1,8 +1,12 @@
+[files]
+extend-exclude = ['api-typedoc.json']
+
 [default]
 extend-ignore-re = [
     '`[^`\n]+`',
     '```[\s\S]*?```',
-    '[\$\w+]',
+    '\$\w+',
+    '\b[A-Z]{2,}(s|ed)\b',
 ]
 
 [default.extend-words]

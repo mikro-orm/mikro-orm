@@ -237,7 +237,7 @@ create table `user` (
 );
 ```
 
-This was working for quite some time now, what changed is how such properties are internally handled during runtime, namely when you try to unset a value of such relation. Previously, this was interpretted as setting both the `invited_by_id` and `organization_id` to `null`, and resulted in foreign key constraint failures, since the `organization_id` column was `not null`. Now the ORM will understand better what you wanted and only set the owned columns to `null`.
+This was working for quite some time now, what changed is how such properties are internally handled during runtime, namely when you try to unset a value of such relation. Previously, this was interpreted as setting both the `invited_by_id` and `organization_id` to `null`, and resulted in foreign key constraint failures, since the `organization_id` column was `not null`. Now the ORM will understand better what you wanted and only set the owned columns to `null`.
 
 There is a new `ownColumns` option on the property level to control this, but its value is set automatically during discovery if we see a column that is shared between the primary key and a foreign key.
 

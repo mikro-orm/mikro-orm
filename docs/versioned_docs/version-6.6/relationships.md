@@ -212,7 +212,7 @@ export class Book {
 }
 ```
 
-Note that if you globally disable the creation of all foreign key contraints by setting `createForeignKeyConstraints` to `false`, then no foreign key constraint is created whatsoever on any relation.
+Note that if you globally disable the creation of all foreign key constraints by setting `createForeignKeyConstraints` to `false`, then no foreign key constraint is created whatsoever on any relation.
 
 ```ts
 const orm = await MikroORM.init({

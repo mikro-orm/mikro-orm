@@ -69,7 +69,7 @@ jobs:
       - name: Check spelling (next docs)
         uses: crate-ci/typos@276087d9a4f06398b3e04825487805e2d7375888 # v1.52.2
         with:
-          files: docs/docs
+          files: docs/docs docs/blog
 
       - name: Check spelling (versioned docs)
         uses: crate-ci/typos@276087d9a4f06398b3e04825487805e2d7375888 # v1.52.2
