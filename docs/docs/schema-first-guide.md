@@ -1946,7 +1946,7 @@ Next, we'll need to associate this repository with the user entity on the entity
 
 and regenerate the entities.
 
-The entity's options will now include a factory for the repository class, as well as a TypeScript hint. To use the custom repository class when available, and fallback to the default ones when not, modify your database wrapper to use the `GetRepository` type, like so:
+The entity's options will now include a factory for the repository class, as well as a TypeScript hint. To use the custom repository class when available, and fall back to the default ones when not, modify your database wrapper to use the `GetRepository` type, like so:
 
 ```diff title="src/db.ts"
 import {
