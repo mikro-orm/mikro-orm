@@ -166,7 +166,7 @@ export class SeedManager implements ISeedManager {
       ret += `Object.defineProperty(exports, '__esModule', { value: true });\n`;
       ret += `const { Seeder } = require('@mikro-orm/seeder');\n\n`;
       ret += `class ${className} extends Seeder {\n\n`;
-      ret += `  async run(em: EntityManager): Promise<void> {}\n\n`;
+      ret += `  async run(em) {}\n\n`;
       ret += `}\n`;
       ret += `exports.${className} = ${className};\n`;
     }

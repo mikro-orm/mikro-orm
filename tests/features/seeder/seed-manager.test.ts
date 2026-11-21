@@ -1,4 +1,5 @@
 import { readFile, rm } from 'node:fs/promises';
+import { Script } from 'node:vm';
 import { MikroORM } from '@mikro-orm/core';
 import { fs } from '@mikro-orm/core/fs-utils';
 import { SeedManager } from '@mikro-orm/seeder';
@@ -102,6 +103,8 @@ describe('Seeder', () => {
     expect(seederFile).toBe(fs.normalizePath(process.cwd()) + `/temp/seeders/Publisher3Seeder.js`);
     const fileContents = await readFile(seederFile, 'utf8');
     expect(fileContents).toContain('exports.Publisher3Seeder = Publisher3Seeder;');
+    // the generated file must be valid JavaScript, without TypeScript type annotations
+    expect(() => new Script(fileContents)).not.toThrow();
     await rm(seederFile);
   });
 
