@@ -58,7 +58,7 @@ console.log(user1 === user2); // true
 
 By default, MikroORM names your embedded columns by prefixing them based on the embedded property name. While you were always in control of the prefix, the behavior of nested embeddables was a bit buggy, since the prefix override was considered as absolute. This was rather an omission in the initial design, which is now resolved.
 
-You can use the new `prefixMode` option in your ORM config to opt in to the correct behavior, which is to respect all the levels of nesting and their `prefix` options respectively, concatenating them when computing the final colum name. There are two prefix modes available:
+You can use the new `prefixMode` option in your ORM config to opt in to the correct behavior, which is to respect all the levels of nesting and their `prefix` options respectively, concatenating them when computing the final column name. There are two prefix modes available:
 
 - `absolute` mode (default) sets the prefix at the beginning of the column.
 - `relative` mode concatenates the prefix with its parent's prefix. This will be the default in v7.
