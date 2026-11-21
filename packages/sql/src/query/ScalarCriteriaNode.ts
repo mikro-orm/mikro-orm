@@ -1,4 +1,4 @@
-import { ARRAY_OPERATORS, ReferenceKind } from '@mikro-orm/core';
+import { ARRAY_OPERATORS, type Collection, type Dictionary, helper, ReferenceKind, Utils } from '@mikro-orm/core';
 import { CriteriaNode } from './CriteriaNode.js';
 import type { ICriteriaNodeProcessOptions, IQueryBuilder } from '../typings.js';
 import { JoinType, QueryType } from './enums.js';
@@ -39,6 +39,10 @@ export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
       return this.payload.toRaw();
     }
 
+    if (Utils.isCollection(this.payload)) {
+      return { $in: this.getCollectionSubQuery(qb, this.payload) };
+    }
+
     if (this.payload && typeof this.payload === 'object') {
       const keys = Object.keys(this.payload).filter(
         key => ARRAY_OPERATORS.includes(key) && Array.isArray(this.payload[key]),
@@ -54,6 +58,38 @@ export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
 
   override willAutoJoin(qb: IQueryBuilder<T>, alias?: string, options?: ICriteriaNodeProcessOptions): boolean {
     return this.shouldJoin(qb, alias);
+  }
+
+  private getCollectionSubQuery(qb: IQueryBuilder<T>, collection: Collection<any>) {
+    const prop = collection.property;
+    const owner = helper(collection.owner);
+    const ownerPk = owner.getPrimaryKey();
+
+    if (ownerPk == null) {
+      throw new Error(
+        `Collection ${owner.__meta.className}.${prop.name} can be used as a filter value only when its owner has a primary key.`,
+      );
+    }
+
+    const sub = qb.clone(true);
+
+    if (prop.kind === ReferenceKind.ONE_TO_MANY) {
+      const targetMeta = prop.targetMeta!;
+      sub
+        .from(targetMeta.class)
+        .select(targetMeta.primaryKeys)
+        .where({ [prop.mappedBy]: ownerPk });
+    } else {
+      const pivotMeta = this.metadata.find(prop.pivotEntity)!;
+      const targetProp = pivotMeta.relations[prop.owner ? 1 : 0];
+      const ownerProp = pivotMeta.relations[prop.owner ? 0 : 1];
+      sub
+        .from(pivotMeta.class)
+        .select(targetProp.name)
+        .where({ [ownerProp.name]: ownerPk });
+    }
+
+    return (sub as Dictionary).getNativeQuery().toRaw();
   }
 
   private shouldJoin(qb: IQueryBuilder<T>, nestedAlias: string | undefined): boolean {
