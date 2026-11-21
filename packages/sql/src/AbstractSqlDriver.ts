@@ -1877,27 +1877,6 @@ export abstract class AbstractSqlDriver<
     return this.rethrow(qb.execute('run', false));
   }
 
-  /**
-   * Fast comparison for collection snapshots that are represented by PK arrays.
-   * Compares scalars via `===` and fallbacks to Utils.equals()` for more complex types like Buffer.
-   * Always expects the same length of the arrays, since we only compare PKs of the same entity type.
-   */
-  private comparePrimaryKeyArrays(a: unknown[], b: unknown[]) {
-    for (let i = a.length; i-- !== 0;) {
-      if (['number', 'string', 'bigint', 'boolean'].includes(typeof a[i])) {
-        if (a[i] !== b[i]) {
-          return false;
-        }
-      } else {
-        if (!Utils.equals(a[i], b[i])) {
-          return false;
-        }
-      }
-    }
-
-    return true;
-  }
-
   override async syncCollections<T extends object, O extends object>(
     collections: Iterable<Collection<T, O>>,
     options?: DriverMethodOptions,
@@ -1909,7 +1888,6 @@ export abstract class AbstractSqlDriver<
       const meta = wrapped.__meta;
       const pks = wrapped.getPrimaryKeys(true)!;
       const snap = coll.getSnapshot();
-      const includes = <T>(arr: T[][], item: T[]) => !!arr.find(i => this.comparePrimaryKeyArrays(i, item));
       // For union-target polymorphic M:N, prepend the per-row discriminator value so the pivot
       // persister can write it alongside the FK id. Memoized per sync-run because a collection can
       // hold hundreds of items of the same few types, and findDiscriminatorValue walks the prototype
@@ -1937,9 +1915,12 @@ export abstract class AbstractSqlDriver<
       };
       const snapshot = snap ? snap.map(toDiff) : [];
       const current = coll.getItems(false).map(toDiff);
-      const deleteDiff = snap ? snapshot.filter(item => !includes(current, item)) : true;
-      const insertDiff = current.filter(item => !includes(snapshot, item));
-      const target = snapshot.filter(item => includes(current, item)).concat(...insertDiff);
+      const hash = (item: Primary<any>[]) => Utils.getPrimaryKeyHash(item as string[]);
+      const currentKeys = new Set(current.map(hash));
+      const snapshotKeys = new Set(snapshot.map(hash));
+      const deleteDiff = snap ? snapshot.filter(item => !currentKeys.has(hash(item))) : true;
+      const insertDiff = current.filter(item => !snapshotKeys.has(hash(item)));
+      const target = snapshot.filter(item => currentKeys.has(hash(item))).concat(...insertDiff);
       const equals = Utils.equals(current, target);
 
       // wrong order if we just delete and insert to the end (only owning sides can have fixed order)
