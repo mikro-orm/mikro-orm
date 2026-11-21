@@ -1,6 +1,6 @@
 # MikroORM TypeScript ORM Development Instructions
 
-Always reference these instructions first and fallback to search or bash commands only when you encounter unexpected information that does not match the info here.
+Always reference these instructions first and fall back to search or bash commands only when you encounter unexpected information that does not match the info here.
 
 ## Working Effectively 
 
