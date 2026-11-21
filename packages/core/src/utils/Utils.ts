@@ -169,8 +169,8 @@ export function equals(a: any, b: any): boolean {
   }
 
   if (a && b && typeof a === 'object' && typeof b === 'object') {
-    if (Array.isArray(a)) {
-      return compareArrays(a, b);
+    if (Array.isArray(a) || Array.isArray(b)) {
+      return Array.isArray(a) && Array.isArray(b) && compareArrays(a, b);
     }
 
     if (ArrayBuffer.isView(a) && ArrayBuffer.isView(b)) {
