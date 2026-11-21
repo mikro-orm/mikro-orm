@@ -1,5 +1,5 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
+import { resolve, dirname, basename, extname } from 'node:path';
 import type { ArgumentsCamelCase, Argv } from 'yargs';
 import {
   MetadataDiscovery,
@@ -64,13 +64,14 @@ export class CompileCommand implements BaseCommand<CompileArgs> {
       return `  '${key}': function(${params}) {\n    ${indentedCode}\n  }`;
     });
 
-    const esm = CLIHelper.isESM();
+    const outPath = args.out ?? resolve(process.cwd(), 'compiled-functions.js');
+    const ext = extname(outPath);
+    const esm = ext === '.mjs' || (ext !== '.cjs' && CLIHelper.isESM());
     const version = Utils.getORMVersion();
     const output = esm
       ? `export default {\n  __version: '${version}',\n${entries.join(',\n')}\n};\n`
       : `'use strict';\nmodule.exports = {\n  __version: '${version}',\n${entries.join(',\n')}\n};\n`;
-    const outPath = args.out ?? resolve(process.cwd(), 'compiled-functions.js');
-    const dtsPath = outPath.replace(/\.js$/, '.d.ts');
+    const dtsPath = /\.[mc]?js$/.test(outPath) ? outPath.replace(/\.([mc]?)js$/, '.d.$1ts') : `${outPath}.d.ts`;
     const dts = esm
       ? `import type { CompiledFunctions } from '@mikro-orm/core';\ndeclare const compiledFunctions: CompiledFunctions;\nexport default compiledFunctions;\n`
       : `import type { CompiledFunctions } from '@mikro-orm/core';\ndeclare const compiledFunctions: CompiledFunctions;\nexport = compiledFunctions;\n`;
@@ -84,7 +85,7 @@ export class CompileCommand implements BaseCommand<CompileArgs> {
 
     CLIHelper.info(colors.green(`Compiled functions generated to ${outPath} (${captured.length} functions)`));
     CLIHelper.info(`\nExample usage in your ORM config:\n`);
-    const importPath = esm ? './compiled-functions.js' : './compiled-functions';
+    const importPath = `./${esm ? basename(outPath) : basename(outPath).replace(/\.js$/, '')}`;
     CLIHelper.info(
       `  ${esm ? 'import' : 'const'} compiledFunctions ${esm ? 'from ' : '= require('}${colors.cyan(`'${importPath}'`)}${esm ? '' : ')'};`,
     );
