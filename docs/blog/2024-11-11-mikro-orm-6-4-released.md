@@ -314,7 +314,7 @@ This is now validated, and such entity definition will cause an error during ent
 
 ## Renamed `tsNode` option to `preferTs`
 
-One small change to wrap this up - the `tsNode` option is now renamed to `preferTs`, to reflect better what it is actually about. Its name could give people a false sense of it enabling `ts-node`, or TypeScript support in general. Yet all it does is forcing the ORM to use the TypeScript related options for folder-based entity discovery (`entitiesTs`) and for migrations and seeders folder (`pathTs`) when they provided. Its value is normally automatically detected, but this can sometimes fail, or you might want to set its value to `false` for production builds.
+One small change to wrap this up - the `tsNode` option is now renamed to `preferTs`, to reflect better what it is actually about. Its name could give people a false sense of it enabling `ts-node`, or TypeScript support in general. Yet all it does is forcing the ORM to use the TypeScript related options for folder-based entity discovery (`entitiesTs`) and for migrations and seeders folder (`pathTs`) when they are provided. Its value is normally automatically detected, but this can sometimes fail, or you might want to set its value to `false` for production builds.
 
 ## What do you think?
 
