@@ -484,7 +484,7 @@ describe('Dataloader', () => {
     }
   });
 
-  test('getColFilter', async () => {
+  test('groupByOwner', async () => {
     const promises = DataloaderUtils.entitiesAndOptsMapToQueries(
       new Map([
         [
@@ -517,7 +517,8 @@ describe('Dataloader', () => {
     for (const collection of collections) {
       const key = `${collection.property.targetMeta!.uniqueName}|{}`;
       const entities = resultsMap.get(key)!;
-      const filtered = entities.filter(DataloaderUtils.getColFilter(collection));
+      const inverseProp = collection.property.inversedBy ?? collection.property.mappedBy;
+      const filtered = DataloaderUtils.groupByOwner(entities, inverseProp).get(collection.owner) ?? [];
       expect(filtered.map((el: any) => el.id)).toEqual((await collection.loadItems()).map((el: any) => el.id));
     }
   });
