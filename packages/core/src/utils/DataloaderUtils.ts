@@ -170,30 +170,28 @@ export class DataloaderUtils {
   }
 
   /**
-   * Creates a filter which returns the results pertaining to a certain collection.
-   * First checks if the Entity type matches, then retrieves the inverse side of the relationship
-   * where the filtering will be done in order to match the target collection.
+   * Groups the results of a query by the entities found on their inverse side property,
+   * so each collection can pick its items without scanning all the results.
    */
-  static getColFilter<T, S extends T>(collection: Collection<any>): (result: T) => result is S {
-    return (result): result is S => {
-      // There is no need to check if Entity matches because we already matched the key which is entity+options.
-      // This is the inverse side of the relationship where the filtering will be done in order to match the target collection
-      // Either inversedBy or mappedBy exist because we already checked in groupInversedOrMappedKeysByEntity
-      const inverseProp = collection.property.inversedBy ?? collection.property.mappedBy;
-      const target = Reference.unwrapReference(result[inverseProp as keyof T] as Ref<any> | Collection<any>);
+  static groupByOwner<T extends object>(entities: T[], inverseProp: string): Map<object, T[]> {
+    const groups = new Map<object, T[]>();
 
-      if (target instanceof Collection) {
-        for (const item of target) {
-          if (item === collection.owner) {
-            return true;
-          }
+    for (const entity of entities) {
+      const target = Reference.unwrapReference(entity[inverseProp as keyof T] as Ref<any> | Collection<any>);
+      const owners = target instanceof Collection ? target : target ? [target] : [];
+
+      for (const owner of owners) {
+        const items = groups.get(owner);
+
+        if (items) {
+          items.push(entity);
+        } else {
+          groups.set(owner, [entity]);
         }
-      } else if (target) {
-        return target === collection.owner;
       }
+    }
 
-      return false;
-    };
+    return groups;
   }
 
   /**
@@ -209,8 +207,8 @@ export class DataloaderUtils {
       const entitiesAndOptsMap = DataloaderUtils.groupInversedOrMappedKeysByEntityAndOpts(collsWithOpts);
       const promises = DataloaderUtils.entitiesAndOptsMapToQueries(entitiesAndOptsMap, em);
       const resultsMap = new Map(await Promise.all(promises));
-      // We need to filter the results in order to map each input collection
-      // to a subset of each query matching the collection items.
+      // Group the results by owner once per query and inverse prop, instead of filtering them for each collection.
+      const groups = new Map<string, Map<object, any[]>>();
       return collsWithOpts.map(([col, opts]) => {
         const key = `${col.property.targetMeta!.uniqueName}|${stringifyCacheKey(opts ?? {})}`;
         const entities = resultsMap.get(key);
@@ -219,7 +217,16 @@ export class DataloaderUtils {
           /* v8 ignore next */
           throw new Error('Cannot match results');
         }
-        return entities.filter(DataloaderUtils.getColFilter(col));
+        const inverseProp = col.property.inversedBy ?? col.property.mappedBy;
+        const groupKey = `${key}|${inverseProp}`;
+        let byOwner = groups.get(groupKey);
+
+        if (!byOwner) {
+          byOwner = DataloaderUtils.groupByOwner(entities, inverseProp);
+          groups.set(groupKey, byOwner);
+        }
+
+        return byOwner.get(col.owner) ?? [];
       });
     };
   }
