@@ -454,10 +454,11 @@ export class UnitOfWork {
 
     this.initIdentifier(entity);
 
-    if (wrapped.__meta.inheritanceType === 'tpt' && wrapped.__meta.tptParent) {
-      this.createTPTChangeSets(entity, cs);
-    } else {
-      this.#changeSets.set(entity, cs);
+    const isTPT = wrapped.__meta.inheritanceType === 'tpt' && wrapped.__meta.tptParent;
+    const leafCs = isTPT ? this.createTPTChangeSets(entity, cs) : cs;
+
+    if (leafCs) {
+      this.#changeSets.set(entity, leafCs);
     }
 
     this.#persistStack.delete(entity);
@@ -896,7 +897,7 @@ export class UnitOfWork {
       return;
     }
 
-    for (const cs of this.#changeSets.values()) {
+    const check = (cs: ChangeSet<any>) => {
       for (const prop of props) {
         if (prop.name in cs.payload && cs.rootMeta === changeSet.rootMeta && cs.type === changeSet.type) {
           conflicts = true;
@@ -906,6 +907,12 @@ export class UnitOfWork {
           }
         }
       }
+    };
+
+    for (const cs of this.#changeSets.values()) {
+      check(cs);
+      // TPT parent table change sets are not in the map, only attached to the leaf one
+      cs.tptChangeSets?.forEach(check);
     }
 
     if (!conflicts) {
@@ -999,10 +1006,11 @@ export class UnitOfWork {
 
     if (changeSet && !this.checkUniqueProps(changeSet)) {
       // For TPT child entities, create changesets for each table in hierarchy
-      if (wrapped.__meta.inheritanceType === 'tpt' && wrapped.__meta.tptParent) {
-        this.createTPTChangeSets(entity, changeSet);
-      } else {
-        this.#changeSets.set(entity, changeSet);
+      const isTPT = wrapped.__meta.inheritanceType === 'tpt' && wrapped.__meta.tptParent;
+      const leafCs = isTPT ? this.createTPTChangeSets(entity, changeSet) : changeSet;
+
+      if (leafCs) {
+        this.#changeSets.set(entity, leafCs);
       }
     }
   }
@@ -1011,7 +1019,7 @@ export class UnitOfWork {
    * For TPT inheritance, creates separate changesets for each table in the hierarchy.
    * Uses the same entity instance for all changesets - only the metadata and payload differ.
    */
-  private createTPTChangeSets<T extends object>(entity: T, originalChangeSet: ChangeSet<T>): void {
+  private createTPTChangeSets<T extends object>(entity: T, originalChangeSet: ChangeSet<T>): ChangeSet<T> | undefined {
     const meta = helper(entity).__meta;
     const isCreate = originalChangeSet.type === ChangeSetType.CREATE;
     let current: EntityMetadata | undefined = meta;
@@ -1068,14 +1076,12 @@ export class UnitOfWork {
       leafCs.originalEntity = originalChangeSet.originalEntity;
     }
 
-    // Store the leaf changeset in the main map (entity as key), with parent CSs attached
-    if (leafCs) {
-      if (parentChangeSets.length > 0) {
-        leafCs.tptChangeSets = parentChangeSets;
-      }
-
-      this.#changeSets.set(entity, leafCs);
+    // parent table change sets are not registered on their own, only attached to the leaf one
+    if (leafCs && parentChangeSets.length > 0) {
+      leafCs.tptChangeSets = parentChangeSets;
     }
+
+    return leafCs;
   }
 
   /**
@@ -1666,8 +1672,17 @@ export class UnitOfWork {
 
       const changeSet = this.#changeSetComputer.computeChangeSet(extraUpdate[0])!;
 
-      if (changeSet) {
-        extraUpdates.push([changeSet, extraUpdate[3]]);
+      if (!changeSet) {
+        continue;
+      }
+
+      const isTPT = changeSet.meta.inheritanceType === 'tpt' && changeSet.meta.tptParent;
+      const leafCs = isTPT ? this.createTPTChangeSets(extraUpdate[0], changeSet)! : changeSet;
+
+      for (const cs of [leafCs, ...(leafCs.tptChangeSets ?? [])]) {
+        if (Utils.hasObjectKeys(cs.payload) || cs.meta.hasOptimisticLock()) {
+          extraUpdates.push([cs, extraUpdate[3]]);
+        }
       }
     }
 
