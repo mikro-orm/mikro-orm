@@ -1799,7 +1799,16 @@ export class UnitOfWork {
 
           // a TPT subclass delete has only a leaf change set that also removes the target row; weak edge so it can't break insert order
           for (const targetMeta of this.#metadata.find(prop.targetMeta.class)!.allTPTDescendants ?? []) {
-            calc.discoverProperty({ ...prop, targetMeta, nullable: true }, meta._id);
+            let parent = targetMeta.tptParent;
+
+            while (parent && parent._id !== meta._id && metaById.has(parent._id)) {
+              parent = parent.tptParent;
+            }
+
+            // an own subclass linked via scheduled parent tables already goes after this one, an edge back would be a cycle
+            if (parent?._id !== meta._id) {
+              calc.discoverProperty({ ...prop, targetMeta, nullable: true }, meta._id);
+            }
           }
         } else {
           calc.discoverProperty(prop, meta._id);
