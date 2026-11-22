@@ -209,8 +209,8 @@ export class DataloaderUtils {
       const entitiesAndOptsMap = DataloaderUtils.groupInversedOrMappedKeysByEntityAndOpts(collsWithOpts);
       const promises = DataloaderUtils.entitiesAndOptsMapToQueries(entitiesAndOptsMap, em);
       const resultsMap = new Map(await Promise.all(promises));
-      // We need to filter the results in order to map each input collection
-      // to a subset of each query matching the collection items.
+      // Group the results by owner once per query and inverse prop, instead of filtering them for each collection.
+      const groups = new Map<string, Map<object, any[]>>();
       return collsWithOpts.map(([col, opts]) => {
         const key = `${col.property.targetMeta!.uniqueName}|${stringifyCacheKey(opts ?? {})}`;
         const entities = resultsMap.get(key);
@@ -219,7 +219,26 @@ export class DataloaderUtils {
           /* v8 ignore next */
           throw new Error('Cannot match results');
         }
-        return entities.filter(DataloaderUtils.getColFilter(col));
+        const inverseProp = col.property.inversedBy ?? col.property.mappedBy;
+        const groupKey = `${key}|${inverseProp}`;
+        let byOwner = groups.get(groupKey);
+        if (!byOwner) {
+          byOwner = new Map();
+          groups.set(groupKey, byOwner);
+          for (const result of entities) {
+            const target = Reference.unwrapReference(result[inverseProp]);
+            const owners = target instanceof Collection ? target : target ? [target] : [];
+            for (const owner of owners) {
+              let items = byOwner.get(owner);
+              if (!items) {
+                items = [];
+                byOwner.set(owner, items);
+              }
+              items.push(result);
+            }
+          }
+        }
+        return byOwner.get(col.owner) ?? [];
       });
     };
   }
