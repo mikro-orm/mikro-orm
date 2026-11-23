@@ -160,7 +160,7 @@ export class EntityAssigner {
         if (options.updateByPrimaryKey) {
           const pk = Utils.extractPK(value, prop.targetMeta);
 
-          if (pk) {
+          if (pk != null) {
             const ref = options.em!.getReference(prop.targetMeta!.class, pk as Primary<T>, options);
             // if the PK differs, we want to change the target entity, not update it
             const wrappedChild = helper(ref);
@@ -309,7 +309,7 @@ export class EntityAssigner {
       if (options.updateNestedEntities && options.updateByPrimaryKey && Utils.isPlainObject(item)) {
         const pk = Utils.extractPK(item, prop.targetMeta);
 
-        if (pk && EntityAssigner.validateEM(em)) {
+        if (pk != null && EntityAssigner.validateEM(em)) {
           const ref = em
             .getUnitOfWork()
             .getById(prop.targetMeta!.class, pk as Primary<U>, options.schema, options.convertCustomTypes);
