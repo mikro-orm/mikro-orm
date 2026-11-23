@@ -1493,8 +1493,9 @@ export class QueryBuilder<
         continue;
       }
 
-      filterOptions = QueryHelper.mergePropertyFilters(join.prop.filters, filterOptions);
-      let cond = await em.applyFilters(join.prop.targetMeta!.class, join.cond, filterOptions, 'read');
+      // keep the relation's own `filters` override local to this join, so it does not leak into the joins after it
+      const joinFilterOptions = QueryHelper.mergePropertyFilters(join.prop.filters, filterOptions);
+      let cond = await em.applyFilters(join.prop.targetMeta!.class, join.cond, joinFilterOptions, 'read');
       const criteriaNode = CriteriaNodeFactory.createNode<Entity>(this.metadata, join.prop.targetMeta!.class, cond);
       cond = criteriaNode.process(this as IQueryBuilder<Entity>, {
         matchPopulateJoins: true,
