@@ -1407,7 +1407,7 @@ __metadata:
     "@mikro-orm/sql": "npm:7.2.11"
     kysely: "npm:0.29.9"
     tarn: "npm:3.1.2"
-    tedious: "npm:20.4.1"
+    tedious: "npm:20.4.2"
     tsqlstring: "npm:1.0.1"
   peerDependencies:
     "@mikro-orm/core": 7.2.11
@@ -1514,7 +1514,7 @@ __metadata:
     jsr: "npm:0.14.3"
     knex: "npm:3.3.0"
     lerna: "npm:10.1.3"
-    lint-staged: "npm:17.6.1"
+    lint-staged: "npm:17.6.2"
     mongodb-memory-server-core: "npm:11.4.0"
     oxfmt: "npm:0.79.0"
     oxlint: "npm:1.94.0"
@@ -5974,9 +5974,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:17.6.1":
-  version: 17.6.1
-  resolution: "lint-staged@npm:17.6.1"
+"lint-staged@npm:17.6.2":
+  version: 17.6.2
+  resolution: "lint-staged@npm:17.6.2"
   dependencies:
     picomatch: "npm:^4.0.7"
     string-argv: "npm:^0.4.0"
@@ -5987,7 +5987,7 @@ __metadata:
       optional: true
   bin:
     lint-staged: bin/lint-staged.js
-  checksum: 10/d449ca6c269e058feb796dd629dbe4393254f56d05d95101edd6baa4519d3cf098f3f9bb628eff15819f64fa76a0dbf8829218bfb2d4199b1089d8fb28e0247c
+  checksum: 10/51e75c0d1dadefd0a4769c9057acfe593e484d7c52e885a825e0aef298fa15d466b81ff1da0a20711bc8f5d282e7e5f14281c0d4790e3ec5b60a6c1e7df41bcc
   languageName: node
   linkType: hard
 
@@ -8318,9 +8318,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tedious@npm:20.4.1":
-  version: 20.4.1
-  resolution: "tedious@npm:20.4.1"
+"tedious@npm:20.4.2":
+  version: 20.4.2
+  resolution: "tedious@npm:20.4.2"
   dependencies:
     "@azure/core-auth": "npm:^1.10.1"
     "@azure/identity": "npm:^4.13.1"
@@ -8331,7 +8331,7 @@ __metadata:
     iconv-lite: "npm:^0.7.0"
     js-md4: "npm:^0.3.2"
     native-duplexpair: "npm:^1.0.0"
-  checksum: 10/caf6f080cad45311796c485cabab4f329d921ca41f11a4d34b9ce7f04166553e26d7bd73be2834c6aaf415585b9b3e429d1b9d04fd5e68739896c8d2038b04b7
+  checksum: 10/3da3d0ec47f98d1348ad0d46e5605abfc448f0006d63b674c7256c7b595af1524fa2d9f8fd1f858577843688760a008bb593f7109ef5b30325e60d309fb944a1
   languageName: node
   linkType: hard
 
