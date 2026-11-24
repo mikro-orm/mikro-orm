@@ -735,6 +735,32 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
+  override alterTable(diff: TableDifference, safe?: boolean): string[] {
+    const changed = Object.values(diff.changedIndexes);
+    const added = [...Object.values(diff.addedIndexes), ...changed].map(idx => idx.columnNames[0]);
+    const fks = Object.values(diff.fromTable.getForeignKeys()).map(fk => fk.columnNames[0]);
+    // an index backing a foreign key can be dropped only once its replacement exists
+    const drops = Object.values(diff.removedIndexes)
+      .filter(idx => !diff.addedIndexes[idx.keyName] && [added, fks].every(cols => cols.includes(idx.columnNames[0])))
+      .map(idx => this.dropIndex(diff.name, idx));
+    const ret = [...super.alterTable(diff, safe).filter(sql => !drops.includes(sql)), ...drops];
+
+    for (const idx of changed) {
+      const create = this.createIndex(idx, diff.toTable, true);
+
+      if (ret.includes(create) && fks.includes(diff.fromTable.getIndex(idx.keyName)!.columnNames[0])) {
+        const drop = this.dropIndex(diff.name, idx);
+        const prefix = `alter table ${this.quote(diff.toTable.getShortestName())} `;
+        // a single statement, so the foreign key never loses its index
+        const sql = create.startsWith(prefix) ? [`${drop}, ${create.slice(prefix.length)}`] : [drop, create];
+        ret.splice(ret.indexOf(drop), 1);
+        ret.splice(ret.indexOf(create), 1, ...sql);
+      }
+    }
+
+    return ret;
+  }
+
   override getPreAlterTable(tableDiff: TableDifference, safe: boolean): string[] {
     // Dropping primary keys requires to unset autoincrement attribute on the particular column first.
     const pk = Object.values(tableDiff.removedIndexes).find(idx => idx.primary);
