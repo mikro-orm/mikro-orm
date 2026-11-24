@@ -294,6 +294,25 @@ export class EntityFactory {
     return current === value;
   }
 
+  /** Whether the owning side of an inverse 1:1 `prop` carries an unflushed change on the given target. */
+  private hasPendingOwner(target: unknown, prop: EntityProperty): boolean {
+    const owner = target ? Reference.unwrapReference(target as AnyEntity) : undefined;
+
+    // a reference gets its owning side set during hydration, that is not a change
+    if (!owner || !helper(owner).__initialized) {
+      return false;
+    }
+
+    const original = helper(owner).__originalEntityData ?? {};
+    const diff = this.#comparator.diffEntities(
+      helper(owner).__meta.class,
+      original,
+      this.#comparator.prepareEntity(owner),
+    );
+
+    return prop.mappedBy in diff;
+  }
+
   /** Merges new data into an existing entity, preserving user-modified properties. */
   mergeData<T extends object>(
     meta: EntityMetadata<T>,
@@ -325,6 +344,17 @@ export class EntityFactory {
         }
       });
     }
+
+    // inverse 1:1 sides are not snapshotted, their pending changes are visible only on the owning side
+    Utils.keys(diff2)
+      .filter(key => meta.properties[key].kind === ReferenceKind.ONE_TO_ONE && !meta.properties[key].owner)
+      .filter(key => {
+        const prop = meta.properties[key];
+        const loaded = Utils.isPlainObject(diff2[key]) && this.findEntity(diff2[key], prop.targetMeta!, options);
+
+        return this.hasPendingOwner(entity[key], prop) || this.hasPendingOwner(loaded, prop);
+      })
+      .forEach(key => delete diff2[key]);
 
     Utils.keys(diff2)
       .filter(key => {
