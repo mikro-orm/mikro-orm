@@ -54,18 +54,22 @@ export class ObjectHydrator extends Hydrator {
     // the running state is used to consider propagation as hydration, saving the values directly to the entity data,
     // but we don't want that for new entities, their propagation should result in entity updates when flushing
     this.running = !newEntity;
-    Utils.callCompiledFunction(
-      hydrate,
-      entity,
-      data,
-      factory,
-      newEntity,
-      convertCustomTypes,
-      schema,
-      parentSchema,
-      normalizeAccessors,
-    );
-    this.running = running;
+
+    try {
+      Utils.callCompiledFunction(
+        hydrate,
+        entity,
+        data,
+        factory,
+        newEntity,
+        convertCustomTypes,
+        schema,
+        parentSchema,
+        normalizeAccessors,
+      );
+    } finally {
+      this.running = running;
+    }
   }
 
   /**
@@ -84,18 +88,22 @@ export class ObjectHydrator extends Hydrator {
     const hydrate = this.getEntityHydrator(meta, 'reference', normalizeAccessors);
     const running = this.running;
     this.running = true;
-    Utils.callCompiledFunction(
-      hydrate,
-      entity,
-      data,
-      factory,
-      false,
-      convertCustomTypes,
-      schema,
-      parentSchema,
-      normalizeAccessors,
-    );
-    this.running = running;
+
+    try {
+      Utils.callCompiledFunction(
+        hydrate,
+        entity,
+        data,
+        factory,
+        false,
+        convertCustomTypes,
+        schema,
+        parentSchema,
+        normalizeAccessors,
+      );
+    } finally {
+      this.running = running;
+    }
   }
 
   /**
