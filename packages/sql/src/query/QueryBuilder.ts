@@ -1486,6 +1486,8 @@ export class QueryBuilder<
    * @internal
    */
   async applyJoinedFilters(em: EntityManager, filterOptions: FilterOptions | undefined): Promise<void> {
+    const joins = Object.values(this.#state.joins);
+
     for (const path of this.#state.autoJoinedPaths) {
       const join = this.getJoinForPath(path)!;
 
@@ -1493,8 +1495,18 @@ export class QueryBuilder<
         continue;
       }
 
-      filterOptions = QueryHelper.mergePropertyFilters(join.prop.filters, filterOptions);
-      let cond = await em.applyFilters(join.prop.targetMeta!.class, join.cond, filterOptions, 'read');
+      // nested joins inherit the overrides of their ancestor relations
+      const chain = [join];
+
+      for (let parent; (parent = joins.find(j => j.alias === chain[0].ownerAlias));) {
+        chain.unshift(parent);
+      }
+
+      const joinFilters = chain.reduce(
+        (acc, j) => QueryHelper.mergePropertyFilters(j.prop.filters, acc),
+        filterOptions,
+      );
+      let cond = await em.applyFilters(join.prop.targetMeta!.class, join.cond, joinFilters, 'read');
       const criteriaNode = CriteriaNodeFactory.createNode<Entity>(this.metadata, join.prop.targetMeta!.class, cond);
       cond = criteriaNode.process(this as IQueryBuilder<Entity>, {
         matchPopulateJoins: true,
