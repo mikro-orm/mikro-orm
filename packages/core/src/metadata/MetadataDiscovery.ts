@@ -3129,9 +3129,10 @@ export class MetadataDiscovery {
       return;
     }
 
-    // a partial index does not cover the foreign key
+    // partial, typed (e.g. fulltext) and custom expression indexes do not cover the foreign key
     const hasIndex = [...meta.indexes, ...meta.uniques].some(
-      idx => !idx.where && Utils.asArray(idx.properties)[0] === prop.name,
+      (idx: EntityMetadata['indexes'][number]) =>
+        !idx.where && !idx.type && !idx.expression && Utils.asArray(idx.properties)[0] === prop.name,
     );
 
     if (!hasIndex) {
