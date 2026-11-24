@@ -831,6 +831,7 @@ Full list of supported options:
 | `MIKRO_ORM_MIGRATIONS_SNAPSHOT_NAME`                        | `migrations.snapshotName`                      |
 | `MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS`           | `schemaGenerator.disableForeignKeys`           |
 | `MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS` | `schemaGenerator.createForeignKeyConstraints`  |
+| `MIKRO_ORM_SCHEMA_GENERATOR_SKIP_COVERED_FOREIGN_KEY_INDEXES` | `schemaGenerator.skipCoveredForeignKeyIndexes` |
 | `MIKRO_ORM_SCHEMA_GENERATOR_IGNORE_TRIGGERS`               | `schemaGenerator.ignoreTriggers`               |
 | `MIKRO_ORM_SCHEMA_GENERATOR_IGNORE_ROUTINES`               | `schemaGenerator.ignoreRoutines`               |
 | `MIKRO_ORM_SCHEMA_GENERATOR_IGNORE_POLICIES`               | `schemaGenerator.ignorePolicies`               |

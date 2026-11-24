@@ -150,6 +150,24 @@ export abstract class Platform {
   }
 
   /**
+   * Whether an entity level index already covers the relation, so it gets no implicit foreign key index.
+   * @internal
+   */
+  isForeignKeyIndexCovered(meta: EntityMetadata, prop: EntityProperty): boolean {
+    if (!this.config.get('schemaGenerator').skipCoveredForeignKeyIndexes) {
+      return meta.indexes.some(idx => idx.properties?.length === 1 && idx.properties[0] === prop.name);
+    }
+
+    const isPlain = (idx: EntityMetadata['indexes'][number]) =>
+      !idx.where && !idx.type && !idx.expression && !idx.columns && !idx.invisible;
+
+    // only a plain index starting with the relation can back the foreign key on its own
+    return [...meta.indexes, ...meta.uniques].some(
+      idx => isPlain(idx) && Utils.asArray(idx.properties)[0] === prop.name,
+    );
+  }
+
+  /**
    * Whether or not the driver supports retuning list of created PKs back when multi-inserting
    */
   usesBatchInserts(): boolean {

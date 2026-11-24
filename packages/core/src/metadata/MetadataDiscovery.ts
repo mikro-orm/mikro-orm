@@ -3129,14 +3129,7 @@ export class MetadataDiscovery {
       return;
     }
 
-    const isPlain = (idx: EntityMetadata['indexes'][number]) =>
-      !idx.where && !idx.type && !idx.expression && !idx.columns && !idx.invisible;
-    // only a plain index starting with the relation can back the foreign key on its own
-    const hasIndex = this.#config.get('schemaGenerator').skipCoveredForeignKeyIndexes
-      ? [...meta.indexes, ...meta.uniques].some(idx => isPlain(idx) && Utils.asArray(idx.properties)[0] === prop.name)
-      : meta.indexes.some(idx => idx.properties?.length === 1 && idx.properties[0] === prop.name);
-
-    if (!hasIndex) {
+    if (!this.#platform.isForeignKeyIndexCovered(meta, prop)) {
       prop.index ??= true;
     }
   }

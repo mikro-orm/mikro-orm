@@ -101,6 +101,7 @@ export function loadEnvironmentVars(): Partial<Options> {
   const read3 = read.bind(null, ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_');
   read3('disableForeignKeys', bool);
   read3('createForeignKeyConstraints', bool);
+  read3('skipCoveredForeignKeyIndexes', bool);
   read3('ignoreTriggers', bool);
   read3('ignoreRoutines', bool);
   read3('ignorePolicies', bool);
