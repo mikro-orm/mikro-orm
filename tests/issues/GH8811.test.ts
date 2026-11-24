@@ -48,6 +48,21 @@ test('implicit FK index is kept when the composite index is partial', async () =
   expect(sql).toContain('add index `book_author_id_index` (`author_id`)');
 });
 
+test('implicit FK index is kept when the composite index has a custom type or expression', async () => {
+  const sql1 = await createSQL(book({ indexes: [{ properties: ['author', 'title'], type: 'fulltext' }] }));
+  expect(sql1).toContain('add index `book_author_id_index` (`author_id`)');
+
+  const expression = 'alter table `book` add index `custom_idx` (`title`)';
+  const sql2 = await createSQL(book({ indexes: [{ name: 'custom_idx', properties: ['author'], expression }] }));
+  expect(sql2).toContain('add index `book_author_id_index` (`author_id`)');
+});
+
+test('explicit `index: true` on the relation keeps the FK index', async () => {
+  const sql = await createSQL(book({ indexes: [{ properties: ['author', 'published'] }] }, true));
+  expect(sql).toContain('add index `book_author_id_index` (`author_id`)');
+  expect(sql).toContain('add index `book_author_id_published_index` (`author_id`, `published`)');
+});
+
 const migrate = async (from: EntitySchema, to: EntitySchema) => {
   const orm1 = await init(from);
   await orm1.schema.refresh();
