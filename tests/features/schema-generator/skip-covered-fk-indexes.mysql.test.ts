@@ -6,25 +6,36 @@ const Author = new EntitySchema({
   properties: { id: { type: 'number', primary: true } },
 });
 
-const book = (extra: Partial<EntitySchemaMetadata<any>>, index?: boolean) =>
+const book = (extra: Partial<EntitySchemaMetadata<any>>, index?: boolean, withAuthor = true) =>
   new EntitySchema({
     name: 'Book',
     properties: {
       id: { type: 'number', primary: true },
-      author: { kind: 'm:1', entity: () => Author, index },
+      ...(withAuthor ? { author: { kind: 'm:1' as const, entity: () => Author, index } } : {}),
       published: { type: 'boolean' },
       title: { type: 'string' },
     },
     ...extra,
   });
 
-const init = (Book: EntitySchema) =>
-  MikroORM.init({ entities: [Author, Book], dbName: 'mikro_orm_test_gh8811', port: 3308 });
+const options = (Book: EntitySchema, skipCoveredForeignKeyIndexes = true) => ({
+  entities: [Author, Book],
+  dbName: 'mikro_orm_test_skip_covered_fk_indexes',
+  port: 3308,
+  schemaGenerator: { skipCoveredForeignKeyIndexes },
+});
 
-const createSQL = async (Book: EntitySchema) => {
-  const orm = new MikroORM({ entities: [Author, Book], dbName: 'mikro_orm_test_gh8811', port: 3308 });
+const init = (Book: EntitySchema) => MikroORM.init(options(Book));
+
+const createSQL = async (Book: EntitySchema, skipCoveredForeignKeyIndexes?: boolean) => {
+  const orm = new MikroORM(options(Book, skipCoveredForeignKeyIndexes));
   return orm.schema.getCreateSchemaSQL({ wrap: false });
 };
+
+test('implicit FK index is kept by default', async () => {
+  const sql = await createSQL(book({ indexes: [{ properties: ['author', 'published'] }] }), false);
+  expect(sql).toContain('add index `book_author_id_index` (`author_id`)');
+});
 
 test('no implicit FK index when a composite index starts with the relation', async () => {
   const sql = await createSQL(book({ indexes: [{ properties: ['author', 'published'] }] }));
@@ -54,6 +65,15 @@ test('implicit FK index is kept when the composite index has a custom type or ex
 
   const expression = 'alter table `book` add index `custom_idx` (`title`)';
   const sql2 = await createSQL(book({ indexes: [{ name: 'custom_idx', properties: ['author'], expression }] }));
+  expect(sql2).toContain('add index `book_author_id_index` (`author_id`)');
+});
+
+test('implicit FK index is kept when the composite index has column options or is invisible', async () => {
+  const columns = [{ name: 'author', sort: 'desc' as const }];
+  const sql1 = await createSQL(book({ indexes: [{ properties: ['author', 'published'], columns }] }));
+  expect(sql1).toContain('add index `book_author_id_index` (`author_id`)');
+
+  const sql2 = await createSQL(book({ indexes: [{ properties: ['author', 'published'], invisible: true }] }));
   expect(sql2).toContain('add index `book_author_id_index` (`author_id`)');
 });
 
@@ -99,4 +119,26 @@ test('named index backing the FK can change its other columns', async () => {
     book({ indexes: [{ name: 'custom_idx', properties: ['author', 'title'] }] }),
   );
   expect(diff.up).toBe('alter table `book` drop index `custom_idx`, add index `custom_idx` (`author_id`, `title`);\n');
+});
+
+test('the index backing the FK can be swapped for another one', async () => {
+  await migrate(
+    book({
+      indexes: [
+        { name: 'idx1', properties: ['author', 'published'] },
+        { name: 'idx2', properties: ['title', 'author'] },
+      ],
+    }),
+    book({
+      indexes: [
+        { name: 'idx1', properties: ['published', 'author'] },
+        { name: 'idx2', properties: ['author', 'title'] },
+      ],
+    }),
+  );
+});
+
+test('relation can be removed while another index is added', async () => {
+  const diff = await migrate(book({}), book({ indexes: [{ properties: ['title'] }] }, undefined, false));
+  expect(diff.up).toContain('alter table `book` drop index `book_author_id_index`;');
 });

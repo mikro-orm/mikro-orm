@@ -736,29 +736,35 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   override alterTable(diff: TableDifference, safe?: boolean): string[] {
+    const ret = super.alterTable(diff, safe);
+    const prefix = `alter table ${this.quote(diff.toTable.getShortestName())} `;
+    const mergeable = (sql: string) => sql.startsWith(prefix) && ret.includes(sql);
+    const fks = Object.values(diff.fromTable.getForeignKeys())
+      .map(fk => fk.columnNames[0])
+      .filter(col => !diff.removedColumns[col]);
     const changed = Object.values(diff.changedIndexes);
-    const added = [...Object.values(diff.addedIndexes), ...changed].map(idx => idx.columnNames[0]);
-    const fks = Object.values(diff.fromTable.getForeignKeys()).map(fk => fk.columnNames[0]);
-    // an index backing a foreign key can be dropped only once its replacement exists
-    const drops = Object.values(diff.removedIndexes)
-      .filter(idx => !diff.addedIndexes[idx.keyName] && [added, fks].every(cols => cols.includes(idx.columnNames[0])))
-      .map(idx => this.dropIndex(diff.name, idx));
-    const ret = [...super.alterTable(diff, safe).filter(sql => !drops.includes(sql)), ...drops];
+    const drops = [...Object.values(diff.removedIndexes), ...changed.map(idx => diff.fromTable.getIndex(idx.keyName)!)]
+      .filter(idx => !idx.primary && fks.includes(idx.columnNames[0]))
+      .map(idx => this.dropIndex(diff.name, idx))
+      .filter(mergeable);
+    const creates = [...Object.values(diff.addedIndexes), ...changed]
+      .map(idx => this.createIndex(idx, diff.toTable, true))
+      .filter(mergeable);
 
-    for (const idx of changed) {
-      const create = this.createIndex(idx, diff.toTable, true);
-
-      if (ret.includes(create) && fks.includes(diff.fromTable.getIndex(idx.keyName)!.columnNames[0])) {
-        const drop = this.dropIndex(diff.name, idx);
-        const prefix = `alter table ${this.quote(diff.toTable.getShortestName())} `;
-        // a single statement, so the foreign key never loses its index
-        const sql = create.startsWith(prefix) ? [`${drop}, ${create.slice(prefix.length)}`] : [drop, create];
-        ret.splice(ret.indexOf(drop), 1);
-        ret.splice(ret.indexOf(create), 1, ...sql);
-      }
+    if (drops.length === 0 || creates.length === 0) {
+      return ret;
     }
 
-    return ret;
+    // an index backing a foreign key can only be dropped in the same statement that adds its replacement
+    const merged = prefix + [...drops, ...creates].map(sql => sql.slice(prefix.length)).join(', ');
+
+    return ret.flatMap(sql => {
+      if (sql === creates[0]) {
+        return [merged];
+      }
+
+      return drops.includes(sql) || creates.includes(sql) ? [] : [sql];
+    });
   }
 
   override getPreAlterTable(tableDiff: TableDifference, safe: boolean): string[] {

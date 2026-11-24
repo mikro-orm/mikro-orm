@@ -606,6 +606,7 @@ MikroORM.init({
   schemaGenerator: {
     disableForeignKeys: false, // try to disable foreign_key_checks (or equivalent)
     createForeignKeyConstraints: true, // do not generate FK constraints
+    skipCoveredForeignKeyIndexes: false, // skip implicit FK indexes covered by another index
     ignoreSchema: [], // allows ignoring some schemas when diffing
     ignoreTriggers: false, // leave triggers unmanaged (never drop or alter existing ones)
     ignoreRoutines: false, // leave stored routines unmanaged (never drop or alter existing ones)

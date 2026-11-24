@@ -3129,11 +3129,12 @@ export class MetadataDiscovery {
       return;
     }
 
-    // partial, typed (e.g. fulltext) and custom expression indexes do not cover the foreign key
-    const hasIndex = [...meta.indexes, ...meta.uniques].some(
-      (idx: EntityMetadata['indexes'][number]) =>
-        !idx.where && !idx.type && !idx.expression && Utils.asArray(idx.properties)[0] === prop.name,
-    );
+    const isPlain = (idx: EntityMetadata['indexes'][number]) =>
+      !idx.where && !idx.type && !idx.expression && !idx.columns && !idx.invisible;
+    // only a plain index starting with the relation can back the foreign key on its own
+    const hasIndex = this.#config.get('schemaGenerator').skipCoveredForeignKeyIndexes
+      ? [...meta.indexes, ...meta.uniques].some(idx => isPlain(idx) && Utils.asArray(idx.properties)[0] === prop.name)
+      : meta.indexes.some(idx => idx.properties?.length === 1 && idx.properties[0] === prop.name);
 
     if (!hasIndex) {
       prop.index ??= true;

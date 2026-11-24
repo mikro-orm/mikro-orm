@@ -129,6 +129,7 @@ const DEFAULTS = {
   },
   schemaGenerator: {
     createForeignKeyConstraints: true,
+    skipCoveredForeignKeyIndexes: false,
     ignoreSchema: [],
     ignoreTriggers: false,
     ignoreRoutines: false,
@@ -1327,6 +1328,12 @@ export interface Options<
      * @default true
      */
     createForeignKeyConstraints?: boolean;
+    /**
+     * Skip the implicit foreign key index of a many-to-one relation when an index or unique constraint already
+     * starts with that relation. Set `index: true` on the relation to keep the index regardless.
+     * @default false
+     */
+    skipCoveredForeignKeyIndexes?: boolean;
     /**
      * Schema names to ignore when comparing schemas.
      * @default []
