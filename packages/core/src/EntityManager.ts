@@ -880,7 +880,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         continue;
       }
 
-      options = { ...options, filters: QueryHelper.mergePropertyFilters(prop.filters, options.filters) };
+      const propOptions = { ...options, filters: QueryHelper.mergePropertyFilters(prop.filters, options.filters) };
 
       // For polymorphic relations, check all targets for filters (not just the first targetMeta)
       const targets = prop.polymorphic && prop.polymorphTargets?.length ? prop.polymorphTargets : [prop.targetMeta!];
@@ -893,7 +893,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       let hasActiveFilter = false;
 
       for (const targetMeta of targets) {
-        const cond = await this.applyFilters(targetMeta.class, {}, options.filters, 'read', options);
+        const cond = await this.applyFilters(targetMeta.class, {}, propOptions.filters, 'read', propOptions);
 
         if (!Utils.isEmpty(cond)) {
           hasActiveFilter = true;
@@ -942,7 +942,11 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           const before = hint.children.length;
           await this.autoJoinRefsForFilters(
             targetMeta,
-            { ...options, populate: hint.children },
+            {
+              ...options,
+              populate: hint.children,
+              filters: QueryHelper.mergePropertyFilters(prop.filters, options.filters),
+            },
             { class: meta.root.class, propName: prop.name },
           );
 
