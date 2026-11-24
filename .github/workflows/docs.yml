@@ -8,12 +8,9 @@ on:
 
 jobs:
   build:
-    environment:
-      name: github-pages
     permissions:
       contents: read
-      pages: write
-      id-token: write
+      pages: read
     runs-on: ubuntu-latest
 
     steps:
@@ -55,5 +52,16 @@ jobs:
         with:
           path: ./docs/build
 
+  # separate job, the artifact listing lags behind the upload and deploying right after it fails intermittently
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+    permissions:
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Deploy artifact to GitHub Pages
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
