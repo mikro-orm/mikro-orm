@@ -29,9 +29,10 @@ drop index \`custom_index_expr\`;
 create index \`custom_index_expr2\` on \`book\` (\`title\`);
 create index \`book_meta_data_fooBar_email_author3_id_index\` on \`book\` ((json_extract(meta_data, '$.fooBar.email')), author3_id);
 create index \`book_meta_data_foo_bar2_meta_data_foo_bar3_index\` on \`book\` ((json_extract(meta_data, '$.foo.bar2')), (json_extract(meta_data, '$.foo.bar3')));
-create index \`lol41\` on \`book\` (\`author3_id\`);
 create index \`lol31\` on \`book\` (\`author3_id\`);
 create unique index \`book_meta_data_fooBar_bazBaz_meta_data_fooBar_lol123_unique\` on \`book\` ((json_extract(meta_data, '$.fooBar.bazBaz')), (json_extract(meta_data, '$.fooBar.lol123')));
+drop index \`book_author3_id_index\`;
+create index \`lol41\` on \`book\` (\`author3_id\`);
 drop index \`book_author5_id_index\`;
 create index \`auth_idx5\` on \`book\` (\`author5_id\`);
 drop index \`isbn_unique_constr\`;
@@ -40,9 +41,9 @@ create unique index \`book_isbn_unique\` on \`book\` (\`isbn\`);
 `;
 
 exports[`indexes on FKs in sqlite (GH 1518) > schema generator respect indexes on FKs on column update 4`] = `
-"drop index \`book_meta_data_fooBar_bazBaz_meta_data_fooBar_lol123_unique\`;
+"drop index \`lol41\`;
+drop index \`book_meta_data_fooBar_bazBaz_meta_data_fooBar_lol123_unique\`;
 drop index \`lol31\`;
-drop index \`lol41\`;
 drop index \`book_meta_data_foo_bar2_meta_data_foo_bar3_index\`;
 drop index \`book_meta_data_fooBar_email_author3_id_index\`;
 create index \`lol42\` on \`book\` (\`author3_id\`);
