@@ -1578,19 +1578,7 @@ export class QueryBuilder<
       return;
     }
 
-    const types = Object.values(meta.root.discriminatorMap!).map(cls => this.metadata.find(cls)!);
-    const children: EntityMetadata[] = [];
-    const lookUpChildren = (ret: EntityMetadata[], type: string) => {
-      const children = types.filter(meta2 => meta2.extends === type);
-      children.forEach(m => lookUpChildren(ret, m.className));
-      ret.push(...children.filter(c => c.discriminatorValue));
-
-      return children;
-    };
-    lookUpChildren(children, meta.className);
-    this.andWhere({
-      [meta.root.discriminatorColumn!]: children.length > 0 ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] } : meta.discriminatorValue,
-    });
+    this.andWhere({ [meta.root.discriminatorColumn!]: this.helper.getDiscriminatorCondition(meta) } as any);
   }
 
   private finalize(): void {

@@ -290,7 +290,7 @@ export class QueryBuilderHelper {
     if (join.prop.targetMeta?.discriminatorValue && !join.path?.endsWith('[pivot]')) {
       const typeProperty = join.prop.targetMeta!.root.discriminatorColumn!;
       const alias = join.inverseAlias ?? join.alias;
-      join.cond[`${alias}.${typeProperty}`] = join.prop.targetMeta!.discriminatorValue;
+      join.cond[`${alias}.${typeProperty}`] = this.getDiscriminatorCondition(join.prop.targetMeta!);
     }
 
     let sql = method + ' ';
@@ -327,6 +327,22 @@ export class QueryBuilderHelper {
     }
 
     return { sql, params };
+  }
+
+  /** STI discriminator condition matching the entity and all its subclasses. */
+  getDiscriminatorCondition(meta: EntityMetadata): unknown {
+    const types = Object.values(meta.root.discriminatorMap!).map(cls => this.metadata.find(cls)!);
+    const children: EntityMetadata[] = [];
+    const lookUpChildren = (ret: EntityMetadata[], type: string) => {
+      const children = types.filter(meta2 => meta2.extends === type);
+      children.forEach(m => lookUpChildren(ret, m.className));
+      ret.push(...children.filter(c => c.discriminatorValue));
+
+      return children;
+    };
+    lookUpChildren(children, meta.className);
+
+    return children.length > 0 ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] } : meta.discriminatorValue;
   }
 
   private processJoinClause(key: string, value: unknown, alias: string, params: Knex.Value[], operator = '$eq'): string {
