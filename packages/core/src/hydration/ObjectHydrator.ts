@@ -50,10 +50,6 @@ export class ObjectHydrator extends Hydrator {
     normalizeAccessors?: boolean,
   ): void {
     const hydrate = this.getEntityHydrator(meta, type, normalizeAccessors);
-    const running = this.running;
-    // the running state is used to consider propagation as hydration, saving the values directly to the entity data,
-    // but we don't want that for new entities, their propagation should result in entity updates when flushing
-    this.running = !newEntity;
     Utils.callCompiledFunction(
       hydrate,
       entity,
@@ -65,7 +61,6 @@ export class ObjectHydrator extends Hydrator {
       parentSchema,
       normalizeAccessors,
     );
-    this.running = running;
   }
 
   /**
@@ -82,8 +77,6 @@ export class ObjectHydrator extends Hydrator {
     normalizeAccessors?: boolean,
   ): void {
     const hydrate = this.getEntityHydrator(meta, 'reference', normalizeAccessors);
-    const running = this.running;
-    this.running = true;
     Utils.callCompiledFunction(
       hydrate,
       entity,
@@ -95,7 +88,6 @@ export class ObjectHydrator extends Hydrator {
       parentSchema,
       normalizeAccessors,
     );
-    this.running = running;
   }
 
   /**
@@ -325,6 +317,28 @@ export class ObjectHydrator extends Hydrator {
         }
       }
 
+      // propagation of a loaded relation is not a change, the FK goes straight to the snapshot of the owning side
+      const prop2 = prop.targetMeta?.properties[prop.mappedBy];
+      const owner = prop.owner ? prop : prop2;
+
+      if ((prop.inversedBy || prop.mappedBy) && !prop.mapToPk && owner?.owner && !owner.mapToPk) {
+        const ownerKey = this.safeKey(`prop_${owner.name}_${this.#tmpIndex++}`);
+        context.set(ownerKey, owner);
+        context.set('syncSnapshot', EntityHelper.syncSnapshot);
+        ret.push(`  if (!newEntity && data${dataKey} != null && entity${entityKey}) {`);
+
+        if (prop.owner) {
+          ret.push(`    syncSnapshot(entity, ${ownerKey}, Reference.unwrapReference(entity${entityKey}));`);
+        } else {
+          ret.push(`    const target = Reference.unwrapReference(entity${entityKey});`);
+          ret.push(`    if (Reference.unwrapReference(target${this.wrap(owner.name)}) === entity) {`);
+          ret.push(`      syncSnapshot(target, ${ownerKey}, entity);`);
+          ret.push(`    }`);
+        }
+
+        ret.push(`  }`);
+      }
+
       if (prop.customType?.ensureComparable(meta, prop)) {
         registerCustomType(prop, this.safeKey(prop.name), 'convertToDatabaseValue', context);
 
@@ -354,7 +368,7 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`    } else {`);
       // loaded items go through `hydrate()`, as `set()` would persist them and queue an auto-flush; the count stays unset, joined results can be filtered
       ret.push(
-        `      Collection.create(entity, ${this.quote(prop.name)}, undefined, false).hydrate(items, true, false, false, false);`,
+        `      Collection.create(entity, ${this.quote(prop.name)}, undefined, false).hydrate(items, true, false, false, false, true);`,
       );
       ret.push(`    }`);
       ret.push(`  } else if (!entity${entityKey} && data${dataKey} instanceof Collection) {`);

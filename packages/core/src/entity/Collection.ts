@@ -22,6 +22,7 @@ import { Reference } from './Reference.js';
 import type { Transaction } from '../connections/Connection.js';
 import type { CountOptions, FindOptions, LoadHint } from '../drivers/IDatabaseDriver.js';
 import { helper, wrap } from './wrap.js';
+import { EntityHelper } from './EntityHelper.js';
 import type { EntityLoaderOptions } from './EntityLoader.js';
 import { QueryHelper } from '../utils/QueryHelper.js';
 import { inspect } from '../logging/inspect.js';
@@ -255,7 +256,7 @@ export class Collection<T extends object, O extends object = object> {
     return added;
   }
 
-  private addItems(items: T[]): number {
+  private addItems(items: T[], hydration?: boolean): number {
     this.validateModification(items);
     let added = 0;
 
@@ -266,7 +267,7 @@ export class Collection<T extends object, O extends object = object> {
         this.#items.add(entity);
         added++;
         this.#dirty = true;
-        this.propagate(entity, 'add');
+        this.propagate(entity, 'add', hydration);
       }
     }
 
@@ -660,7 +661,14 @@ export class Collection<T extends object, O extends object = object> {
   /**
    * @internal
    */
-  hydrate(items: T[], forcePropagate?: boolean, partial?: boolean, readonly?: boolean, count = true): void {
+  hydrate(
+    items: T[],
+    forcePropagate?: boolean,
+    partial?: boolean,
+    readonly?: boolean,
+    count = true,
+    hydration?: boolean,
+  ): void {
     for (let i = 0; i < this.#items.size; i++) {
       delete this[i];
     }
@@ -671,7 +679,7 @@ export class Collection<T extends object, O extends object = object> {
     this.#count = count ? 0 : undefined;
     // loaded items are not persisted, that would queue an auto-flush of their type on a read-only path
     const unwrapped = items.map(i => Reference.unwrapReference(i));
-    this.addItems(unwrapped);
+    this.addItems(unwrapped, hydration);
     this.cancelOrphanRemoval(unwrapped);
     this.takeSnapshot(forcePropagate);
 
@@ -959,11 +967,11 @@ export class Collection<T extends object, O extends object = object> {
     this.#property = prop;
   }
 
-  protected propagate(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
+  protected propagate(item: T, method: 'add' | 'remove' | 'takeSnapshot', hydration?: boolean): void {
     if (this.property.owner && this.property.inversedBy) {
       this.propagateToInverseSide(item, method);
     } else if (!this.property.owner && this.property.mappedBy) {
-      this.propagateToOwningSide(item, method);
+      this.propagateToOwningSide(item, method, hydration);
     }
   }
 
@@ -976,7 +984,7 @@ export class Collection<T extends object, O extends object = object> {
     }
   }
 
-  protected propagateToOwningSide(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
+  protected propagateToOwningSide(item: T, method: 'add' | 'remove' | 'takeSnapshot', hydration?: boolean): void {
     const mappedBy = this.property.mappedBy as EntityKey<T>;
     const collection = item[mappedBy] as Collection<O, T>;
 
@@ -1005,6 +1013,11 @@ export class Collection<T extends object, O extends object = object> {
       // skip if already propagated
       if (Reference.unwrapReference(item[mappedBy] as object) !== value) {
         item[mappedBy] = value as EntityValue<T>;
+
+        // propagation of a loaded relation is not a change, the FK goes straight to the snapshot
+        if (hydration && !prop2.mapToPk) {
+          EntityHelper.syncSnapshot(item, prop2, this.owner);
+        }
       }
     }
   }

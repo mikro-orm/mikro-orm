@@ -17,7 +17,6 @@ import { type EntityFactory } from './entity/EntityFactory.js';
 import { type EntityRepository } from './entity/EntityRepository.js';
 import { Reference, type ScalarReference } from './entity/Reference.js';
 import { EntityHelper } from './entity/EntityHelper.js';
-import { helper } from './entity/wrap.js';
 import type { SerializationContext } from './serialization/SerializationContext.js';
 import type { SerializeOptions } from './serialization/EntitySerializer.js';
 import type { MetadataStorage } from './metadata/MetadataStorage.js';
@@ -620,7 +619,6 @@ export interface IWrappedEntityInternal<Entity extends object> extends IWrappedE
   __platform: Platform;
   __config: Configuration;
   __factory: EntityFactory; // internal factory instance that has its own global fork
-  __hydrator: IHydrator;
   __initialized: boolean;
   __originalEntityData?: EntityData<Entity>;
   __loadedProperties: Set<string>;
@@ -1916,7 +1914,6 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
           },
           set(val: AnyEntity) {
             const wrapped = this.__helper;
-            const hydrator = wrapped.hydrator as IHydrator;
             const entity = Reference.unwrapReference(val ?? wrapped.__data[prop.name]);
             const old = Reference.unwrapReference(wrapped.__data[prop.name]);
 
@@ -1931,15 +1928,6 @@ export class EntityMetadata<Entity = any, Class extends EntityCtor<Entity> = Ent
             }
 
             wrapped.__data[prop.name] = Reference.wrapReference(val, prop as EntityProperty);
-
-            // when propagation from inside hydration, we set the FK to the entity data immediately
-            if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
-              const targetMeta = prop.targetMeta ?? helper(entity)?.__meta;
-              if (targetMeta) {
-                wrapped.__originalEntityData[prop.name] = EntityHelper.getForeignKeyValue(entity, prop, targetMeta);
-              }
-            }
-
             EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val), old);
           },
           enumerable: true,
@@ -2809,8 +2797,6 @@ export interface IHydrator {
     parentSchema?: string,
     normalizeAccessors?: boolean,
   ): void;
-
-  isRunning(): boolean;
 }
 
 /** Constructor signature for hydrator implementations. */
