@@ -210,13 +210,6 @@ module.exports = {
           title: 'Chat on Discord',
           className: 'icon',
         },
-        // {
-        //   href: 'https://join.slack.com/t/mikroorm/shared_invite/enQtNTM1ODYzMzM4MDk3LWM4ZDExMjU5ZDhmNjA2MmM3MWMwZmExNjhhNDdiYTMwNWM0MGY5ZTE3ZjkyZTMzOWExNDgyYmMzNDE1NDI5NjA',
-        //   label: 'Slack',
-        //   position: 'right',
-        //   title: 'Chat on Slack',
-        //   className: 'icon',
-        // },
         {
           href: 'https://github.com/mikro-orm/mikro-orm',
           label: 'GitHub',
@@ -250,10 +243,6 @@ module.exports = {
             {
               label: 'Discord',
               href: 'https://discord.gg/w8bjxFHS7X',
-            },
-            {
-              label: 'Slack',
-              href: 'https://join.slack.com/t/mikroorm/shared_invite/enQtNTM1ODYzMzM4MDk3LWM4ZDExMjU5ZDhmNjA2MmM3MWMwZmExNjhhNDdiYTMwNWM0MGY5ZTE3ZjkyZTMzOWExNDgyYmMzNDE1NDI5NjA',
             },
             {
               label: 'Stack Overflow',
