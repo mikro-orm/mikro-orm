@@ -10,7 +10,6 @@ import {
   EntityRepositoryType,
   type EntityValue,
   HiddenProps,
-  type IHydrator,
   OptionalProps,
   PrimaryKeyProp,
 } from '../typings.js';
@@ -113,7 +112,7 @@ export class EntityHelper {
       __helper: {
         get(): WrappedEntity<T> {
           Object.defineProperty(this, '__helper', {
-            value: new WrappedEntity(this, em.getHydrator(), ...helperParams),
+            value: new WrappedEntity(this, ...helperParams),
             enumerable: false,
             configurable: true,
           });
@@ -142,7 +141,7 @@ export class EntityHelper {
       if (isReference) {
         Object.defineProperty(meta.prototype, prop.name, {
           set(val: AnyEntity) {
-            EntityHelper.defineReferenceProperty(meta, prop, this, em.getHydrator());
+            EntityHelper.defineReferenceProperty(meta, prop, this);
             this[prop.name] = val;
           },
           configurable: true,
@@ -226,12 +225,7 @@ export class EntityHelper {
     };
   }
 
-  static defineReferenceProperty<T extends object>(
-    meta: EntityMetadata<T>,
-    prop: EntityProperty<T>,
-    ref: T,
-    hydrator: IHydrator,
-  ): void {
+  static defineReferenceProperty<T extends object>(meta: EntityMetadata<T>, prop: EntityProperty<T>, ref: T): void {
     const wrapped = helper(ref);
     Object.defineProperty(ref, prop.name, {
       get() {
@@ -247,17 +241,24 @@ export class EntityHelper {
         }
 
         wrapped.__data[prop.name] = Reference.wrapReference(val as T, prop);
-
-        // when propagation from inside hydration, we set the FK to the entity data immediately
-        if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
-          wrapped.__originalEntityData[prop.name] = EntityHelper.getForeignKeyValue(entity, prop, prop.targetMeta!);
-        }
-
         EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val), old);
       },
       enumerable: true,
       configurable: true,
     });
+  }
+
+  /**
+   * Stores the FK of a relation set during hydration in the snapshot of its owning side, so it is not seen as a change.
+   * @internal
+   */
+  static syncSnapshot(owner: AnyEntity, prop: EntityProperty<any>, target: AnyEntity): void {
+    const snapshot = helper(owner).__originalEntityData;
+    const targetMeta = prop.targetMeta ?? helper(target)?.__meta;
+
+    if (snapshot && targetMeta) {
+      snapshot[prop.name] = EntityHelper.getForeignKeyValue(target, prop, targetMeta);
+    }
   }
 
   /**

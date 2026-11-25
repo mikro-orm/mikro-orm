@@ -6,7 +6,6 @@ import type {
   EntityData,
   EntityDictionary,
   EntityMetadata,
-  IHydrator,
   EntityValue,
   EntityKey,
   IWrappedEntityInternal,
@@ -72,20 +71,17 @@ export class WrappedEntity<Entity extends object> {
   declare __identifier?: EntityIdentifier;
 
   declare private readonly entity: Entity;
-  declare private readonly hydrator: IHydrator;
   declare private readonly pkGetter?: (e: Entity) => Primary<Entity>;
   declare private readonly pkSerializer?: (e: Entity) => string;
   declare private readonly pkGetterConverted?: (e: Entity) => Primary<Entity>;
 
   constructor(
     entity: Entity,
-    hydrator: IHydrator,
     pkGetter?: (e: Entity) => Primary<Entity>,
     pkSerializer?: (e: Entity) => string,
     pkGetterConverted?: (e: Entity) => Primary<Entity>,
   ) {
     this.entity = entity;
-    this.hydrator = hydrator;
     this.pkGetter = pkGetter;
     this.pkSerializer = pkSerializer;
     this.pkGetterConverted = pkGetterConverted;

@@ -7,8 +7,6 @@ import type { Configuration } from '../utils/Configuration.js';
 /** Abstract base class for hydrating entity instances from raw database data. */
 /* v8 ignore next */
 export abstract class Hydrator implements IHydrator {
-  protected running = false;
-
   constructor(
     protected readonly metadata: MetadataStorage,
     protected readonly platform: Platform,
@@ -29,15 +27,11 @@ export abstract class Hydrator implements IHydrator {
     schema?: string,
     parentSchema?: string,
   ): void {
-    // the running state is used to consider propagation as hydration, saving the values directly to the entity data,
-    // but we don't want that for new entities, their propagation should result in entity updates when flushing
-    this.running = !newEntity;
     const props = this.getProperties(meta, type);
 
     for (const prop of props) {
       this.hydrateProperty(entity, prop, data, factory, newEntity, convertCustomTypes);
     }
-    this.running = false;
   }
 
   /**
@@ -52,16 +46,9 @@ export abstract class Hydrator implements IHydrator {
     schema?: string,
     parentSchema?: string,
   ): void {
-    this.running = true;
     meta.primaryKeys.forEach(pk => {
       this.hydrateProperty<T>(entity, meta.properties[pk], data, factory, false, convertCustomTypes);
     });
-    this.running = false;
-  }
-
-  /** Returns whether the hydrator is currently in the middle of hydrating an entity. */
-  isRunning(): boolean {
-    return this.running;
   }
 
   protected getProperties<T extends object>(meta: EntityMetadata<T>, type: 'full' | 'reference'): EntityProperty<T>[] {
