@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.12](https://github.com/mikro-orm/mikro-orm/compare/v7.2.11...v7.2.12) (2026-11-25)
+
+### Bug Fixes
+
+* **cli:** respect `.mjs` and `.cjs` output paths in `mikro-orm compile` ([#8795](https://github.com/mikro-orm/mikro-orm/issues/8795)) ([7fd773e](https://github.com/mikro-orm/mikro-orm/commit/7fd773ef7b0b5f3abdc2db8a9b2d50f5e5354e74))
+* **core:** accept fractional seconds in TimeType ([#8759](https://github.com/mikro-orm/mikro-orm/issues/8759)) ([62aea84](https://github.com/mikro-orm/mikro-orm/commit/62aea84a5d24da27ca87c97ba7138dcc100601c1))
+* **core:** keep TPT parent tables first with a self-reference on the root ([#8804](https://github.com/mikro-orm/mikro-orm/issues/8804)) ([33f4e66](https://github.com/mikro-orm/mikro-orm/commit/33f4e669fdc7f4444914ea93d71176adb2eb49fc)), closes [#8422](https://github.com/mikro-orm/mikro-orm/issues/8422)
+* **core:** keep unflushed inverse 1:1 changes when the relation is populated again ([#8817](https://github.com/mikro-orm/mikro-orm/issues/8817)) ([314960d](https://github.com/mikro-orm/mikro-orm/commit/314960dfddd56bc54ecc3be6e9a258e62dfaf9d2)), closes [#8692](https://github.com/mikro-orm/mikro-orm/issues/8692) [#8814](https://github.com/mikro-orm/mikro-orm/issues/8814)
+* **core:** persist extra updates of TPT parent table properties ([#8803](https://github.com/mikro-orm/mikro-orm/issues/8803)) ([b264d54](https://github.com/mikro-orm/mikro-orm/commit/b264d54555bdcf5540e4da54d020754d056ef72a)), closes [#8801](https://github.com/mikro-orm/mikro-orm/issues/8801)
+* **core:** scope relation `filters` override to the relation and its nested joins ([#8809](https://github.com/mikro-orm/mikro-orm/issues/8809)) ([e8d31d1](https://github.com/mikro-orm/mikro-orm/commit/e8d31d1de103e9b387b255cfade543ae79aa20ab)), closes [#8807](https://github.com/mikro-orm/mikro-orm/issues/8807)
+* **core:** separate a negative parameter from a preceding minus ([#8819](https://github.com/mikro-orm/mikro-orm/issues/8819)) ([8d1aa51](https://github.com/mikro-orm/mikro-orm/commit/8d1aa518283953a6dfbf333c89005b452c2dd5a5))
+* **core:** track hydration-time propagation explicitly instead of via shared hydrator state ([#8822](https://github.com/mikro-orm/mikro-orm/issues/8822)) ([4bed003](https://github.com/mikro-orm/mikro-orm/commit/4bed00361107a5fabeef5b23204177ab31cc6588)), closes [#8816](https://github.com/mikro-orm/mikro-orm/issues/8816) [#8816](https://github.com/mikro-orm/mikro-orm/issues/8816) [#8815](https://github.com/mikro-orm/mikro-orm/issues/8815)
+* **core:** update related entities with falsy primary keys in `assign()` ([#8806](https://github.com/mikro-orm/mikro-orm/issues/8806)) ([d19dc8a](https://github.com/mikro-orm/mikro-orm/commit/d19dc8a66295ee68b749501bc2aa3ab315426f44)), closes [#8757](https://github.com/mikro-orm/mikro-orm/issues/8757)
+* **seeder:** generate valid JavaScript for seeders created with `emit: 'js'` ([#8794](https://github.com/mikro-orm/mikro-orm/issues/8794)) ([a93e321](https://github.com/mikro-orm/mikro-orm/commit/a93e321c211ba5cd6ca307ef95f81ab1c7cd0987))
+
+### Performance Improvements
+
+* **core:** group 1:m dataloader results by owner instead of filtering per collection ([#8800](https://github.com/mikro-orm/mikro-orm/issues/8800)) ([8561267](https://github.com/mikro-orm/mikro-orm/commit/8561267e9cf8105f2e82d8d6f4997406b8b20d92))
+* **sql:** avoid quadratic diff of M:N collections in `syncCollections` ([#8791](https://github.com/mikro-orm/mikro-orm/issues/8791)) ([33e9f16](https://github.com/mikro-orm/mikro-orm/commit/33e9f16ed131c4145c5f6e173430048b48e46fbe)), closes [#8788](https://github.com/mikro-orm/mikro-orm/issues/8788)
+
+
 ## [7.2.11](https://github.com/mikro-orm/mikro-orm/compare/v7.2.10...v7.2.11) (2026-11-20)
 
 ### Bug Fixes
