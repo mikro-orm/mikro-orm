@@ -4,4 +4,5 @@ export * from './Routine.js';
 export * from './MetadataDiscovery.js';
 export * from './MetadataStorage.js';
 export * from './MetadataProvider.js';
+export * from './TypeScriptMetadataProvider.js';
 export * from './MetadataValidator.js';
