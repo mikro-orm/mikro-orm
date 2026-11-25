@@ -7,10 +7,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package @mikro-orm/sql-js
 
-
-
-
-
 ## [7.2.11](https://github.com/mikro-orm/mikro-orm/compare/v7.2.10...v7.2.11) (2026-11-20)
 
 **Note:** Version bump only for package @mikro-orm/sql-js

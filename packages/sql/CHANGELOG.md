@@ -7,12 +7,11 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **core:** scope relation `filters` override to the relation and its nested joins ([#8809](https://github.com/mikro-orm/mikro-orm/issues/8809)) ([e8d31d1](https://github.com/mikro-orm/mikro-orm/commit/e8d31d1de103e9b387b255cfade543ae79aa20ab)), closes [#8807](https://github.com/mikro-orm/mikro-orm/issues/8807)
+- **core:** scope relation `filters` override to the relation and its nested joins ([#8809](https://github.com/mikro-orm/mikro-orm/issues/8809)) ([e8d31d1](https://github.com/mikro-orm/mikro-orm/commit/e8d31d1de103e9b387b255cfade543ae79aa20ab)), closes [#8807](https://github.com/mikro-orm/mikro-orm/issues/8807)
 
 ### Performance Improvements
 
-* **sql:** avoid quadratic diff of M:N collections in `syncCollections` ([#8791](https://github.com/mikro-orm/mikro-orm/issues/8791)) ([33e9f16](https://github.com/mikro-orm/mikro-orm/commit/33e9f16ed131c4145c5f6e173430048b48e46fbe)), closes [#8788](https://github.com/mikro-orm/mikro-orm/issues/8788)
-
+- **sql:** avoid quadratic diff of M:N collections in `syncCollections` ([#8791](https://github.com/mikro-orm/mikro-orm/issues/8791)) ([33e9f16](https://github.com/mikro-orm/mikro-orm/commit/33e9f16ed131c4145c5f6e173430048b48e46fbe)), closes [#8788](https://github.com/mikro-orm/mikro-orm/issues/8788)
 
 ## [7.2.11](https://github.com/mikro-orm/mikro-orm/compare/v7.2.10...v7.2.11) (2026-11-20)
 
