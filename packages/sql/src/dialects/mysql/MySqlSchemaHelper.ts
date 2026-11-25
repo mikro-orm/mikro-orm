@@ -735,6 +735,38 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
+  override alterTable(diff: TableDifference, safe?: boolean): string[] {
+    const ret = super.alterTable(diff, safe);
+    const prefix = `alter table ${this.quote(diff.toTable.getShortestName())} `;
+    const mergeable = (sql: string) => sql.startsWith(prefix) && ret.includes(sql);
+    const fks = Object.values(diff.fromTable.getForeignKeys())
+      .map(fk => fk.columnNames[0])
+      .filter(col => !diff.removedColumns[col]);
+    const changed = Object.values(diff.changedIndexes);
+    const drops = [...Object.values(diff.removedIndexes), ...changed.map(idx => diff.fromTable.getIndex(idx.keyName)!)]
+      .filter(idx => !idx.primary && fks.includes(idx.columnNames[0]))
+      .map(idx => this.dropIndex(diff.name, idx))
+      .filter(mergeable);
+    const creates = [...Object.values(diff.addedIndexes), ...changed]
+      .map(idx => this.createIndex(idx, diff.toTable, true))
+      .filter(mergeable);
+
+    if (drops.length === 0 || creates.length === 0) {
+      return ret;
+    }
+
+    // an index backing a foreign key can only be dropped in the same statement that adds its replacement
+    const merged = prefix + [...drops, ...creates].map(sql => sql.slice(prefix.length)).join(', ');
+
+    return ret.flatMap(sql => {
+      if (sql === creates[0]) {
+        return [merged];
+      }
+
+      return drops.includes(sql) || creates.includes(sql) ? [] : [sql];
+    });
+  }
+
   override getPreAlterTable(tableDiff: TableDifference, safe: boolean): string[] {
     // Dropping primary keys requires to unset autoincrement attribute on the particular column first.
     const pk = Object.values(tableDiff.removedIndexes).find(idx => idx.primary);

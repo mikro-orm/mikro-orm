@@ -606,6 +606,7 @@ MikroORM.init({
   schemaGenerator: {
     disableForeignKeys: false, // try to disable foreign_key_checks (or equivalent)
     createForeignKeyConstraints: true, // do not generate FK constraints
+    skipCoveredForeignKeyIndexes: false, // skip implicit FK indexes covered by another index
     ignoreSchema: [], // allows ignoring some schemas when diffing
     ignoreTriggers: false, // leave triggers unmanaged (never drop or alter existing ones)
     ignoreRoutines: false, // leave stored routines unmanaged (never drop or alter existing ones)
@@ -830,6 +831,7 @@ Full list of supported options:
 | `MIKRO_ORM_MIGRATIONS_SNAPSHOT_NAME`                        | `migrations.snapshotName`                      |
 | `MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS`           | `schemaGenerator.disableForeignKeys`           |
 | `MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS` | `schemaGenerator.createForeignKeyConstraints`  |
+| `MIKRO_ORM_SCHEMA_GENERATOR_SKIP_COVERED_FOREIGN_KEY_INDEXES` | `schemaGenerator.skipCoveredForeignKeyIndexes` |
 | `MIKRO_ORM_SCHEMA_GENERATOR_IGNORE_TRIGGERS`               | `schemaGenerator.ignoreTriggers`               |
 | `MIKRO_ORM_SCHEMA_GENERATOR_IGNORE_ROUTINES`               | `schemaGenerator.ignoreRoutines`               |
 | `MIKRO_ORM_SCHEMA_GENERATOR_IGNORE_POLICIES`               | `schemaGenerator.ignorePolicies`               |

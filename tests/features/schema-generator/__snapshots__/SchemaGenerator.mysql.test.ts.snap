@@ -251,13 +251,11 @@ alter table \`configuration2\` drop foreign key \`configuration2_test_id_foreign
 alter table \`foo_param2\` add constraint \`foo_param2_bar_id_foreign\` foreign key (\`bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete cascade;
 alter table \`foo_param2\` add constraint \`foo_param2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade on delete cascade;
 
-alter table \`author2\` drop index \`author2_favourite_author_id_index\`;
 alter table \`author2\` drop index \`author2_name_age_index\`;
 alter table \`author2\` change \`age\` \`age_in_years\` int null default null;
 alter table \`author2\` change \`favourite_author_id\` \`favourite_writer_id\` int unsigned null;
 alter table \`author2\` add constraint \`author2_favourite_writer_id_foreign\` foreign key (\`favourite_writer_id\`) references \`author2\` (\`id\`) on delete set null;
-alter table \`author2\` add index \`author2_favourite_writer_id_index\` (\`favourite_writer_id\`);
-alter table \`author2\` add index \`author2_name_age_in_years_index\` (\`name\`, \`age_in_years\`);
+alter table \`author2\` drop index \`author2_favourite_author_id_index\`, add index \`author2_favourite_writer_id_index\` (\`favourite_writer_id\`), add index \`author2_name_age_in_years_index\` (\`name\`, \`age_in_years\`);
 
 alter table \`book2\` drop column \`foo\`;
 alter table \`book2\` add constraint \`book2_publisher_id_foreign\` foreign key (\`publisher_id\`) references \`publisher2\` (\`id\`) on delete set null;

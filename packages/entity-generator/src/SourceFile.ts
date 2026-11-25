@@ -854,7 +854,7 @@ export class SourceFile {
       const defaultName = this.platform.getIndexName(this.meta.collection, prop.fieldNames, type);
       options[type] = propType === true || defaultName === propType ? 'true' : this.quote(propType);
       const expected = {
-        index: this.platform.indexForeignKeys(),
+        index: this.platform.indexForeignKeys() && !this.platform.isForeignKeyIndexCovered(this.meta, prop),
         unique: prop.kind === ReferenceKind.ONE_TO_ONE,
       };
 

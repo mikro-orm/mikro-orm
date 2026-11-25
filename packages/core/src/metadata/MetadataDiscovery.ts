@@ -3125,9 +3125,11 @@ export class MetadataDiscovery {
   }
 
   private initIndexes(meta: EntityMetadata, prop: EntityProperty): void {
-    const hasIndex = meta.indexes.some(idx => idx.properties?.length === 1 && idx.properties[0] === prop.name);
+    if (prop.kind !== ReferenceKind.MANY_TO_ONE || !this.#platform.indexForeignKeys()) {
+      return;
+    }
 
-    if (prop.kind === ReferenceKind.MANY_TO_ONE && this.#platform.indexForeignKeys() && !hasIndex) {
+    if (!this.#platform.isForeignKeyIndexCovered(meta, prop)) {
       prop.index ??= true;
     }
   }
