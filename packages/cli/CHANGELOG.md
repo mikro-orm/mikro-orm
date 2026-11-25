@@ -3,13 +3,6 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [7.2.12](https://github.com/mikro-orm/mikro-orm/compare/v7.2.11...v7.2.12) (2026-11-25)
-
-### Bug Fixes
-
-* **cli:** respect `.mjs` and `.cjs` output paths in `mikro-orm compile` ([#8795](https://github.com/mikro-orm/mikro-orm/issues/8795)) ([7fd773e](https://github.com/mikro-orm/mikro-orm/commit/7fd773ef7b0b5f3abdc2db8a9b2d50f5e5354e74))
-
-
 ## [7.2.11](https://github.com/mikro-orm/mikro-orm/compare/v7.2.10...v7.2.11) (2026-11-20)
 
 **Note:** Version bump only for package @mikro-orm/cli

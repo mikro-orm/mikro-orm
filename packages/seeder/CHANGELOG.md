@@ -3,13 +3,6 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [7.2.12](https://github.com/mikro-orm/mikro-orm/compare/v7.2.11...v7.2.12) (2026-11-25)
-
-### Bug Fixes
-
-* **seeder:** generate valid JavaScript for seeders created with `emit: 'js'` ([#8794](https://github.com/mikro-orm/mikro-orm/issues/8794)) ([a93e321](https://github.com/mikro-orm/mikro-orm/commit/a93e321c211ba5cd6ca307ef95f81ab1c7cd0987))
-
-
 ## [7.2.11](https://github.com/mikro-orm/mikro-orm/compare/v7.2.10...v7.2.11) (2026-11-20)
 
 ### Bug Fixes
