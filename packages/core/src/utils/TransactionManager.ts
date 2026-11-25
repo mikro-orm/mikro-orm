@@ -166,6 +166,14 @@ export class TransactionManager {
     cb: (em: EntityManager) => T | Promise<T>,
     options: TransactionOptions,
   ): Promise<T> {
+    // a hook of the outer flush can start a transaction too, the outer flush is already writing the changes then
+    if (
+      (options.flushBeforeNestedTransaction ?? em.config.get('flushBeforeNestedTransaction')) &&
+      !em.getUnitOfWork(false).isInsideFlush()
+    ) {
+      await em.flush();
+    }
+
     const fork = this.createFork(em, options);
 
     // Pass existing context to create savepoint

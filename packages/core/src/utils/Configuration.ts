@@ -99,6 +99,7 @@ const DEFAULTS = {
   },
   persistOnCreate: true,
   upsertManaged: true,
+  flushBeforeNestedTransaction: false,
   forceEntityConstructor: false,
   forceUndefined: false,
   initNullableProperties: false,
@@ -1065,6 +1066,12 @@ export interface Options<
    * @default true
    */
   upsertManaged: boolean;
+  /**
+   * Flush pending changes of the outer transaction before a nested one (savepoint) starts.
+   * Without this, the nested transaction writes them inside its savepoint, and they are lost if it rolls back.
+   * @default false
+   */
+  flushBeforeNestedTransaction: boolean;
   /**
    * Force use of entity constructors when creating entity instances.
    * Required when using native private properties inside entities.
