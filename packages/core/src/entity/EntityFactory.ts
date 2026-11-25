@@ -295,22 +295,23 @@ export class EntityFactory {
   }
 
   /** Whether the owning side of an inverse 1:1 `prop` carries an unflushed change on the given target. */
-  private hasPendingOwner(target: unknown, prop: EntityProperty): boolean {
-    const owner = target ? Reference.unwrapReference(target as AnyEntity) : undefined;
-
+  private hasPendingOwner(target: AnyEntity | undefined, prop: EntityProperty): boolean {
     // a reference gets its owning side set during hydration, that is not a change
-    if (!owner || !helper(owner).__initialized) {
+    if (!target || !helper(target).__initialized) {
       return false;
     }
 
-    const original = helper(owner).__originalEntityData ?? {};
-    const diff = this.#comparator.diffEntities(
-      helper(owner).__meta.class,
-      original,
-      this.#comparator.prepareEntity(owner),
-    );
+    const owner = target[prop.mappedBy] as AnyEntity | Primary<AnyEntity> | undefined;
+    const fk = Utils.isEntity(owner, true)
+      ? Utils.getPrimaryKeyValues(
+          Reference.unwrapReference(owner),
+          prop.targetMeta!.properties[prop.mappedBy].targetMeta!,
+          true,
+          true,
+        )
+      : owner;
 
-    return prop.mappedBy in diff;
+    return !Utils.equals(fk ?? null, helper(target).__originalEntityData?.[prop.mappedBy] ?? null);
   }
 
   /** Merges new data into an existing entity, preserving user-modified properties. */
@@ -350,9 +351,12 @@ export class EntityFactory {
       .filter(key => meta.properties[key].kind === ReferenceKind.ONE_TO_ONE && !meta.properties[key].owner)
       .filter(key => {
         const prop = meta.properties[key];
-        const loaded = Utils.isPlainObject(diff2[key]) && this.findEntity(diff2[key], prop.targetMeta!, options);
+        const current = entity[key] ? Reference.unwrapReference(entity[key] as AnyEntity) : undefined;
+        const loaded = Utils.isPlainObject(diff2[key])
+          ? this.findEntity<AnyEntity>(diff2[key], prop.targetMeta!, options)
+          : undefined;
 
-        return this.hasPendingOwner(entity[key], prop) || this.hasPendingOwner(loaded, prop);
+        return this.hasPendingOwner(current, prop) || (loaded !== current && this.hasPendingOwner(loaded, prop));
       })
       .forEach(key => delete diff2[key]);
 
