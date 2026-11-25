@@ -201,6 +201,10 @@ You can find example integrations for some popular frameworks in the [`mikro-orm
 
 - [Express + SQLite](https://github.com/mikro-orm/express-js-example-app)
 
+## Supported Versions
+
+New features and bug fixes land in the latest major version. The previous major version keeps receiving fixes for high and critical severity vulnerabilities for 12 months after the next major is released, and reaches end of life after that. See the [security policy](SECURITY.md) for the current status of each version and for how to report a vulnerability.
+
 ## Contributing
 
 Contributions, issues and feature requests are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on the process for submitting pull requests to us.
