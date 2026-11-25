@@ -2,12 +2,14 @@
 
 ## Supported Versions
 
-Only latest major/minor version is supported (e.g. v4.1). 
+| Version | Status |
+|---|---|
+| 7.x | Supported, bug fixes and security fixes land in the latest minor |
+| 6.x | Security fixes only (high and critical severity) until 2027-03-11 |
+| 5.x and older | End of life |
+
+The latest major version receives all fixes, always in its latest minor release. The previous major version receives fixes for high and critical severity vulnerabilities for 12 months after the release of the next major, and reaches end of life after that. Versions past their end of life receive no fixes of any kind, so please upgrade.
 
 ## Reporting a Vulnerability
 
-To report a vulnerability, please do not create public issue. Instead, use one of the following private channels:
-
-- Email can be found at https://github.com/B4nan
-- Twitter Direct Message to @B4nan or @MikroOrm at https://twitter.com/messages/compose?recipient_id=383367119
-- Facebook Messenger at https://m.me/b4nan
+Please do not create a public issue. Report the vulnerability privately via [GitHub security advisories](https://github.com/mikro-orm/mikro-orm/security/advisories/new) instead.

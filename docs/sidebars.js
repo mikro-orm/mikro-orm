@@ -265,6 +265,8 @@ module.exports = {
       link: {
         type: 'generated-index',
         title: 'Upgrading',
+        description:
+          'New features and bug fixes land in the latest major version. The previous major keeps receiving fixes for high and critical severity vulnerabilities for 12 months after the next major is released, and reaches end of life after that.',
         slug: '/upgrading',
         keywords: ['upgrading'],
       },
