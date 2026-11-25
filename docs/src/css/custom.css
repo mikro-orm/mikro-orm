@@ -126,8 +126,7 @@ html[data-theme="dark"] .navbar .navbar__link:hover {
 
 .navbar .icon[href*=github],
 .navbar .icon[href*=twitter],
-.navbar .icon[href*=discord],
-.navbar .icon[href*=slack] {
+.navbar .icon[href*=discord] {
   font-size: 0;
   padding: 4px;
   margin: 0 4px;
@@ -135,8 +134,7 @@ html[data-theme="dark"] .navbar .navbar__link:hover {
 
 .navbar .icon[href*=github]::before,
 .navbar .icon[href*=twitter]::before,
-.navbar .icon[href*=discord]::before,
-.navbar .icon[href*=slack]::before {
+.navbar .icon[href*=discord]::before {
   content: '';
   display: block;
   width: 28px;
@@ -146,10 +144,6 @@ html[data-theme="dark"] .navbar .navbar__link:hover {
 
 .navbar .icon[href*=github]::before {
   background-image: url('/static/img/github-brand.svg');
-}
-
-.navbar .icon[href*=slack]::before {
-  background-image: url('/static/img/slack-brand.svg');
 }
 
 .navbar .icon[href*=discord]::before {
@@ -230,10 +224,6 @@ html[data-theme="dark"] .navbar .navbar__link[href*=github]:before {
   background-image: url('/static/img/github-brand-dark.svg');
 }
 
-html[data-theme="dark"] .navbar .navbar__link[href*=slack]:before {
-  background-image: url('/static/img/slack-brand-dark.svg');
-}
-
 html[data-theme="dark"] .navbar .navbar__link[href*=discord]:before {
   background-image: url('/static/img/discord-brand-dark.svg');
 }
@@ -269,8 +259,7 @@ html[data-theme="dark"] .navbar .navbar__link[href*=twitter]:before {
 }
 
 @media screen and (min-width: 997px) and (max-width: 1100px) {
-  .navbar .icon[href*=twitter],
-  .navbar .icon[href*=slack] {
+  .navbar .icon[href*=twitter] {
     display: none;
   }
 
