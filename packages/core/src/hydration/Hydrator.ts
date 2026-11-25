@@ -28,6 +28,8 @@ export abstract class Hydrator implements IHydrator {
     convertCustomTypes = false,
     schema?: string,
     parentSchema?: string,
+    normalizeAccessors?: boolean,
+    managed?: boolean,
   ): void {
     // the running state is used to consider propagation as hydration, saving the values directly to the entity data,
     // but we don't want that for new entities, their propagation should result in entity updates when flushing
@@ -51,6 +53,8 @@ export abstract class Hydrator implements IHydrator {
     convertCustomTypes?: boolean,
     schema?: string,
     parentSchema?: string,
+    normalizeAccessors?: boolean,
+    managed?: boolean,
   ): void {
     this.running = true;
     meta.primaryKeys.forEach(pk => {

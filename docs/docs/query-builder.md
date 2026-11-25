@@ -136,6 +136,8 @@ const repo = em.getRepository(User);
 const users = results.map(user => repo.map(user));
 ```
 
+Use `{ disableIdentityMap: true }` to map the result in an isolated context, or `{ managed: false }` to get a cheap, unmanaged entity that never touches the identity map, see [Disabling identity map and change set tracking](./entity-manager.md#disabling-identity-map-and-change-set-tracking).
+
 ## Implicit Joining
 
 `QueryBuilder` supports automatic joining based on entity metadata:

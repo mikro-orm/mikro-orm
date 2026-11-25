@@ -269,7 +269,7 @@ exports[`embedded entities in mongo > diffing 1`] = `
 `;
 
 exports[`embedded entities in mongo > diffing 2`] = `
-"function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors) {
+"function(entity, data, factory, newEntity, convertCustomTypes, schema, parentSchema, normalizeAccessors, managed) {
   if (data._id === null) {
     entity._id = null;
   } else if (typeof data._id !== 'undefined') {
@@ -332,9 +332,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.meta.source = null;
         } else if (typeof data.profile1_identity_meta_source !== 'undefined') {
           if (isPrimaryKey(data.profile1_identity_meta_source, true)) {
-            entity.profile1.identity.meta.source = factory.createReference(source_9, data.profile1_identity_meta_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.createReference(source_9, data.profile1_identity_meta_source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
           } else if (data.profile1_identity_meta_source && typeof data.profile1_identity_meta_source === 'object') {
-            entity.profile1.identity.meta.source = factory.create(source_10, data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.create(source_10, data.profile1_identity_meta_source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
           }
         }
       } else if (data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null) {
@@ -359,9 +359,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.meta.source = null;
         } else if (typeof data.profile1_identity_meta.source !== 'undefined') {
           if (isPrimaryKey(data.profile1_identity_meta.source, true)) {
-            entity.profile1.identity.meta.source = factory.createReference(source_14, data.profile1_identity_meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.createReference(source_14, data.profile1_identity_meta.source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
           } else if (data.profile1_identity_meta.source && typeof data.profile1_identity_meta.source === 'object') {
-            entity.profile1.identity.meta.source = factory.create(source_15, data.profile1_identity_meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.create(source_15, data.profile1_identity_meta.source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
           }
         }
       } else if (data.profile1_identity_meta === null) {
@@ -410,9 +410,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.links[idx_16].meta.source = null;
               } else if (typeof data.profile1_identity_links[idx_16].meta.source !== 'undefined') {
                 if (isPrimaryKey(data.profile1_identity_links[idx_16].meta.source, true)) {
-                  entity.profile1.identity.links[idx_16].meta.source = factory.createReference(source_23, data.profile1_identity_links[idx_16].meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                  entity.profile1.identity.links[idx_16].meta.source = factory.createReference(source_23, data.profile1_identity_links[idx_16].meta.source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
                 } else if (data.profile1_identity_links[idx_16].meta.source && typeof data.profile1_identity_links[idx_16].meta.source === 'object') {
-                  entity.profile1.identity.links[idx_16].meta.source = factory.create(source_24, data.profile1_identity_links[idx_16].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                  entity.profile1.identity.links[idx_16].meta.source = factory.create(source_24, data.profile1_identity_links[idx_16].meta.source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
                 }
               }
             } else if (data.profile1_identity_links[idx_16].meta === null) {
@@ -440,9 +440,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.links[idx_16].metas[idx_25].source = null;
                   } else if (typeof data.profile1_identity_links[idx_16].metas[idx_25].source !== 'undefined') {
                     if (isPrimaryKey(data.profile1_identity_links[idx_16].metas[idx_25].source, true)) {
-                      entity.profile1.identity.links[idx_16].metas[idx_25].source = factory.createReference(source_29, data.profile1_identity_links[idx_16].metas[idx_25].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                      entity.profile1.identity.links[idx_16].metas[idx_25].source = factory.createReference(source_29, data.profile1_identity_links[idx_16].metas[idx_25].source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
                     } else if (data.profile1_identity_links[idx_16].metas[idx_25].source && typeof data.profile1_identity_links[idx_16].metas[idx_25].source === 'object') {
-                      entity.profile1.identity.links[idx_16].metas[idx_25].source = factory.create(source_30, data.profile1_identity_links[idx_16].metas[idx_25].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                      entity.profile1.identity.links[idx_16].metas[idx_25].source = factory.create(source_30, data.profile1_identity_links[idx_16].metas[idx_25].source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
                     }
                   }
                 } else if (data.profile1_identity_links[idx_16].metas[idx_25] === null) {
@@ -456,9 +456,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.links[idx_16].source = null;
             } else if (typeof data.profile1_identity_links[idx_16].source !== 'undefined') {
               if (isPrimaryKey(data.profile1_identity_links[idx_16].source, true)) {
-                entity.profile1.identity.links[idx_16].source = factory.createReference(source_31, data.profile1_identity_links[idx_16].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                entity.profile1.identity.links[idx_16].source = factory.createReference(source_31, data.profile1_identity_links[idx_16].source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
               } else if (data.profile1_identity_links[idx_16].source && typeof data.profile1_identity_links[idx_16].source === 'object') {
-                entity.profile1.identity.links[idx_16].source = factory.create(source_32, data.profile1_identity_links[idx_16].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                entity.profile1.identity.links[idx_16].source = factory.create(source_32, data.profile1_identity_links[idx_16].source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
               }
             }
           } else if (data.profile1_identity_links[idx_16] === null) {
@@ -472,9 +472,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.source = null;
       } else if (typeof data.profile1_identity_source !== 'undefined') {
         if (isPrimaryKey(data.profile1_identity_source, true)) {
-          entity.profile1.identity.source = factory.createReference(source_33, data.profile1_identity_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile1.identity.source = factory.createReference(source_33, data.profile1_identity_source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
         } else if (data.profile1_identity_source && typeof data.profile1_identity_source === 'object') {
-          entity.profile1.identity.source = factory.create(source_34, data.profile1_identity_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile1.identity.source = factory.create(source_34, data.profile1_identity_source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
         }
       }
     } else if (data.profile1_identity_email === null && data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null && data.profile1_identity_links === null && data.profile1_identity_source === null) {
@@ -513,9 +513,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.meta.source = null;
         } else if (typeof data.profile1_identity_meta_source !== 'undefined') {
           if (isPrimaryKey(data.profile1_identity_meta_source, true)) {
-            entity.profile1.identity.meta.source = factory.createReference(source_40, data.profile1_identity_meta_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.createReference(source_40, data.profile1_identity_meta_source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
           } else if (data.profile1_identity_meta_source && typeof data.profile1_identity_meta_source === 'object') {
-            entity.profile1.identity.meta.source = factory.create(source_41, data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.create(source_41, data.profile1_identity_meta_source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
           }
         }
       } else if (data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null) {
@@ -540,9 +540,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.meta.source = null;
         } else if (typeof data.profile1_identity.meta.source !== 'undefined') {
           if (isPrimaryKey(data.profile1_identity.meta.source, true)) {
-            entity.profile1.identity.meta.source = factory.createReference(source_45, data.profile1_identity.meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.createReference(source_45, data.profile1_identity.meta.source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
           } else if (data.profile1_identity.meta.source && typeof data.profile1_identity.meta.source === 'object') {
-            entity.profile1.identity.meta.source = factory.create(source_46, data.profile1_identity.meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.create(source_46, data.profile1_identity.meta.source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
           }
         }
       } else if (data.profile1_identity.meta === null) {
@@ -591,9 +591,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.links[idx_47].meta.source = null;
               } else if (typeof data.profile1_identity.links[idx_47].meta.source !== 'undefined') {
                 if (isPrimaryKey(data.profile1_identity.links[idx_47].meta.source, true)) {
-                  entity.profile1.identity.links[idx_47].meta.source = factory.createReference(source_54, data.profile1_identity.links[idx_47].meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                  entity.profile1.identity.links[idx_47].meta.source = factory.createReference(source_54, data.profile1_identity.links[idx_47].meta.source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
                 } else if (data.profile1_identity.links[idx_47].meta.source && typeof data.profile1_identity.links[idx_47].meta.source === 'object') {
-                  entity.profile1.identity.links[idx_47].meta.source = factory.create(source_55, data.profile1_identity.links[idx_47].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                  entity.profile1.identity.links[idx_47].meta.source = factory.create(source_55, data.profile1_identity.links[idx_47].meta.source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
                 }
               }
             } else if (data.profile1_identity.links[idx_47].meta === null) {
@@ -621,9 +621,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.links[idx_47].metas[idx_56].source = null;
                   } else if (typeof data.profile1_identity.links[idx_47].metas[idx_56].source !== 'undefined') {
                     if (isPrimaryKey(data.profile1_identity.links[idx_47].metas[idx_56].source, true)) {
-                      entity.profile1.identity.links[idx_47].metas[idx_56].source = factory.createReference(source_60, data.profile1_identity.links[idx_47].metas[idx_56].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                      entity.profile1.identity.links[idx_47].metas[idx_56].source = factory.createReference(source_60, data.profile1_identity.links[idx_47].metas[idx_56].source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
                     } else if (data.profile1_identity.links[idx_47].metas[idx_56].source && typeof data.profile1_identity.links[idx_47].metas[idx_56].source === 'object') {
-                      entity.profile1.identity.links[idx_47].metas[idx_56].source = factory.create(source_61, data.profile1_identity.links[idx_47].metas[idx_56].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                      entity.profile1.identity.links[idx_47].metas[idx_56].source = factory.create(source_61, data.profile1_identity.links[idx_47].metas[idx_56].source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
                     }
                   }
                 } else if (data.profile1_identity.links[idx_47].metas[idx_56] === null) {
@@ -637,9 +637,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.links[idx_47].source = null;
             } else if (typeof data.profile1_identity.links[idx_47].source !== 'undefined') {
               if (isPrimaryKey(data.profile1_identity.links[idx_47].source, true)) {
-                entity.profile1.identity.links[idx_47].source = factory.createReference(source_62, data.profile1_identity.links[idx_47].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                entity.profile1.identity.links[idx_47].source = factory.createReference(source_62, data.profile1_identity.links[idx_47].source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
               } else if (data.profile1_identity.links[idx_47].source && typeof data.profile1_identity.links[idx_47].source === 'object') {
-                entity.profile1.identity.links[idx_47].source = factory.create(source_63, data.profile1_identity.links[idx_47].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                entity.profile1.identity.links[idx_47].source = factory.create(source_63, data.profile1_identity.links[idx_47].source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
               }
             }
           } else if (data.profile1_identity.links[idx_47] === null) {
@@ -653,9 +653,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.source = null;
       } else if (typeof data.profile1_identity.source !== 'undefined') {
         if (isPrimaryKey(data.profile1_identity.source, true)) {
-          entity.profile1.identity.source = factory.createReference(source_64, data.profile1_identity.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile1.identity.source = factory.createReference(source_64, data.profile1_identity.source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
         } else if (data.profile1_identity.source && typeof data.profile1_identity.source === 'object') {
-          entity.profile1.identity.source = factory.create(source_65, data.profile1_identity.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile1.identity.source = factory.create(source_65, data.profile1_identity.source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
         }
       }
     } else if (data.profile1_identity === null) {
@@ -665,9 +665,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.source = null;
     } else if (typeof data.profile1_source !== 'undefined') {
       if (isPrimaryKey(data.profile1_source, true)) {
-        entity.profile1.source = factory.createReference(source_66, data.profile1_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+        entity.profile1.source = factory.createReference(source_66, data.profile1_source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
       } else if (data.profile1_source && typeof data.profile1_source === 'object') {
-        entity.profile1.source = factory.create(source_67, data.profile1_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+        entity.profile1.source = factory.create(source_67, data.profile1_source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
       }
     }
   } else if (data.profile1_username === null && data.profile1_identity_email === null && data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null && data.profile1_identity_links === null && data.profile1_identity_source === null && data.profile1_source === null) {
@@ -721,9 +721,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.meta.source = null;
         } else if (typeof data.profile1_identity_meta_source !== 'undefined') {
           if (isPrimaryKey(data.profile1_identity_meta_source, true)) {
-            entity.profile1.identity.meta.source = factory.createReference(source_75, data.profile1_identity_meta_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.createReference(source_75, data.profile1_identity_meta_source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
           } else if (data.profile1_identity_meta_source && typeof data.profile1_identity_meta_source === 'object') {
-            entity.profile1.identity.meta.source = factory.create(source_76, data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.create(source_76, data.profile1_identity_meta_source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
           }
         }
       } else if (data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null) {
@@ -748,9 +748,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.meta.source = null;
         } else if (typeof data.profile1_identity_meta.source !== 'undefined') {
           if (isPrimaryKey(data.profile1_identity_meta.source, true)) {
-            entity.profile1.identity.meta.source = factory.createReference(source_80, data.profile1_identity_meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.createReference(source_80, data.profile1_identity_meta.source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
           } else if (data.profile1_identity_meta.source && typeof data.profile1_identity_meta.source === 'object') {
-            entity.profile1.identity.meta.source = factory.create(source_81, data.profile1_identity_meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.create(source_81, data.profile1_identity_meta.source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
           }
         }
       } else if (data.profile1_identity_meta === null) {
@@ -799,9 +799,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.links[idx_82].meta.source = null;
               } else if (typeof data.profile1_identity_links[idx_82].meta.source !== 'undefined') {
                 if (isPrimaryKey(data.profile1_identity_links[idx_82].meta.source, true)) {
-                  entity.profile1.identity.links[idx_82].meta.source = factory.createReference(source_89, data.profile1_identity_links[idx_82].meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                  entity.profile1.identity.links[idx_82].meta.source = factory.createReference(source_89, data.profile1_identity_links[idx_82].meta.source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
                 } else if (data.profile1_identity_links[idx_82].meta.source && typeof data.profile1_identity_links[idx_82].meta.source === 'object') {
-                  entity.profile1.identity.links[idx_82].meta.source = factory.create(source_90, data.profile1_identity_links[idx_82].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                  entity.profile1.identity.links[idx_82].meta.source = factory.create(source_90, data.profile1_identity_links[idx_82].meta.source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
                 }
               }
             } else if (data.profile1_identity_links[idx_82].meta === null) {
@@ -829,9 +829,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.links[idx_82].metas[idx_91].source = null;
                   } else if (typeof data.profile1_identity_links[idx_82].metas[idx_91].source !== 'undefined') {
                     if (isPrimaryKey(data.profile1_identity_links[idx_82].metas[idx_91].source, true)) {
-                      entity.profile1.identity.links[idx_82].metas[idx_91].source = factory.createReference(source_95, data.profile1_identity_links[idx_82].metas[idx_91].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                      entity.profile1.identity.links[idx_82].metas[idx_91].source = factory.createReference(source_95, data.profile1_identity_links[idx_82].metas[idx_91].source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
                     } else if (data.profile1_identity_links[idx_82].metas[idx_91].source && typeof data.profile1_identity_links[idx_82].metas[idx_91].source === 'object') {
-                      entity.profile1.identity.links[idx_82].metas[idx_91].source = factory.create(source_96, data.profile1_identity_links[idx_82].metas[idx_91].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                      entity.profile1.identity.links[idx_82].metas[idx_91].source = factory.create(source_96, data.profile1_identity_links[idx_82].metas[idx_91].source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
                     }
                   }
                 } else if (data.profile1_identity_links[idx_82].metas[idx_91] === null) {
@@ -845,9 +845,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.links[idx_82].source = null;
             } else if (typeof data.profile1_identity_links[idx_82].source !== 'undefined') {
               if (isPrimaryKey(data.profile1_identity_links[idx_82].source, true)) {
-                entity.profile1.identity.links[idx_82].source = factory.createReference(source_97, data.profile1_identity_links[idx_82].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                entity.profile1.identity.links[idx_82].source = factory.createReference(source_97, data.profile1_identity_links[idx_82].source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
               } else if (data.profile1_identity_links[idx_82].source && typeof data.profile1_identity_links[idx_82].source === 'object') {
-                entity.profile1.identity.links[idx_82].source = factory.create(source_98, data.profile1_identity_links[idx_82].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                entity.profile1.identity.links[idx_82].source = factory.create(source_98, data.profile1_identity_links[idx_82].source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
               }
             }
           } else if (data.profile1_identity_links[idx_82] === null) {
@@ -861,9 +861,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.source = null;
       } else if (typeof data.profile1_identity_source !== 'undefined') {
         if (isPrimaryKey(data.profile1_identity_source, true)) {
-          entity.profile1.identity.source = factory.createReference(source_99, data.profile1_identity_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile1.identity.source = factory.createReference(source_99, data.profile1_identity_source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
         } else if (data.profile1_identity_source && typeof data.profile1_identity_source === 'object') {
-          entity.profile1.identity.source = factory.create(source_100, data.profile1_identity_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile1.identity.source = factory.create(source_100, data.profile1_identity_source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
         }
       }
     } else if (data.profile1_identity_email === null && data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null && data.profile1_identity_links === null && data.profile1_identity_source === null) {
@@ -902,9 +902,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.meta.source = null;
         } else if (typeof data.profile1_identity_meta_source !== 'undefined') {
           if (isPrimaryKey(data.profile1_identity_meta_source, true)) {
-            entity.profile1.identity.meta.source = factory.createReference(source_106, data.profile1_identity_meta_source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.createReference(source_106, data.profile1_identity_meta_source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
           } else if (data.profile1_identity_meta_source && typeof data.profile1_identity_meta_source === 'object') {
-            entity.profile1.identity.meta.source = factory.create(source_107, data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.create(source_107, data.profile1_identity_meta_source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
           }
         }
       } else if (data.profile1_identity_meta_foo === null && data.profile1_identity_meta_bar === null && data.profile1_identity_meta_source === null) {
@@ -929,9 +929,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.meta.source = null;
         } else if (typeof data.profile1.identity.meta.source !== 'undefined') {
           if (isPrimaryKey(data.profile1.identity.meta.source, true)) {
-            entity.profile1.identity.meta.source = factory.createReference(source_111, data.profile1.identity.meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.createReference(source_111, data.profile1.identity.meta.source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
           } else if (data.profile1.identity.meta.source && typeof data.profile1.identity.meta.source === 'object') {
-            entity.profile1.identity.meta.source = factory.create(source_112, data.profile1.identity.meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile1.identity.meta.source = factory.create(source_112, data.profile1.identity.meta.source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
           }
         }
       } else if (data.profile1.identity.meta === null) {
@@ -980,9 +980,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.links[idx_113].meta.source = null;
               } else if (typeof data.profile1.identity.links[idx_113].meta.source !== 'undefined') {
                 if (isPrimaryKey(data.profile1.identity.links[idx_113].meta.source, true)) {
-                  entity.profile1.identity.links[idx_113].meta.source = factory.createReference(source_120, data.profile1.identity.links[idx_113].meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                  entity.profile1.identity.links[idx_113].meta.source = factory.createReference(source_120, data.profile1.identity.links[idx_113].meta.source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
                 } else if (data.profile1.identity.links[idx_113].meta.source && typeof data.profile1.identity.links[idx_113].meta.source === 'object') {
-                  entity.profile1.identity.links[idx_113].meta.source = factory.create(source_121, data.profile1.identity.links[idx_113].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                  entity.profile1.identity.links[idx_113].meta.source = factory.create(source_121, data.profile1.identity.links[idx_113].meta.source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
                 }
               }
             } else if (data.profile1.identity.links[idx_113].meta === null) {
@@ -1010,9 +1010,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.links[idx_113].metas[idx_122].source = null;
                   } else if (typeof data.profile1.identity.links[idx_113].metas[idx_122].source !== 'undefined') {
                     if (isPrimaryKey(data.profile1.identity.links[idx_113].metas[idx_122].source, true)) {
-                      entity.profile1.identity.links[idx_113].metas[idx_122].source = factory.createReference(source_126, data.profile1.identity.links[idx_113].metas[idx_122].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                      entity.profile1.identity.links[idx_113].metas[idx_122].source = factory.createReference(source_126, data.profile1.identity.links[idx_113].metas[idx_122].source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
                     } else if (data.profile1.identity.links[idx_113].metas[idx_122].source && typeof data.profile1.identity.links[idx_113].metas[idx_122].source === 'object') {
-                      entity.profile1.identity.links[idx_113].metas[idx_122].source = factory.create(source_127, data.profile1.identity.links[idx_113].metas[idx_122].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                      entity.profile1.identity.links[idx_113].metas[idx_122].source = factory.create(source_127, data.profile1.identity.links[idx_113].metas[idx_122].source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
                     }
                   }
                 } else if (data.profile1.identity.links[idx_113].metas[idx_122] === null) {
@@ -1026,9 +1026,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.links[idx_113].source = null;
             } else if (typeof data.profile1.identity.links[idx_113].source !== 'undefined') {
               if (isPrimaryKey(data.profile1.identity.links[idx_113].source, true)) {
-                entity.profile1.identity.links[idx_113].source = factory.createReference(source_128, data.profile1.identity.links[idx_113].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                entity.profile1.identity.links[idx_113].source = factory.createReference(source_128, data.profile1.identity.links[idx_113].source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
               } else if (data.profile1.identity.links[idx_113].source && typeof data.profile1.identity.links[idx_113].source === 'object') {
-                entity.profile1.identity.links[idx_113].source = factory.create(source_129, data.profile1.identity.links[idx_113].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                entity.profile1.identity.links[idx_113].source = factory.create(source_129, data.profile1.identity.links[idx_113].source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
               }
             }
           } else if (data.profile1.identity.links[idx_113] === null) {
@@ -1042,9 +1042,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.identity.source = null;
       } else if (typeof data.profile1.identity.source !== 'undefined') {
         if (isPrimaryKey(data.profile1.identity.source, true)) {
-          entity.profile1.identity.source = factory.createReference(source_130, data.profile1.identity.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile1.identity.source = factory.createReference(source_130, data.profile1.identity.source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
         } else if (data.profile1.identity.source && typeof data.profile1.identity.source === 'object') {
-          entity.profile1.identity.source = factory.create(source_131, data.profile1.identity.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile1.identity.source = factory.create(source_131, data.profile1.identity.source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
         }
       }
     } else if (data.profile1.identity === null) {
@@ -1054,9 +1054,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile1.source = null;
     } else if (typeof data.profile1.source !== 'undefined') {
       if (isPrimaryKey(data.profile1.source, true)) {
-        entity.profile1.source = factory.createReference(source_132, data.profile1.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+        entity.profile1.source = factory.createReference(source_132, data.profile1.source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
       } else if (data.profile1.source && typeof data.profile1.source === 'object') {
-        entity.profile1.source = factory.create(source_133, data.profile1.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+        entity.profile1.source = factory.create(source_133, data.profile1.source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
       }
     }
   } else if (data.profile1 === null) {
@@ -1101,9 +1101,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile2.identity.meta.source = null;
         } else if (typeof data.profile2.identity.meta.source !== 'undefined') {
           if (isPrimaryKey(data.profile2.identity.meta.source, true)) {
-            entity.profile2.identity.meta.source = factory.createReference(source_141, data.profile2.identity.meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile2.identity.meta.source = factory.createReference(source_141, data.profile2.identity.meta.source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
           } else if (data.profile2.identity.meta.source && typeof data.profile2.identity.meta.source === 'object') {
-            entity.profile2.identity.meta.source = factory.create(source_142, data.profile2.identity.meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+            entity.profile2.identity.meta.source = factory.create(source_142, data.profile2.identity.meta.source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
           }
         }
       } else if (data.profile2.identity.meta === null) {
@@ -1152,9 +1152,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile2.identity.links[idx_143].meta.source = null;
               } else if (typeof data.profile2.identity.links[idx_143].meta.source !== 'undefined') {
                 if (isPrimaryKey(data.profile2.identity.links[idx_143].meta.source, true)) {
-                  entity.profile2.identity.links[idx_143].meta.source = factory.createReference(source_150, data.profile2.identity.links[idx_143].meta.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                  entity.profile2.identity.links[idx_143].meta.source = factory.createReference(source_150, data.profile2.identity.links[idx_143].meta.source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
                 } else if (data.profile2.identity.links[idx_143].meta.source && typeof data.profile2.identity.links[idx_143].meta.source === 'object') {
-                  entity.profile2.identity.links[idx_143].meta.source = factory.create(source_151, data.profile2.identity.links[idx_143].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                  entity.profile2.identity.links[idx_143].meta.source = factory.create(source_151, data.profile2.identity.links[idx_143].meta.source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
                 }
               }
             } else if (data.profile2.identity.links[idx_143].meta === null) {
@@ -1182,9 +1182,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile2.identity.links[idx_143].metas[idx_152].source = null;
                   } else if (typeof data.profile2.identity.links[idx_143].metas[idx_152].source !== 'undefined') {
                     if (isPrimaryKey(data.profile2.identity.links[idx_143].metas[idx_152].source, true)) {
-                      entity.profile2.identity.links[idx_143].metas[idx_152].source = factory.createReference(source_156, data.profile2.identity.links[idx_143].metas[idx_152].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                      entity.profile2.identity.links[idx_143].metas[idx_152].source = factory.createReference(source_156, data.profile2.identity.links[idx_143].metas[idx_152].source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
                     } else if (data.profile2.identity.links[idx_143].metas[idx_152].source && typeof data.profile2.identity.links[idx_143].metas[idx_152].source === 'object') {
-                      entity.profile2.identity.links[idx_143].metas[idx_152].source = factory.create(source_157, data.profile2.identity.links[idx_143].metas[idx_152].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                      entity.profile2.identity.links[idx_143].metas[idx_152].source = factory.create(source_157, data.profile2.identity.links[idx_143].metas[idx_152].source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
                     }
                   }
                 } else if (data.profile2.identity.links[idx_143].metas[idx_152] === null) {
@@ -1198,9 +1198,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile2.identity.links[idx_143].source = null;
             } else if (typeof data.profile2.identity.links[idx_143].source !== 'undefined') {
               if (isPrimaryKey(data.profile2.identity.links[idx_143].source, true)) {
-                entity.profile2.identity.links[idx_143].source = factory.createReference(source_158, data.profile2.identity.links[idx_143].source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+                entity.profile2.identity.links[idx_143].source = factory.createReference(source_158, data.profile2.identity.links[idx_143].source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
               } else if (data.profile2.identity.links[idx_143].source && typeof data.profile2.identity.links[idx_143].source === 'object') {
-                entity.profile2.identity.links[idx_143].source = factory.create(source_159, data.profile2.identity.links[idx_143].source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+                entity.profile2.identity.links[idx_143].source = factory.create(source_159, data.profile2.identity.links[idx_143].source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
               }
             }
           } else if (data.profile2.identity.links[idx_143] === null) {
@@ -1214,9 +1214,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile2.identity.source = null;
       } else if (typeof data.profile2.identity.source !== 'undefined') {
         if (isPrimaryKey(data.profile2.identity.source, true)) {
-          entity.profile2.identity.source = factory.createReference(source_160, data.profile2.identity.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile2.identity.source = factory.createReference(source_160, data.profile2.identity.source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
         } else if (data.profile2.identity.source && typeof data.profile2.identity.source === 'object') {
-          entity.profile2.identity.source = factory.create(source_161, data.profile2.identity.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+          entity.profile2.identity.source = factory.create(source_161, data.profile2.identity.source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
         }
       }
     } else if (data.profile2.identity === null) {
@@ -1226,9 +1226,9 @@ exports[`embedded entities in mongo > diffing 2`] = `
     entity.profile2.source = null;
     } else if (typeof data.profile2.source !== 'undefined') {
       if (isPrimaryKey(data.profile2.source, true)) {
-        entity.profile2.source = factory.createReference(source_162, data.profile2.source, { merge: true, convertCustomTypes, normalizeAccessors, schema });
+        entity.profile2.source = factory.createReference(source_162, data.profile2.source, { merge: managed, managed, convertCustomTypes, normalizeAccessors, schema });
       } else if (data.profile2.source && typeof data.profile2.source === 'object') {
-        entity.profile2.source = factory.create(source_163, data.profile2.source, { initialized: true, merge: true, newEntity, convertCustomTypes, normalizeAccessors, schema });
+        entity.profile2.source = factory.create(source_163, data.profile2.source, { initialized: true, merge: managed, managed, newEntity, convertCustomTypes, normalizeAccessors, schema });
       }
     }
   } else if (data.profile2 === null) {
