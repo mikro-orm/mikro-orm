@@ -71,6 +71,8 @@ export interface EntityLoaderOptions<Entity, Fields extends string = never, Excl
   schema?: string;
   /** Connection type (read or write replica). */
   connectionType?: ConnectionType;
+  /** Set to `false` to skip the compiled query cache for the queries loading the relations. */
+  compiledQueryCache?: boolean;
   /** Logging options for the query. */
   logging?: LoggingOptions;
   /** Per-relation populate overrides (limit, offset, orderBy). */
@@ -390,6 +392,7 @@ export class EntityLoader {
       strategy,
       populateWhere,
       connectionType,
+      compiledQueryCache: options.compiledQueryCache,
       logging,
       fields: fields as never[],
       populate: [],
@@ -712,6 +715,7 @@ export class EntityLoader {
       fields,
       schema,
       connectionType,
+      compiledQueryCache: options.compiledQueryCache,
       signal: options.signal,
       inflightQueryAbortStrategy: options.inflightQueryAbortStrategy,
       // @ts-ignore not a public option, will be propagated to the populate call
@@ -989,6 +993,7 @@ export class EntityLoader {
           ? ((await this.extractChildPopulateFilter(options, prop)) as ObjectQuery<Entity>)
           : undefined,
         connectionType,
+        compiledQueryCache: options.compiledQueryCache,
         logging,
         schema,
         // @ts-ignore not a public option, will be propagated to the populate call
