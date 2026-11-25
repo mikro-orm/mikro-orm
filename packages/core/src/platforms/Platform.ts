@@ -825,7 +825,10 @@ export abstract class Platform {
         ret += sql.substring(pos, idx) + this.quoteIdentifier(params[j++]).replaceAll('\\?', '?');
         pos = idx + 2;
       } else {
-        ret += sql.substring(pos, idx) + this.quoteValue(params[j++]);
+        const value = this.quoteValue(params[j++]);
+        // a negative value right after a minus would otherwise form a `--` line comment
+        const gap = sql[idx - 1] === '-' && String(value).startsWith('-') ? ' ' : '';
+        ret += sql.substring(pos, idx) + gap + value;
         pos = idx + 1;
       }
     }
