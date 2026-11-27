@@ -82,4 +82,18 @@ describe('introspection of unusual object names in postgres', () => {
     await orm.schema.execute(diff.up);
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
   });
+
+  test('partition name containing a dot', async () => {
+    await orm.schema.execute(`create table "event" ("id" int not null) partition by hash ("id")`);
+    await orm.schema.execute(`create table "my.part" partition of "event" for values with (modulus 1, remainder 0)`);
+
+    const diff = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
+    expect(diff.up.trim()).toBe('drop table if exists "event" cascade;');
+    expect(diff.down).toContain('create table "my.part" partition of "event" ');
+
+    await orm.schema.execute(diff.up);
+    await orm.schema.execute(diff.down);
+    await orm.schema.execute(diff.up);
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+  });
 });

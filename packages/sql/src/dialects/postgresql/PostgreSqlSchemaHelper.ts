@@ -272,7 +272,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     const [createTable, ...rest] = super.createTable(table, alter);
     const partitions = partitioning.partitions.map(partition => {
-      const partitionName = this.quote(this.getTableName(partition.name, partition.schema ?? table.schema));
+      const partitionName = this.quoteTableName(partition.name, partition.schema ?? table.schema);
       return `create table ${partitionName} partition of ${table.getQuotedName()} ${partition.bound}`;
     });
 
@@ -1598,7 +1598,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       // child partitions are separate tables that don't move with the parent — park them too so their
       // names are free for the new partitions
       for (const partition of diff.fromTable.getPartitioning()?.partitions ?? []) {
-        const partitionName = this.quote(this.getTableName(partition.name, partition.schema ?? table.schema));
+        const partitionName = this.quoteTableName(partition.name, partition.schema ?? table.schema);
         ret.push(`alter table ${partitionName} set schema ${this.quote(tmpSchema)}`);
       }
 
