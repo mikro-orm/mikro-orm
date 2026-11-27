@@ -1459,6 +1459,7 @@ __metadata:
     "@mikro-orm/sql": "npm:7.2.12"
     kysely: "npm:0.29.9"
     pg: "npm:8.23.1"
+    pg-connection-string: "npm:2.14.1"
     pg-cursor: "npm:2.22.1"
     postgres-array: "npm:3.0.4"
     postgres-date: "npm:2.1.0"
@@ -7387,17 +7388,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pg-connection-string@npm:2.14.1, pg-connection-string@npm:^2.14.1":
+  version: 2.14.1
+  resolution: "pg-connection-string@npm:2.14.1"
+  checksum: 10/65708bd753b6fa413f57d2966f0fe42bbeac8c21d7f40721ba084c22bf5d67a85ae53c365e7ab8a158fb8a6ac145e79abefe3afb913a9a5f32dbdad3274d452e
+  languageName: node
+  linkType: hard
+
 "pg-connection-string@npm:2.6.2":
   version: 2.6.2
   resolution: "pg-connection-string@npm:2.6.2"
   checksum: 10/22265882c3b6f2320785378d0760b051294a684989163d5a1cde4009e64e84448d7bf67d9a7b9e7f69440c3ee9e2212f9aa10dd17ad6773f6143c6020cebbcb5
-  languageName: node
-  linkType: hard
-
-"pg-connection-string@npm:^2.14.1":
-  version: 2.14.1
-  resolution: "pg-connection-string@npm:2.14.1"
-  checksum: 10/65708bd753b6fa413f57d2966f0fe42bbeac8c21d7f40721ba084c22bf5d67a85ae53c365e7ab8a158fb8a6ac145e79abefe3afb913a9a5f32dbdad3274d452e
   languageName: node
   linkType: hard
 

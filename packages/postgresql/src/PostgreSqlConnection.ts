@@ -1,5 +1,6 @@
 import { Pool, type PoolConfig, TypeOverrides } from 'pg';
 import Cursor from 'pg-cursor';
+import { parse } from 'pg-connection-string';
 import { CompiledQuery, type DatabaseConnection, PostgresDialect } from 'kysely';
 import array from 'postgres-array';
 import { type Dictionary, type Routine, type SessionContext, type Transaction } from '@mikro-orm/core';
@@ -104,6 +105,13 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
       types.setTypeParser(Number(oid), parser as (value: string) => any);
     }
     ret.types = types;
+
+    // `clientUrl` is split into separate options, so the TLS params from its query string need to be mapped too
+    const { ssl } = parse(this.options.clientUrl ?? this.config.get('clientUrl')!);
+
+    if (ssl !== undefined) {
+      ret.ssl = ssl as PoolConfig['ssl'];
+    }
 
     return Utils.mergeConfig(ret, overrides);
   }
