@@ -251,8 +251,30 @@ export class SchemaComparator {
     const ignoreRoutines = this.#platform.getConfig().get('schemaGenerator').ignoreRoutines;
     // Case-fold so user-written `'sql_hash'` matches Oracle's introspected `'SQL_HASH'`.
     const routineKey = (r: SqlRoutineDef): string => ((r.schema ? `${r.schema}.` : '') + r.name).toLowerCase();
-    const fromByKey = new Map(fromSchema.getRoutines().map(r => [routineKey(r), r]));
-    const toByKey = new Map(toSchema.getRoutines().map(r => [routineKey(r), r]));
+    // Overloads share a name: the one matching the other side keeps the plain key, the rest get a signature-qualified one.
+    const indexRoutines = (routines: SqlRoutineDef[], others: SqlRoutineDef[]): Map<string, SqlRoutineDef> => {
+      const map = new Map<string, SqlRoutineDef>();
+
+      for (const routine of routines) {
+        const key = routineKey(routine);
+        const prev = map.get(key);
+
+        if (!prev) {
+          map.set(key, routine);
+          continue;
+        }
+
+        const other = others.find(o => routineKey(o) === key);
+        const keep = other && !this.diffRoutineParams(routine.params, other.params) ? routine : prev;
+        const extra = keep === routine ? prev : routine;
+        map.set(key, keep);
+        map.set(`${key}(${extra.params.map(p => `${p.direction} ${p.type}`).join(', ')})`, extra);
+      }
+
+      return map;
+    };
+    const fromByKey = indexRoutines(fromSchema.getRoutines(), toSchema.getRoutines());
+    const toByKey = indexRoutines(toSchema.getRoutines(), fromSchema.getRoutines());
 
     for (const [key, toRoutine] of toByKey) {
       const fromRoutine = fromByKey.get(key);

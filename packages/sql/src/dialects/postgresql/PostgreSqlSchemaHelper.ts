@@ -995,8 +995,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   override dropRoutine(routine: SqlRoutineDef): string {
     const qualifiedName = this.qualifiedRoutineName(routine);
-    const argTypes = routine.params.map(p => p.type).join(', ');
     const kind = routine.type === 'procedure' ? 'procedure' : 'function';
+    // OUT parameters are not part of a function's identity, only of a procedure's
+    const identityParams = routine.params.filter(p => kind === 'procedure' || p.direction !== 'out');
+    const argTypes = identityParams.map(p => p.type).join(', ');
     return `drop ${kind} if exists ${qualifiedName}(${argTypes})`;
   }
 
@@ -1088,7 +1090,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       // INOUT before IN/OUT, with required trailing space so identifiers like `input` aren't
       // mis-parsed as a direction keyword. The name is optional — `pg_get_function_identity_arguments`
       // omits it for unnamed parameters (e.g. `text`), leaving just the type.
-      const match = /^(?:(INOUT|VARIADIC|IN|OUT)\s+)?(?:(?:"((?:[^"]|"")+)"|([\w$]+))\s+)?(.+)$/is.exec(trimmed);
+      // An unquoted name is never the first word of a multi-word type: postgres quotes those keywords in names, and `double` is only one before `precision`.
+      const match =
+        /^(?:(INOUT|VARIADIC|IN|OUT)\s+)?(?:(?:"((?:[^"]|"")+)"|(?!(?:double\s+precision|character|bit|timestamp|time)(?![\w$]))([\w$]+))\s+)?(.+)$/is.exec(
+          trimmed,
+        );
 
       /* v8 ignore next 3: defensive guard for unexpected `pg_get_function_identity_arguments` output shapes */
       if (!match) {

@@ -342,6 +342,33 @@ describe('stored routines — comparator unit tests', () => {
       expect(diff.changedRoutines.foo.from.params[0].type).toBe('integer');
       expect(diff.changedRoutines.foo.to.params[0].type).toBe('text');
     });
+
+    it('matches the overload with the same params and removes the others, in any order', () => {
+      const byInt = makeRoutine({ name: 'foo', params: [{ name: 'a', type: 'integer', direction: 'in' }] });
+      const byText = makeRoutine({ name: 'foo', params: [{ name: 'a', type: 'text', direction: 'in' }] });
+      const byOut = makeRoutine({ name: 'foo', params: [{ name: 'a', type: 'text', direction: 'out' }] });
+
+      for (const overloads of [
+        [byInt, byText, byOut],
+        [byText, byOut, byInt],
+        [byOut, byInt, byText],
+      ]) {
+        const fromSchema = new DatabaseSchema(orm.em.getPlatform(), '');
+        const toSchema = new DatabaseSchema(orm.em.getPlatform(), '');
+        overloads.forEach(r => fromSchema.addRoutine(r));
+        toSchema.addRoutine(byText);
+
+        const diff = comparator.compare(fromSchema, toSchema);
+        expect(diff.changedRoutines).toEqual({});
+        expect(diff.newRoutines).toEqual({});
+        expect(Object.keys(diff.removedRoutines).sort()).toEqual(['foo(in integer)', 'foo(out text)']);
+
+        const inverse = comparator.compare(toSchema, fromSchema);
+        expect(inverse.changedRoutines).toEqual({});
+        expect(inverse.removedRoutines).toEqual({});
+        expect(Object.keys(inverse.newRoutines).sort()).toEqual(['foo(in integer)', 'foo(out text)']);
+      }
+    });
   });
 
   describe('ignoreRoutines', () => {
