@@ -411,12 +411,15 @@ export class SchemaComparator {
 
   /** Engines drop length/precision modifiers and use different aliases for the same logical type — canonicalise both sides. */
   private normaliseParamType(type: string): string {
-    const lengthMatch = /^([^()]+)\(([^)]*)\)\s*$/.exec(type);
-    const base = (lengthMatch ? lengthMatch[1] : type).trim().toLowerCase();
+    const lower = type.trim().toLowerCase();
+    const array = /\[\d*\]$/.test(lower);
+    const element = array ? lower.slice(0, lower.indexOf('[')) : lower;
+    const open = element.indexOf('(');
+    const close = element.indexOf(')', open);
+    const stripped = open < 0 || close < 0 ? element : element.slice(0, open) + element.slice(close + 1);
+    const base = stripped.replace(/\s+/g, ' ').trim();
     const aliased = SchemaComparator.PARAM_TYPE_ALIASES[base] ?? base;
-    const length = lengthMatch ? Number.parseInt(lengthMatch[2].split(',')[0].trim(), 10) : NaN;
-    const options = Number.isFinite(length) ? { length } : {};
-    return this.#platform.normalizeColumnType(aliased, options).toLowerCase();
+    return this.#platform.normalizeColumnType(aliased, {}).toLowerCase() + (array ? '[]' : '');
   }
 
   private static readonly PARAM_TYPE_ALIASES: Record<string, string> = {
@@ -426,7 +429,11 @@ export class SchemaComparator {
     int2: 'smallint',
     bool: 'boolean',
     'character varying': 'varchar',
+    character: 'char',
     bpchar: 'char',
+    'bit varying': 'varbit',
+    'time without time zone': 'time',
+    'timestamp without time zone': 'timestamp',
     float8: 'double precision',
     float4: 'real',
     // Oracle's USER_ARGUMENTS reports `REF CURSOR`; users declare `sys_refcursor`.
