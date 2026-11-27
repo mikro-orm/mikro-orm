@@ -50,6 +50,8 @@ class Book {
 }
 ```
 
+> The `hidden` flag only affects serialization. Values of hidden properties used in the `orderBy` of `em.findByCursor()` are still part of the cursor strings, see [what the cursor contains](./entity-manager.md#what-the-cursor-contains).
+
 ## Shadow Properties
 
 The opposite situation where you want to define a property that lives only in memory (is not persisted into database) can be solved by defining your property as `persist: false`. Such property can be assigned via one of `Entity.assign()`, `em.create()` and `em.merge()`. It will be also part of serialized result.

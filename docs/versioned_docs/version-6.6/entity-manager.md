@@ -365,6 +365,23 @@ Cursor<User> {
 }
 ```
 
+#### What the cursor contains
+
+The `startCursor`/`endCursor` strings are opaque, not encrypted: they hold the base64url-encoded JSON of the `orderBy` values of the given row, so anyone holding a cursor can decode it. This applies to every key in the `orderBy`, including nested relation and embedded paths (e.g. `orderBy: { author: { email: 'asc' } }`). Ordering by a relation itself stores its primary key.
+
+The [`hidden`](./serializing.md#hidden-properties) flag only affects serialization of the entity, it is not consulted when building the cursor. A hidden property used as an order key is therefore part of the cursor value, even though `serialize()` and `toJSON()` omit it from the items:
+
+```ts
+const cursor = await em.findByCursor(User, {}, {
+  first: 10,
+  orderBy: { internalRank: 'asc' }, // `internalRank` is marked as `hidden: true`
+});
+
+Cursor.decode(cursor.endCursor!); // [42]
+```
+
+If the cursor is handed to a client, order only by values that client is allowed to see, or keep the cursor on the server (or encrypt it) and hand out your own token instead.
+
 ### Handling Not Found Entities
 
 When we call `em.findOne()` and no entity is found based on our criteria, `null` will be returned. If we rather have an `Error` instance thrown, we can use `em.findOneOrFail()`:
