@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import { ValidationError } from '@mikro-orm/core';
+import { parseJsonSafe, ValidationError } from '@mikro-orm/core';
 import { MySqlKnexDialect } from './MySqlKnexDialect';
 import { AbstractSqlConnection } from '../../AbstractSqlConnection';
 
@@ -40,11 +40,7 @@ export class MySqlConnection extends AbstractSqlConnection {
     const ssl = params.get('ssl');
 
     if (ssl != null) {
-      try {
-        ret.ssl = JSON.parse(ssl);
-      } catch {
-        ret.ssl = ssl;
-      }
+      ret.ssl = parseJsonSafe(ssl);
     }
 
     ret.supportBigNumbers = true;
