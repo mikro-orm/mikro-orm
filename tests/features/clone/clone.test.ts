@@ -799,6 +799,14 @@ describe('clone unit tests', () => {
     expect(copy).toEqual({ a: 1 });
   });
 
+  test('shared references to an object with a custom `clone()` map to a single clone', () => {
+    const shared = { clone: () => ({ cloned: true }) };
+    const copy = Utils.copy({ a: shared, b: [shared] });
+
+    expect(copy.a).toEqual({ cloned: true });
+    expect(copy.b[0]).toBe(copy.a);
+  });
+
   test('does not let a nested own `__proto__` key through `Utils.merge`', () => {
     const target: Dictionary = {};
     Utils.merge(target, JSON.parse('{"nested":{"__proto__":{"polluted":true}}}'));

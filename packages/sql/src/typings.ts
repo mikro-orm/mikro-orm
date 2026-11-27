@@ -318,6 +318,8 @@ export interface IQueryBuilder<T> {
   ): this;
   scheduleFilterCheck(path: string): void;
   /** @internal */
+  scheduleSubQueryFilterCheck(qb: IQueryBuilder<any>, ownerAlias: string): void;
+  /** @internal */
   ensureTPTJoins(): void;
   withSchema(schema: string): this;
 }
