@@ -7,13 +7,12 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **postgres:** do not re-emit routines with parameterised parameter or return types ([#8856](https://github.com/mikro-orm/mikro-orm/issues/8856)) ([b7df31f](https://github.com/mikro-orm/mikro-orm/commit/b7df31f546b9fae0aa051527800dfb5ce1e26dd4))
-* **postgres:** drop database-only routines with OUT params, overloads and multi-word types ([#8854](https://github.com/mikro-orm/mikro-orm/issues/8854)) ([021cb2e](https://github.com/mikro-orm/mikro-orm/commit/021cb2e4d7a89c1ec506ac5e66e7a56cb0ed638b))
-* **schema:** quote introspected routine, view and dotted table names correctly ([#8850](https://github.com/mikro-orm/mikro-orm/issues/8850)) ([e9fd363](https://github.com/mikro-orm/mikro-orm/commit/e9fd363f19545f31dd753f6b15e3fcff5ba61ac1))
-* **sql:** apply entity filters inside collection operator subqueries ([#8843](https://github.com/mikro-orm/mikro-orm/issues/8843)) ([1351f00](https://github.com/mikro-orm/mikro-orm/commit/1351f00ec2db124ba91d7f9f9e3d806027ad086f)), closes [#6566](https://github.com/mikro-orm/mikro-orm/issues/6566)
-* **sql:** match null values listed in `$in` and `$nin` ([#8830](https://github.com/mikro-orm/mikro-orm/issues/8830)) ([12559f9](https://github.com/mikro-orm/mikro-orm/commit/12559f9ce507c244d0f7f5d35613bcc3b0da4ae0)), closes [#8829](https://github.com/mikro-orm/mikro-orm/issues/8829) [#8828](https://github.com/mikro-orm/mikro-orm/issues/8828)
-* **sql:** reject non-object `having` in find and count options ([#8839](https://github.com/mikro-orm/mikro-orm/issues/8839)) ([eae4f30](https://github.com/mikro-orm/mikro-orm/commit/eae4f30d5871d52a6dcb705285b4179bebcb6992))
-
+- **postgres:** do not re-emit routines with parameterised parameter or return types ([#8856](https://github.com/mikro-orm/mikro-orm/issues/8856)) ([b7df31f](https://github.com/mikro-orm/mikro-orm/commit/b7df31f546b9fae0aa051527800dfb5ce1e26dd4))
+- **postgres:** drop database-only routines with OUT params, overloads and multi-word types ([#8854](https://github.com/mikro-orm/mikro-orm/issues/8854)) ([021cb2e](https://github.com/mikro-orm/mikro-orm/commit/021cb2e4d7a89c1ec506ac5e66e7a56cb0ed638b))
+- **schema:** quote introspected routine, view and dotted table names correctly ([#8850](https://github.com/mikro-orm/mikro-orm/issues/8850)) ([e9fd363](https://github.com/mikro-orm/mikro-orm/commit/e9fd363f19545f31dd753f6b15e3fcff5ba61ac1))
+- **sql:** apply entity filters inside collection operator subqueries ([#8843](https://github.com/mikro-orm/mikro-orm/issues/8843)) ([1351f00](https://github.com/mikro-orm/mikro-orm/commit/1351f00ec2db124ba91d7f9f9e3d806027ad086f)), closes [#6566](https://github.com/mikro-orm/mikro-orm/issues/6566)
+- **sql:** match null values listed in `$in` and `$nin` ([#8830](https://github.com/mikro-orm/mikro-orm/issues/8830)) ([12559f9](https://github.com/mikro-orm/mikro-orm/commit/12559f9ce507c244d0f7f5d35613bcc3b0da4ae0)), closes [#8829](https://github.com/mikro-orm/mikro-orm/issues/8829) [#8828](https://github.com/mikro-orm/mikro-orm/issues/8828)
+- **sql:** reject non-object `having` in find and count options ([#8839](https://github.com/mikro-orm/mikro-orm/issues/8839)) ([eae4f30](https://github.com/mikro-orm/mikro-orm/commit/eae4f30d5871d52a6dcb705285b4179bebcb6992))
 
 ## [7.2.12](https://github.com/mikro-orm/mikro-orm/compare/v7.2.11...v7.2.12) (2026-11-25)
 

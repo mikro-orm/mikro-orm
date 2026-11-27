@@ -7,8 +7,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **schema:** quote introspected routine, view and dotted table names correctly ([#8850](https://github.com/mikro-orm/mikro-orm/issues/8850)) ([e9fd363](https://github.com/mikro-orm/mikro-orm/commit/e9fd363f19545f31dd753f6b15e3fcff5ba61ac1))
-
+- **schema:** quote introspected routine, view and dotted table names correctly ([#8850](https://github.com/mikro-orm/mikro-orm/issues/8850)) ([e9fd363](https://github.com/mikro-orm/mikro-orm/commit/e9fd363f19545f31dd753f6b15e3fcff5ba61ac1))
 
 ## [7.2.12](https://github.com/mikro-orm/mikro-orm/compare/v7.2.11...v7.2.12) (2026-11-25)
 

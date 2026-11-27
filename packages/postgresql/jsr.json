@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/postgresql",
-  "version": "7.2.12",
+  "version": "7.2.13",
   "exports": {
     ".": "./src/index.ts"
   },
@@ -8,7 +8,7 @@
     "exclude": ["dist/", "node_modules/", "tests/"]
   },
   "imports": {
-    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.2.12",
+    "@mikro-orm/sql": "jsr:@mikro-orm/sql@7.2.13",
     "kysely": "npm:kysely@0.29.9",
     "pg": "npm:pg@8.23.1",
     "pg-connection-string": "npm:pg-connection-string@2.14.1",
@@ -16,6 +16,6 @@
     "postgres-array": "npm:postgres-array@3.0.4",
     "postgres-date": "npm:postgres-date@2.1.0",
     "postgres-interval": "npm:postgres-interval@4.1.0",
-    "@mikro-orm/core": "jsr:@mikro-orm/core@7.2.12"
+    "@mikro-orm/core": "jsr:@mikro-orm/core@7.2.13"
   }
 }

@@ -7,8 +7,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **core:** respect ssl query parameters in `clientUrl` ([#8836](https://github.com/mikro-orm/mikro-orm/issues/8836)) ([3843b78](https://github.com/mikro-orm/mikro-orm/commit/3843b785997670d239d8b7c2352753c672bbcc94))
-
+- **core:** respect ssl query parameters in `clientUrl` ([#8836](https://github.com/mikro-orm/mikro-orm/issues/8836)) ([3843b78](https://github.com/mikro-orm/mikro-orm/commit/3843b785997670d239d8b7c2352753c672bbcc94))
 
 ## [7.2.12](https://github.com/mikro-orm/mikro-orm/compare/v7.2.11...v7.2.12) (2026-11-25)
 
