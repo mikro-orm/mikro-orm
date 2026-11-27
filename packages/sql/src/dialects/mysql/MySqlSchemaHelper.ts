@@ -788,7 +788,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
         o[key] ??= {};
         // items can hold commas, doubled quotes and backslash escapes
         o[key][item.column_name] = [...item.column_type.matchAll(/'((?:''|\\.|[^'\\])*)'/g)].map(
-          ([, value]: string[]) => this.unescapeDefault(value.replaceAll("''", "'")),
+          ([, value]: string[]) => this.unescapeDefault(value),
         );
         return o;
       },
@@ -843,9 +843,9 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return expr.replace(/\\(.)/gs, (escape, char: string) => (char === "'" ? "''" : escape));
   }
 
-  /** Decodes the backslash escapes of an introspected string literal. */
+  /** Decodes the doubled quotes and backslash escapes of an introspected string literal. */
   override unescapeDefault(val: string): string {
     const sqlEscapes: Dictionary<string> = { 0: '\0', b: '\b', n: '\n', r: '\r', t: '\t', Z: '\x1a' };
-    return val.replace(/\\(.)/gs, (_, char: string) => sqlEscapes[char] ?? char);
+    return val.replace(/\\(.)|''/gs, (_, char = "'") => sqlEscapes[char] ?? char);
   }
 }

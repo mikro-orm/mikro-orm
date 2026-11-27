@@ -76,7 +76,7 @@ test('varchar and text literals are introspected in the same form', async () => 
       .getTable('escaped_defaults')!
       .getColumns()
       .map(col => col.default);
-    expect(defaults).toEqual([null, `'a\\\\\\'b'`, `'a\\\\\\'b'`, `'a\\nb'`, `'a\\nb'`]);
+    expect(defaults).toEqual([null, `'a\\\\''b'`, `'a\\\\''b'`, `'a\\nb'`, `'a\\nb'`]);
   } finally {
     await connection.execute('drop table escaped_defaults');
   }

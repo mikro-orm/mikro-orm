@@ -677,8 +677,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   /** Splits the SQL on the separator, keeping the separators that fall inside a string literal. */
   private splitOutsideLiterals(sql: string, separator: string): string[] {
     const [idOpen, idClose] = this.platform.quoteIdentifier('');
-    // mysql escapes quotes as `\'`, the other dialects double them, which pairs up on its own
-    const esc = this.platform.quoteValue(`'`).includes(`\\'`) ? '\\\\.|' : '';
+    // mysql reads `\'` as an escaped quote, the other dialects double them, which pairs up on its own
+    const esc = this.platform.quoteValue('\\') === `'\\\\'` ? '\\\\.|' : '';
     // complete literals, quoted identifiers and `--` comments, so that an apostrophe inside an
     // identifier or a comment is not mistaken for one opening a literal
     const tokens = new RegExp(`'(?:${esc}[^'])*'|\\${idOpen}[^\\${idClose}]*\\${idClose}|--[^\n]*`, 'g');
