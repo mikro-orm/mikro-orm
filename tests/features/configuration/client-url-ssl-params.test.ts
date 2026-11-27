@@ -47,11 +47,14 @@ describe('ssl params in clientUrl', () => {
     expect(getConnectionOptions(driver, url)).not.toHaveProperty('ssl');
     expect(getConnectionOptions(driver, `${url}?ssl=true`).ssl).toBe(true);
     expect(getConnectionOptions(driver, `${url}?ssl={"rejectUnauthorized":true}`).ssl).toEqual({ rejectUnauthorized: true });
-    expect(getConnectionOptions(driver, `${url}?ssl=Amazon RDS`).ssl).toBe('Amazon RDS');
+    // the mariadb client has no ssl profiles and would read a plain string as `false`
+    expect(getConnectionOptions(driver, `${url}?ssl=Amazon RDS`).ssl).toBe(driver === MariaDbDriver ? true : 'Amazon RDS');
     expect(getConnectionOptions(driver, `${url}?ssl={"rejectUnauthorized":true}`, driverOptions).ssl).toEqual({
       rejectUnauthorized: true,
       ca: 'cert',
     });
+    expect(() => getConnectionOptions(driver, `${url}?sslmode=require`)).toThrow(/`sslmode` parameter .* is not supported/);
+    expect(() => getConnectionOptions(driver, `${url}?ssl-mode=REQUIRED`)).toThrow(/`ssl-mode` parameter .* is not supported/);
   });
 
 });
