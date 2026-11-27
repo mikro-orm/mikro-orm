@@ -15,6 +15,7 @@ import {
   ref,
   Reference,
   UniqueConstraintViolationException,
+  ValidationError,
   wrap,
 } from '@mikro-orm/mongodb';
 
@@ -611,9 +612,9 @@ describe('EntityManagerMongo', () => {
   });
 
   test('em.countBy throws when having option is passed for MongoDB', async () => {
-    await expect(orm.em.countBy(Book, 'author', { having: { title: 'Bible' } as any })).rejects.toThrow(
-      'The `having` option is not supported for MongoDB in `countBy`.',
-    );
+    const err = await orm.em.countBy(Book, 'author', { having: { title: 'Bible' } as any }).catch(e => e);
+    expect(err).toBeInstanceOf(ValidationError);
+    expect(err.message).toBe('The `having` option is not supported for MongoDB in `countBy`.');
   });
 
   test('em.countBy falls back to the raw field name when grouping by a non-property key', async () => {

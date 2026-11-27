@@ -1,6 +1,7 @@
 import {
   EntityManager,
   Utils,
+  ValidationError,
   type CountByOptions,
   type Dictionary,
   type EntityKey,
@@ -73,7 +74,7 @@ export class MongoEntityManager<Driver extends MongoDriver = MongoDriver> extend
     const fields = Utils.asArray(groupBy);
 
     if (options.having) {
-      throw new Error('The `having` option is not supported for MongoDB in `countBy`.');
+      throw new ValidationError('The `having` option is not supported for MongoDB in `countBy`.');
     }
 
     await em.tryFlush(entityName, options);

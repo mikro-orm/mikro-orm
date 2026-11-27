@@ -67,8 +67,12 @@ export class DatabaseTable {
   }
 
   getQuotedName(): string {
-    const schema = this.getShortestName() === this.name ? undefined : this.schema;
-    return this.#platform.quoteQualifiedName(this.name, schema);
+    // a dot in the name can be a `database.schema.table` qualifier, it is kept inside the identifier in the default schema only
+    if (this.schema && this.schema !== this.#platform.getDefaultSchemaName()) {
+      return this.#platform.quoteIdentifier(this.getShortestName()).replaceAll('\\?', '?');
+    }
+
+    return this.#platform.quoteQualifiedName(this.name);
   }
 
   getColumns(): Column[] {

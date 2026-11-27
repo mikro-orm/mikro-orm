@@ -206,13 +206,13 @@ export abstract class AbstractSqlDriver<
     }
 
     if (options.collation != null && typeof options.collation !== 'string') {
-      throw new Error(
+      throw new ValidationError(
         'Collation option for SQL drivers must be a string (collation name). Use a CollationOptions object only with MongoDB.',
       );
     }
 
     if (options.indexHint != null && typeof options.indexHint !== 'string') {
-      throw new Error(
+      throw new ValidationError(
         "indexHint for SQL drivers must be a string (e.g. 'force index(my_index)'). Use an object only with MongoDB.",
       );
     }
