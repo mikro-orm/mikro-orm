@@ -2,6 +2,7 @@ import { type Configuration } from './utils/Configuration.js';
 import {
   getOnConflictReturningFields,
   getOnCreateGeneratedFields,
+  getRawConflictFieldsHint,
   getWhereCondition,
   resetUntouchedCollections,
 } from './utils/upsert-utils.js';
@@ -1641,7 +1642,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
       // an empty condition would hydrate the entity from an arbitrary row, mongo still gets one for nested conflict fields
       if (!Utils.hasObjectKeys(where) && platform.usesPivotTable()) {
-        throw new Error(
+        throw new ValidationError(
           `Cannot find the upserted ${meta.className} row, as neither its primary key nor a unique value is known`,
         );
       }
@@ -1657,7 +1658,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       );
 
       if (!data2) {
-        throw new Error(`Cannot find the upserted ${meta.className} row for condition ${JSON.stringify(where)}`);
+        throw new ValidationError(
+          `Cannot find the upserted ${meta.className} row for condition ${JSON.stringify(where)}${getRawConflictFieldsHint(options.onConflictFields)}`,
+        );
       }
 
       em.getHydrator().hydrate(entity, meta, data2, em.#entityFactory, 'full', false, true);
@@ -2076,9 +2079,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         for (const [entity, cond] of loadPK.entries()) {
           const row = data2[findRowIndex(cond as Dictionary)];
 
-          /* v8 ignore next */
           if (!row) {
-            throw new Error(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
+            throw new ValidationError(
+              `Cannot find matching entity for condition ${JSON.stringify(cond)}${getRawConflictFieldsHint(options.onConflictFields)}`,
+            );
           }
 
           em.getHydrator().hydrate(entity, meta, row, em.#entityFactory, 'full', false, true);
@@ -2108,7 +2112,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
           /* v8 ignore next */
           if (!row) {
-            throw new Error(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
+            throw new ValidationError(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
           }
 
           em.getHydrator().hydrate(entity, meta, row, em.#entityFactory, 'full');

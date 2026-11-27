@@ -287,6 +287,13 @@ export function getWhereCondition<T extends object>(
 }
 
 /** @internal */
+export function getRawConflictFieldsHint(onConflictFields: unknown): string {
+  return isRaw(onConflictFields)
+    ? '. The row cannot be identified with a raw `onConflictFields`, pass `onConflictFields` as an array of property names instead.'
+    : '';
+}
+
+/** @internal */
 export function resetUntouchedCollections<Entity extends object>(meta: EntityMetadata<Entity>, entity: Entity): void {
   // for entities passed in via `em.create()` and then upserted, collection-kind relations
   // were initialized as empty-but-initialized by the hydrator (newEntity=true). once the
