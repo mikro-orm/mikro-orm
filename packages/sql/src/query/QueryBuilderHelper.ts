@@ -828,6 +828,18 @@ export class QueryBuilderHelper {
       Array.isArray(value[op]) &&
       value[op].every((v: unknown) => Array.isArray(v));
 
+    // `in` and `not in` never match null, so a null in the list becomes an explicit null check
+    if (fields.length === 1 && ['$in', '$nin'].includes(op) && Array.isArray(value[op]) && value[op].includes(null)) {
+      const list = value[op].filter((v: unknown) => v !== null);
+      const conds: Dictionary[] = [{ [key]: { [op === '$in' ? '$eq' : '$ne']: null } }];
+
+      if (list.length > 0) {
+        conds.unshift({ [key]: { [op]: list } });
+      }
+
+      return this.appendGroupCondition(type, op === '$in' ? '$or' : '$and', conds);
+    }
+
     // an empty list falls through to the generic `1 = 0` / `1 = 1` handling below
     if (fields.length > 1 && Array.isArray(value[op]) && value[op].length > 0) {
       const singleTuple = !value[op].every((v: unknown) => Array.isArray(v));
@@ -1428,8 +1440,16 @@ export class QueryBuilderHelper {
         } else if (val.length === 0) {
           parts.push(`1 = ${op === '$in' ? 0 : 1}`);
         } else {
-          val.forEach((v: unknown) => params.push(v));
-          parts.push(`${lhs} ${replacement} (${val.map(() => '?').join(', ')})`);
+          const list = val.filter((v: unknown) => v !== null);
+          const conds = list.length > 0 ? [`${lhs} ${replacement} (${list.map(() => '?').join(', ')})`] : [];
+          list.forEach((v: unknown) => params.push(v));
+
+          // `in` and `not in` never match null, so a null in the list becomes an explicit null check
+          if (list.length < val.length) {
+            conds.push(`${lhs} is ${op === '$in' ? '' : 'not '}null`);
+          }
+
+          parts.push(conds.length > 1 ? `(${conds.join(op === '$in' ? ' or ' : ' and ')})` : conds[0]);
         }
       } else if (op === '$exists') {
         parts.push(`${lhs} ${replacement} null`);
