@@ -29,6 +29,13 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     return 'utf8mb4';
   }
 
+  override escape(value: any): string {
+    const ret = super.escape(value);
+
+    // quotes are doubled, as `\'` only escapes them without the `NO_BACKSLASH_ESCAPES` sql mode
+    return ret.includes(`\\'`) ? ret.replace(/\\(.)/gs, (esc, char) => (char === `'` ? `''` : esc)) : ret;
+  }
+
   override getBeginTransactionSQL(options?: { isolationLevel?: IsolationLevel; readOnly?: boolean }): string[] {
     if (options?.isolationLevel || options?.readOnly) {
       const parts: string[] = [];
