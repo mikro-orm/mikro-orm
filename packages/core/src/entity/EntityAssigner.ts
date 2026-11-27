@@ -89,12 +89,8 @@ export class EntityAssigner {
         return;
       }
 
-      if ([ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
-        if (!prop.owner) {
-          return;
-        } else if (value?.map) {
-          value = value.map((v: any) => Utils.extractPK(v, prop.targetMeta));
-        }
+      if (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner) {
+        return;
       }
 
       if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
@@ -220,6 +216,10 @@ export class EntityAssigner {
   private static assignCollection<T extends object, U extends object = AnyEntity, C extends boolean = false>(entity: T, collection: Collection<U>, value: unknown, prop: EntityProperty, em: EntityManager | undefined, options: AssignOptions<C>): void {
     const invalid: any[] = [];
     const items = Utils.asArray(value).map((item: any, idx) => {
+      if (options.onlyOwnProperties) {
+        item = Utils.extractPK(item, prop.targetMeta);
+      }
+
       // try to propagate missing owning side reference to the payload first
       const prop2 = prop.targetMeta?.properties[prop.mappedBy];
 
