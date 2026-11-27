@@ -43,6 +43,9 @@ import {
 
 export class MongoConnection extends Connection {
 
+  /** @internal marks a version property to be incremented, other values with an `$inc` key are stored as they are */
+  static readonly VERSION_INCREMENT = Object.freeze({ $inc: 1 });
+
   protected client!: MongoClient;
   protected db!: Db;
 
@@ -400,7 +403,7 @@ export class MongoConnection extends Connection {
         continue;
       }
 
-      if (Utils.isPlainObject(item) && '$inc' in item) {
+      if (item === MongoConnection.VERSION_INCREMENT) {
         $inc[k] = item.$inc;
         delete row[k];
       }

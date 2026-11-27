@@ -440,7 +440,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     if (versionProperty.runtimeType === 'Date') {
       data[versionProperty.name as EntityKey<T>] ??= new Date();
     } else {
-      data[versionProperty.name as EntityKey<T>] ??= update ? { $inc: 1 } : 1;
+      data[versionProperty.name as EntityKey<T>] ??= update ? MongoConnection.VERSION_INCREMENT : 1;
     }
   }
 
