@@ -101,12 +101,8 @@ export class EntityAssigner {
         return;
       }
 
-      if ([ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
-        if (!prop.owner) {
-          return;
-        } else if (value?.map) {
-          value = value.map((v: any) => Utils.extractPK(v, prop.targetMeta));
-        }
+      if (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner) {
+        return;
       }
 
       if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
@@ -299,6 +295,10 @@ export class EntityAssigner {
   ): void {
     const invalid: any[] = [];
     const items = Utils.asArray(value).map((item: any, idx) => {
+      if (options.onlyOwnProperties && !Array.isArray(item)) {
+        item = Utils.extractPK(item, prop.targetMeta);
+      }
+
       // try to propagate missing owning side reference to the payload first
       const prop2 = prop.targetMeta?.properties[prop.mappedBy];
 
@@ -412,7 +412,7 @@ export class EntityAssigner {
       return item;
     }
 
-    if (Utils.isPrimaryKey(item) && EntityAssigner.validateEM(em)) {
+    if (Utils.isPrimaryKey(item, prop.targetMeta!.compositePK) && EntityAssigner.validateEM(em)) {
       return em.getReference(prop.targetMeta!.class, item, options) as T;
     }
 
