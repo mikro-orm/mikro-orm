@@ -365,6 +365,23 @@ Cursor<User> {
 }
 ```
 
+#### What the cursor contains
+
+The `startCursor`/`endCursor` strings are opaque, not encrypted: they hold the base64url-encoded JSON of the `orderBy` values of the given row, so anyone holding a cursor can decode it. This applies to every key in the `orderBy`, including nested relation and embedded paths (e.g. `orderBy: { author: { email: 'asc' } }`) and the keys appended from the entity-level default `orderBy`. Ordering by a relation itself stores its primary key.
+
+The [`hidden`](./serializing.md#hidden-properties) flag only affects serialization of the entity, it is not consulted when building the cursor. A hidden property used as an order key is therefore part of the cursor value, even though `serialize()` and `toJSON()` omit it from the items:
+
+```ts
+const cursor = await em.findByCursor(User, {
+  first: 10,
+  orderBy: { internalRank: 'asc' }, // `internalRank` is marked as `hidden: true`
+});
+
+Cursor.decode(cursor.endCursor!); // [42]
+```
+
+If the cursor is handed to a client, order only by values that client is allowed to see, or keep the cursor on the server (or encrypt it) and hand out your own token instead.
+
 ### Streaming
 
 If you want to process large amount of entities without loading them all into memory at once, you can use `em.stream()` method. It returns an async iterable, so you can use it in `for await ... of` loop.
