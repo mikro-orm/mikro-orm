@@ -1651,15 +1651,25 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         );
       }
 
-      const data2 = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
-        this.driver.findOne(meta.class, where, {
+      // the unique values of a raw conflict target can belong to different rows, the conflicting one is not known then
+      const ambiguous = reloadWhere.length > 1;
+      const [data2, other] = await em.withSessionContext(options.ctx ?? em.#transactionContext, async ctx => {
+        const findOptions = {
           fields: returning.concat(...((options.onConflictMergeFields ?? []) as string[])) as any[],
           ctx,
           convertCustomTypes: true,
           connectionType: 'write',
           schema: options.schema,
-        }),
-      );
+        } as const;
+
+        return ambiguous
+          ? this.driver.find(meta.class, where, { ...findOptions, limit: 2 })
+          : [await this.driver.findOne(meta.class, where, findOptions)];
+      });
+
+      if (other) {
+        throw ValidationError.ambiguousUpsertedRow(meta.class, where);
+      }
 
       if (!data2) {
         throw new Error(`Cannot find the upserted ${meta.className} row for condition ${JSON.stringify(where)}`);

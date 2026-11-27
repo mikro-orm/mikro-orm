@@ -245,6 +245,12 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     );
   }
 
+  static ambiguousUpsertedRow(entityName: EntityName, where: unknown): ValidationError {
+    return new ValidationError(
+      `Cannot find the upserted ${Utils.className(entityName)} row, more than one row matches its unique values: ${inspect(where, { depth: 5 })}`,
+    );
+  }
+
   /* v8 ignore next */
   static invalidQueryCondition(cond: unknown): ValidationError {
     return new ValidationError(`Invalid query condition: ${inspect(cond, { depth: 5 })}`);

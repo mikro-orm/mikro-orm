@@ -43,6 +43,27 @@ const Tag = defineEntity({
   },
 });
 
+const Doc = defineEntity({
+  name: 'UpsertRawDoc',
+  uniques: [{ properties: ['code'], where: { deletedAt: null } }],
+  properties: {
+    id: p.integer().primary().autoincrement(),
+    code: p.string(),
+    name: p.string(),
+    deletedAt: p.datetime().nullable(),
+  },
+});
+
+const Config = defineEntity({
+  name: 'UpsertRawConfig',
+  properties: {
+    id: p.integer().primary().autoincrement(),
+    code: p.string().unique(),
+    data: p.json<Record<string, number>>().unique(),
+    name: p.string(),
+  },
+});
+
 const merge = (table: string, column: string) => ({
   mssql: `on ${table}.${column} = tsource.${column}`,
   oracledb: `on ("${table}"."${column}" = tsource."${column}")`,
@@ -66,10 +87,11 @@ describe.each(Utils.keys(options))('upsert with a raw conflict target [%s]', typ
     raw((merge(table, column) as Record<string, string>)[type] ?? `(${column})`);
   const code = () => target('upsert_raw_item', 'code');
   const expressionIndexes = ['sqlite', 'postgresql'].includes(type);
+  const partialIndexes = !['mariadb', 'oracledb'].includes(type);
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Item, Note, User, ...(expressionIndexes ? [Tag] : [])],
+      entities: [Item, Note, User, ...(expressionIndexes ? [Tag, Config] : []), ...(partialIndexes ? [Doc] : [])],
       dbName: 'mikro_orm_test_upsert_raw_conflict',
       driver: PLATFORMS[type] as any,
       ...options[type],
@@ -156,6 +178,58 @@ describe.each(Utils.keys(options))('upsert with a raw conflict target [%s]', typ
     );
 
     expect(user).toMatchObject({ id: existing.id, email: 'a@x', code: 'a', name: 'old' });
+  });
+
+  test('em.upsert() does not pick a row when the unique values match more than one', async () => {
+    await orm.em.fork().insert(User, { email: 'b@x', code: 'c', name: 'other' });
+    const upsert = orm.em.fork().upsert(
+      User,
+      { email: 'b@x', code: 'a', name: 'new' },
+      {
+        onConflictFields: target('upsert_raw_user', 'code'),
+        onConflictAction: 'ignore',
+      },
+    );
+
+    await expect(upsert).rejects.toThrow(/more than one row matches/);
+  });
+
+  test.skipIf(!partialIndexes)('em.upsert() does not match a row outside of a partial unique index', async () => {
+    await orm.em.fork().insertMany(Doc, [
+      { code: 'a', name: 'deleted', deletedAt: new Date() },
+      { code: 'a', name: 'live' },
+    ]);
+    const targets: Record<string, string> = {
+      mssql: 'on upsert_raw_doc.code = tsource.code and upsert_raw_doc.deleted_at is null',
+    };
+    const upsert = orm.em.fork().upsert(
+      Doc,
+      { code: 'a', name: 'new' },
+      {
+        onConflictFields: raw(targets[type] ?? '(code) where deleted_at is null'),
+        onConflictAction: 'ignore',
+      },
+    );
+
+    await expect(upsert).rejects.toThrow(/Cannot find the upserted UpsertRawDoc row/);
+    expect(await orm.em.fork().find(Doc, {})).toHaveLength(2);
+  });
+
+  test.skipIf(!expressionIndexes)('em.upsert() does not match a row by a unique JSON value', async () => {
+    await orm.em.fork().insertMany(Config, [
+      { code: 'a', data: { a: 1, b: 2 }, name: 'other' },
+      { code: 'b', data: { c: 1 }, name: 'old' },
+    ]);
+    const config = await orm.em.fork().upsert(
+      Config,
+      { code: 'b', data: { a: 1 }, name: 'new' },
+      {
+        onConflictFields: raw('(code)'),
+        onConflictAction: 'ignore',
+      },
+    );
+
+    expect(config).toMatchObject({ code: 'b', data: { c: 1 }, name: 'old' });
   });
 
   test.skipIf(!expressionIndexes)('em.upsert() does not match an arbitrary row for an expression index', async () => {
