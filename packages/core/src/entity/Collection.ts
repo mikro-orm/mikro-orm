@@ -158,12 +158,13 @@ export class Collection<T extends object, O extends object = object> {
     }
 
     let count: number;
+    let cond = this.property.where ? ({ $and: [where ?? {}, this.property.where] } as FilterQuery<T>) : where;
 
     if (dataloader ?? [DataloaderType.ALL, DataloaderType.COLLECTION].includes(em.config.getDataloaderType())) {
       const loader = await em.getDataLoader('count');
-      count = await loader.load([this, { where, ...countOptions }]);
+      count = await loader.load([this, { where: cond, ...countOptions }]);
     } else {
-      const cond = this.createLoadCountCondition(where ?? ({} as FilterQuery<T>));
+      cond = this.createLoadCountCondition(cond ?? ({} as FilterQuery<T>));
       count = await em.count(this.property.targetMeta!.class, cond, countOptions as any);
     }
 
@@ -208,7 +209,7 @@ export class Collection<T extends object, O extends object = object> {
     }
 
     if (options.store) {
-      this.hydrate(items, true);
+      this.hydrate(items, true, undefined, undefined, false);
       this.setSerializationContext(options);
       this.populated();
       this.#readonly = true;
@@ -676,7 +677,7 @@ export class Collection<T extends object, O extends object = object> {
     this.#initialized = true;
     this.#partial = !!partial;
     this.#items.clear();
-    this.#count = count ? 0 : undefined;
+    this.#count = count && !partial ? 0 : undefined;
     // loaded items are not persisted, that would queue an auto-flush of their type on a read-only path
     const unwrapped = items.map(i => Reference.unwrapReference(i));
     this.addItems(unwrapped, hydration);

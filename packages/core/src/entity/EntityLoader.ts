@@ -1083,7 +1083,13 @@ export class EntityLoader {
         return this.#em.getUnitOfWork().register(entity as AnyEntity, undefined, { loaded: true });
       });
       const hasLimit = populate?.limit != null;
-      (entity[prop.name] as unknown as Collection<AnyEntity>).hydrate(items, true, hasLimit, hasLimit);
+      (entity[prop.name] as unknown as Collection<AnyEntity>).hydrate(
+        items,
+        true,
+        hasLimit,
+        hasLimit,
+        Utils.isEmpty(where),
+      );
       children.push(items);
     }
 
