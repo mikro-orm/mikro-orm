@@ -245,12 +245,6 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     );
   }
 
-  static cannotIdentifyUpsertedRow(entityName: EntityName): ValidationError {
-    return new ValidationError(
-      `Cannot find the upserted ${Utils.className(entityName)} row, a raw \`onConflictFields\` fragment does not tell which existing row conflicted. Use an array of property names in \`onConflictFields\` to get the existing row back.`,
-    );
-  }
-
   static invalidQueryCondition(cond: unknown): ValidationError {
     return new ValidationError(`Invalid query condition: ${inspect(cond, { depth: 5 })}`);
   }

@@ -1656,11 +1656,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         }),
       );
 
-      // a raw conflict target does not say which row conflicted, guessing could hydrate an unrelated one
-      if (!data2 && isRaw(options.onConflictFields)) {
-        throw ValidationError.cannotIdentifyUpsertedRow(meta.class);
-      }
-
       if (!data2) {
         throw new Error(`Cannot find the upserted ${meta.className} row for condition ${JSON.stringify(where)}`);
       }
