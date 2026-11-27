@@ -1347,9 +1347,13 @@ export abstract class SchemaHelper {
     return this.platform.quoteIdentifier(keys.filter(Boolean).join('.')).replaceAll('\\?', '?');
   }
 
-  /** Quotes a table or view name held separately from its schema, a dot in the name stays inside the identifier. */
+  /** A dot in the name stays inside the identifier in the default schema only, elsewhere it can be a `database.schema.table` qualifier. */
   protected quoteTableName(name: string, schema?: string): string {
-    return this.platform.quoteQualifiedName(name, schema === this.platform.getDefaultSchemaName() ? undefined : schema);
+    if (schema && schema !== this.platform.getDefaultSchemaName()) {
+      return this.quote(schema, name);
+    }
+
+    return this.platform.quoteQualifiedName(name);
   }
 
   dropForeignKey(tableName: string, constraintName: string): string {
