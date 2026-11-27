@@ -146,3 +146,10 @@ test.each([[true], [false]])(
     }).toThrow(ValidationError);
   },
 );
+
+test.each(shapes)('onlyOwnProperties rejects a new entity without a primary key (%s)', async (_, wrap) => {
+  const book = await loadBook();
+  expect(() => {
+    orm.em.assign(book, { tags: wrap(orm.em.create(Tag, { name: 'new' })) as any }, { onlyOwnProperties: true });
+  }).toThrow(ValidationError);
+});
