@@ -2,6 +2,7 @@ import { type Configuration } from './utils/Configuration.js';
 import {
   getOnConflictReturningFields,
   getOnCreateGeneratedFields,
+  getRawConflictFieldsHint,
   getWhereCondition,
   resetUntouchedCollections,
 } from './utils/upsert-utils.js';
@@ -1657,11 +1658,8 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       );
 
       if (!data2) {
-        const hint = isRaw(options.onConflictFields)
-          ? '. The row cannot be identified with a raw `onConflictFields`, pass `onConflictFields` as an array of property names instead.'
-          : '';
         throw new ValidationError(
-          `Cannot find the upserted ${meta.className} row for condition ${JSON.stringify(where)}${hint}`,
+          `Cannot find the upserted ${meta.className} row for condition ${JSON.stringify(where)}${getRawConflictFieldsHint(options.onConflictFields)}`,
         );
       }
 
@@ -2081,9 +2079,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         for (const [entity, cond] of loadPK.entries()) {
           const row = data2[findRowIndex(cond as Dictionary)];
 
-          /* v8 ignore next */
           if (!row) {
-            throw new ValidationError(`Cannot find matching entity for condition ${JSON.stringify(cond)}`);
+            throw new ValidationError(
+              `Cannot find matching entity for condition ${JSON.stringify(cond)}${getRawConflictFieldsHint(options.onConflictFields)}`,
+            );
           }
 
           em.getHydrator().hydrate(entity, meta, row, em.#entityFactory, 'full', false, true);

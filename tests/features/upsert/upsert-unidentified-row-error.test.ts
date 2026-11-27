@@ -11,6 +11,16 @@ const User = defineEntity({
   },
 });
 
+const Item = defineEntity({
+  name: 'UpsertErrorItem',
+  uniques: [{ properties: ['code'] }],
+  properties: {
+    id: p.integer().primary().autoincrement(),
+    code: p.string(),
+    name: p.string(),
+  },
+});
+
 const options = {
   sqlite: { dbName: ':memory:' },
   mysql: { port: 3308 },
@@ -22,7 +32,7 @@ describe.each(Utils.keys(options))('upserted row that cannot be reloaded [%s]', 
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [User],
+      entities: [User, Item],
       dbName: 'mikro_orm_test_upsert_row_error',
       driver: PLATFORMS[type] as any,
       ...options[type],
@@ -58,6 +68,28 @@ describe.each(Utils.keys(options))('upserted row that cannot be reloaded [%s]', 
       expect(await orm.em.fork().find(User, {})).toMatchObject([{ code: 'a', name: 'old' }]);
     },
   );
+
+  test('em.upsertMany() with a raw conflict target hints at the array form in the batch reload', async () => {
+    await orm.em.fork().insert(Item, { code: 'a', name: 'old' });
+    const error = await orm.em
+      .fork()
+      .upsertMany(
+        Item,
+        [
+          { code: 'a', name: 'new' },
+          { code: 'b', name: 'new' },
+        ],
+        { onConflictFields: raw('(code)'), onConflictAction: 'ignore' },
+      )
+      .then(
+        () => null,
+        (e: Error) => e,
+      );
+
+    expect(error).toBeInstanceOf(ValidationError);
+    expect(error!.message).toMatch(/^Cannot find matching entity for condition /);
+    expect(error!.message).toContain(hint);
+  });
 
   // only `insert ignore` suppresses a conflict on a unique key outside of the conflict target
   test.skipIf(type !== 'mysql')(
