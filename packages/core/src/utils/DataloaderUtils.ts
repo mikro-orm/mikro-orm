@@ -351,7 +351,8 @@ export class DataloaderUtils {
         const conditions: Dictionary[] = [{ [group.fkProp]: { $in: allPKs } }];
 
         if (where) {
-          conditions.push(where as Dictionary);
+          // for M:N the query targets the pivot entity, so the condition goes through its target relation
+          conditions.push(group.targetFilterProp ? { [group.targetFilterProp]: where } : (where as Dictionary));
         }
 
         // For M:N, apply the target entity's filters through the pivot's target relation
