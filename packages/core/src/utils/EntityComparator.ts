@@ -1070,7 +1070,8 @@ export class EntityComparator {
       }
     }
 
-    if (prop.customType) {
+    // a polymorphic relation is snapshotted as a `PolymorphicRef`, regardless of the custom type of its target PKs
+    if (prop.customType && !prop.polymorphic) {
       if (prop.customType.compareValues) {
         const idx = this.#tmpIndex++;
         context.set(`compareValues_${idx}`, (a: unknown, b: unknown) => {

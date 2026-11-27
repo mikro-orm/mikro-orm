@@ -19,11 +19,13 @@ import { EntityHelper } from '../entity/EntityHelper.js';
 import { helper } from '../entity/wrap.js';
 import { Reference } from '../entity/Reference.js';
 import { EntityIdentifier } from '../entity/EntityIdentifier.js';
+import { PolymorphicRef } from '../entity/PolymorphicRef.js';
 import { ChangeSet, ChangeSetType } from './ChangeSet.js';
 import { ChangeSetComputer } from './ChangeSetComputer.js';
 import { ChangeSetPersister } from './ChangeSetPersister.js';
 import { CommitOrderCalculator } from './CommitOrderCalculator.js';
 import { Utils } from '../utils/Utils.js';
+import { QueryHelper } from '../utils/QueryHelper.js';
 import type { EntityManager } from '../EntityManager.js';
 import { Cascade, DeferMode, EventType, LockMode, ReferenceKind } from '../enums.js';
 import { OptimisticLockError, ValidationError } from '../errors.js';
@@ -145,6 +147,19 @@ export class UnitOfWork {
             ? (data[prop.name] as Dictionary)[prop.targetKey]
             : Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
         }
+      } else if (
+        [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
+        prop.polymorphic &&
+        Utils.isObject<Dictionary>(data[prop.name]) &&
+        Object.hasOwn(data[prop.name] as Dictionary, 'constructor')
+      ) {
+        // a joined polymorphic row carries its target class in an own `constructor` property
+        const row = data[prop.name] as Dictionary;
+        const discriminator = QueryHelper.findDiscriminatorValue(prop.discriminatorMap!, row.constructor)!;
+        const id = prop.targetKey
+          ? row[prop.targetKey]
+          : Utils.getPrimaryKeyValues(row, this.#metadata.get(row.constructor), true);
+        data[prop.name] = new PolymorphicRef(discriminator, id) as EntityDataValue<T>;
       } else if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name])) {
         for (const p of prop.targetMeta!.props) {
           /* v8 ignore next */
