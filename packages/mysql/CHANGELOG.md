@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.13](https://github.com/mikro-orm/mikro-orm/compare/v7.2.12...v7.2.13) (2026-11-27)
+
+### Bug Fixes
+
+* **core:** respect ssl query parameters in `clientUrl` ([#8836](https://github.com/mikro-orm/mikro-orm/issues/8836)) ([3843b78](https://github.com/mikro-orm/mikro-orm/commit/3843b785997670d239d8b7c2352753c672bbcc94))
+
+
 ## [7.2.12](https://github.com/mikro-orm/mikro-orm/compare/v7.2.11...v7.2.12) (2026-11-25)
 
 **Note:** Version bump only for package @mikro-orm/mysql

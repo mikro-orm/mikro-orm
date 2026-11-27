@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.13](https://github.com/mikro-orm/mikro-orm/compare/v7.2.12...v7.2.13) (2026-11-27)
+
+### Bug Fixes
+
+* **core:** convert single-item M:N payloads to references in `em.assign()` with `onlyOwnProperties` ([#8844](https://github.com/mikro-orm/mikro-orm/issues/8844)) ([011f7af](https://github.com/mikro-orm/mikro-orm/commit/011f7afc9dfaed0ce60089caf0e8c04c8a70c91f))
+* **core:** do not cache the loaded length as `loadCount()` after a filtered load ([#8831](https://github.com/mikro-orm/mikro-orm/issues/8831)) ([91b43ee](https://github.com/mikro-orm/mikro-orm/commit/91b43ee0254dc033ee629c02618303334d91ab28)), closes [#8827](https://github.com/mikro-orm/mikro-orm/issues/8827)
+* **core:** do not interpret unique key values of upsert data as query operators ([#8840](https://github.com/mikro-orm/mikro-orm/issues/8840)) ([d651c4a](https://github.com/mikro-orm/mikro-orm/commit/d651c4a1c38b72aee7511b8398225a222cf35549))
+* **core:** do not update unchanged polymorphic to-one relations on every flush ([#8833](https://github.com/mikro-orm/mikro-orm/issues/8833)) ([3f43769](https://github.com/mikro-orm/mikro-orm/commit/3f43769689519c57309734ccfcd71cfead9e5585)), closes [#8832](https://github.com/mikro-orm/mikro-orm/issues/8832)
+* **core:** fix joined populate of polymorphic targets with bigint or composite PKs ([#8835](https://github.com/mikro-orm/mikro-orm/issues/8835)) ([5f40a5e](https://github.com/mikro-orm/mikro-orm/commit/5f40a5e670f569d035d9af0b7d84ba02c4cd1d50)), closes [#8833](https://github.com/mikro-orm/mikro-orm/issues/8833)
+* **core:** ignore collection operators when inferring the populate condition ([#8857](https://github.com/mikro-orm/mikro-orm/issues/8857)) ([92cefad](https://github.com/mikro-orm/mikro-orm/commit/92cefad0f7d907d77a7356fdca1abdf1ca1537bd))
+* **core:** respect ssl query parameters in `clientUrl` ([#8836](https://github.com/mikro-orm/mikro-orm/issues/8836)) ([3843b78](https://github.com/mikro-orm/mikro-orm/commit/3843b785997670d239d8b7c2352753c672bbcc94))
+* **mongo:** set the initial version on rows inserted by `upsertMany` ([#8853](https://github.com/mikro-orm/mikro-orm/issues/8853)) ([2dc565c](https://github.com/mikro-orm/mikro-orm/commit/2dc565c460535931d36394206cbb8360ef7f508a))
+* **mongo:** store object values with an `$inc` key as they are ([#8848](https://github.com/mikro-orm/mikro-orm/issues/8848)) ([c0892d7](https://github.com/mikro-orm/mikro-orm/commit/c0892d78b2b51caa9fdeef03807694f88a2d6aee))
+* **postgres:** do not re-emit routines with parameterised parameter or return types ([#8856](https://github.com/mikro-orm/mikro-orm/issues/8856)) ([b7df31f](https://github.com/mikro-orm/mikro-orm/commit/b7df31f546b9fae0aa051527800dfb5ce1e26dd4))
+* **postgres:** drop database-only routines with OUT params, overloads and multi-word types ([#8854](https://github.com/mikro-orm/mikro-orm/issues/8854)) ([021cb2e](https://github.com/mikro-orm/mikro-orm/commit/021cb2e4d7a89c1ec506ac5e66e7a56cb0ed638b))
+* **schema:** quote introspected routine, view and dotted table names correctly ([#8850](https://github.com/mikro-orm/mikro-orm/issues/8850)) ([e9fd363](https://github.com/mikro-orm/mikro-orm/commit/e9fd363f19545f31dd753f6b15e3fcff5ba61ac1))
+* **sql:** apply entity filters inside collection operator subqueries ([#8843](https://github.com/mikro-orm/mikro-orm/issues/8843)) ([1351f00](https://github.com/mikro-orm/mikro-orm/commit/1351f00ec2db124ba91d7f9f9e3d806027ad086f)), closes [#6566](https://github.com/mikro-orm/mikro-orm/issues/6566)
+* **sql:** match null values listed in `$in` and `$nin` ([#8830](https://github.com/mikro-orm/mikro-orm/issues/8830)) ([12559f9](https://github.com/mikro-orm/mikro-orm/commit/12559f9ce507c244d0f7f5d35613bcc3b0da4ae0)), closes [#8829](https://github.com/mikro-orm/mikro-orm/issues/8829) [#8828](https://github.com/mikro-orm/mikro-orm/issues/8828)
+* **sql:** reject non-object `having` in find and count options ([#8839](https://github.com/mikro-orm/mikro-orm/issues/8839)) ([eae4f30](https://github.com/mikro-orm/mikro-orm/commit/eae4f30d5871d52a6dcb705285b4179bebcb6992))
+
+
 ## [6.6.20](https://github.com/mikro-orm/mikro-orm/compare/v6.6.19...v6.6.20) (2026-11-27)
 
 

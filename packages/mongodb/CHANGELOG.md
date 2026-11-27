@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.13](https://github.com/mikro-orm/mikro-orm/compare/v7.2.12...v7.2.13) (2026-11-27)
+
+### Bug Fixes
+
+* **mongo:** set the initial version on rows inserted by `upsertMany` ([#8853](https://github.com/mikro-orm/mikro-orm/issues/8853)) ([2dc565c](https://github.com/mikro-orm/mikro-orm/commit/2dc565c460535931d36394206cbb8360ef7f508a))
+* **mongo:** store object values with an `$inc` key as they are ([#8848](https://github.com/mikro-orm/mikro-orm/issues/8848)) ([c0892d7](https://github.com/mikro-orm/mikro-orm/commit/c0892d78b2b51caa9fdeef03807694f88a2d6aee))
+
+
 ## [7.2.12](https://github.com/mikro-orm/mikro-orm/compare/v7.2.11...v7.2.12) (2026-11-25)
 
 **Note:** Version bump only for package @mikro-orm/mongodb
