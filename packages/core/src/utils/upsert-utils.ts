@@ -286,6 +286,31 @@ export function getWhereCondition<T extends object>(
   return { where, propIndex };
 }
 
+/**
+ * Conditions for every unique key the data has a value for, used when the conflict target is not known.
+ * @internal
+ */
+export function getUniqueConditions<T extends object>(
+  meta: EntityMetadata<T>,
+  data: EntityData<T>,
+  platform: Platform,
+): FilterQuery<T>[] {
+  const keys: EntityKey<T>[][] = [meta.primaryKeys];
+
+  for (let current: EntityMetadata<T> | undefined = meta; current; current = current.tptParent) {
+    current.props.filter(p => p.unique).forEach(p => keys.push([p.name]));
+    current.uniques.forEach(u => keys.push(Utils.asArray<EntityKey<T>>(u.properties)));
+  }
+
+  return keys
+    .filter(props => props.length > 0 && props.every(p => data[p] != null))
+    .map(props => {
+      const where = Object.fromEntries(props.map(p => [p, data[p]])) as FilterQuery<T>;
+      validateWhereCondition(meta, platform, where);
+      return where;
+    });
+}
+
 /** @internal */
 export function resetUntouchedCollections<Entity extends object>(meta: EntityMetadata<Entity>, entity: Entity): void {
   // for entities passed in via `em.create()` and then upserted, collection-kind relations

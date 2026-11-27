@@ -2,6 +2,7 @@ import { type Configuration } from './utils/Configuration.js';
 import {
   getOnConflictReturningFields,
   getOnCreateGeneratedFields,
+  getUniqueConditions,
   getWhereCondition,
   resetUntouchedCollections,
 } from './utils/upsert-utils.js';
@@ -1567,6 +1568,10 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       where,
       this.getPlatform(),
     ).where;
+    // a raw conflict target cannot be introspected, the row is reloaded by any of its known unique values instead
+    const reloadWhere = isRaw(options.onConflictFields)
+      ? getUniqueConditions(meta, data as EntityData<Entity>, this.getPlatform())
+      : [];
     data = QueryHelper.processObjectParams(data);
     validateParams(data, 'insert data');
 
@@ -1624,9 +1629,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           }
         }
       } else {
-        Object.keys(data).forEach(prop => {
-          where[prop as EntityKey] = data[prop as EntityKey];
-        });
+        // matching all the data would miss an existing row that differs in the other columns
+        const pk = helper(entity).hasPrimaryKey() ? Utils.getPrimaryKeyCond(entity, meta.primaryKeys) : null;
+        Object.assign(where, reloadWhere.length > 0 ? { $or: reloadWhere } : (pk ?? data));
 
         if (meta.simplePK && ret.insertId != null) {
           where[meta.primaryKeys[0] as EntityKey] = ret.insertId as never;
