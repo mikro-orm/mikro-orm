@@ -3163,28 +3163,17 @@ describe('EntityManagerMySql', () => {
   });
 
   test('collation option rejects object for SQL driver', async () => {
-    await expect(
-      orm.em.find(
-        Author2,
-        {},
-        {
-          collation: { locale: 'en', strength: 2 } as any,
-          orderBy: { name: 'asc' },
-        },
-      ),
-    ).rejects.toThrow('Collation option for SQL drivers must be a string');
+    const err = await orm.em
+      .find(Author2, {}, { collation: { locale: 'en', strength: 2 } as any, orderBy: { name: 'asc' } })
+      .catch(e => e);
+    expect(err).toBeInstanceOf(ValidationError);
+    expect(err.message).toMatch('Collation option for SQL drivers must be a string');
   });
 
   test('indexHint option rejects object for SQL driver', async () => {
-    await expect(
-      orm.em.find(
-        Author2,
-        {},
-        {
-          indexHint: { name: 1 },
-        },
-      ),
-    ).rejects.toThrow('indexHint for SQL drivers must be a string');
+    const err = await orm.em.find(Author2, {}, { indexHint: { name: 1 } }).catch(e => e);
+    expect(err).toBeInstanceOf(ValidationError);
+    expect(err.message).toMatch('indexHint for SQL drivers must be a string');
   });
 
   test('collation rejects invalid collation name', async () => {
