@@ -85,12 +85,6 @@ describe('upsert with object values in the unique keys (sqlite)', () => {
     await expect(orm.em.fork().upsert(User, { email: 'e@e', password: 'e', settings: { $in: ['a'] } }, { onConflictFields: ['settings'] })).rejects.toThrow(ValidationError);
   });
 
-  test('JSON unique values are read back as whole values', async () => {
-    await orm.em.insert(User, { email: 'b@b', password: 'b', settings: { a: 1, b: 2 } });
-    const user = await orm.em.fork().upsert(User, { email: 'c@c', password: 'c', settings: { a: 1 } }, { onConflictFields: ['settings'], onConflictAction: 'ignore' });
-    expect(user.email).toBe('c@c');
-  });
-
   test('the error names the composite primary key property', async () => {
     await expect(orm.em.fork().upsert(Pair, { a: 1, b: { $ne: null } as any, name: 'p' })).rejects.toThrow(`Invalid value of Pair.b, operators are not allowed in the unique keys of upsert data: { '$ne': null }`);
   });

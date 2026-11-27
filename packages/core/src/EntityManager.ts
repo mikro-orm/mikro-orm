@@ -5,7 +5,6 @@ import {
   Cursor,
   DataloaderUtils,
   getOnConflictReturningFields,
-  getReloadCondition,
   getWhereCondition,
   QueryHelper,
   RawQueryFragment,
@@ -1016,7 +1015,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       if (Array.isArray(uniqueFields)) {
         for (const prop of uniqueFields) {
           if (data![prop as EntityKey] != null) {
-            where[prop as EntityKey] = getReloadCondition(meta, prop as string, data![prop as EntityKey]) as never;
+            where[prop as EntityKey] = data![prop as EntityKey];
           } else if (meta.primaryKeys.includes(prop as EntityKey) && ret.insertId != null) {
             where[prop as EntityKey] = ret.insertId as never;
           }

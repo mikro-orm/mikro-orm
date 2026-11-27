@@ -3,7 +3,6 @@ import type { UpsertOptions } from '../drivers/IDatabaseDriver';
 import type { RawQueryFragment } from '../utils/RawQueryFragment';
 import { Utils } from './Utils';
 import { ValidationError } from '../errors';
-import { JsonType } from '../types/JsonType';
 import type { Platform } from '../platforms/Platform';
 
 function expandEmbeddedProperties<T>(prop: EntityProperty<T>, key?: string): (keyof T)[] {
@@ -208,13 +207,4 @@ export function getWhereCondition<T extends object>(
   validateWhereCondition(meta, platform, where);
 
   return { where, propIndex };
-}
-
-/**
- * A plain object in a condition on a JSON property targets its keys, the upserted value needs to be compared as a whole.
- * @internal
- */
-export function getReloadCondition<T>(meta: EntityMetadata<T>, key: string, value: unknown): unknown {
-  const isJson = meta.properties[key as EntityKey<T>]?.customType instanceof JsonType;
-  return isJson && Utils.isPlainObject(value) ? { $eq: value } : value;
 }
