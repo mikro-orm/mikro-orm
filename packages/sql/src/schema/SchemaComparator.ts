@@ -1286,6 +1286,10 @@ export class SchemaComparator {
       return true;
     }
 
+    if (!!from.constraint !== !!to.constraint || (from.deferMode ?? '') !== (to.deferMode ?? '')) {
+      return true;
+    }
+
     if ([...from.events].sort().join(',') !== [...to.events].sort().join(',')) {
       return true;
     }

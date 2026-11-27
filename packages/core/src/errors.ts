@@ -561,6 +561,13 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     );
   }
 
+  /** Thrown when constraint triggers are declared on an entity using a driver that does not support them. */
+  static constraintTriggersNotSupportedByDriver(meta: EntityMetadata): MetadataError {
+    return new MetadataError(
+      `Entity ${meta.className} declares constraint triggers (\`constraint\` or \`deferMode\`) which are not supported by the current driver. Constraint triggers are only available with the PostgreSQL and PGlite drivers.`,
+    );
+  }
+
   /** Thrown when row level security is declared on an entity using a driver that does not support it. */
   static rowLevelSecurityNotSupportedByDriver(meta: EntityMetadata): MetadataError {
     return new MetadataError(

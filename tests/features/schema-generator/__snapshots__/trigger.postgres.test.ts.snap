@@ -1,5 +1,12 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`trigger [postgres] > constraint triggers > create schema emits a constraint trigger [postgres] > postgres-constraint-trigger-create 1`] = `
+"create table "constraint_trigger_item" ("id" serial primary key, "qty" int not null);
+create or replace function "constraint_trigger_item_trg_qty_fn"() returns trigger as $$ begin IF EXISTS (SELECT 1 FROM constraint_trigger_item WHERE id = NEW.id AND qty < 0) THEN RAISE EXCEPTION 'negative qty'; END IF; RETURN NULL; end; $$ language plpgsql;
+create constraint trigger "trg_qty" AFTER INSERT OR UPDATE on "constraint_trigger_item" deferrable initially deferred for each ROW execute function "constraint_trigger_item_trg_qty_fn"();
+"
+`;
+
 exports[`trigger [postgres] > trigger diff [postgres] > postgres-trigger-diff-1 1`] = `
 "create table "trigger_table" ("id" serial primary key, "price" int not null);
 
