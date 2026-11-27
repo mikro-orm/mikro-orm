@@ -48,5 +48,7 @@ describe('ssl params in clientUrl', () => {
       rejectUnauthorized: true,
       ca: 'cert',
     });
+    expect(() => mapOptions(driver, `${url}?sslmode=require`)).toThrow(/`sslmode` parameter .* is not supported/);
+    expect(() => mapOptions(driver, `${url}?ssl-mode=REQUIRED`)).toThrow(/`ssl-mode` parameter .* is not supported/);
   });
 });
