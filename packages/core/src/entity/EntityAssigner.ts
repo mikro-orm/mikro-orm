@@ -89,8 +89,12 @@ export class EntityAssigner {
         return;
       }
 
-      if (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner) {
-        return;
+      if (prop.kind === ReferenceKind.MANY_TO_MANY) {
+        if (!prop.owner) {
+          return;
+        } else if (Utils.isCollection(value)) {
+          value = value.getItems();
+        }
       }
 
       if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {

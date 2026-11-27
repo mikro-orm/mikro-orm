@@ -183,3 +183,11 @@ test('onlyOwnProperties keeps a new entity passed as a single item', async () =>
       .sort(),
   ).toEqual(['new', 'with pk']);
 });
+
+test('onlyOwnProperties replaces the items when given another collection', async () => {
+  const book = await loadBook();
+  book.tags.add(orm.em.getReference(Tag, 1));
+  const other = orm.em.create(Book, { id: 2, title: 'b2', tags: [2] });
+  orm.em.assign(book, { tags: other.tags }, { onlyOwnProperties: true });
+  expect(book.tags.getIdentifiers()).toEqual([2]);
+});
