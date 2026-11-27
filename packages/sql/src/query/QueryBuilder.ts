@@ -566,6 +566,7 @@ export interface QBState<Entity extends object> {
   })[];
   tptJoinsApplied: boolean;
   autoJoinedPaths: string[];
+  filteredSubQueries: QueryBuilder<any>[];
   partitionLimit?: { partitionBy: string; limit: number; offset?: number };
 }
 
@@ -623,6 +624,7 @@ export class QueryBuilder<
       ctes: [],
       tptJoinsApplied: false,
       autoJoinedPaths: [],
+      filteredSubQueries: [],
       populate: [],
       populateMap: {},
       flags: new Set([QueryFlag.CONVERT_CUSTOM_TYPES]),
@@ -1475,7 +1477,12 @@ export class QueryBuilder<
   /**
    * @internal
    */
-  scheduleFilterCheck(path: string): void {
+  scheduleFilterCheck(path: string | IQueryBuilder<any>): void {
+    if (typeof path !== 'string') {
+      this.#state.filteredSubQueries.push(path as QueryBuilder<any>);
+      return;
+    }
+
     // deduplicate so filters forming a relation cycle cannot reschedule an already visited path forever
     if (!this.#state.autoJoinedPaths.includes(path)) {
       this.#state.autoJoinedPaths.push(path);
@@ -1565,6 +1572,10 @@ export class QueryBuilder<
           }
         }
       }
+    }
+
+    for (const sub of this.#state.filteredSubQueries) {
+      await sub.applyJoinedFilters(em, filterOptions);
     }
   }
 

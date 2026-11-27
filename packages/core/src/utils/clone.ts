@@ -54,7 +54,11 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
         return parent;
       }
 
-      return parent.clone();
+      if (!clones.has(parent)) {
+        clones.set(parent, parent.clone());
+      }
+
+      return clones.get(parent);
     }
 
     let child: unknown;

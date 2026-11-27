@@ -114,10 +114,14 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
             sub.where({ [this.key!]: payload });
           }
 
+          // compiled lazily, so filters can still be applied to its joins, except inside a filter (those could cycle)
+          if (!options?.filter) {
+            sub.scheduleFilterCheck(`${parentMeta.className}.${this.key as string}`);
+            qb.scheduleFilterCheck(sub);
+          }
+
           const op = ['$size', '$some'].includes(key) ? '$in' : '$nin';
-          $and.push({
-            [Utils.getPrimaryKeyHash(primaryKeys)]: { [op]: (sub as Dictionary).getNativeQuery().toRaw() },
-          });
+          $and.push({ [Utils.getPrimaryKeyHash(primaryKeys)]: { [op]: sub } });
         }
 
         if (matchNothing) {
