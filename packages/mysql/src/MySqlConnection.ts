@@ -12,6 +12,7 @@ import {
   type Dictionary,
   Utils,
   ValidationError,
+  parseJsonSafe,
   AbstractSqlConnection,
   type TransactionEventBroadcaster,
 } from '@mikro-orm/sql';
@@ -125,11 +126,7 @@ export class MySqlConnection extends AbstractSqlConnection {
     const ssl = params.get('ssl');
 
     if (ssl != null) {
-      try {
-        ret.ssl = JSON.parse(ssl);
-      } catch {
-        ret.ssl = ssl;
-      }
+      ret.ssl = parseJsonSafe(ssl);
     }
 
     ret.supportBigNumbers = true;
