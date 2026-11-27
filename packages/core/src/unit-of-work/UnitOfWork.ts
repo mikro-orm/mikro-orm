@@ -18,11 +18,13 @@ import { Collection } from '../entity/Collection.js';
 import { EntityHelper } from '../entity/EntityHelper.js';
 import { helper } from '../entity/wrap.js';
 import { Reference } from '../entity/Reference.js';
+import { PolymorphicRef } from '../entity/PolymorphicRef.js';
 import { EntityIdentifier } from '../entity/EntityIdentifier.js';
 import { ChangeSet, ChangeSetType } from './ChangeSet.js';
 import { ChangeSetComputer } from './ChangeSetComputer.js';
 import { ChangeSetPersister } from './ChangeSetPersister.js';
 import { CommitOrderCalculator } from './CommitOrderCalculator.js';
+import { QueryHelper } from '../utils/QueryHelper.js';
 import { Utils } from '../utils/Utils.js';
 import type { EntityManager } from '../EntityManager.js';
 import { Cascade, DeferMode, EventType, LockMode, ReferenceKind } from '../enums.js';
@@ -134,17 +136,31 @@ export class UnitOfWork {
         continue;
       }
 
+      const value = data[prop.name];
+
       if (
         [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
-        Utils.isPlainObject(data[prop.name])
+        prop.polymorphic &&
+        Utils.isObject(value) &&
+        !(value instanceof PolymorphicRef) &&
+        !Utils.isEntity(value, true)
       ) {
-        // Skip polymorphic relations - they use PolymorphicRef wrapper
-        if (!prop.polymorphic) {
-          // with `targetKey`, the FK holds that value instead of the PK
-          data[prop.name] = prop.targetKey
-            ? (data[prop.name] as Dictionary)[prop.targetKey]
-            : Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
-        }
+        const row = value as Dictionary;
+        const discriminator = QueryHelper.findDiscriminatorValue(prop.discriminatorMap!, row.constructor)!;
+        const targetMeta = this.#metadata.find(row.constructor)!;
+        data[prop.name] = new PolymorphicRef(
+          discriminator,
+          prop.targetKey ? row[prop.targetKey] : Utils.getPrimaryKeyValues(row, targetMeta, true),
+        ) as EntityDataValue<T>;
+      } else if (
+        [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) &&
+        Utils.isPlainObject(data[prop.name]) &&
+        !prop.polymorphic
+      ) {
+        // with `targetKey`, the FK holds that value instead of the PK
+        data[prop.name] = prop.targetKey
+          ? (data[prop.name] as Dictionary)[prop.targetKey]
+          : Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!, true);
       } else if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name])) {
         for (const p of prop.targetMeta!.props) {
           /* v8 ignore next */

@@ -1057,16 +1057,20 @@ export class EntityComparator {
     let type = prop.type.toLowerCase();
 
     if (prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED) {
+      // the snapshot value is a PolymorphicRef, not the target primary key, so the pk custom type must not compare it
       if (prop.polymorphic) {
-        type = 'object';
-      } else {
-        const meta2 = prop.targetMeta!;
+        return this.getGenericComparator(
+          this.wrap(prop.name),
+          `!equals(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})`,
+        );
+      }
 
-        if (meta2.primaryKeys.length > 1) {
-          type = 'array';
-        } else {
-          type = meta2.getPrimaryProp().type.toLowerCase();
-        }
+      const meta2 = prop.targetMeta!;
+
+      if (meta2.primaryKeys.length > 1) {
+        type = 'array';
+      } else {
+        type = meta2.getPrimaryProp().type.toLowerCase();
       }
     }
 
