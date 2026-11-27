@@ -258,7 +258,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     definition: string,
     withData = true,
   ): string {
-    const viewName = this.quote(this.getTableName(name, schema));
+    const viewName = this.quoteTableName(name, schema);
     const dataClause = withData ? ' with data' : ' with no data';
     return `create materialized view ${viewName} as ${definition}${dataClause}`;
   }
@@ -285,12 +285,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   override dropMaterializedViewIfExists(name: string, schema?: string): string {
-    return `drop materialized view if exists ${this.quote(this.getTableName(name, schema))} cascade`;
+    return `drop materialized view if exists ${this.quoteTableName(name, schema)} cascade`;
   }
 
   override refreshMaterializedView(name: string, schema?: string, concurrently = false): string {
     const concurrent = concurrently ? ' concurrently' : '';
-    return `refresh materialized view${concurrent} ${this.quote(this.getTableName(name, schema))}`;
+    return `refresh materialized view${concurrent} ${this.quoteTableName(name, schema)}`;
   }
 
   override async getNamespaces(connection: AbstractSqlConnection, ctx?: Transaction): Promise<string[]> {
@@ -827,7 +827,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const fnName = this.getSchemaQualifiedTriggerFnName(table, trigger);
     const triggerName = this.quote(trigger.name);
 
-    const fnSql = `create or replace function ${fnName}() returns trigger as $$ begin ${this.normalizeTriggerBody(trigger.body)} end; $$ language plpgsql`;
+    const fnSql = `create or replace function ${fnName}() returns trigger as ${this.dollarQuote(`begin ${this.normalizeTriggerBody(trigger.body)} end;`)} language plpgsql`;
     const triggerSql = `create trigger ${triggerName} ${timing} ${events} on ${table.getQuotedName()} for each ${forEach}${when} execute function ${fnName}()`;
 
     return `${fnSql};\n${triggerSql}`;
@@ -974,12 +974,23 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     if (routine.type === 'procedure') {
       const body = language === 'sql' ? flatten(routine.body ?? '') : this.wrapRoutineBody(routine.body ?? '');
-      return `create or replace procedure ${qualifiedName}(${params})${security} language ${language} as $$ ${body} $$`;
+      return `create or replace procedure ${qualifiedName}(${params})${security} language ${language} as ${this.dollarQuote(body)}`;
     }
 
     const returnType = routine.returns?.type ?? 'void';
     const body = language === 'sql' ? flatten(routine.body ?? '') : this.wrapRoutineBody(routine.body ?? '');
-    return `create or replace function ${qualifiedName}(${params}) returns ${returnType}${security}${determinism} language ${language} as $$ ${body} $$`;
+    return `create or replace function ${qualifiedName}(${params}) returns ${returnType}${security}${determinism} language ${language} as ${this.dollarQuote(body)}`;
+  }
+
+  /** Wraps a function body in a dollar-quote tag that does not occur in it. */
+  private dollarQuote(body: string): string {
+    let tag = '$$';
+
+    for (let i = 0; body.includes(tag); i++) {
+      tag = `$body${i || ''}$`;
+    }
+
+    return `${tag} ${body} ${tag}`;
   }
 
   override dropRoutine(routine: SqlRoutineDef): string {
@@ -1002,7 +1013,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         case when p.provolatile = 'i' then true when p.provolatile = 'v' then false else null end as deterministic,
         case when p.prosecdef then 'definer' else 'invoker' end as security,
         pg_get_functiondef(p.oid) as full_def,
-        pg_get_function_arguments(p.oid) as arg_signature,
+        pg_get_function_identity_arguments(p.oid) as arg_signature,
         pg_get_function_result(p.oid) as result_type,
         d.description as comment
       from pg_proc p
@@ -1072,17 +1083,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       return [];
     }
 
-    return signature.split(/,(?![^()]*\))/).map(part => {
+    return signature.split(/,(?![^()]*\))(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(part => {
       const trimmed = part.trim();
       // INOUT before IN/OUT, with required trailing space so identifiers like `input` aren't
-      // mis-parsed as a direction keyword. The name is optional — `pg_get_function_arguments`
+      // mis-parsed as a direction keyword. The name is optional — `pg_get_function_identity_arguments`
       // omits it for unnamed parameters (e.g. `text`), leaving just the type.
-      const match =
-        /^(?:(INOUT|VARIADIC|IN|OUT)\s+)?(?:(?:"((?:[^"]|"")+)"|([\w$]+))\s+)?(.+?)(?:\s+default\s+.+)?$/is.exec(
-          trimmed,
-        );
+      const match = /^(?:(INOUT|VARIADIC|IN|OUT)\s+)?(?:(?:"((?:[^"]|"")+)"|([\w$]+))\s+)?(.+)$/is.exec(trimmed);
 
-      /* v8 ignore next 3: defensive guard for unexpected `pg_get_function_arguments` output shapes */
+      /* v8 ignore next 3: defensive guard for unexpected `pg_get_function_identity_arguments` output shapes */
       if (!match) {
         throw new Error(`Could not parse PostgreSQL routine parameter signature: ${JSON.stringify(trimmed)}`);
       }
@@ -1674,11 +1682,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     for (const col of changedEnums) {
       if (!col.fromColumn.nativeEnumName && col.column.nativeEnumName && col.fromColumn.default) {
-        ret.push(`alter table ${quotedName} alter column "${col.column.name}" drop default`);
+        ret.push(`alter table ${quotedName} alter column ${this.quote(col.column.name)} drop default`);
       }
 
       if (col.fromColumn.nativeEnumName && !col.column.nativeEnumName && col.fromColumn.default) {
-        ret.push(`alter table ${quotedName} alter column "${col.column.name}" drop default`);
+        ret.push(`alter table ${quotedName} alter column ${this.quote(col.column.name)} drop default`);
       }
     }
 
@@ -1689,7 +1697,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     for (const col of uuids) {
       ret.push(
-        `alter table ${quotedName} alter column "${col.column.name}" type text using ("${col.column.name}"::text)`,
+        `alter table ${quotedName} alter column ${this.quote(col.column.name)} type text using (${this.quote(col.column.name)}::text)`,
       );
     }
 
@@ -1733,11 +1741,15 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     for (const col of changedEnums) {
       if (!col.fromColumn.nativeEnumName && col.column.nativeEnumName && col.column.default) {
-        ret.push(`alter table ${quotedName} alter column "${col.column.name}" set default ${col.column.default}`);
+        ret.push(
+          `alter table ${quotedName} alter column ${this.quote(col.column.name)} set default ${col.column.default}`,
+        );
       }
 
       if (col.fromColumn.nativeEnumName && !col.column.nativeEnumName && col.column.default) {
-        ret.push(`alter table ${quotedName} alter column "${col.column.name}" set default ${col.column.default}`);
+        ret.push(
+          `alter table ${quotedName} alter column ${this.quote(col.column.name)} set default ${col.column.default}`,
+        );
       }
     }
 
@@ -1933,7 +1945,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       join pg_namespace as ns on i.relnamespace = ns.oid
       join pg_am as am on am.oid = i.relam
       left join pg_constraint as c on c.conname = i.relname
-      where indrelid in (${tables.map(t => `${this.platform.quoteValue(`${this.quote(t.schema_name)}.${this.quote(t.table_name)}`)}::regclass`).join(', ')})
+      where indrelid in (${tables.map(t => `${this.platform.quoteValue(this.platform.quoteQualifiedName(t.table_name, t.schema_name))}::regclass`).join(', ')})
         and (c.contype is null or c.contype <> 'x')
       order by relname`;
   }

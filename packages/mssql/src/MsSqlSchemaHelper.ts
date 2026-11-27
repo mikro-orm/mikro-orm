@@ -756,7 +756,7 @@ export class MsSqlSchemaHelper extends SchemaHelper {
       const type = this.platform.extractSimpleType(col.fromColumn.type);
 
       if (!['varchar', 'nvarchar', 'varbinary'].includes(type) || col.fromColumn.length! < col.column.length!) {
-        ret.push(`alter table ${quotedName} alter column [${col.oldColumnName}] nvarchar(max)`);
+        ret.push(`alter table ${quotedName} alter column ${this.quote(col.oldColumnName)} nvarchar(max)`);
       }
     }
 
@@ -1054,15 +1054,12 @@ export class MsSqlSchemaHelper extends SchemaHelper {
   }
 
   override dropTableIfExists(name: string, schema?: string): string {
-    if (schema === this.platform.getDefaultSchemaName()) {
-      schema = undefined;
-    }
-
-    return `if object_id(${this.platform.quoteValue(this.quote(schema, name))}, 'U') is not null drop table ${this.quote(schema, name)}`;
+    const tableName = this.quoteTableName(name, schema);
+    return `if object_id(${this.platform.quoteValue(tableName)}, 'U') is not null drop table ${tableName}`;
   }
 
   override dropViewIfExists(name: string, schema?: string): string {
-    const viewName = this.quote(this.getTableName(name, schema));
+    const viewName = this.quoteTableName(name, schema);
     return `if object_id(${this.platform.quoteValue(viewName)}, 'V') is not null drop view ${viewName}`;
   }
 
