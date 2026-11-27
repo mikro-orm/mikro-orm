@@ -239,6 +239,12 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     );
   }
 
+  static cannotUseOperatorsInUpsertKeys(entityName: EntityName, propName: string, payload: unknown): ValidationError {
+    return new ValidationError(
+      `Invalid value of ${Utils.className(entityName)}.${propName}, operators are not allowed in the unique keys of upsert data: ${inspect(payload)}`,
+    );
+  }
+
   /* v8 ignore next */
   static invalidQueryCondition(cond: unknown): ValidationError {
     return new ValidationError(`Invalid query condition: ${inspect(cond, { depth: 5 })}`);

@@ -1560,7 +1560,13 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       options.onConflictExcludeFields = [...(options.onConflictExcludeFields ?? []), ...generatedFields] as never[];
     }
 
-    where = getWhereCondition(meta, options.onConflictFields, data as EntityData<Entity>, where).where;
+    where = getWhereCondition(
+      meta,
+      options.onConflictFields,
+      data as EntityData<Entity>,
+      where,
+      this.getPlatform(),
+    ).where;
     data = QueryHelper.processObjectParams(data);
     validateParams(data, 'insert data');
 
@@ -1839,7 +1845,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       propIndex =
         !isRaw(unique) &&
         unique.findIndex(p => (data as Dictionary)[p] ?? (data as Dictionary)[p.substring(0, p.indexOf('.'))] != null);
-      const tmp = getWhereCondition(meta, options.onConflictFields, row, where);
+      const tmp = getWhereCondition(meta, options.onConflictFields, row, where, this.getPlatform());
       propIndex = tmp.propIndex;
 
       // a partial composite PK cannot identify the row
