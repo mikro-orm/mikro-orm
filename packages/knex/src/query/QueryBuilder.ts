@@ -45,7 +45,7 @@ import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { type Alias, QueryBuilderHelper } from './QueryBuilderHelper';
 import type { SqlEntityManager } from '../SqlEntityManager';
 import { CriteriaNodeFactory } from './CriteriaNodeFactory';
-import type { Field, ICriteriaNodeProcessOptions, JoinOptions } from '../typings';
+import type { Field, ICriteriaNodeProcessOptions, IQueryBuilder, JoinOptions } from '../typings';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 
 export interface ExecuteOptions {
@@ -485,11 +485,17 @@ export class QueryBuilder<
   }
 
   private readonly autoJoinedPaths: string[] = [];
+  private readonly filteredSubQueries: QueryBuilder<any>[] = [];
 
   /**
    * @internal
    */
-  scheduleFilterCheck(path: string): void {
+  scheduleFilterCheck(path: string | IQueryBuilder<any>): void {
+    if (typeof path !== 'string') {
+      this.filteredSubQueries.push(path as QueryBuilder<any>);
+      return;
+    }
+
     this.autoJoinedPaths.push(path);
   }
 
@@ -497,6 +503,10 @@ export class QueryBuilder<
    * @internal
    */
   async applyJoinedFilters(em: EntityManager, filterOptions: FilterOptions | undefined): Promise<void> {
+    for (const sub of this.filteredSubQueries) {
+      await sub.applyJoinedFilters(em, filterOptions);
+    }
+
     for (const path of this.autoJoinedPaths) {
       const join = this.getJoinForPath(path)!;
 

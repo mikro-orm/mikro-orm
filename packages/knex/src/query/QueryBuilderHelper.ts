@@ -662,6 +662,11 @@ export class QueryBuilderHelper {
       value[op] = this.knex.raw(value[op].sql, value[op].params as readonly Knex.RawBinding[]);
     }
 
+    // collection operator sub-queries are kept as query builders until the query is compiled
+    if (typeof value[op]?.getKnexQuery === 'function') {
+      value[op] = value[op].getKnexQuery();
+    }
+
     if (this.subQueries[key]) {
       return void qb[m](this.knex.raw(`(${this.subQueries[key]})`), replacement, value[op]);
     }
