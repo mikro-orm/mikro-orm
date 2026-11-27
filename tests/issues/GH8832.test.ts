@@ -82,13 +82,35 @@ const Bookmark = defineEntity({
   },
 });
 
+const Invoice = defineEntity({
+  name: 'Invoice',
+  properties: {
+    id: p.bigint().primary(),
+  },
+});
+
+const Receipt = defineEntity({
+  name: 'Receipt',
+  properties: {
+    id: p.bigint().primary(),
+  },
+});
+
+const Payment = defineEntity({
+  name: 'Payment',
+  properties: {
+    id: p.integer().primary(),
+    document: () => p.manyToOne([Invoice, Receipt]),
+  },
+});
+
 let orm: MikroORM;
 
 const ids = { user: v4(), user2: v4(), team: v4(), comment: v4() };
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [User, Team, Comment, Account, Group, Note, Page, Asset, Visit, Bookmark],
+    entities: [User, Team, Comment, Account, Group, Note, Page, Asset, Visit, Bookmark, Invoice, Receipt, Payment],
     dbName: ':memory:',
   });
   await orm.schema.create();
@@ -194,4 +216,20 @@ test('changing the target of a polymorphic relation with uuid PK targets is pers
 
   const c2 = await orm.em.fork().findOneOrFail(Comment, ids.comment, { populate: ['author'] });
   expect(c2.author).toMatchObject({ id: ids.team, name: 't1' });
+});
+
+test('changing the target of a polymorphic relation with bigint PK targets is persisted', async () => {
+  const em = orm.em.fork();
+  const invoice = em.create(Invoice, { id: 1n });
+  em.create(Invoice, { id: 2n });
+  em.create(Payment, { id: 1, document: invoice });
+  await em.flush();
+  em.clear();
+
+  const payment = await em.findOneOrFail(Payment, 1);
+  payment.document = em.getReference(Invoice, 2n);
+  await em.flush();
+
+  const reloaded = await orm.em.fork().findOneOrFail(Payment, 1);
+  expect(reloaded.document.id).toBe(2n);
 });
