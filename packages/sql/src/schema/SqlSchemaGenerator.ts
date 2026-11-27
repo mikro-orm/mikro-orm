@@ -702,7 +702,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   }
 
   async dropTableIfExists(name: string, schema?: string): Promise<void> {
-    const [schemaName, tableName] = this.helper.splitQualifiedName(schema ? `${schema}.${name}` : name);
+    const [schemaName, tableName] = schema ? [schema, name] : this.helper.splitQualifiedName(name);
     const sql = this.helper.dropTableIfExists(tableName, schemaName);
     return this.execute(sql);
   }
