@@ -1591,12 +1591,14 @@ export class QueryBuilderHelper {
           return 'bigint';
         }
 
-        if (Array.isArray(v) && v.length > 0) {
-          if (typeof v[0] === 'number') {
+        if (Array.isArray(v)) {
+          const first = v.find(i => i !== null);
+
+          if (typeof first === 'number') {
             return 'number';
           }
 
-          if (typeof v[0] === 'boolean') {
+          if (typeof first === 'boolean') {
             return 'boolean';
           }
         }

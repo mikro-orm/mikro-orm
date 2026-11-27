@@ -112,13 +112,14 @@ test('$in and $nin with null first on a json property', async () => {
       id: p.integer().primary(),
       name: p.string(),
       meta: p.json<{ n: number | null }>(),
+      list: p.json<{ n: number | null }[]>(),
     },
   });
   const pg = await PostgreSqlMikroORM.init({ dbName: 'mikro_orm_test_gh_8828', entities: [Item] });
   await pg.schema.refresh();
-  pg.em.create(Item, { name: 'i1', meta: { n: 1 } });
-  pg.em.create(Item, { name: 'i2', meta: { n: null } });
-  pg.em.create(Item, { name: 'i3', meta: { n: 3 } });
+  pg.em.create(Item, { name: 'i1', meta: { n: 1 }, list: [{ n: 1 }] });
+  pg.em.create(Item, { name: 'i2', meta: { n: null }, list: [{ n: null }] });
+  pg.em.create(Item, { name: 'i3', meta: { n: 3 }, list: [{ n: 3 }] });
   await pg.em.flush();
 
   const items = async (where: any) =>
@@ -129,6 +130,8 @@ test('$in and $nin with null first on a json property', async () => {
     expect(await items({ meta: { n: { $nin: [null, 1] } } })).toEqual(['i3']);
     expect(await items({ meta: { n: { $in: [null] } } })).toEqual(['i2']);
     expect(await items({ meta: { n: { $nin: [null] } } })).toEqual(['i1', 'i3']);
+    expect(await items({ list: { $elemMatch: { n: { $in: [null, 1] } } } })).toEqual(['i1', 'i2']);
+    expect(await items({ list: { $elemMatch: { n: { $nin: [null, 1] } } } })).toEqual(['i3']);
   } finally {
     await pg.schema.drop({ dropDb: true });
     await pg.close(true);
