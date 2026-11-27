@@ -485,26 +485,39 @@ export class QueryBuilder<
   }
 
   private readonly autoJoinedPaths: string[] = [];
-  private readonly filteredSubQueries: QueryBuilder<any>[] = [];
+  // shared with clones, while the sub-queries in `_cond` get cloned, so filters need to be applied before cloning
+  private readonly filteredSubQueries: { qb: QueryBuilder<any>; ownerAlias: string }[] = [];
 
   /**
    * @internal
    */
-  scheduleFilterCheck(path: string | IQueryBuilder<any>): void {
-    if (typeof path !== 'string') {
-      this.filteredSubQueries.push(path as QueryBuilder<any>);
-      return;
-    }
-
+  scheduleFilterCheck(path: string): void {
     this.autoJoinedPaths.push(path);
   }
 
   /**
    * @internal
    */
+  scheduleSubQueryFilterCheck(qb: IQueryBuilder<any>, ownerAlias: string): void {
+    this.filteredSubQueries.push({ qb: qb as QueryBuilder<any>, ownerAlias });
+  }
+
+  /**
+   * @internal
+   */
   async applyJoinedFilters(em: EntityManager, filterOptions: FilterOptions | undefined): Promise<void> {
+    const joins = Object.values(this._joins);
+
     for (const sub of this.filteredSubQueries) {
-      await sub.applyJoinedFilters(em, filterOptions);
+      // the sub-query inherits the overrides of the relations it is nested under
+      const chain: JoinOptions[] = [];
+
+      for (let join = joins.find(j => j.alias === sub.ownerAlias); join; join = joins.find(j => j.alias === join!.ownerAlias)) {
+        chain.unshift(join);
+      }
+
+      const filters = chain.reduce((acc, j) => QueryHelper.mergePropertyFilters(j.prop.filters, acc), filterOptions);
+      await sub.qb.applyJoinedFilters(em, filters);
     }
 
     for (const path of this.autoJoinedPaths) {

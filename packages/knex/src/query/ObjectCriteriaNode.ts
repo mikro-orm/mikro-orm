@@ -75,7 +75,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
           if (lazy) {
             sub.scheduleFilterCheck(`${parentMeta.className}.${this.key}`);
-            qb.scheduleFilterCheck(sub);
+            qb.scheduleSubQueryFilterCheck(sub, ownerAlias);
           }
 
           const op = key === '$some' ? '$in' : '$nin';

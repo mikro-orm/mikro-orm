@@ -78,6 +78,17 @@ class Book {
 }
 
 @Entity()
+class Reader {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne(() => Shelf, { filters: false })
+  shelf!: Shelf;
+
+}
+
+@Entity()
 @Filter({ name: 'active', cond: { members: { $some: { active: true } } }, default: true })
 class Team {
 
@@ -111,7 +122,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [User, Shelf, Tag, Book, Team, Member],
+    entities: [User, Shelf, Tag, Book, Reader, Team, Member],
     dbName: ':memory:',
   });
   await orm.schema.createSchema();
@@ -126,6 +137,7 @@ beforeAll(async () => {
   orm.em.create(Book, { title: 'b3', tenant: 2, author: carol, shelf: s2, tags: [y] });
   // visible book with an author hidden by the filter
   orm.em.create(Book, { title: 'b4', tenant: 1, author: carol, shelf: s3, tags: [z] });
+  orm.em.create(Reader, { shelf: s2 });
   const team = orm.em.create(Team, { active: true });
   orm.em.create(Member, { active: true, teams: [team, orm.em.create(Team, { active: false })] });
   orm.em.create(Member, { active: false, teams: [orm.em.create(Team, { active: true })] });
@@ -189,4 +201,11 @@ test('filters referencing each other via collection operators', async () => {
   expect(await em.find(Team, { members: { $some: { active: true } } })).toHaveLength(2);
   expect(await em.find(Team, { members: { $some: { active: true } } }, { filters: false })).toHaveLength(2);
   expect(await em.find(Team, {}, { filters: false })).toHaveLength(3);
+});
+
+test('relation-level `filters` override above the operator is respected', async () => {
+  const em = orm.em.fork();
+  expect(await em.find(Reader, { shelf: { books: { title: 'b3' } } })).toHaveLength(1);
+  expect(await em.find(Reader, { shelf: { books: { $some: { title: 'b3' } } } })).toHaveLength(1);
+  expect(await em.find(Reader, { shelf: { books: { $none: { title: 'b3' } } } })).toHaveLength(0);
 });
