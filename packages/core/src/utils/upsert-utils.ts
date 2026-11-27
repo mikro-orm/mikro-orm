@@ -2,6 +2,8 @@ import type { Dictionary, EntityData, EntityKey, EntityMetadata, EntityProperty,
 import type { UpsertOptions } from '../drivers/IDatabaseDriver';
 import type { RawQueryFragment } from '../utils/RawQueryFragment';
 import { Utils } from './Utils';
+import { ValidationError } from '../errors';
+import type { Platform } from '../platforms/Platform';
 
 function expandEmbeddedProperties<T>(prop: EntityProperty<T>, key?: string): (keyof T)[] {
   if (prop.object) {
@@ -145,11 +147,33 @@ function getPropertyValue(obj: Dictionary, key: string) {
   return curr[parts[parts.length - 1]];
 }
 
+/** The condition is built from the upsert data, so its values must never be interpreted as operators. */
+function validateWhereCondition<T>(meta: EntityMetadata<T>, platform: Platform, value: unknown, propName?: string): void {
+  if (Array.isArray(value)) {
+    // a top-level array is a composite primary key
+    return value.forEach((item, idx) => validateWhereCondition(meta, platform, item, propName ?? meta.primaryKeys[idx]));
+  }
+
+  if (!Utils.isPlainObject(value)) {
+    return;
+  }
+
+  for (const key of Object.keys(value)) {
+    // SQL drivers interpret only the known operators, other `$` keys are valid in JSON values, mongo passes all of them to the server
+    if (platform.usesPivotTable() ? Utils.isOperator(key) : key.startsWith('$')) {
+      throw ValidationError.cannotUseOperatorsInUpsertKeys(meta.className, propName ?? meta.primaryKeys[0], value);
+    }
+
+    validateWhereCondition(meta, platform, value[key], propName ?? key);
+  }
+}
+
 /** @internal */
 export function getWhereCondition<T extends object>(
   meta: EntityMetadata<T>, onConflictFields: (keyof T)[] | RawQueryFragment | undefined,
   data: EntityData<T>,
   where: FilterQuery<T>,
+  platform: Platform,
 ): { where: FilterQuery<T>; propIndex: number | false } {
   const unique = onConflictFields as string[] ?? meta.props.filter(p => p.unique).map(p => p.name);
   const propIndex = !Utils.isRawSql(unique) && unique.findIndex(p => (data as Dictionary)[p] ?? (data as Dictionary)[p.substring(0, p.indexOf('.'))] != null);
@@ -179,6 +203,8 @@ export function getWhereCondition<T extends object>(
       }
     }
   }
+
+  validateWhereCondition(meta, platform, where);
 
   return { where, propIndex };
 }
