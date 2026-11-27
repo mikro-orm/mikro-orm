@@ -59,6 +59,7 @@ import {
   type UpsertManyOptions,
   type UpsertOptions,
   Utils,
+  ValidationError,
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection.js';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform.js';
@@ -190,7 +191,11 @@ export abstract class AbstractSqlDriver<
     return { alias, name: meta.tableName, schema: effectiveSchema, qualifiedName, toString: () => alias };
   }
 
-  private validateSqlOptions(options: { collation?: any; indexHint?: any; using?: any }): void {
+  private validateSqlOptions(options: { collation?: any; indexHint?: any; using?: any; having?: any }): void {
+    if (options.having != null && typeof options.having !== 'object') {
+      throw ValidationError.invalidQueryCondition(options.having);
+    }
+
     if (options.using && !options.indexHint) {
       const names = Utils.asArray(options.using);
       const hint = this.platform.formatIndexHint(names);

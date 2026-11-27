@@ -5,6 +5,7 @@ import {
   QueryFlag,
   raw,
   Utils,
+  ValidationError,
   type AnyEntity,
   type ConnectionType,
   type CountByOptions,
@@ -192,6 +193,10 @@ export class SqlEntityManager<Driver extends AbstractSqlDriver = AbstractSqlDriv
     const meta = em.getMetadata().find(entityName)!;
     const fields = Utils.asArray(groupBy);
     const { where: rawWhere, ...countOptions } = options;
+
+    if (countOptions.having != null && typeof countOptions.having !== 'object') {
+      throw ValidationError.invalidQueryCondition(countOptions.having);
+    }
 
     await em.tryFlush(entityName, options);
     const where = await em.processWhere(entityName, rawWhere ?? ({} as FilterQuery<Entity>), options as any, 'read');
