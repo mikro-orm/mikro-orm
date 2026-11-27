@@ -411,8 +411,13 @@ export class SchemaComparator {
 
   /** Engines drop length/precision modifiers and use different aliases for the same logical type — canonicalise both sides. */
   private normaliseParamType(type: string): string {
-    const [, element, array] = /^(.*?)((?:\s*\[\d*\])*)$/s.exec(type.trim().toLowerCase())!;
-    const base = element.replace(/\s*\([^)]*\)/, '').trim();
+    const lower = type.trim().toLowerCase();
+    const array = /\[\d*\]$/.test(lower);
+    const element = array ? lower.slice(0, lower.indexOf('[')) : lower;
+    const open = element.indexOf('(');
+    const close = element.indexOf(')', open);
+    const stripped = open < 0 || close < 0 ? element : element.slice(0, open) + element.slice(close + 1);
+    const base = stripped.replace(/\s+/g, ' ').trim();
     const aliased = SchemaComparator.PARAM_TYPE_ALIASES[base] ?? base;
     return this.#platform.normalizeColumnType(aliased, {}).toLowerCase() + (array ? '[]' : '');
   }

@@ -22,13 +22,13 @@ const types = [
   'timetz(3)',
   'timestamp(3)',
   'timestamp(3) without time zone',
-  'timestamp(3) with time zone',
+  'timestamp (3) with time zone',
   'timestamptz(3)',
   'interval(3)',
   'interval day to second(3)',
   'interval year to month',
   'varchar(20)[]',
-  'numeric(12,4)[]',
+  'numeric(12,4)[][]',
   'timestamp(3)[]',
 ];
 
