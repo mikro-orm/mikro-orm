@@ -81,6 +81,8 @@ export interface EntityLoaderOptions<Entity, Fields extends string = never, Excl
   inflightQueryAbortStrategy?: InflightQueryAbortStrategy;
 }
 
+const COLLECTION_OPERATORS = ['$some', '$none', '$every', '$size', '$all'];
+
 /** Responsible for batch-loading entity relations using either select-in or joined loading strategies. */
 export class EntityLoader {
   readonly #metadata: MetadataStorage;
@@ -1142,6 +1144,8 @@ export class EntityLoader {
       }
     });
 
+    // collection operators constrain the owning entity, they say nothing about which items to populate
+    COLLECTION_OPERATORS.forEach(op => delete subCond[op]);
     const operators = Object.keys(subCond).filter(key => isRelationOperator(key, subCond[key]));
 
     if (operators.length > 0) {
