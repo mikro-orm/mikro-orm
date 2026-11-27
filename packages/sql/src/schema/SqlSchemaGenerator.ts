@@ -286,10 +286,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
 
     if (options.dropMigrationsTable) {
-      this.append(
-        ret,
-        this.helper.dropTableIfExists(this.config.get('migrations').tableName!, this.config.get('schema')),
-      );
+      const [schema, name] = this.helper.splitTableName(this.config.get('migrations').tableName!);
+      this.append(ret, this.helper.dropTableIfExists(name, schema ?? this.config.get('schema')));
     }
 
     return this.wrapSchema(ret, options);
@@ -704,7 +702,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
   }
 
   async dropTableIfExists(name: string, schema?: string): Promise<void> {
-    const sql = this.helper.dropTableIfExists(name, schema);
+    const [schemaName, tableName] = schema ? [schema, name] : this.helper.splitTableName(name);
+    const sql = this.helper.dropTableIfExists(tableName, schemaName);
     return this.execute(sql);
   }
 

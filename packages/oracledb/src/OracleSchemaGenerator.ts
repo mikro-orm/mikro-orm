@@ -104,10 +104,8 @@ export class OracleSchemaGenerator extends SchemaGenerator {
     }
 
     if (options.dropMigrationsTable) {
-      this.helper.append(
-        ret,
-        this.helper.dropTableIfExists(this.config.get('migrations').tableName!, this.config.get('schema')),
-      );
+      const [schema, name] = this.helper.splitTableName(this.config.get('migrations').tableName!);
+      this.helper.append(ret, this.helper.dropTableIfExists(name, schema ?? this.config.get('schema')));
     }
 
     /* v8 ignore next: empty result branch */

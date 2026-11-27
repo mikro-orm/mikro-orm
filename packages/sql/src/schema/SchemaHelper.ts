@@ -1341,6 +1341,11 @@ export abstract class SchemaHelper {
     return this.platform.quoteIdentifier(keys.filter(Boolean).join('.')).replaceAll('\\?', '?');
   }
 
+  /** Quotes a table or view name held separately from its schema, a dot in either stays inside the identifier. */
+  protected quoteTableName(name: string, schema?: string): string {
+    return this.platform.quoteQualifiedName(name, schema === this.platform.getDefaultSchemaName() ? undefined : schema);
+  }
+
   dropForeignKey(tableName: string, constraintName: string): string {
     return `alter table ${this.quote(tableName)} drop foreign key ${this.quote(constraintName)}`;
   }
@@ -1359,7 +1364,7 @@ export abstract class SchemaHelper {
 
   /** Returns SQL to drop a table if it exists. */
   dropTableIfExists(name: string, schema?: string): string {
-    let sql = `drop table if exists ${this.quote(this.getTableName(name, schema))}`;
+    let sql = `drop table if exists ${this.quoteTableName(name, schema)}`;
 
     if (this.platform.usesCascadeStatement()) {
       sql += ' cascade';
@@ -1369,12 +1374,12 @@ export abstract class SchemaHelper {
   }
 
   createView(name: string, schema: string | undefined, definition: string): string {
-    const viewName = this.quote(this.getTableName(name, schema));
+    const viewName = this.quoteTableName(name, schema);
     return `create view ${viewName} as ${definition}`;
   }
 
   dropViewIfExists(name: string, schema?: string): string {
-    let sql = `drop view if exists ${this.quote(this.getTableName(name, schema))}`;
+    let sql = `drop view if exists ${this.quoteTableName(name, schema)}`;
 
     if (this.platform.usesCascadeStatement()) {
       sql += ' cascade';

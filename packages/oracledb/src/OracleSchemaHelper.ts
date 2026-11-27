@@ -827,19 +827,11 @@ export class OracleSchemaHelper extends SchemaHelper {
   }
 
   override dropViewIfExists(name: string, schema?: string): string {
-    if (schema === this.platform.getDefaultSchemaName()) {
-      schema = undefined;
-    }
-
-    return `drop view if exists ${this.quote(schema, name)} cascade constraints`;
+    return `drop view if exists ${this.quoteTableName(name, schema)} cascade constraints`;
   }
 
   override dropTableIfExists(name: string, schema?: string): string {
-    if (schema === this.platform.getDefaultSchemaName()) {
-      schema = undefined;
-    }
-
-    return `drop table if exists ${this.quote(schema, name)} cascade constraint`;
+    return `drop table if exists ${this.quoteTableName(name, schema)} cascade constraint`;
   }
 
   override getAddColumnsSQL(table: DatabaseTable, columns: Column[]): string[] {

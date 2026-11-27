@@ -126,7 +126,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
 
       if (!definition) {
         const createView = await connection.execute<{ View: string; 'Create View': string }[]>(
-          `show create view \`${view.view_name}\``,
+          `show create view ${this.quoteTableName(view.view_name)}`,
           [],
           'all',
           ctx,

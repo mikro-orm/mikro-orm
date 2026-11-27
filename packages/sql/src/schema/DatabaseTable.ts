@@ -67,7 +67,8 @@ export class DatabaseTable {
   }
 
   getQuotedName(): string {
-    return this.#platform.quoteIdentifier(this.getShortestName()).replaceAll('\\?', '?');
+    const schema = this.getShortestName() === this.name ? undefined : this.schema;
+    return this.#platform.quoteQualifiedName(this.name, schema);
   }
 
   getColumns(): Column[] {
