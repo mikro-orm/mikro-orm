@@ -216,7 +216,7 @@ export class EntityAssigner {
   private static assignCollection<T extends object, U extends object = AnyEntity, C extends boolean = false>(entity: T, collection: Collection<U>, value: unknown, prop: EntityProperty, em: EntityManager | undefined, options: AssignOptions<C>): void {
     const invalid: any[] = [];
     const items = Utils.asArray(value).map((item: any, idx) => {
-      if (options.onlyOwnProperties && !Array.isArray(item)) {
+      if (options.onlyOwnProperties && (Array.isArray(value) ? !Array.isArray(item) : Utils.isPlainObject(item))) {
         item = Utils.extractPK(item, prop.targetMeta);
       }
 
