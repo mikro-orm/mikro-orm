@@ -1,4 +1,5 @@
 import type { Knex } from 'knex';
+import { parseJsonSafe, ValidationError } from '@mikro-orm/core';
 import { MySqlKnexDialect } from './MySqlKnexDialect';
 import { AbstractSqlConnection } from '../../AbstractSqlConnection';
 
@@ -26,6 +27,20 @@ export class MySqlConnection extends AbstractSqlConnection {
 
     if (this.config.get('timezone')) {
       ret.timezone = this.config.get('timezone');
+    }
+
+    // `clientUrl` is split into separate options, so the `ssl` param from its query string needs to be mapped too
+    const params = new URL(this.options.clientUrl ?? this.config.getClientUrl()).searchParams;
+    const unsupported = [...params.keys()].find(key => /^ssl-?mode$/i.test(key));
+
+    if (unsupported) {
+      throw new ValidationError(`The \`${unsupported}\` parameter in \`clientUrl\` is not supported by the MySQL driver, use the \`ssl\` parameter or \`driverOptions\` instead.`);
+    }
+
+    const ssl = params.get('ssl');
+
+    if (ssl != null) {
+      ret.ssl = parseJsonSafe(ssl);
     }
 
     ret.supportBigNumbers = true;

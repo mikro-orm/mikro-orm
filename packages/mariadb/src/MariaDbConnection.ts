@@ -13,6 +13,11 @@ export class MariaDbConnection extends MySqlConnection {
     ret.insertIdAsNumber = true;
     ret.checkDuplicate = false;
 
+    // the mariadb client has no ssl profiles and reads any other string as `false`
+    if (typeof ret.ssl === 'string') {
+      ret.ssl = true as any;
+    }
+
     return ret;
   }
 
