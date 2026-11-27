@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/postgresql",
-  "version": "6.6.19",
+  "version": "6.6.20",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -58,7 +58,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/knex": "6.6.19",
+    "@mikro-orm/knex": "^6.6.20",
     "pg": "8.20.0",
     "pg-connection-string": "2.12.0",
     "postgres-array": "3.0.4",
@@ -66,7 +66,7 @@
     "postgres-interval": "4.0.2"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^6.6.19"
+    "@mikro-orm/core": "^6.6.20"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^6.0.0"

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.20](https://github.com/mikro-orm/mikro-orm/compare/v6.6.19...v6.6.20) (2026-11-27)
+
+
+### Bug Fixes
+
+* **core:** respect ssl query parameters in `clientUrl` ([#8837](https://github.com/mikro-orm/mikro-orm/issues/8837)) ([a171930](https://github.com/mikro-orm/mikro-orm/commit/a171930196291cf81b49fd837e58803bf9a4b669))
+
+
+
+
+
 ## [6.6.19](https://github.com/mikro-orm/mikro-orm/compare/v6.6.18...v6.6.19) (2026-11-20)
 
 **Note:** Version bump only for package @mikro-orm/mariadb

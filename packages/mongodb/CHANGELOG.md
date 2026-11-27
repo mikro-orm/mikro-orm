@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.20](https://github.com/mikro-orm/mikro-orm/compare/v6.6.19...v6.6.20) (2026-11-27)
+
+
+### Bug Fixes
+
+* **mongo:** store object values with an `$inc` key as they are ([#8851](https://github.com/mikro-orm/mikro-orm/issues/8851)) ([04afe98](https://github.com/mikro-orm/mikro-orm/commit/04afe98d6332c5ddfeb12adfec4edc45da14020d)), closes [#8848](https://github.com/mikro-orm/mikro-orm/issues/8848)
+
+
+
+
+
 ## [6.6.19](https://github.com/mikro-orm/mikro-orm/compare/v6.6.18...v6.6.19) (2026-11-20)
 
 **Note:** Version bump only for package @mikro-orm/mongodb

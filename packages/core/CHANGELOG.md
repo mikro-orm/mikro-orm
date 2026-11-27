@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.6.20](https://github.com/mikro-orm/mikro-orm/compare/v6.6.19...v6.6.20) (2026-11-27)
+
+
+### Bug Fixes
+
+* **core:** convert single-item M:N payloads to references in `em.assign()` with `onlyOwnProperties` ([#8847](https://github.com/mikro-orm/mikro-orm/issues/8847)) ([fae707b](https://github.com/mikro-orm/mikro-orm/commit/fae707b27a0480db770961d63194f7a9d5235602)), closes [#8844](https://github.com/mikro-orm/mikro-orm/issues/8844)
+* **core:** do not interpret unique key values of upsert data as query operators ([#8846](https://github.com/mikro-orm/mikro-orm/issues/8846)) ([c724006](https://github.com/mikro-orm/mikro-orm/commit/c724006d2bc595e98342c98b61535fab5322d947)), closes [#8840](https://github.com/mikro-orm/mikro-orm/issues/8840)
+* **core:** separate a negative parameter from a preceding minus ([#8820](https://github.com/mikro-orm/mikro-orm/issues/8820)) ([3e6c80f](https://github.com/mikro-orm/mikro-orm/commit/3e6c80f9ef238a07be384dcf44fd15ec3fe0c632)), closes [#8819](https://github.com/mikro-orm/mikro-orm/issues/8819)
+* **sql:** reject non-object `having` in find and count options ([#8842](https://github.com/mikro-orm/mikro-orm/issues/8842)) ([626c195](https://github.com/mikro-orm/mikro-orm/commit/626c1950c7167753f415dd2a965e2780fe901f29)), closes [#8839](https://github.com/mikro-orm/mikro-orm/issues/8839)
+
+
+
+
+
 ## [6.6.19](https://github.com/mikro-orm/mikro-orm/compare/v6.6.18...v6.6.19) (2026-11-20)
 
 
