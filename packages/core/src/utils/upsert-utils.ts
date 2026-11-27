@@ -3,6 +3,7 @@ import type { UpsertOptions } from '../drivers/IDatabaseDriver';
 import type { RawQueryFragment } from '../utils/RawQueryFragment';
 import { Utils } from './Utils';
 import { ValidationError } from '../errors';
+import { JsonType } from '../types/JsonType';
 import type { Platform } from '../platforms/Platform';
 
 function expandEmbeddedProperties<T>(prop: EntityProperty<T>, key?: string): (keyof T)[] {
@@ -150,7 +151,8 @@ function getPropertyValue(obj: Dictionary, key: string) {
 /** The condition is built from the upsert data, so its values must never be interpreted as operators. */
 function validateWhereCondition<T>(meta: EntityMetadata<T>, platform: Platform, value: unknown, propName?: string): void {
   if (Array.isArray(value)) {
-    return value.forEach(item => validateWhereCondition(meta, platform, item, propName));
+    // a top-level array is a composite primary key
+    return value.forEach((item, idx) => validateWhereCondition(meta, platform, item, propName ?? meta.primaryKeys[idx]));
   }
 
   if (!Utils.isPlainObject(value)) {
@@ -206,4 +208,13 @@ export function getWhereCondition<T extends object>(
   validateWhereCondition(meta, platform, where);
 
   return { where, propIndex };
+}
+
+/**
+ * A plain object in a condition on a JSON property targets its keys, the upserted value needs to be compared as a whole.
+ * @internal
+ */
+export function getReloadCondition<T>(meta: EntityMetadata<T>, key: string, value: unknown): unknown {
+  const isJson = meta.properties[key as EntityKey<T>]?.customType instanceof JsonType;
+  return isJson && Utils.isPlainObject(value) ? { $eq: value } : value;
 }
