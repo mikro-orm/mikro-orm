@@ -859,8 +859,18 @@ export class QueryBuilderHelper {
     }
 
     if (this.#subQueries[key as string]) {
+      const column = `(${this.#subQueries[key as string]})`;
+
+      if (['$in', '$nin'].includes(op) && Array.isArray(value[op]) && value[op].includes(null)) {
+        const sql = this.getNullableListCondition(column, op, value[op], values => {
+          return `${column} ${replacement} ${this.getValueReplacement(fields, values, params, op)}`;
+        });
+        parts.push(sql);
+        return { sql: parts.join(' and '), params };
+      }
+
       const val = this.getValueReplacement(fields, value[op], params, op);
-      parts.push(`(${this.#subQueries[key as string]}) ${replacement} ${val}`);
+      parts.push(`${column} ${replacement} ${val}`);
       return { sql: parts.join(' and '), params };
     }
 
@@ -925,6 +935,18 @@ export class QueryBuilderHelper {
         params.push(
           prop.customType.convertToDatabaseValue(opValue, this.#platform, { fromQuery: true, key: op, mode: 'query' }),
         );
+      } else if (
+        ['$in', '$nin'].includes(op) &&
+        Array.isArray(opValue) &&
+        opValue.includes(null) &&
+        !opValue.some(Array.isArray) &&
+        (prop?.fieldNames.length ?? 1) === 1
+      ) {
+        const column = this.#platform.quoteIdentifier(this.mapper(key, type, opValue, null));
+        const sql = this.getNullableListCondition(column, op, opValue, values => {
+          return `${column} ${replacement} ${this.getValueReplacement(fields, values, params, op, prop)}`;
+        });
+        parts.push(sql);
       } else {
         const mappedKey = this.mapper(key, type, opValue, null);
         const val = this.getValueReplacement(fields, opValue, params, op, prop, rowValues);
@@ -983,6 +1005,24 @@ export class QueryBuilderHelper {
     params.push(value);
 
     return '?';
+  }
+
+  /** `in` and `not in` never match `null`, so a `null` in the list is checked with `is null`, like `$eq: null`. */
+  private getNullableListCondition(
+    column: string,
+    op: string,
+    values: unknown[],
+    buildList: (values: unknown[]) => string,
+  ): string {
+    const nonNull = values.filter(v => v !== null);
+    const list = nonNull.length > 0 ? buildList(nonNull) : undefined;
+
+    if (op === '$in') {
+      return list ? `(${list} or ${column} is null)` : `${column} is null`;
+    }
+
+    // explicit, as `not in` alone yields null instead of false for null rows, which flips under `$not`
+    return list ? `(${list} and ${column} is not null)` : `${column} is not null`;
   }
 
   private getOperatorReplacement(op: string, value: Dictionary): string {
@@ -1427,6 +1467,12 @@ export class QueryBuilderHelper {
           throw new ValidationError(`Invalid query: ${op} operator expects an array value`);
         } else if (val.length === 0) {
           parts.push(`1 = ${op === '$in' ? 0 : 1}`);
+        } else if (val.includes(null)) {
+          const sql = this.getNullableListCondition(lhs, op, val, values => {
+            values.forEach(v => params.push(v));
+            return `${lhs} ${replacement} (${values.map(() => '?').join(', ')})`;
+          });
+          parts.push(sql);
         } else {
           val.forEach((v: unknown) => params.push(v));
           parts.push(`${lhs} ${replacement} (${val.map(() => '?').join(', ')})`);
