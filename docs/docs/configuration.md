@@ -262,6 +262,8 @@ Following table shows default client connection strings:
 | `mariadb`    | `mysql://root@127.0.0.1:3306`          |
 | `postgresql` | `postgresql://postgres@127.0.0.1:5432` |
 
+The `clientUrl` is split into the separate connection options rather than passed to the database client as is, so only some of its query parameters are used: `schema`, the TLS parameters supported by `pg` (e.g. `sslmode`) in PostgreSQL, and `ssl` in MySQL and MariaDB. Use `driverOptions` for anything else.
+
 ### Read Replicas
 
 To set up read replicas, you can use `replicas` option. You can provide only those parts of the `ConnectionOptions` interface, they will be used to override the `master` connection options.

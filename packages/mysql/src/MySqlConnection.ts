@@ -111,6 +111,17 @@ export class MySqlConnection extends AbstractSqlConnection {
       ret.timezone = this.config.get('timezone');
     }
 
+    // `clientUrl` is split into separate options, so the `ssl` param from its query string needs to be mapped too
+    const ssl = new URL(this.options.clientUrl ?? this.config.get('clientUrl')!).searchParams.get('ssl');
+
+    if (ssl != null) {
+      try {
+        ret.ssl = JSON.parse(ssl);
+      } catch {
+        ret.ssl = ssl;
+      }
+    }
+
     ret.supportBigNumbers = true;
     ret.dateStrings = true;
     // mysql2 3.23+ parses mariadb JSON columns via extended metadata, but the mariadb
