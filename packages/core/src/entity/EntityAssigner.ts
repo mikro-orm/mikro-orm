@@ -89,11 +89,11 @@ export class EntityAssigner {
         return;
       }
 
-      if ([ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
+      if (prop.kind === ReferenceKind.MANY_TO_MANY) {
         if (!prop.owner) {
           return;
-        } else if (value?.map) {
-          value = value.map((v: any) => Utils.extractPK(v, prop.targetMeta));
+        } else if (Utils.isCollection(value)) {
+          value = value.getItems();
         }
       }
 
@@ -220,6 +220,10 @@ export class EntityAssigner {
   private static assignCollection<T extends object, U extends object = AnyEntity, C extends boolean = false>(entity: T, collection: Collection<U>, value: unknown, prop: EntityProperty, em: EntityManager | undefined, options: AssignOptions<C>): void {
     const invalid: any[] = [];
     const items = Utils.asArray(value).map((item: any, idx) => {
+      if (options.onlyOwnProperties && (Array.isArray(value) ? !Array.isArray(item) : Utils.isPlainObject(item))) {
+        item = Utils.extractPK(item, prop.targetMeta);
+      }
+
       // try to propagate missing owning side reference to the payload first
       const prop2 = prop.targetMeta?.properties[prop.mappedBy];
 
@@ -299,7 +303,7 @@ export class EntityAssigner {
       return item;
     }
 
-    if (Utils.isPrimaryKey(item) && EntityAssigner.validateEM(em)) {
+    if (Utils.isPrimaryKey(item, prop.targetMeta!.compositePK) && EntityAssigner.validateEM(em)) {
       return em.getReference(prop.type, item, options) as T;
     }
 
