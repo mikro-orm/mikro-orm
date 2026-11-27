@@ -43,9 +43,9 @@ There is also shortcut for `$in` - simply provide array as value, and it will be
 const res = await orm.em.find(Author, { favouriteBook: [1, 2, 7] });
 ```
 
-On array properties (`type: 'string[]'` and other `ArrayType` columns), `$in` and `$nin` work like in MongoDB. A list of arrays matches whole arrays, so `{ tags: { $in: [['a', 'b'], ['c']] } }` finds rows whose `tags` equal `['a', 'b']` or `['c']`. A flat list matches any of the elements, so `{ tags: ['a', 'b'] }` finds rows whose `tags` contain `'a'` or `'b'`. SQL drivers support the flat list only on PostgreSQL (it maps to the `&&` operator) and throw elsewhere. Use `$eq` to match an exact array.
-
 A `null` in the `$in` list also matches rows where the value is `null`, and a `null` in the `$nin` list excludes them.
+
+On array properties (`type: 'string[]'` and other `ArrayType` columns), `$in` and `$nin` work like in MongoDB. A list of arrays matches whole arrays, so `{ tags: { $in: [['a', 'b'], ['c']] } }` finds rows whose `tags` equal `['a', 'b']` or `['c']`. A flat list matches any of the elements, so `{ tags: ['a', 'b'] }` finds rows whose `tags` contain `'a'` or `'b'`. SQL drivers support the flat list only on PostgreSQL (it maps to the `&&` operator) and throw elsewhere. Use `$eq` to match an exact array.
 
 For primary key lookup, you can provide the array directly to `em.find()`:
 
