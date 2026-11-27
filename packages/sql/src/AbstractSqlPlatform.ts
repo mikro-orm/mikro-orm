@@ -138,14 +138,15 @@ export abstract class AbstractSqlPlatform extends Platform {
   }
 
   /**
-   * Quotes a name and its optional schema as separate identifiers, so a dot inside either is not read as a qualifier.
+   * Quotes a name and its optional schema separately, so a dot inside the name is not read as a qualifier.
+   * A dot in the schema separates the parts of a qualifier (`database.schema`).
    * @internal
    */
   quoteQualifiedName(name: string, schema?: string): string {
     const [open, close] = this.quoteIdentifier('');
-    const quote = (part: string) => open + part.replaceAll(close, close + close) + close;
+    const quoted = open + name.replaceAll(close, close + close) + close;
 
-    return schema ? `${quote(schema)}.${quote(name)}` : quote(name);
+    return schema ? `${this.quoteIdentifier(schema).replaceAll('\\?', '?')}.${quoted}` : quoted;
   }
 
   override quoteValue(value: any): string {
