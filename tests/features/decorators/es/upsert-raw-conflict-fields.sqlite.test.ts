@@ -1,4 +1,4 @@
-import { MikroORM, raw } from '@mikro-orm/sqlite';
+import { MikroORM, raw, ValidationError } from '@mikro-orm/sqlite';
 import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/es';
 
 @Entity()
@@ -25,10 +25,10 @@ beforeAll(async () => {
 
 afterAll(() => orm.close(true));
 
-test('em.upsert() with a raw conflict target returns the existing row of an ignored conflict', async () => {
+test('em.upsert() with a raw conflict target rejects an ignored conflict with a row that differs from the data', async () => {
   await orm.em.insert(Item, { id: 1, code: 'a', name: 'old' });
 
-  const item = await orm.em.fork().upsert(
+  const upsert = orm.em.fork().upsert(
     Item,
     { code: 'a', name: 'new' },
     {
@@ -37,5 +37,5 @@ test('em.upsert() with a raw conflict target returns the existing row of an igno
     },
   );
 
-  expect(item).toMatchObject({ id: 1, code: 'a', name: 'old' });
+  await expect(upsert).rejects.toThrow(ValidationError);
 });

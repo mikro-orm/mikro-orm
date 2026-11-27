@@ -2,7 +2,6 @@ import { type Configuration } from './utils/Configuration.js';
 import {
   getOnConflictReturningFields,
   getOnCreateGeneratedFields,
-  getUniqueConditions,
   getWhereCondition,
   resetUntouchedCollections,
 } from './utils/upsert-utils.js';
@@ -1568,10 +1567,6 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       where,
       this.getPlatform(),
     ).where;
-    // a raw conflict target cannot be introspected, the row is reloaded by any of its known unique values instead
-    const reloadWhere = isRaw(options.onConflictFields)
-      ? getUniqueConditions(meta, data as EntityData<Entity>, this.getPlatform())
-      : [];
     data = QueryHelper.processObjectParams(data);
     validateParams(data, 'insert data');
 
@@ -1629,9 +1624,9 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
           }
         }
       } else {
-        // matching all the data would miss an existing row that differs in the other columns
-        const pk = helper(entity).hasPrimaryKey() ? Utils.getPrimaryKeyCond(entity, meta.primaryKeys) : null;
-        Object.assign(where, reloadWhere.length > 0 ? { $or: reloadWhere } : (pk ?? data));
+        Object.keys(data).forEach(prop => {
+          where[prop as EntityKey] = data[prop as EntityKey];
+        });
 
         if (meta.simplePK && ret.insertId != null) {
           where[meta.primaryKeys[0] as EntityKey] = ret.insertId as never;
@@ -1651,24 +1646,19 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         );
       }
 
-      // the unique values of a raw conflict target can belong to different rows, the conflicting one is not known then
-      const ambiguous = reloadWhere.length > 1;
-      const [data2, other] = await em.withSessionContext(options.ctx ?? em.#transactionContext, async ctx => {
-        const findOptions = {
+      const data2 = await em.withSessionContext(options.ctx ?? em.#transactionContext, ctx =>
+        this.driver.findOne(meta.class, where, {
           fields: returning.concat(...((options.onConflictMergeFields ?? []) as string[])) as any[],
           ctx,
           convertCustomTypes: true,
           connectionType: 'write',
           schema: options.schema,
-        } as const;
+        }),
+      );
 
-        return ambiguous
-          ? this.driver.find(meta.class, where, { ...findOptions, limit: 2 })
-          : [await this.driver.findOne(meta.class, where, findOptions)];
-      });
-
-      if (other) {
-        throw ValidationError.ambiguousUpsertedRow(meta.class, where);
+      // a raw conflict target does not say which row conflicted, guessing could hydrate an unrelated one
+      if (!data2 && isRaw(options.onConflictFields)) {
+        throw ValidationError.cannotIdentifyUpsertedRow(meta.class);
       }
 
       if (!data2) {

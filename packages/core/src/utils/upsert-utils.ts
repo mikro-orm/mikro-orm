@@ -7,7 +7,6 @@ import { ReferenceKind } from '../enums.js';
 import { Collection } from '../entity/Collection.js';
 import { helper } from '../entity/wrap.js';
 import type { Platform } from '../platforms/Platform.js';
-import { JsonType } from '../types/JsonType.js';
 
 function expandEmbeddedProperties<T>(prop: EntityProperty<T>, key?: string): (keyof T)[] {
   if (prop.object) {
@@ -285,35 +284,6 @@ export function getWhereCondition<T extends object>(
   validateWhereCondition(meta, platform, where);
 
   return { where, propIndex };
-}
-
-/**
- * Conditions for every unique key the data has a value for, used when the conflict target is not known.
- * @internal
- */
-export function getUniqueConditions<T extends object>(
-  meta: EntityMetadata<T>,
-  data: EntityData<T>,
-  platform: Platform,
-): FilterQuery<T>[] {
-  const keys: EntityKey<T>[][] = [meta.primaryKeys];
-
-  for (let current: EntityMetadata<T> | undefined = meta; current; current = current.tptParent) {
-    current.props.filter(p => p.unique).forEach(p => keys.push([p.name]));
-    // a partial index does not make its values unique across the whole table
-    current.uniques.filter(u => !u.where).forEach(u => keys.push(Utils.asArray<EntityKey<T>>(u.properties)));
-  }
-
-  // a JSON value would be matched by its keys, not as a whole
-  const usable = (p: EntityKey<T>) => data[p] != null && !(meta.properties[p].customType instanceof JsonType);
-
-  return keys
-    .filter(props => props.length > 0 && props.every(usable))
-    .map(props => {
-      const where = Object.fromEntries(props.map(p => [p, data[p]])) as FilterQuery<T>;
-      validateWhereCondition(meta, platform, where);
-      return where;
-    });
 }
 
 /** @internal */
