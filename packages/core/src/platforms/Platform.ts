@@ -590,7 +590,7 @@ export abstract class Platform {
 
   protected getJsonValueType(value: unknown): string {
     if (Array.isArray(value)) {
-      return typeof value[0];
+      return typeof value.find(v => v !== null);
     }
 
     if (Utils.isPlainObject(value) && Object.keys(value).every(k => Utils.isOperator(k))) {
