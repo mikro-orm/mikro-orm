@@ -482,9 +482,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
       return row;
     });
-    data = data.map(row => {
+    data = data.map((row, idx) => {
       row = { ...row };
-      this.handleVersionProperty(entityName, row, true);
+      // a row with an empty filter gets inserted, see `nativeUpdate`
+      this.handleVersionProperty(entityName, row, !(options.upsert && Utils.isEmpty(where[idx])));
       return this.renameFields(entityName, row);
     });
     options = { ...options };
