@@ -738,7 +738,9 @@ export class EntityFactory {
       return undefined;
     }
 
-    const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta, this.#platform, options.convertCustomTypes);
+    // a joined polymorphic row carries its target class in an own `constructor` property, so it would pass for a PK value
+    const row = Object.hasOwn(data, 'constructor') ? { ...data } : data;
+    const pks = Utils.getOrderedPrimaryKeys<T>(row as Dictionary, meta, this.#platform, options.convertCustomTypes);
 
     return this.unitOfWork.getById<T>(meta.class, pks, schema);
   }
