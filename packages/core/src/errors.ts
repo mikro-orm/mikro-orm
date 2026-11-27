@@ -245,7 +245,6 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     );
   }
 
-  /* v8 ignore next */
   static invalidQueryCondition(cond: unknown): ValidationError {
     return new ValidationError(`Invalid query condition: ${inspect(cond, { depth: 5 })}`);
   }
