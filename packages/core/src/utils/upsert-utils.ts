@@ -4,7 +4,6 @@ import { isRaw, type Raw } from '../utils/RawQueryFragment.js';
 import { Utils } from './Utils.js';
 import { ValidationError } from '../errors.js';
 import { ReferenceKind } from '../enums.js';
-import { JsonType } from '../types/JsonType.js';
 import { Collection } from '../entity/Collection.js';
 import { helper } from '../entity/wrap.js';
 import type { Platform } from '../platforms/Platform.js';
@@ -285,15 +284,6 @@ export function getWhereCondition<T extends object>(
   validateWhereCondition(meta, platform, where);
 
   return { where, propIndex };
-}
-
-/**
- * A plain object in a condition on a JSON property targets its keys, the upserted value needs to be compared as a whole.
- * @internal
- */
-export function getReloadCondition<T>(meta: EntityMetadata<T>, key: string, value: unknown): unknown {
-  const isJson = meta.properties[key as EntityKey<T>]?.customType instanceof JsonType;
-  return isJson && Utils.isPlainObject(value) ? { $eq: value } : value;
 }
 
 /** @internal */
