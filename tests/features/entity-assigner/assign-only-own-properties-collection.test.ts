@@ -147,9 +147,28 @@ test.each([[true], [false]])(
   },
 );
 
-test.each(shapes)('onlyOwnProperties rejects a new entity without a primary key (%s)', async (_, wrap) => {
+test('onlyOwnProperties rejects a new entity without a primary key in an array', async () => {
   const book = await loadBook();
   expect(() => {
-    orm.em.assign(book, { tags: wrap(orm.em.create(Tag, { name: 'new' })) as any }, { onlyOwnProperties: true });
+    orm.em.assign(book, { tags: [orm.em.create(Tag, { name: 'new' })] }, { onlyOwnProperties: true });
   }).toThrow(ValidationError);
+});
+
+test('onlyOwnProperties keeps a new entity passed as a single item', async () => {
+  const book = await loadBook();
+  const withPk = new Tag();
+  withPk.id = 5;
+  withPk.name = 'with pk';
+  orm.em.assign(book, { tags: orm.em.create(Tag, { name: 'new' }) }, { onlyOwnProperties: true });
+  orm.em.assign(book, { tags: withPk }, { onlyOwnProperties: true });
+  await orm.em.flush();
+  orm.em.clear();
+
+  const reloaded = await loadBook();
+  expect(
+    reloaded.tags
+      .getItems()
+      .map(t => t.name)
+      .sort(),
+  ).toEqual(['new', 'with pk']);
 });

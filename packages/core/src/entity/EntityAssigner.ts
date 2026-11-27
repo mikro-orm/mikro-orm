@@ -295,7 +295,7 @@ export class EntityAssigner {
   ): void {
     const invalid: any[] = [];
     const items = Utils.asArray(value).map((item: any, idx) => {
-      if (options.onlyOwnProperties && !Array.isArray(item)) {
+      if (options.onlyOwnProperties && (Array.isArray(value) ? !Array.isArray(item) : Utils.isPlainObject(item))) {
         item = Utils.extractPK(item, prop.targetMeta);
       }
 
