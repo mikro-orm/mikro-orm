@@ -12,6 +12,20 @@ class Tag {
 }
 
 @Entity()
+class Label {
+
+  @PrimaryKey()
+  tenant!: number;
+
+  @PrimaryKey()
+  code!: string;
+
+  @Property()
+  name!: string;
+
+}
+
+@Entity()
 class Book {
 
   @PrimaryKey()
@@ -23,13 +37,16 @@ class Book {
   @ManyToMany(() => Tag)
   tags = new Collection<Tag>(this);
 
+  @ManyToMany(() => Label)
+  labels = new Collection<Label>(this);
+
 }
 
 let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [Book, Tag],
+    entities: [Book, Tag, Label],
     dbName: ':memory:',
   });
   await orm.schema.createSchema();
@@ -42,6 +59,7 @@ beforeEach(async () => {
   orm.em.create(Book, { id: 1, title: 'b' });
   orm.em.create(Tag, { id: 1, name: 't1' });
   orm.em.create(Tag, { id: 2, name: 't2' });
+  orm.em.create(Label, { tenant: 1, code: 'a', name: 'l1' });
   await orm.em.flush();
   orm.em.clear();
 });
@@ -52,7 +70,7 @@ const shapes: [string, (item: object) => unknown][] = [
 ];
 
 async function loadBook() {
-  return orm.em.findOneOrFail(Book, 1, { populate: ['tags'] });
+  return orm.em.findOneOrFail(Book, 1, { populate: ['tags', 'labels'] });
 }
 
 test.each(shapes)('onlyOwnProperties converts owning M:N payload to a reference (%s)', async (_, wrap) => {
@@ -81,4 +99,68 @@ test('onlyOwnProperties appends a single item and replaces with an array', async
   expect(book.tags.getIdentifiers()).toEqual([1, 2]);
   orm.em.assign(book, { tags: [orm.em.getReference(Tag, 2)] }, { onlyOwnProperties: true });
   expect(book.tags.getIdentifiers()).toEqual([2]);
+});
+
+test.each(shapes)(
+  'onlyOwnProperties converts owning M:N payload with a composite primary key (%s)',
+  async (_, wrap) => {
+    const book = await loadBook();
+    orm.em.assign(
+      book,
+      { labels: wrap({ tenant: 1, code: 'a', name: 'renamed' }) as any },
+      { onlyOwnProperties: true },
+    );
+    await orm.em.flush();
+    orm.em.clear();
+
+    const reloaded = await loadBook();
+    expect(reloaded.labels.getItems().map(l => l.name)).toEqual(['l1']);
+  },
+);
+
+test.each(shapes)(
+  'onlyOwnProperties rejects composite M:N payload with incomplete primary key (%s)',
+  async (_, wrap) => {
+    const book = await loadBook();
+    expect(() => {
+      orm.em.assign(book, { labels: wrap({ tenant: 1, name: 'new' }) as any }, { onlyOwnProperties: true });
+    }).toThrow(/Invalid collection values provided/);
+  },
+);
+
+test.each([[true], [false]])(
+  'composite primary key tuples are accepted as M:N items (onlyOwnProperties: %s)',
+  async onlyOwnProperties => {
+    const book = await loadBook();
+    orm.em.assign(book, { labels: [[1, 'a']] as any }, { onlyOwnProperties });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const reloaded = await loadBook();
+    expect(reloaded.labels.getItems().map(l => l.name)).toEqual(['l1']);
+  },
+);
+
+test.each([[true], [false]])(
+  'tuples are rejected as M:N items of a single primary key target (onlyOwnProperties: %s)',
+  async onlyOwnProperties => {
+    const book = await loadBook();
+    expect(() => {
+      orm.em.assign(book, { tags: [[1, 2]] as any }, { onlyOwnProperties });
+    }).toThrow(/Invalid collection values provided/);
+  },
+);
+
+test.each(shapes)('onlyOwnProperties accepts a managed entity with a composite primary key (%s)', async (_, wrap) => {
+  const book = await loadBook();
+  const label = await orm.em.findOneOrFail(Label, { tenant: 1, code: 'a' });
+  orm.em.assign(book, { labels: wrap(label) as any }, { onlyOwnProperties: true });
+  expect(book.labels.getItems()).toEqual([label]);
+});
+
+test.each(shapes)('onlyOwnProperties rejects a new entity without a primary key (%s)', async (_, wrap) => {
+  const book = await loadBook();
+  expect(() => {
+    orm.em.assign(book, { tags: wrap(orm.em.create(Tag, { name: 'new' })) as any }, { onlyOwnProperties: true });
+  }).toThrow(/Invalid collection values provided/);
 });

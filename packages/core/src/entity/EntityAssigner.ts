@@ -216,7 +216,7 @@ export class EntityAssigner {
   private static assignCollection<T extends object, U extends object = AnyEntity, C extends boolean = false>(entity: T, collection: Collection<U>, value: unknown, prop: EntityProperty, em: EntityManager | undefined, options: AssignOptions<C>): void {
     const invalid: any[] = [];
     const items = Utils.asArray(value).map((item: any, idx) => {
-      if (options.onlyOwnProperties) {
+      if (options.onlyOwnProperties && !Array.isArray(item)) {
         item = Utils.extractPK(item, prop.targetMeta);
       }
 
@@ -299,7 +299,7 @@ export class EntityAssigner {
       return item;
     }
 
-    if (Utils.isPrimaryKey(item) && EntityAssigner.validateEM(em)) {
+    if (Utils.isPrimaryKey(item, prop.targetMeta!.compositePK) && EntityAssigner.validateEM(em)) {
       return em.getReference(prop.type, item, options) as T;
     }
 
