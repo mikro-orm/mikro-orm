@@ -1,4 +1,5 @@
 import { defineEntity, MikroORM, p, raw, sql } from '@mikro-orm/sqlite';
+import { MikroORM as PostgreSqlMikroORM } from '@mikro-orm/postgresql';
 
 const Phone = defineEntity({
   name: 'Phone',
@@ -102,4 +103,34 @@ test('$in and $nin with null in embedded array queries', async () => {
   expect(await names({ phones: { type: { $nin: ['home', null] } } })).toEqual(['a3']);
   expect(await names({ phones: { type: { $nin: [null] } } })).toEqual(['a1', 'a3']);
   expect(await names({ phones: { $not: { type: { $nin: ['home', null] } } } })).toEqual(['a1', 'a2']);
+});
+
+test('$in and $nin with null first on a json property', async () => {
+  const Item = defineEntity({
+    name: 'Item',
+    properties: {
+      id: p.integer().primary(),
+      name: p.string(),
+      meta: p.json<{ n: number | null }>(),
+    },
+  });
+  const pg = await PostgreSqlMikroORM.init({ dbName: 'mikro_orm_test_gh_8828', entities: [Item] });
+  await pg.schema.refresh();
+  pg.em.create(Item, { name: 'i1', meta: { n: 1 } });
+  pg.em.create(Item, { name: 'i2', meta: { n: null } });
+  pg.em.create(Item, { name: 'i3', meta: { n: 3 } });
+  await pg.em.flush();
+
+  const items = async (where: any) =>
+    (await pg.em.fork().find(Item, where, { orderBy: { id: 'asc' } })).map(i => i.name);
+
+  try {
+    expect(await items({ meta: { n: { $in: [null, 1] } } })).toEqual(['i1', 'i2']);
+    expect(await items({ meta: { n: { $nin: [null, 1] } } })).toEqual(['i3']);
+    expect(await items({ meta: { n: { $in: [null] } } })).toEqual(['i2']);
+    expect(await items({ meta: { n: { $nin: [null] } } })).toEqual(['i1', 'i3']);
+  } finally {
+    await pg.schema.drop({ dropDb: true });
+    await pg.close(true);
+  }
 });
