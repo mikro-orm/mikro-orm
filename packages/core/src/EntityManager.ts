@@ -2,6 +2,7 @@ import { type Configuration } from './utils/Configuration.js';
 import {
   getOnConflictReturningFields,
   getOnCreateGeneratedFields,
+  getReloadCondition,
   getWhereCondition,
   resetUntouchedCollections,
 } from './utils/upsert-utils.js';
@@ -1618,14 +1619,14 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       if (Array.isArray(uniqueFields)) {
         for (const prop of uniqueFields) {
           if (data[prop as EntityKey] != null) {
-            where[prop as EntityKey] = data[prop as EntityKey];
+            where[prop as EntityKey] = getReloadCondition(meta, prop as string, data[prop as EntityKey]) as never;
           } else if (meta.primaryKeys.includes(prop as EntityKey) && ret.insertId != null) {
             where[prop as EntityKey] = ret.insertId as never;
           }
         }
       } else {
         Object.keys(data).forEach(prop => {
-          where[prop as EntityKey] = data[prop as EntityKey];
+          where[prop as EntityKey] = getReloadCondition(meta, prop, data[prop as EntityKey]) as never;
         });
 
         if (meta.simplePK && ret.insertId != null) {
@@ -2004,7 +2005,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
         const fields = insertedPKs[idx] ? [] : getRowUniqueFields(allWhere[idx]);
         const props = Array.isArray(fields) ? fields : Object.keys(item);
         props.forEach(prop => {
-          where.$or[idx][prop as string] = item[prop as EntityKey];
+          where.$or[idx][prop as string] = getReloadCondition(meta, prop as string, item[prop as EntityKey]);
         });
       });
 

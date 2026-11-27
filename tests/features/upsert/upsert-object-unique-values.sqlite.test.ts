@@ -18,13 +18,25 @@ class User {
   settings?: Record<string, unknown>;
 }
 
+@Entity()
+class Pair {
+  @PrimaryKey()
+  a!: number;
+
+  @PrimaryKey()
+  b!: number;
+
+  @Property()
+  name!: string;
+}
+
 describe('upsert with object values in the unique keys (sqlite)', () => {
   let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       metadataProvider: ReflectMetadataProvider,
-      entities: [User],
+      entities: [User, Pair],
       dbName: ':memory:',
     });
     await orm.schema.create();
@@ -80,5 +92,28 @@ describe('upsert with object values in the unique keys (sqlite)', () => {
         .fork()
         .upsert(User, { email: 'e@e', password: 'e', settings: { $in: ['a'] } }, { onConflictFields: ['settings'] }),
     ).rejects.toThrow(ValidationError);
+  });
+  test('JSON unique values are read back as whole values', async () => {
+    await orm.em.insert(User, { email: 'b@b', password: 'b', settings: { a: 1, b: 2 } });
+    const user = await orm.em
+      .fork()
+      .upsert(
+        User,
+        { email: 'c@c', password: 'c', settings: { a: 1 } },
+        { onConflictFields: ['settings'], onConflictAction: 'ignore' },
+      );
+    expect(user.email).toBe('c@c');
+
+    const [user2] = await orm.em.fork().upsertMany(User, [{ email: 'd@d', password: 'd', settings: { b: 2 } }], {
+      onConflictFields: ['settings'],
+      onConflictAction: 'ignore',
+    });
+    expect(user2.email).toBe('d@d');
+  });
+
+  test('the error names the composite primary key property', async () => {
+    await expect(orm.em.fork().upsert(Pair, { a: 1, b: { $ne: null } as any, name: 'p' })).rejects.toThrow(
+      `Invalid value of Pair.b, operators are not allowed in the unique keys of upsert data: { '$ne': null }`,
+    );
   });
 });
