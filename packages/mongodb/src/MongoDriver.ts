@@ -908,8 +908,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     if (versionProperty.runtimeType === 'Date') {
       data[versionProperty.name as EntityKey<T>] ??= new Date();
-    } else {
-      data[versionProperty.name as EntityKey<T>] ??= update ? { $inc: 1 } : 1;
+    } else if (!update) {
+      data[versionProperty.name as EntityKey<T>] ??= 1;
+    } else if (data[versionProperty.name as EntityKey<T>] == null) {
+      delete data[versionProperty.name as EntityKey<T>];
+      (data as Dictionary).$inc = { ...(data as Dictionary).$inc, [versionProperty.fieldNames[0]]: 1 };
     }
   }
 

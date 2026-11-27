@@ -627,19 +627,12 @@ export class MongoConnection extends Connection {
       }
     });
     const $unset: { [K: PropertyKey]: unknown } = {};
-    const $inc: { [K: PropertyKey]: number } = {};
 
     for (const k of Utils.keys(row)) {
       const item = row[k] as Dictionary;
 
       if (typeof item === 'undefined') {
         $unset[k] = '';
-        delete row[k];
-        continue;
-      }
-
-      if (Utils.isPlainObject(item) && '$inc' in item) {
-        $inc[k] = item.$inc;
         delete row[k];
       }
     }
@@ -673,10 +666,6 @@ export class MongoConnection extends Connection {
 
     if (Utils.hasObjectKeys($unset)) {
       doc.$unset = $unset;
-    }
-
-    if (Utils.hasObjectKeys($inc)) {
-      doc.$inc = $inc;
     }
 
     if (!Utils.hasObjectKeys(doc.$set)) {
