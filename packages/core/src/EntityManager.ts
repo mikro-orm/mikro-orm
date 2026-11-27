@@ -983,7 +983,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    where = getWhereCondition(meta, options.onConflictFields, data as EntityData<Entity>, where).where;
+    where = getWhereCondition(meta, options.onConflictFields, data as EntityData<Entity>, where, this.getPlatform()).where;
     data = QueryHelper.processObjectParams(data);
     em.validator.validateParams(data, 'insert data');
 
@@ -1145,7 +1145,7 @@ export class EntityManager<Driver extends IDatabaseDriver = IDatabaseDriver> {
 
       const unique = options.onConflictFields as string[] ?? meta.props.filter(p => p.unique).map(p => p.name);
       propIndex = !Utils.isRawSql(unique) && unique.findIndex(p => (data as Dictionary)[p] ?? (data as Dictionary)[p.substring(0, p.indexOf('.'))] != null);
-      const tmp = getWhereCondition(meta, options.onConflictFields, row, where);
+      const tmp = getWhereCondition(meta, options.onConflictFields, row, where, this.getPlatform());
       propIndex = tmp.propIndex;
       where = QueryHelper.processWhere({
         where: tmp.where,
