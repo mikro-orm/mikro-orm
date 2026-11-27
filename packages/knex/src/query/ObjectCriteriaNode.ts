@@ -70,10 +70,18 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
             sub.where({ [this.key!]: payload });
           }
 
+          // compiled lazily in where conditions, so filters can still be applied to its joins
+          const lazy = !options?.matchPopulateJoins;
+
+          if (lazy) {
+            sub.scheduleFilterCheck(`${parentMeta.className}.${this.key}`);
+            qb.scheduleSubQueryFilterCheck(sub, ownerAlias);
+          }
+
           const op = key === '$some' ? '$in' : '$nin';
 
           $and.push({
-            [Utils.getPrimaryKeyHash(primaryKeys)]: { [op]: (sub as Dictionary).getKnexQuery() },
+            [Utils.getPrimaryKeyHash(primaryKeys)]: { [op]: lazy ? sub : (sub as Dictionary).getKnexQuery() },
           });
         }
 

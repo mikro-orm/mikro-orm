@@ -182,6 +182,8 @@ export interface IQueryBuilder<T> {
   unsetFlag(flag: QueryFlag): this;
   hasFlag(flag: QueryFlag): boolean;
   scheduleFilterCheck(path: string): void;
+  /** @internal */
+  scheduleSubQueryFilterCheck(qb: IQueryBuilder<any>, ownerAlias: string): void;
   withSchema(schema: string): this;
 }
 

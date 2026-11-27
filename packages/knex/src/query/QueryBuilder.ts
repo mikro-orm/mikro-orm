@@ -45,7 +45,7 @@ import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { type Alias, QueryBuilderHelper } from './QueryBuilderHelper';
 import type { SqlEntityManager } from '../SqlEntityManager';
 import { CriteriaNodeFactory } from './CriteriaNodeFactory';
-import type { Field, ICriteriaNodeProcessOptions, JoinOptions } from '../typings';
+import type { Field, ICriteriaNodeProcessOptions, IQueryBuilder, JoinOptions } from '../typings';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 
 export interface ExecuteOptions {
@@ -485,6 +485,8 @@ export class QueryBuilder<
   }
 
   private readonly autoJoinedPaths: string[] = [];
+  // shared with clones, while the sub-queries in `_cond` get cloned, so filters need to be applied before cloning
+  private readonly filteredSubQueries: { qb: QueryBuilder<any>; ownerAlias: string }[] = [];
 
   /**
    * @internal
@@ -496,7 +498,28 @@ export class QueryBuilder<
   /**
    * @internal
    */
+  scheduleSubQueryFilterCheck(qb: IQueryBuilder<any>, ownerAlias: string): void {
+    this.filteredSubQueries.push({ qb: qb as QueryBuilder<any>, ownerAlias });
+  }
+
+  /**
+   * @internal
+   */
   async applyJoinedFilters(em: EntityManager, filterOptions: FilterOptions | undefined): Promise<void> {
+    const joins = Object.values(this._joins);
+
+    for (const sub of this.filteredSubQueries) {
+      // the sub-query inherits the overrides of the relations it is nested under
+      const chain: JoinOptions[] = [];
+
+      for (let join = joins.find(j => j.alias === sub.ownerAlias); join; join = joins.find(j => j.alias === join!.ownerAlias)) {
+        chain.unshift(join);
+      }
+
+      const filters = chain.reduce((acc, j) => QueryHelper.mergePropertyFilters(j.prop.filters, acc), filterOptions);
+      await sub.qb.applyJoinedFilters(em, filters);
+    }
+
     for (const path of this.autoJoinedPaths) {
       const join = this.getJoinForPath(path)!;
 
