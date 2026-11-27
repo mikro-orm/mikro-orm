@@ -1,4 +1,5 @@
 import { TypeOverrides } from 'pg';
+import { parse } from 'pg-connection-string';
 import array from 'postgres-array';
 import { AbstractSqlConnection, type Knex, PostgreSqlKnexDialect } from '@mikro-orm/knex';
 
@@ -31,6 +32,13 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
       1187, // interval[]
     ].forEach(oid => types.setTypeParser(oid, str => array.parse(str)));
     ret.types = types as any;
+
+    // `clientUrl` is split into separate options, so the TLS params from its query string need to be mapped too
+    const { ssl } = parse(this.options.clientUrl ?? this.config.getClientUrl());
+
+    if (ssl !== undefined) {
+      ret.ssl = ssl as Knex.PgConnectionConfig['ssl'];
+    }
 
     return ret;
   }
