@@ -57,6 +57,7 @@ import {
   type UpsertManyOptions,
   type UpsertOptions,
   Utils,
+  ValidationError,
   getLoadingStrategy,
 } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection';
@@ -110,6 +111,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     if (Utils.isPrimaryKey(where, meta.compositePK)) {
       where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as ObjectQuery<T>;
+    }
+
+    if (options.having != null && typeof options.having !== 'object') {
+      throw ValidationError.invalidQueryCondition(options.having);
     }
 
     const { first, last, before, after } = options as FindByCursorOptions<T>;
@@ -487,6 +492,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     if (meta && !Utils.isEmpty(populate)) {
       this.buildFields(meta, populate, joinedProps, qb, qb.alias, options as FindOptions<T>, schema);
+    }
+
+    if (options.having != null && typeof options.having !== 'object') {
+      throw ValidationError.invalidQueryCondition(options.having);
     }
 
     qb.__populateWhere = (options as Dictionary)._populateWhere;

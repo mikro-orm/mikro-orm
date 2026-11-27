@@ -133,6 +133,10 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`Invalid query for entity '${className}', property '${propName}' does not exist in embeddable '${embeddableType}'`);
   }
 
+  static invalidQueryCondition(cond: unknown): ValidationError {
+    return new ValidationError(`Invalid query condition: ${inspect(cond, { depth: 5 })}`);
+  }
+
 }
 
 export class CursorError<T extends AnyEntity = AnyEntity> extends ValidationError<T> {
