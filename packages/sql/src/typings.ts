@@ -316,7 +316,9 @@ export interface IQueryBuilder<T> {
     query: AnyQueryBuilder | NativeQueryBuilder | RawQueryFragment,
     options?: CteOptions,
   ): this;
-  scheduleFilterCheck(path: string | IQueryBuilder<any>): void;
+  scheduleFilterCheck(path: string): void;
+  /** @internal */
+  scheduleSubQueryFilterCheck(qb: IQueryBuilder<any>, ownerAlias: string): void;
   /** @internal */
   ensureTPTJoins(): void;
   withSchema(schema: string): this;

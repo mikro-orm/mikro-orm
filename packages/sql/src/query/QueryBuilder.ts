@@ -566,7 +566,7 @@ export interface QBState<Entity extends object> {
   })[];
   tptJoinsApplied: boolean;
   autoJoinedPaths: string[];
-  filteredSubQueries: QueryBuilder<any>[];
+  filteredSubQueries: { qb: QueryBuilder<any>; ownerAlias: string }[];
   partitionLimit?: { partitionBy: string; limit: number; offset?: number };
 }
 
@@ -1477,12 +1477,7 @@ export class QueryBuilder<
   /**
    * @internal
    */
-  scheduleFilterCheck(path: string | IQueryBuilder<any>): void {
-    if (typeof path !== 'string') {
-      this.#state.filteredSubQueries.push(path as QueryBuilder<any>);
-      return;
-    }
-
+  scheduleFilterCheck(path: string): void {
     // deduplicate so filters forming a relation cycle cannot reschedule an already visited path forever
     if (!this.#state.autoJoinedPaths.includes(path)) {
       this.#state.autoJoinedPaths.push(path);
@@ -1492,8 +1487,25 @@ export class QueryBuilder<
   /**
    * @internal
    */
+  scheduleSubQueryFilterCheck(qb: IQueryBuilder<any>, ownerAlias: string): void {
+    this.#state.filteredSubQueries.push({ qb: qb as QueryBuilder<any>, ownerAlias });
+  }
+
+  /**
+   * @internal
+   */
   async applyJoinedFilters(em: EntityManager, filterOptions: FilterOptions | undefined): Promise<void> {
     const joins = Object.values(this.#state.joins);
+    // nested joins inherit the overrides of their ancestor relations
+    const getJoinFilters = (join?: JoinOptions) => {
+      const chain = join ? [join] : [];
+
+      for (let parent; (parent = joins.find(j => j.alias === chain[0]?.ownerAlias));) {
+        chain.unshift(parent);
+      }
+
+      return chain.reduce((acc, j) => QueryHelper.mergePropertyFilters(j.prop.filters, acc), filterOptions);
+    };
 
     for (const path of this.#state.autoJoinedPaths) {
       const join = this.getJoinForPath(path)!;
@@ -1502,17 +1514,7 @@ export class QueryBuilder<
         continue;
       }
 
-      // nested joins inherit the overrides of their ancestor relations
-      const chain = [join];
-
-      for (let parent; (parent = joins.find(j => j.alias === chain[0].ownerAlias));) {
-        chain.unshift(parent);
-      }
-
-      const joinFilters = chain.reduce(
-        (acc, j) => QueryHelper.mergePropertyFilters(j.prop.filters, acc),
-        filterOptions,
-      );
+      const joinFilters = getJoinFilters(join);
       let cond = await em.applyFilters(join.prop.targetMeta!.class, join.cond, joinFilters, 'read');
       const criteriaNode = CriteriaNodeFactory.createNode<Entity>(this.metadata, join.prop.targetMeta!.class, cond);
       cond = criteriaNode.process(this as IQueryBuilder<Entity>, {
@@ -1575,7 +1577,8 @@ export class QueryBuilder<
     }
 
     for (const sub of this.#state.filteredSubQueries) {
-      await sub.applyJoinedFilters(em, filterOptions);
+      const filters = getJoinFilters(joins.find(j => j.alias === sub.ownerAlias));
+      await sub.qb.applyJoinedFilters(em, filters);
     }
   }
 
