@@ -10,6 +10,7 @@ export {
   EagerProps,
   HiddenProps,
   Config,
+  FilterQueryOverride,
   EntityName,
   IndexHints,
 } from './typings.js';
