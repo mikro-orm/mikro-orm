@@ -41,6 +41,16 @@ export class MySqlNativeQueryBuilder extends NativeQueryBuilder {
     this.parts.push(parts.join(', '));
   }
 
+  protected override addLimitClause() {
+    if (this.options.limit == null && this.options.offset != null) {
+      // MySQL rejects `offset` without `limit`, the docs suggest the max `bigint unsigned` value to mean no limit
+      this.parts.push('limit 18446744073709551615');
+      return;
+    }
+
+    super.addLimitClause();
+  }
+
   protected override addLockClause() {
     if (!this.options.lockMode) {
       return;

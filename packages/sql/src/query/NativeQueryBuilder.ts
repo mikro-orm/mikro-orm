@@ -501,10 +501,7 @@ export class NativeQueryBuilder implements Subquery {
         this.parts.push(`order by ${this.options.orderBy}`);
       }
 
-      if (this.options.limit != null) {
-        this.parts.push(`limit ?`);
-        this.params.push(this.options.limit);
-      }
+      this.addLimitClause();
 
       if (this.options.offset != null) {
         this.parts.push(`offset ?`);
@@ -515,6 +512,14 @@ export class NativeQueryBuilder implements Subquery {
     if (wrapCountSubquery) {
       const asKeyword = this.platform.usesAsKeyword() ? ' as ' : ' ';
       this.parts.push(`)${asKeyword}${this.quote('dcnt')}`);
+    }
+  }
+
+  /** Dialects that reject `offset` without `limit` override this to emit their "no limit" value. */
+  protected addLimitClause(): void {
+    if (this.options.limit != null) {
+      this.parts.push(`limit ?`);
+      this.params.push(this.options.limit);
     }
   }
 
